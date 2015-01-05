@@ -303,8 +303,7 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
         try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(column, m_sql)) {
             String fieldType;
             
-            try
-            {
+            try {
                 fieldType = field.getString("TYPE_NAME");
             }
             catch(SQLNoSuchFieldException e) {
@@ -323,8 +322,19 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
                 case "DATE":
                     return getDate(column);
                     
+                case "DECIMAL": {
+                    // Choose Integer or Long type, if no decimal and that the field is not to big.
+                    if (field.getInt("DECIMAL_DIGITS") == 0 && field.getInt("COLUMN_SIZE") <= 18) {
+                        if (field.getInt("COLUMN_SIZE") <= 9)
+                            return getInt(column);
+                        else
+                            return getLong(column);
+                    }
+                    
+                    return getDouble(column);
+                }
+                    
                 case "DOUBLE":
-                case "DECIMAL":
                 case "CURRENCY":
                     return getDouble(column);
                     

@@ -269,7 +269,7 @@ public class DBFConnection extends AbstractConnection {
         }
         
         // TODO Implements ResultSet:absolute(int) instead.
-        for(int index=1; index < column; index ++) {
+        for(int index=1; index <= column; index ++) {
             try {
                 rs.next();
             }

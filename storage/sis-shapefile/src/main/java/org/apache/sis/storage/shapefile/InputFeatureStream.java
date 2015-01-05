@@ -19,7 +19,7 @@ package org.apache.sis.storage.shapefile;
 import java.io.File;
 import java.io.InputStream;
 import java.sql.SQLFeatureNotSupportedException;
-import java.text.MessageFormat;
+import java.text.*;
 
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
@@ -141,8 +141,7 @@ public class InputFeatureStream extends InputStream {
      */
     public Feature readFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, SQLIllegalColumnIndexException, InvalidShapefileFormatException {
         try {
-            if (m_endOfFile == false) {
-                m_endOfFile = true;
+            if (m_endOfFile) {
                 return null;
             }
             
@@ -159,7 +158,30 @@ public class InputFeatureStream extends InputStream {
                 while(rsDatabase.next()) {
                     String fieldName = rsDatabase.getString("COLUMN_NAME");
                     Object fieldValue = m_rs.getObject(fieldName);
-                    feature.setPropertyValue(fieldName, fieldValue);
+                    
+                    // FIXME To allow features to be filled again, the values are converted to String again : feature should allow any kind of data.
+                    String stringValue;
+                    
+                    if (fieldValue == null) {
+                        stringValue = null;
+                    }
+                    else {
+                        if (fieldValue instanceof Integer || fieldValue instanceof Long) {
+                            stringValue = MessageFormat.format("{0,number,#0}", fieldValue); // Avoid thousand separator.
+                        }
+                        else {
+                            if (fieldValue instanceof Double || fieldValue instanceof Float) {
+                                // Avoid thousand separator.
+                                DecimalFormat df = new DecimalFormat();
+                                df.setGroupingUsed(false);
+                                stringValue = df.format(fieldValue);                                
+                            }
+                            else
+                                stringValue = fieldValue.toString();
+                        }
+                    }
+                    
+                    feature.setPropertyValue(fieldName, stringValue);
                 }
                 
                 return feature;
