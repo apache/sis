@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -31,6 +32,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -484,5 +486,21 @@ check:      while (lower != 0 || upper != dimension) {
             }
         }
         return crs;
+    }
+
+    /**
+     * Returns the Greenwich longitude of the prime meridian of the given CRS in degrees.
+     * If the prime meridian uses an other unit than degrees, then the value will be converted.
+     *
+     * @param  crs The coordinate reference system from which to get the prime meridian.
+     * @return The Greenwich longitude (in degrees) of the prime meridian of the given CRS.
+     *
+     * @since 0.5
+     *
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     */
+    public static double getGreenwichLongitude(final GeodeticCRS crs) {
+        ArgumentChecks.ensureNonNull("crs", crs);
+        return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), NonSI.DEGREE_ANGLE);
     }
 }

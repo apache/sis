@@ -16,11 +16,18 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.*;
+import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
 
 
@@ -33,6 +40,11 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
+    /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
      */
@@ -49,5 +61,34 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals("spherical",   toWKTType(CoordinateSystem.class, SphericalCS     .class));
         assertEquals("temporal",    toWKTType(CoordinateSystem.class, TimeCS          .class));
         assertEquals("vertical",    toWKTType(CoordinateSystem.class, VerticalCS      .class));
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#getGreenwichLongitude(PrimeMeridian, Unit)}.
+     */
+    @Test
+    public void testGetGreenwichLongitude() {
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, NonSI.GRADE),        STRICT);
+        assertEquals(2.5969213,  getGreenwichLongitude(HardCodedDatum.PARIS,     NonSI.GRADE),        STRICT);
+        assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     NonSI.DEGREE_ANGLE), 1E-12);
+        assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, NonSI.DEGREE_ANGLE), 1E-8);
+        assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, NonSI.GRADE),        1E-6);
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#isGreenwichLongitudeEquals(PrimeMeridian, PrimeMeridian)}.
+     */
+    @Test
+    public void testIsGreenwichLongitudeEquals() {
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, HardCodedDatum.PARIS));
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS_RGS));
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS_RGS, HardCodedDatum.PARIS));
+        /*
+         * Test two prime meridians using different units (Paris in grade and Paris in degrees).
+         */
+        final PrimeMeridian pd = new DefaultPrimeMeridian(singletonMap(NAME_KEY, "Paris"), 2.33722917, NonSI.DEGREE_ANGLE);
+        assertTrue(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, pd));
+        assertTrue(isGreenwichLongitudeEquals(pd, HardCodedDatum.PARIS));
     }
 }

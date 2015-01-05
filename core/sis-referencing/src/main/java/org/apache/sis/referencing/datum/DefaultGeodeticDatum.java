@@ -41,10 +41,10 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.isGreenwichLongitudeEquals;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -259,7 +259,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 param = param.clone();
                 param.verify();
                 final GeodeticDatum targetDatum = param.getTargetDatum();
-                if (targetDatum != null && !equalsIgnoreMetadata(primeMeridian, targetDatum.getPrimeMeridian())) {
+                if (targetDatum != null && !isGreenwichLongitudeEquals(primeMeridian, targetDatum.getPrimeMeridian())) {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.MismatchedPrimeMeridianInBWP_1, primeMeridian.getName()));
                 }

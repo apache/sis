@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
@@ -41,6 +42,11 @@ import static org.apache.sis.test.Assert.*;
     CommonCRSTest.class
 })
 public final strictfp class CRSTest extends TestCase {
+    /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
@@ -223,5 +229,13 @@ public final strictfp class CRSTest extends TestCase {
             assertSame("[0…1]", x,  CRS.getComponentAt(xy, 0, 1));
             assertSame("[1…2]", y,  CRS.getComponentAt(xy, 1, 2));
         }
+    }
+
+    /**
+     * Tests {@link CRS#getGreenwichLongitude(GeodeticCRS)}.
+     */
+    @Test
+    public void testGetGreenwichLongitude() {
+        assertEquals(0, CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
     }
 }

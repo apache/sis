@@ -112,7 +112,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see Envelope2D
@@ -437,6 +437,32 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setToNaN() {
         Arrays.fill(ordinates, Double.NaN);
         assert isAllNaN() : this;
+    }
+
+    /**
+     * Translates the envelope by the given vector. For every dimension <var>i</var>, the
+     * {@linkplain #getLower(int) lower} and {@linkplain #getUpper(int) upper} values are
+     * increased by {@code vector[i]}.
+     *
+     * <p>This method does not check if the translation result is inside the coordinate system domain
+     * (e.g. [-180 … +180]° of longitude). Callers can normalize the envelope when desired by call to
+     * the {@link #normalize()} method.</p>
+     *
+     * @param vector The translation vector. The length of this array shall be equal to this envelope
+     *        {@linkplain #getDimension() dimension}.
+     *
+     * @since 0.5
+     */
+    public void translate(final double... vector) {
+        ensureNonNull("vector", vector);
+        final int beginIndex = beginIndex();
+        ensureDimensionMatches("vector", endIndex() - beginIndex, vector);
+        final int upperIndex = beginIndex + (ordinates.length >>> 1);
+        for (int i=0; i<vector.length; i++) {
+            final double t = vector[i];
+            ordinates[beginIndex + i] += t;
+            ordinates[upperIndex + i] += t;
+        }
     }
 
     /**
