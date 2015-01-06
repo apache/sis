@@ -64,44 +64,43 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns the WKT type of the given interface.
+     * Returns {@code true} if the Greenwich longitude of the {@code actual} prime meridian is equals to the
+     * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in unit of the
+     * expected prime meridian.
      *
-     * For {@link CoordinateSystem} base type, the returned value shall be one of
-     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
-     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
-     *
-     * @param  base The abstract base interface.
-     * @param  type The interface or classes for which to get the WKT type.
-     * @return The WKT type for the given class or interface, or {@code null} if none.
+     * @param expected The expected prime meridian, or {@code null}.
+     * @param actual The actual prime meridian, or {@code null}.
+     * @return {@code true} if both prime meridian have the same Greenwich longitude,
+     *         in unit of the expected prime meridian.
      */
-    public static String toWKTType(final Class<?> base, final Class<?> type) {
-        if (type != base) {
-            final UML uml = type.getAnnotation(UML.class);
-            if (uml != null && uml.specification() == Specification.ISO_19111) {
-                String name = uml.identifier();
-                final int length = name.length() - 5; // Length without "CS_" and "CS".
-                if (length >= 1 && name.startsWith("CS_") && name.endsWith("CS")) {
-                    final StringBuilder buffer = new StringBuilder(length).append(name, 3, 3 + length);
-                    if (!name.regionMatches(3, "Cartesian", 0, 9)) {
-                        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
-                    }
-                    name = buffer.toString();
-                    if (name.equals("time")) {
-                        name = "temporal";
-                    }
-                    return name;
-                }
-            }
-            for (final Class<?> c : type.getInterfaces()) {
-                if (base.isAssignableFrom(c)) {
-                    final String name = toWKTType(base, c);
-                    if (name != null) {
-                        return name;
-                    }
-                }
-            }
+    public static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
+        if (expected == actual) {
+            return true;
         }
-        return null;
+        if (expected == null || actual == null) {
+            return false;
+        }
+        return epsilonEqual(expected.getGreenwichLongitude(),
+                getGreenwichLongitude(actual, expected.getAngularUnit()));
+    }
+
+    /**
+     * Returns the longitude value relative to the Greenwich Meridian, expressed in the specified units.
+     * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
+     * but on arbitrary implementation.
+     *
+     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude.
+     * @param  unit The unit for the prime meridian to return.
+     * @return The prime meridian in the given units.
+     *
+     * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     */
+    public static double getGreenwichLongitude(final PrimeMeridian primeMeridian, final Unit<Angle> unit) {
+        if (primeMeridian instanceof DefaultPrimeMeridian) { // Maybe the user overrode some methods.
+            return ((DefaultPrimeMeridian) primeMeridian).getGreenwichLongitude(unit);
+        } else {
+            return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());
+        }
     }
 
     /**
@@ -211,43 +210,44 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns the longitude value relative to the Greenwich Meridian, expressed in the specified units.
-     * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
-     * but on arbitrary implementation.
+     * Returns the WKT type of the given interface.
      *
-     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude.
-     * @param  unit The unit for the prime meridian to return.
-     * @return The prime meridian in the given units.
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
+     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
      *
-     * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     * @param  base The abstract base interface.
+     * @param  type The interface or classes for which to get the WKT type.
+     * @return The WKT type for the given class or interface, or {@code null} if none.
      */
-    public static double getGreenwichLongitude(final PrimeMeridian primeMeridian, final Unit<Angle> unit) {
-        if (primeMeridian instanceof DefaultPrimeMeridian) { // Maybe the user overrode some methods.
-            return ((DefaultPrimeMeridian) primeMeridian).getGreenwichLongitude(unit);
-        } else {
-            return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());
+    public static String toWKTType(final Class<?> base, final Class<?> type) {
+        if (type != base) {
+            final UML uml = type.getAnnotation(UML.class);
+            if (uml != null && uml.specification() == Specification.ISO_19111) {
+                String name = uml.identifier();
+                final int length = name.length() - 5; // Length without "CS_" and "CS".
+                if (length >= 1 && name.startsWith("CS_") && name.endsWith("CS")) {
+                    final StringBuilder buffer = new StringBuilder(length).append(name, 3, 3 + length);
+                    if (!name.regionMatches(3, "Cartesian", 0, 9)) {
+                        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+                    }
+                    name = buffer.toString();
+                    if (name.equals("time")) {
+                        name = "temporal";
+                    }
+                    return name;
+                }
+            }
+            for (final Class<?> c : type.getInterfaces()) {
+                if (base.isAssignableFrom(c)) {
+                    final String name = toWKTType(base, c);
+                    if (name != null) {
+                        return name;
+                    }
+                }
+            }
         }
-    }
-
-    /**
-     * Returns {@code true} if the Greenwich longitude of the {@code actual} prime meridian is equals to the
-     * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in unit of the
-     * expected prime meridian.
-     *
-     * @param expected The expected prime meridian, or {@code null}.
-     * @param actual The actual prime meridian, or {@code null}.
-     * @return {@code true} if both prime meridian have the same Greenwich longitude,
-     *         in unit of the expected prime meridian.
-     */
-    public static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
-        if (expected == actual) {
-            return true;
-        }
-        if (expected == null || actual == null) {
-            return false;
-        }
-        return epsilonEqual(expected.getGreenwichLongitude(),
-                getGreenwichLongitude(actual, expected.getAngularUnit()));
+        return null;
     }
 
     /**
