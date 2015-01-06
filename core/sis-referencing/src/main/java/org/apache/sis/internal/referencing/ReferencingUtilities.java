@@ -29,6 +29,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -188,14 +189,15 @@ public final class ReferencingUtilities extends Static {
             /*
              * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
              */
-            if (crs instanceof DefaultGeographicCRS) {
+            if (crs instanceof DefaultGeographicCRS && crs.getCoordinateSystem().getDimension() == 2) {
                 return ((DefaultGeographicCRS) crs).forConvention(AxesConvention.NORMALIZED);
             }
             final CoordinateSystem cs = CommonCRS.defaultGeographic().getCoordinateSystem();
             if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(cs, crs.getCoordinateSystem())) {
                 return (GeographicCRS) crs;
             }
-            return new DefaultGeographicCRS(singletonMap(DefaultGeographicCRS.NAME_KEY, crs.getName().getCode()),
+            return new DefaultGeographicCRS(
+                    singletonMap(DefaultGeographicCRS.NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)),
                     ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
         }
         if (crs instanceof CompoundCRS) {
