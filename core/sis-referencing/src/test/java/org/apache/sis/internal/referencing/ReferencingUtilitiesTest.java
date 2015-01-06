@@ -46,21 +46,19 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     private static final double STRICT = 0;
 
     /**
-     * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
+     * Tests {@link ReferencingUtilities#isGreenwichLongitudeEquals(PrimeMeridian, PrimeMeridian)}.
      */
     @Test
-    public void testType() {
-        assertNull  (               toWKTType(CoordinateSystem.class, CoordinateSystem.class));
-        assertEquals("affine",      toWKTType(CoordinateSystem.class, AffineCS        .class));
-        assertEquals("Cartesian",   toWKTType(CoordinateSystem.class, CartesianCS     .class));
-        assertEquals("cylindrical", toWKTType(CoordinateSystem.class, CylindricalCS   .class));
-        assertEquals("ellipsoidal", toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
-        assertEquals("linear",      toWKTType(CoordinateSystem.class, LinearCS        .class));
-//      assertEquals("parametric",  toWKTType(CoordinateSystem.class, ParametricCS    .class));
-        assertEquals("polar",       toWKTType(CoordinateSystem.class, PolarCS         .class));
-        assertEquals("spherical",   toWKTType(CoordinateSystem.class, SphericalCS     .class));
-        assertEquals("temporal",    toWKTType(CoordinateSystem.class, TimeCS          .class));
-        assertEquals("vertical",    toWKTType(CoordinateSystem.class, VerticalCS      .class));
+    public void testIsGreenwichLongitudeEquals() {
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, HardCodedDatum.PARIS));
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS_RGS));
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS_RGS, HardCodedDatum.PARIS));
+        /*
+         * Test two prime meridians using different units (Paris in grade and Paris in degrees).
+         */
+        final PrimeMeridian pd = new DefaultPrimeMeridian(singletonMap(NAME_KEY, "Paris"), 2.33722917, NonSI.DEGREE_ANGLE);
+        assertTrue(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, pd));
+        assertTrue(isGreenwichLongitudeEquals(pd, HardCodedDatum.PARIS));
     }
 
     /**
@@ -77,18 +75,20 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link ReferencingUtilities#isGreenwichLongitudeEquals(PrimeMeridian, PrimeMeridian)}.
+     * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
      */
     @Test
-    public void testIsGreenwichLongitudeEquals() {
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, HardCodedDatum.PARIS));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS_RGS));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS_RGS, HardCodedDatum.PARIS));
-        /*
-         * Test two prime meridians using different units (Paris in grade and Paris in degrees).
-         */
-        final PrimeMeridian pd = new DefaultPrimeMeridian(singletonMap(NAME_KEY, "Paris"), 2.33722917, NonSI.DEGREE_ANGLE);
-        assertTrue(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, pd));
-        assertTrue(isGreenwichLongitudeEquals(pd, HardCodedDatum.PARIS));
+    public void testType() {
+        assertNull  (               toWKTType(CoordinateSystem.class, CoordinateSystem.class));
+        assertEquals("affine",      toWKTType(CoordinateSystem.class, AffineCS        .class));
+        assertEquals("Cartesian",   toWKTType(CoordinateSystem.class, CartesianCS     .class));
+        assertEquals("cylindrical", toWKTType(CoordinateSystem.class, CylindricalCS   .class));
+        assertEquals("ellipsoidal", toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
+        assertEquals("linear",      toWKTType(CoordinateSystem.class, LinearCS        .class));
+//      assertEquals("parametric",  toWKTType(CoordinateSystem.class, ParametricCS    .class));
+        assertEquals("polar",       toWKTType(CoordinateSystem.class, PolarCS         .class));
+        assertEquals("spherical",   toWKTType(CoordinateSystem.class, SphericalCS     .class));
+        assertEquals("temporal",    toWKTType(CoordinateSystem.class, TimeCS          .class));
+        assertEquals("vertical",    toWKTType(CoordinateSystem.class, VerticalCS      .class));
     }
 }
