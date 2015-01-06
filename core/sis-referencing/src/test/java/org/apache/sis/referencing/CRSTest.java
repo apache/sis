@@ -236,6 +236,7 @@ public final strictfp class CRSTest extends TestCase {
      */
     @Test
     public void testGetGreenwichLongitude() {
-        assertEquals(0, CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
+        assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
+        assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF),   1E-12);
     }
 }

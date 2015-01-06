@@ -124,11 +124,17 @@ public enum AxesConvention {
      * </ul>
      *
      * Current implementation does not normalize longitude values to the [-180 … +180]° range and does not set
-     * the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian} to
-     * Greenwich, because doing so would cause the conversion between old and new coordinate systems to be non-affine.
-     * Furthermore changing the prime meridian would be a datum change rather than a coordinate system change.
-     * However those rules may be adjusted in future SIS versions based on experience gained.
+     * the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian}
+     * to Greenwich. However those rules may be adjusted in future SIS versions based on experience gained.
      * For more predictable results, consider using {@link #CONVENTIONALLY_ORIENTED} or {@link #RIGHT_HANDED} instead.
+     *
+     * <div class="note"><b>Rational:</b>
+     * The reason why we do not yet normalize the range and the prime meridian is because doing so
+     * would cause the conversion between old and new coordinate systems to be non-affine for axes
+     * having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}. Furthermore changing the
+     * prime meridian would be a datum change rather than a coordinate system change, and datum
+     * changes are more difficult to handle by coordinate operation factories.
+     * </div>
      *
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
@@ -214,19 +220,24 @@ public enum AxesConvention {
 
     /**
      * Axes having a <cite>wraparound</cite>
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() range meaning}
-     * are shifted to their ranges of positive values. The units of measurement and range period are unchanged.
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() range meaning} are
+     * shifted to their ranges of positive values. The units of measurement and range period (difference between
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMaximumValue() maximum} and
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
+     * are unchanged.
+     *
+     * <p>Note that projecting geometry objects from the old to the new coordinate system may require
+     * a non-affine conversion. Some geometries may need to be separated in two parts, and others may
+     * need to be merged.</p>
      *
      * {@section Usage}
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
      * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
      * time axis has a wrapround range meaning.
      *
-     * <p><b>Caution:</b>
-     * Conversions between the original Coordinate System and new CS compliant to this {@code POSITIVE_RANGE}
-     * may not be affine. For example if an image was spanning the [0 … 360]° range of longitude values, then
-     * a change to the [-180 … +180]° range requires cutting the right side (the side spanning the [180 … 360]°
-     * range of longitude values) and pasting it on the left side of the image (in the [-180 … 0]° range).</p>
+     * <p>Note that conversions from an coordinate system using the [-180 … +180]° range to a coordinate system
+     * using the [0 … 360]° range may not be affine. For example the data in the West hemisphere ([-180 … 0]°)
+     * may need to move on the right side of the East hemisphere ([180 … 360]°).</p>
      *
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
