@@ -47,6 +47,8 @@ public final strictfp class HardCodedDatum {
 
     /**
      * Paris meridian (EPSG:8903), with angular measurements in grad.
+     *
+     * @since 0.5
      */
     public static final DefaultPrimeMeridian PARIS = new DefaultPrimeMeridian(
             properties("Paris", "8903"), 2.5969213, NonSI.GRADE);
@@ -54,6 +56,11 @@ public final strictfp class HardCodedDatum {
     /**
      * Old Paris meridian (EPSG:8914) defined as 2°20'13.95"E.
      * Equivalent to 2.596898 grad (value given by EPSG).
+     *
+     * <p>When used together with {@link #PARIS}, this prime meridian is useful for testing
+     * two real-world prime meridians that are very close together but still different.</p>
+     *
+     * @since 0.5
      */
     public static final DefaultPrimeMeridian PARIS_RGS = new DefaultPrimeMeridian(
             properties("Paris RGS", "8914"), 2 + (20 + 13.95/60)/60, NonSI.DEGREE_ANGLE);
@@ -75,6 +82,15 @@ public final strictfp class HardCodedDatum {
     public static final DefaultGeodeticDatum WGS72 = new DefaultGeodeticDatum(
             properties("World Geodetic System 1972", "6322"),
             new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid()), GREENWICH);
+
+    /**
+     * Nouvelle Triangulation Française datum (EPSG:6807). Prime meridian is Paris.
+     *
+     * @since 0.5
+     */
+    public static final DefaultGeodeticDatum NTF = new DefaultGeodeticDatum(
+            properties("Nouvelle Triangulation Française", "6807"),
+            new DefaultEllipsoid(GeodeticDatumMock.NTF.getEllipsoid()), PARIS);
 
     /**
      * Spherical datum based on GRS 1980 Authalic Sphere (EPSG:6047). Prime meridian is Greenwich.
