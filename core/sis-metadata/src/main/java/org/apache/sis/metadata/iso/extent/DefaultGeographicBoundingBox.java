@@ -29,6 +29,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
@@ -381,8 +382,9 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             throws IllegalArgumentException
     {
         if (southBoundLatitude > northBoundLatitude) { // Accept NaN.
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2,
-                    new Latitude(southBoundLatitude), new Latitude(northBoundLatitude)));
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
+                    new Latitude(southBoundLatitude), new Latitude(northBoundLatitude),
+                    Vocabulary.format(Vocabulary.Keys.Latitude)));
         }
     }
 

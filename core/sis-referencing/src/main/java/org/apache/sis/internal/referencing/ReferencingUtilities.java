@@ -69,19 +69,19 @@ public final class ReferencingUtilities extends Static {
      * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in unit of the
      * expected prime meridian.
      *
+     * <p>A {@code null} argument is interpreted as "unknown prime meridian". Consequently this method
+     * unconditionally returns {@code false} if one or both arguments is {@code null}.</p>
+     *
      * @param expected The expected prime meridian, or {@code null}.
      * @param actual The actual prime meridian, or {@code null}.
      * @return {@code true} if both prime meridian have the same Greenwich longitude,
      *         in unit of the expected prime meridian.
      */
     public static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
-        if (expected == actual) {
-            return true;
-        }
         if (expected == null || actual == null) {
-            return false;
+            return false; // See method javadoc.
         }
-        return epsilonEqual(expected.getGreenwichLongitude(),
+        return (expected == actual) || epsilonEqual(expected.getGreenwichLongitude(),
                 getGreenwichLongitude(actual, expected.getAngularUnit()));
     }
 
