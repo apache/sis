@@ -54,9 +54,13 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
      */
     @Test
     public void testIsGreenwichLongitudeEquals() {
+        assertFalse(isGreenwichLongitudeEquals(null, null)); // "null" interpreted as "unknown".
+        assertFalse(isGreenwichLongitudeEquals(null, HardCodedDatum.GREENWICH));
+        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, null));
         assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, HardCodedDatum.PARIS));
         assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS_RGS));
         assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS_RGS, HardCodedDatum.PARIS));
+        assertTrue (isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS));
         /*
          * Test two prime meridians using different units (Paris in grade and Paris in degrees).
          */
@@ -103,6 +107,7 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertNormalizedEqualsWGS84("Shall extract the 2D component.", false, HardCodedCRS.GEOID_4D);
         assertNormalizedEqualsWGS84("Shall build a the 2D component.", true,  HardCodedCRS.WGS84_3D);
         assertNormalizedEqualsWGS84("Shall normalize axis order.",     true,  HardCodedCRS.WGS84_φλ);
+        assertNull(toNormalizedGeographicCRS(null));
     }
 
     /**

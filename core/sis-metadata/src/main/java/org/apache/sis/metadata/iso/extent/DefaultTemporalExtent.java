@@ -226,7 +226,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * available on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this temporal extent.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a temporal extent.
      *
      * @see DefaultExtent#addElements(Envelope)
