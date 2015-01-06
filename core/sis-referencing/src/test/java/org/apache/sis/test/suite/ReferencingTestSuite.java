@@ -30,7 +30,10 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    // Test matrix first because they may be used in about every SIS corners.
+    org.apache.sis.internal.referencing.FormulasTest.class,
+    org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
+
+    // Test matrix early because they may be used in about every SIS corners.
     org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
     org.apache.sis.referencing.operation.matrix.SolverTest.class,
     org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
@@ -51,7 +54,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
 
-    org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
