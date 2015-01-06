@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotSetPropertyValue_1 = 11;
 
         /**
+         * Can not transform envelope.
+         */
+        public static final short CanNotTransformEnvelope = 176;
+
+        /**
          * Can not transform envelope to a geodetic CRS.
          */
         public static final short CanNotTransformEnvelopeToGeodetic = 174;
