@@ -69,18 +69,18 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *   </tr>
  * </table></center>
  *
- * The {@code transform(…)} methods expect an arbitrary {@link Envelope} with <strong>one</strong> of the following
- * arguments: {@link MathTransform}, {@link CoordinateOperation} or {@link CoordinateReferenceSystem}.
+ * Apache SIS tries to detect the curvature by transforming intermediate points in addition to the corners.
+ * While optional, it is strongly recommended that all {@code MathTransform} implementations involved in the
+ * operation (directly or indirectly) support {@linkplain MathTransform#derivative(DirectPosition) derivative},
+ * for more accurate calculation of curve extremum. This is the case of most Apache SIS implementations.
+ *
+ * <p>The {@code transform(…)} methods in this class expect an arbitrary {@link Envelope} with <strong>one</strong>
+ * of the following arguments: {@link MathTransform}, {@link CoordinateOperation} or {@link CoordinateReferenceSystem}.
  * The recommended method is the one expecting a {@code CoordinateOperation} object,
  * since it contains sufficient information for handling the cases of envelopes that encompass a pole.
  * The method expecting a {@code CoordinateReferenceSystem} object is merely a convenience method that
- * infers the {@code CoordinateOperation} itself, but at the cost of performance if the same operation
- * needs to be applied on many envelopes.
- *
- * <p>While optional, it is strongly recommended that all {@code MathTransform} implementations involved
- * in the operation (directly or indirectly) support the {@link MathTransform#derivative(DirectPosition)}
- * operation, for more accurate calculation of curve extremum.
- * This is the case of most Apache SIS implementations.</p>
+ * infers the coordinate operation itself, but at the cost of performance if the same operation needs
+ * to be applied on many envelopes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -194,11 +194,12 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Transforms an envelope using the given {@linkplain MathTransform math transform}.
+     * Transforms an envelope using the given math transform.
      * The transformation is only approximative: the returned envelope may be bigger than necessary,
      * or smaller than required if the bounding box contains a pole.
      *
-     * <p>This method can not handle the case where the envelope contains the North or South pole,
+     * <p><b>Limitation</b><br>
+     * This method can not handle the case where the envelope contains the North or South pole,
      * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
      * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.</p>
      *
@@ -417,7 +418,7 @@ public final class Envelopes extends Static {
     }
 
     /**
-     * Transforms an envelope using the given {@linkplain CoordinateOperation coordinate operation}.
+     * Transforms an envelope using the given coordinate operation.
      * The transformation is only approximative: the returned envelope may be bigger than the
      * smallest possible bounding box, but should not be smaller in most cases.
      *
