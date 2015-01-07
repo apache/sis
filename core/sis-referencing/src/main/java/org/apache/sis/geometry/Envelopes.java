@@ -420,16 +420,16 @@ public final class Envelopes extends Static {
      * Transforms an envelope using the given {@linkplain CoordinateOperation coordinate operation}.
      * The transformation is only approximative: the returned envelope may be bigger than the
      * smallest possible bounding box, but should not be smaller in most cases.
-     * <p>
-     * This method can handle the case where the envelope contains the North or South pole,
-     * or when it cross the &plusmn;180&deg; longitude.
      *
-     * {@note If the envelope CRS is non-null, then the caller should ensure that the operation
-     * source CRS is the same than the envelope CRS. In case of mismatch, this method transforms
-     * the envelope to the operation source CRS before to apply the operation. This extra step
-     * may cause a lost of accuracy. In order to prevent this method from performing such
-     * pre-transformation (if not desired), callers can ensure that the envelope CRS is
-     * <code>null</code> before to call this method.}
+     * <p>This method can handle the case where the envelope contains the North or South pole,
+     * or when it cross the ±180° longitude.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * If the envelope CRS is non-null, then the caller should ensure that the operation source CRS
+     * is the same than the envelope CRS. In case of mismatch, this method transforms the envelope
+     * to the operation source CRS before to apply the operation. This extra step may cause a lost
+     * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
+     * callers can ensure that the envelope CRS is {@code null} before to call this method.</div>
      *
      * @param  operation The operation to use.
      * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.

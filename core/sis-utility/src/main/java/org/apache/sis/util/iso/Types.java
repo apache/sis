@@ -436,9 +436,9 @@ public final class Types extends Static {
      * Note that the size of the returned array may growth between different invocations of this method,
      * since users can add their own codes to an existing list.
      *
-     * {@note This method works with both <code>Enum</code> and <code>CodeList</code>. However if the type
-     *        is known to be an <code>Enum</code>, then the standard <code>Class.getEnumConstants()</code>
-     *        method is more efficient.}
+     * <div class="note"><b>Note:</b>
+     * This method works with both {@link Enum} and {@link CodeList}. However if the type is known to be an
+     * {@code Enum}, then the standard {@link Class#getEnumConstants()} method is more efficient.</div>
      *
      * @param <T> The compile-time type given as the {@code codeType} parameter.
      * @param codeType The type of code list or enumeration.
