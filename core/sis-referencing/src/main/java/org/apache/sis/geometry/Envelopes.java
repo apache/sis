@@ -58,7 +58,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * For example in order to get an envelope that fully encompass the shape shown below on the right side,
  * projecting the four corners is not sufficient:
  *
- * <center><table>
+ * <center><table class="sis">
  *   <caption>Example of curvature induced by a map projection</caption>
  *   <tr>
  *     <th>Envelope before map projection</th>
