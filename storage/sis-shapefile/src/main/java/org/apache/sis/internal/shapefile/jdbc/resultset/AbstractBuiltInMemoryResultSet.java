@@ -31,7 +31,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * @since   0.5
  * @module
  */
-abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
+public abstract class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
     /**
      * Construct a ResultSet for descriptions.
      * @param stmt Statement.
@@ -55,7 +55,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return getBigDecimal(getFieldName(columnIndex, m_sql));
+        return getBigDecimal(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -71,7 +71,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public Date getDate(int columnIndex) throws SQLException {
-        return getDate(getFieldName(columnIndex, m_sql));
+        return getDate(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -95,7 +95,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        return getDouble(getFieldName(columnIndex, m_sql));
+        return getDouble(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -103,7 +103,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        return getFloat(getFieldName(columnIndex, m_sql));
+        return getFloat(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -127,7 +127,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        return getInt(getFieldName(columnIndex, m_sql));
+        return getInt(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -141,7 +141,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      * @see java.sql.ResultSet#getLong(int)
      */
     @Override public long getLong(int columnIndex) throws SQLException {
-        return getLong(getFieldName(columnIndex, m_sql));
+        return getLong(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -156,7 +156,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        return getShort(getFieldName(columnIndex, m_sql));
+        return getShort(getFieldName(columnIndex, sql));
     }
 
     /**
@@ -171,7 +171,7 @@ abstract public class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
      */
     @Override
     public String getString(int columnIndex) throws SQLException {
-        return(getString(getFieldName(columnIndex, m_sql)));
+        return(getString(getFieldName(columnIndex, sql)));
     }
 
     /**

@@ -26,7 +26,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFBuiltInMemoryResultSetForTablesTypesListing extends AbstractBuiltInMemoryResultSet {
     /** There's only one result in this ResultSet. */
-    private int m_index = 0;
+    private int index = 0;
     
     /**
      * Construct a ResultSet listing the tables types of a database.
@@ -44,15 +44,15 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends AbstractBuil
         
         switch(columnLabel) {
             case "OBJECTID":                  // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ? 
-                m_wasNull = false;
+                wasNull = false;
                 return "1";
         
             case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-                m_wasNull = false;
+                wasNull = false;
                 return "TABLE";               // and DBase 3 only knows tables. 
 
             default:
-                m_wasNull = true;
+                wasNull = true;
                 return null;
         }
     }
@@ -64,11 +64,11 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends AbstractBuil
     {
         logStep("next");        
         
-        if (m_index > 1) {
+        if (index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_type_handled"), "Driver manager asks for table types listing", getFile());
         }
 
-        m_index ++;
-        return (m_index == 1) ? true : false;
+        index ++;
+        return (index == 1) ? true : false;
     }
 }

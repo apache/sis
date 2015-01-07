@@ -13,15 +13,15 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
  */
 public class CrudeSQLParser extends AbstractJDBC {
     /** ResultSet followed straight forward. */
-    private DBFRecordBasedResultSet m_rs;
+    private DBFRecordBasedResultSet rs;
     
     /**
      * Construct a crude SQL parser.
-     * @param rs Target ResultSet.
+     * @param resultset Target ResultSet.
      */
-    public CrudeSQLParser(DBFRecordBasedResultSet rs) {
-        Objects.requireNonNull(rs, "The ResultSet given to the SQL parser cannot be null.");
-        m_rs = rs;
+    public CrudeSQLParser(DBFRecordBasedResultSet resultset) {
+        Objects.requireNonNull(resultset, "The ResultSet given to the SQL parser cannot be null.");
+        rs = resultset;
     }
     
     /**
@@ -32,11 +32,11 @@ public class CrudeSQLParser extends AbstractJDBC {
     public ConditionalClauseResolver parse() throws SQLInvalidStatementException {
         logStep("parse");
         
-        String sql = m_rs.getSQL().trim();
+        String sql = rs.getSQL().trim();
         
         if (sql.toLowerCase().startsWith("select * from ") == false) {
             String message = format(Level.WARNING, "excp.limited_feature_syntax", sql);
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
+            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
         }
         
         final String whereWord = " where ";
@@ -53,7 +53,7 @@ public class CrudeSQLParser extends AbstractJDBC {
         // If the condition is empty, it's a syntax error because a WHERE clause went before.
         if (whereCondition.isEmpty()) {
             String message = format(Level.WARNING, "excp.where_without_conditions", sql);            
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
+            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
         }
         
         // Currently, all the condition are made of three parts :
@@ -64,7 +64,7 @@ public class CrudeSQLParser extends AbstractJDBC {
         
         if (parts.length != 3) {
             String message = format(Level.WARNING, "excp.limited_feature_conditional_parsing", whereCondition, sql);
-            throw new SQLInvalidStatementException(message, m_rs.getSQL(), m_rs.getFile());
+            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
         }
         
         // Detect and promote litterals in parameters to their best types.
@@ -108,7 +108,7 @@ public class CrudeSQLParser extends AbstractJDBC {
      * @see org.apache.sis.internal.shapefile.jdbc.AbstractJDBC#getFile()
      */
     @Override protected File getFile() {
-        return m_rs.getFile();
+        return rs.getFile();
     }
 
     /**

@@ -42,18 +42,18 @@ public class DBFConnection extends AbstractConnection {
     final File databaseFile;
     
     /** Opened statement. */
-    private HashSet<DBFStatement> m_openedStatements = new HashSet<>(); 
+    private HashSet<DBFStatement> openedStatements = new HashSet<>(); 
     
     /** ByteReader. */
-    private Dbase3ByteReader m_byteReader;
+    private Dbase3ByteReader byteReader;
     
     /**
      * Constructs a connection to the given database.
      * @param datafile Data file ({@code .dbf} extension).
-     * @param byteReader Byte reader to use for reading binary content.
+     * @param br Byte reader to use for reading binary content.
      * @throws DbaseFileNotFoundException if the Database file cannot be found or is not a file. 
      */
-    public DBFConnection(final File datafile, Dbase3ByteReader byteReader) throws DbaseFileNotFoundException {
+    public DBFConnection(final File datafile, Dbase3ByteReader br) throws DbaseFileNotFoundException {
         // Check that file exists.
         if (!datafile.exists()) {
             throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
@@ -65,7 +65,7 @@ public class DBFConnection extends AbstractConnection {
         }
         
        databaseFile = datafile;
-       m_byteReader = byteReader;
+       byteReader = br;
        format(Level.FINE, "log.database_connection_opened", databaseFile.getAbsolutePath(), "FIXME : column desc.");
     }
 
@@ -80,11 +80,11 @@ public class DBFConnection extends AbstractConnection {
         try {
             // Check if all the underlying connections that has been opened with this connection has been closed.
             // If not, we log a warning to help the developper.
-            if (m_openedStatements.size() > 0) {
-                format(Level.WARNING, "log.statements_left_opened", m_openedStatements.size(), m_openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));  
+            if (openedStatements.size() > 0) {
+                format(Level.WARNING, "log.statements_left_opened", openedStatements.size(), openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));  
             }
             
-            m_byteReader.close();
+            byteReader.close();
         } catch (IOException e) {
             format(Level.FINE, e.getMessage(), e);
         }
@@ -99,7 +99,7 @@ public class DBFConnection extends AbstractConnection {
         assertNotClosed();
         
         DBFStatement stmt = new DBFStatement(this);
-        m_openedStatements.add(stmt);
+        openedStatements.add(stmt);
         return stmt;
     }
 
@@ -116,7 +116,7 @@ public class DBFConnection extends AbstractConnection {
      * @return Charset.
      */
     public Charset getCharset() {
-        return m_byteReader.getCharset();
+        return byteReader.getCharset();
     }
 
     /**
@@ -150,7 +150,7 @@ public class DBFConnection extends AbstractConnection {
      */
     @Override
     public boolean isClosed() {
-        return m_byteReader.isClosed();
+        return byteReader.isClosed();
     }
 
     /**
@@ -188,7 +188,7 @@ public class DBFConnection extends AbstractConnection {
     public void notifyCloseStatement(DBFStatement stmt) {
         Objects.requireNonNull(stmt, "The statement notified being closed cannot be null.");
         
-        if (m_openedStatements.remove(stmt) == false) {
+        if (openedStatements.remove(stmt) == false) {
             throw new RuntimeException(format(Level.SEVERE, "assert.statement_not_opened_by_me", stmt, toString()));
         }
     }
@@ -202,7 +202,7 @@ public class DBFConnection extends AbstractConnection {
      * @throws SQLNoSuchFieldException if there is no field with this name in the query.
      */
     public int findColumn(String columnLabel, String sql) throws SQLNoSuchFieldException {
-        return m_byteReader.findColumn(columnLabel, sql);
+        return byteReader.findColumn(columnLabel, sql);
     }
 
     /**
@@ -210,7 +210,7 @@ public class DBFConnection extends AbstractConnection {
      * @return Column count.
      */
     public int getColumnCount() {
-        return m_byteReader.getColumnCount();
+        return byteReader.getColumnCount();
     }
 
     /**
@@ -288,7 +288,7 @@ public class DBFConnection extends AbstractConnection {
      * @return Fields descriptors.
      */
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
-        return m_byteReader.getFieldsDescriptors();
+        return byteReader.getFieldsDescriptors();
     }
 
     /**
@@ -299,7 +299,7 @@ public class DBFConnection extends AbstractConnection {
      * @throws SQLIllegalColumnIndexException if the index is out of bounds.
      */
     public String getFieldName(int columnIndex, String sql) throws SQLIllegalColumnIndexException {
-        return m_byteReader.getFieldName(columnIndex, sql);
+        return byteReader.getFieldName(columnIndex, sql);
     }
 
     /**
@@ -307,7 +307,7 @@ public class DBFConnection extends AbstractConnection {
      * @return true if a next row is available.
      */
     public boolean nextRowAvailable() {
-        return m_byteReader.nextRowAvailable();        
+        return byteReader.nextRowAvailable();        
     }
 
     /**
@@ -315,7 +315,7 @@ public class DBFConnection extends AbstractConnection {
      * @return Map of field name / object value.
      */
     public Map<String, Object> readNextRowAsObjects() {
-        return m_byteReader.readNextRowAsObjects();
+        return byteReader.readNextRowAsObjects();
     }
     
     /**

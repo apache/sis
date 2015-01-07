@@ -12,26 +12,26 @@ public class SQLIllegalColumnIndexException extends SQLException {
     private static final long serialVersionUID = 7525295716068215255L;
 
     /** The SQL Statement (if known). */
-    private String m_sql;
+    private String sql;
     
     /** The database file. */
-    private File m_database;
+    private File database;
     
     /** Column Index that is invalid. */
-    private int m_columnIndex;
+    private int columnIndex;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble, if known.
-     * @param database The database that was queried.
-     * @param columnIndex The column index that is invalid.
+     * @param sqlStatement SQL Statement who encountered the trouble, if known.
+     * @param dbf The database that was queried.
+     * @param colIndex The column index that is invalid.
      */
-    public SQLIllegalColumnIndexException(String message, String sql, File database, int columnIndex) {
+    public SQLIllegalColumnIndexException(String message, String sqlStatement, File dbf, int colIndex) {
         super(message);
-        m_sql = sql;
-        m_database = database;
-        m_columnIndex = columnIndex;
+        sql = sqlStatement;
+        database = dbf;
+        columnIndex = colIndex;
     }
     
     /**
@@ -39,7 +39,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -47,7 +47,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return Column index.
      */
     public int getColumnIndex() {
-        return m_columnIndex;
+        return columnIndex;
     }
     
     /**
@@ -55,6 +55,6 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }

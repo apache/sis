@@ -35,58 +35,58 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  */
 public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AbstractAutoChecker  implements AutoCloseable  {
     /** The File. */
-    private File m_file;
+    private File file;
     
     /** Input Stream on the DBF. */
-    private FileInputStream m_fis;
+    private FileInputStream fis;
 
     /** File channel on the file. */
-    private FileChannel m_fc;
+    private FileChannel fc;
 
     /** Buffer reader. */
-    private MappedByteBuffer m_byteBuffer;
+    private MappedByteBuffer byteBuffer;
     
     /** Indicates if the byte buffer is closed. */
-    private boolean m_isClosed = false;
+    private boolean isClosed = false;
 
     /** Invalid Exception to throw in case of invalid file format. */
-    private Class<InvalidFormatException> m_classInvalidFormatException;
+    private Class<InvalidFormatException> classInvalidFormatException;
 
     /** Invalid Exception to throw in case of file not found exception. */
-    private Class<FNFException> m_classFNFException;
+    private Class<FNFException> classFNFException;
     
     /**
      * Create and open a byte reader based on a file.
-     * @param file File.
-     * @param classInvalidFormatException Invalid Exception to throw in case of invalid file format.
-     * @param classFileNotFoundException Invalid Exception to throw in case of file not found exception.
+     * @param f File.
+     * @param invalidFormatException Invalid Exception to throw in case of invalid file format.
+     * @param fileNotFoundException Invalid Exception to throw in case of file not found exception.
      * @throws FNFException if the file cannot be opened.
      * @throws InvalidFormatException if the file format is invalid.
      */
-    public CommonByteReader(File file, Class<InvalidFormatException> classInvalidFormatException, Class<FNFException> classFileNotFoundException) throws FNFException, InvalidFormatException {
-        Objects.requireNonNull(file, "The file cannot be null.");
-        m_classInvalidFormatException = classInvalidFormatException;
-        m_classFNFException = classFileNotFoundException;
+    public CommonByteReader(File f, Class<InvalidFormatException> invalidFormatException, Class<FNFException> fileNotFoundException) throws FNFException, InvalidFormatException {
+        Objects.requireNonNull(f, "The file cannot be null.");
+        classInvalidFormatException = invalidFormatException;
+        classFNFException = fileNotFoundException;
         
-        m_file = file;
+        file = f;
         
         try {
-            m_fis = new FileInputStream(file);
+            fis = new FileInputStream(file);
         }
         catch(FileNotFoundException e) {
-            throwException(m_classInvalidFormatException, e.getMessage(), e);
+            throwException(classInvalidFormatException, e.getMessage(), e);
             throw new RuntimeException("this place should not be reached.");
         }
         
-        m_fc = m_fis.getChannel();
+        fc = fis.getChannel();
         
         try {
-            int fsize = (int)m_fc.size();
-            m_byteBuffer = m_fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
+            int fsize = (int)fc.size();
+            byteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
         }
         catch(IOException e) {
-            String message = format(Level.WARNING, "excp.reader_cannot_be_created", m_file.getAbsolutePath(), e.getMessage());
-            throwException(m_classFNFException, message, e);
+            String message = format(Level.WARNING, "excp.reader_cannot_be_created", file.getAbsolutePath(), e.getMessage());
+            throwException(classFNFException, message, e);
             throw new RuntimeException("this place should not be reached.");
         }
    }
@@ -97,13 +97,13 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      */
     @Override 
     public void close() throws IOException {
-        if (m_fc != null)
-            m_fc.close();
+        if (fc != null)
+            fc.close();
 
-        if (m_fis != null)
-            m_fis.close();
+        if (fis != null)
+            fis.close();
         
-        m_isClosed = true;
+        isClosed = true;
     }
 
     /**
@@ -111,7 +111,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return true if it is closed.
      */
     public boolean isClosed() {
-        return m_isClosed;
+        return isClosed;
     }
 
     /**
@@ -119,7 +119,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return Byte Buffer.
      */
     public MappedByteBuffer getByteBuffer() {
-        return m_byteBuffer;
+        return byteBuffer;
     }
     
     /**
@@ -127,6 +127,6 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return File.
      */
     public File getFile() {
-        return m_file;
+        return file;
     }
 }

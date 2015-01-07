@@ -30,24 +30,24 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  */
 public abstract class AbstractClauseResolver extends AbstractAutoChecker {
     /** First comparand. */
-    private Object m_comparand1;
+    private Object comparand1;
     
     /** Second comparand. */
-    private Object m_comparand2;
+    private Object comparand2;
     
     /** Operator. */
-    private String m_operator;
+    private String operator;
     
     /**
      * Construct a where clause resolver.
-     * @param comparand1 The first comparand that might be a primitive or a Field.
-     * @param comparand2 The second comparand that might be a primitive or a Field.
-     * @param operator The operator to apply.
+     * @param cmp1 The first comparand that might be a primitive or a Field.
+     * @param cmp2 The second comparand that might be a primitive or a Field.
+     * @param op The operator to apply.
      */
-    public AbstractClauseResolver(Object comparand1, Object comparand2, String operator) {
-        m_comparand1 = comparand1;
-        m_comparand2 = comparand2;
-        m_operator = operator;
+    public AbstractClauseResolver(Object cmp1, Object cmp2, String op) {
+        comparand1 = cmp1;
+        comparand2 = cmp2;
+        operator = op;
     }
 
     /**
@@ -55,7 +55,7 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @return First comparand.
      */
     public Object getComparand1() {
-        return m_comparand1;
+        return comparand1;
     }
 
     /**
@@ -63,7 +63,7 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @return Second comparand.
      */
     public Object getComparand2() {
-        return m_comparand2;
+        return comparand2;
     }
 
     /**
@@ -71,7 +71,7 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @return Operator.
      */
     public String getOperator() {
-        return m_operator;
+        return operator;
     }
 
     /**
@@ -79,7 +79,7 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @param comparand First comparand.
      */
     public void setComparand1(Object comparand) {
-        m_comparand1 = comparand;
+        comparand1 = comparand;
     }
 
     /**
@@ -87,15 +87,15 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @param comparand Second comparand.
      */
     public void setComparand2(Object comparand) {
-        m_comparand2 = comparand;
+        comparand2 = comparand;
     }
 
     /**
      * Set the operator.
-     * @param operator Operator.
+     * @param op Operator.
      */
-    public void setOperator(String operator) {
-        m_operator = operator;
+    public void setOperator(String op) {
+        operator = op;
     }
     
     /**

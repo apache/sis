@@ -32,16 +32,16 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInMemoryResultSet {
     /** Current field descriptor. */
-    private DBase3FieldDescriptor m_current;
+    private DBase3FieldDescriptor current;
     
     /** Iterator. */
-    private Iterator<DBase3FieldDescriptor> m_it;
+    private Iterator<DBase3FieldDescriptor> itDescriptor;
     
     /** Column index. */
-    private int m_columnIndex;
+    private int columnIndex;
     
     /** Indicates if the ResultSet is set after the last record. */
-    private boolean m_afterLast = false;
+    private boolean afterLast = false;
     
     /**
      * Construct a ResultSet.
@@ -50,7 +50,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      */
     public DBFBuiltInMemoryResultSetForColumnsListing(DBFStatement stmt, List<DBase3FieldDescriptor> fieldsDescriptors) {
         super(stmt, "driver list columns in this DBase 3 file");
-        m_it = fieldsDescriptors.iterator();
+        itDescriptor = fieldsDescriptors.iterator();
     }
 
     /**
@@ -64,21 +64,21 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
             // String => table name
             case "TABLE_NAME": {
                 String tableName = getTableName();
-                m_wasNull = (tableName == null);
+                wasNull = (tableName == null);
                 return tableName;
             }
                 
             // String => column name
             case "COLUMN_NAME": {
-                String columnName = m_current.getName();
-                m_wasNull = (columnName == null);
+                String columnName = current.getName();
+                wasNull = (columnName == null);
                 return columnName;
             }
                 
             // String => Data source dependent type name, for a UDT the type name is fully qualified
             case "TYPE_NAME": {
-                String typeName = m_current.getType() != null ? toColumnTypeName() : null;
-                m_wasNull = (typeName == null);
+                String typeName = current.getType() != null ? toColumnTypeName() : null;
+                wasNull = (typeName == null);
                 return typeName;
             }
             
@@ -89,42 +89,42 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
             
             // String => table catalog (may be null)
             case "TABLE_CAT": {
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
                 
             // String => table schema (may be null)
             case "TABLE_SCHEM": {
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
             
             // String => comment describing column (may be null)
             case "REMARKS": 
-                m_wasNull = true;
+                wasNull = true;
                 return null;
                 
             // String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
             case "COLUMN_DEF": {
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
                 
             // String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
             case "SCOPE_CATALOG": { 
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
                   
             // String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
             case "SCOPE_SCHEMA": { 
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
                   
             // String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF)
             case "SCOPE_TABLE": {
-                m_wasNull = true;
+                wasNull = true;
                 return null;
             }
 
@@ -135,7 +135,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
              * empty string --- if it cannot be determined whether the column is auto incremented
              */
             case "IS_AUTOINCREMENT": {
-                m_wasNull = false; 
+                wasNull = false; 
                 return "NO"; 
             }
 
@@ -146,7 +146,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
              * empty string --- if it cannot be determined whether this is a generated column
              */
             case "IS_GENERATEDCOLUMN": { 
-                m_wasNull = false; 
+                wasNull = false; 
                 return "NO"; 
             }
 
@@ -168,20 +168,20 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
         switch(columnLabel) {
             // int => SQL type from java.sql.Types
             case "DATA_TYPE": { 
-                m_wasNull = false;
+                wasNull = false;
                 return toSQLDataType();
             }
                 
             // int => column size.
             case "COLUMN_SIZE": {
-                m_wasNull = false;
+                wasNull = false;
                 return toPrecision();
             }
 
             // int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
             case "DECIMAL_DIGITS": { 
                 int scale = toScale();
-                m_wasNull = toScale() == -1;
+                wasNull = toScale() == -1;
                 return scale == -1 ? 0 : scale;
             }
             
@@ -197,13 +197,13 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
              * columnNullableUnknown - nullability unknown
              */
             case "NULLABLE": { 
-                m_wasNull = false;
+                wasNull = false;
                 return DatabaseMetaData.columnNullableUnknown;
             }
                 
             // int => unused
             case "SQL_DATA_TYPE": { 
-                m_wasNull = false;
+                wasNull = false;
                 return toSQLDataType();
             }
                 
@@ -218,7 +218,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
                 
             // int => index of column in table (starting at 1)
             case "ORDINAL_POSITION": {
-                return m_columnIndex;
+                return columnIndex;
             }
             
             /**
@@ -228,19 +228,19 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
                 
             // short => source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
             case "SOURCE_DATA_TYPE": {
-                m_wasNull = true;
+                wasNull = true;
                 return 0;
             }
             
             // is not used.
             case "BUFFER_LENGTH": {
-                m_wasNull = false;
+                wasNull = false;
                 return 0;
             }
             
             // int => unused
             case "SQL_DATETIME_SUB": {
-                m_wasNull = false;
+                wasNull = false;
                 return 0;
             }
 
@@ -257,15 +257,15 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @see java.sql.ResultSet#next()
      */
     @Override public boolean next() throws SQLNoResultException {
-        if (m_it.hasNext()) {
-            m_current = m_it.next();
-            m_columnIndex ++;
+        if (itDescriptor.hasNext()) {
+            current = itDescriptor.next();
+            columnIndex ++;
             return true;
         }
         else {
-            if (m_afterLast) {
+            if (afterLast) {
                 // The ResultSet has no more records and has been call one time too much.
-                m_afterLast = true;
+                afterLast = true;
                 
                 String message = format(Level.WARNING, "excp.no_more_desc", getTableName());
                 throw new SQLNoResultException(message, "asking columns desc", getFile());
@@ -281,7 +281,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @return SQL Datatype.
      */
     private int toSQLDataType() {
-        switch(m_current.getType()) {
+        switch(current.getType()) {
             case AutoIncrement:
                 return Types.INTEGER;
                 
@@ -337,7 +337,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @return Column type name.
      */
     private String toColumnTypeName() {
-        switch(m_current.getType()) {
+        switch(current.getType()) {
             case AutoIncrement:
                 return "AUTO_INCREMENT";
                 
@@ -393,11 +393,11 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @return Precision of the current field.
      */
     public int toPrecision() {
-        switch(m_current.getType()) {
+        switch(current.getType()) {
             case AutoIncrement:
             case Character:
             case Integer:
-               return m_current.getLength();
+               return current.getLength();
                 
             case Date:
                 return 8;
@@ -405,7 +405,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
             case Double:
             case FloatingPoint:
             case Number:
-                return m_current.getLength();
+                return current.getLength();
                 
             case Logical:
                 return 0;
@@ -413,7 +413,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
             case Currency:
             case DateTime:
             case TimeStamp:
-                return m_current.getLength();
+                return current.getLength();
 
             case Memo:
             case Picture:
@@ -422,7 +422,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
                 return 0;
 
             default:
-                return m_current.getLength();
+                return current.getLength();
         }
     }
 
@@ -431,7 +431,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
      * @return Scale of the current field, -1 means : this field is not numeric.
      */
     private int toScale() {
-        switch(m_current.getType()) {
+        switch(current.getType()) {
             case AutoIncrement:
             case Logical:
                 return 0;
@@ -441,7 +441,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInM
             case FloatingPoint:
             case Number:
             case Currency:
-                return m_current.getDecimalCount();
+                return current.getDecimalCount();
 
             case Character:
             case Date:

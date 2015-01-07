@@ -30,65 +30,65 @@ import org.apache.sis.storage.shapefile.ShapeTypeEnum;
  */
 public class ShapefileDescriptor {
     /** File code. */
-    private int m_fileCode; // big
+    private int fileCode; // big
 
     /** File length. */
-    private int m_fileLength; // big // The value for file length is the total length of the file in 16-bit words
+    private int fileLength; // big // The value for file length is the total length of the file in 16-bit words
 
     /** File version. */
-    private int m_version; // little
+    private int version; // little
 
     /** Shapefile type. */
-    private ShapeTypeEnum m_shapeType; // little
+    private ShapeTypeEnum shapeType; // little
 
     /** X Min. */
-    private double m_xmin; // little
+    private double xmin; // little
 
     /** Y Min. */
-    private double m_ymin; // little
+    private double ymin; // little
 
     /** X Max. */
-    private double m_xmax; // little
+    private double xmax; // little
 
     /** Y Max. */
-    private double m_ymax; // little
+    private double ymax; // little
 
     /** Z Min. */
-    private double m_zmin; // little
+    private double zmin; // little
 
     /** Z Max. */
-    private double m_zmax; // little
+    private double zmax; // little
 
     /** M Min. */
-    private double m_mmin; // little
+    private double mmin; // little
 
     /** M Max. */
-    private double m_mmax; // little
+    private double mmax; // little
     
     /**
      * Create a shapefile descriptor.
      * @param byteBuffer Source Bytebuffer.
      */
     public ShapefileDescriptor(MappedByteBuffer byteBuffer) {
-        m_fileCode = byteBuffer.getInt();
+        fileCode = byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
         byteBuffer.getInt();
-        m_fileLength = byteBuffer.getInt() * 2;
+        fileLength = byteBuffer.getInt() * 2;
 
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        m_version = byteBuffer.getInt();
-        m_shapeType = ShapeTypeEnum.get(byteBuffer.getInt());
-        m_xmin = byteBuffer.getDouble();
-        m_ymin = byteBuffer.getDouble();
-        m_xmax = byteBuffer.getDouble();
-        m_ymax = byteBuffer.getDouble();
-        m_zmin = byteBuffer.getDouble();
-        m_zmax = byteBuffer.getDouble();
-        m_mmin = byteBuffer.getDouble();
-        m_mmax = byteBuffer.getDouble();
+        version = byteBuffer.getInt();
+        shapeType = ShapeTypeEnum.get(byteBuffer.getInt());
+        xmin = byteBuffer.getDouble();
+        ymin = byteBuffer.getDouble();
+        xmax = byteBuffer.getDouble();
+        ymax = byteBuffer.getDouble();
+        zmin = byteBuffer.getDouble();
+        zmax = byteBuffer.getDouble();
+        mmin = byteBuffer.getDouble();
+        mmax = byteBuffer.getDouble();
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
 
         //dbf.byteBuffer.get(); // should be 0d for field terminator
@@ -102,18 +102,18 @@ public class ShapefileDescriptor {
         StringBuilder s = new StringBuilder();
         String lineSeparator = System.getProperty("line.separator", "\n");
 
-        s.append("FileCode: ").append(m_fileCode).append(lineSeparator);
-        s.append("FileLength: ").append(m_fileLength).append(lineSeparator);
-        s.append("Version: ").append(m_version).append(lineSeparator);
-        s.append("ShapeType: ").append(m_shapeType).append(lineSeparator);
-        s.append("xmin: ").append(m_xmin).append(lineSeparator);
-        s.append("ymin: ").append(m_ymin).append(lineSeparator);
-        s.append("xmax: ").append(m_xmax).append(lineSeparator);
-        s.append("ymax: ").append(m_ymax).append(lineSeparator);
-        s.append("zmin: ").append(m_zmin).append(lineSeparator);
-        s.append("zmax: ").append(m_zmax).append(lineSeparator);
-        s.append("mmin: ").append(m_mmin).append(lineSeparator);
-        s.append("mmax: ").append(m_mmax).append(lineSeparator);
+        s.append("FileCode: ").append(fileCode).append(lineSeparator);
+        s.append("FileLength: ").append(fileLength).append(lineSeparator);
+        s.append("Version: ").append(version).append(lineSeparator);
+        s.append("ShapeType: ").append(shapeType).append(lineSeparator);
+        s.append("xmin: ").append(xmin).append(lineSeparator);
+        s.append("ymin: ").append(ymin).append(lineSeparator);
+        s.append("xmax: ").append(xmax).append(lineSeparator);
+        s.append("ymax: ").append(ymax).append(lineSeparator);
+        s.append("zmin: ").append(zmin).append(lineSeparator);
+        s.append("zmax: ").append(zmax).append(lineSeparator);
+        s.append("mmin: ").append(mmin).append(lineSeparator);
+        s.append("mmax: ").append(mmax).append(lineSeparator);
         s.append("------------------------").append(lineSeparator);
 
         return s.toString();

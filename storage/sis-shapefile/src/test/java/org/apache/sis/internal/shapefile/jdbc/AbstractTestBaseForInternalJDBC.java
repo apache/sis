@@ -21,7 +21,7 @@ import org.junit.Before;
  * all these tests are currently based on the SignedBikeRoute_4326_clipped.dbf DBase 3 file.
  * @author Marc LE BIHAN
  */
-abstract public class AbstractTestBaseForInternalJDBC extends TestCase {
+public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
     /** Logger. */
     protected Logger log = Logging.getLogger(getClass().getName());
     

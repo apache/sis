@@ -35,21 +35,21 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.*;
  */
 public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaData {
     /** ResultSet. */
-    private DBFRecordBasedResultSet m_rs;
+    private DBFRecordBasedResultSet rs;
     
     /** Database metadata. */
-    private DBFDatabaseMetaData m_metadata;
+    private DBFDatabaseMetaData metadata;
     
     /**
      * Construct a ResultSetMetaData.
-     * @param rs ResultSet.
+     * @param resultset ResultSet.
      */
-    public DBFResultSetMataData(DBFRecordBasedResultSet rs) {
-        Objects.requireNonNull(rs, "A non null ResultSet is required.");
-        m_rs = rs;
+    public DBFResultSetMataData(DBFRecordBasedResultSet resultset) {
+        Objects.requireNonNull(resultset, "A non null ResultSet is required.");
+        rs = resultset;
         
         try {
-            m_metadata = (DBFDatabaseMetaData)rs.getStatement().getConnection().getMetaData();
+            metadata = (DBFDatabaseMetaData)resultset.getStatement().getConnection().getMetaData();
         }
         catch(SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -79,7 +79,7 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
     @SuppressWarnings("resource") // The current connection is only used and has not to be closed. 
     @Override public int getColumnCount() throws SQLConnectionClosedException {
         logStep("getColumnCount");
-        DBFConnection cnt = (DBFConnection)(((DBFStatement)m_rs.getStatement()).getConnection());
+        DBFConnection cnt = (DBFConnection)(((DBFStatement)rs.getStatement()).getConnection());
         
         return cnt.getColumnCount();
     }
@@ -282,7 +282,7 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
         logStep("getTableName", column);
 
         // The table default to the file name (without its extension .dbf).
-        String fileName = m_rs.getFile().getName(); 
+        String fileName = rs.getFile().getName(); 
         int indexDBF = fileName.lastIndexOf(".");
         String tableName = fileName.substring(0, indexDBF);
         
@@ -436,7 +436,7 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
      */
     @Override
     protected File getFile() {
-        return m_rs.getFile();
+        return rs.getFile();
     }
     
     /**
@@ -447,12 +447,12 @@ public class DBFResultSetMataData extends AbstractJDBC implements ResultSetMetaD
      * @throws SQLConnectionClosedException if the underlying connection is closed.
      */
     private DBFBuiltInMemoryResultSetForColumnsListing desc(int column) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
-        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)m_metadata.getColumns(null, null, null, null);
+        DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null);
         
         if (column > getColumnCount()) {
             rsDatabase.close();
             String message = format(Level.WARNING, "excp.illegal_column_index_metadata", column, getColumnCount());
-            throw new SQLIllegalColumnIndexException(message, m_rs.getSQL(), getFile(), column);
+            throw new SQLIllegalColumnIndexException(message, rs.getSQL(), getFile(), column);
         }
         
         // TODO Implements ResultSet:absolute(int) instead.

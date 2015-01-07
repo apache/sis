@@ -37,7 +37,7 @@ import org.opengis.feature.Feature;
  */
 public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */
-    private List<DBase3FieldDescriptor> m_fieldsDescriptors = new ArrayList<>();
+    private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<>();
     
     /**
      * Construct a mapped byte reader on a file.
@@ -59,7 +59,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         getByteBuffer().get(); // denotes whether deleted or current
         // read first part of record
 
-        for (DBase3FieldDescriptor fd : m_fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
@@ -96,7 +96,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
         HashMap<String, Object> fieldsValues = new HashMap<>();
 
-        for (DBase3FieldDescriptor fd : m_fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
@@ -143,7 +143,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     
             while(getByteBuffer().position() < this.dbaseHeaderBytes - 1) {
                 DBase3FieldDescriptor fd = new DBase3FieldDescriptor(getByteBuffer()); 
-                this.m_fieldsDescriptors.add(fd);
+                this.fieldsDescriptors.add(fd);
                 // loop until you hit the 0Dh field terminator
             }
             
@@ -171,7 +171,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override 
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
-        return m_fieldsDescriptors;
+        return fieldsDescriptors;
     }
 
     /**
@@ -191,7 +191,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override 
     public int getColumnCount() {
-        return m_fieldsDescriptors.size();
+        return fieldsDescriptors.size();
     }
     
     /**
@@ -211,8 +211,8 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         }
         
         // Search the field among the fields descriptors.
-        for(int index=0; index < m_fieldsDescriptors.size(); index ++) {
-            if (m_fieldsDescriptors.get(index).getName().equals(columnLabel)) {
+        for(int index=0; index < fieldsDescriptors.size(); index ++) {
+            if (fieldsDescriptors.get(index).getName().equals(columnLabel)) {
                 return index + 1;
             }
         }
@@ -235,6 +235,6 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             throw new SQLIllegalColumnIndexException(message, sql, getFile(), columnIndex);
         }
         
-        return m_fieldsDescriptors.get(columnIndex-1);
+        return fieldsDescriptors.get(columnIndex-1);
     }
 }

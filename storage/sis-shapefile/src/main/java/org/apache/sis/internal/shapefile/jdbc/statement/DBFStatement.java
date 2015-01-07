@@ -43,7 +43,7 @@ public class DBFStatement extends AbstractStatement {
     private DBFConnection connection;
 
     /** ResultSets that are currently opened. */
-    private HashSet<AbstractResultSet> m_openedResultSets = new HashSet<>(); 
+    private HashSet<AbstractResultSet> openedResultSets = new HashSet<>(); 
     
     /** The current result set, or {@code null} if none. */
     private AbstractResultSet currentResultSet;
@@ -163,8 +163,8 @@ public class DBFStatement extends AbstractStatement {
         
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
         // If not, we log a warning to help the developper.
-        if (m_openedResultSets.size() > 0) {
-            format(Level.WARNING, "log.resultsets_left_opened", m_openedResultSets.size(), m_openedResultSets.stream().map(AbstractResultSet::toString).collect(Collectors.joining(", ")));  
+        if (openedResultSets.size() > 0) {
+            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.stream().map(AbstractResultSet::toString).collect(Collectors.joining(", ")));  
         }
         
         isClosed = true;
@@ -212,7 +212,7 @@ public class DBFStatement extends AbstractStatement {
         if (currentResultSet == rs)
             currentResultSet = null;
         
-        if (m_openedResultSets.remove(rs) == false) {
+        if (openedResultSets.remove(rs) == false) {
             throw new RuntimeException(format(Level.SEVERE, "assert.resultset_not_opened_by_me", rs, toString()));
         }
     }
@@ -223,7 +223,7 @@ public class DBFStatement extends AbstractStatement {
      */
     public void registerResultSet(AbstractResultSet rs) {
         currentResultSet = rs;
-        m_openedResultSets.add(rs);
+        openedResultSets.add(rs);
     }
 
     /**
