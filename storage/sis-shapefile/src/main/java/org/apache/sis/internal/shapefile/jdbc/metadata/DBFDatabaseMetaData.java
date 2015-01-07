@@ -32,15 +32,15 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabaseMetaData {
     /** Connection. */
-    private DBFConnection m_connection;
+    private DBFConnection connection;
     
     /**
      * Construct a database Metadata.
-     * @param connection Connection.
+     * @param cnt Connection.
      */
-    public DBFDatabaseMetaData(DBFConnection connection) {
-        Objects.requireNonNull(connection, "The database connection used to create Database metadata cannot be null.");
-        m_connection = connection;
+    public DBFDatabaseMetaData(DBFConnection cnt) {
+        Objects.requireNonNull(cnt, "The database connection used to create Database metadata cannot be null.");
+        connection = cnt;
     }
 
     /**
@@ -73,8 +73,8 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
      */
     @Override 
     public ResultSet getColumns(@SuppressWarnings("unused") String catalog, @SuppressWarnings("unused") String schemaPattern, @SuppressWarnings("unused") String tableNamePattern, @SuppressWarnings("unused") String columnNamePattern) throws SQLConnectionClosedException {
-        try(DBFStatement stmt = (DBFStatement)m_connection.createStatement()) {
-            return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, m_connection.getFieldsDescriptors());
+        try(DBFStatement stmt = (DBFStatement)connection.createStatement()) {
+            return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, connection.getFieldsDescriptors());
         }
     }
 
@@ -84,7 +84,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
      */
     @Override 
     public File getFile() {
-        return m_connection.getFile();
+        return connection.getFile();
     }
 
     /**
@@ -1013,7 +1013,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     @Override public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         logStep("getTables", catalog, schemaPattern, tableNamePattern, types != null ? Arrays.asList(types) : null);
 
-        DBFStatement stmt = new DBFStatement(m_connection);
+        DBFStatement stmt = new DBFStatement(connection);
         DBFBuiltInMemoryResultSetForTablesListing tables = new DBFBuiltInMemoryResultSetForTablesListing(stmt);
         stmt.registerResultSet(tables);
         return tables;
@@ -1026,7 +1026,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     @Override public ResultSet getSchemas() {
         logStep("getSchemas");
 
-        DBFStatement stmt = new DBFStatement(m_connection);
+        DBFStatement stmt = new DBFStatement(connection);
         DBFBuiltInMemoryResultSetForSchemaListing schemas = new DBFBuiltInMemoryResultSetForSchemaListing(stmt);
         stmt.registerResultSet(schemas);
         return schemas;
@@ -1039,7 +1039,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     @Override public ResultSet getCatalogs() {
         logStep("getCatalogs");
 
-        DBFStatement stmt = new DBFStatement(m_connection);
+        DBFStatement stmt = new DBFStatement(connection);
         DBFBuiltInMemoryResultSetForCatalogNamesListing catalogNames = new DBFBuiltInMemoryResultSetForCatalogNamesListing(stmt);
         stmt.registerResultSet(catalogNames);
         return catalogNames;
@@ -1052,7 +1052,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
     @Override public ResultSet getTableTypes() {
         logStep("getTableTypes");
 
-        DBFStatement stmt = new DBFStatement(m_connection);
+        DBFStatement stmt = new DBFStatement(connection);
         DBFBuiltInMemoryResultSetForTablesTypesListing tablesTypes = new DBFBuiltInMemoryResultSetForTablesTypesListing(stmt);
         stmt.registerResultSet(tablesTypes);
         return tablesTypes;
@@ -1168,7 +1168,7 @@ public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabase
      */
     @Override public Connection getConnection() {
         logStep("getConnection");
-        return m_connection;
+        return connection;
     }
 
     /**

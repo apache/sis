@@ -28,21 +28,21 @@ public class SQLClosingIOFailureException extends SQLException {
     private static final long serialVersionUID = -3327372119927661463L;
 
     /** The SQL Statement that whas attempted (if known). */
-    private String m_sql;
+    private String sql;
     
     /** The database file. */
-    private File m_database;
+    private File database;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble, if known.
-     * @param database The database that was queried.
+     * @param sqlStatement SQL Statement who encountered the trouble, if known.
+     * @param dbf The database that was queried.
      */
-    public SQLClosingIOFailureException(String message, String sql, File database) {
+    public SQLClosingIOFailureException(String message, String sqlStatement, File dbf) {
         super(message);
-        m_sql = sql;
-        m_database = database;
+        sql = sqlStatement;
+        database = dbf;
     }
     
     /**
@@ -50,7 +50,7 @@ public class SQLClosingIOFailureException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -58,6 +58,6 @@ public class SQLClosingIOFailureException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }

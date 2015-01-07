@@ -26,7 +26,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMemoryResultSet {
     /** There's only one result in this ResultSet. */
-    private int m_index = 0;
+    private int index = 0;
     
     /**
      * Construct a ResultSet.
@@ -46,12 +46,12 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMe
             case "TABLE_NAME":                // String => table name.
             {
                 String tableName = getTableName();
-                m_wasNull = (tableName == null);
+                wasNull = (tableName == null);
                 return tableName;
             }
                 
             case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-                m_wasNull = false;
+                wasNull = false;
                 return "TABLE";
                 
             case "TYPE_NAME":                 // String => type name (may be null) 
@@ -62,11 +62,11 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMe
             case "TYPE_SCHEM":                // String => the types schema (may be null) 
             case "SELF_REFERENCING_COL_NAME": // String => name of the designated "identifier" column of a typed table (may be null)
             case "REF_GENERATION":            // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
-                m_wasNull = true;
+                wasNull = true;
                 return null;
 
             default:
-                m_wasNull = true;
+                wasNull = true;
                 return null;
         }
     }
@@ -78,11 +78,11 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends AbstractBuiltInMe
     {
         logStep("next");
         
-        if (m_index > 1) {
+        if (index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_per_dbf"), "Driver manager asks for table listing", getFile());
         }
 
-        m_index ++;
-        return (m_index == 1) ? true : false;
+        index ++;
+        return (index == 1) ? true : false;
     }
 }

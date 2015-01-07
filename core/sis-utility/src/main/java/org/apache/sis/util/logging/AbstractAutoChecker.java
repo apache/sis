@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * and easy access to Bundle and logging function. 
  * @author Marc LE BIHAN
  */
-abstract public class AbstractAutoChecker {
+public abstract class AbstractAutoChecker {
     /** Logger. */
     private Logger logger = Logging.getLogger(getClass().getSimpleName());
 
@@ -135,7 +135,7 @@ abstract public class AbstractAutoChecker {
      * @param cause Exception root cause.
      * @throws E wished exception.
      */
-    static public <E extends Throwable> void throwException(Class<E> classException, String message, Throwable cause) throws E {
+    public static <E extends Throwable> void throwException(Class<E> classException, String message, Throwable cause) throws E {
        throw(exception(classException, message, cause));
     }
     
@@ -147,7 +147,7 @@ abstract public class AbstractAutoChecker {
      * @param cause Exception root cause.
      * @return E wished exception.
      */
-    static private <E extends Throwable> E exception(Class<E> classException, String message, Throwable cause) {
+    private static <E extends Throwable> E exception(Class<E> classException, String message, Throwable cause) {
        Objects.requireNonNull(classException, "The class of the exception to throw cannot be null."); //$NON-NLS-1$
        
        try

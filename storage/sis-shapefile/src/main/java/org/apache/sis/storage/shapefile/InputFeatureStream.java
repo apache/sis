@@ -45,35 +45,35 @@ import org.opengis.feature.Feature;
  */
 public class InputFeatureStream extends InputStream {
     /** Dedicated connection to DBF. */
-    private DBFConnection m_connection;
+    private DBFConnection connection;
     
     /** Statement. */
-    private DBFStatement m_stmt;
+    private DBFStatement stmt;
     
     /** ResultSet. */
-    private DBFRecordBasedResultSet m_rs;
+    private DBFRecordBasedResultSet rs;
     
     /** SQL Statement executed. */
-    private String m_sql;
+    private String sql;
     
     /** Marks the end of file. */
-    private boolean m_endOfFile;
+    private boolean endOfFile;
     
     /** Shapefile. */
-    private File m_shapefile;
+    private File shapefile;
     
     /** Database file. */
-    private File m_databaseFile;
+    private File databaseFile;
 
     /** Type of the features contained in this shapefile. */
-    private DefaultFeatureType m_featuresType;
+    private DefaultFeatureType featuresType;
     
     /** Shapefile reader. */
-    private ShapefileByteReader m_shapefileReader;
+    private ShapefileByteReader shapefileReader;
 
     /**
      * Create an input stream of features over a connection.
-     * @param shapefile Shapefile.
+     * @param shpfile Shapefile.
      * @param dbaseFile Database file.
      * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid. 
@@ -81,14 +81,14 @@ public class InputFeatureStream extends InputStream {
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      */
-    public InputFeatureStream(File shapefile, File dbaseFile) throws SQLInvalidStatementException, InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
-        m_connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
-        m_sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
-        m_shapefile = shapefile;
-        m_databaseFile = dbaseFile;
+    public InputFeatureStream(File shpfile, File dbaseFile) throws SQLInvalidStatementException, InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
+        connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
+        sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
+        shapefile = shpfile;
+        databaseFile = dbaseFile;
         
-        m_shapefileReader = new ShapefileByteReader(m_shapefile, m_databaseFile);
-        m_featuresType = m_shapefileReader.getFeaturesType(); 
+        shapefileReader = new ShapefileByteReader(shapefile, databaseFile);
+        featuresType = shapefileReader.getFeaturesType(); 
         
         try {
             executeQuery();
@@ -120,9 +120,9 @@ public class InputFeatureStream extends InputStream {
      */
     @Override 
     public void close() {
-        m_rs.close();
-        m_stmt.close();
-        m_connection.close();
+        rs.close();
+        stmt.close();
+        connection.close();
     }
     
     /**
@@ -141,23 +141,23 @@ public class InputFeatureStream extends InputStream {
      */
     public Feature readFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, SQLIllegalColumnIndexException, InvalidShapefileFormatException {
         try {
-            if (m_endOfFile) {
+            if (endOfFile) {
                 return null;
             }
             
-            if (m_rs.next() == false) {
-                m_endOfFile = true;
+            if (rs.next() == false) {
+                endOfFile = true;
                 return null;
             }
             
-            Feature feature = m_featuresType.newInstance();
-            m_shapefileReader.completeFeature(feature);
-            DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)m_connection.getMetaData();
+            Feature feature = featuresType.newInstance();
+            shapefileReader.completeFeature(feature);
+            DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)connection.getMetaData();
             
             try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null)) {
                 while(rsDatabase.next()) {
                     String fieldName = rsDatabase.getString("COLUMN_NAME");
-                    Object fieldValue = m_rs.getObject(fieldName);
+                    Object fieldValue = rs.getObject(fieldName);
                     
                     // FIXME To allow features to be filled again, the values are converted to String again : feature should allow any kind of data.
                     String stringValue;
@@ -203,7 +203,7 @@ public class InputFeatureStream extends InputStream {
      * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
      */
     private void executeQuery() throws SQLConnectionClosedException, SQLInvalidStatementException {
-        m_stmt = (DBFStatement)m_connection.createStatement(); 
-        m_rs = (DBFRecordBasedResultSet)m_stmt.executeQuery(m_sql);
+        stmt = (DBFStatement)connection.createStatement(); 
+        rs = (DBFRecordBasedResultSet)stmt.executeQuery(sql);
     }
 }

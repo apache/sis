@@ -28,31 +28,31 @@ public class SQLNotNumericException extends SQLException {
     private static final long serialVersionUID = -1065338463289030584L;
 
     /** The SQL Statement (if known). */
-    private String m_sql;
+    private String sql;
     
     /** The database file. */
-    private File m_database;
+    private File database;
     
     /** Column name. */
-    private String m_columnName;
+    private String columnName;
     
     /** The value that is not numeric. */
-    private String m_value;
+    private String value;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble, if known.
-     * @param database The database that was queried.
-     * @param columnName The column name that has a non numeric value.
-     * @param value The wrong value.
+     * @param sqlStatement SQL Statement who encountered the trouble, if known.
+     * @param dbf The database that was queried.
+     * @param colName The column name that has a non numeric value.
+     * @param wrongValue The wrong value.
      */
-    public SQLNotNumericException(String message, String sql, File database, String columnName, String value) {
+    public SQLNotNumericException(String message, String sqlStatement, File dbf, String colName, String wrongValue) {
         super(message);
-        m_sql = sql;
-        m_database = database;
-        m_columnName = columnName;
-        m_value = value;
+        sql = sqlStatement;
+        database = dbf;
+        columnName = colName;
+        value = wrongValue;
     }
     
     /**
@@ -60,7 +60,7 @@ public class SQLNotNumericException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -68,7 +68,7 @@ public class SQLNotNumericException extends SQLException {
      * @return Column name.
      */
     public String getColumnName() {
-        return m_columnName;
+        return columnName;
     }
     
     /**
@@ -76,7 +76,7 @@ public class SQLNotNumericException extends SQLException {
      * @return Value.
      */
     public String getValue() {
-        return m_value;
+        return value;
     }
     
     /**
@@ -84,6 +84,6 @@ public class SQLNotNumericException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }

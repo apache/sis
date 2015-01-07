@@ -28,26 +28,26 @@ public class SQLNoSuchFieldException extends SQLException {
     private static final long serialVersionUID = 1118679516090878177L;
 
     /** The SQL Statement (if known). */
-    private String m_sql;
+    private String sql;
     
     /** The database file. */
-    private File m_database;
+    private File database;
     
     /** Column name that doesn't exist. */
-    private String m_columnName;
+    private String columnName;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble, if known.
-     * @param database The database that was queried.
-     * @param columnName The column name that doesn't exist.
+     * @param sqlStatement SQL Statement who encountered the trouble, if known.
+     * @param dbf The database that was queried.
+     * @param colName The column name that doesn't exist.
      */
-    public SQLNoSuchFieldException(String message, String sql, File database, String columnName) {
+    public SQLNoSuchFieldException(String message, String sqlStatement, File dbf, String colName) {
         super(message);
-        m_sql = sql;
-        m_database = database;
-        m_columnName = columnName;
+        sql = sqlStatement;
+        database = dbf;
+        columnName = colName;
     }
     
     /**
@@ -55,7 +55,7 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -63,7 +63,7 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return Column name.
      */
     public String getColumnName() {
-        return m_columnName;
+        return columnName;
     }
     
     /**
@@ -71,6 +71,6 @@ public class SQLNoSuchFieldException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }

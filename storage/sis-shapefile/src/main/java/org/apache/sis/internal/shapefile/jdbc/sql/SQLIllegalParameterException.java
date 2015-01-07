@@ -28,31 +28,31 @@ public class SQLIllegalParameterException extends SQLException {
     private static final long serialVersionUID = -3173798942882143448L;
 
     /** The SQL Statement (if known). */
-    private String m_sql;
+    private String sql;
     
     /** The database file. */
-    private File m_database;
+    private File database;
     
     /** Parameter name (if known) that is invalid. */
-    private String m_parameterName;
+    private String parameterName;
     
     /** Parameter value that is invalid. */
-    private String m_parameterValue;
+    private String parameterValue;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble, if known.
-     * @param database The database that was queried.
-     * @param parameterName The parameter name that is invalid.
-     * @param parameterValue The parameter value that is invalid.
+     * @param sqlStatement SQL Statement who encountered the trouble, if known.
+     * @param dbf The database that was queried.
+     * @param name The parameter name that is invalid.
+     * @param value The parameter value that is invalid.
      */
-    public SQLIllegalParameterException(String message, String sql, File database, String parameterName, String parameterValue) {
+    public SQLIllegalParameterException(String message, String sqlStatement, File dbf, String name, String value) {
         super(message);
-        m_sql = sql;
-        m_database = database;
-        m_parameterName = parameterName;
-        m_parameterValue = parameterValue;
+        sql = sqlStatement;
+        database = dbf;
+        parameterName = name;
+        parameterValue = value;
     }
     
     /**
@@ -60,7 +60,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -68,7 +68,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Parameter name.
      */
     public String geParameterName() {
-        return m_parameterName;
+        return parameterName;
     }
     
     /**
@@ -76,7 +76,7 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Parameter name.
      */
     public String geParameterValue() {
-        return m_parameterValue;
+        return parameterValue;
     }
     
     /**
@@ -84,6 +84,6 @@ public class SQLIllegalParameterException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }

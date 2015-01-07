@@ -28,21 +28,21 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
     private static final long serialVersionUID = 6944940576163675495L;
 
     /** The SQL Statement that whas attempted. */
-    private String m_sql;
+    private String sql;
     
     /** The database that was queried. */
-    private File m_database;
+    private File database;
     
     /**
      * Build the exception.
      * @param message Exception message.
-     * @param sql SQL Statement who encountered the trouble.
-     * @param database The database that was queried.
+     * @param sqlStatement SQL Statement who encountered the trouble.
+     * @param dbf The database that was queried.
      */
-    public SQLUnsupportedParsingFeatureException(String message, String sql, File database) {
+    public SQLUnsupportedParsingFeatureException(String message, String sqlStatement, File dbf) {
         super(message);
-        m_sql = sql;
-        m_database = database;
+        sql = sqlStatement;
+        database = dbf;
     }
     
     /**
@@ -50,7 +50,7 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
      * @return SQL statement.
      */
     public String getSQL() {
-        return m_sql;
+        return sql;
     }
     
     /**
@@ -58,6 +58,6 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
      * @return The database that was queried.
      */
     public File getDatabase() {
-        return m_database;
+        return database;
     }
 }
