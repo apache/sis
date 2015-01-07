@@ -114,6 +114,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
     org.apache.sis.geometry.Envelope2DTest.class,
+    org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.EnvelopesTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
