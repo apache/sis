@@ -16,12 +16,16 @@
  */
 package org.apache.sis.internal.referencing.j2d;
 
-import java.awt.geom.Line2D;
+import java.awt.Shape;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.QuadCurve2D;
+import java.awt.geom.CubicCurve2D;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -39,29 +43,35 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     private static final double EPS = 1E-8;
 
     /**
-     * Tests {@link ShapeUtilities#cubicCurveExtremum(double, double, double, double, double, double)}.
+     * Tests {@link ShapeUtilities#toPrimitive(Shape)}.
      */
     @Test
-    public void testCubicCurveExtremum() {
-        final Point2D.Double P1 = new Point2D.Double();
-        final Point2D.Double P2 = new Point2D.Double();
-        double dy1, dy2;
-        Line2D extremums;
+    public void testToPrimitive() {
+        final Path2D path = new Path2D.Double();
+        path.moveTo(4, 5);
+        path.lineTo(7, 9);
+        Shape p = ShapeUtilities.toPrimitive(path);
+        assertInstanceOf("toPrimitive", Line2D.class, p);
+        assertEquals("P1", new Point2D.Double(4, 5), ((Line2D) p).getP1());
+        assertEquals("P2", new Point2D.Double(7, 9), ((Line2D) p).getP2());
 
-        P1.x =  0; P1.y =  0; dy1 =   7;
-        P2.x = -4; P2.y =  0; dy2 = -12;
-        extremums = ShapeUtilities.cubicCurveExtremum(P1.x, P1.y, dy1, P2.x, P2.y, dy2);
-        assertEquals("X1",   3.31741507, extremums.getX1(), EPS);
-        assertEquals("Y1",  17.31547745, extremums.getY1(), EPS);
-        assertEquals("X2",  -2.25074840, extremums.getX2(), EPS);
-        assertEquals("Y2",  -9.65918115, extremums.getY2(), EPS);
+        path.reset();
+        path.moveTo(4, 5);
+        path.quadTo(6, 7, 8, 5);
+        p = ShapeUtilities.toPrimitive(path);
+        assertInstanceOf("toPrimitive", QuadCurve2D.class, p);
+        assertEquals("P1",     new Point2D.Double(4, 5), ((QuadCurve2D) p).getP1());
+        assertEquals("CtrlPt", new Point2D.Double(6, 7), ((QuadCurve2D) p).getCtrlPt());
+        assertEquals("P2",     new Point2D.Double(8, 5), ((QuadCurve2D) p).getP2());
 
-        P1.x = 0; P1.y =  0; dy1 = 5;
-        P2.x = 5; P2.y = 20; dy2 = 1;
-        extremums = ShapeUtilities.cubicCurveExtremum(P1.x, P1.y, dy1, P2.x, P2.y, dy2);
-        assertEquals("X1",   5.47313697, extremums.getX1(), EPS);
-        assertEquals("Y1",  20.24080512, extremums.getY1(), EPS);
-        assertEquals("X2",  -3.80647030, extremums.getX2(), EPS);
-        assertEquals("Y2", -11.72228660, extremums.getY2(), EPS);
+        path.reset();
+        path.moveTo(4, 5);
+        path.curveTo(6, 7, 8, 6, 9, 4);
+        p = ShapeUtilities.toPrimitive(path);
+        assertInstanceOf("toPrimitive", CubicCurve2D.class, p);
+        assertEquals("P1",     new Point2D.Double(4, 5), ((CubicCurve2D) p).getP1());
+        assertEquals("CtrlP1", new Point2D.Double(6, 7), ((CubicCurve2D) p).getCtrlP1());
+        assertEquals("CtrlP2", new Point2D.Double(8, 6), ((CubicCurve2D) p).getCtrlP2());
+        assertEquals("P2",     new Point2D.Double(9, 4), ((CubicCurve2D) p).getP2());
     }
 }

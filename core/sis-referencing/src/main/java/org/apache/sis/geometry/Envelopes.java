@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.Rectangle2D in this class, because not every platforms
+ * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
+ * force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -44,19 +49,38 @@ import org.apache.sis.internal.system.DefaultFactories;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
-/*
- * TODO: We would like to avoid java.awt.geom dependency in this class, because not every platforms
- * support Java2D (e.g. Android) or some applications (e.g. JavaFX or SWT) may want to avoid forcing
- * Java2D initialization. However we do not yet have an Apache SIS geometry module that we could use.
- * So we temporarily accept Java2D dependency, but should revisit this issue in a future SIS version.
- */
-import java.awt.geom.Line2D;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
-
 
 /**
- * Utility methods for envelopes. This utility class is made up of static functions working
- * with arbitrary implementations of GeoAPI interfaces.
+ * Transforms envelopes to new Coordinate Reference Systems, and miscellaneous utilities.
+ *
+ * {@section Envelope transformations}
+ * All {@code transform(…)} methods in this class take in account the curvature of the transformed shape.
+ * For example in order to get an envelope that fully encompass the shape shown below on the right side,
+ * projecting the four corners is not sufficient:
+ *
+ * <center><table>
+ *   <caption>Example of curvature induced by a map projection</caption>
+ *   <tr>
+ *     <th>Envelope before map projection</th>
+ *     <th>Shape of the projected envelope</th>
+ *   </tr><tr>
+ *     <td><img src="doc-files/GeographicArea.png" alt="Envelope in a geographic CRS"></td>
+ *     <td><img src="doc-files/ConicArea.png" alt="Shape of the envelope transformed in a conic projection"></td>
+ *   </tr>
+ * </table></center>
+ *
+ * The {@code transform(…)} methods expect an arbitrary {@link Envelope} with <strong>one</strong> of the following
+ * arguments: {@link MathTransform}, {@link CoordinateOperation} or {@link CoordinateReferenceSystem}.
+ * The recommended method is the one expecting a {@code CoordinateOperation} object,
+ * since it contains sufficient information for handling the cases of envelopes that encompass a pole.
+ * The method expecting a {@code CoordinateReferenceSystem} object is merely a convenience method that
+ * infers the {@code CoordinateOperation} itself, but at the cost of performance if the same operation
+ * needs to be applied on many envelopes.
+ *
+ * <p>While optional, it is strongly recommended that all {@code MathTransform} implementations involved
+ * in the operation (directly or indirectly) support the {@link MathTransform#derivative(DirectPosition)}
+ * operation, for more accurate calculation of curve extremum.
+ * This is the case of most Apache SIS implementations.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -326,14 +350,15 @@ public final class Envelopes extends Static {
          */
         DirectPosition temporary = null;
         final DirectPositionView sourceView = new DirectPositionView(sourcePt, 0, sourceDim);
+        final CurveExtremum extremum = new CurveExtremum();
         for (pointIndex=0; pointIndex < derivatives.length; pointIndex++) {
             final Matrix D1 = derivatives[pointIndex];
             if (D1 != null) {
-                int indexBase3=pointIndex, power3=1;
+                int indexBase3 = pointIndex, power3 = 1;
                 for (int i=sourceDim; --i>=0; indexBase3 /= 3, power3 *= 3) {
                     final int digitBase3 = indexBase3 % 3;
                     if (digitBase3 != 2) { // Process only if we are not already located on the median along the dimension i.
-                        final int medianIndex = pointIndex + power3*(2-digitBase3);
+                        final int medianIndex = pointIndex + power3 * (2 - digitBase3);
                         final Matrix D2 = derivatives[medianIndex];
                         if (D2 != null) {
                             final double xmin = envelope.getMinimum(i);
@@ -343,14 +368,13 @@ public final class Envelopes extends Static {
                             final int offset1 = targetDim * pointIndex;
                             final int offset2 = targetDim * medianIndex;
                             for (int j=0; j<targetDim; j++) {
-                                final Line2D.Double extremum = ShapeUtilities.cubicCurveExtremum(
-                                        x1, ordinates[offset1 + j], D1.getElement(j,i),
-                                        x2, ordinates[offset2 + j], D2.getElement(j,i));
+                                extremum.resolve(x1, ordinates[offset1 + j], D1.getElement(j,i),
+                                                 x2, ordinates[offset2 + j], D2.getElement(j,i));
                                 boolean isP2 = false;
                                 do { // Executed exactly twice, one for each extremum point.
-                                    final double x = isP2 ? extremum.x2 : extremum.x1;
+                                    final double x = isP2 ? extremum.ex2 : extremum.ex1;
                                     if (x > xmin && x < xmax) {
-                                        final double y = isP2 ? extremum.y2 : extremum.y1;
+                                        final double y = isP2 ? extremum.ey2 : extremum.ey1;
                                         if (y < transformed.getMinimum(j) ||
                                             y > transformed.getMaximum(j))
                                         {
