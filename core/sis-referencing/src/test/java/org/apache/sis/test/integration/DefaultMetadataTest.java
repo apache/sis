@@ -220,7 +220,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                 name.setDates(singleton(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
-                aggregateInfo.setAssociationType(AssociationType.LARGER_WORD_CITATION);
+                aggregateInfo.setAssociationType(AssociationType.LARGER_WORK_CITATION);
                 identification.setAssociatedResources(singleton(aggregateInfo));
             }
             /*
