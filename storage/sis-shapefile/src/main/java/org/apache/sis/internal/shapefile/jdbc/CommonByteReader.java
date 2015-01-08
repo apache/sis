@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import org.apache.sis.util.logging.AbstractAutoChecker;
+import org.apache.sis.util.logging.AutoChecker;
 
 /**
  * Common byte reader.
@@ -33,7 +33,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @since   0.5
  * @module
  */
-public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AbstractAutoChecker  implements AutoCloseable  {
+public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker  implements AutoCloseable  {
     /** The File. */
     private File file;
     

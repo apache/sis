@@ -30,7 +30,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Database Metadata.
  * @author Marc LE BIHAN
  */
-public class DBFDatabaseMetaData extends AbstractUnimplementedFeaturesOfDatabaseMetaData {
+public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /** Connection. */
     private DBFConnection connection;
     

@@ -31,13 +31,13 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * @since   0.5
  * @module
  */
-public abstract class AbstractBuiltInMemoryResultSet extends AbstractResultSet {
+public abstract class BuiltInMemoryResultSet extends AbstractResultSet {
     /**
      * Construct a ResultSet for descriptions.
      * @param stmt Statement.
      * @param sqlQuery SQLQuery.
      */
-    public AbstractBuiltInMemoryResultSet(DBFStatement stmt, String sqlQuery) {
+    public BuiltInMemoryResultSet(DBFStatement stmt, String sqlQuery) {
         super(stmt, sqlQuery);
     }
 

@@ -23,7 +23,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Special ResultSet listing schemas contained in this DBase 3 (they are none).
  * @author Marc LE BIHAN
  */
-public class DBFBuiltInMemoryResultSetForSchemaListing extends AbstractBuiltInMemoryResultSet {
+public class DBFBuiltInMemoryResultSetForSchemaListing extends BuiltInMemoryResultSet {
     /**
      * Construct a ResultSet listing the tables of a database.
      * @param stmt Statement.

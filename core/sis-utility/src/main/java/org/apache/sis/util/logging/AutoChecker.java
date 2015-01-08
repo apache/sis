@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * and easy access to Bundle and logging function. 
  * @author Marc LE BIHAN
  */
-public abstract class AbstractAutoChecker {
+public abstract class AutoChecker {
     /** Logger. */
     private Logger logger = Logging.getLogger(getClass().getSimpleName());
 

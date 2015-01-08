@@ -24,7 +24,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Special ResultSet listing tables types contained in this DBase 3 (only tables).
  * @author Marc LE BIHAN
  */
-public class DBFBuiltInMemoryResultSetForTablesTypesListing extends AbstractBuiltInMemoryResultSet {
+public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemoryResultSet {
     /** There's only one result in this ResultSet. */
     private int index = 0;
     

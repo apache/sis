@@ -30,7 +30,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Special ResultSet listing columns contained in this DBase 3.
  * @author Marc LE BIHAN
  */
-public class DBFBuiltInMemoryResultSetForColumnsListing extends AbstractBuiltInMemoryResultSet {
+public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryResultSet {
     /** Current field descriptor. */
     private DBase3FieldDescriptor current;
     

@@ -22,13 +22,13 @@ import java.util.logging.Level;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-import org.apache.sis.util.logging.AbstractAutoChecker;
+import org.apache.sis.util.logging.AutoChecker;
 
 /**
  * Base class for clause resolver.
  * @author Marc LE BIHAN
  */
-public abstract class AbstractClauseResolver extends AbstractAutoChecker {
+public abstract class ClauseResolver extends AutoChecker {
     /** First comparand. */
     private Object comparand1;
     
@@ -44,7 +44,7 @@ public abstract class AbstractClauseResolver extends AbstractAutoChecker {
      * @param cmp2 The second comparand that might be a primitive or a Field.
      * @param op The operator to apply.
      */
-    public AbstractClauseResolver(Object cmp1, Object cmp2, String op) {
+    public ClauseResolver(Object cmp1, Object cmp2, String op) {
         comparand1 = cmp1;
         comparand2 = cmp2;
         operator = op;

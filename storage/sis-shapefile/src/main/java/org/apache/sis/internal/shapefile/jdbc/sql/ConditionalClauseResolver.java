@@ -24,7 +24,7 @@ package org.apache.sis.internal.shapefile.jdbc.sql;
  * <br>- This class is only here temporary, and will be replaced by a good SQL parser as soon as possible. 
  * @author Marc LE BIHAN
  */
-public class ConditionalClauseResolver extends AbstractClauseResolver
+public class ConditionalClauseResolver extends ClauseResolver
 {
     /**
      * Construct a where clause resolver.
