@@ -17,7 +17,7 @@
 
 
 /**
- * Doclet that modify the behavior of some standard options.
+ * Doclet performing post-processing after Javadoc generation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
