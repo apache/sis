@@ -544,9 +544,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     @Debug
     @Override
     public String toString() {
-	final StringBuilder buffer = new StringBuilder(50).append('{');
-	for (final Entry<Citation,String> entry : entrySet()) {
-	    if (buffer.length() != 1) {
+    final StringBuilder buffer = new StringBuilder(50).append('{');
+    for (final Entry<Citation,String> entry : entrySet()) {
+        if (buffer.length() != 1) {
                 buffer.append(", ");
             }
             SpecializedIdentifier.format(buffer, entry.getKey(), entry.getValue());
