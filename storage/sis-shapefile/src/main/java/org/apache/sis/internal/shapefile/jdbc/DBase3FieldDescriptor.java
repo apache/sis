@@ -18,7 +18,7 @@ package org.apache.sis.internal.shapefile.jdbc;
 
 import java.nio.MappedByteBuffer;
 
-import org.apache.sis.util.logging.AbstractAutoChecker;
+import org.apache.sis.util.logging.AutoChecker;
 
 
 /**
@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @version 0.5
  * @module
  */
-public class DBase3FieldDescriptor extends AbstractAutoChecker {
+public class DBase3FieldDescriptor extends AutoChecker {
     /** Field name. */
     private byte[] fieldName = new byte[11];
 

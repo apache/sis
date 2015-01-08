@@ -8,7 +8,7 @@ import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
  * Unimplemented methods of DatabaseMetaData.
  * @author Marc LE BIHAN
  */
-public abstract class AbstractUnimplementedFeaturesOfDatabaseMetaData extends AbstractJDBC implements DatabaseMetaData {
+public abstract class AbstractDatabaseMetaData extends AbstractJDBC implements DatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#getAttributes(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */

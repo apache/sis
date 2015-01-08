@@ -20,7 +20,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
 
-import org.apache.sis.util.logging.AbstractAutoChecker;
+import org.apache.sis.util.logging.AutoChecker;
 
 
 /**
@@ -30,7 +30,7 @@ import org.apache.sis.util.logging.AbstractAutoChecker;
  * @since   0.5
  * @module
  */
-public abstract class AbstractJDBC extends AbstractAutoChecker implements Wrapper {
+public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     /**
      * Constructs a new instance of a JDBC interface.
      */

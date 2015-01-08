@@ -23,7 +23,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Special ResultSet listing tables types contained in this DBase 3 (none).
  * @author Marc LE BIHAN
  */
-public class DBFBuiltInMemoryResultSetForCatalogNamesListing extends AbstractBuiltInMemoryResultSet {
+public class DBFBuiltInMemoryResultSetForCatalogNamesListing extends BuiltInMemoryResultSet {
     /**
      * Construct a ResultSet listing the catalog names of a database.
      * @param stmt Statement.
