@@ -55,8 +55,10 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * {@section Envelope transformations}
  * All {@code transform(…)} methods in this class take in account the curvature of the transformed shape.
- * For example in order to get an envelope that fully encompass the shape shown below on the right side,
- * projecting the four corners is not sufficient:
+ * For example the shape of a geographic envelope (figure below on the left side) is not rectangular in a
+ * conic projection (figure below on the right side). In order to get the envelope represented by the red
+ * rectangle, projecting the four corners of the geographic envelope is not sufficient since we would miss
+ * the southerner part.
  *
  * <center><table class="sis">
  *   <caption>Example of curvature induced by a map projection</caption>
