@@ -113,7 +113,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     @Override
     public void execute() throws MojoExecutionException {
         final boolean isIncremental = buildContext.isIncremental();
-    	declareOutputDirectory();
+        declareOutputDirectory();
 
         int errors = 0;
         for (final String sourceDirectory : compileSourceRoots) {
