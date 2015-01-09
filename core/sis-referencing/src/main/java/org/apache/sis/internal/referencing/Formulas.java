@@ -72,6 +72,7 @@ public final class Formulas extends Static {
 
     /**
      * Returns 3ⁿ for very small (less than 10) positive values of <var>n</var>.
+     * Note that this method overflow for any value equals or greater than 20.
      *
      * @param n The exponent.
      * @return 3ⁿ
@@ -81,6 +82,7 @@ public final class Formulas extends Static {
      * @since 0.5
      */
     public static int pow3(int n) {
+        assert n >= 0 && n <= 19 : n;
         int p = 1;
         while (--n >= 0) {
             p *= 3;

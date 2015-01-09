@@ -62,6 +62,10 @@ public final class ShapeUtilities extends Static {
      * @param  bx2 <var>x</var> value of the last  point on the second line.
      * @param  by2 <var>y</var> value of the last  point on the second line.
      * @return The intersection point, or {@code null} if none.
+     *
+     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
+     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
+     *       depending whether we port to SIS the sandbox code.
      */
     public static Point2D.Double intersectionPoint(final double ax1, final double ay1, double ax2, double ay2,
                                                    final double bx1, final double by1, double bx2, double by2)
@@ -113,6 +117,10 @@ public final class ShapeUtilities extends Static {
      * @return The nearest point on the given line.
      *
      * @see #colinearPoint(double,double , double,double , double,double , double)
+     *
+     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
+     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
+     *       depending whether we port to SIS the sandbox code.
      */
     public static Point2D.Double nearestColinearPoint(final double x1, final double y1,
                                                       final double x2, final double y2,
@@ -170,6 +178,10 @@ public final class ShapeUtilities extends Static {
      * @return A point on the given line located at the given distance from the given point.
      *
      * @see #nearestColinearPoint(double,double , double,double , double,double)
+     *
+     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
+     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
+     *       depending whether we port to SIS the sandbox code.
      */
     public static Point2D.Double colinearPoint(double x1, double y1, double x2, double y2,
                                                double x, double y, double distance)
@@ -245,10 +257,10 @@ public final class ShapeUtilities extends Static {
      *
      * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
      *
-     * @param  x0 <var>x</var> value of the starting point.
-     * @param  y0 <var>y</var> value of the starting point.
-     * @param  x1 <var>x</var> value of a passing point.
-     * @param  y1 <var>y</var> value of a passing point.
+     * @param  x1 <var>x</var> value of the starting point.
+     * @param  y1 <var>y</var> value of the starting point.
+     * @param  px <var>x</var> value of a passing point.
+     * @param  py <var>y</var> value of a passing point.
      * @param  x2 <var>x</var> value of the ending point.
      * @param  y2 <var>y</var> value of the ending point.
      * @param  horizontal If {@code true}, the <var>x</var> axis is considered horizontal while computing the
@@ -256,14 +268,18 @@ public final class ShapeUtilities extends Static {
      *         joining the {@code P0} and {@code P2} points.
      * @return A quadratic curve passing by the given points. The curve starts at {@code P0} and ends at {@code P2}.
      *         If two points are too close or if the three points are colinear, then this method returns {@code null}.
+     *
+     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
+     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
+     *       depending whether we port to SIS the sandbox code.
      */
-    public static QuadCurve2D.Double fitParabol(final double x0, final double y0,
-                                                final double x1, final double y1,
+    public static QuadCurve2D.Double fitParabol(final double x1, final double y1,
+                                                final double px, final double py,
                                                 final double x2, final double y2,
                                                 final boolean horizontal)
     {
-        final Point2D.Double p = parabolicControlPoint(x0, y0, x1, y1, x2, y2, horizontal);
-        return (p != null) ? new QuadCurve2D.Double(x0, y0, p.x, p.y, x2, y2) : null;
+        final Point2D.Double p = parabolicControlPoint(x1, y1, px, py, x2, y2, horizontal);
+        return (p != null) ? new QuadCurve2D.Double(x1, y1, p.x, p.y, x2, y2) : null;
     }
 
     /**
@@ -282,10 +298,10 @@ public final class ShapeUtilities extends Static {
      *
      * Note that if {@code P0.y == P2.y}, then both {@code horizontal} values produce the same result.
      *
-     * @param  x0 <var>x</var> value of the starting point.
-     * @param  y0 <var>y</var> value of the starting point.
-     * @param  x1 <var>x</var> value of a passing point.
-     * @param  y1 <var>y</var> value of a passing point.
+     * @param  x1 <var>x</var> value of the starting point.
+     * @param  y1 <var>y</var> value of the starting point.
+     * @param  px <var>x</var> value of a passing point.
+     * @param  py <var>y</var> value of a passing point.
      * @param  x2 <var>x</var> value of the ending point.
      * @param  y2 <var>y</var> value of the ending point.
      * @param  horizontal If {@code true}, the <var>x</var> axis is considered horizontal while computing the
@@ -295,26 +311,26 @@ public final class ShapeUtilities extends Static {
      *         and ends at {@code (x2,y2)}. If two points are too close or if the three points are colinear, then this
      *         method returns {@code null}.
      */
-    public static Point2D.Double parabolicControlPoint(final double x0, final double y0,
-            double x1, double y1, double x2, double y2, final boolean horizontal)
+    public static Point2D.Double parabolicControlPoint(final double x1, final double y1,
+            double px, double py, double x2, double y2, final boolean horizontal)
     {
         /*
          * Apply a translation in such a way that (x0,y0) become the coordinate system origin.
          * After this translation, we shall not use (x0,y0) until we are done.
          */
-        x1 -= x0;
-        y1 -= y0;
-        x2 -= x0;
-        y2 -= y0;
+        px -= x1;
+        py -= y1;
+        x2 -= x1;
+        y2 -= y1;
         if (horizontal) {
-            final double a = (y2 - y1*x2/x1) / (x2-x1); // Actually "a*x2"
+            final double a = (y2 - py*x2/px) / (x2-px); // Actually "a*x2"
             final double check = abs(a);
             if (!(check <= 1/EPS)) return null; // Two points have the same coordinates.
             if (!(check >=   EPS)) return null; // The three points are co-linear.
             final double b = y2/x2 - a;
-            x1 = (1 + b/(2*a))*x2 - y2/(2*a);
-            y1 = y0 + b*x1;
-            x1 += x0;
+            px = (1 + b/(2*a))*x2 - y2/(2*a);
+            py = y1 + b*px;
+            px += x1;
         } else {
             /*
              * Apply a rotation in such a way that (x2,y2)
@@ -323,15 +339,15 @@ public final class ShapeUtilities extends Static {
             final double rx2 = x2;
             final double ry2 = y2;
             x2 = hypot(x2,y2);
-            y2 = (x1*rx2 + y1*ry2) / x2; // use 'y2' as a temporary variable for 'x1'
-            y1 = (y1*rx2 - x1*ry2) / x2;
-            x1 = y2;
+            y2 = (px*rx2 + py*ry2) / x2; // use 'y2' as a temporary variable for 'x1'
+            py = (py*rx2 - px*ry2) / x2;
+            px = y2;
             y2 = 0; // set as a matter of principle (but not used).
             /*
              * Now compute the control point coordinates in our new coordinate system axis.
              */
             final double x = 0.5;                       // Actually "x/x2"
-            final double y = (y1*x*x2) / (x1*(x2-x1));  // Actually "y/y2"
+            final double y = (py*x*x2) / (px*(x2-px));  // Actually "y/y2"
             final double check = abs(y);
             if (!(check <= 1/EPS)) return null; // Two points have the same coordinates.
             if (!(check >=   EPS)) return null; // The three points are co-linear.
@@ -339,10 +355,10 @@ public final class ShapeUtilities extends Static {
              * Applies the inverse rotation then a translation to bring
              * us back to the original coordinate system.
              */
-            x1 = (x*rx2 - y*ry2) + x0;
-            y1 = (y*rx2 + x*ry2) + y0;
+            px = (x*rx2 - y*ry2) + x1;
+            py = (y*rx2 + x*ry2) + y1;
         }
-        return new Point2D.Double(x1,y1);
+        return new Point2D.Double(px,py);
     }
 
     /**
@@ -356,6 +372,10 @@ public final class ShapeUtilities extends Static {
      * @param  x3 <var>x</var> value of the third  point.
      * @param  y3 <var>y</var> value of the third  point.
      * @return A circle passing by the given points.
+     *
+     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
+     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
+     *       depending whether we port to SIS the sandbox code.
      */
     public static Point2D.Double circleCentre(double x1, double y1,
                                               double x2, double y2,
