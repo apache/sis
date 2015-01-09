@@ -268,6 +268,9 @@ public final class Envelopes extends Static {
          * ordinate values. This coordinate will be updated in the 'switch' statement inside
          * the 'while' loop.
          */
+        if (sourceDim >= 20) { // Maximal value supported by Formulas.pow3(int) is 19.
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1));
+        }
         int             pointIndex            = 0;
         boolean         isDerivativeSupported = true;
         GeneralEnvelope transformed           = null;

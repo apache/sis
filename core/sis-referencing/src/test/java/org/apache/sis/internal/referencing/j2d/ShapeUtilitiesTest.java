@@ -30,6 +30,7 @@ import static org.opengis.test.Assert.*;
 
 /**
  * Tests the {@link ShapeUtilities} class.
+ * Values in this test were determined empirically by running {@link ShapeUtilitiesViewer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from geotk-3.20)
@@ -40,7 +41,98 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     /**
      * Tolerance factor for the tests in this class.
      */
-    private static final double EPS = 1E-8;
+    private static final double EPS = 1E-12;
+
+    /**
+     * Asserts that the given point is equals to the given value.
+     */
+    private static void assertPointEquals(final double x, final double y, final Point2D point) {
+        assertEquals(x, point.getX(), EPS);
+        assertEquals(y, point.getY(), EPS);
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#intersectionPoint(double, double, double, double, double, double, double, double)}.
+     */
+    @Test
+    public void testIntersectionPoint() {
+        assertPointEquals(373.0459349536288,  153.4272907665677, ShapeUtilities.intersectionPoint(164, 261, 541,  67, 475, 214, 135,  12));
+        assertPointEquals(164.2967949656081,  147.2610859066296, ShapeUtilities.intersectionPoint(  6, 259, 227, 103, 328, 254,  32,  61));
+        assertPointEquals(206.18415613599478, 276.5596260282143, ShapeUtilities.intersectionPoint(549, 309, 158, 272, 495, 138, 174, 292));
+
+        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint( 52, 61, 419, 209, 419, 130, 529, 303));
+        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint( 53, 62, 222, 221, 494, 158, 382, 174));
+        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint(566, 296, 386, 305, 553, 51, 408, 291));
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#nearestColinearPoint(double, double, double, double, double, double)}.
+     */
+    @Test
+    public void testNearestColinearPoint() {
+        assertPointEquals(250.3762957286331,   41.53513088371716, ShapeUtilities.nearestColinearPoint(251,  41,  82, 186, 334, 139));
+        assertPointEquals(339.88188039274024, 107.30764653376968, ShapeUtilities.nearestColinearPoint(318, 189, 363,  21, 167,  61));
+        assertPointEquals(120.45221035554958, 270.19778288495337, ShapeUtilities.nearestColinearPoint(100, 279, 574,  75, 135, 304));
+        assertPointEquals(141.0,              203.0,              ShapeUtilities.nearestColinearPoint(351,  17, 141, 203,  55, 221));
+        assertPointEquals(333.6115520537628,  160.28938068478067, ShapeUtilities.nearestColinearPoint(289,  25, 381, 304,  10, 267));
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#colinearPoint(double, double, double, double, double, double, double)}.
+     */
+    @Test
+    public void testColinearPoint() {
+        assertPointEquals(292.1838668370446,  278.764084678759,   ShapeUtilities.colinearPoint(214, 297, 587, 210, 104, 77, 275.902));
+        assertPointEquals(151.57330058770097, 162.19277228964654, ShapeUtilities.colinearPoint(187,  93, 123, 218, 204, 16, 155.309));
+        assertPointEquals(568.6671514383643,  274.6199927862288,  ShapeUtilities.colinearPoint(232,  84, 587, 285, 469, 31, 263.219));
+
+        assertNull("No point at the given distance.", ShapeUtilities.colinearPoint(415, 112, 21,  269, 223, 270, 341.434));
+        assertNull("No point at the given distance.", ShapeUtilities.colinearPoint(353, 235, 233, 104, 423,  81, 558.129));
+    }
+
+    /**
+     * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal)}, then verifies that the control
+     * point of the returned curve is equals to {@code (cx, cy)}.
+     */
+    private static void assertParabolEquals(final double cx, final double cy,
+                                            final double x1, final double y1,
+                                            final double px, final double py,
+                                            final double x2, final double y2,
+                                            final boolean horizontal)
+    {
+        final QuadCurve2D p = ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal);
+        assertPointEquals(x1, y1, p.getP1());
+        assertPointEquals(x2, y2, p.getP2());
+        assertPointEquals(cx, cy, p.getCtrlPt());
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#fitParabol(double, double, double, double, double, double, boolean)}
+     * with a {@code false} boolean argument.
+     */
+    @Test
+    public void testFitParabol() {
+        assertParabolEquals(203.09937404322247, 298.52149034018106, 188,  25, 367, 282, 477, 294, false);
+        assertParabolEquals(440.2165208525737,  147.92614458270768, 342, 193, 503, 182, 537, 196, false);
+        assertParabolEquals(688.8232271997849,  117.2311838864974,  488, 241, 578, 134, 455,  86, false);
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#fitParabol(double, double, double, double, double, double, boolean)}
+     * with a {@code true} boolean argument.
+     */
+    @Test
+    public void testFitHorizontalParabol() {
+        assertParabolEquals(327.0, 272.41465201465195, 538, 197, 473, 213, 116, 43, true);
+    }
+
+    /**
+     * Tests {@link ShapeUtilities#circleCentre(double, double, double, double, double, double)}.
+     */
+    @Test
+    public void testCircleCentre() {
+        assertPointEquals(117.40902595856156, 151.49785663253124, ShapeUtilities.circleCentre(182, 103, 50, 107, 124, 232));
+    }
 
     /**
      * Tests {@link ShapeUtilities#toPrimitive(Shape)}.

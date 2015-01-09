@@ -251,6 +251,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ExcessiveListSize_2 = 25;
 
         /**
+         * For this algorithm, {0} is an excessive number of dimensions.
+         */
+        public static final short ExcessiveNumberOfDimensions_1 = 177;
+
+        /**
          * The character string is too long.
          */
         public static final short ExcessiveStringSize = 153;
