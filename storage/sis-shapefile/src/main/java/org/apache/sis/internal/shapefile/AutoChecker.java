@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.logging;
+package org.apache.sis.internal.shapefile;
 
 import java.lang.reflect.Constructor;
 import java.text.MessageFormat;
@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.sis.util.logging.Logging;
 
 
 /**

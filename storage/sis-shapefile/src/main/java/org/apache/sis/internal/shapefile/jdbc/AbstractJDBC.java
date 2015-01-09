@@ -20,7 +20,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.logging.Level;
 
-import org.apache.sis.util.logging.AutoChecker;
+import org.apache.sis.internal.shapefile.AutoChecker;
 
 
 /**

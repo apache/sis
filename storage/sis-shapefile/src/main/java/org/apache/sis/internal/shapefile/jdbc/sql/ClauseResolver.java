@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
 
+import org.apache.sis.internal.shapefile.AutoChecker;
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.resultset.*;
-import org.apache.sis.util.logging.AutoChecker;
 
 /**
  * Base class for clause resolver.

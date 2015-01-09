@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel;
 import java.util.Objects;
 import java.util.logging.Level;
 
-import org.apache.sis.util.logging.AutoChecker;
+import org.apache.sis.internal.shapefile.AutoChecker;
 
 /**
  * Common byte reader.
