@@ -18,7 +18,7 @@ package org.apache.sis.internal.shapefile.jdbc;
 
 import java.nio.MappedByteBuffer;
 
-import org.apache.sis.util.logging.AutoChecker;
+import org.apache.sis.internal.shapefile.AutoChecker;
 
 
 /**
