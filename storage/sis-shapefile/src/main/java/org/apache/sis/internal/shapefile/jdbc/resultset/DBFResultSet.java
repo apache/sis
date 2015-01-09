@@ -35,7 +35,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory. 
  * @author Marc LE BIHAN
  */
-public abstract class AbstractResultSet extends AbstractUnimplementedFeaturesOfResultSet {
+public abstract class DBFResultSet extends AbstractUnimplementedFeaturesOfResultSet {
     /** Indicates if the ResultSet is closed.  */
     protected boolean isClosed;
     
@@ -53,7 +53,7 @@ public abstract class AbstractResultSet extends AbstractUnimplementedFeaturesOfR
      * @param stmt Parent statement.
      * @param sqlQuery SQL Statment that produced this ResultSet.
      */
-    public AbstractResultSet(final DBFStatement stmt, String sqlQuery) {
+    public DBFResultSet(final DBFStatement stmt, String sqlQuery) {
         Objects.requireNonNull(stmt, "the statement referred by the ResultSet cannot be null.");
         
         statement = stmt;

@@ -31,7 +31,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * @since   0.5
  * @module
  */
-public abstract class BuiltInMemoryResultSet extends AbstractResultSet {
+public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**
      * Construct a ResultSet for descriptions.
      * @param stmt Statement.
