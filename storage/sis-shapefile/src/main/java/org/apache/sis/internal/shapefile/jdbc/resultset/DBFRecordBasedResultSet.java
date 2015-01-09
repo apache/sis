@@ -45,7 +45,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     }
     
     /**
-     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractUnimplementedFeaturesOfResultSet#getBigDecimal(java.lang.String)
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getBigDecimal(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLNoSuchFieldException if the field looked for doesn't exist.
      * @throws SQLNotNumericException if the field value is not numeric.
@@ -230,7 +230,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     }
 
     /**
-     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractUnimplementedFeaturesOfResultSet#getInt(java.lang.String)
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getInt(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLNoSuchFieldException if the field looked for doesn't exist.
      * @throws SQLNotNumericException if the field value is not numeric.
@@ -296,7 +296,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     }
     
     /**
-     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractUnimplementedFeaturesOfResultSet#getObject(int)
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getObject(int)
      */
     @Override 
     public Object getObject(int column) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
