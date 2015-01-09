@@ -23,7 +23,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * A ResultSet based on a record.
  * @author Marc LE BIHAN
  */
-public class DBFRecordBasedResultSet extends AbstractResultSet {
+public class DBFRecordBasedResultSet extends DBFResultSet {
     /** The current record. */
     private Map<String, Object> record;
     
@@ -372,7 +372,7 @@ public class DBFRecordBasedResultSet extends AbstractResultSet {
     }
 
     /**
-     * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getObject(java.lang.String)
+     * @see org.apache.sis.internal.shapefile.jdbc.resultset.DBFResultSet#getObject(java.lang.String)
      */
     @Override 
     public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {

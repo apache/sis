@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.apache.sis.internal.shapefile.jdbc.SQLConnectionClosedException;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
-import org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet;
+import org.apache.sis.internal.shapefile.jdbc.resultset.DBFResultSet;
 import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 
@@ -43,10 +43,10 @@ public class DBFStatement extends AbstractStatement {
     private DBFConnection connection;
 
     /** ResultSets that are currently opened. */
-    private HashSet<AbstractResultSet> openedResultSets = new HashSet<>(); 
+    private HashSet<DBFResultSet> openedResultSets = new HashSet<>(); 
     
     /** The current result set, or {@code null} if none. */
-    private AbstractResultSet currentResultSet;
+    private DBFResultSet currentResultSet;
 
     /** Indicates if the statement is currently closed. */
     private boolean isClosed;
@@ -164,7 +164,7 @@ public class DBFStatement extends AbstractStatement {
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
         // If not, we log a warning to help the developper.
         if (openedResultSets.size() > 0) {
-            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.stream().map(AbstractResultSet::toString).collect(Collectors.joining(", ")));  
+            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.stream().map(DBFResultSet::toString).collect(Collectors.joining(", ")));  
         }
         
         isClosed = true;
@@ -205,7 +205,7 @@ public class DBFStatement extends AbstractStatement {
      * Method called by ResultSet class to notity this statement that a resultSet has been closed.
      * @param rs ResultSet that has been closed.
      */
-    public void notifyCloseResultSet(AbstractResultSet rs) {
+    public void notifyCloseResultSet(DBFResultSet rs) {
         Objects.requireNonNull(rs, "The ResultSet notified being closed cannot be null.");
         
         // If this ResultSet was the current ResultSet, now there is no more current ResultSet.
@@ -221,7 +221,7 @@ public class DBFStatement extends AbstractStatement {
      * Register a ResultSet as opened.
      * @param rs Result Set.
      */
-    public void registerResultSet(AbstractResultSet rs) {
+    public void registerResultSet(DBFResultSet rs) {
         currentResultSet = rs;
         openedResultSets.add(rs);
     }
