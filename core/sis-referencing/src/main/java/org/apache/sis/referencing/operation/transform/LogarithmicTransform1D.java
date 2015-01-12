@@ -33,7 +33,7 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Logarithms in bases other than <var>e</var> or 10 are computed by concatenating a linear transform,
  * using the following mathematical identity:</p>
  *
- * <blockquote>    log<sub>base</sub>(<var>x</var>) = ln(<var>x</var>) / ln(base)    </blockquote>
+ * <blockquote>log<sub>base</sub>(<var>x</var>) = ln(<var>x</var>) / ln(base)</blockquote>
  *
  * {@section Serialization}
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -112,11 +112,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      *
      * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
-     *         followed by {@code this}, or {@code false} if the transformation order is
-     *         {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined
-     *         transform is available.
+     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
+     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
     final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
@@ -124,12 +122,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
             final LinearTransform1D linear = (LinearTransform1D) other;
             if (applyOtherFirst) {
                 if (linear.offset == 0 && linear.scale > 0) {
-                    return create(getBase(), transform(linear.scale));
+                    return create(base(), transform(linear.scale));
                 }
             } else {
                 final double newBase = pow(1 / linear.scale);
                 if (!Double.isNaN(newBase)) {
-                    return create(newBase, linear.transform(getOffset()));
+                    return create(newBase, linear.transform(offset()));
                 }
             }
         } else if (other instanceof ExponentialTransform1D) {
@@ -153,22 +151,22 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Returns the base of this logarithmic function.
      */
-    double getBase() {
+    double base() {
         return Math.E;
     }
 
     /**
      * Returns the natural logarithm of the base of this logarithmic function.
-     * More specifically, returns <code>{@linkplain Math#log(double) Math.log}({@linkplain #getBase()})</code>.
+     * More specifically, returns <code>{@linkplain Math#log(double) Math.log}({@link #base()})</code>.
      */
-    double getLogBase() {
+    double lnBase() {
         return 1;
     }
 
     /**
      * Returns the offset applied after this logarithmic function.
      */
-    double getOffset() {
+    double offset() {
         return 0;
     }
 
@@ -312,19 +310,19 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
 
         /** {@inheritDoc} */
         @Override
-        double getBase() {
+        double base() {
             return 10;
         }
 
         /** {@inheritDoc} */
         @Override
-        double getLogBase() {
+        double lnBase() {
             return LOG_10;
         }
 
         /** {@inheritDoc} */
         @Override
-        double getOffset() {
+        double offset() {
             return offset;
         }
 
