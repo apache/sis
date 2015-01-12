@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
@@ -80,8 +81,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         ArgumentChecks.ensureStrictlyPositive("base", base);
         if (base == 10) {
             return Base10.create(offset);
+        } else {
+            return NATURAL.concatenate(1 / Math.log(base), offset);
         }
-        return NATURAL.concatenate(1 / Math.log(base), offset);
     }
 
     /**
@@ -122,12 +124,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
             final LinearTransform1D linear = (LinearTransform1D) other;
             if (applyOtherFirst) {
                 if (linear.offset == 0 && linear.scale > 0) {
-                    return create(getBase(), Math.log(linear.scale) / getLogBase() + getOffset());
+                    return create(getBase(), transform(linear.scale));
                 }
             } else {
-                final double newBase = Math.pow(getBase(), 1 / linear.scale);
+                final double newBase = pow(1 / linear.scale);
                 if (!Double.isNaN(newBase)) {
-                    return create(newBase, linear.scale * getOffset() + linear.offset);
+                    return create(newBase, linear.transform(getOffset()));
                 }
             }
         } else if (other instanceof ExponentialTransform1D) {
@@ -179,7 +181,17 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Returns the logarithm of the given value in the base given to this transform constructor.
+     * Returns the base of this logarithmic transform raised to the given power.
+     *
+     * @param value The power to raise the base.
+     * @return The base of this transform raised to the given power.
+     */
+    double pow(final double value) {
+        return Math.exp(value);
+    }
+
+    /**
+     * Returns the logarithm of the given value in the base of this logarithmic transform.
      * This method is similar to {@link #transform(double)} except that the offset is not added.
      *
      * @param  value The value for which to compute the log.
@@ -324,6 +336,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
 
         /** {@inheritDoc} */
         @Override
+        double pow(final double value) {
+            return MathFunctions.pow10(value);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         double log(final double value) {
             return Math.log10(value);
         }
@@ -345,7 +363,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
                 srcOff += numPts;
                 dstOff += numPts;
                 while (--numPts >= 0) {
-                    dstPts[--dstOff] = Math.log10(srcPts[srcOff++]) + offset;
+                    dstPts[--dstOff] = Math.log10(srcPts[--srcOff]) + offset;
                 }
             }
         }
@@ -361,7 +379,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
                 srcOff += numPts;
                 dstOff += numPts;
                 while (--numPts >= 0) {
-                    dstPts[--dstOff] = (float) (Math.log10(srcPts[srcOff++]) + offset);
+                    dstPts[--dstOff] = (float) (Math.log10(srcPts[--srcOff]) + offset);
                 }
             }
         }
