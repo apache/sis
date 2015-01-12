@@ -42,13 +42,13 @@ public interface Dbase3ByteReader {
      * @return true if it is closed.
      */
     public boolean isClosed();
-    
+
     /**
      * Returns the fields descriptors in their binary format.
      * @return Fields descriptors.
      */
     public List<DBase3FieldDescriptor> getFieldsDescriptors();
-    
+
     /**
      * Returns the column index for the given column name.
      * The default implementation of all methods expecting a column label will invoke this method.
@@ -58,13 +58,13 @@ public interface Dbase3ByteReader {
      * @throws SQLNoSuchFieldException if there is no field with this name in the query.
      */
     public int findColumn(String columnLabel, String sql) throws SQLNoSuchFieldException;
-    
+
     /**
      * Returns the charset.
      * @return Charset.
      */
     public Charset getCharset();
-    
+
     /**
      * Returns the column count of the unique table of the DBase 3.
      * @return Column count.
@@ -79,13 +79,13 @@ public interface Dbase3ByteReader {
      * @throws SQLIllegalColumnIndexException if the index is out of bounds.
      */
     public String getFieldName(int columnIndex, String sql) throws SQLIllegalColumnIndexException;
-    
+
     /**
      * Returns the database last update date.
      * @return Date of the last update.
      */
     public Date getDateOfLastUpdate();
-    
+
     /**
      * Returns the record count.
      * @return Record count.
@@ -97,19 +97,19 @@ public interface Dbase3ByteReader {
      * @return Current record number.
      */
     public int getRowNum();
-    
+
     /**
      * Load a row into a feature.
      * @param feature Feature to fill.
      */
     public void loadRowIntoFeature(Feature feature);
-    
+
     /**
      * Checks if a next row is available. Warning : it may be a deleted one.
      * @return true if a next row is available.
      */
     public boolean nextRowAvailable();
-    
+
     /**
      * Read the next row as a set of objects.
      * @return Map of field name / object value.

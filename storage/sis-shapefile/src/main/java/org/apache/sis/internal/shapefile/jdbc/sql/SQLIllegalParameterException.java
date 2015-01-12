@@ -29,16 +29,16 @@ public class SQLIllegalParameterException extends SQLException {
 
     /** The SQL Statement (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /** Parameter name (if known) that is invalid. */
     private String parameterName;
-    
+
     /** Parameter value that is invalid. */
     private String parameterValue;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -54,7 +54,7 @@ public class SQLIllegalParameterException extends SQLException {
         parameterName = name;
         parameterValue = value;
     }
-    
+
     /**
      * Returns the SQL statement.
      * @return SQL statement or null.
@@ -62,7 +62,7 @@ public class SQLIllegalParameterException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the parameter name that is invalid, if known.
      * @return Parameter name.
@@ -70,7 +70,7 @@ public class SQLIllegalParameterException extends SQLException {
     public String geParameterName() {
         return parameterName;
     }
-    
+
     /**
      * Returns the parameter value that is invalid.
      * @return Parameter name.
@@ -78,7 +78,7 @@ public class SQLIllegalParameterException extends SQLException {
     public String geParameterValue() {
         return parameterValue;
     }
-    
+
     /**
      * Returns the database file.
      * @return Database file.

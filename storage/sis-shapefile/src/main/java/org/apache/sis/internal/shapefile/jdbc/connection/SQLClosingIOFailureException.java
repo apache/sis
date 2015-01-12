@@ -29,10 +29,10 @@ public class SQLClosingIOFailureException extends SQLException {
 
     /** The SQL Statement that whas attempted (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -44,7 +44,7 @@ public class SQLClosingIOFailureException extends SQLException {
         sql = sqlStatement;
         database = dbf;
     }
-    
+
     /**
      * Returns the SQL statement who encountered the "connection closed" alert, if known.
      * @return SQL statement or null.
@@ -52,7 +52,7 @@ public class SQLClosingIOFailureException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the database file that is not opened for connection.
      * @return Database file.

@@ -36,7 +36,7 @@ import org.apache.sis.internal.shapefile.AutoChecker;
 public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker  implements AutoCloseable  {
     /** The File. */
     private File file;
-    
+
     /** Input Stream on the DBF. */
     private FileInputStream fis;
 
@@ -45,7 +45,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
 
     /** Buffer reader. */
     private MappedByteBuffer byteBuffer;
-    
+
     /** Indicates if the byte buffer is closed. */
     private boolean isClosed = false;
 
@@ -54,7 +54,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
 
     /** Invalid Exception to throw in case of file not found exception. */
     private Class<FNFException> classFNFException;
-    
+
     /**
      * Create and open a byte reader based on a file.
      * @param f File.
@@ -67,9 +67,9 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
         Objects.requireNonNull(f, "The file cannot be null.");
         classInvalidFormatException = invalidFormatException;
         classFNFException = fileNotFoundException;
-        
+
         file = f;
-        
+
         try {
             fis = new FileInputStream(file);
         }
@@ -77,9 +77,9 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
             throwException(classInvalidFormatException, e.getMessage(), e);
             throw new RuntimeException("this place should not be reached.");
         }
-        
+
         fc = fis.getChannel();
-        
+
         try {
             int fsize = (int)fc.size();
             byteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
@@ -95,14 +95,14 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * Close the MappedByteReader.
      * @throws IOException if the close operation fails.
      */
-    @Override 
+    @Override
     public void close() throws IOException {
         if (fc != null)
             fc.close();
 
         if (fis != null)
             fis.close();
-        
+
         isClosed = true;
     }
 
@@ -121,7 +121,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
     public MappedByteBuffer getByteBuffer() {
         return byteBuffer;
     }
-    
+
     /**
      * Return the file mapped.
      * @return File.

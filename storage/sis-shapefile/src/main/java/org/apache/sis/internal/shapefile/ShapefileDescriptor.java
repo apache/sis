@@ -64,7 +64,7 @@ public class ShapefileDescriptor {
 
     /** M Max. */
     private double mmax; // little
-    
+
     /**
      * Create a shapefile descriptor.
      * @param byteBuffer Source Bytebuffer.
@@ -119,4 +119,3 @@ public class ShapefileDescriptor {
         return s.toString();
     }
 }
-

@@ -32,16 +32,16 @@ import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 
 /**
- * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory. 
+ * Common implemented features of all ResultSets : those based on a record, but also those returning results forged in memory.
  * @author Marc LE BIHAN
  */
 public abstract class DBFResultSet extends AbstractResultSet {
     /** Indicates if the ResultSet is closed.  */
     protected boolean isClosed;
-    
+
     /** SQL Statement. */
     protected String sql;
-    
+
     /** true, if the last column had the SQL NULL value (for the ResultSet.wasNull() method). */
     protected boolean wasNull;
 
@@ -55,7 +55,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     public DBFResultSet(final DBFStatement stmt, String sqlQuery) {
         Objects.requireNonNull(stmt, "the statement referred by the ResultSet cannot be null.");
-        
+
         statement = stmt;
         sql = sqlQuery;
     }
@@ -74,7 +74,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     protected void assertNotClosed() throws SQLConnectionClosedException {
         statement.assertNotClosed();
-        
+
         if (isClosed) {
             throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_resultset", sql, getFile().getName()), sql, getFile());
         }
@@ -95,20 +95,20 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public void close() {
         if (isClosed())
             return;
-        
+
         statement.notifyCloseResultSet(this);
         isClosed = true;
     }
-    
+
     /**
      * Returns the column index for the given column name.
      * The default implementation of all methods expecting a column label will invoke this method.
      * @param columnLabel The name of the column.
      * @return The index of the given column name : first column is 1.
      * @throws SQLNoSuchFieldException if there is no field with this name in the query.
-     * @throws SQLConnectionClosedException if the connection is closed. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override 
+    @Override
     @SuppressWarnings("resource") // The connection is only used to get the column index.
     public int findColumn(String columnLabel) throws SQLNoSuchFieldException, SQLConnectionClosedException {
         DBFConnection cnt = (DBFConnection)statement.getConnection();
@@ -229,7 +229,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      * @throws SQLIllegalColumnIndexException if the index is out of bounds.
      * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @SuppressWarnings("resource") // Only use the current connection to get the field name. 
+    @SuppressWarnings("resource") // Only use the current connection to get the field name.
     public String getFieldName(int columnIndex, String sqlStatement) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
         DBFConnection cnt = (DBFConnection)statement.getConnection();
         return cnt.getFieldName(columnIndex, sqlStatement);
@@ -239,7 +239,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      * Returns the Database File.
      * @return Database File.
      */
-    @Override 
+    @Override
     public File getFile() {
         return statement.getFile();
     }
@@ -349,7 +349,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public boolean isWrapperFor(Class<?> iface) {
         return iface.isAssignableFrom(getInterface());
     }
-    
+
     /**
      * Defaults to the index-based version of this method.
      * The given column name is mapped to a column index by {@link #findColumn(String)}.
@@ -565,7 +565,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
         updateBinaryStream(findColumn(columnLabel), x, length);
     }
-    
+
     /**
      * Defaults to the index-based version of this method.
      * The given column name is mapped to a column index by {@link #findColumn(String)}.
@@ -769,7 +769,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
         updateClob(columnLabel, reader);
     }
-    
+
     /**
      * Defaults to the index-based version of this method.
      * The given column name is mapped to a column index by {@link #findColumn(String)}.
@@ -930,7 +930,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public boolean wasNull() {
         return wasNull;
     }
-    
+
     /**
      * Get a field description.
      * @param columnLabel Column label.

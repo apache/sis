@@ -49,4 +49,3 @@ public class DBFBuiltInMemoryResultSetForCatalogNamesListing extends BuiltInMemo
         return true;
     }
 }
-

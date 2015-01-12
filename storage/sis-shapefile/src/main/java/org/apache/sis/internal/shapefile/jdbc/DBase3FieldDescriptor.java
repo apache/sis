@@ -101,7 +101,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
     public int getDecimalCount() {
         return Byte.toUnsignedInt(this.fieldDecimalCount);
     }
-    
+
     /**
      * Returns the field length.
      * @return field length.
@@ -129,7 +129,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
     public DBaseDataType getType() {
         return(fieldType);
     }
-    
+
     /**
      * @see java.lang.Object#toString()
      */

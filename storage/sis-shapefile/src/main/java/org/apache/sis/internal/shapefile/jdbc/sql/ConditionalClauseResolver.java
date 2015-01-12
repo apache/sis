@@ -21,7 +21,7 @@ package org.apache.sis.internal.shapefile.jdbc.sql;
  * <br>- Only resolve comparison of simple statements like F = 2, not those involving intermediate calculations (F + 4 = 6).
  * <br>- Only resolve a part of an expression : in "A = 5 and (B = 3 or C = 6)" will treat A = 5, for example.
  * <br>- If many clauseResolvers are chained, operator precedence checking has to be done by the caller.
- * <br>- This class is only here temporary, and will be replaced by a good SQL parser as soon as possible. 
+ * <br>- This class is only here temporary, and will be replaced by a good SQL parser as soon as possible.
  * @author Marc LE BIHAN
  */
 public class ConditionalClauseResolver extends ClauseResolver

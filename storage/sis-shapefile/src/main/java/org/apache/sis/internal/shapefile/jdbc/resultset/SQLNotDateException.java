@@ -29,16 +29,16 @@ public class SQLNotDateException extends SQLException {
 
     /** The SQL Statement (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /** Column name. */
     private String columnName;
-    
+
     /** The value that is not numeric. */
     private String value;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -54,7 +54,7 @@ public class SQLNotDateException extends SQLException {
         columnName = colName;
         value = wrongValue;
     }
-    
+
     /**
      * Returns the SQL statement.
      * @return SQL statement or null.
@@ -62,7 +62,7 @@ public class SQLNotDateException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the column name.
      * @return Column name.
@@ -70,7 +70,7 @@ public class SQLNotDateException extends SQLException {
     public String getColumnName() {
         return columnName;
     }
-    
+
     /**
      * Returns the value that is not numeric.
      * @return Value.
@@ -78,7 +78,7 @@ public class SQLNotDateException extends SQLException {
     public String getValue() {
         return value;
     }
-    
+
     /**
      * Returns the database file.
      * @return Database file.

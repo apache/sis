@@ -26,13 +26,13 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 public class DBFRecordBasedResultSet extends DBFResultSet {
     /** The current record. */
     private Map<String, Object> record;
-    
+
     /** Condition of where clause (currently, only one is handled). */
     private ConditionalClauseResolver singleConditionOfWhereClause;
 
     /** UTF-8 charset. */
     private static Charset UTF8 = Charset.forName("UTF-8");
-    
+
     /**
      * Constructs a result set.
      * @param stmt Parent statement.
@@ -43,7 +43,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         super(stmt, sqlQuery);
         singleConditionOfWhereClause = new CrudeSQLParser(this).parse();
     }
-    
+
     /**
      * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getBigDecimal(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -53,14 +53,14 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public BigDecimal getBigDecimal(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getBigDecimal", columnLabel);
-        
+
         assertNotClosed();
-        
+
         // Act as if we were a double, but store the result in a pre-created BigDecimal at the end.
         try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, sql)) {
             MathContext mc = new MathContext(field.getInt("DECIMAL_DIGITS"), RoundingMode.HALF_EVEN);
             Double doubleValue = getDouble(columnLabel);
-            
+
             if (doubleValue != null) {
                 BigDecimal number = new BigDecimal(doubleValue, mc);
                 wasNull = false;
@@ -72,7 +72,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
             }
         }
     }
-    
+
     /**
      * @see java.sql.ResultSet#getBigDecimal(int)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -97,11 +97,11 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getBigDecimal", columnLabel, scale);
         assertNotClosed();
-        
+
         // Act as if we were a double, but store the result in a pre-created BigDecimal at the end.
         MathContext mc = new MathContext(scale, RoundingMode.HALF_EVEN);
         Double doubleValue = getDouble(columnLabel);
-        
+
         if (doubleValue != null) {
             BigDecimal number = new BigDecimal(getDouble(columnLabel), mc);
             wasNull = false;
@@ -117,15 +117,15 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      * @see java.sql.ResultSet#getDate(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLNoSuchFieldException if the field looked for doesn't exist.
-     * @throws SQLNotDateException if the field is not a date. 
+     * @throws SQLNotDateException if the field is not a date.
      */
     @Override
     public Date getDate(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotDateException {
         logStep("getDate", columnLabel);
         assertNotClosed();
-        
+
         String value = getString(columnLabel);
-        
+
         if (value == null || value.equals("00000000")) { // "00000000" is stored in Database to represent a null value too.
             wasNull = true;
             return null; // The ResultSet:getDate() contract is to return null when a null date is encountered.
@@ -133,7 +133,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         else {
             wasNull = false;
         }
-        
+
         // The DBase 3 date format is "YYYYMMDD".
         // if the length of the string isn't eight characters, the field format is incorrect.
         if (value.length() != 8) {
@@ -143,7 +143,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         // Extract the date parts.
         int year, month, dayOfMonth;
-        
+
         try {
             year = Integer.parseInt(value.substring(0, 4));
             month = Integer.parseInt(value.substring(5, 7));
@@ -153,7 +153,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
             String message = format(Level.WARNING, "excp.field_is_not_a_date", columnLabel, sql, value);
             throw new SQLNotDateException(message, sql, getFile(), columnLabel, value);
         }
-        
+
         // Create a date.
         Calendar calendar = new GregorianCalendar(year, month-1, dayOfMonth, 0, 0, 0);
         Date sqlDate = new Date(calendar.getTimeInMillis());
@@ -164,7 +164,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      * @see java.sql.ResultSet#getDate(int)
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLNoSuchFieldException if the field looked for doesn't exist.
-     * @throws SQLNotDateException if the field is not a date. 
+     * @throws SQLNotDateException if the field is not a date.
      * @throws SQLIllegalColumnIndexException if the column index has an illegal value.
      */
     @Override
@@ -182,7 +182,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public double getDouble(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getDouble", columnLabel);
-        
+
         Double value = getNumeric(columnLabel, Double::parseDouble);
         wasNull = (value == null);
         return value != null ? value : 0.0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
@@ -210,7 +210,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public float getFloat(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getFloat", columnLabel);
-        
+
         Float value = getNumeric(columnLabel, Float::parseFloat);
         wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
@@ -238,7 +238,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public int getInt(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getInt", columnLabel);
-        
+
         Integer value = getNumeric(columnLabel, Integer::parseInt);
         wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
@@ -266,7 +266,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public long getLong(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getLong", columnLabel);
-        
+
         Long value = getNumeric(columnLabel, Long::parseLong);
         wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
@@ -283,26 +283,26 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         logStep("getLong", columnIndex);
         return getLong(getFieldName(columnIndex, sql));
     }
-    
+
     /**
      * @see java.sql.ResultSet#getMetaData()
      */
     @Override
     public ResultSetMetaData getMetaData() {
         logStep("getMetaData");
-        
-        DBFResultSetMataData meta = new DBFResultSetMataData(this); 
+
+        DBFResultSetMataData meta = new DBFResultSetMataData(this);
         return meta;
     }
-    
+
     /**
      * @see org.apache.sis.internal.shapefile.jdbc.resultset.AbstractResultSet#getObject(int)
      */
-    @Override 
+    @Override
     public Object getObject(int column) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
         try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(column, sql)) {
             String fieldType;
-            
+
             try {
                 fieldType = field.getString("TYPE_NAME");
             }
@@ -310,18 +310,18 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 // This is an internal trouble because the field type must be found.
                 throw new RuntimeException(e.getMessage(), e);
             }
-            
+
             switch(fieldType) {
                 case "AUTO_INCREMENT":
                 case "INTEGER":
                     return getInt(column);
-                    
+
                 case "CHAR":
                     return getString(column);
-                    
+
                 case "DATE":
                     return getDate(column);
-                    
+
                 case "DECIMAL": {
                     // Choose Integer or Long type, if no decimal and that the field is not to big.
                     if (field.getInt("DECIMAL_DIGITS") == 0 && field.getInt("COLUMN_SIZE") <= 18) {
@@ -330,55 +330,55 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                         else
                             return getLong(column);
                     }
-                    
+
                     return getDouble(column);
                 }
-                    
+
                 case "DOUBLE":
                 case "CURRENCY":
                     return getDouble(column);
-                    
+
                 case "FLOAT":
                     return getFloat(column);
-                    
+
                 case "BOOLEAN":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Boolean");
-                    
+
                 case "DATETIME":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on DateTime");
-                    
+
                 case "TIMESTAMP":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on TimeStamp");
-                    
+
                 case "MEMO":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Memo");
-                    
+
                 case "PICTURE":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Picture");
-                    
+
                 case "VARIFIELD":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on VariField");
-                    
+
                 case "VARIANT":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on Variant");
-                    
+
                 case "UNKNOWN":
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + fieldType);
-                    
+
                 default:
                     throw unsupportedOperation("ResultSetMetaData.getColumnClassName(..) on " + fieldType);
-            }            
+            }
         }
     }
 
     /**
      * @see org.apache.sis.internal.shapefile.jdbc.resultset.DBFResultSet#getObject(java.lang.String)
      */
-    @Override 
+    @Override
     public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
         return getObject(findColumn(columnLabel));
     }
-    
+
     /**
      * @see java.sql.ResultSet#getShort(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -388,7 +388,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public short getShort(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         logStep("getShort", columnLabel);
-        
+
         Short value = getNumeric(columnLabel, Short::parseShort);
         wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
@@ -418,23 +418,23 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     public String getString(String columnLabel) throws SQLConnectionClosedException, SQLNoSuchFieldException {
         logStep("getString", columnLabel);
         assertNotClosed();
-        
+
         getFieldDesc(columnLabel, sql); // Ensure that the field queried exists, else a null value here can be interpreted as "not existing" or "has a null value".
         String withoutCharset = (String)record.get(columnLabel);
-        
+
         if (withoutCharset == null) {
             wasNull = true;
             return withoutCharset;
-        } 
+        }
         else {
             wasNull = false;
         }
-        
+
         // If a non null value has been readed, convert it to the wished Charset.
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
-        String withDatabaseCharset = new String(withoutCharset.getBytes(), cnt.getCharset()); 
+        String withDatabaseCharset = new String(withoutCharset.getBytes(), cnt.getCharset());
         log(Level.FINER, "log.string_field_charset", columnLabel, withoutCharset, withDatabaseCharset, cnt.getCharset());
-        
+
         // Because the Database is old (end of 1980's), it has not been made to support UTF-8 encoding.
         // But must users of DBase 3 don't know this, and sometimes a String field may carry such characters.
         // Attempt to determine if the string could be an UTF-8 String instead.
@@ -443,7 +443,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         // If conversion contains a not convertible character, it's not an UTF-8 string.
         // If the UTF-8 string is shorter than the one that would have given the database charset, it's a good sign : it has chances to be better.
         boolean unsureResult = withUtf8Encoding.indexOf('\ufffd') != -1 || withUtf8Encoding.length() >= withDatabaseCharset.length();
-        
+
         if (unsureResult)
             return withDatabaseCharset;
         else {
@@ -451,7 +451,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
             return withUtf8Encoding;
         }
     }
-    
+
     /**
      * @see java.sql.ResultSet#getString(int)
      * @throws SQLConnectionClosedException if the connection is closed.
@@ -489,7 +489,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         return nextRecordMatchingConditions();
     }
-    
+
     /**
      * Find the next record that match the where condition.
      * @return true if a record has been found.
@@ -505,15 +505,15 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     private boolean nextRecordMatchingConditions() throws SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLConnectionClosedException, SQLNotNumericException, SQLNotDateException {
         boolean recordMatchesConditions = false;
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
-        
+
         while(cnt.nextRowAvailable() && recordMatchesConditions == false) {
             record = cnt.readNextRowAsObjects();
             recordMatchesConditions = singleConditionOfWhereClause == null || singleConditionOfWhereClause.isVerified(this);
         }
-        
+
         return recordMatchesConditions && cnt.nextRowAvailable(); // Beware of the end of database !
     }
-    
+
     /**
      * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
      */
@@ -544,19 +544,19 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      */
     private <T extends Number> T getNumeric(String columnLabel, Function<String, T> parse) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         assertNotClosed();
-        
+
         try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, sql)) {
-            String textValue = (String)record.get(columnLabel); 
-            
+            String textValue = (String)record.get(columnLabel);
+
             if (textValue == null) {
                 return null;
             }
-            
+
             try {
                 textValue = textValue.trim(); // Field must be trimed before being converted.
                 T value = parse.apply(textValue);
                 return(value);
-            } 
+            }
             catch(NumberFormatException e) {
                 String message = format(Level.WARNING, "excp.field_is_not_numeric", columnLabel, rs.getString("TYPE_NAME"), sql, textValue);
                 throw new SQLNotNumericException(message, sql, getFile(), columnLabel, textValue);

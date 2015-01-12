@@ -40,10 +40,10 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 public class ShapeFile {
     /** Shapefile. */
     private File shapeFile;
-    
+
     /** Database file. */
     private File databaseFile;
-    
+
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -52,7 +52,7 @@ public class ShapeFile {
         Objects.requireNonNull(shpfile, "The shapefile to load cannot be null.");
 
         shapeFile = new File(shpfile);
-        
+
         // Deduct database file name.
         StringBuilder dbfFileName = new StringBuilder(shpfile);
         dbfFileName.replace(shpfile.length() - 3, shpfile.length(), "dbf");
@@ -62,7 +62,7 @@ public class ShapeFile {
     /**
      * Find features corresponding to an SQL request SELECT * FROM database.
      * @return Features
-     * @throws SQLInvalidStatementException if the SQL statement is invalid. 
+     * @throws SQLInvalidStatementException if the SQL statement is invalid.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws InvalidDbaseFileFormatException if the database file format is invalid.

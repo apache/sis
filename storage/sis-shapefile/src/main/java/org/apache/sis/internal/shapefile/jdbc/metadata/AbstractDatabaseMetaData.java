@@ -15,7 +15,7 @@ public abstract class AbstractDatabaseMetaData extends AbstractJDBC implements D
     @Override public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
         throw unsupportedOperation("getAttributes", catalog, schemaPattern, typeNamePattern, attributeNamePattern);
     }
-    
+
     /**
      * @see java.sql.DatabaseMetaData#getBestRowIdentifier(java.lang.String, java.lang.String, java.lang.String, int, boolean)
      */
@@ -183,5 +183,4 @@ public abstract class AbstractDatabaseMetaData extends AbstractJDBC implements D
     @Override public <T> T unwrap(Class<T> iface) throws SQLFeatureNotSupportedException {
         throw unsupportedOperation("unwrap", iface);
     }
-
 }

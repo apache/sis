@@ -46,28 +46,28 @@ import org.opengis.feature.Feature;
 public class InputFeatureStream extends InputStream {
     /** Dedicated connection to DBF. */
     private DBFConnection connection;
-    
+
     /** Statement. */
     private DBFStatement stmt;
-    
+
     /** ResultSet. */
     private DBFRecordBasedResultSet rs;
-    
+
     /** SQL Statement executed. */
     private String sql;
-    
+
     /** Marks the end of file. */
     private boolean endOfFile;
-    
+
     /** Shapefile. */
     private File shapefile;
-    
+
     /** Database file. */
     private File databaseFile;
 
     /** Type of the features contained in this shapefile. */
     private DefaultFeatureType featuresType;
-    
+
     /** Shapefile reader. */
     private ShapefileByteReader shapefileReader;
 
@@ -76,7 +76,7 @@ public class InputFeatureStream extends InputStream {
      * @param shpfile Shapefile.
      * @param dbaseFile Database file.
      * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
-     * @throws InvalidShapefileFormatException if the shapefile format is invalid. 
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      * @throws InvalidDbaseFileFormatException if the Dbase file format is invalid.
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws DbaseFileNotFoundException if the database file has not been found.
@@ -86,10 +86,10 @@ public class InputFeatureStream extends InputStream {
         sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
         shapefile = shpfile;
         databaseFile = dbaseFile;
-        
+
         shapefileReader = new ShapefileByteReader(shapefile, databaseFile);
-        featuresType = shapefileReader.getFeaturesType(); 
-        
+        featuresType = shapefileReader.getFeaturesType();
+
         try {
             executeQuery();
         }
@@ -98,7 +98,7 @@ public class InputFeatureStream extends InputStream {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
-    
+
     /**
      * @see java.io.InputStream#read()
      */
@@ -110,25 +110,25 @@ public class InputFeatureStream extends InputStream {
     /**
      * @see java.io.InputStream#available()
      */
-    @Override 
+    @Override
     public int available() {
         throw new UnsupportedOperationException("InputFeatureStream doesn't allow the use of available(). Use readFeature() will return null when feature are no more available.");
     }
-    
+
     /**
      * @see java.io.InputStream#close()
      */
-    @Override 
+    @Override
     public void close() {
         rs.close();
         stmt.close();
         connection.close();
     }
-    
+
     /**
      * Read next feature responding to the SQL request.
      * @return Feature, null if no more feature is available.
-     * @throws SQLNotNumericException if a field expected numeric isn't. 
+     * @throws SQLNotNumericException if a field expected numeric isn't.
      * @throws SQLNotDateException if a field expected of date kind, isn't.
      * @throws SQLNoSuchFieldException if a field doesn't exist.
      * @throws SQLIllegalParameterException if a parameter is illegal in the query.
@@ -144,24 +144,24 @@ public class InputFeatureStream extends InputStream {
             if (endOfFile) {
                 return null;
             }
-            
+
             if (rs.next() == false) {
                 endOfFile = true;
                 return null;
             }
-            
+
             Feature feature = featuresType.newInstance();
             shapefileReader.completeFeature(feature);
             DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)connection.getMetaData();
-            
+
             try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null)) {
                 while(rsDatabase.next()) {
                     String fieldName = rsDatabase.getString("COLUMN_NAME");
                     Object fieldValue = rs.getObject(fieldName);
-                    
+
                     // FIXME To allow features to be filled again, the values are converted to String again : feature should allow any kind of data.
                     String stringValue;
-                    
+
                     if (fieldValue == null) {
                         stringValue = null;
                     }
@@ -174,16 +174,16 @@ public class InputFeatureStream extends InputStream {
                                 // Avoid thousand separator.
                                 DecimalFormat df = new DecimalFormat();
                                 df.setGroupingUsed(false);
-                                stringValue = df.format(fieldValue);                                
+                                stringValue = df.format(fieldValue);
                             }
                             else
                                 stringValue = fieldValue.toString();
                         }
                     }
-                    
+
                     feature.setPropertyValue(fieldName, stringValue);
                 }
-                
+
                 return feature;
             }
             catch(SQLNoResultException e) {
@@ -199,11 +199,11 @@ public class InputFeatureStream extends InputStream {
 
     /**
      * Execute the wished SQL query.
-     * @throws SQLConnectionClosedException if the connection is closed. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
      */
     private void executeQuery() throws SQLConnectionClosedException, SQLInvalidStatementException {
-        stmt = (DBFStatement)connection.createStatement(); 
+        stmt = (DBFStatement)connection.createStatement();
         rs = (DBFRecordBasedResultSet)stmt.executeQuery(sql);
     }
 }

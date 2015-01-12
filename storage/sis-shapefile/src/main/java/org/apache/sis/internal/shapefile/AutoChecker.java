@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Base class for objets having auto-checking abilities
- * and easy access to Bundle and logging function. 
+ * and easy access to Bundle and logging function.
  * @author Marc LE BIHAN
  */
 public abstract class AutoChecker {
@@ -50,7 +50,7 @@ public abstract class AutoChecker {
 
         Class<?> candidateClass = classForResourceBundleName;
         MessageFormat format = null;
-        
+
         // Find the key in the bundle having for name this class, or in one of its superclasses.
         do {
             try {
@@ -62,7 +62,7 @@ public abstract class AutoChecker {
             }
         }
         while(candidateClass != null && format == null);
-        
+
         if (format == null) {
             String fmt = "Cannot find property key {0} in {1} properties file or any of its superclasses.";
             String message = MessageFormat.format(fmt, key, classForResourceBundleName.getName());
@@ -93,7 +93,7 @@ public abstract class AutoChecker {
      */
     final protected String format(Level logLevel, String key, Object... args) {
         Objects.requireNonNull(logLevel, "The log level cannot be null.");
-        
+
         String message = format(key, args);
         logger.log(logLevel, message);
         return(message);
@@ -110,7 +110,7 @@ public abstract class AutoChecker {
      */
     final protected String format(Level logLevel, Class<?> classForResourceBundleName, String key, Object... args) {
         Objects.requireNonNull(logLevel, "The log level cannot be null.");
-        
+
         String message = format(classForResourceBundleName, key, args);
         logger.log(logLevel, message);
         return(message);
@@ -140,7 +140,7 @@ public abstract class AutoChecker {
     public static <E extends Throwable> void throwException(Class<E> classException, String message, Throwable cause) throws E {
        throw(exception(classException, message, cause));
     }
-    
+
     /**
      * Build an exception by reflection.
      * @param <E> Class of the exception to build.
@@ -151,7 +151,7 @@ public abstract class AutoChecker {
      */
     private static <E extends Throwable> E exception(Class<E> classException, String message, Throwable cause) {
        Objects.requireNonNull(classException, "The class of the exception to throw cannot be null."); //$NON-NLS-1$
-       
+
        try
        {
             Constructor<E> cstr = classException.getConstructor(String.class, Throwable.class);
@@ -165,7 +165,7 @@ public abstract class AutoChecker {
             throw new RuntimeException(msg, e);
        }
     }
-    
+
     /**
      * Return the class logger.
      * @return logger.

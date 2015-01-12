@@ -25,7 +25,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 
 
 /**
- * This Base ResultSet is only used for Descriptions function (getTables(..) and others functions in in Metadata). 
+ * This Base ResultSet is only used for Descriptions function (getTables(..) and others functions in in Metadata).
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
@@ -45,7 +45,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
      * @see java.sql.ResultSet#getBigDecimal(java.lang.String, int)
      * @deprecated Deprecated API (from ResultSet Interface)
      */
-    @Deprecated @Override 
+    @Deprecated @Override
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
         throw unsupportedOperation("BigDecimal", columnLabel, scale);
     }
@@ -85,7 +85,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**
      * @see java.sql.ResultSet#getDouble(java.lang.String)
      */
-    @Override 
+    @Override
     public double getDouble(String columnLabel) throws SQLException {
         throw unsupportedOperation("getDouble", columnLabel);
     }
@@ -109,7 +109,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**
      * @see java.sql.ResultSet#getFloat(java.lang.String)
      */
-    @Override 
+    @Override
     public float getFloat(String columnLabel) throws SQLException {
         throw unsupportedOperation("getFloat", columnLabel);
     }
@@ -117,7 +117,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**
      * @see java.sql.ResultSet#getInt(java.lang.String)
      */
-    @Override 
+    @Override
     public int getInt(String columnLabel) throws SQLException {
         throw unsupportedOperation("getInt", columnLabel);
     }
@@ -165,7 +165,7 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     @Override public String getString(String columnLabel) throws SQLException {
         throw unsupportedOperation("getString", columnLabel);
     }
-    
+
     /**
      * @see java.sql.ResultSet#getString(int)
      */
@@ -180,17 +180,17 @@ public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     @Override public ResultSetMetaData getMetaData() throws SQLException {
         throw unsupportedOperation("getMetaData");
     }
-    
+
     /**
      * Returns the table name.
      * @return Table Name.
      */
     protected String getTableName() {
         // The table default to the file name (without its extension .dbf).
-        String fileName = getFile().getName(); 
+        String fileName = getFile().getName();
         int indexDBF = fileName.lastIndexOf(".");
         String tableName = fileName.substring(0, indexDBF);
-        
+
         return tableName;
     }
 }

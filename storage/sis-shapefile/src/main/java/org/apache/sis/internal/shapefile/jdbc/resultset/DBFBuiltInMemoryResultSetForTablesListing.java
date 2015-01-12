@@ -27,7 +27,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResultSet {
     /** There's only one result in this ResultSet. */
     private int index = 0;
-    
+
     /**
      * Construct a ResultSet.
      * @param stmt Statement.
@@ -41,7 +41,7 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
      */
     @Override public String getString(String columnLabel) {
         logStep("getString", columnLabel);
-        
+
         switch(columnLabel) {
             case "TABLE_NAME":                // String => table name.
             {
@@ -49,17 +49,17 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
                 wasNull = (tableName == null);
                 return tableName;
             }
-                
+
             case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
                 wasNull = false;
                 return "TABLE";
-                
-            case "TYPE_NAME":                 // String => type name (may be null) 
-            case "TABLE_CAT":                 // String => table catalog (may be null) 
-            case "TABLE_SCHEM":               // String => table schema (may be null) 
-            case "REMARKS":                   // String => explanatory comment on the table 
-            case "TYPE_CAT":                  // String => the types catalog (may be null) 
-            case "TYPE_SCHEM":                // String => the types schema (may be null) 
+
+            case "TYPE_NAME":                 // String => type name (may be null)
+            case "TABLE_CAT":                 // String => table catalog (may be null)
+            case "TABLE_SCHEM":               // String => table schema (may be null)
+            case "REMARKS":                   // String => explanatory comment on the table
+            case "TYPE_CAT":                  // String => the types catalog (may be null)
+            case "TYPE_SCHEM":                // String => the types schema (may be null)
             case "SELF_REFERENCING_COL_NAME": // String => name of the designated "identifier" column of a typed table (may be null)
             case "REF_GENERATION":            // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
                 wasNull = true;
@@ -74,10 +74,10 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
     /**
      * @see java.sql.ResultSet#next()
      */
-    @Override public boolean next() throws SQLNoResultException 
+    @Override public boolean next() throws SQLNoResultException
     {
         logStep("next");
-        
+
         if (index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_per_dbf"), "Driver manager asks for table listing", getFile());
         }

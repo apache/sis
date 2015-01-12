@@ -38,39 +38,39 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
 
     /** Number of bytes in the record. */
     protected short dbaseRecordBytes;
-    
+
     /** Reserved (dBASE IV) Filled with 00h. */
     protected byte[] reservedFiller1 = new byte[2];
-    
-    /** 
+
+    /**
      * Reserved : Incomplete transaction (dBASE IV).
      * 00h : Transaction ended (or rolled back).
-     * 01h : Transaction started. 
+     * 01h : Transaction started.
      */
     protected byte reservedIncompleteTransaction;
 
     /**
      * Reserved : Encryption flag (dBASE IV).
-     * 00h : Not encrypted. 
+     * 00h : Not encrypted.
      * 01h : Data encrypted.
      */
     protected byte reservedEncryptionFlag;
-    
+
     /** Reserved : Free record thread (for LAN only). */
     protected byte[] reservedFreeRecordThread = new byte[4];
-    
+
     /** Reserved : For multi-user (DBase 3+). */
     protected byte[] reservedMultiUser = new byte[8];
 
     /** Reserved : MDX flag (dBASE IV). */
     protected byte reservedMDXFlag;
-    
+
     /** Binary code page value. */
     protected byte codePage;
-    
+
     /** Reserved (dBASE IV) Filled with 00h. */
     protected byte[] reservedFiller2 = new byte[2];
-    
+
     /** Marks the end of the descriptor : must be 0x0D. */
     protected byte descriptorTerminator;
 
@@ -79,7 +79,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
 
     /** Number of records in the table. */
     protected int rowCount;
-    
+
     /** Database charset. */
     protected Charset charset;
 
@@ -88,7 +88,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
 
     /** Current row rumber. */
     protected int rowNum;
-    
+
     /**
      * Map a dbf file.
      * @param file Database file.
@@ -98,7 +98,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     public AbstractDbase3ByteReader(File file) throws DbaseFileNotFoundException, InvalidDbaseFileFormatException {
         super(file, InvalidDbaseFileFormatException.class, DbaseFileNotFoundException.class);
     }
-    
+
     /**
      * Returns the charset.
      * @return Charset.
@@ -106,7 +106,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     @Override public Charset getCharset() {
         return charset;
     }
-    
+
     /**
      * Returns the database last update date.
      * @return Date of the last update.
@@ -122,7 +122,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     @Override public int getRowCount() {
         return rowCount;
     }
-    
+
     /**
      * Returns the current record number.
      * @return Current record number.
@@ -142,7 +142,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     protected Charset toCharset(byte codePageBinaryValue) throws InvalidDbaseFileFormatException, UnsupportedCharsetException {
         // Attempt to find a known conversion.
         String dbfCodePage = toCodePage(codePageBinaryValue);
-        
+
         // If no conversion has been found, decide if the cause is an unsupported value or an illegal value to choose the good exception to return.
         if (dbfCodePage == null) {
             switch(Byte.toUnsignedInt(codePageBinaryValue)) {
@@ -156,21 +156,21 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
                 default: dbfCodePage = "invalid"; break;
             }
         }
-        
+
         assert dbfCodePage != null;
-        
+
         // If the code page is invalid, the database itself has chances to be invalid too.
         if (dbfCodePage.equals("invalid")) {
             String message = format(Level.WARNING, "excp.illegal_codepage", codePageBinaryValue, getFile().getAbsolutePath());
             throw new InvalidDbaseFileFormatException(message);
         }
-        
+
         // If the code page cannot find a match for a more recent Charset, we wont be able to handle this DBF.
         if (dbfCodePage.equals("unsupported")) {
             String message = format(Level.WARNING, "excp.unsupported_codepage", dbfCodePage, getFile().getAbsolutePath());
             throw new UnsupportedCharsetException(message);
         }
-        
+
         try {
             return Charset.forName(dbfCodePage);
         }
@@ -180,7 +180,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
             throw new RuntimeException(message);
         }
     }
-    
+
     /**
      * Return a Charset code page from a binary code page value.
      * @param pageCodeBinaryValue binary code page value.
@@ -248,30 +248,30 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
         knownConversions.put(0xca, "cp1254"); // Turkish Windows
         knownConversions.put(0xcb, "cp1253"); // Greek Windows
         knownConversions.put(0xcc, "cp1257"); // Baltic Windows
-        
+
         return(knownConversions.get(Byte.toUnsignedInt(pageCodeBinaryValue)));
     }
 
     /**
      * Return a date from a byte array.
-     * @param yymmdd byte[3] with byte[0] = year (2 digits), [1] = month, [2] = day. 
+     * @param yymmdd byte[3] with byte[0] = year (2 digits), [1] = month, [2] = day.
      * @return Date.
      */
     private Date toDate(byte[] yymmdd) {
         Objects.requireNonNull(yymmdd, "the yymmdd bytes cannot be null");
-        
+
         if (yymmdd.length != 3)
             throw new IllegalArgumentException(MessageFormat.format("Database:toDate() works only on a 3 bytes YY MM DD date. this array has {0} length", yymmdd.length));
-        
+
         Objects.requireNonNull(yymmdd[0], "the year byte cannot be null");
         Objects.requireNonNull(yymmdd[1], "the month byte cannot be null");
         Objects.requireNonNull(yymmdd[2], "the day byte cannot be null");
-        
+
         int year = yymmdd[0] < 70 ? 100 + yymmdd[0] : yymmdd[0];
         int month = yymmdd[1];
         int day = yymmdd[2];
-        
-        @SuppressWarnings("deprecation") // But everything is deprecated in DBF files... 
+
+        @SuppressWarnings("deprecation") // But everything is deprecated in DBF files...
         Date date = new Date(year, month, day);
         return date;
     }

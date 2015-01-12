@@ -43,8 +43,8 @@ public class DBFStatement extends AbstractStatement {
     private DBFConnection connection;
 
     /** ResultSets that are currently opened. */
-    private HashSet<DBFResultSet> openedResultSets = new HashSet<>(); 
-    
+    private HashSet<DBFResultSet> openedResultSets = new HashSet<>();
+
     /** The current result set, or {@code null} if none. */
     private DBFResultSet currentResultSet;
 
@@ -69,7 +69,7 @@ public class DBFStatement extends AbstractStatement {
         assertNotClosed();
         return connection;
     }
-    
+
     /**
      * Returns the Database File.
      * @return Database File.
@@ -78,7 +78,7 @@ public class DBFStatement extends AbstractStatement {
     public File getFile() {
         return connection.getFile();
     }
-    
+
     /**
      * @see java.sql.Statement#execute(java.lang.String)
      */
@@ -103,7 +103,7 @@ public class DBFStatement extends AbstractStatement {
     public ResultSet executeQuery(final String sql) throws SQLConnectionClosedException, SQLInvalidStatementException {
         Objects.requireNonNull(sql, "The SQL query cannot be null.");
         assertNotClosed();
-        
+
         DBFRecordBasedResultSet rs = new DBFRecordBasedResultSet(this, sql);
         registerResultSet(rs);
         return rs;
@@ -151,22 +151,22 @@ public class DBFStatement extends AbstractStatement {
     public void close() {
         if (isClosed())
             return;
-        
+
         if (currentResultSet != null) {
             // Inform that this ResultSet could have been closed but that we are handling this :
             // Some developpers may expect their ResultSet should have been closed before in their program.
             format(Level.FINE, "log.closing_underlying_resultset", currentResultSet);
             currentResultSet.close();
-            
+
             currentResultSet = null;
         }
-        
+
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
         // If not, we log a warning to help the developper.
         if (openedResultSets.size() > 0) {
-            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.stream().map(DBFResultSet::toString).collect(Collectors.joining(", ")));  
+            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.stream().map(DBFResultSet::toString).collect(Collectors.joining(", ")));
         }
-        
+
         isClosed = true;
         connection.notifyCloseStatement(this);
     }
@@ -186,13 +186,13 @@ public class DBFStatement extends AbstractStatement {
      */
     public void assertNotClosed() throws SQLConnectionClosedException {
         connection.assertNotClosed(); // First, the underlying shall not be closed.
-        
+
         // Then, this statement shouldn't be closed too.
         if (isClosed) {
             throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_statement", connection.getFile().getName()), null, connection.getFile());
         }
     }
-    
+
     /**
      * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
      */
@@ -207,11 +207,11 @@ public class DBFStatement extends AbstractStatement {
      */
     public void notifyCloseResultSet(DBFResultSet rs) {
         Objects.requireNonNull(rs, "The ResultSet notified being closed cannot be null.");
-        
+
         // If this ResultSet was the current ResultSet, now there is no more current ResultSet.
         if (currentResultSet == rs)
             currentResultSet = null;
-        
+
         if (openedResultSets.remove(rs) == false) {
             throw new RuntimeException(format(Level.SEVERE, "assert.resultset_not_opened_by_me", rs, toString()));
         }

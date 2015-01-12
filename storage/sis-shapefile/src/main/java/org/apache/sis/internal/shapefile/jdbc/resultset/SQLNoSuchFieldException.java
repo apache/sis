@@ -29,13 +29,13 @@ public class SQLNoSuchFieldException extends SQLException {
 
     /** The SQL Statement (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /** Column name that doesn't exist. */
     private String columnName;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -49,7 +49,7 @@ public class SQLNoSuchFieldException extends SQLException {
         database = dbf;
         columnName = colName;
     }
-    
+
     /**
      * Returns the SQL statement.
      * @return SQL statement or null.
@@ -57,7 +57,7 @@ public class SQLNoSuchFieldException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the column name that doesn't exist.
      * @return Column name.
@@ -65,7 +65,7 @@ public class SQLNoSuchFieldException extends SQLException {
     public String getColumnName() {
         return columnName;
     }
-    
+
     /**
      * Returns the database file.
      * @return Database file.
