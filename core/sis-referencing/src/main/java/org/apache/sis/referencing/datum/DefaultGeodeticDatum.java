@@ -260,8 +260,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 param.verify();
                 final GeodeticDatum targetDatum = param.getTargetDatum();
                 if (targetDatum != null && !isGreenwichLongitudeEquals(primeMeridian, targetDatum.getPrimeMeridian())) {
-                    throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.MismatchedPrimeMeridianInBWP_1, primeMeridian.getName()));
+// TODO
+//                  throw new IllegalArgumentException(Errors.format(
+//                          Errors.Keys.MismatchedPrimeMeridianInBWP_1, primeMeridian.getName()));
                 }
                 bursaWolf[i] = param;
             }
