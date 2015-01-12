@@ -29,10 +29,10 @@ public class SQLInvalidStatementException extends SQLException {
 
     /** The SQL Statement (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -44,7 +44,7 @@ public class SQLInvalidStatementException extends SQLException {
         sql = sqlStatement;
         database = dbf;
     }
-    
+
     /**
      * Returns the SQL statement.
      * @return SQL statement or null.
@@ -52,7 +52,7 @@ public class SQLInvalidStatementException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the database file.
      * @return Database file.

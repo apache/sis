@@ -13,13 +13,13 @@ public class SQLIllegalColumnIndexException extends SQLException {
 
     /** The SQL Statement (if known). */
     private String sql;
-    
+
     /** The database file. */
     private File database;
-    
+
     /** Column Index that is invalid. */
     private int columnIndex;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -33,7 +33,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
         database = dbf;
         columnIndex = colIndex;
     }
-    
+
     /**
      * Returns the SQL statement.
      * @return SQL statement or null.
@@ -41,7 +41,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the column index.
      * @return Column index.
@@ -49,7 +49,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
     public int getColumnIndex() {
         return columnIndex;
     }
-    
+
     /**
      * Returns the database file.
      * @return Database file.

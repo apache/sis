@@ -88,14 +88,14 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      */
     public final SQLFeatureNotSupportedException unsupportedOperation(final String methodOrWishedFeatureName, Object... args) throws SQLFeatureNotSupportedException {
         StringBuffer arguments = new StringBuffer();
-        
+
         for(Object arg : args) {
             arguments.append(arguments.length() == 0 ? "" : ", ");   // Separator if needed.
             arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
             arguments.append(arg == null ? "null" : arg.toString()); // String value of the argument.
-            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed. 
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
         }
-        
+
         String message = format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName(), arguments.toString());
         throw new SQLFeatureNotSupportedException(message);
     }
@@ -133,13 +133,13 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     public void logUnsupportedOperation(final String methodName, Object... args) {
         format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodName, getClass().getSimpleName(), arguments(args));
     }
-    
+
     /**
      * Returns the Database File.
      * @return Database File.
      */
     abstract protected File getFile();
-    
+
     /**
      * Concat arguments in a StringBuffer.
      * @param args arguments.
@@ -147,14 +147,14 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      */
     private StringBuffer arguments(Object... args) {
         StringBuffer arguments = new StringBuffer();
-        
+
         for(Object arg : args) {
             arguments.append(arguments.length() == 0 ? "" : ", ");   // Separator if needed.
             arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
             arguments.append(arg == null ? "null" : arg.toString()); // String value of the argument.
-            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed. 
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
         }
-        
+
         return arguments;
     }
 }

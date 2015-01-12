@@ -40,30 +40,30 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 public class DBFConnection extends AbstractConnection {
     /** The object to use for reading the database content. */
     final File databaseFile;
-    
+
     /** Opened statement. */
-    private HashSet<DBFStatement> openedStatements = new HashSet<>(); 
-    
+    private HashSet<DBFStatement> openedStatements = new HashSet<>();
+
     /** ByteReader. */
     private Dbase3ByteReader byteReader;
-    
+
     /**
      * Constructs a connection to the given database.
      * @param datafile Data file ({@code .dbf} extension).
      * @param br Byte reader to use for reading binary content.
-     * @throws DbaseFileNotFoundException if the Database file cannot be found or is not a file. 
+     * @throws DbaseFileNotFoundException if the Database file cannot be found or is not a file.
      */
     public DBFConnection(final File datafile, Dbase3ByteReader br) throws DbaseFileNotFoundException {
         // Check that file exists.
         if (!datafile.exists()) {
             throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
         }
-        
+
         // Check that its not a directory.
         if (datafile.isDirectory()) {
             throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
         }
-        
+
        databaseFile = datafile;
        byteReader = br;
        format(Level.FINE, "log.database_connection_opened", databaseFile.getAbsolutePath(), "FIXME : column desc.");
@@ -76,14 +76,14 @@ public class DBFConnection extends AbstractConnection {
     public void close() {
         if (isClosed())
             return;
-        
+
         try {
             // Check if all the underlying connections that has been opened with this connection has been closed.
             // If not, we log a warning to help the developper.
             if (openedStatements.size() > 0) {
-                format(Level.WARNING, "log.statements_left_opened", openedStatements.size(), openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));  
+                format(Level.WARNING, "log.statements_left_opened", openedStatements.size(), openedStatements.stream().map(DBFStatement::toString).collect(Collectors.joining(", ")));
             }
-            
+
             byteReader.close();
         } catch (IOException e) {
             format(Level.FINE, e.getMessage(), e);
@@ -97,7 +97,7 @@ public class DBFConnection extends AbstractConnection {
     @Override
     public Statement createStatement() throws SQLConnectionClosedException {
         assertNotClosed();
-        
+
         DBFStatement stmt = new DBFStatement(this);
         openedStatements.add(stmt);
         return stmt;
@@ -110,7 +110,7 @@ public class DBFConnection extends AbstractConnection {
     public String getCatalog() {
         return null; // DBase 3 offers no catalog.
     }
-    
+
     /**
      * Returns the charset.
      * @return Charset.
@@ -127,7 +127,7 @@ public class DBFConnection extends AbstractConnection {
     public File getFile() {
         return databaseFile;
     }
-    
+
     /**
      * Returns the JDBC interface implemented by this class.
      * This is used for formatting error messages.
@@ -175,24 +175,24 @@ public class DBFConnection extends AbstractConnection {
      * @throws SQLConnectionClosedException if the connection is closed.
      */
     public void assertNotClosed() throws SQLConnectionClosedException {
-        // If closed throw an exception specifying the name if the DBF that is closed. 
+        // If closed throw an exception specifying the name if the DBF that is closed.
         if (isClosed()) {
             throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_connection", getFile().getName()), null, getFile());
         }
     }
-    
+
     /**
      * Method called by Statement class to notity this connection that a statement has been closed.
      * @param stmt Statement that has been closed.
      */
     public void notifyCloseStatement(DBFStatement stmt) {
         Objects.requireNonNull(stmt, "The statement notified being closed cannot be null.");
-        
+
         if (openedStatements.remove(stmt) == false) {
             throw new RuntimeException(format(Level.SEVERE, "assert.statement_not_opened_by_me", stmt, toString()));
         }
     }
-    
+
     /**
      * Returns the column index for the given column name.
      * The default implementation of all methods expecting a column label will invoke this method.
@@ -223,15 +223,15 @@ public class DBFConnection extends AbstractConnection {
      */
     public ResultSet getFieldDesc(String columnLabel, String sql) throws SQLConnectionClosedException, SQLNoSuchFieldException {
         Objects.requireNonNull(columnLabel, "The column name cannot be null.");
-        
+
         DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)((DBFDatabaseMetaData)getMetaData()).getColumns(null, null, null, null);
-        
+
         try {
             while(rs.next()) {
                 try {
                     if (rs.getString("COLUMN_NAME").equalsIgnoreCase(columnLabel)) {
                         return rs;
-                    } 
+                    }
                 }
                 catch(SQLNoSuchFieldException e) {
                     // if it is the COLUMN_NAME column that has not been found in the desc ResultSet, we have an internal error.
@@ -245,7 +245,7 @@ public class DBFConnection extends AbstractConnection {
             rs.close();
             throw new RuntimeException(e.getMessage(), e);
         }
-        
+
         // But if we are here, we have not found the column with this name, and we have to throw an SQLNoSuchFieldException exception ourselves.
         String message = format("excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
         throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
@@ -261,13 +261,13 @@ public class DBFConnection extends AbstractConnection {
      */
     public ResultSet getFieldDesc(int column, String sql) throws SQLConnectionClosedException, SQLIllegalColumnIndexException {
         DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)((DBFDatabaseMetaData)getMetaData()).getColumns(null, null, null, null);
-        
+
         if (column <= 0 || column > getColumnCount()) {
             rs.close();
             String message = format("excp.illegal_column_index_metadata", column, getColumnCount());
             throw new SQLIllegalColumnIndexException(message, sql, getFile(), column);
         }
-        
+
         // TODO Implements ResultSet:absolute(int) instead.
         for(int index=1; index <= column; index ++) {
             try {
@@ -279,10 +279,10 @@ public class DBFConnection extends AbstractConnection {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
-        
+
         return rs;
     }
-    
+
     /**
      * Returns the fields descriptors in their binary format.
      * @return Fields descriptors.
@@ -307,7 +307,7 @@ public class DBFConnection extends AbstractConnection {
      * @return true if a next row is available.
      */
     public boolean nextRowAvailable() {
-        return byteReader.nextRowAvailable();        
+        return byteReader.nextRowAvailable();
     }
 
     /**
@@ -317,7 +317,7 @@ public class DBFConnection extends AbstractConnection {
     public Map<String, Object> readNextRowAsObjects() {
         return byteReader.readNextRowAsObjects();
     }
-    
+
     /**
      * @see java.lang.Object#toString()
      */

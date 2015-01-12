@@ -29,10 +29,10 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
 
     /** The SQL Statement that whas attempted. */
     private String sql;
-    
+
     /** The database that was queried. */
     private File database;
-    
+
     /**
      * Build the exception.
      * @param message Exception message.
@@ -44,7 +44,7 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
         sql = sqlStatement;
         database = dbf;
     }
-    
+
     /**
      * Returns the SQL statement who encountered the "end of data" alert.
      * @return SQL statement.
@@ -52,7 +52,7 @@ public class SQLUnsupportedParsingFeatureException extends SQLException {
     public String getSQL() {
         return sql;
     }
-    
+
     /**
      * Returns the database file that was queried.
      * @return The database that was queried.

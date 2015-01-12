@@ -33,7 +33,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /** Connection. */
     private DBFConnection connection;
-    
+
     /**
      * Construct a database Metadata.
      * @param cnt Connection.
@@ -69,9 +69,9 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
 
     /**
      * @see java.sql.DatabaseMetaData#getColumns(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     * @throws SQLConnectionClosedException if the connection is closed. 
+     * @throws SQLConnectionClosedException if the connection is closed.
      */
-    @Override 
+    @Override
     public ResultSet getColumns(@SuppressWarnings("unused") String catalog, @SuppressWarnings("unused") String schemaPattern, @SuppressWarnings("unused") String tableNamePattern, @SuppressWarnings("unused") String columnNamePattern) throws SQLConnectionClosedException {
         try(DBFStatement stmt = (DBFStatement)connection.createStatement()) {
             return new DBFBuiltInMemoryResultSetForColumnsListing(stmt, connection.getFieldsDescriptors());
@@ -82,7 +82,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
      * Returns the Database File.
      * @return Database File.
      */
-    @Override 
+    @Override
     public File getFile() {
         return connection.getFile();
     }
@@ -469,7 +469,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
         logStep("supportsMinimumSQLGrammar");
         return false; // Check what is the ODBC SQL minimum grammar.
     }
-    
+
     /**
      * @see java.sql.DatabaseMetaData#supportsCoreSQLGrammar()
      */
@@ -573,7 +573,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
         logStep("isCatalogAtStart");
         return false;
     }
-    
+
     /**
      * @see java.sql.DatabaseMetaData#getCatalogSeparator()
      */
@@ -1009,7 +1009,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
      */
-    @SuppressWarnings("resource") // The statement will be closed by the caller. 
+    @SuppressWarnings("resource") // The statement will be closed by the caller.
     @Override public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         logStep("getTables", catalog, schemaPattern, tableNamePattern, types != null ? Arrays.asList(types) : null);
 
@@ -1022,7 +1022,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#getSchemas()
      */
-    @SuppressWarnings("resource") // The statement will be closed by the caller. 
+    @SuppressWarnings("resource") // The statement will be closed by the caller.
     @Override public ResultSet getSchemas() {
         logStep("getSchemas");
 
@@ -1035,7 +1035,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#getCatalogs()
      */
-    @SuppressWarnings("resource") // The statement will be closed by the caller. 
+    @SuppressWarnings("resource") // The statement will be closed by the caller.
     @Override public ResultSet getCatalogs() {
         logStep("getCatalogs");
 
@@ -1048,7 +1048,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
     /**
      * @see java.sql.DatabaseMetaData#getTableTypes()
      */
-    @SuppressWarnings("resource") // The statement will be closed by the caller. 
+    @SuppressWarnings("resource") // The statement will be closed by the caller.
     @Override public ResultSet getTableTypes() {
         logStep("getTableTypes");
 
@@ -1069,7 +1069,7 @@ public class DBFDatabaseMetaData extends AbstractDatabaseMetaData {
             case ResultSet.FETCH_UNKNOWN:
             case ResultSet.TYPE_FORWARD_ONLY:
             return true;
-            
+
             default :
                 return false;
         }

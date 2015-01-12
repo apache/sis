@@ -39,7 +39,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      */
     public DBFDriver() {
     }
-    
+
     /**
      * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
      */
@@ -72,7 +72,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
     public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
         Objects.requireNonNull(url, "the DBase3 url cannot be null");
         File file = new File(url);
-        
+
         return new DBFConnection(file, new MappedByteReader(file));
     }
 
@@ -84,7 +84,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
         if (!url.endsWith(".dbf")) {
             return false;
         }
-        
+
         final File datafile = new File(url);
         return datafile.isFile(); // Future version should check for magic number.
     }

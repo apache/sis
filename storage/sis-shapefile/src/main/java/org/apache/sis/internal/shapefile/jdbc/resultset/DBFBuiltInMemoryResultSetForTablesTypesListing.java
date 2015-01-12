@@ -27,7 +27,7 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemoryResultSet {
     /** There's only one result in this ResultSet. */
     private int index = 0;
-    
+
     /**
      * Construct a ResultSet listing the tables types of a database.
      * @param stmt Statement.
@@ -41,15 +41,15 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemor
      */
     @Override public String getString(String columnLabel) {
         logStep("getString", columnLabel);
-        
+
         switch(columnLabel) {
-            case "OBJECTID":                  // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ? 
+            case "OBJECTID":                  // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ?
                 wasNull = false;
                 return "1";
-        
+
             case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
                 wasNull = false;
-                return "TABLE";               // and DBase 3 only knows tables. 
+                return "TABLE";               // and DBase 3 only knows tables.
 
             default:
                 wasNull = true;
@@ -60,10 +60,10 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemor
     /**
      * @see java.sql.ResultSet#next()
      */
-    @Override public boolean next() throws SQLNoResultException 
+    @Override public boolean next() throws SQLNoResultException
     {
-        logStep("next");        
-        
+        logStep("next");
+
         if (index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_type_handled"), "Driver manager asks for table types listing", getFile());
         }

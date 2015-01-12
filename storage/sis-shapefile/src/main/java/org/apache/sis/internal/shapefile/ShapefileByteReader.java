@@ -41,13 +41,13 @@ import com.esri.core.geometry.*;
 public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormatException, ShapefileNotFoundException> {
     /** Name of the Geometry field. */
     private static final String GEOMETRY_NAME = "geometry";
-    
+
     /** Shapefile descriptor. */
-    private ShapefileDescriptor shapefileDescriptor; 
-    
+    private ShapefileDescriptor shapefileDescriptor;
+
     /** Database Field descriptors. */
     private List<DBase3FieldDescriptor> databaseFieldsDescriptors;
-    
+
     /** Type of the features contained in this shapefile. */
     private DefaultFeatureType featuresType;
 
@@ -57,7 +57,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * @param dbaseFile underlying database file name.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      * @throws InvalidDbaseFileFormatException if the database file format is invalid.
-     * @throws ShapefileNotFoundException if the shapefile has not been found. 
+     * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      */
     public ShapefileByteReader(File shapefile, File dbaseFile) throws InvalidShapefileFormatException, InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
@@ -67,7 +67,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         featuresType = getFeatureType(shapefile.getName());
     }
-    
+
     /**
      * Returns the DBase 3 fields descriptors.
      * @return Fields descriptors.
@@ -75,7 +75,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
         return databaseFieldsDescriptors;
     }
-    
+
     /**
      * Returns the shapefile descriptor.
      * @return Shapefile descriptor.
@@ -83,7 +83,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     public ShapefileDescriptor getShapefileDescriptor() {
         return shapefileDescriptor;
     }
-    
+
     /**
      * Returns the type of the features contained in this shapefile.
      * @return Features type.
@@ -91,7 +91,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     public DefaultFeatureType getFeaturesType() {
         return featuresType;
     }
-    
+
     /**
      * Create a feature descriptor.
      * @param name Name of the field.
@@ -99,7 +99,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      */
     private DefaultFeatureType getFeatureType(final String name) {
         Objects.requireNonNull(name, "The feature name cannot be null.");
-        
+
         final int n = databaseFieldsDescriptors.size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
         final Map<String, Object> properties = new HashMap<>(4);
@@ -134,7 +134,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      */
     private void loadDatabaseFieldDescriptors(File dbaseFile) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
         MappedByteReader databaseReader = null;
-        
+
         try {
             databaseReader = new MappedByteReader(dbaseFile);
             databaseFieldsDescriptors = databaseReader.getFieldsDescriptors();
@@ -149,7 +149,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
             }
         }
     }
-    
+
     /**
      * Complete a feature with shapefile content.
      * @param feature Feature to complete.
@@ -173,15 +173,15 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
             case Point:
                 loadPointFeature(feature);
                 break;
-    
+
             case Polygon:
                 loadPolygonFeature(feature);
                 break;
-    
+
             case PolyLine:
                 loadPolylineFeature(feature);
                 break;
-    
+
             default:
                 throw new InvalidShapefileFormatException("Unsupported shapefile type: " + iShapeType);
         }
@@ -203,7 +203,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     /**
      * Load polygon feature.
      * @param feature Feature to fill.
-     * @throws InvalidShapefileFormatException if the polygon cannot be handled. 
+     * @throws InvalidShapefileFormatException if the polygon cannot be handled.
      */
     private void loadPolygonFeature(Feature feature) throws InvalidShapefileFormatException {
         /* double xmin = */getByteBuffer().getDouble();

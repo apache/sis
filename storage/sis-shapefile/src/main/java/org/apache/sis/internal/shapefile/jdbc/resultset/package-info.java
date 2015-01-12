@@ -16,6 +16,6 @@
  */
 
 /**
- * Result sets for SQL statements and DB Metadata querying. 
+ * Result sets for SQL statements and DB Metadata querying.
  */
 package org.apache.sis.internal.shapefile.jdbc.resultset;

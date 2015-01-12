@@ -38,12 +38,12 @@ import org.opengis.feature.Feature;
 public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */
     private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<>();
-    
+
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
      * @throws InvalidDbaseFileFormatException if the database seems to be invalid.
-     * @throws DbaseFileNotFoundException if the Dbase file has not been found. 
+     * @throws DbaseFileNotFoundException if the Dbase file has not been found.
      */
     public MappedByteReader(File dbase3File) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
         super(dbase3File);
@@ -79,7 +79,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      * Checks if a next row is available. Warning : it may be a deleted one.
      * @return true if a next row is available.
      */
-    @Override 
+    @Override
     public boolean nextRowAvailable() {
         return getByteBuffer().hasRemaining();
     }
@@ -88,7 +88,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      * Read the next row as a set of objects.
      * @return Map of field name / object value.
      */
-    @Override 
+    @Override
     public Map<String, Object> readNextRowAsObjects() {
         // TODO: ignore deleted records
         byte isDeleted = getByteBuffer().get(); // denotes whether deleted or current
@@ -112,41 +112,41 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         rowNum ++;
         return fieldsValues;
     }
-    
+
     /**
      * Loading the database file content from binary .dbf file.
-     * @throws InvalidDbaseFileFormatException if descriptor is not readable. 
+     * @throws InvalidDbaseFileFormatException if descriptor is not readable.
      */
     private void loadDescriptor() throws InvalidDbaseFileFormatException {
         try {
             this.dbaseVersion = getByteBuffer().get();
             getByteBuffer().get(this.dbaseLastUpdate);
-    
+
             getByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
             this.rowCount = getByteBuffer().getInt();
             this.dbaseHeaderBytes = getByteBuffer().getShort();
             this.dbaseRecordBytes = getByteBuffer().getShort();
             getByteBuffer().order(ByteOrder.BIG_ENDIAN);
-            
+
             getByteBuffer().get(reservedFiller1);
             this.reservedIncompleteTransaction = getByteBuffer().get();
             this.reservedEncryptionFlag = getByteBuffer().get();
             getByteBuffer().get(reservedFreeRecordThread);
             getByteBuffer().get(reservedMultiUser);
             reservedMDXFlag = getByteBuffer().get();
-            
+
             // Translate code page value to a known charset.
             this.codePage = getByteBuffer().get();
-            this.charset = toCharset(this.codePage);             
-            
-            getByteBuffer().get(reservedFiller2); 
-    
+            this.charset = toCharset(this.codePage);
+
+            getByteBuffer().get(reservedFiller2);
+
             while(getByteBuffer().position() < this.dbaseHeaderBytes - 1) {
-                DBase3FieldDescriptor fd = new DBase3FieldDescriptor(getByteBuffer()); 
+                DBase3FieldDescriptor fd = new DBase3FieldDescriptor(getByteBuffer());
                 this.fieldsDescriptors.add(fd);
                 // loop until you hit the 0Dh field terminator
             }
-            
+
             this.descriptorTerminator = getByteBuffer().get();
 
             // If the last character read after the field descriptor isn't 0x0D, the expected mark has not been found and the DBF is corrupted.
@@ -156,7 +156,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             }
         }
         catch(BufferUnderflowException e) {
-            // This exception doesn't denote a trouble of file opening because the file has been checked before 
+            // This exception doesn't denote a trouble of file opening because the file has been checked before
             // the calling of this private function.
             // Therefore, an internal structure problem cause maybe a premature End of file or anything else, but the only thing
             // we can conclude is : we are not before a device trouble, but a file format trouble.
@@ -164,12 +164,12 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             throw new InvalidDbaseFileFormatException(message);
         }
     }
-    
+
     /**
      * Returns the fields descriptors in their binary format.
      * @return Fields descriptors.
      */
-    @Override 
+    @Override
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
         return fieldsDescriptors;
     }
@@ -181,7 +181,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      * @return Field Name.
      * @throws SQLIllegalColumnIndexException if the index is out of bounds.
      */
-    @Override 
+    @Override
     public String getFieldName(int columnIndex, String sql) throws SQLIllegalColumnIndexException {
         return getField(columnIndex, sql).getName();
     }
@@ -189,11 +189,11 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     /**
      * @see org.apache.sis.internal.shapefile.jdbc.Dbase3ByteReader#getColumnCount()
      */
-    @Override 
+    @Override
     public int getColumnCount() {
         return fieldsDescriptors.size();
     }
-    
+
     /**
      * Returns the column index for the given column name.
      * The default implementation of all methods expecting a column label will invoke this method.
@@ -202,14 +202,14 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      * @return The index of the given column name : first column is 1.
      * @throws SQLNoSuchFieldException if there is no field with this name in the query.
      */
-    @Override 
+    @Override
     public int findColumn(String columnLabel, String sql) throws SQLNoSuchFieldException {
         // If the column name is null, no search is needed.
         if (columnLabel == null) {
             String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
             throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
         }
-        
+
         // Search the field among the fields descriptors.
         for(int index=0; index < fieldsDescriptors.size(); index ++) {
             if (fieldsDescriptors.get(index).getName().equals(columnLabel)) {
@@ -221,7 +221,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         String message = format(Level.WARNING, "excp.no_such_column_in_resultset", columnLabel, sql, getFile().getName());
         throw new SQLNoSuchFieldException(message, sql, getFile(), columnLabel);
     }
-    
+
     /**
      * Returns the field descriptor of a given ResultSet column index.
      * @param columnIndex Column index, first column is 1, second is 2, etc.
@@ -234,7 +234,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             String message = format(Level.WARNING, "excp.illegal_column_index", columnIndex, getColumnCount());
             throw new SQLIllegalColumnIndexException(message, sql, getFile(), columnIndex);
         }
-        
+
         return fieldsDescriptors.get(columnIndex-1);
     }
 }
