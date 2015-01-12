@@ -127,7 +127,16 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     }
 
     /**
-     * A single (non-concatenated) test case in base 10 without offset.
+     * Implementation of {@link #testAffineConcatenations()} for the given base.
+     */
+    private void testAffineConcatenations(final double base) throws TransformException {
+        final MathTransform1D linear = LinearTransform1D.create(C1, C0);
+        transform = MathTransforms.concatenate(linear, LogarithmicTransform1D.create(base, OFFSET), linear);
+        run(ConcatenatedTransformDirect1D.class, base, OFFSET, true, true);
+    }
+
+    /**
+     * A single (non-concatenated) test case without offset.
      *
      * @throws TransformException should never happen.
      */
@@ -142,7 +151,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     }
 
     /**
-     * A single (non-concatenated) test case in base 10 with an offset.
+     * A single (non-concatenated) test case with an offset.
      *
      * @throws TransformException should never happen.
      */
@@ -158,7 +167,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     }
 
     /**
-     * Tests the concatenation of a linear operation before the exponential one in base 10.
+     * Tests the concatenation of a linear operation before the logarithmic one.
      *
      * @throws TransformException should never happen.
      */
@@ -169,24 +178,43 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
         testAffinePreConcatenation(10);
         messageOnFailure = "Affine + logarithmic transform in base E";
         testAffinePreConcatenation(E);
-        messageOnFailure = "Affine + logarithmic transform in base 8.4";
+        messageOnFailure = "Affine + logarithmic transform in base 8.4"; // Arbitrary base.
         testAffinePreConcatenation(8.4);
     }
 
     /**
-     * Tests the concatenation of a linear operation after the exponential one in base 10.
+     * Tests the concatenation of a linear operation after the logarithmic one.
      *
      * @throws TransformException should never happen.
      */
     @Test
     @DependsOnMethod("testSingleWithOffset")
     public void testAffinePostConcatenation() throws TransformException {
-        messageOnFailure = "Logarithmic + affine transform in base 10";
+        messageOnFailure = "Logarithmic transform in base 10 + affine";
         testAffinePostConcatenation(10);
-        messageOnFailure = "Logarithmic + affine transform in base E";
+        messageOnFailure = "Logarithmic transform in base E + affine";
         testAffinePostConcatenation(E);
-        messageOnFailure = "Logarithmic + affine transform in base 8.4";
+        messageOnFailure = "Logarithmic transform in base 8.4 + affine"; // Arbitrary base.
         testAffinePostConcatenation(8.4);
+    }
+
+    /**
+     * Tests the concatenation of a linear operation before and after the logarithmic one.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    @DependsOnMethod({
+        "testAffinePreConcatenation",
+        "testAffinePostConcatenation"
+    })
+    public void testAffineConcatenations() throws TransformException {
+        messageOnFailure = "Affine + logarithmic transform in base 10 + affine";
+        testAffineConcatenations(10);
+        messageOnFailure = "Affine + logarithmic transform in base E + affine";
+        testAffineConcatenations(E);
+        messageOnFailure = "Affine + logarithmic transform in base 8.4 + affine"; // Arbitrary base.
+        testAffineConcatenations(8.4);
     }
 
     /**

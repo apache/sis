@@ -218,11 +218,11 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
     @Test
     @DependsOnMethod("testSingleWithScale")
     public void testAffinePostConcatenation() throws TransformException {
-        messageOnFailure = "Exponential + affine transform in base 10";
+        messageOnFailure = "Exponential transform in base 10 + affine";
         testAffinePostConcatenation(10);
-        messageOnFailure = "Exponential + affine transform in base E";
+        messageOnFailure = "Exponential transform in base E + affine";
         testAffinePostConcatenation(E);
-        messageOnFailure = "Exponential + affine transform in base 8.4"; // Arbitrary base.
+        messageOnFailure = "Exponential transform in base 8.4 + affine"; // Arbitrary base.
         testAffinePostConcatenation(8.4);
     }
 
@@ -237,11 +237,11 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
         "testAffinePostConcatenation"
     })
     public void testAffineConcatenations() throws TransformException {
-        messageOnFailure = "Affine + exponential + affine transform in base 10";
+        messageOnFailure = "Affine + exponential transform in base 10 + affine";
         testAffineConcatenations(10);
-        messageOnFailure = "Affine + exponential + affine transform in base E";
+        messageOnFailure = "Affine + exponential transform in base E + affine";
         testAffineConcatenations(E);
-        messageOnFailure = "Affine + exponential + affine transform in base 8.4"; // Arbitrary base.
+        messageOnFailure = "Affine + exponential transform in base 8.4 + affine"; // Arbitrary base.
         testAffineConcatenations(8.4);
     }
 }
