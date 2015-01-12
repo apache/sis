@@ -89,9 +89,9 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * Constructs a new exponential transform which is the inverse of the supplied logarithmic transform.
      */
     ExponentialTransform1D(final LogarithmicTransform1D inverse) {
-        this.base    = inverse.getBase();
-        this.lnBase  = inverse.getLogBase();
-        this.scale   = inverse.pow(-inverse.getOffset());
+        this.base    = inverse.base();
+        this.lnBase  = inverse.lnBase();
+        this.scale   = inverse.pow(-inverse.offset());
         this.inverse = inverse;
     }
 
@@ -248,26 +248,23 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * to this {@code ExponentialTransform1D}.
      *
      * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
-     *         followed by {@code this}, or {@code false} if the transformation order is
-     *         {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined
-     *         transform is available.
+     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
+     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
     final MathTransform concatenateLog(final LogarithmicTransform1D other, final boolean applyOtherFirst) {
+        final double newScale = lnBase / other.lnBase();
         if (applyOtherFirst) {
-            return MathTransforms.concatenate(
-                    PowerTransform1D.create(lnBase / other.getLogBase()),
-                    LinearTransform1D.create(scale * Math.pow(base, other.getOffset()), 0));
+            return MathTransforms.concatenate(PowerTransform1D.create(newScale),
+                    LinearTransform1D.create(scale * Math.pow(base, other.offset()), 0));
         } else {
-            final double newScale = lnBase / other.getLogBase();
             final double newOffset;
             if (scale > 0) {
-                newOffset = other.log(scale) + other.getOffset();
+                newOffset = other.log(scale) + other.offset();
             } else {
                 // Maybe the Math.log(...) argument will become
                 // positive if we rewrite the equation that way...
-                newOffset = other.log(scale * other.getOffset() * other.getLogBase());
+                newOffset = other.log(scale * other.offset() * other.lnBase());
             }
             if (!Double.isNaN(newOffset)) {
                 return LinearTransform1D.create(newScale, newOffset);
@@ -281,8 +278,8 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      */
     @Override
     protected int computeHashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(base) +
-                            31 * Double.doubleToLongBits(scale)) ^ super.computeHashCode();
+        return Numerics.hashCode(Double.doubleToLongBits(base)
+                + 31 * Double.doubleToLongBits(scale)) ^ super.computeHashCode();
     }
 
     /**
