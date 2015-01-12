@@ -17,13 +17,13 @@
 package org.apache.sis.storage.shapefile;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
-import org.apache.sis.storage.DataStoreException;
+import java.sql.SQLException;
+
+import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
+import org.opengis.feature.Feature;
 
 
 /**
@@ -48,36 +48,52 @@ public final strictfp class ShapeFileTest extends TestCase {
     /**
      * Test polylines count.
      * @throws URISyntaxException if the resource name is incorrect.
-     * @throws IOException if the shapefile cannot be found or an I/O error occurs.
-     * @throws DataStoreException if the shapefile has a structure problem.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws SQLException if any SQL Exception occuring.
      */
     @Test
-    public void testPolyineCount() throws URISyntaxException, IOException, DataStoreException {
+    public void testPolyineCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        readAll(shp);
     }
 
     /**
      * Test polygon count.
      * @throws URISyntaxException if the resource name is incorrect.
-     * @throws IOException if the shapefile cannot be found or an I/O error occurs.
-     * @throws DataStoreException if the shapefile has a structure problem.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws SQLException if any SQL Exception occuring.
      */
      @Test
-     public void testPolygonCount() throws URISyntaxException, IOException, DataStoreException {
+     public void testPolygonCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        readAll(shp);
     }
 
      /**
       * Test point count.
       * @throws URISyntaxException if the resource name is incorrect.
-      * @throws IOException if the shapefile cannot be found or an I/O error occurs.
-      * @throws DataStoreException if the shapefile has a structure problem.
+      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+      * @throws SQLException if any SQL Exception occuring.
       */
      @Test
-     public void testPointCount() throws URISyntaxException, IOException, DataStoreException {
+     public void testPointCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
-        assertEquals(shp.FeatureMap.size(), shp.getFeatureCount());
+        readAll(shp);
+     }
+
+    /**
+     * Read all the shapefile content.
+     * @param shp Shapefile to read.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws SQLException if any SQL Exception occuring.
+     */
+    private void readAll(ShapeFile shp) throws SQLException, InvalidShapefileFormatException {
+        try(InputFeatureStream is = shp.findAll()) {
+            Feature feature = is.readFeature();
+
+            while(feature != null) {
+                feature = is.readFeature();
+            }
+        }
     }
 }

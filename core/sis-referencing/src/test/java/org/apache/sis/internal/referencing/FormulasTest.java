@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class FormulasTest extends TestCase {
@@ -37,6 +37,18 @@ public final strictfp class FormulasTest extends TestCase {
     @Test
     public void testConstants() {
         assertEquals(StrictMath.round(365.25 * 24 * 60 * 60 * 1000), Formulas.JULIAN_YEAR_LENGTH);
+    }
+
+    /**
+     * Tests {@link Formulas#pow3(int)}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testPow3() {
+        for (int n=0; n<=8; n++) {
+            assertEquals((int) Math.round(Math.pow(3, n)), Formulas.pow3(n));
+        }
     }
 
     /**

@@ -31,7 +31,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Formulas extends Static {
@@ -68,6 +68,26 @@ public final class Formulas extends Static {
      * Do not allow instantiation of this class.
      */
     private Formulas() {
+    }
+
+    /**
+     * Returns 3ⁿ for very small (less than 10) positive values of <var>n</var>.
+     * Note that this method overflow for any value equals or greater than 20.
+     *
+     * @param n The exponent.
+     * @return 3ⁿ
+     *
+     * @see org.apache.sis.math.DecimalFunctions#pow10(int)
+     *
+     * @since 0.5
+     */
+    public static int pow3(int n) {
+        assert n >= 0 && n <= 19 : n;
+        int p = 1;
+        while (--n >= 0) {
+            p *= 3;
+        }
+        return p;
     }
 
     /**

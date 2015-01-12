@@ -31,8 +31,8 @@ import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
-
 import org.apache.sis.measure.Longitude;
+
 import static org.apache.sis.internal.referencing.HardCoded.CRS;
 import static org.apache.sis.internal.referencing.HardCoded.EPSG;
 import static org.apache.sis.internal.referencing.HardCoded.CRS27;

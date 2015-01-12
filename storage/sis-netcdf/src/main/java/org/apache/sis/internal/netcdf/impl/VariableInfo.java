@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class VariableInfo extends Variable {
@@ -162,10 +162,22 @@ final class VariableInfo extends Variable {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            Attribute attribute = attributes.get(attributeName);
+            final Attribute attribute = attributes.get(attributeName);
             if (attribute != null && attribute.value instanceof String) {
                 return (String) attribute.value;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the unit of measurement as a string, or {@code null} if none.
+     */
+    @Override
+    public String getUnitsString() {
+        final Attribute attribute = attributes.get(CDM.UNITS);
+        if (attribute != null && attribute.value instanceof String) {
+            return (String) attribute.value;
         }
         return null;
     }

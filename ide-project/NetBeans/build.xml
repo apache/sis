@@ -37,11 +37,13 @@
         <include name="*.utf"/>
       </fileset>
     </copy>
+    <!-- Pending discussion about how to handle resources in the Shapefile module.
     <copy todir="${build.classes.dir}/org/apache/sis/internal/shapefile/jdbc">
       <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
         <include name="*.utf"/>
       </fileset>
     </copy>
+    -->
 
     <!-- Following are classical properties resources files. -->
     <copy todir="${build.classes.dir}">

@@ -38,7 +38,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -61,7 +61,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -466,7 +466,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (identifiers != null) {
             for (final Identifier identifier : identifiers) {
                 if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-                    appendUnicodeIdentifier(id, '-', ReferencingUtilities.toURNType(getClass()), ":", false) |
+appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
                     appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
                 {
                     /*

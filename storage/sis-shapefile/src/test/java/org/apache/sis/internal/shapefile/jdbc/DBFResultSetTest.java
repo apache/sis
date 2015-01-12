@@ -16,106 +16,189 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import java.sql.*;
-import java.io.File;
-import java.net.URL;
-import java.net.URISyntaxException;
-import org.apache.sis.storage.shapefile.Database;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
+import java.sql.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+
+import org.apache.sis.internal.shapefile.jdbc.resultset.DBFRecordBasedResultSet;
+import org.apache.sis.test.DependsOnMethod;
+import org.junit.Test;
 
 
 /**
- * Tests {@link DBFResultSet}.
+ * Tests {@link DBFRecordBasedResultSet}.
  *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
  * @module
  */
-public class DBFResultSetTest extends TestCase {
-    /**
-     * The database file to use for testing purpose.
-     */
-    private File dbfFile;
-
-    /**
-     * Test setup.
-     *
-     * @throws URISyntaxException If an error occurred while getting the file to the test database.
-     */
-    @Before
-    public void setup() throws URISyntaxException {
-        final URL url = Database.class.getResource("SignedBikeRoute_4326_clipped.dbf");
-        assertNotNull("The database file used for testing doesn't exist.", url);
-        dbfFile = new File(url.toURI());
-        assertTrue(dbfFile.isFile());
-    }
-
-    /**
-     * Open and close a connection.
-     *
-     * @throws SQLException if an error occurred while querying the database.
-     */
-    @Test
-    public void openCloseConnection() throws SQLException {
-        final Driver     driver     = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
-        assertFalse("Connection should be opened", connection.isClosed());
-        assertTrue ("Connection should be valid",  connection.isValid(0));
-
-        connection.close();
-        assertTrue ("Connection should be closed", connection.isClosed());
-        assertFalse("Connection should no more be valid", connection.isValid(0));
-    }
-
+public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     /**
      * Reads the first record.
-     *
      * @throws SQLException if an error occurred while querying the database.
      */
     @Test
-    @DependsOnMethod("openCloseConnection")
     public void readFirstRecord() throws SQLException {
-        final Driver     driver     = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
-        final Statement  stmt       = connection.createStatement();
-        final ResultSet  rs         = stmt.executeQuery("SELECT * FROM SignedBikeRoute");
-        // We don't care currently of the request: we are returning everything each time.
-
-        rs.next();
-        assertEquals("getString(\"ST_NAME\")", "336TH ST", rs.getString("ST_NAME"));
-
-        rs.close();
-        stmt.close();
-        connection.close();
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
+            rs.next();
+            assertEquals("getString(\"ST_NAME\")", "36TH ST", rs.getString("ST_NAME"));                                    // ST_NAME Character(29)
+            assertEquals("getInt(\"FNODE_\")", 1199, rs.getInt("FNODE_"));                                                 // FNODE_ Number(10, 0)
+            assertEquals("getDouble(\"SHAPE_LEN\")", 43.0881492571, rs.getDouble("SHAPE_LEN"), 0.1);                       // SHAPE_LEN Number(19, 11)
+            assertEquals("getBigDecimal(\"SHAPE_LEN\")", 43.0881492571, rs.getBigDecimal("SHAPE_LEN").doubleValue(), 0.1); // SHAPE_LEN Number(19, 11)
+            assertEquals("getDate(\"TR_DATE\")", null, rs.getDate("TR_DATE"));                       // TR_DATE Date(8)
+        }
     }
 
     /**
      * Read all the DBF records.
-     *
      * @throws SQLException if an error occurred while querying the database.
      */
     @Test
     @DependsOnMethod("readFirstRecord")
     public void readAllRecords() throws SQLException {
-        final Driver     driver     = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
-        final Statement  stmt       = connection.createStatement();
-        final ResultSet  rs         = stmt.executeQuery("SELECT * FROM SignedBikeRoute");
-        // We don't care currently of the request: we are returning everything each time.
+        try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
+            int count = 0;
 
-        int count = 0;
-        while (rs.next()) {
-            count++;
+            while(rs.next()) {
+                ArrayList<Object> record = new ArrayList<>();
+
+                record.add(rs.getLong("OBJECTID"));         // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("FNODE_"));           // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("TNODE_"));           // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("LPOLY_"));           // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("RPOLY_"));           // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("SCL_"));             // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("SCL_ID"));           // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("SCL_CODE"));         // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getString("DXF_LAYER"));      // Type : Character, Field length : 16, Decimal positions : 0
+                record.add(rs.getString("SIS_ID"));         // Type : Character, Field length : 12, Decimal positions : 0
+                record.add(rs.getString("QUAD_CODE"));      // Type : Character, Field length : 1, Decimal positions : 0
+                record.add(rs.getString("PRIME_ST"));       // Type : Character, Field length : 4, Decimal positions : 0
+                record.add(rs.getString("INT_SEQ"));        // Type : Character, Field length : 3, Decimal positions : 0
+                record.add(rs.getString("ST_NAME"));        // Type : Character, Field length : 29, Decimal positions : 0
+                record.add(rs.getString("FDPRE"));          // Type : Character, Field length : 2, Decimal positions : 0
+                record.add(rs.getString("FNAME"));          // Type : Character, Field length : 30, Decimal positions : 0
+                record.add(rs.getString("FTYPE"));          // Type : Character, Field length : 4, Decimal positions : 0
+                record.add(rs.getString("FDSUF"));          // Type : Character, Field length : 2, Decimal positions : 0
+                record.add(rs.getLong("LEFTRANGE1"));       // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("LEFTRANGE2"));       // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("RGTRANGE1"));        // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getLong("RGTRANGE2"));        // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getString("STREET"));         // Type : Character, Field length : 26, Decimal positions : 0
+                record.add(rs.getString("QUAD"));           // Type : Character, Field length : 2, Decimal positions : 0
+                record.add(rs.getString("FROM_ST"));        // Type : Character, Field length : 100, Decimal positions : 0
+                record.add(rs.getString("TO_ST"));          // Type : Character, Field length : 100, Decimal positions : 0
+                record.add(rs.getString("ODD_WARD"));       // Type : Character, Field length : 1, Decimal positions : 0
+                record.add(rs.getString("EVEN_WARD"));      // Type : Character, Field length : 1, Decimal positions : 0
+                record.add(rs.getString("WARD"));           // Type : Character, Field length : 3, Decimal positions : 0
+                record.add(rs.getString("FC"));             // Type : Character, Field length : 40, Decimal positions : 0
+                record.add(rs.getInt("NHS"));               // Type : Number, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("SIGNEDRTE1"));     // Type : Character, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("RTETYPE1"));       // Type : Character, Field length : 10, Decimal positions : 0
+                record.add(rs.getString("SIGNEDRTE2"));     // Type : Character, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("RTETYPE2"));       // Type : Character, Field length : 10, Decimal positions : 0
+                record.add(rs.getBigDecimal("AADT"));       // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("AADT_YEAR"));  // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("COM_SING_P")); // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("COM_SING_A")); // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("COM_COMB_P")); // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("COM_COMB_A")); // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getString("IS_ONEWAY"));      // Type : Number, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("TRAVEL_DIR"));     // Type : Character, Field length : 20, Decimal positions : 0
+                record.add(rs.getBigDecimal("LEN_MI"));     // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getLong("STUDY_NET"));        // Type : Number, Field length : 10, Decimal positions : 0
+                record.add(rs.getDate("TR_DATE"));          // Type : Date, Field length : 8, Decimal positions : 0
+                record.add(rs.getBigDecimal("AADT_2"));     // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("AADT_FINAL")); // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getBigDecimal("ROUTENET"));   // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getString("NOTES"));          // Type : Character, Field length : 50, Decimal positions : 0
+                record.add(rs.getBigDecimal("LENGTH_MI"));  // Type : Number, Field length : 19, Decimal positions : 8
+                record.add(rs.getInt("NET_MARCH"));         // Type : Number, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("SIGNED_JOI"));     // Type : Character, Field length : 5, Decimal positions : 0
+                record.add(rs.getString("SIGNED_FAC"));     // Type : Character, Field length : 30, Decimal positions : 0
+                record.add(rs.getString("NEW_USE"));        // Type : Character, Field length : 30, Decimal positions : 0
+                record.add(rs.getBigDecimal("SHAPE_LEN"));  // Type : Number, Field length : 19, Decimal positions : 11
+
+                count ++;
+                log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
+            }
+
+            assertTrue("Less than one record was readed.", count > 1);
         }
-        assertTrue("Less than one record was readed.", count > 1);
+    }
 
-        rs.close();
-        stmt.close();
-        connection.close();
+    /**
+     * An attempt to use a closed resultSet must fail with the correct exception and message.
+     * @throws SQLException if an error occurred while opening the database, the statement or the resultset.
+     */
+    @Test
+    public void resultSetClosed() throws SQLException {
+        // 1) Open a connection, open a statement, open and close a ResultSet.
+        String sql = "SELECT * FROM SignedBikeRoute";
+
+        try(Connection connection = connect(); Statement stmt = connection.createStatement()) {
+            // Then, attempt to use it.
+            try {
+                ResultSet rs = stmt.executeQuery(sql);
+                rs.close();
+            }
+            catch(SQLConnectionClosedException e) {
+                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The SQL Query is exception is not well set.", e.getSQL(), sql);
+            }
+            catch(SQLException e) {
+                fail("Not the expected exception for using a closed ResultSet.");
+            }
+        }
+
+        // 2) Same, but we close the connection instead.
+        Connection connection = connect();
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
+
+        connection.close(); // At this time, you expect also a warning on the console, telling that you have one statement and one ResultSet still opened.
+
+        // Then, attempt to use it.
+        try {
+            rs.next();
+        }
+        catch(SQLConnectionClosedException e) {
+            assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+        }
+        catch(SQLException e) {
+            fail("Not the expected exception for using a closed ResultSet.");
+        }
+        finally {
+            rs.close();
+            stmt.close();
+        }
+
+        // 3) Same, but we close the statement instead .
+        try(Connection cnt = connect()) {
+            stmt = cnt.createStatement();
+            rs = stmt.executeQuery(sql);
+
+            stmt.close(); // At this time, you expect also a information message on the console, telling that the statement has closed its current ResultSet.
+
+            // Then, attempt to use it.
+            try {
+                rs.next();
+            }
+            catch(SQLConnectionClosedException e) {
+                assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+            }
+            catch(SQLException e) {
+                fail("Not the expected exception for using a closed ResultSet.");
+            }
+            finally {
+                rs.close();
+                stmt.close();
+            }
+        }
     }
 }

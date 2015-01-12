@@ -256,6 +256,7 @@ public final strictfp class UnitsTest extends TestCase {
         assertSame(KILOMETRE,    valueOf("kilomètres"));
         assertSame(KILOMETRE,    valueOf("kilometers"));
         assertSame(KELVIN,       valueOf("K"));
+        assertSame(KELVIN,       valueOf("degK"));
         assertSame(CELSIUS,      valueOf("Celsius"));
         assertSame(CELSIUS,      valueOf("degree Celsius"));
         assertSame(CELSIUS,      valueOf("degree_Celcius"));

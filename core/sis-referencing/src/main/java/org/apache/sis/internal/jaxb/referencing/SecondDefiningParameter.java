@@ -23,7 +23,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.Measure;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 
 

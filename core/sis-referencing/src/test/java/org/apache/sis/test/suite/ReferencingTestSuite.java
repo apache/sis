@@ -30,7 +30,10 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    // Test matrix first because they may be used in about every SIS corners.
+    org.apache.sis.internal.referencing.FormulasTest.class,
+    org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
+
+    // Test matrix early because they may be used in about every SIS corners.
     org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
     org.apache.sis.referencing.operation.matrix.SolverTest.class,
     org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
@@ -46,15 +49,16 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
     org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
+    org.apache.sis.referencing.operation.transform.LogarithmicTransform1DTest.class,
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
 
-    org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
+    org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,
@@ -111,10 +115,12 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
     org.apache.sis.geometry.Envelope2DTest.class,
+    org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.EnvelopesTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
 
+    org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.test.integration.ReferencingInMetadataTest.class,
     org.apache.sis.test.integration.DefaultMetadataTest.class
 })

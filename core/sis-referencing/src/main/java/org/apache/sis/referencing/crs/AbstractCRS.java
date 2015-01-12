@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.ConcurrentModificationException;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,7 +29,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -39,7 +40,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-import static org.apache.sis.internal.metadata.ReferencingUtilities.canSetProperty;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -70,7 +71,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
- * @version 0.4
+ * @version 0.5
  * @module
  *
  * @see AbstractCS
@@ -103,12 +104,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     private CoordinateSystem coordinateSystem;
 
     /**
-     * Other coordinate reference systems derived from this CRS.
+     * Other coordinate reference systems computed from this CRS by the application of an axes convention.
      * Created only when first needed.
      *
      * @see #forConvention(AxesConvention)
      */
-    private transient Map<AxesConvention,AbstractCRS> derived;
+    private transient Map<AxesConvention,AbstractCRS> forConvention;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
@@ -306,7 +307,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * }
      *
      * However our attempts to apply this approach have not been conclusive.
-     * For an unknown reason, the unmarlshalled CS object was empty.</div>
+     * For an unknown reason, the unmarshalled CS object was empty.</div>
      *
      * @param  name The property name, used only in case of error message to format.
      * @throws IllegalStateException If the coordinate system has already been set.
@@ -318,15 +319,35 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the map of cached CRS for axes conventions.
-     * This method shall be invoked in a synchronized block.
+     * Returns the existing CRS for the given convention, or {@code null} if none.
      */
-    final Map<AxesConvention,AbstractCRS> derived() {
+    final AbstractCRS getCached(final AxesConvention convention) {
         assert Thread.holdsLock(this);
-        if (derived == null) {
-            derived = new EnumMap<>(AxesConvention.class);
+        return (forConvention != null) ? forConvention.get(convention) : null;
+    }
+
+    /**
+     * Sets the CRS for the given axes convention.
+     *
+     * @param crs The CRS to cache.
+     * @return The cached CRS. May be different than the given {@code crs} if an existing instance has been found.
+     */
+    final AbstractCRS setCached(final AxesConvention convention, AbstractCRS crs) {
+        assert Thread.holdsLock(this);
+        if (forConvention == null) {
+            forConvention = new EnumMap<>(AxesConvention.class);
+        } else if (crs != this) {
+            for (final AbstractCRS existing : forConvention.values()) {
+                if (crs.equals(existing)) {
+                    crs = existing;
+                    break;
+                }
+            }
         }
-        return derived;
+        if (forConvention.put(convention, crs) != null) {
+            throw new ConcurrentModificationException(); // Should never happen, unless we have a synchronization bug.
+        }
+        return crs;
     }
 
     /**
@@ -340,8 +361,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     public synchronized AbstractCRS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        final Map<AxesConvention,AbstractCRS> derived = derived();
-        AbstractCRS crs = derived.get(convention);
+        AbstractCRS crs = getCached(convention);
         if (crs == null) {
             final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
             final AbstractCS candidate = cs.forConvention(convention);
@@ -349,14 +369,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                 crs = this;
             } else {
                 crs = createSameType(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), candidate);
-                for (final AbstractCRS existing : derived.values()) {
-                    if (crs.equals(existing)) {
-                        crs = existing;
-                        break;
-                    }
-                }
             }
-            derived.put(convention, crs);
+            crs = setCached(convention, crs);
         }
         return crs;
     }

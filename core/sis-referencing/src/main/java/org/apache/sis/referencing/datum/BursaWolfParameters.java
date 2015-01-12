@@ -41,13 +41,13 @@ import java.util.Objects;
 
 
 /**
- * Parameters for a geographic transformation between two datum.
+ * Parameters for a geographic transformation between two datum having the same prime meridian.
  * Bursa-Wolf parameters are also known as <cite>Helmert transformation parameters</cite>.
  * For an explanation of their purpose, see the <cite>Bursa-Wolf parameters</cite> section
  * of {@link DefaultGeodeticDatum} class javadoc.
  *
  * <p>The Bursa-Wolf parameters shall be applied to geocentric coordinates,
- * where the <var>X</var> axis points towards the Greenwich Prime Meridian,
+ * where the <var>X</var> axis points towards the Prime Meridian (usually Greenwich),
  * the <var>Y</var> axis points East, and the <var>Z</var> axis points North.</p>
  *
  * <div class="note"><b>Note:</b>

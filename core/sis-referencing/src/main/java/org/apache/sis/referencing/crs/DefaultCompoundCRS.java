@@ -34,7 +34,7 @@ import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
@@ -328,18 +328,21 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * {@inheritDoc}
      *
+     * <p>If the given convention is {@link AxesConvention#CONVENTIONALLY_ORIENTED} or
+     * {@link AxesConvention#NORMALIZED}, then this method will also reorder the components
+     * with horizontal CRS (geodetic or projected) first, then vertical CRS, then temporal CRS.</p>
+     *
      * @return {@inheritDoc}
      */
     @Override
     public synchronized DefaultCompoundCRS forConvention(final AxesConvention convention) {
         ensureNonNull("convention", convention);
-        final Map<AxesConvention,AbstractCRS> derived = derived();
-        DefaultCompoundCRS crs = (DefaultCompoundCRS) derived.get(convention);
+        DefaultCompoundCRS crs = (DefaultCompoundCRS) getCached(convention);
         if (crs == null) {
             crs = this;
             boolean changed = false;
-            final List<? extends CoordinateReferenceSystem> components =
-                    (convention != AxesConvention.NORMALIZED) ? this.components : singles;
+            final boolean reorderCRS = convention.ordinal() <= AxesConvention.CONVENTIONALLY_ORIENTED.ordinal();
+            final List<? extends CoordinateReferenceSystem> components = reorderCRS ? singles : this.components;
             final CoordinateReferenceSystem[] newComponents = new CoordinateReferenceSystem[components.size()];
             for (int i=0; i<newComponents.length; i++) {
                 CoordinateReferenceSystem component = components.get(i);
@@ -351,12 +354,12 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                 newComponents[i] = component;
             }
             if (changed) {
-                if (convention == AxesConvention.NORMALIZED) {
+                if (reorderCRS) {
                     Arrays.sort(newComponents, SubTypes.BY_TYPE); // This array typically has less than 4 elements.
                 }
                 crs = new DefaultCompoundCRS(IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY), newComponents);
             }
-            derived.put(convention, crs);
+            crs = (DefaultCompoundCRS) setCached(convention, crs);
         }
         return crs;
     }
