@@ -53,7 +53,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
             assertEquals("getDate(\"TR_DATE\")", null, rs.getDate("TR_DATE"));                       // TR_DATE Date(8)
         }
     }
-    
+
     /**
      * Read all the DBF records.
      * @throws SQLException if an error occurred while querying the database.
@@ -63,10 +63,10 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     public void readAllRecords() throws SQLException {
         try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             int count = 0;
-            
+
             while(rs.next()) {
                 ArrayList<Object> record = new ArrayList<>();
-                
+
                 record.add(rs.getLong("OBJECTID"));         // Type : Number, Field length : 10, Decimal positions : 0
                 record.add(rs.getLong("FNODE_"));           // Type : Number, Field length : 10, Decimal positions : 0
                 record.add(rs.getLong("TNODE_"));           // Type : Number, Field length : 10, Decimal positions : 0
@@ -122,16 +122,16 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 record.add(rs.getString("SIGNED_JOI"));     // Type : Character, Field length : 5, Decimal positions : 0
                 record.add(rs.getString("SIGNED_FAC"));     // Type : Character, Field length : 30, Decimal positions : 0
                 record.add(rs.getString("NEW_USE"));        // Type : Character, Field length : 30, Decimal positions : 0
-                record.add(rs.getBigDecimal("SHAPE_LEN"));  // Type : Number, Field length : 19, Decimal positions : 11                
-                
+                record.add(rs.getBigDecimal("SHAPE_LEN"));  // Type : Number, Field length : 19, Decimal positions : 11
+
                 count ++;
                 log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
             }
-            
+
             assertTrue("Less than one record was readed.", count > 1);
         }
     }
-    
+
     /**
      * An attempt to use a closed resultSet must fail with the correct exception and message.
      * @throws SQLException if an error occurred while opening the database, the statement or the resultset.
@@ -140,36 +140,36 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     public void resultSetClosed() throws SQLException {
         // 1) Open a connection, open a statement, open and close a ResultSet.
         String sql = "SELECT * FROM SignedBikeRoute";
-        
+
         try(Connection connection = connect(); Statement stmt = connection.createStatement()) {
             // Then, attempt to use it.
             try {
                 ResultSet rs = stmt.executeQuery(sql);
                 rs.close();
-            } 
+            }
             catch(SQLConnectionClosedException e) {
                 assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
                 assertEquals("The SQL Query is exception is not well set.", e.getSQL(), sql);
-            } 
+            }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed ResultSet.");
             }
         }
-        
+
         // 2) Same, but we close the connection instead.
         Connection connection = connect();
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(sql);
-        
+
         connection.close(); // At this time, you expect also a warning on the console, telling that you have one statement and one ResultSet still opened.
-        
+
         // Then, attempt to use it.
         try {
             rs.next();
-        } 
+        }
         catch(SQLConnectionClosedException e) {
             assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
-        } 
+        }
         catch(SQLException e) {
             fail("Not the expected exception for using a closed ResultSet.");
         }
@@ -177,21 +177,21 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
             rs.close();
             stmt.close();
         }
-        
+
         // 3) Same, but we close the statement instead .
         try(Connection cnt = connect()) {
             stmt = cnt.createStatement();
             rs = stmt.executeQuery(sql);
-            
+
             stmt.close(); // At this time, you expect also a information message on the console, telling that the statement has closed its current ResultSet.
-            
+
             // Then, attempt to use it.
             try {
                 rs.next();
-            } 
+            }
             catch(SQLConnectionClosedException e) {
                 assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
-            } 
+            }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed ResultSet.");
             }

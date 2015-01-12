@@ -22,31 +22,31 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
     public void operators() throws SQLException {
         try(Connection connection = connect(); Statement stmt = connection.createStatement(); DBFRecordBasedResultSet rs = (DBFRecordBasedResultSet)stmt.executeQuery("SELECT * FROM SignedBikeRoute")) {
             rs.next();
-            
+
             assertTrue("FNODE_ = 1199", new ConditionalClauseResolver("FNODE_", 1199L, "=").isVerified(rs));
             assertFalse("FNODE_ > 1199", new ConditionalClauseResolver("FNODE_", 1199L, ">").isVerified(rs));
             assertFalse("FNODE_ < 1199", new ConditionalClauseResolver("FNODE_", 1199L, "<").isVerified(rs));
             assertTrue("FNODE_ >= 1199", new ConditionalClauseResolver("FNODE_", 1199L, ">=").isVerified(rs));
             assertTrue("FNODE_ <= 1199", new ConditionalClauseResolver("FNODE_", 1199L, "<=").isVerified(rs));
-            
+
             assertTrue("FNODE_ > 1198", new ConditionalClauseResolver("FNODE_", 1198L, ">").isVerified(rs));
             assertFalse("FNODE_ < 1198", new ConditionalClauseResolver("FNODE_", 1198L, "<").isVerified(rs));
             assertTrue("FNODE_ >= 1198", new ConditionalClauseResolver("FNODE_", 1198L, ">=").isVerified(rs));
             assertFalse("FNODE_ <= 1198", new ConditionalClauseResolver("FNODE_", 1198L, "<=").isVerified(rs));
-            
+
             assertFalse("FNODE_ > 1200", new ConditionalClauseResolver("FNODE_", 1200L, ">").isVerified(rs));
             assertTrue("FNODE_ < 1200", new ConditionalClauseResolver("FNODE_", 1200L, "<").isVerified(rs));
             assertFalse("FNODE_ >= 1200", new ConditionalClauseResolver("FNODE_", 1200L, ">=").isVerified(rs));
             assertTrue("FNODE_ <= 1200", new ConditionalClauseResolver("FNODE_", 1200L, "<=").isVerified(rs));
-            
+
             assertTrue("ST_NAME = '36TH ST'", new ConditionalClauseResolver("ST_NAME", "'36TH ST'", "=").isVerified(rs));
-            
+
             assertTrue("SHAPE_LEN = 43.0881492571", new ConditionalClauseResolver("SHAPE_LEN", 43.0881492571, "=").isVerified(rs));
             assertTrue("SHAPE_LEN > 43.088", new ConditionalClauseResolver("SHAPE_LEN", 43.088, ">").isVerified(rs));
             assertFalse("SHAPE_LEN < 43.0881492571", new ConditionalClauseResolver("SHAPE_LEN", 43.0881492571, "<").isVerified(rs));
         }
     }
-    
+
     /**
      * Test where conditions : field [operator] integer.
      * @throws SQLException if a trouble occurs : all tests shall pass.
@@ -55,7 +55,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
     public void whereCondition_field_literal_int() throws SQLException {
         checkAndCount("FNODE_ < 2000", rs -> rs.getInt("FNODE_") < 2000, 3);
     }
-    
+
     /**
      * Test where conditions : field [operator] integer.
      * @throws SQLException if a trouble occurs : all tests shall pass.
@@ -82,12 +82,12 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
     public void whereCondition_field_field() throws SQLException {
         checkAndCount("FNODE_ < TNODE_", rs -> rs.getInt("FNODE_") < rs.getInt("TNODE_"), 1);
     }
-    
-    /** 
-     * Trick suggested by AdiGuba (Forum des développeurs) to avoid the exception thrown by ResultSet:getInt(), 
+
+    /**
+     * Trick suggested by AdiGuba (Forum des développeurs) to avoid the exception thrown by ResultSet:getInt(),
      * unhandlable by a simple Predicate.
-     * @param <T> Type used. 
-     */ 
+     * @param <T> Type used.
+     */
     @FunctionalInterface
     public interface ResultSetPredicate<T> {
         /**
@@ -98,7 +98,7 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
          */
         boolean test(T condition) throws SQLException;
     }
-    
+
     /**
      * Check that all records match the conditions and count them.
      * @param whereCondition The where condition to add to a "SELECT * FROM SignedBikeRoute WHERE " statement.
@@ -108,15 +108,15 @@ public class WhereClauseTest extends AbstractTestBaseForInternalJDBC {
      */
     private void checkAndCount(String whereCondition, ResultSetPredicate<ResultSet> condition, int countExpected) throws SQLException {
         String sql = "SELECT * FROM SignedBikeRoute WHERE " + whereCondition;
-        
+
         try(Connection connection = connect(); Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             int count = 0;
-            
+
             while(rs.next()) {
                 count ++;
                 assertTrue(sql, condition.test(rs));
             }
-            
+
             if (countExpected != -1)
                 assertEquals("Wrong number of records red by : " + sql, countExpected, count);
         }
