@@ -48,7 +48,7 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
         assertTrue ("Connection should be closed", connection.isClosed());
         assertFalse("Connection should no more be valid", connection.isValid(0));
     }
-    
+
     /**
      * An attempt to use a closed connection must fail with the correct exception.
      * @throws SQLException if an error occurred while opening the database.
@@ -60,7 +60,7 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
         final Driver driver = new DBFDriver();
         final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
         connection.close();
-        
+
         // Then, attempt to use it.
         try {
             connection.createStatement();

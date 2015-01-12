@@ -54,7 +54,7 @@ public final strictfp class ShapeFileTest extends TestCase {
     @Test
     public void testPolyineCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
-        readAll(shp); 
+        readAll(shp);
     }
 
     /**
@@ -66,7 +66,7 @@ public final strictfp class ShapeFileTest extends TestCase {
      @Test
      public void testPolygonCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
-        readAll(shp); 
+        readAll(shp);
     }
 
      /**
@@ -78,9 +78,9 @@ public final strictfp class ShapeFileTest extends TestCase {
      @Test
      public void testPointCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
-        readAll(shp); 
+        readAll(shp);
      }
-     
+
     /**
      * Read all the shapefile content.
      * @param shp Shapefile to read.
@@ -90,7 +90,7 @@ public final strictfp class ShapeFileTest extends TestCase {
     private void readAll(ShapeFile shp) throws SQLException, InvalidShapefileFormatException {
         try(InputFeatureStream is = shp.findAll()) {
             Feature feature = is.readFeature();
-            
+
             while(feature != null) {
                 feature = is.readFeature();
             }
