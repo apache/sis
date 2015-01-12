@@ -34,8 +34,17 @@ import static org.opengis.test.Validators.validate;
  * @version 0.3
  * @module
  */
-@DependsOn(GeneralEnvelopeTest.class)
+@DependsOn({
+    GeneralEnvelopeTest.class,
+    CurveExtremumTest.class
+})
 public final strictfp class EnvelopesTest extends TestCase {
+
+    /*
+     * Tests of the 'transform' methods are not yet ported because they need more MathTransform
+     * implementations. Those tests will be ported in a future Apache SIS version.
+     */
+
     /**
      * Tests {@link Envelopes#fromWKT(CharSequence)}. This test is provided as a matter of principle,
      * but the real test is done by {@link GeneralEnvelopeTest#testWktParsing()}.

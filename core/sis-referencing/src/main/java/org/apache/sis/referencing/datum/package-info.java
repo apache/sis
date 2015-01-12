@@ -33,6 +33,8 @@
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getEccentricity()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance(double, double, double, double)}</li>
+ *   <li>{@link org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(javax.measure.unit.Unit)
+ *       DefaultPrimeMeridian.getGreenwichLongitude(Unit)}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPositionVectorTransformation
  *       DefaultGeodeticDatum.getPositionVectorTransformation(GeodeticDatum, Extent)}</li>

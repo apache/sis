@@ -175,7 +175,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
 
     /**
      * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
-     * The units of measurement is given by {@link #getBoundUnit()}.
+     * The units of measurement is given by {@link #getBoundUnits()}.
      *
      * @return Shortest wavelength that the sensor is capable of collecting within a designated band,
      *         or {@code null} if unspecified.

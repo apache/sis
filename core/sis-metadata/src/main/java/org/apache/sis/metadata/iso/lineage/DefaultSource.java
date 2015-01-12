@@ -256,7 +256,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Sets the denominator of the representative fraction on a source map.
      * This method stores the value in the
-     * {@linkplain #setSourceSpatialResolution(RepresentativeFraction) source spatial resolution}.
+     * {@linkplain #setSourceSpatialResolution(Resolution) source spatial resolution}.
      *
      * @param newValue The new scale denominator.
      *

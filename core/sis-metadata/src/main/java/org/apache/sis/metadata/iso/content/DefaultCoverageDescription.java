@@ -286,7 +286,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @return Dimensions of the cell measurement value.
      *
-     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getGroupAttributes()}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getAttributes()}.
      */
     @Override
     @Deprecated
@@ -323,7 +323,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValues The new dimensions.
      *
-     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setGroupAttributes(Collection)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setAttributes(Collection)}.
      */
     @Deprecated
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {

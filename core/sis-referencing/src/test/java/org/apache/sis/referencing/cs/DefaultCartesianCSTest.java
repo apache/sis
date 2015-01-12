@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -148,52 +148,53 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
     }
 
     /**
-     * Creates a Cartesian CS using the provided test axis, invoke {@link AbstractCS#standard}
-     * with it and compare with the expected axis.
+     * Creates a Cartesian CS using the provided test axis, invokes {@link AbstractCS#forConvention(AxesConvention)}
+     * on it and compares with the expected axes.
      *
      * @param expectedX The name of the expected {@link AxisDirection} of x axis after normalization.
      * @param expectedY The name of the expected {@link AxisDirection} of y axis after normalization.
      * @param toTestX   The name of the {@link AxisDirection} value for the x axis of the CS to normalize.
      * @param toTestY   The name of the {@link AxisDirection} value for the y axis of the CS to normalize.
      */
-    private static void assertNormalizationEquals(
+    private static void assertConventionallyOrientedEquals(
             final String expectedX, final String expectedY,
             final String toTestX,   final String toTestY)
     {
         DefaultCartesianCS cs = createCS(toTestX, toTestY);
-        cs = cs.forConvention(AxesConvention.NORMALIZED);
+        cs = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertEqualsIgnoreMetadata(createCS(expectedX, expectedY), cs);
     }
 
     /**
-     * Asserts that the coordinate system made of the given axes is normalized.
-     * This method also ensures that swapping the axes and normalizing give back the original CS.
+     * Asserts that the coordinate system made of the given axes has conventional orientation.
+     * Then ensures that swapping the axes and applying conventional orientation gives back the original CS.
      */
-    private static void assertNormalized(final String x, final String y) {
-        assertNormalizationEquals(x, y, x, y); // Expect no-op.
-        assertNormalizationEquals(x, y, y, x); // Expect normalization.
+    private static void testConventionalOrientation(final String x, final String y) {
+        assertConventionallyOrientedEquals(x, y, x, y); // Expect no-op.
+        assertConventionallyOrientedEquals(x, y, y, x); // Expect normalization.
     }
 
     /**
-     * Tests {@link DefaultCartesianCS#forConvention(AxesConvention)} with {@link AxesConvention#NORMALIZED}.
+     * Tests {@link DefaultCartesianCS#forConvention(AxesConvention)} with
+     * {@link AxesConvention#CONVENTIONALLY_ORIENTED}.
      */
     @Test
     @DependsOnMethod("testConstructor")
-    public void testNormalization() {
-        // ----------- Axis to test ------ Expected axis --
-        assertNormalizationEquals("East", "North",    "East", "North");
-        assertNormalizationEquals("East", "North",    "North", "East");
-        assertNormalizationEquals("East", "North",    "South", "East");
-        assertNormalizationEquals("East", "North",    "South", "West");
+    public void testConventionalOrientation() {
+        // -------------------------------- Axes to test ------ Expected axes --
+        assertConventionallyOrientedEquals("East", "North",    "East", "North");
+        assertConventionallyOrientedEquals("East", "North",    "North", "East");
+        assertConventionallyOrientedEquals("East", "North",    "South", "East");
+        assertConventionallyOrientedEquals("East", "North",    "South", "West");
 
-        assertNormalized("East",                       "North");
-        assertNormalized("South-East",                 "North-East");
-        assertNormalized("North along  90 deg East",   "North along   0 deg");
-        assertNormalized("North along  90 deg East",   "North along   0 deg");
-        assertNormalized("North along  75 deg West",   "North along 165 deg West");
-        assertNormalized("South along  90 deg West",   "South along   0 deg");
-        assertNormalized("South along 180 deg",        "South along  90 deg West");
-        assertNormalized("North along 130 deg West",   "North along 140 deg East");
+        testConventionalOrientation("East",                       "North");
+        testConventionalOrientation("South-East",                 "North-East");
+        testConventionalOrientation("North along  90 deg East",   "North along   0 deg");
+        testConventionalOrientation("North along  90 deg East",   "North along   0 deg");
+        testConventionalOrientation("North along  75 deg West",   "North along 165 deg West");
+        testConventionalOrientation("South along  90 deg West",   "South along   0 deg");
+        testConventionalOrientation("South along 180 deg",        "South along  90 deg West");
+        testConventionalOrientation("North along 130 deg West",   "North along 140 deg East");
     }
 
     /**

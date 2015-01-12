@@ -81,6 +81,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 0;
 
         /**
+         * Can not assign units “{1}” to dimension “{0}”.
+         */
+        public static final short CanNotAssignUnitToDimension_2 = 168;
+
+        /**
          * Can not assign “{1}” to “{0}”.
          */
         public static final short CanNotAssign_2 = 167;
@@ -144,6 +149,16 @@ public final class Errors extends IndexedResourceBundle {
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 11;
+
+        /**
+         * Can not transform envelope.
+         */
+        public static final short CanNotTransformEnvelope = 176;
+
+        /**
+         * Can not transform envelope to a geodetic CRS.
+         */
+        public static final short CanNotTransformEnvelopeToGeodetic = 174;
 
         /**
          * Circular reference.
@@ -234,6 +249,11 @@ public final class Errors extends IndexedResourceBundle {
          * A size of {1} elements is excessive for the “{0}” list.
          */
         public static final short ExcessiveListSize_2 = 25;
+
+        /**
+         * For this algorithm, {0} is an excessive number of dimensions.
+         */
+        public static final short ExcessiveNumberOfDimensions_1 = 177;
 
         /**
          * The character string is too long.
@@ -459,6 +479,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedParameterDescriptor_1 = 146;
 
         /**
+         * Bursa-Wolf parameters shall target a datum having the “{0}” prime meridian.
+         */
+        public static final short MismatchedPrimeMeridianInBWP_1 = 175;
+
+        /**
          * Mismatched type for “{0}” property.
          */
         public static final short MismatchedPropertyType_1 = 154;
@@ -474,6 +499,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingAuthority_1 = 135;
 
         /**
+         * No horizontal dimension found in “{0}”.
+         */
+        public static final short MissingHorizontalDimension_1 = 169;
+
+        /**
          * “{0}” has no namespace.
          */
         public static final short MissingNamespace_1 = 163;
@@ -487,6 +517,16 @@ public final class Errors extends IndexedResourceBundle {
          * Missing scheme in URI.
          */
         public static final short MissingSchemeInURI = 62;
+
+        /**
+         * No spatial or temporal dimension found in “{0}”
+         */
+        public static final short MissingSpatioTemporalDimension_1 = 170;
+
+        /**
+         * No temporal dimension found in “{0}”
+         */
+        public static final short MissingTemporalDimension_1 = 171;
 
         /**
          * Missing value for “{0}” option.
@@ -507,6 +547,11 @@ public final class Errors extends IndexedResourceBundle {
          * Missing value in the “{0}” column.
          */
         public static final short MissingValueInColumn_1 = 65;
+
+        /**
+         * No vertical dimension found in “{0}”
+         */
+        public static final short MissingVerticalDimension_1 = 172;
 
         /**
          * Options “{0}” and “{1}” are mutually exclusive.
@@ -867,6 +912,11 @@ public final class Errors extends IndexedResourceBundle {
          * Feature named “{0}” has not yet been resolved.
          */
         public static final short UnresolvedFeatureName_1 = 164;
+
+        /**
+         * Coordinate reference system is unspecified.
+         */
+        public static final short UnspecifiedCRS = 173;
 
         /**
          * No format is specified for objects of class ‘{0}’.
