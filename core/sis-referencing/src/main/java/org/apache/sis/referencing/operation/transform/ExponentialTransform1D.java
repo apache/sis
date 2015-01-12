@@ -91,7 +91,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     ExponentialTransform1D(final LogarithmicTransform1D inverse) {
         this.base    = inverse.getBase();
         this.lnBase  = inverse.getLogBase();
-        this.scale   = Math.pow(base, -inverse.getOffset());
+        this.scale   = inverse.pow(-inverse.getOffset());
         this.inverse = inverse;
     }
 

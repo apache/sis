@@ -34,9 +34,8 @@ import org.opengis.test.ToleranceModifiers;
 
 
 /**
- * Tests the {@link ExponentialTransform1D} class. This test case will also tests
- * indirectly the {@link LogarithmicTransform1D} class since it is the inverse of
- * the exponential transform.
+ * Tests the {@link ExponentialTransform1D} class. Note that this is closely related to
+ * {@link LogarithmicTransform1DTest}, since one transform is the inverse of the other.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from geotk-3.17)
@@ -49,9 +48,9 @@ import org.opengis.test.ToleranceModifiers;
 })
 public final strictfp class ExponentialTransform1DTest extends MathTransformTestCase {
     /**
-     * Arbitrary parameters of the exponential transform to be tested.
+     * Arbitrary parameter of the exponential transform to be tested.
      */
-    private static final double BASE = 10, SCALE = 2;
+    static final double SCALE = 2;
 
     /**
      * Arbitrary coefficients of a linear transform to be concatenated to the exponential transform.
@@ -59,79 +58,156 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
     private static final double C0 = -3, C1 = 0.25;
 
     /**
-     * The random values to use as input, and the expected transformed values.
+     * Tolerance factor for comparison of coefficients (not coordinates).
      */
-    private double[] values, expected;
+    private static final double EPS = 1E-12;
 
     /**
-     * Generates random values for input coordinates, and allocates (but do not compute values)
-     * array for the expected transformed coordinates.
-     *
-     * @param mt The math transform which will be tested.
+     * Creates a new test case.
      */
-    private void initialize(final MathTransform1D mt) {
-        transform         = mt; // Must be set before generateRandomCoordinates(…).
+    public ExponentialTransform1DTest() {
         tolerance         = 1E-14;
         toleranceModifier = ToleranceModifier.RELATIVE;
         derivativeDeltas  = new double[] {0.001};
-        values            = generateRandomCoordinates(CoordinateDomain.RANGE_10, 0);
-        expected          = new double[values.length];
     }
 
     /**
-     * Tests the current transform using the {@link #values} as input points, and comparing with
-     * the {@link #expected} values.
+     * Tests the current transform using random values as input points, and
+     * comparing with the expected values computed using the given coefficients.
+     *
+     * The {@link #transform} field must be set before to invoke this method.
+     *
+     * @param expectedType The expected base type of the math transform.
+     * @param base         The exponent base given to the {@link ExponentialTransform1D} constructor.
+     * @param scale        The scale factor given to the {@link ExponentialTransform1D} constructor.
+     * @param preAffine    {@code true} for applying an additional affine transform before the transform.
+     * @param postAffine   {@code true} for applying an additional affine transform after the transform.
      */
-    private void run(final Class<? extends MathTransform1D> expectedType) throws TransformException {
+    private void run(final Class<? extends MathTransform1D> expectedType, final double base, final double scale,
+            final boolean preAffine, final boolean postAffine) throws TransformException
+    {
         assertInstanceOf("Expected the use of mathematical identities.", expectedType, transform);
         assertFalse(transform.isIdentity());
         validate();
+
+        final double[] values = generateRandomCoordinates(CoordinateDomain.RANGE_10, 0);
+        final double[] expected = new double[values.length];
+        for (int i=0; i<values.length; i++) {
+            double value = values[i];
+            if (preAffine) {
+                value = C0 + C1*value;
+            }
+            value = scale * pow(base, value);
+            if (postAffine) {
+                value = C0 + C1*value;
+            }
+            expected[i] = value;
+        }
         verifyTransform(values, expected);
         verifyDerivative(2.5); // Test at a hard-coded point.
     }
 
     /**
-     * A single (non-concatenated) test case.
+     * Implementation of {@link #testSingle()} and {@link #testSingleWithScale()} for the given base.
+     */
+    private void testSingle(final double base, final double scale) throws TransformException {
+        transform = ExponentialTransform1D.create(base, scale);
+        run(ExponentialTransform1D.class, base, scale, false, false);
+    }
+
+    /**
+     * Implementation of {@link #testAffinePreConcatenation()} for the given base.
+     */
+    private void testAffinePreConcatenation(final double base) throws TransformException {
+        transform = MathTransforms.concatenate(LinearTransform1D.create(C1, C0),
+                ExponentialTransform1D.create(base, SCALE));
+        run(ExponentialTransform1D.class, base, SCALE, true, false);
+        /*
+         * Find back the original linear coefficients as documented in the ExponentialTransform1D class javadoc.
+         */
+        final double offset = -log(SCALE) / log(base);
+        final MathTransform1D log = LogarithmicTransform1D.create(base, offset);
+        transform = (LinearTransform1D) MathTransforms.concatenate(transform, log);
+        assertEquals("C1", C1, ((LinearTransform1D) transform).scale,  EPS);
+        assertEquals("C0", C0, ((LinearTransform1D) transform).offset, EPS);
+    }
+
+    /**
+     * Implementation of {@link #testAffinePostConcatenation()} for the given base.
+     */
+    private void testAffinePostConcatenation(final double base) throws TransformException {
+        transform = MathTransforms.concatenate(ExponentialTransform1D.create(base, SCALE),
+                LinearTransform1D.create(C1, C0));
+        /*
+         * The inverse transforms in this test case have high rounding errors.
+         * Those errors are low for values close to zero, and increase fast for higher values.
+         * We scale the default tolerance (1E-14) by 1E+8, which give us a tolerance of 1E-6.
+         */
+        toleranceModifier = ToleranceModifiers.concatenate(toleranceModifier,
+                ToleranceModifiers.scale(EnumSet.of(CalculationType.INVERSE_TRANSFORM), 1E+8));
+        run(ConcatenatedTransformDirect1D.class, base, SCALE, false, true);
+    }
+
+    /**
+     * Implementation of {@link #testAffineConcatenations()} for the given base.
+     */
+    private void testAffineConcatenations(final double base) throws TransformException {
+        final LinearTransform1D linear = LinearTransform1D.create(C1, C0);
+        transform = MathTransforms.concatenate(linear, ExponentialTransform1D.create(base, SCALE), linear);
+
+        // See testAffinePostConcatenation for an explanation about why we relax tolerance.
+        toleranceModifier = ToleranceModifiers.concatenate(toleranceModifier,
+                ToleranceModifiers.scale(EnumSet.of(CalculationType.INVERSE_TRANSFORM), 1E+8));
+        run(ConcatenatedTransformDirect1D.class, base, SCALE, true, true);
+    }
+
+    /**
+     * A single (non-concatenated) test case without scale.
      *
      * @throws TransformException should never happen.
      */
     @Test
     public void testSingle() throws TransformException {
-        initialize(ExponentialTransform1D.create(BASE, SCALE));
-        for (int i=0; i<values.length; i++) {
-            expected[i] = SCALE * pow(BASE, values[i]);
-        }
-        run(ExponentialTransform1D.class);
+        messageOnFailure = "Exponential transform in base 10";
+        testSingle(10, 1);
+        messageOnFailure = "Exponential transform in base E";
+        testSingle(E, 1);
+        messageOnFailure = "Exponential transform in base 8.4"; // Arbitrary base.
+        testSingle(8.4, 1);
     }
 
     /**
-     * Tests the concatenation of a linear operation before the exponential one.
+     * A single (non-concatenated) test case with a scale.
      *
      * @throws TransformException should never happen.
      */
     @Test
     @DependsOnMethod("testSingle")
+    public void testSingleWithScale() throws TransformException {
+        messageOnFailure = "Exponential transform in base 10";
+        testSingle(10, SCALE);
+        messageOnFailure = "Exponential transform in base E";
+        testSingle(E, SCALE);
+        messageOnFailure = "Exponential transform in base 8.4"; // Arbitrary base.
+        testSingle(8.4, SCALE);
+    }
+
+    /**
+     * Tests the concatenation of a linear operation before the exponential one. This test also
+     * opportunistically verifies that the technic documented in {@link ExponentialTransform1D}
+     * javadoc for finding back the original coefficients works.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSingleWithScale")
     public void testAffinePreConcatenation() throws TransformException {
-        initialize(MathTransforms.concatenate(
-                   LinearTransform1D.create(C1, C0),
-                   ExponentialTransform1D.create(BASE, SCALE)));
-        for (int i=0; i<values.length; i++) {
-            expected[i] = SCALE * pow(BASE, C0 + C1 * values[i]);
-        }
-        run(ExponentialTransform1D.class);
-        /*
-         * Find back the original linear coefficients as documented in the ExponentialTransform1D class javadoc.
-         */
-        final double lnBase =  log(BASE);
-        final double offset = -log(SCALE) / lnBase;
-        final MathTransform1D log = LogarithmicTransform1D.create(BASE, offset);
-        for (int i=0; i<values.length; i++) {
-            expected[i] = log(expected[i]) / lnBase + offset;
-        }
-        transform = (LinearTransform1D) MathTransforms.concatenate(transform, log);
-        run(LinearTransform1D.class);
-        assertEquals(C1, ((LinearTransform1D) transform).scale,  1E-12);
-        assertEquals(C0, ((LinearTransform1D) transform).offset, 1E-12);
+        messageOnFailure = "Affine + exponential transform in base 10";
+        testAffinePreConcatenation(10);
+        messageOnFailure = "Affine + exponential transform in base E";
+        testAffinePreConcatenation(E);
+        messageOnFailure = "Affine + exponential transform in base 8.4"; // Arbitrary base.
+        testAffinePreConcatenation(8.4);
     }
 
     /**
@@ -140,41 +216,32 @@ public final strictfp class ExponentialTransform1DTest extends MathTransformTest
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingle")
+    @DependsOnMethod("testSingleWithScale")
     public void testAffinePostConcatenation() throws TransformException {
-        initialize(MathTransforms.concatenate(
-                   ExponentialTransform1D.create(BASE, SCALE),
-                   LinearTransform1D.create(C1, C0)));
-        for (int i=0; i<values.length; i++) {
-            expected[i] = C0 + C1 * (SCALE * pow(BASE, values[i]));
-        }
-        /*
-         * The inverse transforms in this test case have high rounding errors.
-         * Those errors are low for values close to zero, and increase fast for higher values.
-         * We scale the default tolerance (1E-14) by 1E+8, which give us a tolerance of 1E-6.
-         */
-        toleranceModifier = ToleranceModifiers.concatenate(toleranceModifier,
-                ToleranceModifiers.scale(EnumSet.of(CalculationType.INVERSE_TRANSFORM), 1E+8));
-        run(ConcatenatedTransformDirect1D.class);
+        messageOnFailure = "Exponential + affine transform in base 10";
+        testAffinePostConcatenation(10);
+        messageOnFailure = "Exponential + affine transform in base E";
+        testAffinePostConcatenation(E);
+        messageOnFailure = "Exponential + affine transform in base 8.4"; // Arbitrary base.
+        testAffinePostConcatenation(8.4);
     }
 
     /**
-     * Tests the concatenation of a logarithmic operation with the exponential one.
+     * Tests the concatenation of a linear operation before and after the exponential one.
      *
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingle")
-    public void testLogarithmicConcatenation() throws TransformException {
-        final double base   = 8; // Must be different than BASE.
-        final double lnBase = log(base);
-        initialize(MathTransforms.concatenate(
-                   LogarithmicTransform1D.create(base, C0),
-                   ExponentialTransform1D.create(BASE, SCALE)));
-        for (int i=0; i<values.length; i++) {
-            values[i] = abs(values[i]) + 0.001;
-            expected[i] = SCALE * pow(BASE, log(values[i]) / lnBase + C0);
-        }
-        run(ConcatenatedTransformDirect1D.class);
+    @DependsOnMethod({
+        "testAffinePreConcatenation",
+        "testAffinePostConcatenation"
+    })
+    public void testAffineConcatenations() throws TransformException {
+        messageOnFailure = "Affine + exponential + affine transform in base 10";
+        testAffineConcatenations(10);
+        messageOnFailure = "Affine + exponential + affine transform in base E";
+        testAffineConcatenations(E);
+        messageOnFailure = "Affine + exponential + affine transform in base 8.4"; // Arbitrary base.
+        testAffineConcatenations(8.4);
     }
 }
