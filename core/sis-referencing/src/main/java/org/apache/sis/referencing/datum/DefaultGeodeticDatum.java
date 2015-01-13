@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
@@ -44,7 +43,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.isGreenwichLongitudeEquals;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -61,26 +59,33 @@ import java.util.Objects;
  * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
  * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
  *
- * <p>There is different methods for transforming coordinates from one geodetic datum to an other datum,
- * and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
- * for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
- * know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
- * sometime together with the geographic extent of the coordinates to transform.</p>
+ * <p>The Bursa-Wolf parameters serve two purposes:</p>
+ * <ol>
+ *   <li><p><b>Fallback for datum shifts</b><br>
+ *     There is different methods for transforming coordinates from one geodetic datum to an other datum,
+ *     and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
+ *     for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
+ *     know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
+ *     sometime together with the geographic extent of the coordinates to transform.</p>
  *
- * <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
- * {@link org.opengis.referencing.operation.CoordinateOperation} or a
- * {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
- * This is known as the <cite>late-binding</cite> approach.
- * If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
- * instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
- * then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
+ *     <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
+ *     {@link org.opengis.referencing.operation.CoordinateOperation} or a
+ *     {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
+ *     This is known as the <cite>late-binding</cite> approach.
+ *     If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
+ *     instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
+ *     then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
+ *   </li>
  *
- * <p>The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
- * <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
- * with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
- * for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
- * Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
- * do not exist in the EPSG database.</p>
+ *   <li><p><b>WKT version 1 formatting</b><br>
+ *     The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
+ *     <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
+ *     with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
+ *     for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
+ *     Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
+ *     do not exist in the EPSG database.</p>
+ *   </li>
+ * </ol>
  *
  * {@section Creating new geodetic datum instances}
  * New instances can be created either directly by specifying all information to a factory method (choices 3
@@ -233,10 +238,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   </tr>
      * </table>
      *
-     * If the given {@code properties} map contains Bursa-Wolf parameters, then for all of them the
-     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} prime meridian shall be equal
-     * (ignoring metadata) to the {@code primeMeridian} parameter given to this constructor.
-     *
      * @param properties    The properties to be given to the identified object.
      * @param ellipsoid     The ellipsoid.
      * @param primeMeridian The prime meridian.
@@ -258,12 +259,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 ensureNonNullElement("bursaWolf", i, param);
                 param = param.clone();
                 param.verify();
-                final GeodeticDatum targetDatum = param.getTargetDatum();
-                if (targetDatum != null && !isGreenwichLongitudeEquals(primeMeridian, targetDatum.getPrimeMeridian())) {
-// TODO
-//                  throw new IllegalArgumentException(Errors.format(
-//                          Errors.Keys.MismatchedPrimeMeridianInBWP_1, primeMeridian.getName()));
-                }
                 bursaWolf[i] = param;
             }
         }
@@ -284,8 +279,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         super(datum);
         ellipsoid     = datum.getEllipsoid();
         primeMeridian = datum.getPrimeMeridian();
-        bursaWolf     = (datum instanceof DefaultGeodeticDatum) ?
-                        ((DefaultGeodeticDatum) datum).bursaWolf : null;
+        bursaWolf     = (datum instanceof DefaultGeodeticDatum) ? ((DefaultGeodeticDatum) datum).bursaWolf : null;
+        // No need to clone the 'bursaWolf' array since it is read only.
     }
 
     /**
@@ -341,11 +336,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * Returns all Bursa-Wolf parameters specified in the {@code properties} map at construction time.
-     * For a discussion about what Bursa-Wolf parameters are, see the class javadoc.
-     *
-     * <p><b>Invariant:</b> for all Bursa-Wolf parameters, the {@linkplain BursaWolfParameters#getTargetDatum()
-     * target datum} prime meridian is equals (ignoring metadata) to this datum {@linkplain #getPrimeMeridian()
-     * prime meridian}.</p>
+     * See class javadoc for a discussion about Bursa-Wolf parameters.
      *
      * @return The Bursa-Wolf parameters, or an empty array if none.
      */
@@ -362,31 +353,36 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * Returns the position vector transformation (geocentric domain) to the specified datum.
-     * This method performs the search in the following order:
+     * If the returned matrix is non-null, then the transformation is represented by an affine transform which can be
+     * applied on <strong>geocentric</strong> coordinates. This is identified in the EPSG database as operation method
+     * 1033 – <cite>Position Vector transformation (geocentric domain)</cite>, or
+     * 1053 – <cite>Time-dependent Position Vector transformation</cite>.
      *
-     * <ul>
+     * <p>If this datum and the given {@code targetDatum} do not use the same
+     * {@linkplain #getPrimeMeridian() prime meridian}, then it is caller's responsibility
+     * to apply longitude rotation before to use the matrix returned by this method.</p>
+     *
+     * <p><b>Search order</b><br>
+     * This method performs the search in the following order:</p>
+     * <ol>
      *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
      *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
      *       then the matrix will be built from those parameters.</li>
      *   <li>Otherwise if the other datum contains {@code BursaWolfParameters} having this datum
      *       as their target (ignoring metadata), then the matrix will be built from those parameters
      *       and {@linkplain MatrixSIS#inverse() inverted}.</li>
-     *   <li>Otherwise this method returns {@code null}.</li>
-     * </ul>
+     * </ol>
      *
+     * <p><b>Multi-occurrences resolution</b><br>
      * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
      * the largest intersection between its {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
      * and the given extent will be selected. If more than one instance have the same intersection, then the first
-     * occurrence is selected.
+     * occurrence is selected.</p>
      *
-     * <p>If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
+     * <p><b>Time-dependent parameters</b><br>
+     * If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
-     * Bursa-Wolf parameters. This apply only to {@linkplain TimeDependentBWP time-dependent parameters}.</p>
-     *
-     * <p>If the returned matrix is non-null, then the transformation is represented by an affine transform which can be
-     * applied on <strong>geocentric</strong> coordinates. This is identified in the EPSG database as operation method
-     * 1033 – <cite>Position Vector transformation (geocentric domain)</cite>, or
-     * 1053 – <cite>Time-dependent Position Vector transformation</cite>.</p>
+     * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.</p>
      *
      * @param  targetDatum The target datum.
      * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.

@@ -97,17 +97,21 @@ import java.util.Objects;
  * {@section Source and target geodetic datum}
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
- * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and often fixed to
- * WGS 84 for the needs of the {@code TOWGS84[…]} element in <cite>Well Known Text</cite> (WKT 1) representation.
+ * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and is often,
+ * but not necessarily, the <cite>World Geodetic System 1984</cite> (WGS 84) datum.
+ *
+ * <p>If the source and target datum does not have the same {@linkplain DefaultGeodeticDatum#getPrimeMeridian()
+ * prime meridian}, then it is user's responsibility to apply longitude rotation before to use the Bursa-Wolf
+ * parameters.</p>
  *
  * {@section When Bursa-Wolf parameters are used}
  * {@code BursaWolfParameters} are used in three contexts:
  * <ol>
  *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation
  *       coordinate operation} from the EPSG database.</li>
- *   <li>Associated to a {@link DefaultGeodeticDatum} for the sole needs of the WKT 1 {@code TOWGS84[…]} element.
- *       In this case, only Bursa-Wolf parameters having a WGS 84 {@linkplain #getTargetDatum() target datum} are
- *       useful.</li>
+ *   <li>Associated to a {@link DefaultGeodeticDatum} with the WGS 84 {@linkplain #getTargetDatum() target datum} for
+ *       providing the parameter values to display in the {@code TOWGS84[…]} element of <cite>Well Known Text</cite>
+ *       (WKT) version 1. Note that WKT version 2 does not have {@code TOWGS84[…]} element anymore.</li>
  *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.
  *       Apache SIS will ignore those Bursa-Wolf parameters, except as a fallback if no parameters
  *       can been found in the EPSG database for a given pair of source and target CRS.</li>
@@ -357,6 +361,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * This is identified as operation method 1033 in the EPSG database.
      * Those geocentric coordinates are typically converted from geographic coordinates
      * in the region or timeframe given by {@link #getDomainOfValidity()}.
+     *
+     * <p>If the source datum and the {@linkplain #getTargetDatum() target datum} do not use the same
+     * {@linkplain DefaultGeodeticDatum#getPrimeMeridian() prime meridian}, then it is caller's responsibility
+     * to apply longitude rotation before to use the matrix returned by this method.</p>
      *
      * {@section Time-dependent transformation}
      * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
