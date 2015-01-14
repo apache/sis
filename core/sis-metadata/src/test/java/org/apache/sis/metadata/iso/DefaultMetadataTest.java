@@ -283,7 +283,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
                 new DefaultCitationDate(date("2014-10-09 00:00:00"), DateType.valueOf("LAST_UPDATE")),
                 new DefaultCitationDate(creation, DateType.CREATION)
         };
-        metadata.setDates(Arrays.asList(dates));
+        metadata.setDateInfo(Arrays.asList(dates));
         assertEquals("dateStamp", creation, metadata.getDateStamp());
         /*
          * Invoking the deprecated setters shall modify the CitationDate object
@@ -292,7 +292,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         creation = date("2014-10-06 00:00:00");
         metadata.setDateStamp(creation);
         assertEquals("citationDates[1].date", creation, dates[1].getDate());
-        assertArrayEquals("dates", dates, metadata.getDates().toArray());
+        assertArrayEquals("dates", dates, metadata.getDateInfo().toArray());
     }
 
     /**

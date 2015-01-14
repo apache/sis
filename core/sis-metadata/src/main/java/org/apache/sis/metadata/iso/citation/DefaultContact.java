@@ -386,6 +386,11 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Returns the time period (including time zone) when individuals can contact the organization or individual.
      *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @return Time period when individuals can contact the organization or individual, or {@code null}.
      */
     @Override
@@ -396,6 +401,11 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Sets time period (including time zone) when individuals can contact the organization or individual.
+     *
+     * <div class="warning"><b>Upcoming API change — multiplicity</b><br>
+     * As of ISO 19115:2014, this singleton has been replaced by a collection.
+     * This change will tentatively be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new hours of service, or {@code null} if none.
      */

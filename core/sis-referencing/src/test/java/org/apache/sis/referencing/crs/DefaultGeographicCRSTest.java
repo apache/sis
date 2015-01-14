@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -75,12 +75,12 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
 
     /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
-     * for {@link AxesConvention#NORMALIZED}.
+     * for {@link AxesConvention#CONVENTIONALLY_ORIENTED}.
      */
     @Test
-    public void testNormalize() {
+    public void testConventionalOrientation() {
         final DefaultGeographicCRS crs = DefaultGeographicCRS.castOrCopy(CommonCRS.WGS84.geographic3D());
-        final DefaultGeographicCRS normalized = crs.forConvention(AxesConvention.NORMALIZED);
+        final DefaultGeographicCRS normalized = crs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame(crs, normalized);
         final EllipsoidalCS cs = normalized.getCoordinateSystem();
         final EllipsoidalCS ref = crs.getCoordinateSystem();

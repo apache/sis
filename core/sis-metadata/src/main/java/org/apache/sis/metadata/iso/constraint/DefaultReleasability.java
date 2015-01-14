@@ -97,7 +97,7 @@ public class DefaultReleasability extends ISOMetadata {
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
-     * @see #castOrCopy(SecurityConstraints)
+     * @see #castOrCopy(Releasability)
      */
     public DefaultReleasability(final DefaultReleasability object) {
         super(object);

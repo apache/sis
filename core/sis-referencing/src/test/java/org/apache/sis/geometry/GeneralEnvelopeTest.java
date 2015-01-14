@@ -40,7 +40,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
@@ -524,6 +524,18 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals( 3, e.getUpper(0), STRICT);
         assertEquals(-1, e.getUpper(1), STRICT);
         verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#translate(double...)}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testTranslate() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
+        envelope.translate(2, -4);
+        assertEnvelopeEquals(envelope, 6, 1, 10, 3);
     }
 
     /**

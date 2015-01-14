@@ -93,7 +93,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @param object The metadata to copy values from, or {@code null} if none.
      *
-     * @see #castOrCopy(AggregateInformation)
+     * @see #castOrCopy(AssociatedResource)
      */
     public DefaultAggregateInformation(final AggregateInformation object) {
         super(object);

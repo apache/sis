@@ -70,6 +70,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.Standards;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Units;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
@@ -200,6 +201,15 @@ final class MetadataReader {
     }
 
     /**
+     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     *
+     * @return The localized error resource bundle.
+     */
+    private Errors errors() {
+        return Errors.getResources(decoder.listeners.getLocale());
+    }
+
+    /**
      * Reads the attribute value for the given name, then trims the leading and trailing spaces.
      * If the value is null, empty or contains only spaces, then this method returns {@code null}.
      */
@@ -229,7 +239,7 @@ final class MetadataReader {
     private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
         final T code = Types.forEnumName(enumType, name);
         if (code == null && name != null) {
-            decoder.listeners.warning(Errors.format(Errors.Keys.UnknownEnumValue_2, enumType, name), null);
+            decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, enumType, name), null);
         }
         return code;
     }
@@ -245,7 +255,7 @@ final class MetadataReader {
              * CodeLists are not enums, but using the error message for enums is not completly wrong since
              * if we did not allowed CodeList to create new elements, then we are using it like an enum.
              */
-            decoder.listeners.warning(Errors.format(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
+            decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
         }
         return code;
     }
@@ -585,7 +595,7 @@ final class MetadataReader {
             identification.setPointOfContacts(singleton(pointOfContact));
         }
         addKeywords(identification, project,   KeywordType.valueOf("project"));
-        addKeywords(identification, publisher, KeywordType.valueOf("dataCenter"));
+        addKeywords(identification, publisher, KeywordType.valueOf("dataCentre"));
         identification.setSupplementalInformation(toInternationalString(stringValue(COMMENT)));
         return identification;
     }
@@ -862,9 +872,12 @@ final class MetadataReader {
         if (description != null && !(description = description.trim()).isEmpty() && !description.equals(name)) {
             band.setDescription(new SimpleInternationalString(description));
         }
-//TODO: Can't store the units, because the Band interface restricts it to length.
-//      We need the SampleDimension interface proposed in ISO 19115 revision draft.
-//      band.setUnits(Units.valueOf(variable.getUnitsString()));
+        final String units = variable.getUnitsString();
+        if (units != null) try {
+            band.setUnits(Units.valueOf(units));
+        } catch (IllegalArgumentException e) {
+            decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
+        }
         return band;
     }
 
@@ -933,7 +946,7 @@ final class MetadataReader {
         metadata.setMetadataIdentifier(identifier);
         final Date creation = decoder.dateValue(METADATA_CREATION);
         if (creation != null) {
-            metadata.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
+            metadata.setDateInfo(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
         }
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
         for (final String service : SERVICES) {

@@ -63,15 +63,6 @@
  * {@code  └─}     {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
  * </td></tr></table>
  *
- * {@section Bands in gridded data}
- * ISO 19115 defines a {@link org.opengis.metadata.content.Band} interface
- * which expresses the range of wavelengths in the electromagnetic spectrum.
- * For the needs of Image I/O, an additional interface has been defined with a subset
- * of the {@code Band} API and the restriction to electromagnetic spectrum removed.
- * That interface is named {@link org.apache.sis.image.io.metadata.SampleDimension}.
- * Both {@code Band} and {@code SampleDimension} interfaces extend the same parent,
- * {@link org.opengis.metadata.content.RangeDimension}.
- *
  * {@section Null values, nil objects and collections}
  * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.

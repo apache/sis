@@ -16,71 +16,47 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
+import java.io.File;
+import java.sql.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.sql.Wrapper;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import org.apache.sis.util.logging.Logging;
+
+import org.apache.sis.internal.shapefile.AutoChecker;
 
 
 /**
  * Base class for each JDBC class.
- *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
  * @module
  */
-abstract class AbstractJDBC implements Wrapper {
-    /**
-     * The logger for JDBC operations. We use the {@code "org.apache.sis.storage.jdbc"} logger name instead than
-     * the package name because this package is internal and may move in any future SIS version. The logger name
-     * does not need to be the name of an existing package. The important thing is to not change it, because it
-     * can been seen as a kind of public API since user may want to control verbosity level by logger names.
-     */
-    static final Logger LOGGER = Logging.getLogger("org.apache.sis.storage.jdbc");
-
+public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     /**
      * Constructs a new instance of a JDBC interface.
      */
-    AbstractJDBC() {
+    public AbstractJDBC() {
     }
 
     /**
      * Returns the JDBC interface implemented by this class.
      * This is used for formatting error messages.
-     *
      * @return The JDBC interface implemented by this class.
      */
-    abstract Class<?> getInterface();
+    abstract protected Class<?> getInterface();
 
     /**
      * Unsupported by default.
-     *
-     * @param  iface the type of the wrapped object.
+     * @param iface the type of the wrapped object.
      * @return The wrapped object.
      */
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        throw unsupportedOperation("unwrap");
-    }
-
-    /**
-     * Default to {@code false}, assuming that no non-standard features are handled.
-     *
-     * @param  iface the type of the wrapped object.
-     * @return {@code true} if this instance is a wrapper for the given type of object.
-     */
-    @Override
-    public boolean isWrapperFor(Class<?> iface) {
-        return false;
+        throw unsupportedOperation("unwrap", iface);
     }
 
     /**
      * Defaults to {@code null}.
+     * @return SQL Warning.
      */
     public SQLWarning getWarnings() {
         return null;
@@ -94,36 +70,91 @@ abstract class AbstractJDBC implements Wrapper {
 
     /**
      * Returns an unsupported operation exception to be thrown.
-     *
-     * @param  methodOrWishedFeatureName The feature / call the caller attempted.
-     * @return The exception to throw.
+     * @param methodOrWishedFeatureName The feature / call the caller attempted.
+     * @return the not supported feature exception.
+     * @throws SQLFeatureNotSupportedException the not supported feature.
      */
-    final SQLException unsupportedOperation(final String methodOrWishedFeatureName) {
-        return new SQLFeatureNotSupportedException(Resources.format(Resources.Keys.UnsupportedDriverFeature_2,
-                getInterface(), methodOrWishedFeatureName));
+    public final SQLFeatureNotSupportedException unsupportedOperation(final String methodOrWishedFeatureName) throws SQLFeatureNotSupportedException {
+        String message = format(Level.WARNING, "excp.unsupportedDriverFeature", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName());
+        throw new SQLFeatureNotSupportedException(message);
+    }
+
+    /**
+     * Returns an unsupported operation exception to be thrown : this exception add parameters sent to the method that isn't implemented.
+     * @param methodOrWishedFeatureName The feature / call the caller attempted.
+     * @param args Arguments that where sent to the unimplemented function.
+     * @return the not supported feature exception.
+     * @throws SQLFeatureNotSupportedException the not supported feature.
+     */
+    public final SQLFeatureNotSupportedException unsupportedOperation(final String methodOrWishedFeatureName, Object... args) throws SQLFeatureNotSupportedException {
+        StringBuffer arguments = new StringBuffer();
+
+        for(Object arg : args) {
+            arguments.append(arguments.length() == 0 ? "" : ", ");   // Separator if needed.
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
+            arguments.append(arg == null ? "null" : arg.toString()); // String value of the argument.
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
+        }
+
+        String message = format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodOrWishedFeatureName, getClass().getSimpleName(), arguments.toString());
+        throw new SQLFeatureNotSupportedException(message);
+    }
+
+    /**
+     * log a function call in the driver : very verbose.
+     * @param methodName The call the caller attempted.
+     */
+    public void logStep(final String methodName) {
+        format(Level.FINER, "log.step", methodName, getClass().getSimpleName());
+    }
+
+    /**
+     * log a function call in the driver : very verbose.
+     * @param methodName The call the caller attempted.
+     * @param args Arguments that where sent to the unimplemented function.
+     */
+    public void logStep(final String methodName, Object... args) {
+        format(Level.FINER, "log.step_with_arguments", methodName, getClass().getSimpleName(), arguments(args));
     }
 
     /**
      * log an unsupported feature as a warning.
-     *
      * @param methodName The call the caller attempted.
      */
-    final void logUnsupportedOperation(final String methodName) {
-        logWarning(methodName, Resources.Keys.UnsupportedDriverFeature_2, getInterface(), methodName);
+    public void logUnsupportedOperation(final String methodName) {
+        format(Level.WARNING, "excp.unsupportedDriverFeature", getInterface(), methodName, getClass().getSimpleName());
     }
 
     /**
-     * Logs a warning with the given resource keys and arguments.
-     *
-     * @param methodName  The name of the method which is emitting the warning.
-     * @param resourceKey One of the {@link org.apache.sis.internal.shapefile.jdbc.Resources.Keys} values.
-     * @param arguments   Arguments to be given to {@link java.text.MessageFormat}, or {@code null} if none.
+     * log an unsupported feature as a warning.
+     * @param methodName The call the caller attempted.
+     * @param args Arguments that where sent to the unimplemented function.
      */
-    final void logWarning(final String methodName, final short resourceKey, final Object... arguments) {
-        final LogRecord record = Resources.getResources(null).getLogRecord(Level.WARNING, resourceKey, arguments);
-        record.setSourceClassName(getClass().getCanonicalName());
-        record.setSourceMethodName(methodName);
-        record.setLoggerName(LOGGER.getName());
-        LOGGER.log(record);
+    public void logUnsupportedOperation(final String methodName, Object... args) {
+        format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodName, getClass().getSimpleName(), arguments(args));
+    }
+
+    /**
+     * Returns the Database File.
+     * @return Database File.
+     */
+    abstract protected File getFile();
+
+    /**
+     * Concat arguments in a StringBuffer.
+     * @param args arguments.
+     * @return Arguments.
+     */
+    private StringBuffer arguments(Object... args) {
+        StringBuffer arguments = new StringBuffer();
+
+        for(Object arg : args) {
+            arguments.append(arguments.length() == 0 ? "" : ", ");   // Separator if needed.
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
+            arguments.append(arg == null ? "null" : arg.toString()); // String value of the argument.
+            arguments.append(arg instanceof String ? "\"" : "");     // Enclosing " for String, if needed.
+        }
+
+        return arguments;
     }
 }

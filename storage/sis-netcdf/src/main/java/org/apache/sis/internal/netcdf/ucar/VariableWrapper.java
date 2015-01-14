@@ -30,7 +30,7 @@ import org.apache.sis.internal.netcdf.Variable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class VariableWrapper extends Variable {
@@ -66,6 +66,14 @@ final class VariableWrapper extends Variable {
     @Override
     public String getDescription() {
         return variable.getDescription();
+    }
+
+    /**
+     * Returns the unit of measurement as a string, or {@code null} if none.
+     */
+    @Override
+    public String getUnitsString() {
+        return variable.getUnitsString();
     }
 
     /**

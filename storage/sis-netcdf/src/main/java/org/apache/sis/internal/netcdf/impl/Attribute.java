@@ -52,11 +52,17 @@ final class Attribute {
     /**
      * The value, either as a {@link String} or as an array of primitive type.
      * Never {@code null} and never an empty string or empty array.
+     *
+     * <p>If the value is a {@code String}, then leading and trailing spaces and control characters
+     * have been trimmed by {@link String#trim()}.</p>
      */
     final Object value;
 
     /**
      * Creates a new attribute of the given name and value.
+     *
+     * @param name  The attribute name (can not be null).
+     * @param value The value (trimmed if a {@code String}).
      */
     Attribute(final String name, final Object value) {
         this.name  = name;
