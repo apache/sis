@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -31,6 +32,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -39,13 +41,14 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
@@ -53,7 +56,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -137,7 +139,7 @@ public final class CRS extends Static {
     public static CoordinateReferenceSystem forCode(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
-        ensureNonNull("code", code);
+        ArgumentChecks.ensureNonNull("code", code);
         final String authority;
         final String value;
         final DefinitionURI uri = DefinitionURI.parse(code);
@@ -423,5 +425,82 @@ public final class CRS extends Static {
             singles = Collections.singletonList((SingleCRS) crs);
         }
         return singles;
+    }
+
+    /**
+     * Returns the coordinate reference system in the given range of dimension indices.
+     * This method processes as below:
+     *
+     * <ul>
+     *   <li>If the given {@code crs} is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if {@code lower} is 0 and {@code upper} if the number of CRS dimensions,
+     *       then this method returns the given CRS unchanged.</li>
+     *   <li>Otherwise if the given CRS is an instance of {@link CompoundCRS}, then this method
+     *       searches for a {@linkplain CompoundCRS#getComponents() component} where:
+     *       <ul>
+     *         <li>The {@linkplain CoordinateSystem#getDimension() number of dimensions} is
+     *             equals to {@code upper - lower};</li>
+     *         <li>The sum of the number of dimensions of all previous CRS is equals to
+     *             {@code lower}.</li>
+     *       </ul>
+     *       If such component is found, then it is returned.</li>
+     *   <li>Otherwise (i.e. no component match), this method returns {@code null}.</li>
+     * </ul>
+     *
+     * This method does <strong>not</strong> attempt to build new CRS from the components.
+     * For example it does not attempt to create a 3D geographic CRS from a 2D one + a vertical component.
+     *
+     * @param  crs   The coordinate reference system to decompose, or {@code null}.
+     * @param  lower The first dimension to keep, inclusive.
+     * @param  upper The last  dimension to keep, exclusive.
+     * @return The sub-coordinate system, or {@code null} if the given {@code crs} was {@code null}
+     *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
+     * @throws IndexOutOfBoundsException If the given index are out of bounds.
+     *
+     * @since 0.5
+     *
+     * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
+     */
+    public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
+        if (crs != null) {
+            int dimension = crs.getCoordinateSystem().getDimension();
+            ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
+check:      while (lower != 0 || upper != dimension) {
+                if (crs instanceof CompoundCRS) {
+                    final List<CoordinateReferenceSystem> components = ((CompoundCRS) crs).getComponents();
+                    final int size = components.size();
+                    for (int i=0; i<size; i++) {
+                        crs = components.get(i);
+                        dimension = crs.getCoordinateSystem().getDimension();
+                        if (lower < dimension) {
+                            // The requested dimensions may intersect the dimension of this CRS.
+                            // The outer loop will perform the verification, and eventually go
+                            // down again in the tree of sub-components.
+                            continue check;
+                        }
+                        lower -= dimension;
+                        upper -= dimension;
+                    }
+                }
+                return null;
+            }
+        }
+        return crs;
+    }
+
+    /**
+     * Returns the Greenwich longitude of the prime meridian of the given CRS in degrees.
+     * If the prime meridian uses an other unit than degrees, then the value will be converted.
+     *
+     * @param  crs The coordinate reference system from which to get the prime meridian.
+     * @return The Greenwich longitude (in degrees) of the prime meridian of the given CRS.
+     *
+     * @since 0.5
+     *
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(Unit)
+     */
+    public static double getGreenwichLongitude(final GeodeticCRS crs) {
+        ArgumentChecks.ensureNonNull("crs", crs);
+        return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), NonSI.DEGREE_ANGLE);
     }
 }

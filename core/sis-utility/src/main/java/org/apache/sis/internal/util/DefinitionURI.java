@@ -49,7 +49,9 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *   <li>an arbitrary amount of {@linkplain #parameters}</li>
  * </ul>
  *
- * The <cite>object type</cite> can be:
+ * The <cite>object type</cite> can be one of the following name.
+ * Mapping between those names and GeoAPI interfaces is provided by the
+ * {@link org.apache.sis.internal.metadata.NameMeaning} class.
  * <table class="sis">
  *   <caption>Recognized object types in URN</caption>
  *   <tr><th>Object type</th>         <th>Meaning</th></tr>

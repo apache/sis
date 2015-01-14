@@ -246,8 +246,8 @@ public class TransferFunction implements Cloneable, Serializable {
         } else if (function instanceof LogarithmicTransform1D) {
             final LogarithmicTransform1D f = (LogarithmicTransform1D) function;
             type   = TransferFunctionType.LOGARITHMIC;
-            base   = f.getBase();
-            offset = f.getOffset();
+            base   = f.base();
+            offset = f.offset();
             scale  = 1;
         } else {
             /*

@@ -121,7 +121,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
         metadata.setLanguages(singleton(Locale.ENGLISH));
         metadata.setCharacterSets(singleton(StandardCharsets.UTF_8));
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Common Data Index record")));
-        metadata.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
+        metadata.setDateInfo(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
          * Contact information for the author. The same party will be used for custodian and distributor,
          * with only the role changed. Note that we need to create an instance of the deprecated class,
@@ -233,7 +233,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                 name.setDates(singleton(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
-                aggregateInfo.setAssociationType(AssociationType.LARGER_WORD_CITATION);
+                aggregateInfo.setAssociationType(AssociationType.LARGER_WORD_CITATION); // There is a typo ("WORD" → "WORK"), but we have to use the wrong spelling for this branch.
                 identification.setAggregationInfo(singleton(aggregateInfo));
             }
             /*
