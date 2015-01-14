@@ -215,7 +215,7 @@ public final strictfp class MetadataMock implements Metadata {
      * @return {@code null}.
      */
     @Override
-    public Collection<? extends CitationDate> getDates() {
+    public Collection<? extends CitationDate> getDateInfo() {
         return null;
     }
 
