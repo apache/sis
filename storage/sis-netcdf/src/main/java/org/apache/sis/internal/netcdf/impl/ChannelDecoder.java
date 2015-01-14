@@ -329,10 +329,9 @@ public final class ChannelDecoder extends Decoder {
         if (length < 0) {
             throw malformedHeader();
         }
-        final ByteBuffer buffer = input.buffer;
         final int size = ensureBufferContains(length, 1, "<name>");
         final String text = input.readString(length, NAME_ENCODING);
-        buffer.position(buffer.position() + (size - length));
+        input.buffer.position(input.buffer.position() + (size - length));
         return text;
     }
 
@@ -340,6 +339,9 @@ public final class ChannelDecoder extends Decoder {
      * Returns the values of the given type. In the given type is {@code CHAR}, then this method returns the values
      * as a {@link String}. Otherwise this method returns the value as an array of the corresponding primitive type
      * and the given length.
+     *
+     * <p>If the value is a {@code String}, then leading and trailing spaces and control characters have been trimmed
+     * by {@link String#trim()}.</p>
      *
      * @return The value, or {@code null} if it was an empty string or an empty array.
      */
@@ -432,6 +434,9 @@ public final class ChannelDecoder extends Decoder {
      *   <li>The number of values of the above type         (use {@link #readInt()})</li>
      *   <li>The actual values as a variable length list    (use {@link #readValues(String,int,int)})</li>
      * </ul>
+     *
+     * If the value is a {@code String}, then leading and trailing spaces and control characters
+     * have been trimmed by {@link String#trim()}.
      *
      * @param nelems The number of attributes to read.
      */

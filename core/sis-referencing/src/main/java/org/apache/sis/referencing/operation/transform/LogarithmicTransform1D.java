@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
@@ -32,7 +33,7 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Logarithms in bases other than <var>e</var> or 10 are computed by concatenating a linear transform,
  * using the following mathematical identity:</p>
  *
- * <blockquote>    log<sub>base</sub>(<var>x</var>) = ln(<var>x</var>) / ln(base)    </blockquote>
+ * <blockquote>log<sub>base</sub>(<var>x</var>) = ln(<var>x</var>) / ln(base)</blockquote>
  *
  * {@section Serialization}
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -80,8 +81,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         ArgumentChecks.ensureStrictlyPositive("base", base);
         if (base == 10) {
             return Base10.create(offset);
+        } else {
+            return NATURAL.concatenate(1 / Math.log(base), offset);
         }
-        return NATURAL.concatenate(1 / Math.log(base), offset);
     }
 
     /**
@@ -110,11 +112,9 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * {@link LinearTransform1D} and {@link ExponentialTransform1D}.
      *
      * @param  other The math transform to apply.
-     * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
-     *         followed by {@code this}, or {@code false} if the transformation order is
-     *         {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined
-     *         transform is available.
+     * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
+     *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
     final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
@@ -122,12 +122,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
             final LinearTransform1D linear = (LinearTransform1D) other;
             if (applyOtherFirst) {
                 if (linear.offset == 0 && linear.scale > 0) {
-                    return create(getBase(), Math.log(linear.scale) / getLogBase() + getOffset());
+                    return create(base(), transform(linear.scale));
                 }
             } else {
-                final double newBase = Math.pow(getBase(), 1 / linear.scale);
+                final double newBase = pow(1 / linear.scale);
                 if (!Double.isNaN(newBase)) {
-                    return create(newBase, linear.scale * getOffset() + linear.offset);
+                    return create(newBase, linear.transform(offset()));
                 }
             }
         } else if (other instanceof ExponentialTransform1D) {
@@ -151,22 +151,22 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     /**
      * Returns the base of this logarithmic function.
      */
-    double getBase() {
+    double base() {
         return Math.E;
     }
 
     /**
      * Returns the natural logarithm of the base of this logarithmic function.
-     * More specifically, returns <code>{@linkplain Math#log(double) Math.log}({@linkplain #getBase()})</code>.
+     * More specifically, returns <code>{@linkplain Math#log(double) Math.log}({@link #base()})</code>.
      */
-    double getLogBase() {
+    double lnBase() {
         return 1;
     }
 
     /**
      * Returns the offset applied after this logarithmic function.
      */
-    double getOffset() {
+    double offset() {
         return 0;
     }
 
@@ -179,7 +179,17 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
     }
 
     /**
-     * Returns the logarithm of the given value in the base given to this transform constructor.
+     * Returns the base of this logarithmic transform raised to the given power.
+     *
+     * @param value The power to raise the base.
+     * @return The base of this transform raised to the given power.
+     */
+    double pow(final double value) {
+        return Math.exp(value);
+    }
+
+    /**
+     * Returns the logarithm of the given value in the base of this logarithmic transform.
      * This method is similar to {@link #transform(double)} except that the offset is not added.
      *
      * @param  value The value for which to compute the log.
@@ -300,19 +310,19 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
 
         /** {@inheritDoc} */
         @Override
-        double getBase() {
+        double base() {
             return 10;
         }
 
         /** {@inheritDoc} */
         @Override
-        double getLogBase() {
+        double lnBase() {
             return LOG_10;
         }
 
         /** {@inheritDoc} */
         @Override
-        double getOffset() {
+        double offset() {
             return offset;
         }
 
@@ -320,6 +330,12 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
         @Override
         public double derivative(final double value) {
             return (1 / LOG_10) / value;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double pow(final double value) {
+            return MathFunctions.pow10(value);
         }
 
         /** {@inheritDoc} */
@@ -345,7 +361,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
                 srcOff += numPts;
                 dstOff += numPts;
                 while (--numPts >= 0) {
-                    dstPts[--dstOff] = Math.log10(srcPts[srcOff++]) + offset;
+                    dstPts[--dstOff] = Math.log10(srcPts[--srcOff]) + offset;
                 }
             }
         }
@@ -361,7 +377,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
                 srcOff += numPts;
                 dstOff += numPts;
                 while (--numPts >= 0) {
-                    dstPts[--dstOff] = (float) (Math.log10(srcPts[srcOff++]) + offset);
+                    dstPts[--dstOff] = (float) (Math.log10(srcPts[--srcOff]) + offset);
                 }
             }
         }

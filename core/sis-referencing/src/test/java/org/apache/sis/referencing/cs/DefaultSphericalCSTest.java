@@ -30,17 +30,17 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultSphericalCSTest extends TestCase {
     /**
-     * Tests the normalization of a coordinate system.
+     * Tests the conventional orientation of a coordinate system.
      */
     @Test
-    public void testNormalize() {
-        final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.NORMALIZED);
+    public void testConventionalOrientation() {
+        final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame(SPHERICAL, normalized);
         assertEquals(new DefaultSphericalCS(
             Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (deg), North (deg), Up (m)."),

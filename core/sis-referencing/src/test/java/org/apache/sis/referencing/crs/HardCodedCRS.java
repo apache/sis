@@ -33,7 +33,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class HardCodedCRS {
@@ -71,6 +71,22 @@ public final strictfp class HardCodedCRS {
      */
     public static final DefaultGeographicCRS WGS84_3D = new DefaultGeographicCRS(
             properties("WGS 84 (3D)"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
+
+    /**
+     * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
+     * increasing towards the East and latitude values increasing towards the North.
+     * The angular units are decimal degrees except for the prime meridian (Paris),
+     * which is measured in grades.
+     *
+     * <p>This CRS is equivalent to {@code EPSG:4807} except for axis order and units of measurement,
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades. The main purpose of
+     * this CRS is to test operations between CRS having different prime meridian.</p>
+     *
+     * @since 0.5
+     */
+    public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
+            properties("NTF (Paris)"), HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
@@ -143,7 +159,14 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
 
     /**
-     * A (λ,φ,h,t) CRS where <var>h</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * A (λ,φ,H) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * This constant uses the "geoid" term as an approximation for the gravity related height.
+     */
+    public static final DefaultCompoundCRS GEOID_3D = new DefaultCompoundCRS(
+            properties("WGS 84 + height"), WGS84, GRAVITY_RELATED_HEIGHT);
+
+    /**
+     * A (λ,φ,H,t) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT} and <var>t</var> is {@link #TIME}.
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(

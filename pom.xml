@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>15</version>
+    <version>16</version>
   </parent>
 
 
@@ -341,7 +341,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>1.1.1</version>
+        <version>1.2</version>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>
@@ -357,7 +357,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.8</version>
+        <version>1.9</version>
       </dependency>
 
       <!-- Optional dependencies -->
@@ -516,10 +516,43 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
+      <!-- Checkstype configuration
+           Legal note: Checkstyle is under LGPL license, but it is okay to use it only for
+           the build if it is downloaded by Maven (not included in Apache SIS distribution).
+           See http://www.apache.org/legal/resolved.html#prohibited
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.13</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <consoleOutput>true</consoleOutput>
+              <checkstyleRules>
+                <module name="Checker">
+                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
+<!--              <module name="NewlineAtEndOfFile"/>   <!-  Checks that there is a newline at the end of each file. ->
+                  <module name="TreeWalker">
+                    <module name="RedundantImport"/>    <!- Checks for redundant import statements. ->
+                    <module name="GenericWhitespace"/>  <!- Checks that the whitespace around the Generic tokens follow the typical convention. ->
+                  </module> -->
+                </module>
+              </checkstyleRules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
+        <version>2.10.1</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -533,8 +566,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
-          <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
-          <validateLinks>true</validateLinks>
+          <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <links>
             <link>http://www.geoapi.org/snapshot/pending</link>
           </links>
@@ -646,7 +678,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.8</version>
+          <version>1.9.1</version>
         </plugin>
         <plugin>
           <groupId>org.mortbay.jetty</groupId>

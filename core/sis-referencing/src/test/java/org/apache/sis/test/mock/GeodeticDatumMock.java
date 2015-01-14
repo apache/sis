@@ -32,7 +32,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @SuppressWarnings("serial")
@@ -56,6 +56,15 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
      * The "North American Datum 1927" datum with "Clarke 1866" ellipsoid.
      */
     public static final GeodeticDatum NAD27 = new GeodeticDatumMock("NAD27", 6378206.4, 6356583.8, 294.97869821390583, false);
+
+    /**
+     * The "Nouvelle Triangulation Française" (EPSG:6807) datum with "Clarke 1880 (IGN)" ellipsoid.
+     * This is the same datum than "Nouvelle Triangulation Française (Paris)" (EPSG:6275) except
+     * for the prime meridian, which is Greenwich instead of Paris.
+     *
+     * @since 0.5
+     */
+    public static final GeodeticDatum NTF = new GeodeticDatumMock("NTF", 6378249.2, 6356515, 293.4660212936269, false);
 
     /**
      * The sphere based on the GRS 1980 Authalic sphere.

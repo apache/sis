@@ -30,7 +30,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.13)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class AxisDirections extends Static {
@@ -379,6 +379,34 @@ public final class AxisDirections extends Static {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Returns the index of the first dimension in {@code cs} where axes are colinear with the {@code subCS} axes.
+     * If no such dimension is found, returns -1.
+     *
+     * @param  cs    The coordinate system which contains all axes.
+     * @param  subCS The coordinate system to search into {@code cs}.
+     * @return The first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
+     *
+     * @since 0.5
+     */
+    public static int indexOfColinear(final CoordinateSystem cs, final CoordinateSystem subCS) {
+        final int dim = indexOfColinear(cs, subCS.getAxis(0).getDirection());
+        if (dim >= 0) {
+            int i = subCS.getDimension();
+            if (dim + i > cs.getDimension()) {
+                return -1;
+            }
+            while (--i > 0) { // Intentionally exclude 0.
+                if (!absolute(subCS.getAxis(i).getDirection()).equals(
+                     absolute(cs.getAxis(i + dim).getDirection())))
+                {
+                    return -1;
+                }
+            }
+        }
+        return dim;
     }
 
     /**

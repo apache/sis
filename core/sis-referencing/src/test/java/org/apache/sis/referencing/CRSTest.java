@@ -17,8 +17,10 @@
 package org.apache.sis.referencing;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -33,13 +35,18 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
     CommonCRSTest.class
 })
 public final strictfp class CRSTest extends TestCase {
+    /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
@@ -152,5 +159,84 @@ public final strictfp class CRSTest extends TestCase {
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.GEOID_4D));
+    }
+
+    /**
+     * Tests {@link CRS#getComponentAt(CoordinateReferenceSystem, int, int)}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testGetComponentAt() {
+        testGetComponentAt(
+                null, // Null because our CRS has no component for the 'x' axis alone.
+                null, // Null because our CRS has no component for the 'y' axis alone.
+                HardCodedCRS.GRAVITY_RELATED_HEIGHT,
+                HardCodedCRS.TIME,
+                HardCodedCRS.WGS84,
+                null, // Null because our CRS has no (x,y,z) component.
+                HardCodedCRS.GEOID_4D);
+        /*
+         * The above tests was for the standard (x,y,z,t) flat view.
+         * Now test again, but with a more hierarchical structure: ((x,y,z),t)
+         */
+        testGetComponentAt(
+                null, // Null because our CRS has no component for the 'x' axis alone.
+                null, // Null because our CRS has no component for the 'y' axis alone.
+                HardCodedCRS.GRAVITY_RELATED_HEIGHT,
+                HardCodedCRS.TIME,
+                HardCodedCRS.WGS84,
+                HardCodedCRS.GEOID_3D,
+                new DefaultCompoundCRS(IdentifiedObjects.getProperties(HardCodedCRS.GEOID_4D),
+                        HardCodedCRS.GEOID_3D, HardCodedCRS.TIME));
+    }
+
+    /**
+     * Tests {@link CRS#getComponentAt(CoordinateReferenceSystem, int, int)} on a (x,y,z,t)
+     * coordinate reference system having 4 dimensions. All arguments given to this method
+     * except the last one are the expected components, which may be {@code null}.
+     */
+    private static void testGetComponentAt(
+            final CoordinateReferenceSystem x,
+            final CoordinateReferenceSystem y,
+            final CoordinateReferenceSystem z,
+            final CoordinateReferenceSystem t,
+            final CoordinateReferenceSystem xy,
+            final CoordinateReferenceSystem xyz,
+            final CoordinateReferenceSystem xyzt)
+    {
+        assertSame("[0…4]", xyzt, CRS.getComponentAt(xyzt, 0, 4));
+        assertSame("[0…3]", xyz,  CRS.getComponentAt(xyzt, 0, 3));
+        assertSame("[0…2]", xy,   CRS.getComponentAt(xyzt, 0, 2));
+        assertSame("[0…1]", x,    CRS.getComponentAt(xyzt, 0, 1));
+        assertSame("[1…2]", y,    CRS.getComponentAt(xyzt, 1, 2));
+        assertSame("[2…3]", z,    CRS.getComponentAt(xyzt, 2, 3));
+        assertSame("[3…4]", t,    CRS.getComponentAt(xyzt, 3, 4));
+        assertNull("[1…3]",       CRS.getComponentAt(xyzt, 1, 3));
+        assertNull("[1…4]",       CRS.getComponentAt(xyzt, 1, 4));
+        assertNull("[2…4]",       CRS.getComponentAt(xyzt, 2, 4));
+        assertNull("[4…4]",       CRS.getComponentAt(xyzt, 4, 4));
+
+        if (xyz != null) {
+            assertSame("[0…3]", xyz, CRS.getComponentAt(xyz, 0, 3));
+            assertSame("[0…2]", xy,  CRS.getComponentAt(xyz, 0, 2));
+            assertSame("[0…1]", x,   CRS.getComponentAt(xyz, 0, 1));
+            assertSame("[1…2]", y,   CRS.getComponentAt(xyz, 1, 2));
+            assertSame("[2…3]", z,   CRS.getComponentAt(xyz, 2, 3));
+        }
+        if (xy != null) {
+            assertSame("[0…2]", xy, CRS.getComponentAt(xy, 0, 2));
+            assertSame("[0…1]", x,  CRS.getComponentAt(xy, 0, 1));
+            assertSame("[1…2]", y,  CRS.getComponentAt(xy, 1, 2));
+        }
+    }
+
+    /**
+     * Tests {@link CRS#getGreenwichLongitude(GeodeticCRS)}.
+     */
+    @Test
+    public void testGetGreenwichLongitude() {
+        assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
+        assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF),   1E-12);
     }
 }

@@ -33,7 +33,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class AxisDirectionsTest extends TestCase {
@@ -332,5 +332,29 @@ public final strictfp class AxisDirectionsTest extends TestCase {
     public void testIndexOfColinear() {
         assertEquals(1, AxisDirections.indexOfColinear(HardCodedCS.GEODETIC_3D, AxisDirection.NORTH));
         assertEquals(1, AxisDirections.indexOfColinear(HardCodedCS.GEODETIC_3D, AxisDirection.SOUTH));
+    }
+
+    /**
+     * Tests {@link AxisDirections#indexOfColinear(CoordinateSystem, CoordinateSystem)}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testIndexOfColinearCS() {
+        assertEquals(0, AxisDirections.indexOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.GEODETIC_2D));
+
+        assertEquals(2, AxisDirections.indexOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.ELLIPSOIDAL_HEIGHT));
+
+        assertEquals(2, AxisDirections.indexOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.DEPTH));
+
+        assertEquals(-1, AxisDirections.indexOfColinear(
+                HardCodedCS.GEODETIC_3D,
+                HardCodedCS.DAYS));
     }
 }

@@ -22,10 +22,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static org.apache.sis.internal.metadata.ReferencingUtilities.toURNType;
 
 
 /**
@@ -154,7 +153,7 @@ public final class Code {
              */
             if (fallback != null) {
                 if (!isHTTP) {
-                    final String urn = DefinitionURI.format(toURNType(type), fallback);
+                    final String urn = DefinitionURI.format(NameMeaning.toObjectType(type), fallback);
                     if (urn != null) {
                         final Code code = new Code();
                         code.codeSpace = Citations.getIdentifier(fallback.getAuthority());

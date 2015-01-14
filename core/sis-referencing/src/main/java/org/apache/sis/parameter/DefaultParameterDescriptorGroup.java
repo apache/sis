@@ -103,7 +103,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
-     * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map) super-class constructor}.
+     * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map, int, int) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
      *
      * <table class="sis">
@@ -129,7 +129,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.apache.sis.parameter.AbstractParameterDescriptor#DESCRIPTION_KEY}</td>
+     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
