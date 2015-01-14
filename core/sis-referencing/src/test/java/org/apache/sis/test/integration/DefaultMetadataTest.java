@@ -108,7 +108,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
         metadata.setLanguages(singleton(Locale.ENGLISH));
         metadata.setCharacterSets(singleton(StandardCharsets.UTF_8));
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Common Data Index record")));
-        metadata.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
+        metadata.setDateInfo(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
          * Contact information for the author. The same party will be used for custodian and distributor,
          * with only the role changed. Note that we need to create an instance of the deprecated class,

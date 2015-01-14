@@ -82,7 +82,7 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
         assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
         assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLanguages()));
         assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getCharacterSets()));
-        assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDates()).getDate());
+        assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDateInfo()).getDate());
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>
