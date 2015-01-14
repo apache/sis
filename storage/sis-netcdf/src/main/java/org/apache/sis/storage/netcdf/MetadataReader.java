@@ -946,7 +946,7 @@ final class MetadataReader {
         metadata.setMetadataIdentifier(identifier);
         final Date creation = decoder.dateValue(METADATA_CREATION);
         if (creation != null) {
-            metadata.setDates(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
+            metadata.setDateInfo(singleton(new DefaultCitationDate(creation, DateType.CREATION)));
         }
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
         for (final String service : SERVICES) {

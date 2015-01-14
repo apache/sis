@@ -434,6 +434,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InfiniteArgumentValue_1 = 51;
 
         /**
+         * Inseparable transform.
+         */
+        public static final short InseparableTransform = 175;
+
+        /**
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
          */
         public static final short InsufficientArgumentSize_3 = 53;
@@ -477,11 +482,6 @@ public final class Errors extends IndexedResourceBundle {
          * Mismatched descriptor for “{0}” parameter.
          */
         public static final short MismatchedParameterDescriptor_1 = 146;
-
-        /**
-         * Bursa-Wolf parameters shall target a datum having the “{0}” prime meridian.
-         */
-        public static final short MismatchedPrimeMeridianInBWP_1 = 175;
 
         /**
          * Mismatched type for “{0}” property.
