@@ -29,8 +29,8 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -618,8 +618,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                      */
                     if (convention != Convention.INTERNAL && formatter.getEnclosingElement(2) == null) {
                         final FormattableObject parent = formatter.getEnclosingElement(1);
-                        if (parent != null && ReferencingUtilities.usesURN(cs)) {
-                            final String type = ReferencingUtilities.toURNType(parent.getClass());
+                        if (parent != null && NameMeaning.usesURN(cs)) {
+                            final String type = NameMeaning.toObjectType(parent.getClass());
                             if (type != null) {
                                 formatter.append(new URI(type, cs, version, code));
                             }

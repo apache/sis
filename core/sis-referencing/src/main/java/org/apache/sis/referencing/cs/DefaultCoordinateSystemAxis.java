@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.internal.metadata.ReferencingUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;

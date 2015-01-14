@@ -182,15 +182,29 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
 
     /**
      * Sets this spatio-temporal extent to values inferred from the specified envelope.
-     * The envelope shall have at least a temporal component. If a spatial component is
-     * also found, then:
+     * The given envelope shall have at least a spatial, vertical or temporal component.
      *
+     * <p>The spatial component is handled as below:</p>
      * <ul>
-     *   <li>If the collection of {@link #getSpatialExtent() spatial extents} contains a
-     *       {@link GeographicBoundingBox}, then that bounding box will be updated or replaced
-     *       by a bounding box containing the spatial component of the given envelope.</li>
-     *   <li>Otherwise a new {@link DefaultGeographicBoundingBox} with the spatial component
-     *       of the given envelope is added to the list of spatial extents.</li>
+     *   <li>If the given envelope has an horizontal component, then:
+     *     <ul>
+     *       <li>If the collection of {@linkplain #getSpatialExtent() spatial extents} contains a
+     *           {@link GeographicBoundingBox}, then that bounding box will be updated or replaced
+     *           by a bounding box containing the spatial component of the given envelope.</li>
+     *       <li>Otherwise a new {@link DefaultGeographicBoundingBox} with the spatial component
+     *           of the given envelope is added to the list of spatial extents.</li>
+     *     </ul>
+     *   </li>
+     *   <li>All extraneous geographic extents are removed.
+     *       Non-geographic extents (e.g. descriptions and polygons) are left unchanged.</li>
+     * </ul>
+     *
+     * <p>Other dimensions are handled in a more straightforward way:</p>
+     * <ul>
+     *   <li>The {@linkplain #getVerticalExtent() vertical extent} is set to the vertical component
+     *       of the given envelope, or {@code null} if none.</li>
+     *   <li>The {@linkplain #getExtent() temporal extent} is set to the temporal component
+     *       of the given envelope, or {@code null} if none.</li>
      * </ul>
      *
      * <b>Note:</b> This method is available only if the {@code sis-referencing} module is

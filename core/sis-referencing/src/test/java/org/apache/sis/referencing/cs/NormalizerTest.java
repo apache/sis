@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -166,23 +166,27 @@ public final strictfp class NormalizerTest extends TestCase {
      */
     @Test
     public void testNormalizeAxis() {
-        assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE));
-        assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE));
-        assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING));
-        assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING));
-        assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE));
-        assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME));
+        boolean normalizeUnits = false;
+        do { // Executed twice, first without units normalization, then with units normalization.
+            assertSame(HardCodedAxes.GEODETIC_LATITUDE,  Normalizer.normalize(HardCodedAxes.GEODETIC_LATITUDE, normalizeUnits));
+            assertSame(HardCodedAxes.GEODETIC_LONGITUDE, Normalizer.normalize(HardCodedAxes.GEODETIC_LONGITUDE, normalizeUnits));
+            assertSame(HardCodedAxes.EASTING,            Normalizer.normalize(HardCodedAxes.EASTING, normalizeUnits));
+            assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING, normalizeUnits));
+            assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE, normalizeUnits));
+            assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME, normalizeUnits));
+        } while ((normalizeUnits = !normalizeUnits) == true);
         /*
          * Test a change of unit from centimetre to metre.
          */
+        assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm, false));
         assertAxisEquals("Height", "h", AxisDirection.UP,
             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.HEIGHT_cm));
+            Normalizer.normalize(HardCodedAxes.HEIGHT_cm, true));
         /*
          * Test a change of direction from West to East.
          */
         assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
             AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.WESTING));
+            Normalizer.normalize(HardCodedAxes.WESTING, true));
     }
 }

@@ -48,7 +48,7 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 final class Normalizer implements Comparable<Normalizer> {
@@ -127,9 +127,10 @@ final class Normalizer implements Comparable<Normalizer> {
      * but with normalized axis direction and unit of measurement.
      *
      * @param  axis The axis to normalize.
+     * @param  normalizeUnits {@code true} for normalizing units.
      * @return An axis using normalized direction unit, or {@code axis} if the given axis already uses the given unit.
      */
-    static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis) {
+    static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis, final boolean normalizeUnits) {
         /*
          * Normalize the axis direction. For now we do not touch to inter-cardinal directions (e.g. "North-East")
          * because it is not clear which normalization policy would match common usage.
@@ -144,12 +145,16 @@ final class Normalizer implements Comparable<Normalizer> {
          * Normalize unit of measurement.
          */
         final Unit<?> unit = axis.getUnit(), newUnit;
-        if (Units.isLinear(unit)) {
-            newUnit = SI.METRE;
-        } else if (Units.isAngular(unit)) {
-            newUnit = NonSI.DEGREE_ANGLE;
-        } else if (Units.isTemporal(unit)) {
-            newUnit = NonSI.DAY;
+        if (normalizeUnits) {
+            if (Units.isLinear(unit)) {
+                newUnit = SI.METRE;
+            } else if (Units.isAngular(unit)) {
+                newUnit = NonSI.DEGREE_ANGLE;
+            } else if (Units.isTemporal(unit)) {
+                newUnit = NonSI.DAY;
+            } else {
+                newUnit = unit;
+            }
         } else {
             newUnit = unit;
         }
@@ -206,17 +211,18 @@ final class Normalizer implements Comparable<Normalizer> {
      * If no axis change is needed, then this method returns {@code cs} unchanged.
      *
      * @param  cs The coordinate system to normalize.
-     * @param  allowAxisChanges {@code true} for normalizing axis directions and units.
+     * @param  normalizeAxes  {@code true} for normalizing axis directions.
+     * @param  normalizeUnits {@code true} for normalizing units (currently ignored if {@code normalizeAxes} is {@code false}).
      * @return The normalized coordinate system.
      */
-    static AbstractCS normalize(final AbstractCS cs, final boolean allowAxisChanges) {
+    static AbstractCS normalize(final AbstractCS cs, final boolean normalizeAxes, final boolean normalizeUnits) {
         boolean changed = false;
         final int dimension = cs.getDimension();
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
         for (int i=0; i<dimension; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
-            if (allowAxisChanges) {
-                changed |= (axis != (axis = normalize(axis)));
+            if (normalizeAxes) {
+                changed |= (axis != (axis = normalize(axis, normalizeUnits)));
             }
             axes[i] = axis;
         }

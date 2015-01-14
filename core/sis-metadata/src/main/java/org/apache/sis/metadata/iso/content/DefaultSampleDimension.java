@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.SampleDimension;
+import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
