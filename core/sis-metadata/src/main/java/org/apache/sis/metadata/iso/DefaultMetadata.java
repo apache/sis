@@ -163,7 +163,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Date(s) associated with the metadata.
      */
-    private Collection<CitationDate> dates;
+    private Collection<CitationDate> dateInfo;
 
     /**
      * Citation(s) for the standard(s) to which the metadata conform.
@@ -271,7 +271,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         this.contacts  = singleton(contact, Responsibility.class);
         this.identificationInfo = singleton(identificationInfo, Identification.class);
         if (dateStamp != null) {
-            dates = singleton(new DefaultCitationDate(dateStamp, DateType.CREATION), CitationDate.class);
+            dateInfo = singleton(new DefaultCitationDate(dateStamp, DateType.CREATION), CitationDate.class);
         }
     }
 
@@ -293,7 +293,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
             metadataScopes                = copyCollection(object.getMetadataScopes(),                MetadataScope.class);
             contacts                      = copyCollection(object.getContacts(),                      Responsibility.class);
-            dates                         = copyCollection(object.getDates(),                         CitationDate.class);
+            dateInfo                      = copyCollection(object.getDateInfo(),                      CitationDate.class);
             metadataStandards             = copyCollection(object.getMetadataStandards(),             Citation.class);
             metadataProfiles              = copyCollection(object.getMetadataProfiles(),              Citation.class);
             alternativeMetadataReferences = copyCollection(object.getAlternativeMetadataReferences(), Citation.class);
@@ -799,8 +799,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @since 0.5
      */
     @Override
-    public Collection<CitationDate> getDates() {
-        return dates = nonNullCollection(dates, CitationDate.class);
+    public Collection<CitationDate> getDateInfo() {
+        return dateInfo = nonNullCollection(dateInfo, CitationDate.class);
     }
 
     /**
@@ -811,8 +811,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      */
-    public void setDates(final Collection<? extends CitationDate> newValues) {
-        dates = writeCollection(newValues, dates, CitationDate.class);
+    public void setDateInfo(final Collection<? extends CitationDate> newValues) {
+        dateInfo = writeCollection(newValues, dateInfo, CitationDate.class);
     }
 
     /**
@@ -826,7 +826,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "dateStamp", required = true)
     public Date getDateStamp() {
-        final Collection<CitationDate> dates = getDates();
+        final Collection<CitationDate> dates = getDateInfo();
         if (dates != null) {
             for (final CitationDate date : dates) {
                 if (DateType.CREATION.equals(date.getDateType())) {
@@ -847,7 +847,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setDateStamp(final Date newValue) {
         checkWritePermission();
-        Collection<CitationDate> newValues = dates; // See "Note about deprecated methods implementation"
+        Collection<CitationDate> newValues = dateInfo; // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
                 return;
@@ -872,7 +872,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             }
         }
         newValues.add(new DefaultCitationDate(newValue, DateType.CREATION));
-        setDates(newValues);
+        setDateInfo(newValues);
     }
 
     /**
