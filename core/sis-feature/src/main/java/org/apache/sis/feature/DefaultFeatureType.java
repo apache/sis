@@ -654,6 +654,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @param  name The name of the property to search.
      * @return The property for the given name, or {@code null} if none.
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     *
+     * @see AbstractFeature#getProperty(String)
      */
     @Override
     public PropertyType getProperty(final String name) throws IllegalArgumentException {
