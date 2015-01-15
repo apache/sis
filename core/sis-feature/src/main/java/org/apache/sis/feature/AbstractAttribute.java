@@ -276,8 +276,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      * all the "standard" characteristics and need no special processing.</div>
      *
      * {@section Reading a characteristic}
-     * If an attribute is known to be a measurement with a characteristic named "accuracy" of type {@link Float},
-     * then the accuracy value could be read as below:
+     * The characteristic values are enumerated in the {@linkplain Map#values() map values}.
+     * The {@linkplain Map#keySet() map keys} are the {@code String} representations of characteristics
+     * {@linkplain DefaultAttributeType#getName() name}, for more convenient lookups.
+     *
+     * <p>If an attribute is known to be a measurement with a characteristic named "accuracy"
+     * of type {@link Float}, then the accuracy value could be read as below:</p>
      *
      * {@preformat java
      *     Float getAccuracy(Attribute<?> measurement) {
@@ -324,7 +328,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *     }</li>
      * </ol>
      *
-     * @return Other attribute types that describes this attribute type, or an empty set if none.
+     * @return Other attribute types that describes this attribute type, or an empty map if none.
      *
      * @see DefaultAttributeType#characteristics()
      */

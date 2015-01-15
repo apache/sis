@@ -124,6 +124,7 @@ public abstract class AbstractFeature implements Serializable {
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      *
      * @see #getPropertyValue(String)
+     * @see DefaultFeatureType#getProperty(String)
      */
     public abstract Object getProperty(final String name) throws IllegalArgumentException;
 

@@ -467,7 +467,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (identifiers != null) {
             for (final ReferenceIdentifier identifier : identifiers) {
                 if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
+                    appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
                     appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
                 {
                     /*
