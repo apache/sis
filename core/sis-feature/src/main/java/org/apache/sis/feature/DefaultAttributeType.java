@@ -65,6 +65,8 @@ import org.opengis.feature.AttributeType;
  * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
  * The accuracy value is often constant for all instances of that attribute
  * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
+ *
+ * <div class="note"><b>Design note:</b>
  * Such accuracy could be stored as an ordinary, independent, attribute (like an other column in a table),
  * but storing accuracy as a {@linkplain #characteristics() characteristic} of the measurement attribute instead
  * provides the following advantages:
@@ -77,6 +79,7 @@ import org.opengis.feature.AttributeType;
  *   <li>In the common case of a {@linkplain DefaultFeatureType#isSimple() simple feature} with characteristics
  *       that are constants, declaring them as attribute characteristics allows to specify the constants only once.</li>
  * </ul>
+ * </div>
  *
  * Constant values of characteristics are given by their {@linkplain #getDefaultValue() default value}.
  * It is still possible for any specific {@code Attribute} instance to specify their own value,
@@ -291,10 +294,15 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * shall hold that constant.
      * </div>
      *
-     * @return Other attribute types that describes this attribute type, or an empty set if none.
+     * The characteristics are enumerated in the {@linkplain Map#values() map values}.
+     * The {@linkplain Map#keySet() map keys} are the {@code String} representations
+     * of characteristics {@linkplain #getName() name}, for more convenient lookups.
+     *
+     * @return Other attribute types that describes this attribute type, or an empty map if none.
      *
      * @see AbstractAttribute#characteristics()
      */
+    @Override
     public Map<String,AttributeType<?>> characteristics() {
         return (characteristics != null) ? characteristics : Collections.emptyMap();
     }

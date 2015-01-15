@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.simple;
 
+import java.util.Map;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.Type;
 import org.opengis.feature.Attribute;
@@ -152,6 +154,16 @@ public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Ser
     @Override
     public InternationalString getDescription() {
         return null;
+    }
+
+    /**
+     * Not used for this simple attribute type.
+     *
+     * @return Always empty.
+     */
+    @Override
+    public Map<String, AttributeType<?>> characteristics() {
+        return Collections.emptyMap();
     }
 
     /**
