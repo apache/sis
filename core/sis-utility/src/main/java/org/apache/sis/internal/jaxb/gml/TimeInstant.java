@@ -16,13 +16,13 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.Date;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.opengis.temporal.Instant;
-import org.opengis.temporal.Position;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.XmlUtilities;
 
@@ -78,14 +78,14 @@ public final class TimeInstant extends GMLAdapter {
      */
     static XMLGregorianCalendar toXML(final Instant instant) {
         if (instant != null) {
-            final Position position = instant.getPosition();
-            if (position != null) {
+            final Date date = instant.getDate();
+            if (date != null) {
                 final Context context = Context.current();
                 try {
-                    final XMLGregorianCalendar date = XmlUtilities.toXML(context, position.getDate());
-                    if (date != null) {
-                        XmlUtilities.trimTime(date, false);
-                        return date;
+                    final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
+                    if (gc != null) {
+                        XmlUtilities.trimTime(gc, false);
+                        return gc;
                     }
                 } catch (DatatypeConfigurationException e) {
                     Context.warningOccured(context, TimeInstant.class, "toXML", e, true);

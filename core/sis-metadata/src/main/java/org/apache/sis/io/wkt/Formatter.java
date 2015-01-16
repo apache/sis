@@ -168,6 +168,12 @@ public class Formatter implements Localized {
     private Citation authority;
 
     /**
+     * {@code true} for preserving non-ASCII characters. The default value is {@code false},
+     * which causes replacements like "é" → "e" in all elements except {@code REMARKS["…"]}.
+     */
+    boolean isNonAsciiAllowed;
+
+    /**
      * The enclosing WKT element being formatted.
      *
      * @see #getEnclosingElement(int)
@@ -372,11 +378,12 @@ public class Formatter implements Localized {
     final void configure(Convention convention, final Citation authority, final Colors colors,
             final boolean toUpperCase, final byte indentation)
     {
-        this.convention  = convention;
-        this.authority   = (authority != null) ? authority : convention.getNameAuthority();
-        this.colors      = colors;
-        this.toUpperCase = toUpperCase;
-        this.indentation = indentation;
+        this.convention   = convention;
+        this.authority    = (authority != null) ? authority : convention.getNameAuthority();
+        this.colors       = colors;
+        this.toUpperCase  = toUpperCase;
+        this.indentation  = indentation;
+        isNonAsciiAllowed = (convention == Convention.INTERNAL);
     }
 
     /**
@@ -859,7 +866,8 @@ public class Formatter implements Localized {
                 final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
                 if (matrix != null) {
                     openElement(true, "Param_MT");
-                    quote("Affine");
+                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append("Affine")
+                          .appendCodePoint(symbols.getClosingQuote(0));
                     indent(+1);
                     append(matrix);
                     indent(-1);
@@ -890,7 +898,7 @@ public class Formatter implements Localized {
         boolean columns = false;
         do {
             openElement(true, "Parameter");
-            quote(columns ? "num_col" : "num_row");
+            buffer.appendCodePoint(openQuote).append(columns ? "num_col" : "num_row").appendCodePoint(closeQuote);
             append(columns ? numCol : numRow);
             closeElement(false);
         } while ((columns = !columns) == true);
@@ -932,9 +940,7 @@ public class Formatter implements Localized {
             final String localized = CharSequences.trimWhitespaces(text.toString(locale));
             if (localized != null && !localized.isEmpty()) {
                 openElement(true, keyword);
-                setColor(type);
-                quote(localized);
-                resetColor();
+                quote(localized, type);
                 closeElement(true);
             }
         }
@@ -950,9 +956,7 @@ public class Formatter implements Localized {
     public void append(final String text, final ElementKind type) {
         if (text != null) {
             appendSeparator();
-            setColor(type);
-            quote(text);
-            resetColor();
+            quote(text, type);
         }
     }
 
@@ -961,10 +965,16 @@ public class Formatter implements Localized {
      * that character will be doubled (WKT 2) or deleted (WKT 1). We check for the closing quote only because
      * it is the character that the parser will look for determining the text end.
      */
-    private void quote(final String text) {
+    private void quote(final String text, final ElementKind type) {
+        setColor(type);
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-        buffer.append(text);
+        if (isNonAsciiAllowed || (type == ElementKind.REMARKS)) {
+            buffer.append(text);
+        } else {
+            buffer.append(CharSequences.toASCII(text));
+        }
         closeQuote(base);
+        resetColor();
     }
 
     /**

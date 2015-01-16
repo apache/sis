@@ -212,21 +212,38 @@ public final class StringBuilders extends Static {
      */
     static CharSequence toASCII(CharSequence text, StringBuilder buffer) {
         if (text != null) {
-            final int length = text.length();
-            for (int i=0; i<length;) {
-                final int c = codePointAt(text, i);
+            /*
+             * Scan the buffer in reverse order because we may suppress some characters.
+             */
+            int i = text.length();
+            while (i > 0) {
+                final int c = codePointBefore(text, i);
+                final int n = charCount(c);
                 final int r = c - 0xC0;
-                if (r >= 0 && r<ASCII.length()) {
-                    final char ac = ASCII.charAt(r);
+                i -= n; // After this line, 'i' is the index of character 'c'.
+                if (r >= 0) {
+                    final char cr; // The character replacement.
+                    if (r < ASCII.length()) {
+                        cr = ASCII.charAt(r);
+                    } else {
+                        switch (getType(c)) {
+                            case SPACE_SEPARATOR: cr = ' '; break;
+                            case PARAGRAPH_SEPARATOR: // Fall through
+                            case LINE_SEPARATOR: cr = '\n'; break;
+                            default: continue;
+                        }
+                    }
                     if (buffer == null) {
                         buffer = new StringBuilder(text.length()).append(text);
                         text = buffer;
                     }
-                    // Nothing special do to about codepoint here, since 'c' is
-                    // in the basic plane (verified by the r<ASCII.length() check).
-                    buffer.setCharAt(i, ac);
+                    if (n == 2) {
+                        buffer.deleteCharAt(i + 1); // Remove the low surrogate of a surrogate pair.
+                    }
+                    // Nothing special to do about codepoint here, since 'c' is in
+                    // the basic plane (verified by the r < ASCII.length() check).
+                    buffer.setCharAt(i, cr);
                 }
-                i += charCount(c);
             }
         }
         return text;
