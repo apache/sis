@@ -16,19 +16,13 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import java.sql.Time;
 import java.util.Date;
-import java.util.Collection;
-import java.util.Collections;
 import org.opengis.temporal.Instant;
-import org.opengis.temporal.Period;
 import org.opengis.temporal.Duration;
-import org.opengis.temporal.Position;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
-import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 
@@ -42,7 +36,7 @@ import org.apache.sis.internal.simple.SimpleIdentifiedObject;
  * @module
  */
 @SuppressWarnings("serial")
-final class DummyInstant extends SimpleIdentifiedObject implements Instant, Position {
+final class DummyInstant extends SimpleIdentifiedObject implements Instant {
     /**
      * The time, in milliseconds elapsed since January 1st, 1970.
      */
@@ -64,26 +58,10 @@ final class DummyInstant extends SimpleIdentifiedObject implements Instant, Posi
     }
 
     /**
-     * Returns the position, which is {@code this}.
-     */
-    @Override
-    public Position getPosition() {
-        return this;
-    }
-
-    /**
-     * Empty properties.
-     */
-    @Override public Time                getTime()     {return null;}
-    @Override public InternationalString getDateTime() {return null;}
-    @Override public TemporalPosition    anyOther()    {return null;}
-    @Override public Collection<Period>  getBegunBy()  {return Collections.emptySet();}
-    @Override public Collection<Period>  getEndedBy()  {return Collections.emptySet();}
-    @Override public Duration            length()      {return null;}
-
-    /**
      * Unsupported operations.
      */
+    @Override public Duration         length()                                   {throw new UnsupportedOperationException();}
     @Override public RelativePosition relativePosition(TemporalPrimitive  other) {throw new UnsupportedOperationException();}
     @Override public Duration         distance(TemporalGeometricPrimitive other) {throw new UnsupportedOperationException();}
+    @Override public TemporalPosition getTemporalPosition()                      {throw new UnsupportedOperationException();}
 }
