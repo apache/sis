@@ -60,7 +60,7 @@ public final class TemporalUtilities extends Static {
      * Creates an instant for the given date using the given factory.
      */
     private static Instant createInstant(final TemporalFactory factory, final Date date) {
-        return factory.createInstant(factory.createPosition(date));
+        return factory.createInstant(date);
     }
 
     /**
