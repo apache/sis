@@ -27,6 +27,9 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
 
+// Branch-dependent imports
+import java.util.Objects;
+
 
 /**
  * An adapter for collections of a legacy type replaced by an other collection.
@@ -318,5 +321,47 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
                 }
             }
         };
+    }
+
+    /**
+     * Compares this collection with the given object for equality. This method performs comparisons only with
+     * instances of {@code LegacyPropertyAdapter}, and returns {@code false} for all other kinds of collection.
+     * We do <strong>not</strong> compare with arbitrary collection implementations.
+     *
+     * <p><b>Rational:</b> {@link Collection#equals(Object)} contract explicitely forbids comparisons with
+     * {@code List} and {@code Set}. The rational explained in {@code Collection} javadoc applies also to
+     * other kind of {@code Collection} implementations: we can not enforce {@code Collection.equals(Object)}
+     * to be symmetric in such cases.</p>
+     *
+     * @param  other The other object to compare with this collection, or {@code null}.
+     * @return {@code true} if the objects are equal, or {@code false} otherwise.
+     */
+    @Override
+    public final boolean equals(final Object other) {
+        if (!(other instanceof LegacyPropertyAdapter<?,?>)) {
+            return false;
+        }
+        final Iterator<?> ot = ((LegacyPropertyAdapter<?,?>) other).iterator();
+        final Iterator<L> it = iterator();
+        while (it.hasNext()) {
+            if (!ot.hasNext() || !Objects.equals(it.next(), ot.next())) {
+                return false;
+            }
+        }
+        return !ot.hasNext();
+    }
+
+    /**
+     * Returns a hash code value for this collection.
+     *
+     * @return A hash code value calculated from the content of this collection.
+     */
+    @Override
+    public final int hashCode() {
+        int code = 0;
+        for (final L element : this) {
+            code = code*31 + Objects.hashCode(element);
+        }
+        return code;
     }
 }

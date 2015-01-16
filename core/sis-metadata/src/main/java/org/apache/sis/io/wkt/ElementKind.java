@@ -114,6 +114,10 @@ public enum ElementKind {
     /**
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getRemarks() Remarks},
      * often represented by {@code REMARKS[…]} elements.
+     *
+     * <p>When formatting an ISO 19162 Well Known Text, texts quoted as remarks preserve non-ASCII characters.
+     * By contrast, quoted texts in any other {@code ElementKind} will have some non-ASCII characters replaced
+     * by ASCII ones (e.g. "é" → "e").</p>
      */
     REMARKS,
 

@@ -55,7 +55,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 public enum Convention {
     /**
      * The ISO 19162 format, also known as “WKT 2”.
-     * This convention follows the ISO recommendations except the following ones:
+     * This convention follows the ISO recommendations with the following exceptions:
      *
      * <ul>
      *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
@@ -144,6 +144,7 @@ public enum Convention {
      * with the following differences:
      *
      * <ul>
+     *   <li>All quoted texts (not only the remarks) preserve non-ASCII characters.</li>
      *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
      *       linear and non-linear steps, rather than as a single operation.</li>
      *   <li>{@code CompoundCRS} shows nested compound CRS if any (the structure is not flattened).</li>
@@ -155,8 +156,8 @@ public enum Convention {
      *       not only CRS or coordinate operations.</li>
      *   <li>Additional attributes not defined by ISO 19162 may be formatted:
      *     <ul>
-     *       <li>{@code ImageDatum} includes the {@link org.apache.sis.referencing.datum.DefaultImageDatum#getPixelInCell() Pixel in Cell} code.</li>
-     *       <li>{@code TemporalDatum} includes the {@link org.apache.sis.referencing.datum.DefaultTemporalDatum#getOrigin() Origin} date.</li>
+     *       <li>{@code ImageDatum} includes the {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum#getPixelInCell() Pixel in Cell} code.</li>
+     *       <li>{@code TemporalDatum} includes the {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum#getOrigin() Origin} date.</li>
      *     </ul>
      *   </li>
      * </ul>
