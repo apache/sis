@@ -238,7 +238,9 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         final DefaultMetadata metadata = new DefaultMetadata();
         assertTrue("hierarchyLevelNames", metadata.getHierarchyLevelNames().isEmpty());
         assertTrue("hierarchyLevels",     metadata.getHierarchyLevels().isEmpty());
-
+        /*
+         * Tests the setter and verify immediately with the getter methods.
+         */
         metadata.setHierarchyLevelNames(Arrays.asList(names));
         metadata.setHierarchyLevels(Arrays.asList(levels));
         assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
@@ -255,7 +257,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertEquals("metadataScopes[1].name", "Golden Gate Bridge", scope.getName().toString());
         assertEquals("metadataScopes[1].resourceScope", ScopeCode.FEATURE, scope.getResourceScope());
         /*
-         * Changes in the MetadataScope object shall be relfected immediately on the scope collection.
+         * Changes in the MetadataScope object shall be reflected immediately on the scope collection.
          * Verify that.
          */
         it.remove();
@@ -266,6 +268,17 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertTrue(scopes.add(c));
         assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
         assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
+        /*
+         * Test the customized equals(Object) and hashCode() implementations.
+         * Note: the 'assertNotSame' check is not a contract requirement. It is just that if
+         * 'n1' and 'n2' are the same, then the test become pointless and should be removed.
+         */
+        Collection<String> n1 = metadata.getHierarchyLevelNames();
+        Collection<String> n2 = metadata.getHierarchyLevelNames();
+        assertNotSame("Remove this test.", n1, n2); // See above comment.
+        assertTrue("equals", n1.equals(n2));
+        assertTrue("equals", n2.equals(n1));
+        assertEquals("hashCode", n1.hashCode(), n2.hashCode());
     }
 
     /**
