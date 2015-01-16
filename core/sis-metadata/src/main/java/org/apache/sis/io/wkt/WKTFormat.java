@@ -78,7 +78,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
  * @since   0.4 (derived from geotk-3.20)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public class WKTFormat extends CompoundFormat<Object> {
@@ -144,6 +144,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Whether WKT keywords shall be formatted in upper case.
      */
     private KeywordCase keywordCase;
+
+    /**
+     * {@code true} for preserving non-ASCII characters. The default value is {@code false},
+     * which causes replacements like "é" → "e" in all elements except {@code REMARKS["…"]}.
+     */
+    private boolean isNonAsciiAllowed;
 
     /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
@@ -215,6 +221,34 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.symbols = symbols.immutable();
             formatter = null;
         }
+    }
+
+    /**
+     * Returns whether non-ASCII characters are preserved. The default value is {@code false},
+     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
+     *
+     * <p>This value is always {@code true} when the WKT {@linkplain #getConvention() convention}
+     * is set to {@link Convention#INTERNAL}.</p>
+     *
+     * @return Whether non-ASCII characters are preserved.
+     *
+     * @since 0.5
+     */
+    public boolean isNonAsciiAllowed() {
+        return isNonAsciiAllowed || (convention == Convention.INTERNAL);
+    }
+
+    /**
+     * Sets whether non-ASCII characters shall be preserved. The default value is {@code false},
+     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
+     * Setting this property to {@code true} will disable such replacements.
+     *
+     * @param allowed Whether non-ASCII characters shall be preserved.
+     *
+     * @since 0.5
+     */
+    public void setNonAsciiAllowed(final boolean allowed) {
+        isNonAsciiAllowed = allowed;
     }
 
     /**
@@ -347,6 +381,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 default: toUpperCase = (convention.majorVersion() == 1); break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
+            formatter.isNonAsciiAllowed |= isNonAsciiAllowed;
         }
     }
 
