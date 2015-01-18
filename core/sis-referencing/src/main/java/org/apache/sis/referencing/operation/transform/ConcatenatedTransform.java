@@ -898,6 +898,9 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      *
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Concat_MT} is defined in the WKT 1 specification only.</div>
+     *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "Concat_MT"}.
      */
