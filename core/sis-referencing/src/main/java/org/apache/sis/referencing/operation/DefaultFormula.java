@@ -20,15 +20,15 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Formula;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.iso.Types;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Branch-dependent imports
 import java.util.Objects;
-import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -75,6 +75,38 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
         ensureNonNull("citation", citation);
         this.citation = citation;
         this.formula  = null;
+    }
+
+    /**
+     * Creates a new formula with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param formula The formula to copy.
+     *
+     * @see #castOrCopy(Formula)
+     */
+    protected DefaultFormula(final Formula formula) {
+        ensureNonNull("formula", formula);
+        this.citation = formula.getCitation();
+        this.formula  = formula.getFormula();
+    }
+
+    /**
+     * Returns a SIS formula implementation with the same values than the given arbitrary implementation.
+     * If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
+     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultFormula castOrCopy(final Formula object) {
+        return (object == null) || (object instanceof DefaultFormula)
+               ? (DefaultFormula) object : new DefaultFormula(object);
     }
 
     /**
@@ -129,8 +161,9 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
      *
      * <div class="note"><b>Compatibility note:</b>
      * ISO 19162 does not define a WKT representation for {@code Formula} objects.
-     * The text formatted by this method is SIS-specific and causes the text to be flagged as
-     * {@linkplain Formatter#setInvalidWKT(Class, Exception) invalid WKT}.</div>
+     * The text formatted by this method is SIS-specific and causes the text to be
+     * flagged as {@linkplain Formatter#setInvalidWKT(Class, Exception) invalid WKT}.
+     * The WKT content of this element may change in any future SIS version.</div>
      *
      * @return {@code "Formula"}.
      */
