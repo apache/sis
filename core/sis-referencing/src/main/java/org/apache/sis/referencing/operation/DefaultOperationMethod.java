@@ -46,6 +46,17 @@ import java.util.Objects;
  * contains an arbitrary amount of {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptors}.
  * Values for those parameters will be assigned by {@linkplain DefaultSingleOperation coordinate operations}.
  *
+ * <div class="note"><b>Departure from the ISO 19111 standard:</b>
+ * the following properties are mandatory according ISO 19111,
+ * but may be missing under some conditions in Apache SIS:
+ * <ul>
+ *   <li>The {@linkplain #getFormula() formula} if it has not been provided to the
+ *     {@linkplain #DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup) constructor}, or if it
+ *     can not be {@linkplain #DefaultOperationMethod(MathTransform) inferred from the given math transform}.</li>
+ *   <li>The {@linkplain #getParameters() parameters} if the {@link #DefaultOperationMethod(MathTransform)}
+ *     constructor can not infer them.</li>
+ * </ul></div>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5 (derived from geotk-2.0)
@@ -170,10 +181,15 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @param transform The math transform to describe.
      */
     public DefaultOperationMethod(final MathTransform transform) {
-        this(getProperties(transform),
-             transform.getSourceDimensions(),
-             transform.getTargetDimensions(),
-             (transform instanceof Parameterized) ? ((Parameterized) transform).getParameterDescriptors() : null);
+        super(getProperties(transform));
+        sourceDimension = transform.getSourceDimensions();
+        targetDimension = transform.getTargetDimensions();
+        if (transform instanceof Parameterized) {
+            parameters = ((Parameterized) transform).getParameterDescriptors();
+        } else {
+            parameters = null;
+        }
+        formula = null;
     }
 
     /**
@@ -317,6 +333,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formula(s) or procedure used by this operation method. This may be a reference to a
      * publication. Note that the operation method may not be analytic, in which case this
      * attribute references or contains the procedure, not an analytic formula.
+     *
+     * <div class="note"><b>Departure from the ISO 19111 standard:</b>
+     * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
+     *
+     * @return The formula used by this method, or {@code null} if unknown.
      */
     @Override
     public Formula getFormula() {
@@ -326,6 +347,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Number of dimensions in the source CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
+     *
+     * @return The dimension of source CRS, or {@code null} if unknown.
      */
     @Override
     public Integer getSourceDimensions() {
@@ -335,6 +358,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Number of dimensions in the target CRS of this operation method.
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
+     *
+     * @return The dimension of target CRS, or {@code null} if unknown.
      */
     @Override
     public Integer getTargetDimensions() {
@@ -343,6 +368,12 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Returns the set of parameters.
+     *
+     * <div class="note"><b>Departure from the ISO 19111 standard:</b>
+     * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
+     * {@linkplain #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     *
+     * @return The parameters, or {@code null} if unknown.
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
