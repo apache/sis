@@ -54,6 +54,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
+    org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
 
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
@@ -105,6 +106,9 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.CRSTest.class,
+
+    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
+    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

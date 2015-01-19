@@ -14,49 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.referencing.operation;
 
-import org.apache.sis.util.Static;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
- * Hard coded values (typically identifiers).
+ * Tests {@link DefaultFormula}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
  * @version 0.5
+ * @since   0.5
  * @module
  */
-public final class HardCoded extends Static {
+public final strictfp class DefaultFormulaTest extends TestCase {
     /**
-     * The {@value} code space.
+     * Tests {@link DefaultFormula#toWKT()}.
      */
-    public static final String EPSG = Citations.EPSG;
-
-    /**
-     * The {@value} code space.
-     */
-    public static final String CRS = "CRS";
-
-    /**
-     * The {@code CRS:27} identifier for a coordinate reference system.
-     */
-    public static final byte CRS27 = 27;
-
-    /**
-     * The {@code CRS:83} identifier for a coordinate reference system.
-     */
-    public static final byte CRS83 = 83;
-
-    /**
-     * The {@code CRS:84} identifier for a coordinate reference system.
-     */
-    public static final byte CRS84 = 84;
-
-    /**
-     * Do not allow instantiation of this class.
-     */
-    private HardCoded() {
+    @Test
+    public void testWKT() {
+        final DefaultFormula formula = new DefaultFormula("Mercator");
+        assertWktEquals("Formula[“Mercator”]", formula);
     }
 }

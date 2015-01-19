@@ -438,7 +438,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) CRS into the given formatter.
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      * The default implementation writes the following elements in WKT 2 format:
      *
      * <ul>

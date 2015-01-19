@@ -283,6 +283,71 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Returns what seems to be the "core" of the given math transform. This method should be used only
+     * for information purpose, since the definition of "core" is imprecise and may be adjusted in future
+     * SIS versions. The current algorithm is as below:
+     *
+     * <ul>
+     *   <li>If the given transform can be decomposed in {@linkplain #getSteps(MathTransform) steps}, then the steps for
+     *       {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping and scaling} are
+     *       ignored.</li>
+     *   <li>If the given transform or one of its steps is a {@link PassThroughTransform}, then its sub-transform
+     *       it taken.</li>
+     * </ul>
+     *
+     * @param  transform The math transform from which to get the "core" transform, or {@code null}.
+     * @return The "core" (may be the whole math transform), or {@code null} if the given argument was null.
+     */
+    public static MathTransform getCore(final MathTransform transform) {
+        MathTransform step = transform;
+        while (!isIgnorable(step)) {
+            if (step instanceof ConcatenatedTransform) {
+                // Ignore axis switch and scaling (usually unit conversions).
+                final ConcatenatedTransform c = (ConcatenatedTransform) step;
+                if (isIgnorable(c.transform1)) {
+                    step = c.transform2;
+                } else if (isIgnorable(c.transform2)) {
+                    step = c.transform1;
+                } else {
+                    return c; // Both components are non-ignorable: return the ConcatenatedTransform as a whole.
+                }
+            } else if (step instanceof PassThroughTransform) {
+                step = ((PassThroughTransform) step).subTransform;
+            } else {
+                return step;
+            }
+        }
+        return transform; // The full MathTransform is ignorable. Do not try to decompose it.
+    }
+
+    /**
+     * Returns {@code true} if the specified transform is likely to exists only for axis swapping
+     * and/or unit conversions. The heuristic rule checks if the transform is backed by a square
+     * matrix with exactly one non-null value in each row and each column. This method is used for
+     * implementation of the {@link #getCore(MathTransform)} method only.
+     */
+    private static boolean isIgnorable(final MathTransform transform) {
+        final Matrix matrix = getMatrix(transform);
+        if (matrix != null) {
+            final int size = matrix.getNumRow();
+            if (matrix.getNumCol() == size) {
+                for (int j=0; j<size; j++) {
+                    int n1=0, n2=0;
+                    for (int i=0; i<size; i++) {
+                        if (matrix.getElement(j,i) != 0) n1++;
+                        if (matrix.getElement(i,j) != 0) n2++;
+                    }
+                    if (n1 != 1 || n2 != 1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * If the given transform is linear, returns its coefficients as a matrix.
      * More specifically:
      *

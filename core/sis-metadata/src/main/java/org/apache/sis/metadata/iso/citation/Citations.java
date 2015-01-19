@@ -18,9 +18,9 @@ package org.apache.sis.metadata.iso.citation;
 
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -125,10 +125,16 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "PROJ4");
 
     /**
-     * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * This citation is used as an authority for
+     * The <a href="http://www.epsg.org">EPSG</a> dataset. This citation is used as an authority for
      * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
      * identifiers.
+     *
+     * <div class="note"><b>Historical note:</b>
+     * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
+     * But this meaning does not apply anymore since the European and American associations merged
+     * into the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
+     * The legacy acronym now applies only to the database Coordinate Reference System definitions,
+     * known as <cite>EPSG dataset</cite>.</div>
      *
      * @see #OGP
      * @see #AUTO
@@ -138,7 +144,9 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>("EPSG", "EPSG");
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>(
+            org.apache.sis.internal.util.Citations.EPSG,
+            org.apache.sis.internal.util.Citations.EPSG);
 
     /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
