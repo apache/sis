@@ -54,6 +54,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
+    org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
 
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
