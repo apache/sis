@@ -972,7 +972,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) object into the given formatter.
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this object.
      * The default implementation writes the following elements:
      *
      * <ul>

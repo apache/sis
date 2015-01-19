@@ -877,6 +877,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
      * The parameter group name is used as the math transform name.
      *
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Param_MT} is defined in the WKT 1 specification only.</div>
+     *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
      */
@@ -886,6 +889,9 @@ public abstract class AbstractMathTransform extends FormattableObject
         if (parameters != null) {
             WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
             WKTUtilities.append(parameters, formatter);
+        }
+        if (formatter.getConvention().majorVersion() != 1) {
+            formatter.setInvalidWKT(MathTransform.class, null);
         }
         return "Param_MT";
     }
@@ -1037,6 +1043,9 @@ public abstract class AbstractMathTransform extends FormattableObject
          * If this inverse math transform has any parameter values, then this method format the
          * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
+         *
+         * <div class="note"><b>Compatibility note:</b>
+         * {@code Param_MT} and {@code Inverse_MT} are defined in the WKT 1 specification only.</div>
          *
          * @param  formatter The formatter to use.
          * @return The WKT element name, which is {@code "Param_MT"} or

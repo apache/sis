@@ -136,7 +136,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         matrix.m13 = 2;
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth);
         assertInstanceOf("Expected a new passthrough transform.", PassThroughTransform.class, transform);
-        final MathTransform subTransform = ((PassThroughTransform) transform).getSubTransform();
+        final MathTransform subTransform = ((PassThroughTransform) transform).subTransform;
         assertInstanceOf("Expected a new concatenated transform.", ConcatenatedTransform.class, subTransform);
         assertSame(kernel, ((ConcatenatedTransform) subTransform).transform2);
         assertEquals("Source dimensions", 3, transform.getSourceDimensions());

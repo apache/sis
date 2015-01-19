@@ -416,7 +416,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) CS into the given formatter.
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this coordinate system.
      * This method does <strong>not</strong> format the axes, because they shall appear outside
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).

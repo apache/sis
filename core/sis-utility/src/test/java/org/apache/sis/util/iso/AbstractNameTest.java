@@ -21,8 +21,9 @@ import org.opengis.util.GenericName;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.internal.util.Citations.EPSG;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
@@ -43,7 +44,6 @@ public final strictfp class AbstractNameTest extends TestCase {
      */
     @Test
     public void testGlobalNamespace() {
-        final String EPSG = "EPSG";
         final DefaultLocalName name = new DefaultLocalName(null, EPSG);
         assertSame(EPSG, name.toString());
         assertSame(EPSG, name.toInternationalString().toString());
@@ -59,7 +59,6 @@ public final strictfp class AbstractNameTest extends TestCase {
      */
     @Test
     public void testEpsgNamespace() {
-        final String EPSG = "EPSG";
         final DefaultNameSpace ns = DefaultNameSpace.forName(new DefaultLocalName(null, EPSG),
                 DEFAULT_SEPARATOR_STRING, DEFAULT_SEPARATOR_STRING);
         assertSame(EPSG, ns.name().toString());
