@@ -107,6 +107,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.CRSTest.class,
 
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
+    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

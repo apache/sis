@@ -410,8 +410,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * have already been compared by the subclass.
                  */
                 final Datum that = (Datum) object;
-                return isHeuristicMatchForName(that. getName().getCode()) ||
-                       IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode());
+                return isHeuristicMatchForName(that.getName().getCode())
+                        || IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode());
             }
         }
     }

@@ -362,7 +362,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return {@code true} if both objects are equal.
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true; // Slight optimization.
@@ -370,6 +369,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (super.equals(object, mode)) {
             switch (mode) {
                 case STRICT: {
+                    // Name and identifiers have been compared by super.equals(object, mode).
                     final DefaultOperationMethod that = (DefaultOperationMethod) object;
                     return Objects.equals(this.formula,         that.formula) &&
                            Objects.equals(this.sourceDimension, that.sourceDimension) &&
@@ -377,18 +377,28 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                            Objects.equals(this.parameters,      that.parameters);
                 }
                 case BY_CONTRACT: {
+                    // Name and identifiers have been compared by super.equals(object, mode).
                     if (!Objects.equals(getFormula(), ((OperationMethod) object).getFormula())) {
                         return false;
                     }
-                    // Fall through
+                    break;
                 }
                 default: {
+                    // Name and identifiers have been ignored by super.equals(object, mode).
+                    // Since they are significant for OperationMethod, compare them here.
                     final OperationMethod that = (OperationMethod) object;
-                    return Objects.equals(getSourceDimensions(), that.getSourceDimensions()) &&
-                           Objects.equals(getTargetDimensions(), that.getTargetDimensions()) &&
-                           Utilities.deepEquals(getParameters(), that.getParameters(), mode);
+                    if (!isHeuristicMatchForName(that.getName().getCode())
+                            && !IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()))
+                    {
+                        return false;
+                    }
+                    break;
                 }
             }
+            final OperationMethod that = (OperationMethod) object;
+            return Objects.equals(getSourceDimensions(), that.getSourceDimensions()) &&
+                   Objects.equals(getTargetDimensions(), that.getTargetDimensions()) &&
+                   Utilities.deepEquals(getParameters(), that.getParameters(), mode);
         }
         return false;
     }
@@ -413,7 +423,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        formatter.newLine();
         return (formatter.getConvention().majorVersion() == 1) ? "Projection" : "Method";
     }
 }
