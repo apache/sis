@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -39,6 +38,23 @@ public final strictfp class MathTransformsTest extends TestCase {
      * For floating point comparisons.
      */
     private static final double STRICT = 0;
+
+    /**
+     * Creates a dummy transform for testing purpose.
+     * The transform has the folowing properties:
+     *
+     * <ul>
+     *   <li>The source and target dimensions are 3.</li>
+     *   <li>The transform contains 3 step.</li>
+     *   <li>The second step is a {@link PassThroughTransform}.</li>
+     *   <li>The transform in the middle (at dimension 1) is non-linear.</li>
+     * </ul>
+     *
+     * @return The dummy math transform.
+     */
+    public static MathTransform createConcatenateAndPassThrough() {
+        return createConcatenateAndPassThrough(new Matrix4(), new Matrix4());
+    }
 
     /**
      * Creates a dummy transform for testing purpose.
@@ -74,16 +90,5 @@ public final strictfp class MathTransformsTest extends TestCase {
         assertMatrixEquals("Step 1", scale, MathTransforms.getMatrix(steps.get(0)), STRICT);
         assertMatrixEquals("Step 3", swap,  MathTransforms.getMatrix(steps.get(2)), STRICT);
         assertInstanceOf  ("Step 2", PassThroughTransform.class, steps.get(1));
-    }
-
-    /**
-     * Tests {@link MathTransforms#getCore(MathTransform)}.
-     */
-    @Test
-    @DependsOnMethod("testGetSteps")
-    public void testGetCore() {
-        MathTransform tr = createConcatenateAndPassThrough(new Matrix4(), new Matrix4());
-        tr = MathTransforms.getCore(tr);
-        assertInstanceOf("The only non-ignorable part should be the exponential one.", ExponentialTransform1D.class, tr);
     }
 }
