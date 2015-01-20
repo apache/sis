@@ -77,6 +77,10 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.TensorParametersTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
 
+    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
+    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.internal.referencing.OperationMethodsTest.class,
+
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
@@ -106,9 +110,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.CRSTest.class,
-
-    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
-    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
