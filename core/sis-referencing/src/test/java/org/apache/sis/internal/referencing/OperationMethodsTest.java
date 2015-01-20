@@ -60,7 +60,7 @@ public final strictfp class OperationMethodsTest extends TestCase {
      */
     @Test
     public void testCheckDimensions() {
-        final Map<String,?> properties = Collections.singletonMap("locale", Locale.ENGLISH);
+        final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.LOCALE_KEY, Locale.ENGLISH);
         final MathTransform tr = MathTransformsTest.createConcatenateAndPassThrough();
         OperationMethods.checkDimensions(createOperationMethod(3, 3), tr, properties);
         OperationMethods.checkDimensions(createOperationMethod(1, 1), tr, properties);
