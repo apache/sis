@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
@@ -62,12 +63,13 @@ public final class OperationMethods extends Static {
      *       is taken. Only one non-ignorable step may exist, otherwise we do not try to select any of them.</li>
      * </ul>
      *
-     * @param  method    The operation method to compare to the math transform.
-     * @param  transform The math transform to compare to the operation method.
+     * @param  method     The operation method to compare to the math transform.
+     * @param  transform  The math transform to compare to the operation method.
+     * @param  properties Properties of the caller object being constructed, used only for formatting error message.
      * @throws IllegalArgumentException if the number of dimensions are incompatible.
      */
-    public static void checkDimensions(final OperationMethod method, MathTransform transform)
-            throws IllegalArgumentException
+    public static void checkDimensions(final OperationMethod method, MathTransform transform,
+            final Map<String,?> properties) throws IllegalArgumentException
     {
         int actual = transform.getSourceDimensions();
         Integer expected = method.getSourceDimensions();
@@ -96,18 +98,17 @@ public final class OperationMethods extends Static {
          * Now verify if the MathTransform dimensions are equal to the OperationMethod ones,
          * ignoring null java.lang.Integer instances.
          */
-        final String name;
+        byte isTarget = 0; // false: wrong dimension is the source one.
         if (expected == null || actual == expected) {
             actual = transform.getTargetDimensions();
             expected = method.getTargetDimensions();
             if (expected == null || actual == expected) {
                 return;
             }
-            name = "transform.target";
-        } else {
-            name = "transform.source";
+            isTarget = 1; // true: wrong dimension is the target one.
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3, name, expected, actual));
+        throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
     }
 
     /**
