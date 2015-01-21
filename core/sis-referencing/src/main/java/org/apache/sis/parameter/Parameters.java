@@ -16,6 +16,8 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Map;
+import java.util.HashMap;
 import javax.measure.unit.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.parameter.*; // We use almost all types from this package.
@@ -174,7 +176,8 @@ public final class Parameters extends Static {
      * Sub-groups are copied recursively.
      *
      * <p>A typical usage of this method is for transferring values from an arbitrary implementation
-     * to some specific implementation.</p>
+     * to some specific implementation, or to a parameter group using a different but compatible
+     * {@linkplain DefaultParameterValueGroup#getDescriptor() descriptor}.</p>
      *
      * @param  values The parameters values to copy.
      * @param  destination Where to copy the values.
@@ -186,6 +189,8 @@ public final class Parameters extends Static {
     public static void copy(final ParameterValueGroup values, final ParameterValueGroup destination)
             throws InvalidParameterNameException, InvalidParameterValueException
     {
+        final Integer ONE = 1;
+        final Map<String,Integer> occurrences = new HashMap<>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
             if (value instanceof ParameterValueGroup) {
@@ -198,35 +203,74 @@ public final class Parameters extends Static {
                     final ParameterValueGroup groups = (ParameterValueGroup) descriptor.createValue();
                     copy((ParameterValueGroup) value, groups);
                     values.groups(name).add(groups);
-                    continue;
                 } else {
                     throw new InvalidParameterNameException(Errors.format(
                             Errors.Keys.UnexpectedParameter_1, name), name);
                 }
-            }
-            /*
-             * Single parameter - copy the value, with special care for value with units.
-             */
-            final ParameterValue<?> source = (ParameterValue<?>) value;
-            final ParameterValue<?> target;
-            try {
-                target = destination.parameter(name);
-            } catch (ParameterNotFoundException cause) {
-                throw new InvalidParameterNameException(Errors.format(
-                            Errors.Keys.UnexpectedParameter_1, name), cause, name);
-            }
-            final Object  v    = source.getValue();
-            final Unit<?> unit = source.getUnit();
-            if (unit == null) {
-                target.setValue(v);
-            } else if (v instanceof Number) {
-                target.setValue(((Number) v).doubleValue(), unit);
-            } else if (v instanceof double[]) {
-                target.setValue((double[]) v, unit);
             } else {
-                throw new InvalidParameterValueException(Errors.format(
-                        Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
+                /*
+                 * Single parameter - copy the value, with special care for value with units
+                 * and for multi-occurrences. Not that the later is not allowed by ISO 19111
+                 * but supported by SIS implementation.
+                 */
+                final ParameterValue<?> source = (ParameterValue<?>) value;
+                final ParameterValue<?> target;
+                Integer occurrence = occurrences.get(name);
+                if (occurrence == null) {
+                    occurrence = ONE;
+                    try {
+                        target = destination.parameter(name);
+                    } catch (ParameterNotFoundException cause) {
+                        throw new InvalidParameterNameException(Errors.format(
+                                    Errors.Keys.UnexpectedParameter_1, name), cause, name);
+                    }
+                } else {
+                    target = (ParameterValue<?>) getOrCreate(destination, name, occurrence);
+                    occurrence++;
+                }
+                occurrences.put(name, occurrence);
+                final Object  v    = source.getValue();
+                final Unit<?> unit = source.getUnit();
+                if (unit == null) {
+                    target.setValue(v);
+                } else if (v instanceof Number) {
+                    target.setValue(((Number) v).doubleValue(), unit);
+                } else if (v instanceof double[]) {
+                    target.setValue((double[]) v, unit);
+                } else {
+                    throw new InvalidParameterValueException(Errors.format(
+                            Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
+                }
             }
+        }
+    }
+
+    /**
+     * Returns the <var>n</var>th occurrence of the parameter of the given name.
+     *
+     * @param  values The group from which to get or create a value
+     * @param  name   The name of the parameter to fetch. An exact match will be required.
+     * @param  n      Number of occurrences to skip before to return or create the parameter.
+     * @return The <var>n</var>th occurrence (zero-based) of the parameter of the given name.
+     * @throws IndexOutOfBoundsException if {@code n} is greater than the current number of
+     *         parameters of the given name.
+     */
+    private static GeneralParameterValue getOrCreate(final ParameterValueGroup values, final String name, int n) {
+        for (final GeneralParameterValue value : values.values()) {
+            if (name.equals(value.getDescriptor().getName().getCode())) {
+                if (--n < 0) {
+                    return value;
+                }
+            }
+        }
+        if (n == 0) {
+            final GeneralParameterValue value = values.getDescriptor().descriptor(name).createValue();
+            values.values().add(value);
+            return value;
+        } else {
+            // We do not botter formatting a good error message for now, because
+            // this method is currently invoked only with increasing index values.
+            throw new IndexOutOfBoundsException(name);
         }
     }
 }
