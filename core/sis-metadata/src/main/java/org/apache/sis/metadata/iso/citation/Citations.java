@@ -21,6 +21,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.iso.DefaultIdentifier; // For javadoc
 
 
 /**
@@ -37,7 +38,7 @@ import org.apache.sis.internal.simple.SimpleCitation;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final class Citations extends Static {
@@ -188,8 +189,8 @@ public final class Citations extends Static {
      *
      * <ul>
      *   <li>If the given title is {@code null} or empty (ignoring spaces), then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given name matches a {@linkplain Citation#getTitle() title} or an
-     *       {@linkplain Citation#getAlternateTitles() alternate titles} of one of the pre-defined
+     *   <li>Otherwise if the given name matches a {@linkplain DefaultCitation#getTitle() title} or an
+     *       {@linkplain DefaultCitation#getAlternateTitles() alternate titles} of one of the pre-defined
      *       constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
      *   <li>Otherwise, a new citation is created with the specified name as the title.</li>
      * </ul>
@@ -210,8 +211,8 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getTitle() title} or
-     * {@linkplain Citation#getAlternateTitles() alternate title} in {@code c1} is leniently
+     * Returns {@code true} if at least one {@linkplain DefaultCitation#getTitle() title} or
+     * {@linkplain DefaultCitation#getAlternateTitles() alternate title} in {@code c1} is leniently
      * equal to a title or alternate title in {@code c2}. The comparison is case-insensitive
      * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
      * letter or a digit}. The titles ordering is not significant.
@@ -226,8 +227,8 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if the {@linkplain Citation#getTitle() title} or any
-     * {@linkplain Citation#getAlternateTitles() alternate title} in the given citation
+     * Returns {@code true} if the {@linkplain DefaultCitation#getTitle() title} or any
+     * {@linkplain DefaultCitation#getAlternateTitles() alternate title} in the given citation
      * matches the given string. The comparison is case-insensitive and ignores every character
      * which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
@@ -241,42 +242,49 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier} in
-     * {@code c1} is equal to an identifier in {@code c2}. The comparison is case-insensitive
-     * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
-     * letter or a digit}. The identifier ordering is not significant.
+     * Returns {@code true} if at least one {@linkplain DefaultCitation#getIdentifiers() identifier}
+     * {@linkplain DefaultIdentifier#getCode() code} in {@code c1} is equal to an identifier code in
+     * {@code c2}. {@linkplain DefaultIdentifier#getCodeSpace() Code spaces} are compared only if
+     * provided in the two identifiers being compared. Comparisons are case-insensitive and ignores
+     * every character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     * The identifier ordering is not significant.
      *
      * <p>If (and <em>only</em> if) the citations do not contains any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,Citation) titleMatches}
      * method. This fallback exists for compatibility with client codes using the citation
-     * {@linkplain Citation#getTitle() titles} without identifiers.</p>
+     * {@linkplain DefaultCitation#getTitle() titles} without identifiers.</p>
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one identifier,
      *         title or alternate title matches.
+     *
+     * @see org.apache.sis.referencing.IdentifierMatching
      */
     public static boolean identifierMatches(final Citation c1, final Citation c2) {
         return org.apache.sis.internal.util.Citations.identifierMatches(c1, c2);
     }
 
     /**
-     * Returns {@code true} if any {@linkplain Citation#getIdentifiers() identifiers} in the given
-     * citation matches the given string. The comparison is case-insensitive and ignores every
-     * character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     * Returns {@code true} if at least one {@linkplain DefaultCitation#getIdentifiers() identifier}
+     * in the given citation have a {@linkplain DefaultIdentifier#getCode() code} matching the given
+     * string. The comparison is case-insensitive and ignores every character which is not a
+     * {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,String) titleMatches}
      * method. This fallback exists for compatibility with client codes using citation
-     * {@linkplain Citation#getTitle() titles} without identifiers.</p>
+     * {@linkplain DefaultCitation#getTitle() title} without identifiers.</p>
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  identifier The identifier to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and the title or alternate title
      *         matches the given string.
+     *
+     * @see org.apache.sis.referencing.IdentifierMatching
      */
     public static boolean identifierMatches(final Citation citation, final String identifier) {
-        return org.apache.sis.internal.util.Citations.identifierMatches(citation, identifier);
+        return org.apache.sis.internal.util.Citations.identifierMatches(citation, null, identifier);
     }
 
     /**
@@ -286,14 +294,14 @@ public final class Citations extends Static {
      *
      * <ul>
      *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getIdentifiers() identifier}, then:
+     *   <li>Otherwise if the citation contains at least one {@linkplain DefaultCitation#getIdentifiers() identifier}, then:
      *     <ul>
      *       <li>If at least one identifier is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
      *           unicode identifier}, then the shortest of those identifiers is returned.</li>
      *       <li>Otherwise the shortest identifier is returned, despite not being a Unicode identifier.</li>
      *     </ul></li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getTitle() title} or
-     *       {@linkplain Citation#getAlternateTitles() alternate title}, then:
+     *   <li>Otherwise if the citation contains at least one {@linkplain DefaultCitation#getTitle() title} or
+     *       {@linkplain DefaultCitation#getAlternateTitles() alternate title}, then:
      *     <ul>
      *       <li>If at least one title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
      *           unicode identifier}, then the shortest of those titles is returned.</li>

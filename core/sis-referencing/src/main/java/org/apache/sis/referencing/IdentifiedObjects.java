@@ -219,7 +219,7 @@ public final class IdentifiedObjects extends Static {
                             if (ns != null) {
                                 final GenericName scope = ns.name();
                                 if (scope != null) {
-                                    if (identifierMatches(authority, scope.toString())) {
+                                    if (identifierMatches(authority, null, scope.toString())) {
                                         final String name = alias.toString();
                                         if (name != null) {
                                             if (addTo == null) {
