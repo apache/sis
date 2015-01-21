@@ -24,6 +24,7 @@ import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import javax.measure.unit.Unit;
@@ -151,6 +152,8 @@ public final strictfp class ParametersTest extends TestCase {
         assertEquals("Mandatory 1", 10, destination.parameter("Mandatory 1").intValue());
         assertEquals("Mandatory 2", 20, destination.parameter("Mandatory 2").intValue());
         assertEquals("Optional 3",  30, destination.parameter("Optional 3") .intValue());
-// TODO assertEquals("Optional 4",  40, destination.parameter("Optional 4") .intValue());
+        assertEquals("Optional 4",  40, destination.parameter("Optional 4") .intValue());
+        assertEquals("Optional 4 (second occurrence)", 50,
+                ((ParameterValue<?>) destination.values().get(4)).intValue());
     }
 }
