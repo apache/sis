@@ -216,8 +216,8 @@ public final class Citations extends Static {
      * one. The comparison is case-insensitive and ignores every character which is not a
      * {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
-     * <p>If a match is found, if the given {@code identifier} is non-null and if the codespace
-     * of both objects is non-null, then the codespace is also compared.</p>
+     * <p>If a match is found, if the given {@code identifier} is non-null and if the code space
+     * of both objects is non-null, then the code space is also compared.</p>
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation, CharSequence) titleMatches}
@@ -240,11 +240,11 @@ public final class Citations extends Static {
                 final Identifier id = identifiers.next();
                 if (id != null && equalsFiltered(code, id.getCode(), LETTERS_AND_DIGITS, true)) {
                     if (identifier != null) {
-                        final String codespace = identifier.getCodeSpace();
-                        if (codespace != null) {
+                        final String codeSpace = identifier.getCodeSpace();
+                        if (codeSpace != null) {
                             final String cs = id.getCodeSpace();
                             if (cs != null) {
-                                return equalsFiltered(codespace, cs, LETTERS_AND_DIGITS, true);
+                                return equalsFiltered(codeSpace, cs, LETTERS_AND_DIGITS, true);
                             }
                         }
                     }
