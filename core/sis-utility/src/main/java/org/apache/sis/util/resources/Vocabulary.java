@@ -166,6 +166,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Directory = 16;
 
         /**
+         * ″
+         */
+        public static final short DittoMark = 82;
+
+        /**
          * Dublin Julian
          */
         public static final short DublinJulian = 17;

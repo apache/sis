@@ -26,9 +26,9 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
 import static java.util.Collections.singletonMap;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.opengis.referencing.IdentifiedObject.*;
 
 
@@ -57,8 +57,8 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<>(name(properties, "Optional 3", "Alias 3"),    0, 1, type, null, null, DEFAULT_VALUE),
-            new DefaultParameterDescriptor<>(name(properties, "Optional 4", "Ambiguity"),  0, 2, type, null, null, DEFAULT_VALUE)
+            new DefaultParameterDescriptor<>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
+            new DefaultParameterDescriptor<>(name(properties, "Optional 4",  "Ambiguity"), 0, 2, type, null, null, DEFAULT_VALUE)
         );
     }
 
@@ -79,7 +79,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<>(4);
         final DefaultParameterDescriptor<Integer> p1, p2;
-        p1 = new DefaultParameterDescriptor<>(name(properties,    "Name", null), 1, 1, type, null, null, null);
+        p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
         p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
         try {
             new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1, p1, p2);
@@ -166,6 +166,19 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         for (final GeneralParameterDescriptor p : descriptors) {
             assertTrue(descriptors.contains(p));
         }
+    }
+
+    /**
+     * Tests the WKT representation.
+     */
+    @Test
+    public void testWKT() {
+        assertWktEquals(
+                "ParameterGroup[“Test group”,\n" +
+                "  Parameter[“Mandatory 1”, 10],\n" +
+                "  Parameter[“Mandatory 2”, 10],\n" +
+                "  Parameter[“Optional 3”, 10],\n" +
+                "  Parameter[“Optional 4”, 10]]", M1_M1_O1_O2);
     }
 
     /**

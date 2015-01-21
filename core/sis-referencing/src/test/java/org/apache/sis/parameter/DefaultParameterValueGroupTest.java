@@ -31,7 +31,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -42,7 +42,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.1)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn({
@@ -353,19 +353,6 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertFalse ("equals", g1.equals(g2));
         assertTrue  ("equals", g1.equals(g3));
         assertEquals("hashCode", g1.hashCode(), g3.hashCode());
-    }
-
-    /**
-     * Tests the WKT representation.
-     */
-    @Test
-    public void testWKT() {
-        assertWktEquals(
-                "ParameterGroup[“Test group”,\n" +
-                "  Parameter[“Mandatory 1”, 10],\n" +
-                "  Parameter[“Mandatory 2”, 10],\n" +
-                "  Parameter[“Optional 3”, 10],\n" +
-                "  Parameter[“Optional 4”, 10]]", descriptor);
     }
 
     /**
