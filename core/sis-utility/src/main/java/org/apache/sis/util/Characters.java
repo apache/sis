@@ -292,9 +292,9 @@ public final class Characters extends Static {
 
         /**
          * The subset of all characters for which {@link Character#isUnicodeIdentifierPart(int)}
-         * returns {@code true}, excluding {@linkplain Character#isIdentifierIgnorable(int)
-         * ignorable} characters. This subset includes all the {@link #LETTERS_AND_DIGITS}
-         * categories with the addition of the following ones:
+         * returns {@code true}, excluding {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters.
+         * This subset includes all the {@link #LETTERS_AND_DIGITS} categories with the addition of the following
+         * ones:
          * {@link Character#LETTER_NUMBER},
          * {@link Character#CONNECTOR_PUNCTUATION CONNECTOR_PUNCTUATION},
          * {@link Character#NON_SPACING_MARK NON_SPACING_MARK} and
