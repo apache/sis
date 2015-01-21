@@ -18,8 +18,7 @@ package org.apache.sis.parameter;
 
 import javax.measure.unit.Unit;
 import org.opengis.util.MemberName;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.*; // We use almost all types from this package.
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
@@ -41,6 +40,75 @@ public final class Parameters extends Static {
      * Do not allow instantiation of this class.
      */
     private Parameters() {
+    }
+
+    /**
+     * Gets the parameter name as an instance of {@code MemberName}.
+     * This method performs the following checks:
+     *
+     * <ul>
+     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
+     *       returns that primary name.</li>
+     *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
+     *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
+     *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
+     *       {@linkplain DefaultParameterDescriptor#getValueClass() value class}, using the mapping defined in
+     *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
+     * </ul>
+     *
+     * This method can be used as a bridge between the parameter object
+     * defined by ISO 19111 (namely {@code CC_OperationParameter}) and the one
+     * defined by ISO 19115 (namely {@code SV_Parameter}).
+     *
+     * @param  parameter The parameter from which to get the name (may be {@code null}).
+     * @return The member name, or {@code null} if none.
+     *
+     * @see org.apache.sis.util.iso.Names#createMemberName(CharSequence, String, CharSequence, Class)
+     *
+     * @since 0.5
+     */
+    public static MemberName getMemberName(final ParameterDescriptor<?> parameter) {
+        return ServiceParameter.getMemberName(parameter);
+    }
+
+    /**
+     * Returns the domain of valid values defined by the given descriptor, or {@code null} if none.
+     * This method builds the range from the {@linkplain DefaultParameterDescriptor#getMinimumValue() minimum value},
+     * {@linkplain DefaultParameterDescriptor#getMaximumValue() maximum value} and, if the values are numeric, from
+     * the {@linkplain DefaultParameterDescriptor#getUnit() unit}.
+     *
+     * @param  descriptor The parameter descriptor, or {@code null}.
+     * @return The domain of valid values, or {@code null} if none.
+     *
+     * @see DefaultParameterDescriptor#getValueDomain()
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Range<?> getValueDomain(final ParameterDescriptor<?> descriptor) {
+        if (descriptor != null) {
+            if (descriptor instanceof DefaultParameterDescriptor<?>) {
+                return ((DefaultParameterDescriptor<?>) descriptor).getValueDomain();
+            }
+            final Class<?> valueClass = descriptor.getValueClass();
+            final Comparable<?> minimumValue = descriptor.getMinimumValue();
+            final Comparable<?> maximumValue = descriptor.getMaximumValue();
+            if ((minimumValue == null || valueClass.isInstance(minimumValue)) &&
+                (maximumValue == null || valueClass.isInstance(maximumValue)))
+            {
+                if (Number.class.isAssignableFrom(valueClass)) {
+                    final Unit<?> unit = descriptor.getUnit();
+                    if (unit != null) {
+                        return new MeasurementRange((Class) valueClass,
+                                (Number) minimumValue, true, (Number) maximumValue, true, unit);
+                    } else if (minimumValue != null || maximumValue != null) {
+                        return new NumberRange((Class) valueClass,
+                                (Number) minimumValue, true, (Number) maximumValue, true);
+                    }
+                } else if (minimumValue != null || maximumValue != null) {
+                    return new Range(valueClass, minimumValue, true, maximumValue, true);
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -100,71 +168,65 @@ public final class Parameters extends Static {
     }
 
     /**
-     * Returns the domain of valid values defined by the given descriptor, or {@code null} if none.
-     * This method builds the range from the {@linkplain DefaultParameterDescriptor#getMinimumValue() minimum value},
-     * {@linkplain DefaultParameterDescriptor#getMaximumValue() maximum value} and, if the values are numeric, from
-     * the {@linkplain DefaultParameterDescriptor#getUnit() unit}.
+     * Copies the values of a parameter group into another parameter group.
+     * All values in the {@code source} group shall be valid for the {@code destination} group,
+     * but the {@code destination} may have more parameters.
+     * Sub-groups are copied recursively.
      *
-     * @param  descriptor The parameter descriptor, or {@code null}.
-     * @return The domain of valid values, or {@code null} if none.
+     * <p>A typical usage of this method is for transferring values from an arbitrary implementation
+     * to some specific implementation.</p>
      *
-     * @see DefaultParameterDescriptor#getValueDomain()
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static Range<?> getValueDomain(final ParameterDescriptor<?> descriptor) {
-        if (descriptor != null) {
-            if (descriptor instanceof DefaultParameterDescriptor<?>) {
-                return ((DefaultParameterDescriptor<?>) descriptor).getValueDomain();
-            }
-            final Class<?> valueClass = descriptor.getValueClass();
-            final Comparable<?> minimumValue = descriptor.getMinimumValue();
-            final Comparable<?> maximumValue = descriptor.getMaximumValue();
-            if ((minimumValue == null || valueClass.isInstance(minimumValue)) &&
-                (maximumValue == null || valueClass.isInstance(maximumValue)))
-            {
-                if (Number.class.isAssignableFrom(valueClass)) {
-                    final Unit<?> unit = descriptor.getUnit();
-                    if (unit != null) {
-                        return new MeasurementRange((Class) valueClass,
-                                (Number) minimumValue, true, (Number) maximumValue, true, unit);
-                    } else if (minimumValue != null || maximumValue != null) {
-                        return new NumberRange((Class) valueClass,
-                                (Number) minimumValue, true, (Number) maximumValue, true);
-                    }
-                } else if (minimumValue != null || maximumValue != null) {
-                    return new Range(valueClass, minimumValue, true, maximumValue, true);
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Gets the parameter name as an instance of {@code MemberName}.
-     * This method performs the following checks:
-     *
-     * <ul>
-     *   <li>If the {@linkplain DefaultParameterDescriptor#getName() primary name} is an instance of {@code MemberName},
-     *       returns that primary name.</li>
-     *   <li>Otherwise this method searches for the first {@linkplain DefaultParameterDescriptor#getAlias() alias}
-     *       which is an instance of {@code MemberName}. If found, that alias is returned.</li>
-     *   <li>If no alias is found, then this method tries to build a member name from the primary name and the
-     *       {@linkplain DefaultParameterDescriptor#getValueClass() value class}, using the mapping defined in
-     *       {@link org.apache.sis.util.iso.DefaultTypeName} javadoc.</li>
-     * </ul>
-     *
-     * This method can be used as a bridge between the parameter object
-     * defined by ISO 19111 (namely {@code CC_OperationParameter}) and the one
-     * defined by ISO 19115 (namely {@code SV_Parameter}).
-     *
-     * @param  parameter The parameter from which to get the name (may be {@code null}).
-     * @return The member name, or {@code null} if none.
-     *
-     * @see org.apache.sis.util.iso.Names#createMemberName(CharSequence, String, CharSequence, Class)
+     * @param  values The parameters values to copy.
+     * @param  destination Where to copy the values.
+     * @throws InvalidParameterNameException if a {@code source} parameter name is unknown to the {@code destination}.
+     * @throws InvalidParameterValueException if the value of a {@code source} parameter is invalid for the {@code destination}.
      *
      * @since 0.5
      */
-    public static MemberName getMemberName(final ParameterDescriptor<?> parameter) {
-        return ServiceParameter.getMemberName(parameter);
+    public static void copy(final ParameterValueGroup values, final ParameterValueGroup destination)
+            throws InvalidParameterNameException, InvalidParameterValueException
+    {
+        for (final GeneralParameterValue value : values.values()) {
+            final String name = value.getDescriptor().getName().getCode();
+            if (value instanceof ParameterValueGroup) {
+                /*
+                 * Contains sub-group - invokes 'copy' recursively.
+                 */
+                final GeneralParameterDescriptor descriptor;
+                descriptor = destination.getDescriptor().descriptor(name);
+                if (descriptor instanceof ParameterDescriptorGroup) {
+                    final ParameterValueGroup groups = (ParameterValueGroup) descriptor.createValue();
+                    copy((ParameterValueGroup) value, groups);
+                    values.groups(name).add(groups);
+                    continue;
+                } else {
+                    throw new InvalidParameterNameException(Errors.format(
+                            Errors.Keys.UnexpectedParameter_1, name), name);
+                }
+            }
+            /*
+             * Single parameter - copy the value, with special care for value with units.
+             */
+            final ParameterValue<?> source = (ParameterValue<?>) value;
+            final ParameterValue<?> target;
+            try {
+                target = destination.parameter(name);
+            } catch (ParameterNotFoundException cause) {
+                throw new InvalidParameterNameException(Errors.format(
+                            Errors.Keys.UnexpectedParameter_1, name), cause, name);
+            }
+            final Object  v    = source.getValue();
+            final Unit<?> unit = source.getUnit();
+            if (unit == null) {
+                target.setValue(v);
+            } else if (v instanceof Number) {
+                target.setValue(((Number) v).doubleValue(), unit);
+            } else if (v instanceof double[]) {
+                target.setValue((double[]) v, unit);
+            } else {
+                throw new InvalidParameterValueException(Errors.format(
+                        Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
+            }
+        }
     }
 }

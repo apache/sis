@@ -578,6 +578,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                 new TableAppender(out, columnSeparator) : new TableAppender(out);
         table.setMultiLinesCells(true);
         table.nextLine(horizontalBorder);
+        int numColumnsBeforeValue = 0;
         for (int i=0; ; i++) {
             boolean end = false;
             final short key;
@@ -616,6 +617,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             }
             if (end) break;
             nextColumn(table);
+            numColumnsBeforeValue++;
         }
         table.nextLine();
         /*
@@ -683,8 +685,25 @@ public class ParameterFormat extends TabularFormat<Object> {
                     Object value = row.values.get(i);
                     if (value != null) {
                         if (i != 0) {
-                            table.append(lineSeparator);
+                            /*
+                             * If the same parameter is repeated more than once (not allowed by ISO 19111,
+                             * but this extra flexibility is allowed by Apache SIS), write the ditto mark
+                             * in all previous columns (name, type, etc.) on a new row.
+                             */
+                            final String ditto = resources.getString(Vocabulary.Keys.DittoMark);
+                            table.nextLine();
+                            table.setCellAlignment(TableAppender.ALIGN_CENTER);
+                            for (int j=0; j<numColumnsBeforeValue; j++) {
+                                table.append(ditto);
+                                nextColumn(table);
+                            }
+                            table.setCellAlignment(TableAppender.ALIGN_RIGHT);
                         }
+                        /*
+                         * Format the value followed by the unit of measure, or followed by spaces if there is no unit
+                         * for this value. The intend is the right align the numerical value rather than the numerical
+                         * + unit tupple.
+                         */
                         final Format format = getFormat(value.getClass());
                         if (format != null) {
                             value = format.format(value, buffer, dummyFP);
