@@ -247,6 +247,9 @@ public final class Parameters extends Static {
 
     /**
      * Returns the <var>n</var>th occurrence of the parameter of the given name.
+     * This method is not public because ISO 19111 does not allow multi-occurrences of parameter values
+     * (this is a SIS-specific flexibility). Current implementation is not very efficient, but it should
+     * not be an issue if this method is rarely invoked.
      *
      * @param  values The group from which to get or create a value
      * @param  name   The name of the parameter to fetch. An exact match will be required.
