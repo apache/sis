@@ -61,6 +61,7 @@ import org.junit.BeforeClass;
     org.apache.sis.math.StatisticsFormatTest.class,
     org.apache.sis.internal.util.UtilitiesTest.class,
     org.apache.sis.internal.util.DoubleDoubleTest.class,
+    org.apache.sis.math.PlaneTest.class,
 
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
