@@ -125,6 +125,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
 
+    org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.test.integration.ReferencingInMetadataTest.class,
     org.apache.sis.test.integration.DefaultMetadataTest.class
