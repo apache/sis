@@ -45,7 +45,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class Citations extends Static {
@@ -164,10 +164,12 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier} in
-     * {@code c1} is equal to an identifier in {@code c2}. The comparison is case-insensitive
-     * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
-     * letter or a digit}. The identifier ordering is not significant.
+     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier}
+     * {@linkplain Identifier#getCode() code} in {@code c1} is equal to an identifier code in
+     * {@code c2}. {@linkplain Identifier#getCodeSpace() Code spaces} are compared only if
+     * provided in the two identifiers being compared. Comparisons are case-insensitive and ignores
+     * every character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     * The identifier ordering is not significant.
      *
      * <p>If (and <em>only</em> if) the citations do not contains any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,Citation) titleMatches}
@@ -200,7 +202,7 @@ public final class Citations extends Static {
             }
             do {
                 final Identifier id = iterator.next();
-                if (id != null && identifierMatches(c1, id.getCode())) {
+                if (id != null && identifierMatches(c1, id, id.getCode())) {
                     return true;
                 }
             } while (iterator.hasNext());
@@ -209,29 +211,43 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if any {@linkplain Citation#getIdentifiers() identifiers} in the given
-     * citation matches the given string. The comparison is case-insensitive and ignores every
-     * character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier}
+     * in the given citation have a {@linkplain Identifier#getCode() code} matching the given
+     * one. The comparison is case-insensitive and ignores every character which is not a
+     * {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     *
+     * <p>If a match is found, if the given {@code identifier} is non-null and if the code space
+     * of both objects is non-null, then the code space is also compared.</p>
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation, CharSequence) titleMatches}
      * method. This fallback exists for compatibility with client codes using citation
-     * {@linkplain Citation#getTitle() titles} without identifiers.</p>
+     * {@linkplain Citation#getTitle() title} without identifiers.</p>
      *
-     * @param  citation The citation to check for, or {@code null}.
-     * @param  identifier The identifier to compare, or {@code null}.
+     * @param  citation   The citation to check for, or {@code null}.
+     * @param  identifier The identifier to compare, or {@code null} to unknown.
+     * @param  code       The identifier code to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and the title or alternate title
      *         matches the given string.
      */
-    public static boolean identifierMatches(final Citation citation, final CharSequence identifier) {
-        if (citation != null && identifier != null) {
+    public static boolean identifierMatches(final Citation citation, final Identifier identifier, final CharSequence code) {
+        if (citation != null && code != null) {
             final Iterator<? extends Identifier> identifiers = iterator(citation.getIdentifiers());
             if (identifiers == null) {
-                return titleMatches(citation, identifier);
+                return titleMatches(citation, code);
             }
             while (identifiers.hasNext()) {
                 final Identifier id = identifiers.next();
-                if (id != null && equalsFiltered(identifier, id.getCode(), LETTERS_AND_DIGITS, true)) {
+                if (id != null && equalsFiltered(code, id.getCode(), LETTERS_AND_DIGITS, true)) {
+                    if (identifier != null) {
+                        final String codeSpace = identifier.getCodeSpace();
+                        if (codeSpace != null) {
+                            final String cs = id.getCodeSpace();
+                            if (cs != null) {
+                                return equalsFiltered(codeSpace, cs, LETTERS_AND_DIGITS, true);
+                            }
+                        }
+                    }
                     return true;
                 }
             }
