@@ -40,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  */
 final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPosition>, Iterator<DirectPosition> {
     /**
-     * The array of ordinate values, for example (x[], y[], z[]).
+     * The arrays of ordinate values, for example (x[], y[], z[]).
      */
     private final double[][] ordinates;
 

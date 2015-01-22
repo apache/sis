@@ -152,7 +152,7 @@ public class Plane implements Cloneable, Serializable {
      * This method needs to iterate over the points two times:
      * one for computing the coefficients, and one for the computing the Pearson coefficient.
      */
-    private double fit(final Iterable<DirectPosition> points) {
+    private double fit(final Iterable<? extends DirectPosition> points) {
         int i = 0, n = 0;
         final DoubleDouble sum_x  = new DoubleDouble();
         final DoubleDouble sum_y  = new DoubleDouble();
