@@ -22,7 +22,9 @@ import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import javax.measure.unit.Unit;
@@ -127,5 +129,31 @@ public final strictfp class ParametersTest extends TestCase {
             @Override public ParameterValue<T>        createValue()      {return descriptor.createValue();}
             @Override public String                   toWKT()            {return descriptor.toWKT();}
         }));
+    }
+
+    /**
+     * Tests {@link Parameters#copy(ParameterValueGroup, ParameterValueGroup)}.
+     */
+    @Test
+    public void testCopy() {
+        final ParameterValueGroup source = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
+        final ParameterValue<?> o1 = source.parameter("Optional 4");
+        final ParameterValue<?> o2 = o1.getDescriptor().createValue(); // See ParameterFormatTest.testMultiOccurrence()
+        source.parameter("Mandatory 2").setValue(20);
+        source.values().add(o2);
+        o1.setValue(40);
+        o2.setValue(50);
+
+        final ParameterValueGroup destination = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
+        destination.parameter("Mandatory 1").setValue(-10);  // We expect this value to be overwritten.
+        destination.parameter("Optional 3") .setValue( 30);  // We expect this value to be preserved.
+        Parameters.copy(source, destination);
+
+        assertEquals("Mandatory 1", 10, destination.parameter("Mandatory 1").intValue());
+        assertEquals("Mandatory 2", 20, destination.parameter("Mandatory 2").intValue());
+        assertEquals("Optional 3",  30, destination.parameter("Optional 3") .intValue());
+        assertEquals("Optional 4",  40, destination.parameter("Optional 4") .intValue());
+        assertEquals("Optional 4 (second occurrence)", 50,
+                ((ParameterValue<?>) destination.values().get(4)).intValue());
     }
 }

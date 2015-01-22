@@ -17,6 +17,8 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
@@ -58,16 +60,23 @@ public final strictfp class OperationMethodsTest extends TestCase {
      */
     @Test
     public void testCheckDimensions() {
+        final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.LOCALE_KEY, Locale.ENGLISH);
         final MathTransform tr = MathTransformsTest.createConcatenateAndPassThrough();
-        OperationMethods.checkDimensions(createOperationMethod(3, 3), tr);
-        OperationMethods.checkDimensions(createOperationMethod(1, 1), tr);
+        OperationMethods.checkDimensions(createOperationMethod(3, 3), tr, properties);
+        OperationMethods.checkDimensions(createOperationMethod(1, 1), tr, properties);
         try {
-            OperationMethods.checkDimensions(createOperationMethod(2, 2), tr);
-            fail("OperationMethod of dimension 2 shall be considered incompatible.");
+            OperationMethods.checkDimensions(createOperationMethod(2, 2), tr, properties);
+            fail("MathTransform.sourceDimension == 3 shall be considered incompatible.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("transform.source"));
+            assertEquals(e.getMessage(), "The transform has 1 source dimension, while 2 was expected.");
+        }
+        try {
+            OperationMethods.checkDimensions(createOperationMethod(3, 1), tr, properties);
+            fail("MathTransform.targetDimension == 3 shall be considered incompatible.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+            assertEquals(e.getMessage(), "The transform has 3 target dimensions, while 1 was expected.");
         }
     }
 }
