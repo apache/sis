@@ -44,6 +44,9 @@ import static java.lang.Double.*;
  * @since   0.5 (derived from geotk-1.0)
  * @version 0.5
  * @module
+ *
+ * @see Plane
+ * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  */
 public class Line implements Cloneable, Serializable {
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -46,6 +47,10 @@ import org.apache.sis.util.Debug;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see LinearTransform
+ * @see Line
+ * @see Plane
  */
 public class LinearTransformBuilder {
     /**
@@ -98,15 +103,19 @@ public class LinearTransformBuilder {
     /**
      * Sets the source points. The number of points shall be the same than the number of target points.
      *
-     * <p><b>Limitation:</b> in current implementation, the source points must be two-dimensional.
-     * But this restriction may be removed in a future SIS version.</p>
+     * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
+     * This restriction may be removed in a future SIS version.</p>
      *
      * @param  points The source points, assumed precise.
      * @throws MismatchedDimensionException if at least one point does not have the expected number of dimensions.
      */
     public void setSourcePoints(final DirectPosition... points) throws MismatchedDimensionException {
         ArgumentChecks.ensureNonNull("points", points);
-        sources = toArrays(points, 2);
+        if (points.length != 0) {
+            sources = toArrays(points, points[0].getDimension() == 1 ? 1 : 2);
+        } else {
+            sources = null;
+        }
         correlation = null;
     }
 
@@ -148,16 +157,31 @@ public class LinearTransformBuilder {
         }
         final int sourceDim = sources.length;
         final int targetDim = targets.length;
-        final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
-        final Plane plan = new Plane();
         correlation = new double[targetDim];
-        for (int j=0; j<targets.length; j++) {
-            correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
-            matrix.setElement(j, 0, plan.slopeX());
-            matrix.setElement(j, 1, plan.slopeY());
-            matrix.setElement(j, 2, plan.z0());
-        }
+        final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
         matrix.setElement(targetDim, sourceDim, 1);
+        switch (sourceDim) {
+            case 1: {
+                final Line line = new Line();
+                for (int j=0; j<targets.length; j++) {
+                    correlation[j] = line.fit(sources[0], targets[j]);
+                    matrix.setElement(j, 0, line.slope());
+                    matrix.setElement(j, 1, line.y0());
+                }
+                break;
+            }
+            case 2: {
+                final Plane plan = new Plane();
+                for (int j=0; j<targets.length; j++) {
+                    correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
+                    matrix.setElement(j, 0, plan.slopeX());
+                    matrix.setElement(j, 1, plan.slopeY());
+                    matrix.setElement(j, 2, plan.z0());
+                }
+                break;
+            }
+            default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.
+        }
         return MathTransforms.linear(matrix);
     }
 

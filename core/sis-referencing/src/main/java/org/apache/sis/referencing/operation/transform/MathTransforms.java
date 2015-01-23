@@ -108,6 +108,7 @@ public final class MathTransforms extends Static {
      * @param  matrix The matrix used to define the linear transform.
      * @return The linear (usually affine) transform.
      *
+     * @see #getMatrix(MathTransform)
      * @see org.opengis.referencing.operation.MathTransformFactory#createAffineTransform(Matrix)
      */
     public static LinearTransform linear(final Matrix matrix) {
@@ -296,6 +297,9 @@ public final class MathTransforms extends Static {
      *
      * @param  transform The transform for which to get the matrix, or {@code null}.
      * @return The matrix of the given transform, or {@code null} if none.
+     *
+     * @see #linear(Matrix)
+     * @see LinearTransform#getMatrix()
      */
     public static Matrix getMatrix(final MathTransform transform) {
         if (transform instanceof LinearTransform) {

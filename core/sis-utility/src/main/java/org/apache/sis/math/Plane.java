@@ -46,6 +46,9 @@ import static java.lang.Math.ulp;
  * @since   0.5 (derived from geotk-1.0)
  * @version 0.5
  * @module
+ *
+ * @see Line
+ * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  */
 public class Plane implements Cloneable, Serializable {
     /**
@@ -140,7 +143,7 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Returns the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0). This coefficient appears in the
-     * plane equation <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><u><var>z</var>₀</u></b>.
+     * plane equation <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><var>z</var>₀</b>.
      *
      * @return The <var>z</var>₀ term.
      *
