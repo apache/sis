@@ -153,9 +153,9 @@ public class LinearTransformBuilder {
         correlation = new double[targetDim];
         for (int j=0; j<targets.length; j++) {
             correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
-            matrix.setElement(j, 0, plan.cx);
-            matrix.setElement(j, 1, plan.cy);
-            matrix.setElement(j, 2, plan.c);
+            matrix.setElement(j, 0, plan.slopeX());
+            matrix.setElement(j, 1, plan.slopeY());
+            matrix.setElement(j, 2, plan.z0());
         }
         matrix.setElement(targetDim, sourceDim, 1);
         return MathTransforms.linear(matrix);
