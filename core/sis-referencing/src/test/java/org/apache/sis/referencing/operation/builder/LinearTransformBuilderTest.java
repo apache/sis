@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Random;
 import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -48,7 +49,25 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Tests a very simple case where an exact answer is expected.
      */
     @Test
-    public void testMinimalist() {
+    public void testMinimalist1D() {
+        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        builder.setSourcePoints(
+                new DirectPosition1D(1),
+                new DirectPosition1D(2));
+        builder.setTargetPoints(
+                new DirectPosition1D(1),
+                new DirectPosition1D(3));
+        final Matrix m = builder.create().getMatrix();
+        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
+        assertEquals("m₀₁", -1, m.getElement(0, 1), STRICT);
+        assertArrayEquals("correlation", new double[] {1}, builder.correlation(), STRICT);
+    }
+
+    /**
+     * Tests a very simple case where an exact answer is expected.
+     */
+    @Test
+    public void testMinimalist2D() {
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setSourcePoints(
                 new DirectPosition2D(1, 1),
@@ -75,17 +94,41 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
     /**
      * Tests with a random number of points with an exact solution expected.
+     */
+    @Test
+    @DependsOnMethod("testMinimalist1D")
+    public void testExact1D() {
+        final Random rd = TestUtilities.createRandomNumberGenerator(-6080923837183751016L);
+        for (int i=0; i<10; i++) {
+            test1D(rd, rd.nextInt(900) + 100, false, 1E-14, 1E-12);
+        }
+    }
+
+    /**
+     * Tests with a random number of points with an exact solution expected.
      *
      * <p><b>Note:</b> this test can pass with a random seed most of the time. But we fix the seed anyway
      * because there is always a small probability that truly random points are all colinear, in which case
      * the test would fail. Even if the probability is low, we do not take the risk of random build failures.</p>
      */
     @Test
-    @DependsOnMethod("testMinimalist")
-    public void testExact() {
+    @DependsOnMethod("testMinimalist2D")
+    public void testExact2D() {
         final Random rd = TestUtilities.createRandomNumberGenerator(41632405806929L);
         for (int i=0; i<10; i++) {
-            test(rd, rd.nextInt(900) + 100, false, 1E-14, 1E-12);
+            test2D(rd, rd.nextInt(900) + 100, false, 1E-14, 1E-12);
+        }
+    }
+
+    /**
+     * Tests with a random number of points and a random errors in target points.
+     */
+    @Test
+    @DependsOnMethod("testExact1D")
+    public void testNonExact1D() {
+        final Random rd = TestUtilities.createRandomNumberGenerator(8819436190826166876L);
+        for (int i=0; i<4; i++) {
+            test1D(rd, rd.nextInt(900) + 100, true, 0.02, 0.5);
         }
     }
 
@@ -99,23 +142,59 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * failures.</p>
      */
     @Test
-    @DependsOnMethod("testExact")
-    public void testNonExact() {
+    @DependsOnMethod("testExact2D")
+    public void testNonExact2D() {
         final Random rd = TestUtilities.createRandomNumberGenerator(270575025643864L);
         for (int i=0; i<4; i++) {
-            test(rd, rd.nextInt(900) + 100, true, 0.02, 0.5);
+            test2D(rd, rd.nextInt(900) + 100, true, 0.02, 0.5);
         }
     }
 
     /**
-     * Implementation of {@link #testExact()} and {@link #testNonExact()}.
+     * Implementation of {@link #testExact1D()} and {@link #testNonExact1D()}.
      *
      * @param rd        The random number generator to use.
      * @param numPts    The number of points to generate.
      * @param addErrors {@code true} for adding a random error in the target points.
      * @param scaleTolerance Tolerance threshold for floating point comparisons.
      */
-    private static void test(final Random rd, final int numPts, final boolean addErrors,
+    private static void test1D(final Random rd, final int numPts, final boolean addErrors,
+            final double scaleTolerance, final double translationTolerance)
+    {
+        final double scale  = rd.nextDouble() * 30 - 12;
+        final double offset = rd.nextDouble() * 10 - 4;
+        final DirectPosition1D[] sources = new DirectPosition1D[numPts];
+        final DirectPosition1D[] targets = new DirectPosition1D[numPts];
+        for (int i=0; i<numPts; i++) {
+            final DirectPosition1D src = new DirectPosition1D(rd.nextDouble() * 100 - 50);
+            final DirectPosition1D tgt = new DirectPosition1D(src.ordinate * scale + offset);
+            if (addErrors) {
+                tgt.ordinate += rd.nextDouble() * 10 - 5;
+            }
+            sources[i] = src;
+            targets[i] = tgt;
+        }
+        /*
+         * Create the fitted transform to test.
+         */
+        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        builder.setSourcePoints(sources);
+        builder.setTargetPoints(targets);
+        final Matrix m = builder.create().getMatrix();
+        assertEquals("m₀₀", scale,  m.getElement(0, 0), scaleTolerance);
+        assertEquals("m₀₁", offset, m.getElement(0, 1), translationTolerance);
+        assertEquals("correlation", 1, Math.abs(builder.correlation()[0]), scaleTolerance);
+    }
+
+    /**
+     * Implementation of {@link #testExact2D()} and {@link #testNonExact2D()}.
+     *
+     * @param rd        The random number generator to use.
+     * @param numPts    The number of points to generate.
+     * @param addErrors {@code true} for adding a random error in the target points.
+     * @param scaleTolerance Tolerance threshold for floating point comparisons.
+     */
+    private static void test2D(final Random rd, final int numPts, final boolean addErrors,
             final double scaleTolerance, final double translationTolerance)
     {
         /*
@@ -148,7 +227,6 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         /*
          * Compare the coefficients with the reference implementation.
          */
-        double r;
         assertEquals("m₀₀", ref.getScaleX(),     m.getElement(0, 0), scaleTolerance);
         assertEquals("m₀₁", ref.getShearX(),     m.getElement(0, 1), scaleTolerance);
         assertEquals("m₀₂", ref.getTranslateX(), m.getElement(0, 2), translationTolerance);
