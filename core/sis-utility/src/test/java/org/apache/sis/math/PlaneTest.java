@@ -97,18 +97,15 @@ public final strictfp class PlaneTest extends TestCase {
         final double x[] = random(rd, 4000, 100, -25);
         final double y[] = random(rd, 4000,  80, -20);
         final double z[] = random(rd, 4000, 150, -40);
-        final Plane plan = new Plane();
-        plan.cx =  2;
-        plan.cy =  3;
-        plan.c  = -4;
+        final Plane plan = new Plane(2, 3, -4);
         for (int i=0; i<z.length; i++) {
             // Compute points with random displacements above or below a known plane.
             z[i] = plan.z(x[i], y[i]) + (10 * rd.nextDouble() - 5);
         }
         final Plane fitted = assertFitEquals(6, x, y, z);
-        assertEquals("cx", plan.cx, fitted.cx, 0.01);
-        assertEquals("cy", plan.cy, fitted.cy, 0.01);
-        assertEquals("c",  plan.c,  fitted.c,  1);
+        assertEquals("sx", plan.slopeX(), fitted.slopeX(), 0.01);
+        assertEquals("sy", plan.slopeY(), fitted.slopeY(), 0.01);
+        assertEquals("z₀", plan.z0(),     fitted.z0(),     1);
     }
 
     /**
@@ -116,10 +113,7 @@ public final strictfp class PlaneTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final Plane local = new Plane();
-        local.c  =  3.7;
-        local.cx =  9.3;
-        local.cy = -1.8;
+        final Plane local = new Plane(3.7, 9.3, -1.8);
         assertNotSame(local, assertSerializedEquals(local));
     }
 }

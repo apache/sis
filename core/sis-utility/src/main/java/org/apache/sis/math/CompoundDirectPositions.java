@@ -114,7 +114,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * @return Always {@code null}.
      */
     @Override
-    public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return null;
     }
 
@@ -122,7 +122,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * Returns the number of dimensions.
      */
     @Override
-    public final int getDimension() {
+    public int getDimension() {
         return ordinates.length;
     }
 
@@ -138,7 +138,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * Not needed.
      */
     @Override
-    public final double[] getCoordinate() {
+    public double[] getCoordinate() {
         throw new UnsupportedOperationException();
     }
 
