@@ -54,6 +54,11 @@ public class Plane implements Cloneable, Serializable {
     private static final long serialVersionUID = 2956201711131316723L;
 
     /**
+     * Number of dimensions.
+     */
+    private static final int DIMENSION = 3;
+
+    /**
      * Threshold value relative to 1 ULP of other terms in the  z = sx⋅x + sy⋅y + z₀  equation.
      * A value of 1 would be theoretically sufficient since adding a value smaller to 1 ULP to
      * a {@code double} has no effect. Nevertheless we use a smaller value as a safety because:
@@ -149,7 +154,7 @@ public class Plane implements Cloneable, Serializable {
      * Computes the <var>x</var> value for the specified (<var>y</var>,<var>z</var>) point.
      * The <var>x</var> value is computed using the following equation:
      *
-     * <blockquote>x(y,z) = (z - ({@linkplain #z0() z0} + {@linkplain #slopeY() sy}⋅y)) / {@linkplain #slopeX() sx}</blockquote>
+     * <blockquote>x(y,z) = (z - ({@linkplain #z0() z₀} + {@linkplain #slopeY() sy}⋅y)) / {@linkplain #slopeX() sx}</blockquote>
      *
      * @param y The <var>y</var> value where to compute <var>x</var>.
      * @param z The <var>z</var> value where to compute <var>x</var>.
@@ -163,7 +168,7 @@ public class Plane implements Cloneable, Serializable {
      * Computes the <var>y</var> value for the specified (<var>x</var>,<var>z</var>) point.
      * The <var>y</var> value is computed using the following equation:
      *
-     * <blockquote>y(x,z) = (z - ({@linkplain #z0() z0} + {@linkplain #slopeX() sx}⋅x)) / {@linkplain #slopeY() sy}</blockquote>
+     * <blockquote>y(x,z) = (z - ({@linkplain #z0() z₀} + {@linkplain #slopeX() sx}⋅x)) / {@linkplain #slopeY() sy}</blockquote>
      *
      * @param x The <var>x</var> value where to compute <var>y</var>.
      * @param z The <var>z</var> value where to compute <var>y</var>.
@@ -177,7 +182,7 @@ public class Plane implements Cloneable, Serializable {
      * Computes the <var>z</var> value for the specified (<var>x</var>,<var>y</var>) point.
      * The <var>z</var> value is computed using the following equation:
      *
-     * <blockquote>z(x,y) = {@linkplain #z0() z0} + {@linkplain #slopeX() sx}⋅x + {@linkplain #slopeY() sy}⋅y</blockquote>
+     * <blockquote>z(x,y) = {@linkplain #z0() z₀} + {@linkplain #slopeX() sx}⋅x + {@linkplain #slopeY() sy}⋅y</blockquote>
      *
      * @param x The <var>x</var> value where to compute <var>z</var>.
      * @param y The <var>y</var> value where to compute <var>z</var>.
@@ -232,7 +237,7 @@ public class Plane implements Cloneable, Serializable {
      * {@link Double#NaN} ordinate values are ignored.
      * The result is undetermined if all points are colinear.</p>
      *
-     * @param  points The three dimensional points.
+     * @param  points The three-dimensional points.
      * @return An estimation of the Pearson correlation coefficient.
      * @throws MismatchedDimensionException if a point is not three-dimensional.
      */
@@ -265,9 +270,9 @@ public class Plane implements Cloneable, Serializable {
         final DoubleDouble zy     = new DoubleDouble();
         for (final DirectPosition p : points) {
             final int dimension = p.getDimension();
-            if (dimension != 3) {
+            if (dimension != DIMENSION) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "positions[" + i + ']', 3, dimension));
+                        Errors.Keys.MismatchedDimension_3, "points[" + i + ']', DIMENSION, dimension));
             }
             i++;
             final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
@@ -319,12 +324,6 @@ public class Plane implements Cloneable, Serializable {
         z0.subtract(tmp);
         z0.divide(n, 0);
         /*
-         * Done - store the result.
-         */
-        this.sx = sx.value;
-        this.sy = sy.value;
-        this.z0 = z0.value;
-        /*
          * At this point, the model is computed. Now computes an estimation of the Pearson
          * correlation coefficient. Note that both the z array and the z computed from the
          * model have the same average, called sum_z below (the name is not true anymore).
@@ -335,7 +334,7 @@ public class Plane implements Cloneable, Serializable {
         final double mean_x = sum_x.value / n;
         final double mean_y = sum_y.value / n;
         final double mean_z = sum_z.value / n;
-        final double offset = abs((this.sx * mean_x + this.sy * mean_y) + this.z0); // Offsetted z₀ - see comment before usage.
+        final double offset = abs((sx.value * mean_x + sy.value * mean_y) + z0.value); // Offsetted z₀ - see comment before usage.
         double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;
         for (final DirectPosition p : points) {
             final double x = (p.getOrdinate(0) - mean_x) * sx.value;
@@ -364,9 +363,13 @@ public class Plane implements Cloneable, Serializable {
             if (detectZeroSy && abs(y) >= ulp(x * ZERO_THRESHOLD)) detectZeroSy = false;
             if (detectZeroZ0 && offset >= ulp(s * ZERO_THRESHOLD)) detectZeroZ0 = false;
         }
-        if (detectZeroSx) this.sx = 0;
-        if (detectZeroSy) this.sy = 0;
-        if (detectZeroZ0) this.z0 = 0;
+        /*
+         * Store the result only when we are done, so we have a "all or nothing" behavior.
+         * We invoke the setEquation(sx, sy, z₀) method in case the user override it.
+         */
+        setEquation(detectZeroSx ? 0 : sx.value,
+                    detectZeroSy ? 0 : sy.value,
+                    detectZeroZ0 ? 0 : z0.value);
         return sum_dsz / sqrt(sum_ds2 * sum_dz2);
     }
 
@@ -408,7 +411,7 @@ public class Plane implements Cloneable, Serializable {
     @Override
     public int hashCode() {
         return Numerics.hashCode(serialVersionUID
-                     ^ (Double.doubleToLongBits(z0 )
+                     ^ (Double.doubleToLongBits(z0)
                 + 31 * (Double.doubleToLongBits(sx)
                 + 31 * (Double.doubleToLongBits(sy)))));
     }
@@ -419,12 +422,12 @@ public class Plane implements Cloneable, Serializable {
      *
      * <blockquote>
      *     <var>z</var>(<var>x</var>,<var>y</var>) = {@linkplain #slopeX() sx}⋅<var>x</var>
-     *     + {@linkplain #slopeY() sy}⋅<var>y</var> + {@linkplain #z0() z0}
+     *     + {@linkplain #slopeY() sy}⋅<var>y</var> + {@linkplain #z0() z₀}
      * </blockquote>
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder("z(x,y) = ");
+        final StringBuilder buffer = new StringBuilder(60).append("z(x,y) = ");
         String separator = "";
         if (sx != 0) {
             buffer.append(sx).append("⋅x");
@@ -434,11 +437,6 @@ public class Plane implements Cloneable, Serializable {
             buffer.append(separator).append(sy).append("⋅y");
             separator = " + ";
         }
-        if (z0 != 0) {
-            buffer.append(separator).append(z0);
-        } else if (separator.isEmpty()) {
-            buffer.append('0');
-        }
-        return buffer.toString();
+        return buffer.append(separator).append(z0).toString();
     }
 }
