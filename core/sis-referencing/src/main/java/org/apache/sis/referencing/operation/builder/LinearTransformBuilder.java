@@ -30,7 +30,8 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Creates a linear (usually affine) transform which will map approximatively the given source points to
  * the given target points. The transform coefficients are determined using a <cite>least squares</cite>
- * estimation method.
+ * estimation method, with the assumption that source points are precise and all uncertainty is in the
+ * target points.
  *
  * <div class="note"><b>Implementation note:</b>
  * The quantity that current implementation tries to minimize is not strictly the squared Euclidian distance.
@@ -98,7 +99,7 @@ public class LinearTransformBuilder {
      * <p><b>Limitation:</b> in current implementation, the source points must be two-dimensional.
      * But this restriction may be removed in a future SIS version.</p>
      *
-     * @param  points The source points.
+     * @param  points The source points, assumed precise.
      * @throws MismatchedDimensionException if at least one point does not have the expected number of dimensions.
      */
     public void setSourcePoints(final DirectPosition... points) throws MismatchedDimensionException {
@@ -112,7 +113,7 @@ public class LinearTransformBuilder {
      * Target points can have any number of dimensions (not necessarily 2), but all points shall have
      * the same number of dimensions.
      *
-     * @param  points The target points.
+     * @param  points The target points, assumed uncertain.
      * @throws MismatchedDimensionException if not all points have the same number of dimensions.
      */
     public void setTargetPoints(final DirectPosition... points) throws MismatchedDimensionException {
@@ -126,7 +127,8 @@ public class LinearTransformBuilder {
     }
 
     /**
-     * Creates a linear transform from the source and target points.
+     * Creates a linear transform approximation from the source points to the target points.
+     * This method assumes that source points are precise and all uncertainty is in the target points.
      *
      * @return The fitted linear transform.
      */

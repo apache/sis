@@ -51,7 +51,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
         // First row (x)
         assertEquals( 2, m.getElement(0, 0), 0);
-        assertEquals( 0, m.getElement(0, 1), 1E-20);
+        assertEquals( 0, m.getElement(0, 1), 0);
         assertEquals( 1, m.getElement(0, 2), 0);
 
         // Second row (y)
