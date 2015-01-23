@@ -267,7 +267,7 @@ public class Plane implements Cloneable, Serializable {
         final double mean_x = sum_x.value / n;
         final double mean_y = sum_y.value / n;
         final double mean_z = sum_z.value / n;
-        final double offset = (this.cx * mean_x + this.cy * mean_y) + this.c; // Offsetted c - see comment before usage.
+        final double offset = Math.abs((this.cx * mean_x + this.cy * mean_y) + this.c); // Offsetted c - see comment before usage.
         double sum_ds2 = 0, sum_dz2 = 0, sum_dsz = 0;
         for (final DirectPosition p : points) {
             final double x = (p.getOrdinate(0) - mean_x) * cx.value;

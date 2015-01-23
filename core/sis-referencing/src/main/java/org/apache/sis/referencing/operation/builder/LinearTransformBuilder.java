@@ -23,8 +23,10 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -47,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  */
 public class LinearTransformBuilder {
     /**
-     * The arrays of source ordinate values, for example (x[], y[], z[]).
+     * The arrays of source ordinate values, for example (x[], y[]).
      * This is {@code null} if not yet specified.
      */
     private double[][] sources;
@@ -126,6 +128,11 @@ public class LinearTransformBuilder {
         correlation = null;
     }
 
+    /*
+     * No getters yet because we did not determined what they should return.
+     * Array? Collection? Map<source,target>?
+     */
+
     /**
      * Creates a linear transform approximation from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
@@ -152,5 +159,38 @@ public class LinearTransformBuilder {
         }
         matrix.setElement(targetDim, sourceDim, 1);
         return MathTransforms.linear(matrix);
+    }
+
+    /**
+     * Returns the correlation coefficients of the last transform created by {@link #create()},
+     * or {@code null} if none. If non-null, the array length is equals to the number of target
+     * dimensions.
+     *
+     * @return Estimation of correlation coefficients for each target dimension, or {@code null}.
+     */
+    public double[] correlation() {
+        return (correlation != null) ? correlation.clone() : null;
+    }
+
+    /**
+     * Returns a string representation of this builder for debugging purpose.
+     *
+     * @return A string representation of this builder.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
+        if (sources != null) {
+            buffer.append(sources[0].length).append(" points");
+            if (correlation != null) {
+                String separator = ", correlation is ";
+                for (final double c : correlation) {
+                    buffer.append(separator).append((float) c);
+                    separator = ", ";
+                }
+            }
+        }
+        return buffer.append(']').toString();
     }
 }
