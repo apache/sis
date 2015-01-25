@@ -16,14 +16,17 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.io.IOException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -64,6 +67,11 @@ public class LinearTransformBuilder {
      * This is {@code null} if not yet specified.
      */
     private double[][] targets;
+
+    /**
+     * The transform created by the last call to {@link #create()}.
+     */
+    private LinearTransform transform;
 
     /**
      * An estimation of the Pearson correlation coefficient for each target dimension.
@@ -116,6 +124,7 @@ public class LinearTransformBuilder {
         } else {
             sources = null;
         }
+        transform   = null;
         correlation = null;
     }
 
@@ -134,6 +143,7 @@ public class LinearTransformBuilder {
         } else {
             targets = null;
         }
+        transform   = null;
         correlation = null;
     }
 
@@ -149,40 +159,43 @@ public class LinearTransformBuilder {
      * @return The fitted linear transform.
      */
     public LinearTransform create() {
-        final double[][] sources = this.sources;  // Protect from changes.
-        final double[][] targets = this.targets;
-        if (sources == null || targets == null) {
-            throw new IllegalStateException(Errors.format(
-                    Errors.Keys.MissingValueForProperty_1, (sources == null) ? "sources" : "targets"));
-        }
-        final int sourceDim = sources.length;
-        final int targetDim = targets.length;
-        correlation = new double[targetDim];
-        final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
-        matrix.setElement(targetDim, sourceDim, 1);
-        switch (sourceDim) {
-            case 1: {
-                final Line line = new Line();
-                for (int j=0; j<targets.length; j++) {
-                    correlation[j] = line.fit(sources[0], targets[j]);
-                    matrix.setElement(j, 0, line.slope());
-                    matrix.setElement(j, 1, line.y0());
-                }
-                break;
+        if (transform == null) {
+            final double[][] sources = this.sources;  // Protect from changes.
+            final double[][] targets = this.targets;
+            if (sources == null || targets == null) {
+                throw new IllegalStateException(Errors.format(
+                        Errors.Keys.MissingValueForProperty_1, (sources == null) ? "sources" : "targets"));
             }
-            case 2: {
-                final Plane plan = new Plane();
-                for (int j=0; j<targets.length; j++) {
-                    correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
-                    matrix.setElement(j, 0, plan.slopeX());
-                    matrix.setElement(j, 1, plan.slopeY());
-                    matrix.setElement(j, 2, plan.z0());
+            final int sourceDim = sources.length;
+            final int targetDim = targets.length;
+            correlation = new double[targetDim];
+            final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
+            matrix.setElement(targetDim, sourceDim, 1);
+            switch (sourceDim) {
+                case 1: {
+                    final Line line = new Line();
+                    for (int j=0; j<targets.length; j++) {
+                        correlation[j] = line.fit(sources[0], targets[j]);
+                        matrix.setElement(j, 0, line.slope());
+                        matrix.setElement(j, 1, line.y0());
+                    }
+                    break;
                 }
-                break;
+                case 2: {
+                    final Plane plan = new Plane();
+                    for (int j=0; j<targets.length; j++) {
+                        correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
+                        matrix.setElement(j, 0, plan.slopeX());
+                        matrix.setElement(j, 1, plan.slopeY());
+                        matrix.setElement(j, 2, plan.z0());
+                    }
+                    break;
+                }
+                default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.
             }
-            default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.
+            transform = MathTransforms.linear(matrix);
         }
-        return MathTransforms.linear(matrix);
+        return transform;
     }
 
     /**
@@ -207,14 +220,27 @@ public class LinearTransformBuilder {
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
         if (sources != null) {
             buffer.append(sources[0].length).append(" points");
-            if (correlation != null) {
-                String separator = ", correlation is ";
-                for (final double c : correlation) {
-                    buffer.append(separator).append((float) c);
-                    separator = ", ";
-                }
+        }
+        buffer.append(']');
+        if (transform != null) {
+            final String lineSeparator = System.lineSeparator();
+            buffer.append(':').append(lineSeparator);
+            final TableAppender table = new TableAppender(buffer, " ");
+            table.setMultiLinesCells(true);
+            table.append(Matrices.toString(transform.getMatrix()));
+            table.nextColumn();
+            table.append(lineSeparator);
+            table.append("  ");
+            table.append(Vocabulary.format(Vocabulary.Keys.Correlation));
+            table.append(" =");
+            table.nextColumn();
+            table.append(Matrices.create(correlation.length, 1, correlation).toString());
+            try {
+                table.flush();
+            } catch (IOException e) {
+                throw new AssertionError(e); // Should never happen since we wrote into a StringBuilder.
             }
         }
-        return buffer.append(']').toString();
+        return buffer.toString();
     }
 }

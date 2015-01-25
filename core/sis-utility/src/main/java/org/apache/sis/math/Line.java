@@ -224,7 +224,7 @@ public class Line implements Cloneable, Serializable {
      *
      * @param x Vector of <var>x</var> values (independent variable).
      * @param y Vector of <var>y</var> values (dependent variable).
-     * @return Estimation of the correlation coefficient. The closer this coefficient is to 1, the better the fit.
+     * @return Estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
      *
      * @throws IllegalArgumentException if <var>x</var> and <var>y</var> do not have the same length.
      */
@@ -242,7 +242,7 @@ public class Line implements Cloneable, Serializable {
      * {@link Double#NaN} ordinate values are ignored.</p>
      *
      * @param  points The two-dimensional points.
-     * @return Estimation of the correlation coefficient. The closer this coefficient is to 1, the better the fit.
+     * @return Estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.
      * @throws MismatchedDimensionException if a point is not two-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
