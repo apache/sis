@@ -185,7 +185,7 @@ public class Plane implements Cloneable, Serializable {
      * Computes the <var>z</var> value for the specified (<var>x</var>,<var>y</var>) point.
      * The <var>z</var> value is computed using the following equation:
      *
-     * <blockquote>z(x,y) = {@linkplain #z0() z₀} + {@linkplain #slopeX() sx}⋅x + {@linkplain #slopeY() sy}⋅y</blockquote>
+     * <blockquote>z(x,y) = {@linkplain #slopeX() sx}⋅x + {@linkplain #slopeY() sy}⋅y + {@linkplain #z0() z₀}</blockquote>
      *
      * @param x The <var>x</var> value where to compute <var>z</var>.
      * @param y The <var>y</var> value where to compute <var>z</var>.
@@ -373,7 +373,7 @@ public class Plane implements Cloneable, Serializable {
         setEquation(detectZeroSx ? 0 : sx.value,
                     detectZeroSy ? 0 : sy.value,
                     detectZeroZ0 ? 0 : z0.value);
-        return sum_dsz / sqrt(sum_ds2 * sum_dz2);
+        return Math.min(sum_dsz / sqrt(sum_ds2 * sum_dz2), 1);
     }
 
     /**
