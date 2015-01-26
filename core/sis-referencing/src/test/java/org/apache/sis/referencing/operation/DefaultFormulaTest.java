@@ -14,14 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation.provider;
+package org.apache.sis.referencing.operation;
 
-import java.util.Map;
-import java.util.Collections;
-import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
 
-public abstract class Affine implements org.opengis.referencing.operation.OperationMethod {
-    public static Map<String,Object> IDENTIFICATION = Collections.<String,Object>singletonMap(NAME_KEY, "Affine");
+import static org.apache.sis.test.MetadataAssert.*;
 
-    public static ParameterDescriptorGroup PARAMETERS; // TODO
+
+/**
+ * Tests {@link DefaultFormula}.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 0.5
+ * @since   0.5
+ * @module
+ */
+public final strictfp class DefaultFormulaTest extends TestCase {
+    /**
+     * Tests {@link DefaultFormula#toWKT()}.
+     */
+    @Test
+    public void testWKT() {
+        final DefaultFormula formula = new DefaultFormula("Mercator");
+        assertWktEquals("Formula[“Mercator”]", formula);
+    }
 }

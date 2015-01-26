@@ -61,6 +61,10 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * rounding errors anyway. So we put the threshold to some arbitrary mid-value, which may change in any future
      * SIS version according experience gained. As long as the value is smaller than 1, it still more accurate than
      * {@code double} arithmetic anyway.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * A similar constant exists in {@code org.apache.sis.math.Plane}.
+     * </div>
      */
     private static final double ZERO_THRESHOLD = 1E-14;
 

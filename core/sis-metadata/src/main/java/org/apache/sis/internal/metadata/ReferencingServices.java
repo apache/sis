@@ -38,6 +38,9 @@ import org.apache.sis.util.resources.Errors;
  * This class searches for the {@link org.apache.sis.internal.referencing.ServicesForMetadata}
  * implementation using Java reflection.
  *
+ * <p>This class also opportunistically defines some constants related to "referencing by coordinates"
+ * but needed by metadata.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
  * @version 0.5
@@ -45,12 +48,13 @@ import org.apache.sis.util.resources.Errors;
  */
 public abstract class ReferencingServices extends SystemListener {
     /**
-     * The length of one nautical mile, in metres.
+     * The length of one nautical mile, which is {@value} metres.
      */
     public static final double NAUTICAL_MILE = 1852;
 
     /**
-     * The GRS80 {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}.
+     * The GRS80 {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius},
+     * which is {@value} metres.
      */
     public static final double AUTHALIC_RADIUS = 6371007;
 

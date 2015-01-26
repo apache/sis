@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Affine;
 
 // Test imports
 import org.junit.Test;

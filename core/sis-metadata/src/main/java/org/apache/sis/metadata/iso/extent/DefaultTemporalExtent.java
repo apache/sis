@@ -168,7 +168,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
         } else {
             return null;
         }
-        return instant.getPosition().getDate();
+        return instant.getDate();
     }
 
     /**

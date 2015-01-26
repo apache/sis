@@ -55,6 +55,22 @@ public final strictfp class FormatterTest extends TestCase {
     }
 
     /**
+     * Tests (indirectly) {@link Formatter#quote(String)}.
+     */
+    @Test
+    public void testQuote() {
+        assertWktEquals(Convention.WKT2,
+                "“A “quote”” to double”",               // Expect doubling quotes.
+                 "A “quote” to double");
+        assertWktEquals(Convention.WKT2,
+                "“Nouvelle Triangulation Francaise”",   // Expect replacement of non-latin characters.
+                 "Nouvelle Triangulation Française");
+        assertWktEquals(Convention.INTERNAL,
+                "“Nouvelle Triangulation Française”",   // Non-latin characters shall be preserved in internal mode.
+                 "Nouvelle Triangulation Française");
+    }
+
+    /**
      * Tests (indirectly) {@link Formatter#append(GeographicBoundingBox, int)}.
      */
     @Test

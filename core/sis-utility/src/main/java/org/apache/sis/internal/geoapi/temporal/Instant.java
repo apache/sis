@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.geoapi.temporal;
 
+import java.util.Date;
 import org.opengis.temporal.TemporalPrimitive;
 
 
@@ -24,14 +25,14 @@ import org.opengis.temporal.TemporalPrimitive;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public interface Instant extends TemporalPrimitive {
     /**
      * Gets the date of this instant.
      *
-     * @return The date as a {@code Position} object.
+     * @return The date.
      */
-    Position getPosition();
+    Date getDate();
 }

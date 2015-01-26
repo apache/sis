@@ -97,8 +97,8 @@ public final strictfp class StringBuildersTest extends TestCase {
      */
     @Test
     public void testToASCII() {
-        final StringBuilder metre = new StringBuilder("mètre");
+        final StringBuilder metre = new StringBuilder("mètres" + Characters.PARAGRAPH_SEPARATOR);
         toASCII(metre);
-        assertEquals("metre", metre.toString());
+        assertEquals("metres\n", metre.toString());
     }
 }

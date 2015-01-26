@@ -489,6 +489,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedPropertyType_1 = 154;
 
         /**
+         * The transform has {2} {0,choice,0#source|1#target} dimension{2,choice,1#|2#s}, while {1} was
+         * expected.
+         */
+        public static final short MismatchedTransformDimension_3 = 178;
+
+        /**
          * Class of “{0}” values is ‘{2}’, but the requested type is ‘{1}’.
          */
         public static final short MismatchedValueClass_3 = 157;
