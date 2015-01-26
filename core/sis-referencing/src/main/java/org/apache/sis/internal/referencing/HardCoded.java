@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import org.apache.sis.util.Static;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -31,7 +32,7 @@ public final class HardCoded extends Static {
     /**
      * The {@value} code space.
      */
-    public static final String EPSG = "EPSG";
+    public static final String EPSG = Citations.EPSG;
 
     /**
      * The {@value} code space.

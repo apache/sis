@@ -63,7 +63,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
@@ -294,7 +294,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
         assertInstanceOf("identifiers", Collection.class, identifiers);
-        HardCodedCitations.assertIdentifiersFor("ISO", (Collection<?>) identifiers);
+        assertContainsIdentifierCode("ISO", (Collection<?>) identifiers);
     }
 
     /**
@@ -608,7 +608,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("identifiers", Collection.class, target);
         assertNotSame("Distinct objects shall have distinct collections.", source, target);
         assertEquals ("The two collections shall have the same content.",  source, target);
-        HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) target);
+        assertContainsIdentifierCode("EPSG", (Collection<?>) target);
 
         // Set the identifiers to null, which should clear the collection.
         assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));

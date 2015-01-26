@@ -54,6 +54,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
+    org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
 
     org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
@@ -75,6 +76,10 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.ParameterFormatTest.class,
     org.apache.sis.parameter.TensorParametersTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
+
+    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
+    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.internal.referencing.OperationMethodsTest.class,
 
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
@@ -120,6 +125,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
 
+    org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.test.integration.ReferencingInMetadataTest.class,
     org.apache.sis.test.integration.DefaultMetadataTest.class

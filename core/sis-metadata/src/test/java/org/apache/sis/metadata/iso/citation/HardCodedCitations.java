@@ -17,8 +17,6 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
-import java.util.Collection;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
@@ -27,7 +25,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Static;
 
-import static org.opengis.test.Assert.*;
 import static java.util.Collections.singleton;
 
 
@@ -40,7 +37,7 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {
@@ -168,24 +165,5 @@ public final strictfp class HardCodedCitations extends Static {
      * Do not allow instantiation of this class.
      */
     private HardCodedCitations() {
-    }
-
-    /**
-     * Asserts that the given {@linkplain Identifier#getCode() identifier code}
-     * is found in the collection of identifiers.
-     *
-     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
-     * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
-     */
-    public static void assertIdentifiersFor(final String expected, final Collection<?> identifiers) {
-        assertNotNull("identifiers", identifiers);
-        int count = 0;
-        for (final Object id : identifiers) {
-            assertInstanceOf("identifier", Identifier.class, id);
-            if (((Identifier) id).getCode().equals(expected)) {
-                count++;
-            }
-        }
-        assertEquals("Unexpected amount of identifiers.", 1, count);
     }
 }

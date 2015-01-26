@@ -31,7 +31,7 @@ import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
