@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;

@@ -40,7 +40,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -253,7 +253,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertEquals("title", "European Petroleum Survey Group", map.get("getTitle").toString());
         final Object identifiers = map.get("identifiers");
         assertInstanceOf("identifiers", Collection.class, identifiers);
-        HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) identifiers);
+        assertContainsIdentifierCode("EPSG", (Collection<?>) identifiers);
     }
 
     /**

@@ -26,6 +26,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterValue;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -43,7 +44,7 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGP;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.5
  * @module
  */
 @DependsOn(ParameterBuilderTest.class)
@@ -308,13 +309,14 @@ public final strictfp class ParameterFormatTest extends TestCase {
     }
 
     /**
-     * Tests the formatting of a parameter value group with an invalid cardinality.
-     * While not allowed by ISO 19111, the Apache SIS implementation shall be robust
-     * to those cases.
+     * Tests the formatting of a parameter descriptor group with a cardinality
+     * invalid according ISO 19111, but allowed by Apache SIS implementation.
+     * ISO 19111 restricts {@link ParameterDescriptor} cardinality to the [0 … 1] range,
+     * but SIS can handle arbitrary ranges ([0 … 2] in this test).
      */
     @Test
     @DependsOnMethod("testFormatBriefDescriptors")
-    public void testInvalidCardinality() {
+    public void testExtendedCardinality() {
         final ParameterFormat format = new ParameterFormat(null, null);
         format.setContentLevel(ParameterFormat.ContentLevel.BRIEF);
         final String text = format.format(DefaultParameterDescriptorGroupTest.M1_M1_O1_O2);
@@ -328,5 +330,41 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ Optional 3  │ Integer │ Optional   │              │            10 │\n" +
                 "│ Optional 4  │ Integer │ 0 … 2      │              │            10 │\n" +
                 "└─────────────┴─────────┴────────────┴──────────────┴───────────────┘\n", text);
+    }
+
+    /**
+     * Tests the formatting of a parameter value group with a cardinality
+     * invalid according ISO 19111, but allowed by Apache SIS implementation.
+     * ISO 19111 restricts {@link ParameterValue} cardinality to the [0 … 1] range,
+     * but SIS can handle arbitrary number of occurrences (2 in this test).
+     */
+    @Test
+    @DependsOnMethod("testExtendedCardinality")
+    public void testMultiOccurrence() {
+        final ParameterValueGroup group = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
+        group.parameter("Mandatory 2").setValue(20);
+        final ParameterValue<?> value = group.parameter("Optional 4");
+        value.setValue(40);
+        /*
+         * Adding a second occurrence of the same parameter.
+         * Not straightforward because not allowed by ISO 19111.
+         */
+        final ParameterValue<?> secondOccurrence = value.getDescriptor().createValue();
+        group.values().add(secondOccurrence);
+        secondOccurrence.setValue(50);
+
+        final ParameterFormat format = new ParameterFormat(null, null);
+        format.setContentLevel(ParameterFormat.ContentLevel.BRIEF);
+        final String text = format.format(group);
+        assertMultilinesEquals(
+                "Test group\n" +
+                "┌─────────────┬─────────┬──────────────┬───────┐\n" +
+                "│ Name        │ Type    │ Value domain │ Value │\n" +
+                "├─────────────┼─────────┼──────────────┼───────┤\n" +
+                "│ Mandatory 1 │ Integer │              │    10 │\n" +
+                "│ Mandatory 2 │ Integer │              │    20 │\n" +
+                "│ Optional 4  │ Integer │              │    40 │\n" +
+                "│      ″      │    ″    │      ″       │    50 │\n" +
+                "└─────────────┴─────────┴──────────────┴───────┘\n", text);
     }
 }

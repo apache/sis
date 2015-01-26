@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.Parameterized;
 
 // Test imports

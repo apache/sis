@@ -16,10 +16,13 @@
  */
 package org.apache.sis.test;
 
+import java.util.Collection;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -28,7 +31,7 @@ import org.apache.sis.io.wkt.Convention;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
- * @version 0.4
+ * @version 0.5
  * @module
  */
 public strictfp class MetadataAssert extends Assert {
@@ -48,6 +51,44 @@ public strictfp class MetadataAssert extends Assert {
      * For subclass constructor only.
      */
     protected MetadataAssert() {
+    }
+
+    /**
+     * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
+     * The authority is expected to have the {@code "OGP"} title or alternate title.
+     *
+     * @param expected   The expected identifier code.
+     * @param identifier The identifier to verify.
+     *
+     * @since 0.5
+     */
+    public static void assertEpsgIdentifierEquals(final String expected, final Identifier identifier) {
+        assertNotNull(identifier);
+        assertEquals("code",      expected, identifier.getCode());
+        assertEquals("codeSpace", Citations.EPSG, identifier.getCodeSpace());
+        assertEquals("authority", "OGP",  Citations.getIdentifier(identifier.getAuthority()));
+    }
+
+    /**
+     * Asserts that the given collection contains exactly one identifier with the given
+     * {@linkplain Identifier#getCode() code}. The {@linkplain Identifier#getCodeSpace()
+     * code space} and authority are ignored.
+     *
+     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
+     * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
+     *
+     * @since 0.5
+     */
+    public static void assertContainsIdentifierCode(final String expected, final Collection<?> identifiers) {
+        assertNotNull("identifiers", identifiers);
+        int count = 0;
+        for (final Object id : identifiers) {
+            assertInstanceOf("identifier", Identifier.class, id);
+            if (((Identifier) id).getCode().equals(expected)) {
+                count++;
+            }
+        }
+        assertEquals("Unexpected amount of identifiers.", 1, count);
     }
 
     /**
