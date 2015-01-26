@@ -297,7 +297,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * The {@code TIMEORIGIN[…]} element inside an {@code TDATUM[…]}.
+     * The {@code TimeOrigin[…]} element inside a {@code TimeDatum[…]}.
      */
     private static final class Origin extends FormattableObject {
         /** The value of the origin to format. */

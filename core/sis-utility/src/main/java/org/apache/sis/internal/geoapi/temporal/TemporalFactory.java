@@ -29,9 +29,7 @@ import org.opengis.util.InternationalString;
  * @module
  */
 public interface TemporalFactory {
-    Position createPosition(Date position);
-
-    Instant createInstant(Position instant);
+    Instant createInstant(Date date);
 
     Period createPeriod(Instant begin, Instant end);
 

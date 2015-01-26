@@ -103,7 +103,7 @@ public final strictfp class HardCodedDatum {
      * Mean sea level, which can be used as an approximation of geoid.
      */
     public static final DefaultVerticalDatum MEAN_SEA_LEVEL = new DefaultVerticalDatum(
-            properties("Mean Sea Level", "5700"), VerticalDatumType.GEOIDAL);
+            properties("Mean Sea Level", "5100"), VerticalDatumType.GEOIDAL);
 
     /**
      * Ellipsoid for measurements of height above the ellipsoid.

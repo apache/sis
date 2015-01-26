@@ -121,6 +121,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ConstantPressureSurface = 19;
 
         /**
+         * Correlation
+         */
+        public static final short Correlation = 83;
+
+        /**
          * Current date and time
          */
         public static final short CurrentDateTime = 10;
@@ -164,6 +169,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Directory
          */
         public static final short Directory = 16;
+
+        /**
+         * ″
+         */
+        public static final short DittoMark = 82;
 
         /**
          * Dublin Julian

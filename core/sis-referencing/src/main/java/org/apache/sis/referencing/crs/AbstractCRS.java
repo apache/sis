@@ -415,10 +415,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                            Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
-                    return deepEquals(datum,
-                                      (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
-                           deepEquals(getCoordinateSystem(),
-                                      ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
+                    return deepEquals(datum, (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
+                           deepEquals(getCoordinateSystem(), ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
                 }
             }
         }
@@ -438,7 +436,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT) CRS into the given formatter.
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      * The default implementation writes the following elements in WKT 2 format:
      *
      * <ul>
