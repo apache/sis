@@ -17,12 +17,18 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 
 
@@ -40,6 +46,71 @@ public final class OperationMethods extends Static {
      * Do not allow instantiation of this class.
      */
     private OperationMethods() {
+    }
+
+    /**
+     * Determines whether a match or mismatch is found between the two given collections of identifiers.
+     * If any of the given collections is {@code null} or empty, this method returns {@code null}.
+     *
+     * <p>According ISO 19162 (<cite>Well known text representation of coordinate reference systems</cite>),
+     * {@linkplain AbstractIdentifiedObject#getIdentifier() identifiers} should have precedence over
+     * {@linkplain AbstractIdentifiedObject#getName() name} for identifying {@code IdentifiedObject}s,
+     * at least in the case of {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod
+     * operation methods} and {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters}.</p>
+     *
+     * @param  id1 The first collection of identifiers, or {@code null}.
+     * @param  id2 The second collection of identifiers, or {@code null}.
+     * @return {@code TRUE} or {@code FALSE} on match or mismatch respectively, or {@code null} if this method
+     *         can not determine if there is a match or mismatch.
+     */
+    public static Boolean hasCommonIdentifier(final Iterable<? extends Identifier> id1,
+                                              final Iterable<? extends Identifier> id2)
+    {
+        if (id1 != null && id2 != null) {
+            boolean hasFound = false;
+            for (final Identifier identifier : id1) {
+                final Citation authority = identifier.getAuthority();
+                final String   codeSpace = identifier.getCodeSpace();
+                for (final Identifier other : id2) {
+                    if (authorityMatches(identifier, authority, codeSpace)) {
+                        if (CharSequences.equalsFiltered(identifier.getCode(), other.getCode(), Characters.Filter.UNICODE_IDENTIFIER, true)) {
+                            return Boolean.TRUE;
+                        }
+                        hasFound = true;
+                    }
+                }
+            }
+            if (hasFound) {
+                return Boolean.FALSE;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if the given identifier authority matches the given {@code authority}.
+     * If one of the authority is null, then the comparison fallback on the given {@code codeSpace}.
+     * If the code spaces are also null, then this method conservatively returns {@code false}.
+     *
+     * @param  identifier The identifier to compare.
+     * @param  authority  The desired authority, or {@code null}.
+     * @param  codeSpace  The desired code space or {@code null}, used as a fallback if an authority is null.
+     * @return {@code true} if the authority or code space (as a fallback only) matches.
+     */
+    private static boolean authorityMatches(final Identifier identifier, final Citation authority, final String codeSpace) {
+        if (authority != null) {
+            final Citation other = identifier.getAuthority();
+            if (other != null) {
+                return Citations.identifierMatches(authority, other);
+            }
+        }
+        if (codeSpace != null) {
+            final String other = identifier.getCodeSpace();
+            if (other != null) {
+                return CharSequences.equalsFiltered(codeSpace, other, Characters.Filter.UNICODE_IDENTIFIER, true);
+            }
+        }
+        return false;
     }
 
     /**
