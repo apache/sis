@@ -33,6 +33,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -415,10 +416,21 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                     break;
                 }
                 default: {
-                    // Name and identifiers have been ignored by super.equals(object, mode).
-                    // Since they are significant for OperationMethod, compare them here.
+                    /*
+                     * Name and identifiers have been ignored by super.equals(object, mode).
+                     * Since they are significant for OperationMethod, we compare them here.
+                     *
+                     * According ISO 19162 (Well Known Text representation of Coordinate Reference Systems),
+                     * identifiers shall have precedence over name at least in the case of operation methods
+                     * and parameters.
+                     */
                     final OperationMethod that = (OperationMethod) object;
-                    if (!isHeuristicMatchForName(that.getName().getCode())
+                    final Boolean match = OperationMethods.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
+                    if (match != null) {
+                        if (!match) {
+                            return false;
+                        }
+                    } else if (!isHeuristicMatchForName(that.getName().getCode())
                             && !IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode()))
                     {
                         return false;

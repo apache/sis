@@ -26,7 +26,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.TensorParameters;
-import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 

@@ -32,6 +32,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.OperationMethods;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
@@ -404,12 +405,19 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
             }
             default: {
                 /*
-                 * Tests for name, since datum with different name have completely
-                 * different meaning. We don't perform this comparison if the user
-                 * asked for metadata comparison, because in such case the names
-                 * have already been compared by the subclass.
+                 * Tests for identifiers or name since datum with different identification may have completely
+                 * different meaning. We do not perform this check if the user asked for metadata comparison,
+                 * because in such case the name and identifiers have already been compared by the subclass.
+                 *
+                 * According ISO 19162 (Well Known Text representation of Coordinate Reference Systems),
+                 * identifiers shall have precedence over name at least in the case of operation methods
+                 * and parameters. We extend this rule to datum as well.
                  */
                 final Datum that = (Datum) object;
+                final Boolean match = OperationMethods.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
+                if (match != null) {
+                    return match;
+                }
                 return isHeuristicMatchForName(that.getName().getCode())
                         || IdentifiedObjects.isHeuristicMatchForName(that, getName().getCode());
             }

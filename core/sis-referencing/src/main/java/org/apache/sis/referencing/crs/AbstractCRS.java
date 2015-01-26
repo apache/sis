@@ -415,10 +415,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                            Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
-                    return deepEquals(datum,
-                                      (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
-                           deepEquals(getCoordinateSystem(),
-                                      ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
+                    return deepEquals(datum, (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
+                           deepEquals(getCoordinateSystem(), ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
                 }
             }
         }

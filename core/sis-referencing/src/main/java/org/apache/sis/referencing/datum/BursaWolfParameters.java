@@ -258,9 +258,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @return {@code true} if the given datum is equal to WGS84 for computational purpose.
      */
     final boolean isToWGS84() {
-        return (targetDatum != null) &&
-               (IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS 84") ||
-                IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS84"));
+        return (targetDatum != null) && IdentifiedObjects.isHeuristicMatchForName(targetDatum, "WGS84");
     }
 
     /**
