@@ -41,7 +41,7 @@ import static java.lang.Double.*;
  * and (<var>x</var>₂,<var>y</var>₂) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @since   0.5 (derived from geotk-1.0)
+ * @since   0.5
  * @version 0.5
  * @module
  *

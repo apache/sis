@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */

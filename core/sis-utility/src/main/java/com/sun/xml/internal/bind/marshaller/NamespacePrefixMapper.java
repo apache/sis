@@ -35,7 +35,7 @@ package com.sun.xml.internal.bind.marshaller;
  * that the method signatures in {@code OGCNamespacePrefixMapper} match the ones in the JDK.</p>
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -107,7 +107,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.4
  * @module
  */
@@ -1158,7 +1158,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */

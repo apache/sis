@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assert.*;
  * Test conversions using the units declared in {@link Units}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.4
  * @module
  */

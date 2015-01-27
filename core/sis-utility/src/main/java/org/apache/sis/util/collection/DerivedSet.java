@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * @param <E> The type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

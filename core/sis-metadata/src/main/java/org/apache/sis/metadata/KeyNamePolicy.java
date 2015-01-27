@@ -31,7 +31,7 @@ import org.opengis.annotation.UML;
  * {@code UML_IDENTIFIER} usually stay singular no matter the property cardinality.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  *

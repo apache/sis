@@ -36,7 +36,7 @@ import org.opengis.util.InternationalString;
  * as they want.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.4
  * @module
  */
@@ -48,7 +48,7 @@ public final class Errors extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.2)
+     * @since   0.3
      * @module
      */
     @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")

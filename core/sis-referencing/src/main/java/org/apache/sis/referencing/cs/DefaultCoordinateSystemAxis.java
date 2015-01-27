@@ -78,7 +78,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  *

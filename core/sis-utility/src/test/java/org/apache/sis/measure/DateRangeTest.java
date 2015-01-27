@@ -31,7 +31,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * usage of {@code java.util.Date} is replaced by usage of ISO 19108 (temporal schema) types.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

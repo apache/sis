@@ -49,7 +49,7 @@ import org.apache.sis.util.ComparisonMode;
  * same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.5
  * @module
  */

@@ -26,7 +26,7 @@ import static org.apache.sis.internal.referencing.HardCoded.EPSG;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.4 (derived from geotk-3.04)
+ * @since   0.4
  * @version 0.4
  * @module
  */

@@ -41,7 +41,7 @@ import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.4
  * @module
  */

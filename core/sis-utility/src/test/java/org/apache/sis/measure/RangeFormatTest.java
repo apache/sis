@@ -40,7 +40,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
  * Tests parsing and formatting done by the {@link RangeFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.06)
+ * @since   0.3
  * @version 0.4
  * @module
  */

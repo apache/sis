@@ -21,7 +21,7 @@
  * for building Apache SIS. See the Maven-generated module description for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.3
  * @module
  */

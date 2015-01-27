@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.4
  * @module
  */

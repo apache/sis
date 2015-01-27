@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Errors;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.5
  * @module
  */
@@ -327,7 +327,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.5 (derived from geotk-3.00)
+     * @since   0.5
      * @version 0.5
      * @module
      */

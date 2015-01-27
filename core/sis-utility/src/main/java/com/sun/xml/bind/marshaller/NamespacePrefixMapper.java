@@ -25,7 +25,7 @@ package com.sun.xml.bind.marshaller;
  * than the one bundled in JDK 6, so we must be able to support both.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -33,7 +33,7 @@
  * {@code Line} class in this package extends to infinite.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.5
  * @module
  */

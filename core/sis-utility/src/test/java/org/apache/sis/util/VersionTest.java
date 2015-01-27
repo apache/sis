@@ -27,7 +27,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Version} class, especially the {@code compareTo} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.4
  * @module
  */

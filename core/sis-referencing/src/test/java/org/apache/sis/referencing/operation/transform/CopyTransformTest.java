@@ -28,7 +28,7 @@ import org.apache.sis.test.DependsOn;
  * Tests the {@link CopyTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.08)
+ * @since   0.5
  * @version 0.5
  * @module
  */

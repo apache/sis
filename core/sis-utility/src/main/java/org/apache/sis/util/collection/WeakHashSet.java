@@ -72,7 +72,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @param <E> The type of elements in the set.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link LineAppender} implementation when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *

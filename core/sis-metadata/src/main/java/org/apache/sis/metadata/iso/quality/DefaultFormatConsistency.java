@@ -35,7 +35,7 @@ import org.opengis.metadata.quality.FormatConsistency;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

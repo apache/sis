@@ -122,7 +122,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.5
  * @module
  *

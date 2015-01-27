@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.2)
+ * @since   0.5
  * @version 0.5
  * @module
  *

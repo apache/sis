@@ -21,7 +21,7 @@ package org.apache.sis.storage;
  * Thrown when a {@link DataStore} can not complete a read or write operation.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.3
  * @module
  */

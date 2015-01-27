@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the XML marshalling of {@code FreeText}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
+ * @since   0.3
  * @version 0.3
  * @module
  *

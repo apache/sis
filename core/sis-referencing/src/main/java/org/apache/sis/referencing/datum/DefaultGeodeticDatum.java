@@ -117,7 +117,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.5
  * @module
  *

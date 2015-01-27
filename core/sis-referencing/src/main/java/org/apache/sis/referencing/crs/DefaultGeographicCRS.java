@@ -55,7 +55,7 @@ import static org.apache.sis.internal.referencing.HardCoded.CRS84;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.5
  * @module
  */
