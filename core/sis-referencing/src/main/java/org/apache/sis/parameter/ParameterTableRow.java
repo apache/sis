@@ -49,7 +49,7 @@ import static org.apache.sis.util.CharSequences.spaces;
  * A row in the table to be formatted by {@link ParameterFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.4
  * @module
  */

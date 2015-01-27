@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
+ * @since   0.3
  * @version 0.4
  * @module
  */

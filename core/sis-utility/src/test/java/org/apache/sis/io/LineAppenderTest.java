@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * which is a problematic involved in every tests. Subclasses will test other aspects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.4
  * @module
  */

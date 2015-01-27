@@ -56,7 +56,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.5
  * @module
  *

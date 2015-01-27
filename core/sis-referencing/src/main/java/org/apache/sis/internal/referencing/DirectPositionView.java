@@ -29,7 +29,7 @@ import org.opengis.geometry.UnmodifiableGeometryException;
  * This class shall be used for temporary objects only (it is not serializable for this reason).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.20)
+ * @since   0.5
  * @version 0.5
  * @module
  */

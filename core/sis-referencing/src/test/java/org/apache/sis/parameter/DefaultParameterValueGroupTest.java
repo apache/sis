@@ -41,7 +41,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Tests the {@link DefaultParameterValueGroup} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.1)
+ * @since   0.4
  * @version 0.5
  * @module
  */

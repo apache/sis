@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  * In such case, the error message is given by {@link #message(Map, String, Object)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  */

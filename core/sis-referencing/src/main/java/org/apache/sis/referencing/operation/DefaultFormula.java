@@ -36,7 +36,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
- * @since   0.5 (derived from geotk-3.03)
+ * @since   0.5
  * @module
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {

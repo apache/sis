@@ -86,7 +86,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * any public {@code NamedIdentifier} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.5
  * @module
  */

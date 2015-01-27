@@ -34,7 +34,7 @@ import static org.apache.sis.measure.Units.*;
  * This class may be removed in a future SIS version if we provide our own units framework.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.4
  * @module
  */

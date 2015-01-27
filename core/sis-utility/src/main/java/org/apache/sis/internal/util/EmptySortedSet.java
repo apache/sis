@@ -34,7 +34,7 @@ import java.util.SortedSet;
  * @param  <E> Type of elements in the collection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.3
  * @module
  */

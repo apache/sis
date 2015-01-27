@@ -63,7 +63,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.5
  * @module
  *

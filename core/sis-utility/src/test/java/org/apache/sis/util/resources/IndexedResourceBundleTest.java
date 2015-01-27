@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assert.*;
  * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.4
  */
 @DependsOn(LoaderTest.class)

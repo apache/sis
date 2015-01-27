@@ -45,7 +45,7 @@ import static org.apache.sis.internal.util.Citations.identifierMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.5
  * @module
  *

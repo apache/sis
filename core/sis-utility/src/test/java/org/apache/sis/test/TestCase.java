@@ -49,7 +49,7 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.16)
+ * @since   0.3
  * @version 0.4
  * @module
  */

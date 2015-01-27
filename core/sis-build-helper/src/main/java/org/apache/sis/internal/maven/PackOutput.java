@@ -38,7 +38,7 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * A JAR file to be created for output by {@link Packer}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.4
  * @module
  */

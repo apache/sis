@@ -84,7 +84,7 @@
  * if the given value is not assignable to the expected class or is not inside the value domain.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.4
  * @module
  */

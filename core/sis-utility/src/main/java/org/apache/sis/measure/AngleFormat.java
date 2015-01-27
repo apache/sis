@@ -120,7 +120,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * </table>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.4
  * @module
  *

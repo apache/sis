@@ -77,7 +77,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.5
  * @module
  */

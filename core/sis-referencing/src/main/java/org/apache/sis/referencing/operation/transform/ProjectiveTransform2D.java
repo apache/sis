@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-2.5)
+ * @since   0.5
  * @version 0.5
  * @module
  */

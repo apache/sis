@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

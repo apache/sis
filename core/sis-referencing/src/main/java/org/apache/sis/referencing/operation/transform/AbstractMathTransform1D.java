@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.17)
+ * @since   0.5
  * @version 0.5
  * @module
  */

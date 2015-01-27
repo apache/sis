@@ -47,7 +47,7 @@ import org.apache.sis.xml.ReferenceResolver;
  * only "{@code Context}" for that reason.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.07)
+ * @since   0.3
  * @version 0.5
  * @module
  */

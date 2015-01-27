@@ -105,7 +105,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.5
  * @module
  */

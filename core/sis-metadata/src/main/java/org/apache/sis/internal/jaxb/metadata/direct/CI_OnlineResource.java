@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.15)
+ * @since   0.3
  * @version 0.3
  * @module
  */

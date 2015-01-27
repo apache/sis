@@ -68,7 +68,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.1)
+ * @since   0.4
  * @version 0.4
  * @module
  *

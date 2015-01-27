@@ -101,7 +101,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.1)
+ * @since   0.4
  * @version 0.4
  * @module
  */

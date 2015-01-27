@@ -53,7 +53,7 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.4
  * @module
  *
