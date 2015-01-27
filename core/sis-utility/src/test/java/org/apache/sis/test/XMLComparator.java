@@ -73,7 +73,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
+ * @since   0.3
  * @version 0.4
  * @module
  *

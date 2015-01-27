@@ -56,7 +56,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * Tests the {@link Classes} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.5
  * @module
  */

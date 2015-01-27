@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.4
  * @module
  */

@@ -32,7 +32,7 @@ import org.apache.sis.math.FunctionProperty;
  * @param <T> The base type of converted objects.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.01)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -26,7 +26,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * @param <T> The identifier type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.19)
+ * @since   0.4
  * @version 0.4
  * @module
  *

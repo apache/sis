@@ -24,7 +24,7 @@ package org.apache.sis.util.collection;
  * @param <E> The base type of elements in the container.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

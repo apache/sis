@@ -43,7 +43,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the XML marshaling of {@code Locale} when used for a language.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.4
  * @module
  */

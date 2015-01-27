@@ -28,7 +28,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * Tests the {@link PerformanceLevel} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.16)
+ * @since   0.3
  * @version 0.3
  * @module
  */

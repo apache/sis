@@ -35,7 +35,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * Tests the {@link MathFunctions} static methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.4
  * @module
  */

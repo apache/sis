@@ -47,7 +47,7 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
  * This should be considered as an implementation details.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.5
  * @module
  */

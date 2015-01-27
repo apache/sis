@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Various implementations are used for each test.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.4
  * @module
  */

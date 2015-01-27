@@ -43,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.assertWktEquals;
  * Tests the {@link AbstractReferenceSystem} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

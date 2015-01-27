@@ -21,7 +21,7 @@ package org.apache.sis.metadata;
  * Thrown when a metadata is in a invalid state, usually because a mandatory property is missing.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

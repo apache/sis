@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Citations;
  * from other modules and libraries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.5
  * @module
  */

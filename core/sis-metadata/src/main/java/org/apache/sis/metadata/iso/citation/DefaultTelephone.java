@@ -56,7 +56,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.5 (derived from geotk-2.1)
+ * @since   0.5
  * @version 0.5
  * @module
  *

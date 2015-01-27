@@ -29,7 +29,7 @@ import static org.apache.sis.util.CharSequences.*;
  * Utilities methods related to {@link AxisDirection}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.13)
+ * @since   0.4
  * @version 0.5
  * @module
  */

@@ -32,7 +32,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.4
  * @module
  */

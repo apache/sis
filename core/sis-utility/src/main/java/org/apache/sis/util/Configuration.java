@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * See "<cite>Use</cite>" javadoc link for a list of annotated methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

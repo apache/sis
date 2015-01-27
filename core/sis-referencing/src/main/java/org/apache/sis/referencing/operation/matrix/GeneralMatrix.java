@@ -35,7 +35,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * the {@link DoubleDouble#error}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.5
  * @module
  *

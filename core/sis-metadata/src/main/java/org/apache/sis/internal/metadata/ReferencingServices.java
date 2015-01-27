@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  * but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.5
  * @module
  */
