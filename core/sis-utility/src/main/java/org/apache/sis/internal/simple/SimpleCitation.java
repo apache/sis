@@ -40,7 +40,7 @@ import java.util.Objects;
  * A trivial implementation of {@link Citation} containing only a title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */

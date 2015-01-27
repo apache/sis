@@ -29,7 +29,7 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
  * Tests {@link LineAppender} implementation when used for wrapping lines to 80 characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *

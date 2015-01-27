@@ -29,7 +29,7 @@ import static org.apache.sis.util.iso.DefaultInternationalStringTest.MESSAGE;
  * Tests the {@link SimpleInternationalString} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

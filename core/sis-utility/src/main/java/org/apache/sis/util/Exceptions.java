@@ -29,7 +29,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.4
  * @module
  */

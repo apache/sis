@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link SecondDefiningParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.06)
+ * @since   0.4
  * @version 0.4
  * @module
  */

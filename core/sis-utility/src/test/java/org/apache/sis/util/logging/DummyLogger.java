@@ -24,7 +24,7 @@ import java.util.logging.Level;
  * This class is used by {@link LoggerAdapterTest}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

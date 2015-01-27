@@ -44,7 +44,7 @@ import org.apache.sis.util.ComparisonMode;
  * an {@link java.awt.geom.AffineTransform} for every 2D affine conversions.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.08)
+ * @since   0.5
  * @version 0.5
  * @module
  */

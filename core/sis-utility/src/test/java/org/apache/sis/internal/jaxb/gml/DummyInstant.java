@@ -31,7 +31,7 @@ import org.apache.sis.internal.simple.SimpleIdentifiedObject;
  * toward the {@code sis-temporal} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.5
  * @module
  */

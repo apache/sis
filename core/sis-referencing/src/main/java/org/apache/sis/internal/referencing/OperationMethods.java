@@ -37,7 +37,7 @@ import org.apache.sis.util.Static;
  * Not in public API because the contract of those methods is not clear or is disputable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.20)
+ * @since   0.5
  * @version 0.5
  * @module
  */

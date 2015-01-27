@@ -46,7 +46,7 @@ import static org.apache.sis.internal.jaxb.gco.PropertyType.LEGACY_XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.5
  * @module
  */

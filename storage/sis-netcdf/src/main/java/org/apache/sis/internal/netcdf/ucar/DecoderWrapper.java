@@ -44,7 +44,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
  * Provides NetCDF decoding services based on the NetCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */

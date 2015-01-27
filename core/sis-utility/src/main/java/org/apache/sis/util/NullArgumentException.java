@@ -29,7 +29,7 @@ package org.apache.sis.util;
  * is now the recommended one in the <cite>Effective Java</cite> book.</div>
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *

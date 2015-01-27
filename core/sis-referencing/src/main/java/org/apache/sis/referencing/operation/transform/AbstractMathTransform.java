@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.2)
+ * @since   0.5
  * @version 0.5
  * @module
  */
@@ -926,7 +926,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * running the same SIS version.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.5 (derived from geotk-2.0)
+     * @since   0.5
      * @version 0.5
      * @module
      */

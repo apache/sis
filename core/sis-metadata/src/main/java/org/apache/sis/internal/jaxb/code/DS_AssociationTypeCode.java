@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * about the handling of CodeList in ISO-19139.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

@@ -19,7 +19,7 @@
  * Temporary placeholder for the Temporal Schema JAXB adapters.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.21)
+ * @since   0.3
  * @version 0.3
  * @module
  */

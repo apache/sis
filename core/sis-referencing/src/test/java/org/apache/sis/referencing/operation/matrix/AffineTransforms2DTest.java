@@ -28,7 +28,7 @@ import static java.lang.StrictMath.*;
  * Tests the {@link AffineTransforms2D} static methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

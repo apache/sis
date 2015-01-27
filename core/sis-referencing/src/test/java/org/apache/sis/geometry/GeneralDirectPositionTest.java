@@ -30,7 +30,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * Tests the {@link GeneralDirectPosition} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

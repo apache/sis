@@ -45,7 +45,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @param <T> The type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *

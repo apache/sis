@@ -49,7 +49,7 @@ import org.apache.sis.internal.system.Modules;
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */

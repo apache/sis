@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
  * <a href="http://www.geoapi.org">GeoAPI</a> interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

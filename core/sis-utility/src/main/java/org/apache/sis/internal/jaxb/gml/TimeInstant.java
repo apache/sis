@@ -33,7 +33,7 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * Note that GML3 does not anymore include {@code TimeInstant} inside {@code TimePeriod}.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */

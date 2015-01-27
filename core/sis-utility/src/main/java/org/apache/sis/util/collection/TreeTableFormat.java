@@ -94,7 +94,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.5
  * @module
  */

@@ -41,7 +41,7 @@
  * Unicode supplementary characters}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

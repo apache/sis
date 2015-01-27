@@ -27,7 +27,7 @@ import org.apache.sis.test.DependsOn;
  * anyway, we want it to work.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

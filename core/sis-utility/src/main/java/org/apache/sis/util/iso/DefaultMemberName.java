@@ -45,7 +45,7 @@ import java.util.Objects;
  * state.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
+ * @since   0.3
  * @version 0.5
  * @module
  *

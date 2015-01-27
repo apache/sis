@@ -32,7 +32,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

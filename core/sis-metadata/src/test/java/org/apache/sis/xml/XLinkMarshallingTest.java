@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the XML marshalling of object having {@code xlink} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.18)
+ * @since   0.4
  * @version 0.4
  * @module
  *

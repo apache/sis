@@ -30,7 +30,7 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */

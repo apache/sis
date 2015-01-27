@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

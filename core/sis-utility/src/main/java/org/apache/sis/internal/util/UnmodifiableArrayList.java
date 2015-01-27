@@ -58,7 +58,7 @@ import java.util.Objects;
  * @param <E> The type of elements in the list.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -310,7 +310,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @param <E> The type of elements in the list.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.00)
+     * @since   0.3
      * @version 0.3
      * @module
      */

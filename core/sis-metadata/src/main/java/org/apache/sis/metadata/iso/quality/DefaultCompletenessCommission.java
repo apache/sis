@@ -35,7 +35,7 @@ import org.opengis.metadata.quality.CompletenessCommission;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

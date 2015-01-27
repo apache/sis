@@ -19,7 +19,7 @@
  * Miscellaneous objects and adapters defined in the {@code "gmx"} namespace.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.4
  * @module
  *

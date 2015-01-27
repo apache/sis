@@ -119,7 +119,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

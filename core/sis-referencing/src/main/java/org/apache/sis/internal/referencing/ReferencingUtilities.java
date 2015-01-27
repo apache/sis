@@ -48,7 +48,7 @@ import static org.apache.sis.internal.util.Numerics.epsilonEqual;
  * <p><strong>Do not rely on this API!</strong> It may change in incompatible way in any future release.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.5
  * @module
  */
