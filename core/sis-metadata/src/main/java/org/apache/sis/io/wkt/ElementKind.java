@@ -33,7 +33,7 @@ import org.apache.sis.util.Numbers;
  * Different kinds of elements can be associated to different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.4
  * @module
  */

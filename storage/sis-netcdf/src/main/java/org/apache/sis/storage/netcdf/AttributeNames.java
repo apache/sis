@@ -127,7 +127,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -422,7 +422,7 @@ public class AttributeNames {
      * in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.20)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -721,7 +721,7 @@ public class AttributeNames {
      * identified in a NetCDF file.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.20)
+     * @since   0.3
      * @version 0.3
      * @module
      *

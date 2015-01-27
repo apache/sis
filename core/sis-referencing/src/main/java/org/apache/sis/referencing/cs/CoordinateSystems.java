@@ -45,7 +45,7 @@ import java.util.Objects;
  * Utility methods working on {@link CoordinateSystem} objects and their axes.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  */

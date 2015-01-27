@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

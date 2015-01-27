@@ -69,7 +69,7 @@
  * Like SIS, Vecmath is optimized for small matrices of interest for 2D and 3D graphics.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

@@ -24,7 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */

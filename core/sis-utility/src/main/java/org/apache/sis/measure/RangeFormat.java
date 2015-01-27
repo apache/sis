@@ -90,7 +90,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.06)
+ * @since   0.3
  * @version 0.4
  * @module
  *

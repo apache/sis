@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  *

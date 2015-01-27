@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.AbstractMap;
  * underlying {@code IdentifiedObject} instance is itself serializable, immutable or thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  */

@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
  * throw an exception (which is the default), then {@code AffineTransform} is immutable.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.2)
+ * @since   0.5
  * @version 0.5
  * @module
  */

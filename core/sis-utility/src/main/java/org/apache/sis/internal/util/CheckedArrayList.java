@@ -49,7 +49,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @param <E> The type of elements in the list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.5
  * @module
  *

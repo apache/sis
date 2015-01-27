@@ -32,7 +32,7 @@ import org.apache.sis.util.StringBuilders;
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-3.03)
+ * @since   0.4
  * @version 0.4
  * @module
  */

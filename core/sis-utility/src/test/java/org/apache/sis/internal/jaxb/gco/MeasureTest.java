@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * Test {@link Measure}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.4
  * @module
  */

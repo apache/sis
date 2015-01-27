@@ -26,7 +26,7 @@ import org.apache.sis.util.iso.DefaultRecordType;
  * See package documentation for more information about JAXB and interface.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */

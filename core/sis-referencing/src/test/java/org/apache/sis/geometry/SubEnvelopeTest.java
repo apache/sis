@@ -32,7 +32,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

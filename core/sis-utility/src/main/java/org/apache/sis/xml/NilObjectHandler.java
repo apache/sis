@@ -48,7 +48,7 @@ import java.util.Objects;
  * For now, it doesn't seem worth to cache the handlers.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  */

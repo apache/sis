@@ -53,7 +53,7 @@ import java.util.Objects;
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  *

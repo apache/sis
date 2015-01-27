@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  * console outputs. However those attributes can also occasionally be used for HTML rendering.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  *

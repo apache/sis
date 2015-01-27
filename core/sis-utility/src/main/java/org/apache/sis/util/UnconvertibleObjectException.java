@@ -27,7 +27,7 @@ package org.apache.sis.util;
  * will be an arbitrary item of this list.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

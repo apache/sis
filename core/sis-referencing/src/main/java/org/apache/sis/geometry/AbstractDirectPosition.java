@@ -53,7 +53,7 @@ import java.util.Objects;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */

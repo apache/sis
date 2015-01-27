@@ -67,7 +67,7 @@ import org.apache.sis.util.logging.Logging;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3
  * @version 0.4
  * @module
  */

@@ -134,7 +134,7 @@ import org.apache.sis.internal.jdk8.Supplier;
  * @param <V> The type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.4
  * @module
  */
@@ -560,7 +560,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * @param <V> The type of value objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.00)
+     * @since   0.3
      * @version 0.3
      * @module
      */

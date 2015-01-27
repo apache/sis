@@ -26,7 +26,7 @@ import com.sun.tools.doclets.Taglet;
  * The <code>@section</code> tag for inserting a new section in a javadoc comment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

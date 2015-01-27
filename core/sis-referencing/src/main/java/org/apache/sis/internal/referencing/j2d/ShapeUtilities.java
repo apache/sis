@@ -32,7 +32,7 @@ import static java.lang.Math.*;
  * Static methods operating on shapes from the {@link java.awt.geom} package.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.1)
+ * @since   0.5
  * @version 0.5
  * @module
  */

@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * The above list may be expanded in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.4
  * @module
  *

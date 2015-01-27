@@ -46,7 +46,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@link SI} and {@link NonSI} ones.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.4
  * @module
  */

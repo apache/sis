@@ -32,7 +32,7 @@ package org.apache.sis.util;
  * format. However once an object has been disposed, it can not be used anymore.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.3
  * @module
  *

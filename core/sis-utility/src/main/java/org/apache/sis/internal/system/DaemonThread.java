@@ -39,7 +39,7 @@ import java.util.ArrayList;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.09)
+ * @since   0.3
  * @version 0.3
  * @module
  */

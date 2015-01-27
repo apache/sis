@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link IdentifierMapWithSpecialCases}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */

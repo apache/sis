@@ -26,7 +26,7 @@ import com.sun.tools.doclets.Taglet;
  * The <code>@module</code> tag. This tag expects no argument.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.4
  * @module
  */

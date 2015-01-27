@@ -52,7 +52,7 @@ import org.opengis.test.ToleranceModifier;
  * This base class inherits the convenience methods defined in GeoAPI and adds a few {@code verifyFoo} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.5
  * @module
  */
@@ -270,7 +270,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
          * In addition to the GeoAPI "verifyTransform" check, check also for consistency of various variant
          * of MathTransform.transform(…) methods.  In GeoAPI, 'verifyTransform' and 'verifyConsistency' are
          * two independent steps because not all developers may want to perform both verifications together.
-         * But in Apache SIS, we want to verify consistency for all math transform. A previous Geotk version
+         * But in Apache SIS, we want to verify consistency for all math transforms. A previous Geotk version
          * had a bug with the Google projection which was unnoticed because of lack of this consistency check.
          */
         final float[] asFloats = Numerics.copyAsFloats(coordinates);

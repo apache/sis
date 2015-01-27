@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * This writer is useful for debugging purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

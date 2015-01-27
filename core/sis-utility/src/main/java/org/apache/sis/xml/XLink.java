@@ -72,7 +72,7 @@ import java.util.Objects;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -207,7 +207,7 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -533,7 +533,7 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -608,7 +608,7 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *

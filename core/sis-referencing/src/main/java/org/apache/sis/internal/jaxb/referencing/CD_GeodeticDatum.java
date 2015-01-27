@@ -28,7 +28,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.05)
+ * @since   0.4
  * @version 0.4
  * @module
  */

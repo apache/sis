@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * Tests the {@link AbstractMathTransformTest} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.00)
+ * @since   0.5
  * @version 0.5
  * @module
  */

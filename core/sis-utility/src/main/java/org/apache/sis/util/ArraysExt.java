@@ -69,7 +69,7 @@ import java.util.Objects;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.4
  * @module
  *

@@ -54,7 +54,7 @@ import static org.junit.Assert.*;
  *
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.14)
+ * @since   0.3
  * @version 0.5
  * @module
  */
