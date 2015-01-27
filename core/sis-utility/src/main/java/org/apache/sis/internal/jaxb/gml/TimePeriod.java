@@ -34,7 +34,7 @@ import static org.apache.sis.internal.jaxb.LegacyNamespaces.VERSION_3_0;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

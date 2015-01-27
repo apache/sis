@@ -24,7 +24,7 @@ import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
  * JAXB adapter for (un)marshalling of GeoAPI code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.4
  * @module
  */

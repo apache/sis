@@ -30,7 +30,7 @@ import org.apache.sis.math.FunctionProperty;
  * The same {@link #INSTANCE} can be passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

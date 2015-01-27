@@ -25,7 +25,7 @@ import org.apache.sis.internal.simple.SimpleCitation;
  * Base class of factories provided in the Apache SIS library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

@@ -61,7 +61,7 @@ import org.apache.sis.math.FunctionProperty;
  * @param <V>  The type of values in this map.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

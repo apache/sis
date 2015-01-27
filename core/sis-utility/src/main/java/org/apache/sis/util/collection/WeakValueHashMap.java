@@ -79,7 +79,7 @@ import java.util.Objects;
  * @param <V> The class of value elements.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.4
  * @module
  *
@@ -488,7 +488,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.13)
+     * @since   0.3
      * @version 0.3
      * @module
      */

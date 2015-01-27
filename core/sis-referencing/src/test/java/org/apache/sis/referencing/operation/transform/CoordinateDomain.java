@@ -30,7 +30,7 @@ import org.apache.sis.test.mock.GeodeticDatumMock;
  * This class can generate random number suitable for their domain.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.00)
+ * @since   0.5
  * @version 0.5
  * @module
  */

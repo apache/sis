@@ -40,7 +40,7 @@ package org.apache.sis.util;
  * {@link #IGNORE_METADATA} level but not necessarily at the {@link #STRICT} level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * Tests the {@link LocalizedParseException} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.04)
+ * @since   0.3
  * @version 0.3
  * @module
  */

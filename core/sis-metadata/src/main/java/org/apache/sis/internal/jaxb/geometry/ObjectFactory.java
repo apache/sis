@@ -30,7 +30,7 @@ import org.apache.sis.util.Workaround;
  * in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.15)
+ * @since   0.3
  * @version 0.4
  * @module
  */

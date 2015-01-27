@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Errors;
  * @param <E> The type of tensor element values.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.5
  * @module
  */

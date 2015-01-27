@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * of that buffer is used for the tests, while the original full buffer is used for comparison purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.07)
+ * @since   0.3
  * @version 0.5
  * @module
  */

@@ -33,7 +33,7 @@ import static java.lang.Character.*;
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *

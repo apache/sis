@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  * are not suitable here.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.1)
+ * @since   0.4
  * @version 0.4
  * @module
  */

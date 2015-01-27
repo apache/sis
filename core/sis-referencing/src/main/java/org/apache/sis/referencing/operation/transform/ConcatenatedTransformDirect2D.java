@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * Concatenated transform where both transforms are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-1.2)
+ * @since   0.5
  * @version 0.5
  * @module
  */

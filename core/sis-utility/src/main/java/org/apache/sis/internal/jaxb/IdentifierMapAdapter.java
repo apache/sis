@@ -79,7 +79,7 @@ import java.util.Objects;
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -341,7 +341,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * for the same authority, then only the first occurrence is retained.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -415,7 +415,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * if the identifier has been removed, of {@code Boolean#FALSE} otherwise.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      */

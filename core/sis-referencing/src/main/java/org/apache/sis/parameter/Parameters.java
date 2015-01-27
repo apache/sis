@@ -33,7 +33,7 @@ import org.apache.sis.util.Static;
  * Static methods working on parameters and their descriptors.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-2.1)
+ * @since   0.4
  * @version 0.5
  * @module
  */

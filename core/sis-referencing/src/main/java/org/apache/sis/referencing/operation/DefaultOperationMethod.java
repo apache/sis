@@ -60,7 +60,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @module
  *
  * @see DefaultSingleOperation

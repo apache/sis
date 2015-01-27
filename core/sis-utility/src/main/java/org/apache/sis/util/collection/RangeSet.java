@@ -102,7 +102,7 @@ import static org.apache.sis.util.Numbers.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.5
  * @module
  *
@@ -130,7 +130,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param <E> The type of range elements.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -1299,7 +1299,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */

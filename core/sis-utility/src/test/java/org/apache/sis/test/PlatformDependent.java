@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * (or its test suite) need to be revisited for better portability.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.14)
+ * @since   0.3
  * @version 0.3
  * @module
  */

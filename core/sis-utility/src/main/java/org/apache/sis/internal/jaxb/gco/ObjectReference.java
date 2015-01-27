@@ -39,7 +39,7 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * implementations in the public {@link org.apache.sis.metadata.iso} package and sub-packages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *

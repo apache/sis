@@ -33,7 +33,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Defined in a separated classes for reducing classes loading when not necessary.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.4
  * @module
  */
