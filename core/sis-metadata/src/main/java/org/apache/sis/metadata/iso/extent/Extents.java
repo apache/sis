@@ -53,7 +53,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.4
  * @module
  *

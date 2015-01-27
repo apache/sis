@@ -69,7 +69,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -835,7 +835,7 @@ public class TableAppender extends Appender implements Flushable {
      * This class if for internal use only.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */

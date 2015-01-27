@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link PositionalAccuracyConstant} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5 (derived from geotk-2.2)
+ * @since   0.5
  * @version 0.5
  * @module
  */

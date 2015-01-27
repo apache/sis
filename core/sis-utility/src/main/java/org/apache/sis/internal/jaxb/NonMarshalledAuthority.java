@@ -64,7 +64,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * @param <T> The type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  *

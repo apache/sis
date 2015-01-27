@@ -39,7 +39,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * Implementors need to override at least one method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.19)
+ * @since   0.5
  * @version 0.5
  * @module
  */

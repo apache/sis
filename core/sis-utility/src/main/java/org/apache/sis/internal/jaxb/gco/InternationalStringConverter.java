@@ -26,7 +26,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * {@link InternationalStringAdapter}, this converter doesn't wrap the string in a new object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

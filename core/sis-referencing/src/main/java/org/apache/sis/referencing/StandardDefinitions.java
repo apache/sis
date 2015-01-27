@@ -61,7 +61,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class is used only as a fallback if the objects can not be fetched from the EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

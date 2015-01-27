@@ -25,7 +25,7 @@ import javax.imageio.stream.ImageInputStream;
  * Wraps a {@link ImageInputStream} as a standard {@link InputStream}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

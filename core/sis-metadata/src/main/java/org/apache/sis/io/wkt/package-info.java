@@ -58,7 +58,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  */

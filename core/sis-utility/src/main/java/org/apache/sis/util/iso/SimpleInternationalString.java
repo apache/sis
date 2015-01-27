@@ -44,7 +44,7 @@ import java.util.Objects;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */

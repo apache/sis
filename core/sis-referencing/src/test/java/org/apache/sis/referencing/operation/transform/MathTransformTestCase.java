@@ -51,7 +51,7 @@ import org.opengis.test.CalculationType;
  * This base class inherits the convenience methods defined in GeoAPI and adds a few {@code verifyFoo} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-2.0)
+ * @since   0.5
  * @version 0.5
  * @module
  */

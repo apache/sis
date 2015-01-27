@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
  * Validates the {@link HardCodedCS} definitions.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.4)
+ * @since   0.4
  * @version 0.4
  * @module
  */

@@ -33,7 +33,7 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4 (derived from geotk-3.00)
+ * @version 0.4
  * @since   0.4
  * @module
  */

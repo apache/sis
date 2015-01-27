@@ -46,7 +46,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.5
  * @module
  */

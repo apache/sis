@@ -24,7 +24,7 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.4
  * @module
  *

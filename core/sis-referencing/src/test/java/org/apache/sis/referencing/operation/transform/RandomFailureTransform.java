@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * This is used for testing robustness to transformation failures.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.00)
+ * @since   0.5
  * @version 0.5
  * @module
  */

@@ -38,7 +38,7 @@ import static java.awt.geom.AffineTransform.*;
  * Those {@code AffineTransform} instances can be viewed as 3×3 matrices.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

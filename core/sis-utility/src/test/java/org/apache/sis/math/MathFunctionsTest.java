@@ -32,7 +32,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * Tests the {@link MathFunctions} static methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.4
  * @module
  */

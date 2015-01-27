@@ -32,7 +32,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * Tests the {@link AxisDirections} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.5
  * @module
  */

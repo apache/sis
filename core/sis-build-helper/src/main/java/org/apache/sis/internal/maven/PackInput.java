@@ -29,7 +29,7 @@ import java.io.InputStream;
  * Those files will be open in read-only mode.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

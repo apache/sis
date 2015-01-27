@@ -33,7 +33,7 @@
  * This is used for storing the value in a list of identifiers while preserving the original object.</p>
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

@@ -122,7 +122,7 @@ import java.util.Objects;
  * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.4
  * @module
  *

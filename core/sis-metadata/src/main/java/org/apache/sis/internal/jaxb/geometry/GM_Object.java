@@ -32,7 +32,7 @@ import org.apache.sis.xml.Namespaces;
  * specialized subclasses in GML modules.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.15)
+ * @since   0.3
  * @version 0.3
  * @module
  */

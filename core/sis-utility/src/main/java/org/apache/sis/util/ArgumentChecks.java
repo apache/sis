@@ -80,7 +80,7 @@ import org.apache.sis.util.resources.Errors;
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
+ * @since   0.3
  * @version 0.4
  * @module
  */

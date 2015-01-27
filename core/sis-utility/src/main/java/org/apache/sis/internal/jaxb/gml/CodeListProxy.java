@@ -27,7 +27,7 @@ import org.apache.sis.util.iso.Types;
  * complying with OGC/ISO standard.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

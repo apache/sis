@@ -50,7 +50,7 @@ import java.util.Objects;
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.5
  * @module
  *

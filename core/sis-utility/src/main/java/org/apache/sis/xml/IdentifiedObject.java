@@ -59,7 +59,7 @@ import org.opengis.metadata.citation.Citation;
  * for the purpose of handling XML {@code id}, {@code uuid} or {@code href} attributes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *

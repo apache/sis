@@ -65,7 +65,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@code ValueConverter} to a (un)marshaller.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.07)
+ * @since   0.3
  * @version 0.5
  * @module
  */

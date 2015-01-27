@@ -45,7 +45,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * but the {@link #WKT1_COMMON_UNITS} enumeration allows parsing and formatting using the older interpretation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.4
  * @module
  *

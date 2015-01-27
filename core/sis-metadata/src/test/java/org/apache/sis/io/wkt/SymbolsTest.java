@@ -28,7 +28,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-2.4)
+ * @since   0.4
  * @version 0.4
  * @module
  */

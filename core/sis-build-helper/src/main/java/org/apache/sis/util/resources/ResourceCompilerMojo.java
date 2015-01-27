@@ -38,7 +38,7 @@ import static org.apache.sis.util.resources.IndexedResourceCompiler.PROPERTIES_E
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Olivier Nouguier (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.5
  * @module
  *

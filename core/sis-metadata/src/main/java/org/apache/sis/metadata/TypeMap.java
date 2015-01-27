@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * Map of property valuePolicy for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  *

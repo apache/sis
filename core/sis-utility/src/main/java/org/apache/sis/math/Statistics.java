@@ -86,7 +86,7 @@ import java.util.function.DoubleConsumer;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -569,7 +569,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * which are stored in a {@link #delta} statistics object.
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @since   0.3 (derived from geotk-1.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */

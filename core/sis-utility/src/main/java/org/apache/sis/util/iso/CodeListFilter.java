@@ -25,7 +25,7 @@ import org.apache.sis.util.Characters.Filter;
  * The filters used by {@link Types#forCodeName(Class, String, boolean)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */

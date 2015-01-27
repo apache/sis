@@ -39,7 +39,7 @@ import java.lang.ref.Reference;
  * @param <V> The type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

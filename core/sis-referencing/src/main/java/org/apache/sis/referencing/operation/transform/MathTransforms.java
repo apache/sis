@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.20)
+ * @since   0.5
  * @version 0.5
  * @module
  *

@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * the command-line in a future version if this happen to be useful.</p>
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3
  * @version 0.3
  * @module
  */

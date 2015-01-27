@@ -42,7 +42,7 @@ import org.apache.sis.io.wkt.Formatter;
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from geotk-2.4)
+ * @since   0.4
  * @version 0.4
  * @module
  */

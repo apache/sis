@@ -49,7 +49,7 @@ import java.util.function.Function;
  * bit tedious to explain, which is an other indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.5
  * @module
  */
