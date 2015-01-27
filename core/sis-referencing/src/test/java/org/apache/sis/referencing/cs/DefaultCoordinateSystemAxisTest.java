@@ -39,7 +39,7 @@ import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
  * Tests the {@link DefaultCoordinateSystemAxis} class.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

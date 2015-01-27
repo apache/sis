@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * Tests all known {@link ISOMetadata} subclasses for JAXB annotations and getter/setter methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.5
  * @module
  */

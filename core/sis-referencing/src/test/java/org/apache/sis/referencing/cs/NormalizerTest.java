@@ -35,7 +35,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link Normalizer} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.4)
+ * @since   0.4
  * @version 0.5
  * @module
  */

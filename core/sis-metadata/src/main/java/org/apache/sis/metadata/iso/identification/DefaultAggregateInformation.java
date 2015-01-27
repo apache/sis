@@ -54,7 +54,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.5
  * @module
  */

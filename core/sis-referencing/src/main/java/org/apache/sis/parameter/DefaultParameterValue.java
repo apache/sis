@@ -105,7 +105,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @param <T> The value type.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.0)
+ * @since   0.4
  * @version 0.4
  * @module
  *

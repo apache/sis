@@ -41,7 +41,7 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
  * Tests the {@link AbstractIdentifiedObject} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-2.2)
+ * @since   0.4
  * @version 0.4
  * @module
  */

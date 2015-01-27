@@ -45,7 +45,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * against null argument for trapping user errors.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.5
  * @module
  */

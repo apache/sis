@@ -100,7 +100,7 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.20)
+ * @since   0.4
  * @version 0.5
  * @module
  *

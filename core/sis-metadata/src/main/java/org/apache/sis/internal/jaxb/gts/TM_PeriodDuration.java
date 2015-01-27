@@ -40,7 +40,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.21)
+ * @since   0.3
  * @version 0.3
  * @module
  */

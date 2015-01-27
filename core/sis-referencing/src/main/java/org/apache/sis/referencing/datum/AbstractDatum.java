@@ -60,7 +60,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.4 (derived from geotk-1.2)
+ * @since   0.4
  * @version 0.4
  * @module
  *

@@ -35,7 +35,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * constructor required by JAXB.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4 (derived from geotk-3.00)
+ * @since   0.4
  * @version 0.4
  * @module
  */

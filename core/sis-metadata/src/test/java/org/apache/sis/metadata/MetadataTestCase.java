@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.5
  * @module
  */

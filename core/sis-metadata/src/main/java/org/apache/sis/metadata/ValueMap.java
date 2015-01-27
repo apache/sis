@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * are the value returned by the {@code getFoo()} method using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -173,7 +173,7 @@ final class ValueMap extends PropertyMap<Object> {
      * A map entry for a given property.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -234,7 +234,7 @@ final class ValueMap extends PropertyMap<Object> {
      * The iterator over the {@link Property} elements contained in an {@link Entries} set.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -312,7 +312,7 @@ final class ValueMap extends PropertyMap<Object> {
      * View of the entries contained in the map.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */

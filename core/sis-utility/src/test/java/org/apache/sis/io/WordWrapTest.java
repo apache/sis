@@ -32,7 +32,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * Tests {@link LineAppender} implementation when used for wrapping lines to 80 characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *

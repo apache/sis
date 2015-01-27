@@ -62,7 +62,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @since   0.5 (derived from geotk-2.1)
+ * @since   0.5
  * @version 0.5
  * @module
  *

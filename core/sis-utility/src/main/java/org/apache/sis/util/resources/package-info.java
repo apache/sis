@@ -83,7 +83,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3
  * @version 0.4
  * @module
  *

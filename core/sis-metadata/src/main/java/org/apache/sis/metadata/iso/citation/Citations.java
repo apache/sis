@@ -37,7 +37,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier; // For javadoc
  * In the later case, the citations are actually of kind {@link IdentifierSpace}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
+ * @since   0.3
  * @version 0.5
  * @module
  */

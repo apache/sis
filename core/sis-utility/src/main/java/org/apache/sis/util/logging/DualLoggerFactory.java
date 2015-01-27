@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * than picking an arbitrary logger.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */

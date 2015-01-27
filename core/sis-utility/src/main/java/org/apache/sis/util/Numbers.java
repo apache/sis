@@ -37,7 +37,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  *

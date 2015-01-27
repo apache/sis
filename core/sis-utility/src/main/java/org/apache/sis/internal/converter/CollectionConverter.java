@@ -33,7 +33,7 @@ import org.apache.sis.math.FunctionProperty;
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */

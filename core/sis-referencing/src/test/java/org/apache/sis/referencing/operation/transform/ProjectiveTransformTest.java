@@ -47,7 +47,7 @@ import org.opengis.test.referencing.TransformTestCase;
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5 (derived from geotk-3.08)
+ * @since   0.5
  * @version 0.5
  * @module
  */

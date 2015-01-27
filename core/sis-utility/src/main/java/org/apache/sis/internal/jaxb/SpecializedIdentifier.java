@@ -43,7 +43,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @param  <T> The value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */
