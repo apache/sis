@@ -22,8 +22,10 @@ import java.util.Collections;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Formula;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -144,9 +146,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
      * @param properties      Set of properties. Shall contain at least {@code "name"}.
-     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
-     * @param targetDimension Number of dimensions in the target CRS of this operation method.
-     * @param parameters      The set of parameters.
+     * @param sourceDimension Number of dimensions in the source CRS of this operation method, or {@code null}.
+     * @param targetDimension Number of dimensions in the target CRS of this operation method, or {@code null}.
+     * @param parameters      Description of parameters expected by this operation.
      */
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimension,
@@ -331,6 +333,36 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
+     * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
+     * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
+     *
+     * <ul>
+     *   <li>{@link org.opengis.referencing.operation.Transformation}
+     *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
+     *     which the operation parameters were determined. Those errors do not depend on the floating point precision
+     *     or the accuracy of the implementation algorithm.</li>
+     *   <li>{@link org.opengis.referencing.operation.Conversion}
+     *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
+     *   <li>{@link org.opengis.referencing.operation.Projection}
+     *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
+     *     to plane (map) coordinates. This type can optionally be refined with one of the
+     *     {@link org.opengis.referencing.operation.CylindricalProjection},
+     *     {@link org.opengis.referencing.operation.ConicProjection} or
+     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
+     * </ul>
+     *
+     * In case of doubt, this method can conservatively return the base type.
+     * The default implementation returns {@code CoordinateOperation.class},
+     * which is the most conservative return value.
+     *
+     * @return Interface implemented by all coordinate operations that use this method.
+     */
+    public Class<? extends CoordinateOperation> getOperationType() {
+        return CoordinateOperation.class;
+    }
+
+    /**
      * Formula(s) or procedure used by this operation method. This may be a reference to a
      * publication. Note that the operation method may not be analytic, in which case this
      * attribute references or contains the procedure, not an analytic formula.
@@ -466,6 +498,29 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Projection" : "Method";
+        if (formatter.getConvention().majorVersion() == 1) {
+            /*
+             * The WKT 1 keyword is "PROJECTION", which imply that the operation method should be of type
+             * org.opengis.referencing.operation.Projection. So strictly speaking only the first check in
+             * the following 'if' statement is relevant.
+             *
+             * Unfortunately in many cases we do not know the operation type, because the method that we
+             * invoked - getOperationType() - is not a standard OGC/ISO property, so this information is
+             * usually not provided in XML documents for example.  The user could also have instantiated
+             * DirectOperationMethod directly without creating a subclass. Consequently we also accept to
+             * format the keyword as "PROJECTION" if the operation type *could* be a projection. This is
+             * the second check in the following 'if' statement.
+             *
+             * In other words, the combination of those two checks exclude the following operation types:
+             * Transformation, ConcatenatedOperation, PassThroughOperation, or any user-defined type that
+             * do not extend Projection. All other operation types are accepted.
+             */
+            final Class<? extends CoordinateOperation> type = getOperationType();
+            if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
+                return "Projection";
+            }
+            formatter.setInvalidWKT(this, null);
+        }
+        return "Method";
     }
 }
