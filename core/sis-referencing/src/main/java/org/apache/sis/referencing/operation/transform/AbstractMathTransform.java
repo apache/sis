@@ -47,18 +47,23 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 /**
  * Provides a default implementation for most methods required by the {@link MathTransform} interface.
- * {@code AbstractMathTransform} provides a convenient base class from which transform implementations
- * can be easily derived. It also defines a few additional SIS-specific methods for convenience of performance.
+ * A {@code MathTransform} is an object that actually does the work of applying a
+ * {@linkplain org.apache.sis.referencing.operation.DefaultFormula formula} to coordinate values.
+ * The math transform does not know or care how the coordinates relate to positions in the real world.
+ * For example if an affine transform scales <var>z</var> values by a factor of 1000,
+ * then it could be converting metres to millimetres, or it could be converting kilometres to metres.
  *
- * <p>The simplest way to implement this abstract class is to provide an implementation for the following methods
- * only:</p>
+ * <p>{@code AbstractMathTransform} provides a convenient base class from which {@code MathTransform} implementations
+ * can be easily derived. It also defines a few additional SIS-specific methods for convenience of performance.
+ * The simplest way to implement this abstract class is to provide an implementation for the following methods only:</p>
+ *
  * <ul>
  *   <li>{@link #getSourceDimensions()}</li>
  *   <li>{@link #getTargetDimensions()}</li>
  *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
  * </ul>
  *
- * However more performance may be gained by overriding the other {@code transform} methods as well.
+ * However more performance may be gained by overriding the other {@code transform(…)} methods as well.
  *
  * {@section Immutability and thread safety}
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
