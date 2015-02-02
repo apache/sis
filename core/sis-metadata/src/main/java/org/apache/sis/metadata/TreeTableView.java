@@ -158,6 +158,9 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * Invoked on serialization. Write the metadata object instead of the {@linkplain #root} node.
+     *
+     * @param  out The output stream where to serialize this object.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -166,6 +169,10 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * Invoked on deserialization. Recreate the {@linkplain #root} node from the metadata object.
+     *
+     * @param  in The input stream from which to deserialize an object.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

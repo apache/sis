@@ -53,6 +53,7 @@ public final strictfp class CharacteristicMapTest extends TestCase {
      * @param  name Either {@code "accuracy"} or {@code "units"}.
      * @return An attribute for the given name.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})    // Not needed on JDK7 branch.
     private static AbstractAttribute<?> create(final AbstractAttribute<?> temperature, final String name) {
         return new SingletonAttribute(((DefaultAttributeType<?>) temperature.getType()).characteristics().get(name));
     }

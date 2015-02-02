@@ -187,6 +187,7 @@ public final class WKTUtilities extends Static {
      * @param parameter The parameter to append to the WKT, or {@code null} if none.
      * @param formatter The formatter where to append the parameter.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})    // Not needed on JDK7 branch.
     public static void append(GeneralParameterValue parameter, final Formatter formatter) {
         if (parameter instanceof ParameterValueGroup) {
             boolean first = true;
