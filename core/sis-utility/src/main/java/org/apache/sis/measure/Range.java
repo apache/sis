@@ -606,6 +606,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * only one digit. This method assumes that we have verified that the element type
      * is an integer type before to invoke this method.
      */
+    @SuppressWarnings("unchecked")
     private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
         if (value == null) {
             return ifNull;

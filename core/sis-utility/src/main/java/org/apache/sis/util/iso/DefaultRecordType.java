@@ -221,6 +221,10 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     /**
      * Invoked on deserialization for restoring the transient fields.
      * See {@link #writeObject(ObjectOutputStream)} for the stream data description.
+     *
+     * @param  in The input stream from which to deserialize an object.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -241,6 +245,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @serialData The number of members as an {@code int}, followed by a
      *             ({@code MemberName}, {@code Type}) pair for each member.
+     *
+     * @param  out The output stream where to serialize this object.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         final int size = size();

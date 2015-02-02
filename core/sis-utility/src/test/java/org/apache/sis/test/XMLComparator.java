@@ -664,6 +664,7 @@ public strictfp class XMLComparator {
      * returns {@code NaN}. This is used only if a {@linkplain #tolerance} threshold greater
      * than zero has been provided.
      */
+    @SuppressWarnings("unchecked")
     private static double doubleValue(final Comparable<?> property) {
         if (property instanceof Number) {
             return ((Number) property).doubleValue();
