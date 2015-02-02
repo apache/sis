@@ -326,6 +326,9 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
 
     /**
      * Trims the array to its capacity before to serialize.
+     *
+     * @param  out The output stream where to serialize this object.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         values = ArraysExt.resize(values, size);

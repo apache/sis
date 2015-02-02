@@ -148,6 +148,9 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
 
     /**
      * Serializes this international string using the key name rather than numerical value.
+     *
+     * @param  out The output stream where to serialize this object.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -156,6 +159,10 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
 
     /**
      * Deserializes an object serialized by {@link #writeObject(ObjectOutputStream)}.
+     *
+     * @param  in The input stream from which to deserialize an object.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

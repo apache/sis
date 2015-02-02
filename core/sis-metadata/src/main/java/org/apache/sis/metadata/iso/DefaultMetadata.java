@@ -820,7 +820,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return Date that the metadata was created, or {@code null}.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getDates()}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getDateInfo()}.
      */
     @Override
     @Deprecated
@@ -842,7 +842,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new date stamp.
      *
-     * @deprecated As of ISO 19115:2014, replaced by {@link #setDates(Collection)}.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setDateInfo(Collection)}.
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
