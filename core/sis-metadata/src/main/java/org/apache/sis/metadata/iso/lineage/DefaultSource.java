@@ -381,7 +381,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @return Information about the extent of the source data.
      *
-     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#getExtent()}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#getExtents()}.
      */
     @Override
     @Deprecated
@@ -405,7 +405,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValues The new source extents.
      *
-     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtent(Extent)}.
+     * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtents(Collection)}.
      */
     @Deprecated
     public void setSourceExtents(final Collection<? extends Extent> newValues) {
