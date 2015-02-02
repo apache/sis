@@ -243,6 +243,7 @@ public class ConverterRegistry {
      * @param <T> The class of target (converted) values.
      * @param converter The converter to register.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         /*
