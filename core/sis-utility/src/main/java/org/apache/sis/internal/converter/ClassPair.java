@@ -86,10 +86,10 @@ class ClassPair<S,T> implements Serializable {
      *
      * @return A key for the parent source, or {@code null}.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     final ClassPair<? super S, T> parentSource() {
         final Class<? super S> source;
         if (sourceClass.isInterface()) {
-            @SuppressWarnings({"unchecked","rawtypes"})
             final Class<? super S>[] interfaces = (Class[]) sourceClass.getInterfaces();
             if (interfaces.length == 0) {
                 return null;

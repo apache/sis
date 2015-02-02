@@ -71,6 +71,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
+        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.List<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
@@ -95,6 +96,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
+        @SuppressWarnings({"unchecked","rawtypes"})
         public java.util.Set<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
