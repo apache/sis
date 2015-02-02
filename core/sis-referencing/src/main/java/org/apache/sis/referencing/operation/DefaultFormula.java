@@ -33,11 +33,20 @@ import java.util.Objects;
 
 /**
  * Specification of the coordinate operation method formula.
+ * A formula may be {@linkplain #getFormula() given textually},
+ * or may be a {@linkplain #getCitation() reference to a publication}.
+ *
+ * <p>{@code Formula} is for human reading.
+ * The object that actually does the work of applying formula to coordinate values is
+ * {@link org.opengis.referencing.operation.MathTransform}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
  * @module
+ *
+ * @see DefaultOperationMethod
+ * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**
