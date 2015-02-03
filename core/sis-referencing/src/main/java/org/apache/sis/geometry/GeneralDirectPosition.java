@@ -36,18 +36,19 @@ import java.util.Objects;
 
 
 /**
- * Holds the coordinates for a position within some coordinate reference system.
+ * A mutable {@code DirectPosition} (the coordinates of a position) of arbitrary dimension.
+ * This particular implementation of {@code DirectPosition} is said "General" because it
+ * uses an {@linkplain #ordinates array of ordinates} of an arbitrary length. If the direct
+ * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
+ * a more efficient implementation.
+ *
+ * {@section Coordinate Reference System (CRS) optionality}
  * Since {@code DirectPosition}s, as data types, will often be included in larger objects
- * (such as {@linkplain org.opengis.geometry.Geometry geometries}) that have references
+ * (such as {@link org.opengis.geometry.Geometry}) that have references
  * to {@code CoordinateReferenceSystem}, the {@link #getCoordinateReferenceSystem()} method
  * may returns {@code null} if this particular {@code DirectPosition} is included in such
  * larger object. In this case, the coordinate reference system is implicitly assumed to take
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
- *
- * <p>This particular implementation of {@code DirectPosition} is said "General" because it
- * uses an {@linkplain #ordinates array of ordinates} of an arbitrary length. If the direct
- * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
- * a more efficient implementation.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3

@@ -41,10 +41,10 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
 
 
 /**
- * A minimum bounding box or rectangle. Regardless of dimension, an {@code Envelope} can
- * be represented without ambiguity as two {@linkplain DirectPosition direct positions}
- * (coordinate points). To encode an {@code Envelope}, it is sufficient to encode these
- * two points.
+ * A mutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
+ * Regardless of dimension, an {@code Envelope} can be represented without ambiguity
+ * as two {@linkplain AbstractDirectPosition direct positions} (coordinate points).
+ * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
  * <div class="note"><b>Note:</b>
  * {@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.

@@ -33,7 +33,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 
 /**
- * Immutable representation of an {@linkplain Envelope envelope}.
+ * An immutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
