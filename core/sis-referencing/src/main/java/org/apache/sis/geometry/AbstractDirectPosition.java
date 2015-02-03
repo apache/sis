@@ -45,6 +45,8 @@ import java.util.Objects;
 
 /**
  * Base class for {@link DirectPosition} implementations.
+ * A direct position holds the coordinates for a position within some
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  * This base class provides default implementations for {@link #toString()},
  * {@link #equals(Object)} and {@link #hashCode()} methods.
  *
@@ -390,7 +392,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (doubleToLongBits(getOrdinate(i)) != doubleToLongBits(that.getOrdinate(i))) {
+                    if (!Numerics.equals(getOrdinate(i), that.getOrdinate(i))) {
                         return false;
                     }
                 }

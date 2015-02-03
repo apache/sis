@@ -42,7 +42,7 @@
  * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is an other
  * JVM instance running on the local machine. Otherwise this property can be omitted for debugging purpose.
  * For production environment, see the security settings documented on the
- * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html">Monitoring
+ * <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/management/agent.html">Monitoring
  * and Management Using JMX Technology</a> page.
  *
  * @author  Martin Desruisseaux (Geomatys)
