@@ -35,7 +35,7 @@ import java.util.Objects;
 
 
 /**
- * Holds the coordinates for a one-dimensional position within some coordinate reference system.
+ * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
