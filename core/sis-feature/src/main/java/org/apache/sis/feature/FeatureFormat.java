@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Formats {@link AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
+ * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
  * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
