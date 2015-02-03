@@ -35,20 +35,17 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 abstract class InlineTaglet implements Taglet {
     /**
      * The doclet configuration, created when first needed for reporting warnings.
-     *
-     * <p>Note: the JDK7 branch uses {@code ConfigurationImpl.getInstance()} method instead.
-     * But that method does not exist anymore in JDK8.</p>
      */
     private static Configuration configuration;
 
     /**
-     * Returns the doclet configuration.
+     * Returns the root document, or {@code null} if none.
      */
-    private static synchronized Configuration getConfiguration() {
+    private static synchronized RootDoc getRootDoc() {
         if (configuration == null) {
             configuration = new ConfigurationImpl();
         }
-        return configuration;
+        return configuration.root;
     }
 
     /**
@@ -149,7 +146,7 @@ abstract class InlineTaglet implements Taglet {
      * Prints a warning message.
      */
     static void printWarning(final SourcePosition position, final String message) {
-        final RootDoc root = getConfiguration().root;
+        final RootDoc root = getRootDoc();
         if (root != null) {
             root.printWarning(position, message);
         } else {
@@ -161,7 +158,7 @@ abstract class InlineTaglet implements Taglet {
      * Prints an error message.
      */
     static void printError(final SourcePosition position, final String message) {
-        final RootDoc root = getConfiguration().root;
+        final RootDoc root = getRootDoc();
         if (root != null) {
             root.printError(position, message);
         } else {
