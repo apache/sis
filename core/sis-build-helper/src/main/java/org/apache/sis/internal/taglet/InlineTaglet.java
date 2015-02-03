@@ -34,10 +34,31 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  */
 abstract class InlineTaglet implements Taglet {
     /**
-     * Returns the doclet configuration.
+     * The doclet configuration, created when first needed for reporting warnings.
      */
-    private static synchronized Configuration getConfiguration() {
-        return ConfigurationImpl.getInstance();
+    private static Configuration configuration;
+
+    /**
+     * Returns the root document, or {@code null} if none.
+     */
+    private static synchronized RootDoc getRootDoc() {
+        if (configuration == null) {
+            /*
+             * Try to invoke ConfigurationImpl.getInstance(), which exists on JDK6 and JDK7 but not on JDK8.
+             * If we fail, fallback on direct instantiation of ConfigurationImpl(), which is possible only
+             * in JDK8 (because the constructor is private on JDK6 and JDK7).
+             */
+            try {
+                configuration = (Configuration) ConfigurationImpl.class.getMethod("getInstance").invoke(null);
+            } catch (ReflectiveOperationException e) {
+                try {
+                    configuration = ConfigurationImpl.class.newInstance();
+                } catch (ReflectiveOperationException e2) {
+                    return null; // Allowed by this method contract.
+                }
+            }
+        }
+        return configuration.root;
     }
 
     /**
@@ -138,7 +159,7 @@ abstract class InlineTaglet implements Taglet {
      * Prints a warning message.
      */
     static void printWarning(final SourcePosition position, final String message) {
-        final RootDoc root = getConfiguration().root;
+        final RootDoc root = getRootDoc();
         if (root != null) {
             root.printWarning(position, message);
         } else {
@@ -150,7 +171,7 @@ abstract class InlineTaglet implements Taglet {
      * Prints an error message.
      */
     static void printError(final SourcePosition position, final String message) {
-        final RootDoc root = getConfiguration().root;
+        final RootDoc root = getRootDoc();
         if (root != null) {
             root.printError(position, message);
         } else {
