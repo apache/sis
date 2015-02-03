@@ -55,7 +55,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
      * Creates a new test case.
      */
     public LogarithmicTransform1DTest() {
-        tolerance         = 1E-14;
+        tolerance         = 2E-14;
         toleranceModifier = ToleranceModifier.RELATIVE;
         derivativeDeltas  = new double[] {0.001};
     }
