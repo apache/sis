@@ -223,6 +223,6 @@ h5 {
  * JDK style uses bold characters for the left column, which contains the class and
  * package names. But we do not want those bold characters to apply to the descriptions.
  */
-td.colLast a:link {
+td.colLast div.block a:link {
   font-weight: normal;
 }

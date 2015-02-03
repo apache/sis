@@ -22,7 +22,7 @@ import org.apache.sis.internal.util.Numerics;
 
 /**
  * A matrix of fixed {@value #SIZE}×{@value #SIZE} size,
- * typically resulting from {@linkplain org.opengis.referencing.operation.MathTransform2D} derivative computation.
+ * typically resulting from {@link org.opengis.referencing.operation.MathTransform2D} derivative computation.
  * The matrix members are:
  *
  * <blockquote><pre> ┌         ┐
