@@ -42,13 +42,6 @@
         <include name="*.utf"/>
       </fileset>
     </copy>
-    <!-- Pending discussion about how to handle resources in the Shapefile module.
-    <copy todir="${build.classes.dir}/org/apache/sis/internal/shapefile/jdbc">
-      <fileset dir="${project.root}/storage/sis-shapefile/target/generated-resources/org/apache/sis/internal/shapefile/jdbc">
-        <include name="*.utf"/>
-      </fileset>
-    </copy>
-    -->
 
     <!-- Following are classical properties resources files. -->
     <copy todir="${build.classes.dir}">
@@ -107,14 +100,6 @@
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/test/resources">
         <include name="**/*.xml"/>
-      </fileset>
-    </copy>
-    <copy todir="${build.test.classes.dir}">
-      <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
-        <include name="**/*.dbf"/>
-        <include name="**/*.prj"/>
-        <include name="**/*.shp"/>
-        <include name="**/*.shx"/>
       </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">
