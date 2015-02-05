@@ -148,7 +148,7 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Formats an error message and logs it is we are (un)marshalling a document, or return the message otherwise.
+     * Formats an error message and logs it if we are (un)marshalling a document, or return the message otherwise.
      * In the later case, it is caller's responsibility to use the message for throwing an exception.
      *
      * @param  classe    The caller class, used only in case of warning message to log.

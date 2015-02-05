@@ -1257,7 +1257,7 @@ public class Formatter implements Localized {
      * Invoking this method is equivalent to first verifying the {@code other} class,
      * then delegating as below:
      *
-     * {@preformat
+     * {@preformat java
      *     return other.formatTo(this);
      * }
      *
