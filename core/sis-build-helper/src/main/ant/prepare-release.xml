@@ -35,11 +35,9 @@
                 replace = "&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
 
     <!-- Replace the version number in Java code. -->
-    <replace dir="${user.dir}" failOnNoReplacements="true">
-      <include name="core/sis-utility/src/main/java/org/apache/sis/util/Version.java"/>
-      <replacefilter token="&quot;${sis.version}-SNAPSHOT&quot;"
-                     value="&quot;${sis.version}&quot;"/>
-    </replace>
+    <replaceregexp file = "${user.dir}/core/sis-utility/src/main/java/org/apache/sis/util/Version.java"
+                  match = "MINOR_VERSION\s*\+\s*&quot;-SNAPSHOT&quot;"
+                replace = "MINOR_VERSION"/>
 
     <!-- Replace URL to trunk by URL to the branch on Subversion. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
