@@ -875,7 +875,7 @@ final class MetadataReader {
         final String units = variable.getUnitsString();
         if (units != null) try {
             band.setUnits(Units.valueOf(units));
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) { // IllegalArgumentException or ClassCastException (specific to this branch).
             decoder.listeners.warning(errors().getString(Errors.Keys.CanNotAssignUnitToDimension_2, name, units), e);
         }
         return band;
