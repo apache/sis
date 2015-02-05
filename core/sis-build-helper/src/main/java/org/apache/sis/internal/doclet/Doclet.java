@@ -90,10 +90,10 @@ public final class Doclet extends HtmlDoclet {
                 }
             }
         }
-        final boolean status = HtmlDoclet.start(root);
-        if (outputDirectory != null) try {
+        final boolean success = HtmlDoclet.start(root);
+        if (success && outputDirectory != null) try {
             final File output = new File(outputDirectory);
-            final File customCSS  = customCSS(output);
+            final File customCSS = customCSS(output);
             copyStylesheet(customCSS, output);
             copyResources(customCSS.getParentFile(), output);
         } catch (IOException e) {
@@ -103,7 +103,7 @@ public final class Doclet extends HtmlDoclet {
             root.printError(buffer.toString());
             return false;
         }
-        return status;
+        return success;
     }
 
     /**
