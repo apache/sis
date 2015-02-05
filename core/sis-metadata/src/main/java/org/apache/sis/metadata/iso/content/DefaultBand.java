@@ -306,9 +306,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the units of data as a unit of length.
      *
-     * <div class="warning"><b>Upcoming API change — generalization</b><br>
-     * As of ISO 19115:2014, the units of wavelength is rather {@code boundUnits}.
-     * The restriction for units of length in this {@code units} property may be relaxed in GeoAPI 4.0.
+     * <div class="warning"><b>Upcoming precondition change — relaxation</b><br>
+     * The current implementation requires the unit to be an instance of {@code Unit<Length>},
+     * otherwise a {@link ClassCastException} is thrown. This is because the value returned by
+     * {@link #getUnits()} was restricted by ISO 19115:2003 to units of length.
+     * However this restriction may be relaxed in GeoAPI 4.0.
      * </div>
      *
      * @param newValue The new units of data as an instance of {@code Unit<Length>}.
