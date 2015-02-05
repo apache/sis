@@ -130,7 +130,7 @@ final class LocalisedCharacterString {
      * Returns a string representation of this object for debugging purpose.
      * Example:
      *
-     * {@preformat
+     * {@preformat text
      *   LocalisedCharacterString[#locale-fra, “Un texte”]
      * }
      *
