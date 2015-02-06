@@ -65,7 +65,7 @@ public final class Modules {
      *
      * @see org.apache.sis.util.Version
      */
-    public static final int MINOR_VERSION = 5;
+    public static final int MINOR_VERSION = 6;
 
     /**
      * Do not allows instantiation of this class.
