@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @Suite.SuiteClasses({
@@ -79,6 +79,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
     org.apache.sis.internal.referencing.OperationMethodsTest.class,
 
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
