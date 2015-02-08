@@ -114,6 +114,7 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
                 methodIterator = null;
             }
         }
+        // Maintenance note: following check shall be consistent with the one in 'contains(Object)'.
         if (method instanceof DefaultOperationMethod) {
             if (!type.isAssignableFrom(((DefaultOperationMethod) method).getOperationType())) {
                 return false;
@@ -205,5 +206,48 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
                 return OperationMethodSet.this.next(cursor++);
             }
         };
+    }
+
+    /**
+     * Returns {@code true} if this set contains the given object.
+     * This implementation overrides the default one with a quick check allowing us to filter
+     * {@code OperationMethod} instances of the wrong type before to iterate over the elements.
+     */
+    @Override
+    public boolean contains(final Object object) {
+        // Maintenance note: following check shall be consistent with the one in 'transfer()'.
+        if (object instanceof DefaultOperationMethod) {
+            if (!type.isAssignableFrom(((DefaultOperationMethod) object).getOperationType())) {
+                return false;
+            }
+        } else if (!(object instanceof OperationMethod)) {
+            return false;
+        }
+        /*
+         * NOTE: we could optimize this method here with the following code, which would be
+         * much more efficient than the default implementation if 'methods' is a HashSet:
+         *
+         *   if (methods instanceof Collection<?>) {
+         *       synchronized (methods) {
+         *           return ((Collection<?>) methods).contains(object);
+         *       }
+         *   }
+         *
+         * However we don't do that because it would bring 2 issues:
+         *
+         *   1) There is no guarantee that implementation of the 'methods' collection uses the 'equals(Object)'
+         *      method. For example TreeSet rather uses 'compareTo(Object)'. Since the OperationMethodSet class
+         *      uses 'equals', there is a risk of inconsistency.
+         *
+         *   2) The 'synchronized (methods)' statement introduces a risk of deadlock if some implementations of
+         *      'OperationMethod.equals(Object)' invokes DefaultMathTransformFactory methods. Of course no such
+         *      callbacks should exist (and Apache SIS don't do that), but the OperationMethods can be supplied
+         *      by users and Murphy's law said that if something can go wrong, it will go wrong.
+         *
+         * Since there is no evidence at this time that we need an efficient OperationMethodSet.contains(Object)
+         * implementation, we keep for now the slowest but more conservative approach inherited from AbstractSet.
+         * However this choice may be revisited in any future SIS version if necessary.
+         */
+        return super.contains(object);
     }
 }
