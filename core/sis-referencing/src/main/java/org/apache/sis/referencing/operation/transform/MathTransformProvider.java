@@ -26,14 +26,37 @@ import org.opengis.referencing.operation.MathTransform;
 
 /**
  * An object capable to create {@code MathTransform} instances from given parameter values.
- * The Apache SIS {@link DefaultMathTransformFactory} implementation checks for this interface
- * when creating a {@code MathTransform} for an
- * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation method}.
+ * {@code MathTransformProvider} is the "glue" expressing an abstract formula into concrete Java code.
+ * There is one {@code MathTransformProvider} for each map projection: one for Mercator, one for Lambert,
+ * <i>etc</i>.
+ *
+ * <p>This interface is used by {@link DefaultMathTransformFactory} or by developers who want to plug
+ * their own operation methods into Apache SIS. This interface is generally not used directly.
+ * The recommended way to get a {@code MathTransform} is to first get the {@code CoordinateOperation}
+ * (generally from a pair of <var>source</var> and <var>target</var> CRS), then to invoke
+ * {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.</p>
+ *
+ * {@section How to add custom coordinate operations}
+ * To define a custom coordinate operation, one needs to define a class implementing <strong>both</strong> this
+ * {@code MathTransformProvider} interface and the {@link org.opengis.referencing.operation.OperationMethod} one.
+ * While not mandatory, we suggest to extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
+ * Then the fully-qualified class name of that implementation should be listed in a file having this exact name:
+ *
+ * {@preformat text
+ *     META-INF/services/org.opengis.referencing.operation.OperationMethod
+ * }
+ *
+ * <div class="note"><b>Design note:</b>
+ * this interface does not extend {@code OperationMethod} directly in order to allow its usage
+ * in other contexts than coordinate operations.</div>
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see org.apache.sis.referencing.operation.DefaultOperationMethod
+ * @see DefaultMathTransformFactory
  */
 @FunctionalInterface
 public interface MathTransformProvider {
