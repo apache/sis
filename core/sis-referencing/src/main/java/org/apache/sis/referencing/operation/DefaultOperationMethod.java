@@ -91,6 +91,12 @@ import java.util.Objects;
  * {@code DefaultOperationMethod} subclasses should implement the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
  *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thread-safe if all properties given to the constructor are also immutable and thread-safe.
+ * It is strongly recommended for all subclasses to be thread-safe, especially the
+ * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} implementations to be used with
+ * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5

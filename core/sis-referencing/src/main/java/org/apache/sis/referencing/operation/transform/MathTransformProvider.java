@@ -26,7 +26,8 @@ import org.opengis.referencing.operation.MathTransform;
 
 /**
  * An object capable to create {@code MathTransform} instances from given parameter values.
- * {@code MathTransformProvider} is the "glue" expressing an abstract formula into concrete Java code.
+ * {@code MathTransformProvider} is the Apache SIS mechanism by which
+ * {@linkplain org.apache.sis.referencing.operation.DefaultFormula formula} are concretized as Java code.
  * There is one {@code MathTransformProvider} for each map projection: one for Mercator, one for Lambert,
  * <i>etc</i>.
  *
@@ -37,7 +38,8 @@ import org.opengis.referencing.operation.MathTransform;
  * {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.</p>
  *
  * {@section How to add custom coordinate operations}
- * To define a custom coordinate operation, one needs to define a class implementing <strong>both</strong> this
+ * To define a custom coordinate operation,
+ * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this
  * {@code MathTransformProvider} interface and the {@link org.opengis.referencing.operation.OperationMethod} one.
  * While not mandatory, we suggest to extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
  * Then the fully-qualified class name of that implementation should be listed in a file having this exact name:
@@ -47,8 +49,8 @@ import org.opengis.referencing.operation.MathTransform;
  * }
  *
  * <div class="note"><b>Design note:</b>
- * this interface does not extend {@code OperationMethod} directly in order to allow its usage
- * in other contexts than coordinate operations.</div>
+ * this {@code MathTransformProvider} interface does not extend {@code OperationMethod} directly
+ * in order to allow its usage in other contexts than coordinate operations.</div>
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @since   0.6
@@ -57,6 +59,7 @@ import org.opengis.referencing.operation.MathTransform;
  *
  * @see org.apache.sis.referencing.operation.DefaultOperationMethod
  * @see DefaultMathTransformFactory
+ * @see AbstractMathTransform
  */
 @FunctionalInterface
 public interface MathTransformProvider {
