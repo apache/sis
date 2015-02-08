@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.Formula;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -45,12 +45,30 @@ import java.util.Objects;
 
 
 /**
- * Defines the algorithm and describes the parameters used to perform a coordinate operation. An {@code OperationMethod}
- * contains an arbitrary amount of {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptors}.
- * Values for those parameters will be assigned by {@linkplain DefaultSingleOperation coordinate operations}.
+ * Describes the algorithm and parameters used to perform a coordinate operation. An {@code OperationMethod}
+ * is a kind of metadata: it does not perform any coordinate operation (e.g. map projection) by itself, but
+ * tells us what is needed in order to perform such operation.
  *
- * <div class="note"><b>Departure from the ISO 19111 standard:</b>
- * the following properties are mandatory according ISO 19111,
+ * <p>The most important parts of an {@code OperationMethod} are its {@linkplain #getName() name} and its
+ * {@linkplain #getParameters() group of parameter descriptors}. The parameter descriptors do not contain
+ * any value, but tell us what are the expected parameters, together with their units of measurement.</p>
+ *
+ * <div class="note"><b>Example:</b>
+ * An operation method named “<cite>Mercator (variant A)</cite>” (EPSG:9804) expects the following parameters:
+ * <ul>
+ *   <li>“<cite>Latitude of natural origin</cite>” in degrees. Default value is 0°.</li>
+ *   <li>“<cite>Longitude of natural origin</cite>” in degrees. Default value is 0°.</li>
+ *   <li>“<cite>Scale factor at natural origin</cite>” as a dimensionless number. Default value is 1.</li>
+ *   <li>“<cite>False easting</cite>” in metres. Default value is 0 m.</li>
+ *   <li>“<cite>False northing</cite>” in metres. Default value is 0 m.</li>
+ * </ul></div>
+ *
+ * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However it is
+ * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
+ * since names can sometime be ambiguous or be spelled in different ways.
+ *
+ * <div class="note"><b>Departure from the ISO 19111 standard</b><br>
+ * The following properties are mandatory according ISO 19111,
  * but may be missing under some conditions in Apache SIS:
  * <ul>
  *   <li>The {@linkplain #getFormula() formula} if it has not been provided to the
@@ -60,12 +78,26 @@ import java.util.Objects;
  *     constructor can not infer them.</li>
  * </ul></div>
  *
+ * {@section Relationship with other classes or interfaces}
+ * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
+ * When values have been assigned to parameters, the result is a {@link SingleOperation}.
+ * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
+ * coordinate operation. See {@link #getOperationType()} for more information.
+ *
+ * <p>The interface performing the actual work of taking coordinates in the
+ * {@linkplain AbstractCoordinateOperation#getSourceCRS() source CRS} and calculating the new coordinates in the
+ * {@linkplain AbstractCoordinateOperation#getTargetCRS() target CRS} is {@link MathTransform}.
+ * In order to allow Apache SIS to instantiate those {@code MathTransform}s from given parameter values,
+ * {@code DefaultOperationMethod} subclasses should implement the
+ * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
  * @module
  *
  * @see DefaultSingleOperation
+ * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
 public class DefaultOperationMethod extends AbstractIdentifiedObject implements OperationMethod {
     /**
@@ -337,29 +369,29 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
      *
      * <ul>
-     *   <li>{@link org.opengis.referencing.operation.Transformation}
+     *   <li><p>{@link org.opengis.referencing.operation.Transformation}
      *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
      *     which the operation parameters were determined. Those errors do not depend on the floating point precision
-     *     or the accuracy of the implementation algorithm.</li>
-     *   <li>{@link org.opengis.referencing.operation.Conversion}
+     *     or the accuracy of the implementation algorithm.</p></li>
+     *   <li><p>{@link org.opengis.referencing.operation.Conversion}
      *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
-     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
-     *   <li>{@link org.opengis.referencing.operation.Projection}
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</p></li>
+     *   <li><p>{@link org.opengis.referencing.operation.Projection}
      *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
      *     to plane (map) coordinates. This type can optionally be refined with one of the
      *     {@link org.opengis.referencing.operation.CylindricalProjection},
      *     {@link org.opengis.referencing.operation.ConicProjection} or
-     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
+     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</p></li>
      * </ul>
      *
      * In case of doubt, this method can conservatively return the base type.
-     * The default implementation returns {@code CoordinateOperation.class},
+     * The default implementation returns {@code SingleOperation.class},
      * which is the most conservative return value.
      *
      * @return Interface implemented by all coordinate operations that use this method.
      */
-    public Class<? extends CoordinateOperation> getOperationType() {
-        return CoordinateOperation.class;
+    public Class<? extends SingleOperation> getOperationType() {
+        return SingleOperation.class;
     }
 
     /**
@@ -404,7 +436,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@linkplain #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
      *
      * @return The parameters, or {@code null} if unknown.
      */
@@ -515,7 +547,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              * Transformation, ConcatenatedOperation, PassThroughOperation, or any user-defined type that
              * do not extend Projection. All other operation types are accepted.
              */
-            final Class<? extends CoordinateOperation> type = getOperationType();
+            final Class<? extends SingleOperation> type = getOperationType();
             if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
                 return "Projection";
             }
