@@ -377,7 +377,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public double doubleValue(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
-        return getConverterTo(unit).convert(doubleValue());
+        final double value = doubleValue(); // Invoke first in case it throws an exception.
+        return getConverterTo(unit).convert(value);
     }
 
     /**

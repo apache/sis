@@ -585,6 +585,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NoSuchAuthorityCode_3 = 137;
 
         /**
+         * No operation method found for name of identifier “{0}”.
+         */
+        public static final short NoSuchOperationMethod_1 = 179;
+
+        /**
          * No unit of measurement has been specified.
          */
         public static final short NoUnit = 72;
