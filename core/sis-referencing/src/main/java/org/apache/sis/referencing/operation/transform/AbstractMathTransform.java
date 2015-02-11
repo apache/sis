@@ -130,6 +130,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Gets the dimension of input points.
      *
      * @return The dimension of input points.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getSourceDimensions()
      */
     @Override
     public abstract int getSourceDimensions();
@@ -138,6 +140,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Gets the dimension of output points.
      *
      * @return The dimension of output points.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultOperationMethod#getTargetDimensions()
      */
     @Override
     public abstract int getTargetDimensions();

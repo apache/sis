@@ -395,6 +395,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * which is the most conservative return value.
      *
      * @return Interface implemented by all coordinate operations that use this method.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
      */
     public Class<? extends SingleOperation> getOperationType() {
         return SingleOperation.class;
@@ -409,6 +411,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
      *
      * @return The formula used by this method, or {@code null} if unknown.
+     *
+     * @see DefaultFormula
+     * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
      */
     @Override
     public Formula getFormula() {
@@ -420,6 +425,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
      * @return The dimension of source CRS, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
      */
     @Override
     public Integer getSourceDimensions() {
@@ -431,6 +438,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
      * @return The dimension of target CRS, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
      */
     @Override
     public Integer getTargetDimensions() {

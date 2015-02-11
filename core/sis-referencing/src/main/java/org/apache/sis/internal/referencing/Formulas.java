@@ -31,7 +31,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Formulas extends Static {
@@ -43,7 +43,7 @@ public final class Formulas extends Static {
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
-    public static final double LINEAR_TOLERANCE = 1.0;
+    public static final double LINEAR_TOLERANCE = 0.01;
 
     /**
      * Default tolerance threshold for comparing ordinate values in a geographic CRS,
