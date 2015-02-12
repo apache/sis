@@ -26,6 +26,7 @@ import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -207,7 +208,19 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Reorder the axes in an attempt to get a right-handed system.
+     * Reorders the axes in an attempt to get a right-handed system.
+     * If no axis change is needed, then this method returns {@code cs} unchanged.
+     *
+     * @param  cs The coordinate system to normalize.
+     * @return The normalized coordinate system.
+     */
+    static CoordinateSystem normalize(final CoordinateSystem cs) {
+        final CoordinateSystemAxis[] axes = normalizeAxes(cs, true, true);
+        return (axes != null) ? createSameType(AbstractCS.castOrCopy(cs), axes) : cs;
+    }
+
+    /**
+     * Reorders the axes in an attempt to get a right-handed system.
      * If no axis change is needed, then this method returns {@code cs} unchanged.
      *
      * @param  cs The coordinate system to normalize.
@@ -216,6 +229,22 @@ final class Normalizer implements Comparable<Normalizer> {
      * @return The normalized coordinate system.
      */
     static AbstractCS normalize(final AbstractCS cs, final boolean normalizeAxes, final boolean normalizeUnits) {
+        final CoordinateSystemAxis[] axes = normalizeAxes(cs, normalizeAxes, normalizeUnits);
+        return (axes != null) ? createSameType(cs, axes) : cs;
+    }
+
+    /**
+     * Returns the normalized set of axes for the given coordinate system,
+     * or {@code null} if its axes were already normalized.
+     *
+     * @param  cs The coordinate system to normalize.
+     * @param  normalizeAxes  {@code true} for normalizing axis directions.
+     * @param  normalizeUnits {@code true} for normalizing units (currently ignored if {@code normalizeAxes} is {@code false}).
+     * @return The normalized set of coordinate system axes.
+     */
+    private static CoordinateSystemAxis[] normalizeAxes(final CoordinateSystem cs,
+            final boolean normalizeAxes, final boolean normalizeUnits)
+    {
         boolean changed = false;
         final int dimension = cs.getDimension();
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
@@ -227,13 +256,21 @@ final class Normalizer implements Comparable<Normalizer> {
             axes[i] = axis;
         }
         /*
-         * Sorts the axis in an attempt to create a right-handed system
-         * and creates a new Coordinate System if at least one axis changed.
+         * Sorts the axis in an attempt to create a right-handed system.
+         * Caller will create a new Coordinate System only if at least one axis changed.
          */
         changed |= sort(axes);
-        if (!changed) {
-            return cs;
-        }
+        return changed ? axes : null;
+    }
+
+    /**
+     * Creates a new coordinate system of the same type than the given one, but with the given axes.
+     *
+     * @param  cs   The coordinate system to copy.
+     * @param  axes The set of axes to give to the new coordinate system.
+     * @return A new coordinate system of the same type than {@code cs}, but using the given axes.
+     */
+    private static AbstractCS createSameType(final AbstractCS cs, final CoordinateSystemAxis[] axes) {
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(cs.getInterface().getSimpleName());
         return cs.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
     }
