@@ -46,7 +46,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class CoordinateSystems extends Static {
@@ -295,5 +295,41 @@ public final class CoordinateSystems extends Static {
             }
         }
         return matrix;
+    }
+
+    /**
+     * Returns a coordinate system with {@linkplain AxesConvention#NORMALIZED normalized} axis order and units.
+     * This method is typically used together with {@link #swapAndScaleAxes swapAndScaleAxes} for the creation
+     * of a transformation step before some
+     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
+     * Example:
+     *
+     * {@preformat java
+     *     Matrix step1 = swapAndScaleAxes(sourceCS, normalize(sourceCS));
+     *     Matrix step2 = ... some transform operating on standard axis ...
+     *     Matrix step3 = swapAndScaleAxes(normalize(targetCS), targetCS);
+     * }
+     *
+     * A rational for normalized axis order and units is explained in the <cite>Axis units and
+     * direction</cite> section in the {@linkplain org.apache.sis.referencing.operation.projection
+     * description of map projection package}.
+     *
+     * @param  cs The coordinate system.
+     * @return A constant similar to the specified {@code cs} with normalized axes.
+     * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
+     *
+     * @see AxesConvention#NORMALIZED
+     *
+     * @since 0.6
+     */
+    public static CoordinateSystem normalize(final CoordinateSystem cs) throws IllegalArgumentException {
+        if (cs == null) {
+            return null;
+        } else if (cs instanceof AbstractCS) {
+            // User may have overridden the 'forConvention' method.
+            return ((AbstractCS) cs).forConvention(AxesConvention.NORMALIZED);
+        } else {
+            return Normalizer.normalize(cs);
+        }
     }
 }
