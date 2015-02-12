@@ -27,24 +27,35 @@ import java.util.logging.Level;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
+import javax.measure.converter.ConversionException;
+
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
+
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.HardCoded;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -81,7 +92,7 @@ import org.apache.sis.util.resources.Messages;
  * @version 0.6
  * @module
  */
-public abstract class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory {
+public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory {
     /**
      * The separator character between an identifier and its namespace in the argument given to
      * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
@@ -206,7 +217,8 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
      * if it does not support filtering by the given type.
      *
      * @param  type <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
-     *         <code>{@linkplain Projection}.class</code> for fetching only map projection methods, <i>etc</i>.
+     *         <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for fetching
+     *         only map projection methods, <i>etc</i>.
      * @return Methods available in this factory for coordinate operations of the given type.
      *
      * @see #getDefaultParameters(String)
@@ -276,7 +288,7 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
                 }
             }
             if (method == null) {
-                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, method), identifier);
+                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }
             /*
              * Remember the method we just found, for faster check next time.
@@ -325,8 +337,7 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
      * "<a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator</a>").
      *
      * <p>This method creates new parameter instances at every call. The returned object is intended to be modified
-     * by the user before to be passed to <code>{@linkplain #createParameterizedTransform(ParameterValueGroup)
-     * createParameterizedTransform}(parameters)</code>.</p>
+     * by the user before to be passed to {@link #createParameterizedTransform(ParameterValueGroup)}.</p>
      *
      * @param  method The name or identifier of the operation method to search.
      * @return A new group of parameter values for the {@code OperationMethod} identified by the given name.
@@ -380,23 +391,27 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
     }
 
     /**
-     * Creates a {@linkplain #createParameterizedTransform(ParameterValueGroup) parameterized transform}
-     * from a base CRS to a derived CS. This convenience method {@linkplain #createConcatenatedTransform
-     * concatenates} the parameterized transform with any other transform required for performing units
-     * changes and ordinates swapping.
+     * Creates a transform from a base CRS to a derived CS using the given parameters.
+     * This convenience method:
      *
-     * In addition, this method infers the {@code "semi_major"} and {@code "semi_minor"} parameters values
-     * from the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} associated to the
-     * {@code baseCRS}, if those parameters are not explicitly given and if they are applicable (typically
-     * for cartographic projections).
+     * <ol>
+     *   <li>Infers the {@code "semi_major"} and {@code "semi_minor"} parameters values from the
+     *       {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} associated
+     *       to the {@code baseCRS}, if those parameters are not explicitly given and if they are
+     *       applicable (typically for cartographic projections).</li>
+     *   <li>{@linkplain #createConcatenatedTransform Concatenates} the
+     *       {@linkplain #createParameterizedTransform(ParameterValueGroup) parameterized transform}
+     *       with any other transform required for performing units changes and ordinates swapping.</li>
+     * </ol>
      *
-     * <p>The {@code OperationMethod} instance used by this method can be obtained by a call to
-     * {@link #getLastMethodUsed()}.</p>
+     * The {@code OperationMethod} instance used by this method can be obtained by a call to
+     * {@link #getLastMethodUsed()}.
      *
      * @param  baseCRS    The source coordinate reference system.
      * @param  parameters The parameter values for the transform.
      * @param  derivedCS  The target coordinate system.
-     * @return The parameterized transform.
+     * @return The parameterized transform from {@code baseCRS} to {@code derivedCS},
+     *         including unit conversions and axis swapping.
      * @throws NoSuchIdentifierException if there is no transform registered for the method.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
@@ -417,8 +432,8 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
             ParameterValue<?> mismatchedParam = null;
             double mismatchedValue = 0;
             try {
-                final ParameterValue<?> semiMajor = parameters.parameter("semi_major");
-                final ParameterValue<?> semiMinor = parameters.parameter("semi_minor");
+                final ParameterValue<?> semiMajor = parameters.parameter(HardCoded.SEMI_MAJOR);
+                final ParameterValue<?> semiMinor = parameters.parameter(HardCoded.SEMI_MINOR);
                 final Unit<Length>      axisUnit  = ellipsoid.getAxisUnit();
                 /*
                  * The two calls to getOptional(…) shall succeed before we write anything, in order to have a
@@ -463,7 +478,7 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
         try {
             baseToDerived = createParameterizedTransform(parameters);
             final OperationMethod method = lastMethod.get();
-            baseToDerived = createBaseToDerived(baseCRS, baseToDerived, derivedCS);
+            baseToDerived = createBaseToDerived(baseCRS.getCoordinateSystem(), baseToDerived, derivedCS);
             lastMethod.set(method);
         } catch (FactoryException e) {
             if (failure != null) {
@@ -475,22 +490,181 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
     }
 
     /**
-     * Creates a transform from a base CRS to a derived CS. This method expects a "raw" transform without
-     * unit conversion or axis swapping. Such "raw" transforms are typically map projections working on
-     * (<cite>longitude</cite>, <cite>latitude</cite>) axes in degrees and (<cite>x</cite>, <cite>y</cite>)
-     * axes in metres. This method inspects the coordinate systems and prepend or append the unit conversions
-     * and axis swapping automatically.
+     * Creates a transform from a base to a derived CS using an existing parameterized transform.
+     * This convenience method {@linkplain #createConcatenatedTransform concatenates} the given parameterized
+     * transform with any other transform required for performing units changes and ordinates swapping.
      *
-     * @param  baseCRS    The source coordinate reference system.
-     * @param  projection The "raw" <cite>base to derived</cite> transform.
-     * @param  derivedCS  the target coordinate system.
-     * @return The parameterized transform.
+     * <p>The given {@code parameterized} transform shall expect
+     * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates and
+     * produce normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention} for more
+     * information about what Apache SIS means by "normalized".</p>
+     *
+     * <div class="note"><b>Example:</b>
+     * The most typical examples of transforms with normalized inputs/outputs are normalized
+     * map projections expecting (<cite>longitude</cite>, <cite>latitude</cite>) inputs in degrees
+     * and calculating (<cite>x</cite>, <cite>y</cite>) coordinates in metres,
+     * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
+     * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.</div>
+     *
+     * @param  baseCS        The source coordinate system.
+     * @param  parameterized A <cite>base to derived</cite> transform for normalized input and output coordinates.
+     * @param  derivedCS     The target coordinate system.
+     * @return The transform from {@code baseCS} to {@code derivedCS}, including unit conversions and axis swapping.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
+     *
+     * @see org.apache.sis.referencing.cs.AxesConvention#NORMALIZED
      */
-    public abstract MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
-            final MathTransform projection, final CoordinateSystem derivedCS)
-            throws FactoryException;
+    public MathTransform createBaseToDerived(final CoordinateSystem baseCS,
+            final MathTransform parameterized, final CoordinateSystem derivedCS)
+            throws FactoryException
+    {
+        /*
+         * Computes matrix for swapping axis and performing units conversion.
+         * There is one matrix to apply before projection on (longitude,latitude)
+         * coordinates, and one matrix to apply after projection on (easting,northing)
+         * coordinates.
+         */
+        final Matrix swap1, swap3;
+        try {
+            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.normalize(baseCS));
+            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.normalize(derivedCS), derivedCS);
+        } catch (IllegalArgumentException | ConversionException cause) {
+            throw new FactoryException(cause);
+        }
+        /*
+         * Prepares the concatenation of the matrices computed above and the projection.
+         * Note that at this stage, the dimensions between each step may not be compatible.
+         * For example the projection (step2) is usually two-dimensional while the source
+         * coordinate system (step1) may be three-dimensional if it has a height.
+         */
+        MathTransform step1 = createAffineTransform(swap1);
+        MathTransform step3 = createAffineTransform(swap3);
+        MathTransform step2 = parameterized;
+        /*
+         * If the target coordinate system has a height, instructs the projection to pass
+         * the height unchanged from the base CRS to the target CRS. After this block, the
+         * dimensions of 'step2' and 'step3' should match.
+         */
+        final int numTrailingOrdinates = step3.getSourceDimensions() - step2.getTargetDimensions();
+        if (numTrailingOrdinates > 0) {
+            step2 = createPassThroughTransform(0, step2, numTrailingOrdinates);
+        }
+        /*
+         * If the source CS has a height but the target CS doesn't, drops the extra coordinates.
+         * After this block, the dimensions of 'step1' and 'step2' should match.
+         */
+        final int sourceDim = step1.getTargetDimensions();
+        final int targetDim = step2.getSourceDimensions();
+        if (sourceDim > targetDim) {
+            final Matrix drop = Matrices.createDiagonal(targetDim+1, sourceDim+1);
+            drop.setElement(targetDim, sourceDim, 1); // Element in the lower-right corner.
+            step1 = createConcatenatedTransform(createAffineTransform(drop), step1);
+        }
+        MathTransform mt = createConcatenatedTransform(createConcatenatedTransform(step1, step2), step3);
+        /*
+         * At this point we finished to create the transform.  But before to return it, verify if the
+         * parameterized transform given in argument had some custom parameters. This happen with the
+         * Equirectangular projection, which can be simplified as an AffineTransform while we want to
+         * continue to describe it with the "semi_major", "semi_minor", etc. parameters  instead than
+         * "elt_0_0", "elt_0_1", etc.  The following code just forwards those parameters to the newly
+         * created transform; it does not change the operation.
+         */
+        if (parameterized instanceof ParameterizedAffine) {
+            mt = ((ParameterizedAffine) parameterized).newTransform(mt);
+        }
+        return mt;
+    }
+
+    /**
+     * Creates a transform from a group of parameters. The {@code OperationMethod} name is inferred
+     * from the {@linkplain ParameterDescriptorGroup#getName() parameter group name}.
+     * Example:
+     *
+     * {@preformat java
+     *     ParameterValueGroup p = factory.getDefaultParameters("Transverse_Mercator");
+     *     p.parameter("semi_major").setValue(6378137.000);
+     *     p.parameter("semi_minor").setValue(6356752.314);
+     *     MathTransform mt = factory.createParameterizedTransform(p);
+     * }
+     *
+     * @param  parameters The parameter values.
+     * @return The parameterized transform.
+     * @throws NoSuchIdentifierException if there is no transform registered for the method.
+     * @throws FactoryException if the object creation failed. This exception is thrown
+     *         if some required parameter has not been supplied, or has illegal value.
+     *
+     * @see #getDefaultParameters(String)
+     * @see #getAvailableMethods(Class)
+     * @see #getLastMethodUsed()
+     */
+    @Override
+    public MathTransform createParameterizedTransform(ParameterValueGroup parameters)
+            throws NoSuchIdentifierException, FactoryException
+    {
+        final String methodName = parameters.getDescriptor().getName().getCode();
+        OperationMethod method = null;
+        try {
+            method = getOperationMethod(methodName);
+        } finally {
+            lastMethod.set(method); // May be null in case of failure, which is intended.
+        }
+        if (!(method instanceof MathTransformProvider)) {
+            throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
+                    Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
+        }
+        /*
+         * If the "official" parameter descriptor was used, that descriptor should have already
+         * enforced argument validity. Consequently, there is no need to performs the check and
+         * we will avoid it as a performance enhancement.
+         */
+        final ParameterDescriptorGroup expected = method.getParameters();
+        final boolean isConform = expected.equals(parameters.getDescriptor());
+        MathTransform transform;
+        try {
+            if (!isConform) {
+                /*
+                 * Copies all values from the user-supplied group to the provider-supplied group.
+                 * The later should perform all needed checks. It is supplier's responsibility to
+                 * know about alias (e.g. OGC, EPSG, ESRI),  since the caller probably used names
+                 * from only one authority.
+                 */
+                final ParameterValueGroup copy = expected.createValue();
+                Parameters.copy(parameters, copy);
+                parameters = copy;
+            }
+            transform  = ((MathTransformProvider) method).createMathTransform(parameters);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            /*
+             * Catch only exceptions which may be the result of improper parameter
+             * usage (e.g. a value out of range). Do not catch exception caused by
+             * programming errors (e.g. null pointer exception).
+             */
+            throw new FactoryException(exception);
+        }
+        transform = pool.unique(transform);
+        return transform;
+    }
+
+    /**
+     * Creates an affine transform from a matrix. If the transform input dimension is {@code M},
+     * and output dimension is {@code N}, then the matrix will have size {@code [N+1][M+1]}. The
+     * +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation. The
+     * {@code [M][j]} element of the matrix will be the j'th ordinate of the moved origin. The
+     * {@code [i][N]} element of the matrix will be 0 for <var>i</var> less than {@code M}, and 1
+     * for <var>i</var> equals {@code M}.
+     *
+     * @param  matrix The matrix used to define the affine transform.
+     * @return The affine transform.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see MathTransforms#linear(Matrix)
+     */
+    @Override
+    public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
+        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider
+        return pool.unique(MathTransforms.linear(matrix));
+    }
 
     /**
      * Creates a transform by concatenating two existing transforms.
@@ -503,12 +677,15 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
      * @param  transform2 The second transform to apply to points.
      * @return The concatenated transform.
      * @throws FactoryException if the object creation failed.
+     *
+     * @see MathTransforms#concatenate(MathTransform, MathTransform)
      */
     @Override
     public MathTransform createConcatenatedTransform(final MathTransform transform1,
                                                      final MathTransform transform2)
             throws FactoryException
     {
+        lastMethod.remove();
         MathTransform tr;
         try {
             tr = MathTransforms.concatenate(transform1, transform2);
@@ -536,7 +713,7 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
      * }
      *
      * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
-     * @param  subTransform          Transform to use for affected ordinates.
+     * @param  subTransform Transform to use for affected ordinates.
      * @param  numTrailingOrdinates  Number of trailing ordinates to pass through. Affected ordinates will range
      *         from {@code firstAffectedOrdinate} inclusive to {@code dimTarget-numTrailingOrdinates} exclusive.
      * @return A pass through transform.
@@ -548,6 +725,7 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
                                                     final int numTrailingOrdinates)
             throws FactoryException
     {
+        lastMethod.remove();
         MathTransform tr;
         try {
             tr = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
@@ -559,9 +737,39 @@ public abstract class DefaultMathTransformFactory extends AbstractFactory implem
     }
 
     /**
-     * Returns the operation method used for the latest call to
-     * {@link #createParameterizedTransform(ParameterValueGroup)} in the currently running thread.
+     * Creates a math transform object from a XML string. The default implementation
+     * always throws an exception, since this method is not yet implemented.
+     *
+     * @param  xml Math transform encoded in XML format.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public MathTransform createFromXML(String xml) throws FactoryException {
+        lastMethod.remove();
+        throw new FactoryException("Not yet implemented.");
+    }
+
+    /**
+     * Creates a math transform object from a
+     * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
+     * Known Text</cite> (WKT)</a>.
+     *
+     * @param  text Math transform encoded in Well-Known Text format.
+     * @return The math transform (never {@code null}).
+     * @throws FactoryException if the Well-Known Text can't be parsed,
+     *         or if the math transform creation failed from some other reason.
+     */
+    @Override
+    public MathTransform createFromWKT(final String text) throws FactoryException {
+        lastMethod.remove();
+        throw new FactoryException("Not yet implemented.");
+    }
+
+    /**
+     * Returns the operation method used by the latest call to a {@code create} method in the currently running thread.
      * Returns {@code null} if not applicable.
+     *
+     * @return The last method used, or {@code null} if unknown of unsupported.
      *
      * @see #createParameterizedTransform(ParameterValueGroup)
      */

@@ -25,7 +25,7 @@ import org.apache.sis.internal.util.Citations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class HardCoded extends Static {
@@ -33,6 +33,11 @@ public final class HardCoded extends Static {
      * The {@value} code space.
      */
     public static final String EPSG = Citations.EPSG;
+
+    /**
+     * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
+     */
+    public static final String SEMI_MAJOR = "semi_major", SEMI_MINOR = "semi_minor";
 
     /**
      * The {@value} code space.
