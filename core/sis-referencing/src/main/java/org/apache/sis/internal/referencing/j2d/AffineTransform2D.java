@@ -411,6 +411,10 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
         return true;
     }
 
+    /*
+     * Intentionally no hashCode() method. See equals(Object) for explanation.
+     */
+
     /**
      * Returns a new affine transform which is a modifiable copy of this transform. This implementation always
      * returns an instance of {@link AffineTransform}, <strong>not</strong> {@code AffineTransform2D}, because
