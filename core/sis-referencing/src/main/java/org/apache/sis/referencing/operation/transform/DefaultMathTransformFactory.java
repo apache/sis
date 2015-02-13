@@ -93,6 +93,13 @@ import org.apache.sis.util.resources.Messages;
  * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory {
+    /*
+     * NOTE FOR JAVADOC WRITER:
+     * The "method" word is ambiguous here, because it can be "Java method" or "coordinate operation method".
+     * In this class, we reserve the "method" word for "coordinate operation method" as much as possible.
+     * For Java methods, we rather use "constructor" or "function".
+     */
+
     /**
      * The separator character between an identifier and its namespace in the argument given to
      * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
@@ -136,7 +143,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private final Map<Class<?>, OperationMethodSet> methodsByType;
 
     /**
-     * The last method used by a {@code create(…)} method.
+     * The last coordinate operation method used by a {@code create(…)} constructor.
      */
     private final ThreadLocal<OperationMethod> lastMethod;
 
@@ -213,8 +220,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *   <li>{@link SingleOperation} for all coordinate operations.</li>
      * </ul>
      *
-     * This method may conservatively return more {@code OperationMethod} elements than requested
-     * if it does not support filtering by the given type.
+     * The returned set may conservatively contain more {@code OperationMethod} elements than requested
+     * if this {@code MathTransformFactory} does not support filtering by the given type.
      *
      * @param  type <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
      *         <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for fetching
@@ -264,7 +271,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * methods are deprecated, the first one is returned.</p>
      *
      * @param  identifier The name or identifier of the operation method to search.
-     * @return The operation method for the given name or identifier.
+     * @return The coordinate operation method for the given name or identifier.
      * @throws NoSuchIdentifierException if there is no operation method registered for the specified identifier.
      */
     public OperationMethod getOperationMethod(String identifier) throws NoSuchIdentifierException {
@@ -304,9 +311,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
      *
-     * This method is private and static for now, but we may consider to make it a protected member in a future
-     * SIS version in order to give users a chance to override the matching criterion. We don't do that yet
-     * because we would like to have at least one use case before doing so.
+     * This function is private and static for now, but we may consider to make it a protected member
+     * in a future SIS version in order to give users a chance to override the matching criterion.
+     * We don't do that yet because we would like to have at least one use case before doing so.
      *
      * @param  method     The method to test for a match.
      * @param  identifier The name or identifier of the operation method to search.
@@ -331,15 +338,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Returns the default parameter values for a math transform using the given method.
-     * The method argument is the name of any operation method returned by the {@link #getAvailableMethods(Class)} method.
+     * Returns the default parameter values for a math transform using the given operation method.
+     * The {@code method} argument is the name of any {@code OperationMethod} instance returned by
+     * <code>{@link #getAvailableMethods(Class) getAvailableMethods}({@linkplain SingleOperation}.class)</code>.
      * A typical example is
      * "<a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator</a>").
      *
-     * <p>This method creates new parameter instances at every call. The returned object is intended to be modified
-     * by the user before to be passed to {@link #createParameterizedTransform(ParameterValueGroup)}.</p>
+     * <p>This function creates new parameter instances at every call.
+     * Parameters are intended to be modified by the user before to be given to the
+     * {@link #createParameterizedTransform createParameterizedTransform(…)} constructor.</p>
      *
-     * @param  method The name or identifier of the operation method to search.
+     * @param  method The case insensitive name of the coordinate operation method to search for.
      * @return A new group of parameter values for the {@code OperationMethod} identified by the given name.
      * @throws NoSuchIdentifierException if there is no method registered for the given name or identifier.
      *
@@ -355,7 +364,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Returns the value of the given parameter in the given unit, or {@code NaN} if the parameter is not set.
      *
-     * <p><b>NOTE:</b> Do not merge this method with {@code ensureSet(…)}. We keep those two methods
+     * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
      * separated in order to give to {@code createBaseToDerived(…)} a "all or nothing" behavior.</p>
      */
     private static double getValue(final ParameterValue<?> parameter, final Unit<Length> unit) {
@@ -392,7 +401,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a transform from a base CRS to a derived CS using the given parameters.
-     * This convenience method:
+     * This convenience constructor:
      *
      * <ol>
      *   <li>Infers the {@code "semi_major"} and {@code "semi_minor"} parameters values from the
@@ -404,7 +413,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *       with any other transform required for performing units changes and ordinates swapping.</li>
      * </ol>
      *
-     * The {@code OperationMethod} instance used by this method can be obtained by a call to
+     * The {@code OperationMethod} instance used by this constructor can be obtained by a call to
      * {@link #getLastMethodUsed()}.
      *
      * @param  baseCRS    The source coordinate reference system.
@@ -412,7 +421,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  derivedCS  The target coordinate system.
      * @return The parameterized transform from {@code baseCRS} to {@code derivedCS},
      *         including unit conversions and axis swapping.
-     * @throws NoSuchIdentifierException if there is no transform registered for the method.
+     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
      */
@@ -491,7 +500,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a transform from a base to a derived CS using an existing parameterized transform.
-     * This convenience method {@linkplain #createConcatenatedTransform concatenates} the given parameterized
+     * This convenience constructor {@linkplain #createConcatenatedTransform concatenates} the given parameterized
      * transform with any other transform required for performing units changes and ordinates swapping.
      *
      * <p>The given {@code parameterized} transform shall expect
@@ -590,7 +599,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * @param  parameters The parameter values.
      * @return The parameterized transform.
-     * @throws NoSuchIdentifierException if there is no transform registered for the method.
+     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
      *
@@ -671,7 +680,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * A concatenated transform acts in the same way as applying two transforms, one after the other.
      *
      * <p>The dimension of the output space of the first transform must match the dimension of the input space
-     * in the second transform. In order to concatenate more than two transforms, use this method repeatedly.</p>
+     * in the second transform. In order to concatenate more than two transforms, use this constructor repeatedly.</p>
      *
      * @param  transform1 The first transform to apply to points.
      * @param  transform2 The second transform to apply to points.
@@ -738,7 +747,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a math transform object from a XML string. The default implementation
-     * always throws an exception, since this method is not yet implemented.
+     * always throws an exception, since this constructor is not yet implemented.
      *
      * @param  xml Math transform encoded in XML format.
      * @throws FactoryException if the object creation failed.
@@ -766,10 +775,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Returns the operation method used by the latest call to a {@code create} method in the currently running thread.
-     * Returns {@code null} if not applicable.
+     * Returns the operation method used by the latest call to a {@code create(…)} constructor
+     * in the currently running thread. Returns {@code null} if not applicable.
      *
-     * @return The last method used, or {@code null} if unknown of unsupported.
+     * <p>Invoking {@code getLastMethodUsed()} can be useful after a call to
+     * {@link #createParameterizedTransform createParameterizedTransform(…)}, or after a call to another
+     * constructor that delegates its work to {@code createParameterizedTransform(…)}, for example
+     * {@link #createBaseToDerived createBaseToDerived(…)}.</p>
+     *
+     * @return The last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
      *
      * @see #createParameterizedTransform(ParameterValueGroup)
      */
