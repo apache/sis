@@ -36,9 +36,8 @@
  * More on this convention is explained below.</p>
  *
  * <p>Users wanting to know more about the available projections and their parameters should look at the
- * <a href="http://sis.apache.org/CoordinateOperationMethods.html">Coordinate Operation Methods</a> page.
- * Only users interested in the <em>implementation</em> or parameters of those projections should look at
- * this package.</p>
+ * <a href="http://sis.apache.org/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
+ * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
  * {@section Definition of terms}
@@ -93,7 +92,7 @@
  * where the other steps change units and swap ordinates.
  * </blockquote>
  *
- * The Geotk implementation extends this rule to axis directions as well, i.e. (<var>x</var>, <var>y</var>) coordinates
+ * The Apache SIS implementation extends this rule to axis directions as well, i.e. (<var>x</var>, <var>y</var>) coordinates
  * must be ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
  * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) oriented.
  *
@@ -164,6 +163,5 @@
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list">Projections list on RemoteSensing.org</a>
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
- * @see <a href="http://atlas.gc.ca/site/english/learningresources/carto_corner/map_projections.html">Map projections on the atlas of Canada</a>
  */
 package org.apache.sis.referencing.operation.projection;

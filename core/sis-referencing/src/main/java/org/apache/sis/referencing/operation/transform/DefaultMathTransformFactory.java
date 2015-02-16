@@ -67,21 +67,76 @@ import org.apache.sis.util.resources.Messages;
 
 /**
  * Low level factory for creating {@linkplain AbstractMathTransform math transforms}.
- * High level GIS applications usually do not need to use this factory directly.
+ * The objects created by this factory do not know what the source and target coordinate systems mean.
+ * Because of this low semantic value, high level GIS applications usually do not need to use this factory directly.
  * They can use the static convenience methods in the {@link org.apache.sis.referencing.CRS}
  * or {@link MathTransforms} classes instead.
  *
- * {@section Math transforms discovery}
- * Unless {@linkplain #DefaultMathTransformFactory(Iterable) specified explicitely at construction time},
- * {@code OperationMethod} implementations shall be listed in the following file:
  *
- * {@preformat text
- *     META-INF/services/org.opengis.referencing.operation.OperationMethod
- * }
+ * {@section Standard parameters}
+ * {@code MathTransform} instances are created from {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup
+ * parameter values}. The parameters expected by each operation available in a default Apache SIS installation is
+ * <a href="http://sis.apache.org/CoordinateOperationMethods.html">listed here</a>.
+ * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
- * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
- * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
- * can be used by the {@code create(…)} methods in this class.
+ * <ul>
+ *   <li>A <cite>semi-major</cite> and <cite>semi-minor</cite> axis length in metres.</li>
+ *   <li>A <cite>central meridian</cite> and <cite>latitude of origin</cite> in decimal degrees.</li>
+ *   <li>A <cite>scale factor</cite>, which default to 1.</li>
+ *   <li>A <cite>false easting</cite> and <cite>false northing</cite> in metres, which default to 0.</li>
+ * </ul>
+ *
+ * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
+ * For example the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
+ * by OGC, while EPSG uses various names like "<cite>False easting</cite>" or "<cite>Easting at
+ * false origin</cite>".</p>
+ *
+ * {@section Dynamic parameters}
+ * A few non-standard parameters are defined for compatibility reasons,
+ * but delegates their work to standard parameters. Those dynamic parameters are not listed in the
+ * {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#values() parameter values}.
+ * Dynamic parameters are:
+ *
+ * <ul>
+ *   <li>{@code "earth_radius"}, which copy its value to the {@code "semi_major"} and
+ *       {@code "semi_minor"} parameter values.</li>
+ *   <li>{@code "inverse_flattening"}, which compute the {@code "semi_minor"} value from
+ *       the {@code "semi_major"} parameter value.</li>
+ *   <li>{@code "standard_parallel"} expecting an array of type {@code double[]}, which copy
+ *       its elements to the {@code "standard_parallel_1"} and {@code "standard_parallel_2"}
+ *       parameter scalar values.</li>
+ * </ul>
+ *
+ * <p>The main purpose of those dynamic parameters is to support some less commonly used conventions
+ * without duplicating the most commonly used conventions. The alternative ways are used in NetCDF
+ * files for example, which often use spherical models instead than ellipsoidal ones.</p>
+ *
+ *
+ * <a name="Obligation">{@section Mandatory and optional parameters}</a>
+ * Parameters are flagged as either <cite>mandatory</cite> or <cite>optional</cite>.
+ * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
+ * means that the parameter is an essential part of the projection defined by standards.
+ * Such mandatory parameters will always appears in any <cite>Well Known Text</cite> (WKT) formatting,
+ * even if not explicitly set by the user. For example the central meridian is typically a mandatory
+ * parameter with a default value of 0° (the Greenwich meridian).
+ *
+ * <p>Optional parameters, on the other hand, are often non-standard extensions.
+ * They will appear in WKT formatting only if the user defined explicitly a value which is different than the
+ * default value.</p>
+ *
+ *
+ * {@section Operation methods discovery}
+ * {@link OperationMethod} describes all the parameters expected for instantiating a particular kind of
+ * math transform. The set of operation methods known to this factory can be obtained in two ways:
+ *
+ * <ul>
+ *   <li>{@linkplain #DefaultMathTransformFactory(Iterable) specified explicitely at construction time}, or</li>
+ *   <li>{@linkplain #DefaultMathTransformFactory() discovered by scanning the classpath}.</li>
+ * </ul>
+ *
+ * The default way is to scan the classpath. See {@link MathTransformProvider} for indications about how to add
+ * custom coordinate operation methods in a default Apache SIS installation.
+ *
  *
  * {@section Thread safety}
  * This class is safe for multi-thread usage if all referenced {@code OperationMethod} instances are thread-safe.
@@ -91,6 +146,9 @@ import org.apache.sis.util.resources.Messages;
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see MathTransformProvider
+ * @see AbstractMathTransform
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory {
     /*
@@ -155,7 +213,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
-     * {@code OperationMethod} implementations shall be listed in the following file:
+     * The {@link OperationMethod} implementations shall be listed in the following file:
      *
      * {@preformat text
      *     META-INF/services/org.opengis.referencing.operation.OperationMethod
@@ -164,6 +222,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
      * can be used by the {@code create(…)} methods in this class.
+     *
+     * @see #reload()
      */
     public DefaultMathTransformFactory() {
         this(ServiceLoader.load(OperationMethod.class));
@@ -586,20 +646,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a transform from a group of parameters. The {@code OperationMethod} name is inferred
-     * from the {@linkplain ParameterDescriptorGroup#getName() parameter group name}.
+     * Creates a transform from a group of parameters.
+     * The set of expected parameters varies for each operation.
+     * The easiest way to provide parameter values is to get an initially empty group for the desired
+     * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
      * Example:
      *
      * {@preformat java
-     *     ParameterValueGroup p = factory.getDefaultParameters("Transverse_Mercator");
-     *     p.parameter("semi_major").setValue(6378137.000);
-     *     p.parameter("semi_minor").setValue(6356752.314);
-     *     MathTransform mt = factory.createParameterizedTransform(p);
+     *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
+     *     group.parameter("semi_major").setValue(6378137.000);
+     *     group.parameter("semi_minor").setValue(6356752.314);
+     *     MathTransform mt = factory.createParameterizedTransform(group);
      * }
      *
-     * @param  parameters The parameter values.
-     * @return The parameterized transform.
-     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
+     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
+     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
+     * @return The transform created from the given parameters.
+     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
      *
