@@ -81,6 +81,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @since   0.5
  * @version 0.5
  * @module
+ *
+ * @see DefaultMathTransformFactory
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
