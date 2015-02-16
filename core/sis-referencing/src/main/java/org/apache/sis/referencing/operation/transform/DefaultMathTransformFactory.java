@@ -615,44 +615,46 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         OperationMethod method = null;
         try {
             method = getOperationMethod(methodName);
+            if (!(method instanceof MathTransformProvider)) {
+                throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
+                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
+            }
+            /*
+             * If the "official" parameter descriptor was used, that descriptor should have already
+             * enforced argument validity. Consequently, there is no need to performs the check and
+             * we will avoid it as a performance enhancement.
+             */
+            final ParameterDescriptorGroup expected = method.getParameters();
+            final boolean isConform = expected.equals(parameters.getDescriptor());
+            MathTransform transform;
+            try {
+                if (!isConform) {
+                    /*
+                     * Copies all values from the user-supplied group to the provider-supplied group.
+                     * The later should perform all needed checks. It is supplier's responsibility to
+                     * know about alias (e.g. OGC, EPSG, ESRI),  since the caller probably used names
+                     * from only one authority.
+                     */
+                    final ParameterValueGroup copy = expected.createValue();
+                    Parameters.copy(parameters, copy);
+                    parameters = copy;
+                }
+                transform  = ((MathTransformProvider) method).createMathTransform(parameters);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                /*
+                 * Catch only exceptions which may be the result of improper parameter
+                 * usage (e.g. a value out of range). Do not catch exception caused by
+                 * programming errors (e.g. null pointer exception).
+                 */
+                throw new FactoryException(exception);
+            }
+            transform = pool.unique(transform);
+            method = DefaultOperationMethod.redimension(method,
+                    transform.getSourceDimensions(), transform.getTargetDimensions());
+            return transform;
         } finally {
             lastMethod.set(method); // May be null in case of failure, which is intended.
         }
-        if (!(method instanceof MathTransformProvider)) {
-            throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
-                    Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
-        }
-        /*
-         * If the "official" parameter descriptor was used, that descriptor should have already
-         * enforced argument validity. Consequently, there is no need to performs the check and
-         * we will avoid it as a performance enhancement.
-         */
-        final ParameterDescriptorGroup expected = method.getParameters();
-        final boolean isConform = expected.equals(parameters.getDescriptor());
-        MathTransform transform;
-        try {
-            if (!isConform) {
-                /*
-                 * Copies all values from the user-supplied group to the provider-supplied group.
-                 * The later should perform all needed checks. It is supplier's responsibility to
-                 * know about alias (e.g. OGC, EPSG, ESRI),  since the caller probably used names
-                 * from only one authority.
-                 */
-                final ParameterValueGroup copy = expected.createValue();
-                Parameters.copy(parameters, copy);
-                parameters = copy;
-            }
-            transform  = ((MathTransformProvider) method).createMathTransform(parameters);
-        } catch (IllegalArgumentException | IllegalStateException exception) {
-            /*
-             * Catch only exceptions which may be the result of improper parameter
-             * usage (e.g. a value out of range). Do not catch exception caused by
-             * programming errors (e.g. null pointer exception).
-             */
-            throw new FactoryException(exception);
-        }
-        transform = pool.unique(transform);
-        return transform;
     }
 
     /**
