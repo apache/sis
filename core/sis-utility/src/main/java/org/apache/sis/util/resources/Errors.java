@@ -333,7 +333,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalMemberType_2 = 37;
 
         /**
-         * Dimensions of “{0}” operation can not be ({1}, {2}).
+         * Dimensions of “{0}” operation can not be ({1} → {2}).
          */
         public static final short IllegalOperationDimension_3 = 180;
 
