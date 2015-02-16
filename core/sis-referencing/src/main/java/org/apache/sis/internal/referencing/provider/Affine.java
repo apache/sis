@@ -34,9 +34,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 /**
  * The provider for "<cite>Affine general parametric transformation</cite>" (EPSG:9624).
- * The set of available parameters depends on the matrix size, which is
- * {@value org.geotoolkit.parameter.MatrixParameterDescriptors#DEFAULT_MATRIX_SIZE}&times;{@value
- * org.geotoolkit.parameter.MatrixParameterDescriptors#DEFAULT_MATRIX_SIZE} by default.
+ * The set of available parameters depends on the matrix size, which is 3×3 by default.
  *
  * <table class="sis">
  *   <caption>{@code Affine} parameters</caption>
