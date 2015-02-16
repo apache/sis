@@ -27,9 +27,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the registration of operation methods in {@link DefaultMathTransformFactory}.
- * This test uses the providers registered in all
- * {@code META-INF/services/org.geotoolkit.referencing.operation.MathTransformProvider}
+ * Tests the registration of operation methods in {@link DefaultMathTransformFactory}. This test uses the
+ * providers registered in all {@code META-INF/services/org.opengis.referencing.operation.OperationMethod}
  * files found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
