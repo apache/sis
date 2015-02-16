@@ -149,11 +149,11 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Returns the parameter descriptors for this math transform, or {@code null} if unknown.
      *
-     * <span class="note"><b>Relationship with ISO 19111:</b>
+     * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
-     * </span>
+     * </div>
      *
      * @return The parameter descriptors for this math transform, or {@code null}.
      *
@@ -169,11 +169,11 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Since this method returns a copy of the parameter values, any change to a value will have no
      * effect on this math transform.
      *
-     * <span class="note"><b>Relationship with ISO 19111:</b>
+     * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
-     * </span>
+     * </div>
      *
      * @return A copy of the parameter values for this math transform, or {@code null}.
      *
