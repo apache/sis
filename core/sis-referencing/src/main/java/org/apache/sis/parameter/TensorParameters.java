@@ -86,7 +86,7 @@ import java.util.Objects;
  *   <caption>Well Known Text format for a matrix</caption>
  * <tr>
  *   <th>Using EPSG names</th>
- *   <th>Using OGC names</th>
+ *   <th class="sep">Using OGC names</th>
  * </tr>
  * <tr><td>
  * {@preformat wkt
@@ -97,7 +97,12 @@ import java.util.Objects;
  *   Parameter["B1", <value>, ID["EPSG",8640]],
  *   Parameter["B2", <value>, ID["EPSG",8641]]
  * }
- * </td><td>
+ *
+ * <div class="note"><b>Note:</b>
+ * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
+ * but they are for polynomial transformations, not affine transformations.</div>
+ *
+ * </td><td class="sep">
  * {@preformat wkt
  *   Parameter["num_row", 3],
  *   Parameter["num_col", 3],
@@ -111,10 +116,6 @@ import java.util.Objects;
  *   Parameter["elt_<num_row-1>_<num_col-1>", <value>]
  * }
  * </td></tr></table>
- *
- * <div class="note"><b>Note:</b>
- * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
- * but they are for polynomial transformations, not affine transformations.</div>
  *
  * Those groups are extensible, i.e. the number of <code>"elt_<var>row</var>_<var>col</var>"</code> parameters
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
