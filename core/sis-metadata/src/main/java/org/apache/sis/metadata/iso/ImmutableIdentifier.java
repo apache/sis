@@ -39,6 +39,7 @@ import org.apache.sis.io.wkt.ElementKind;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
+import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Branch-dependent imports
@@ -356,7 +357,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
          */
         value = properties.get(CODESPACE_KEY);
         if (value == null && !properties.containsKey(CODESPACE_KEY)) {
-            codeSpace = getCodeSpace(authority);
+            codeSpace = getUnicodeIdentifier(authority);
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {
@@ -438,37 +439,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     @Override
     public String getCodeSpace() {
         return codeSpace;
-    }
-
-    /**
-     * Infers a code space from the given authority. First, this method takes a short identifier or title with
-     * preference for Unicode identifier - see {@link Citations#getIdentifier(Citation)} for more information.
-     * Next this method applies additional restrictions in order to reduce the risk of undesired code space.
-     * Those restrictions are arbitrary and may change in any future SIS version. Currently, the restriction
-     * is to accept only letters or digits.
-     *
-     * @param  authority The authority for which to get a code space.
-     * @return The code space, or {@code null} if none.
-     *
-     * @see Citations#getIdentifier(Citation)
-     */
-    private static String getCodeSpace(final Citation authority) {
-        final String codeSpace = Citations.getIdentifier(authority); // Whitespaces trimed by Citations.
-        if (codeSpace != null) {
-            final int length = codeSpace.length();
-            if (length != 0) {
-                int i = 0;
-                do {
-                    final int c = codeSpace.charAt(i);
-                    if (!Character.isLetterOrDigit(c)) {
-                        return null;
-                    }
-                    i += Character.charCount(c);
-                } while (i < length);
-                return codeSpace;
-            }
-        }
-        return null;
     }
 
     /**
@@ -589,12 +559,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     protected String formatTo(final Formatter formatter) {
         String keyword = null;
         if (code != null) {
-            String citation = Citations.getIdentifier(authority);
-            String cs = codeSpace;
-            if (cs == null) {
-                cs = citation;
-                citation  = null;
-            }
+            final String cs = (codeSpace != null) ? codeSpace : getUnicodeIdentifier(authority);
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
@@ -608,6 +573,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                     if (version != null) {
                         appendCode(formatter, version);
                     }
+                    final String citation = org.apache.sis.internal.util.Citations.getIdentifier(authority, false);
                     if (citation != null && !citation.equals(cs)) {
                         formatter.append(new Cite(citation));
                     }

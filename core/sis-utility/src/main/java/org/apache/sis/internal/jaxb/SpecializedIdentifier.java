@@ -196,7 +196,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getIdentifier(authority);
+        return Citations.getUnicodeIdentifier(authority);
     }
 
     /**
@@ -264,7 +264,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * Formats the given (authority, code) par value in the given buffer.
      */
     static void format(final StringBuilder buffer, final Citation authority, final String code) {
-        buffer.append(Citations.getIdentifier(authority)).append('=');
+        buffer.append(Citations.getIdentifier(authority, false)).append('=');
         final boolean quote = (code != null) && (code.indexOf('[') < 0);
         if (quote) buffer.append('“');
         buffer.append(code);
