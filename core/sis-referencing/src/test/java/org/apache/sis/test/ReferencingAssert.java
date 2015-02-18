@@ -16,21 +16,29 @@
  */
 package org.apache.sis.test;
 
+import java.util.Collection;
+import java.util.Set;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import javax.measure.unit.Unit;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.opengis.util.GenericName;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.internal.referencing.HardCoded;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 import static java.lang.StrictMath.*;
 
@@ -41,7 +49,7 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public strictfp class ReferencingAssert extends MetadataAssert {
@@ -54,6 +62,40 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * For subclass constructor only.
      */
     protected ReferencingAssert() {
+    }
+
+    /**
+     * Asserts that the string representation of the unique identifier of the given object is equals to the given
+     * EPSG code. As a special case if the given code is 0, then this method verifies that the given object has no
+     * identifier.
+     *
+     * @param code   The expected EPSG code, or {@code 0} if we expect no EPSG code.
+     * @param object The object for which to test the EPSG code.
+     */
+    public static void assertIdentifierEqualsEPSG(final int code, final IdentifiedObject object) {
+        final Set<Identifier> identifiers = object.getIdentifiers();
+        if (code == 0) {
+            assertTrue("identifiers.isEmpty()", identifiers.isEmpty());
+        } else {
+            assertEquals("identifier", HardCoded.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code,
+                    IdentifiedObjects.toString(TestUtilities.getSingleton(identifiers)));
+        }
+    }
+
+    /**
+     * Asserts that the tip of the unique alias of the given object is equals to the expected value.
+     * As a special case if the expected value is null, then this method verifies that the given object has no alias.
+     *
+     * @param expected The expected alias, or {@code null} if we expect no alias.
+     * @param object   The object for which to test the alias.
+     */
+    public static void assertAliasTipEquals(final String expected, final IdentifiedObject object) {
+        final Collection<GenericName> aliases = object.getAlias();
+        if (expected == null) {
+            assertTrue("aliases.isEmpty()", aliases.isEmpty());
+        } else {
+            assertEquals("alias", expected, TestUtilities.getSingleton(aliases).tip().toString());
+        }
     }
 
     /**

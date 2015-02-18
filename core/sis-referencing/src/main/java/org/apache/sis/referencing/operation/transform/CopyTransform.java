@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -310,7 +309,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.descriptor(srcDim, getTargetDimensions());
     }
 
     /**
@@ -318,7 +317,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(getMatrix());
     }
 
     /**

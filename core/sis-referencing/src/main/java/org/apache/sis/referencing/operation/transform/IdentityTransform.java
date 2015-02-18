@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -134,7 +133,7 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.descriptor(dimension, dimension);
     }
 
     /**
@@ -144,7 +143,7 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(getMatrix());
     }
 
     /**

@@ -27,6 +27,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Numbers;
 
@@ -53,17 +54,17 @@ final class TypeNames {
     private static final Map<String,Class<?>> MAPPING = new LinkedHashMap<>(16);
     static {
         final Map<String,Class<?>> m = MAPPING;
-        m.put("URI",                URI.class);
-        m.put("DateTime",           Date.class);
-        m.put("PT_Locale",          Locale.class);
-        m.put("Boolean",            Boolean.class);  // Used as a sentinel value for stopping iteration.
+        m.put("URI",       URI.class);
+        m.put("DateTime",  Date.class);
+        m.put("PT_Locale", Locale.class);
+        m.put("Boolean",   Boolean.class);  // Used as a sentinel value for stopping iteration.
 
         // Entries below this point are handled in a special way.
-        m.put("FreeText",           InternationalString.class);
-        m.put("CharacterString",    String.class);
-        m.put("Real",               Double.class);
-        m.put("Decimal",            Double.class);
-        m.put("Integer",            Integer.class);
+        m.put("FreeText",        InternationalString.class);
+        m.put("CharacterString", String.class);
+        m.put("Real",            Double.class);
+        m.put("Decimal",         Double.class);
+        m.put("Integer",         Integer.class);
     };
 
     /**
@@ -80,7 +81,7 @@ final class TypeNames {
      * Creates a new factory of type names.
      */
     TypeNames(final NameFactory factory) {
-        ogcNS   = factory.createNameSpace(factory.createLocalName(null, "OGC"),   null);
+        ogcNS   = factory.createNameSpace(factory.createLocalName(null, Citations.OGC), null);
         classNS = factory.createNameSpace(factory.createLocalName(null, "class"), null);
     }
 
@@ -157,7 +158,7 @@ final class TypeNames {
      */
     static Class<?> toClass(final String namespace, final String name) throws ClassNotFoundException {
         Class<?> c;
-        if (namespace == null || namespace.equalsIgnoreCase("OGC")) {
+        if (namespace == null || namespace.equalsIgnoreCase(Citations.OGC)) {
             c = MAPPING.get(name);
             if (c == null) {
                 c = Types.forStandardName(name);

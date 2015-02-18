@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
@@ -33,9 +34,12 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
@@ -53,9 +57,13 @@ import java.util.Objects;
  *
  * <p>Each group of parameters contains the following elements:</p>
  * <ul>
- *   <li>A mandatory parameter for the number of rows ({@code "num_row"} in WKT 1).</li>
- *   <li>A mandatory parameter for the number of columns ({@code "num_col"} in WKT 1).</li>
- *   <li>(<i>etc.</i> for third-order or higher-order tensors).</li>
+ *   <li>Parameters (usually mandatory) for the tensor dimensions:
+ *     <ul>
+ *       <li>number of rows ({@code "num_row"} in WKT 1),</li>
+ *       <li>number of columns ({@code "num_col"} in WKT 1),</li>
+ *       <li><i>etc.</i> for third-order or higher-order tensors.</li>
+ *     </ul>
+ *   </li>
  *   <li>A maximum of {@code num_row} × {@code num_col} × … optional parameters for the matrix or tensor element values.
  *       Parameter names depend on the formatting convention.</li>
  * </ul>
@@ -70,8 +78,26 @@ import java.util.Objects;
  * For a more efficient matrix storage, see {@link org.apache.sis.referencing.operation.matrix.MatrixSIS}.</p>
  *
  * {@section Formatting}
- * The parameters format for a matrix is typically like below:
+ * In the particular case of a tensor of {@linkplain #rank() rank} 2 (i.e. a matrix),
+ * the parameters are typically formatted as below. Note that in the EPSG convention,
+ * the matrix is implicitly {@linkplain Matrices#isAffine affine} and of dimension 3×3.
  *
+ * <table class="sis">
+ *   <caption>Well Known Text format for a matrix</caption>
+ * <tr>
+ *   <th>Using EPSG names</th>
+ *   <th>Using OGC names</th>
+ * </tr>
+ * <tr><td>
+ * {@preformat wkt
+ *   Parameter["A0", <value>, ID["EPSG",8623]],
+ *   Parameter["A1", <value>, ID["EPSG",8624]],
+ *   Parameter["A2", <value>, ID["EPSG",8625]],
+ *   Parameter["B0", <value>, ID["EPSG",8639]],
+ *   Parameter["B1", <value>, ID["EPSG",8640]],
+ *   Parameter["B2", <value>, ID["EPSG",8641]]
+ * }
+ * </td><td>
  * {@preformat wkt
  *   Parameter["num_row", 3],
  *   Parameter["num_col", 3],
@@ -84,6 +110,11 @@ import java.util.Objects;
  *   ...
  *   Parameter["elt_<num_row-1>_<num_col-1>", <value>]
  * }
+ * </td></tr></table>
+ *
+ * <div class="note"><b>Note:</b>
+ * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
+ * but they are for polynomial transformations, not affine transformations.</div>
  *
  * Those groups are extensible, i.e. the number of <code>"elt_<var>row</var>_<var>col</var>"</code> parameters
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
@@ -91,7 +122,7 @@ import java.util.Objects;
  *
  * {@section Usage}
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
- * on can use the following code:
+ * one can use the following code:
  *
  * {@preformat java
  *   Map<String,?> properties = Collections.singletonMap("name", "My operation");
@@ -102,10 +133,9 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
-@SuppressWarnings("unchecked")
 public class TensorParameters<E> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -113,17 +143,40 @@ public class TensorParameters<E> implements Serializable {
     private static final long serialVersionUID = -7386537348359343836L;
 
     /**
-     * Parses and creates parameters names for matrices matching the
+     * Parses and creates matrix parameters with names matching the <cite>"Affine parametric transformation"</cite>
+     * (EPSG:9624) operation method. The matrix size is 3×3 and the parameter names are {@code "A0"}, {@code "A1"},
+     * {@code "A2"}, {@code "B0"}, {@code "B1"} and {@code "B2"} where:
+     *
+     * <ul>
+     *   <li>the letter indicates the row (first row is {@code "A"}),
+     *   <li>the digit is the column index (first column is {@code "0"}).</li>
+     * </ul>
+     *
+     * This implementation accepts also parameters for matrix of different size (for example {@code "C4"} for row 3
+     * and column 4), but such extensions are not official EPSG parameter names.
+     *
+     * <p>If addition, each parameter accepts also the {@link WKT1} name (e.g. {@code "elt_1_2"})
+     * as an {@linkplain ParameterDescriptor#getAlias() alias}.</p>
+     *
+     * @since 0.6
+     */
+    public static final TensorParameters<Double> EPSG;
+
+    /**
+     * Parses and creates matrix parameters with names matching the
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text</a>
      * version 1 (WKT 1) convention.
      *
      * <ul>
      *   <li>First parameter is {@code "num_row"}.</li>
      *   <li>Second parameter is {@code "num_col"}.</li>
-     *   <li>All other parameters are of the form <code>"elt_<var>row</var>_<var>col</var>"</code>.</li>
+     *   <li>All other parameters are of the form <code>"elt_</code><var>row</var><code>_</code><var>col</var><code>"</code>.
+     *       Those parameters have alias of the form {@code "A0"}, {@code "A1"}, <i>etc.</i> where the letter indicates
+     *       the row (first row is {@code "A"}) and the digit is the column index (first column is {@code "0"}).</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b> {@code "elt_2_1"} is the element name for the value at line 2 and row 1.</div>
+     * <div class="note"><b>Example:</b> {@code "elt_1_2"} is the element name for the value at row 1 and column 2.
+     * Its alias is {@code "B2"}, which is the EPSG name for the same parameter.</div>
      */
     public static final TensorParameters<Double> WKT1;
     static {
@@ -135,15 +188,29 @@ public class TensorParameters<E> implements Serializable {
          *       elements.
          */
         final NumberRange<Integer> valueDomain = NumberRange.create(1, true, 50, true);
-        final Integer defaultSize = 3;
-        final ParameterDescriptor<Integer> numRow, numCol;
+        final Integer defaultSize = Affine.EPSG_DIMENSION + 1;
+        /*
+         * For the WKT1 convention, the "num_row" and "num_col" parameters are mandatory.
+         */
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
         properties.put(Identifier.CODE_KEY, "num_row");
-        numRow = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
+        ParameterDescriptor<Integer> numRow = new DefaultParameterDescriptor<>(
+                properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         properties.put(Identifier.CODE_KEY, "num_col");
-        numCol = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        WKT1 = new TensorParameters<>(Double.class, "elt_", "_", numRow, numCol);
+        ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<>(
+                properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
+        WKT1 = new MatrixParameters("elt_", "_", numRow, numCol);
+        /*
+         * For the EPSG convention, there is no "num_row" or "num_col" parameters since the matrix
+         * size if fixed to 3×3. However since we still need them, we will declare them as optional
+         * and we will hide them from the descriptor unless the matrix size is different than 3×3.
+         */
+        numRow = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numRow),
+                0, 1, Integer.class, valueDomain, null, defaultSize);
+        numCol = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numCol),
+                0, 1, Integer.class, valueDomain, null, defaultSize);
+        EPSG = new MatrixParameters("", "", numRow, numCol);
     }
 
     /**
@@ -207,7 +274,7 @@ public class TensorParameters<E> implements Serializable {
      *                    Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
     {
@@ -235,7 +302,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> ParameterDescriptor<T>[] createCache() {
         if (Number.class.isAssignableFrom(elementType)) try {
             one  = (E) Numbers.wrap(1, (Class) elementType);
@@ -265,10 +332,10 @@ public class TensorParameters<E> implements Serializable {
      *
      * <table class="sis">
      *   <caption>Tensor types implied by rank</caption>
-     *   <tr><th>Rank</th> <th>Type</th></tr>
-     *   <tr><td>0</td>    <td>scalar</td></tr>
-     *   <tr><td>1</td>    <td>vector</td></tr>
-     *   <tr><td>2</td>    <td>matrix</td></tr>
+     *   <tr><th>Rank</th> <th>Type</th>   <th>Used with</th></tr>
+     *   <tr><td>0</td>    <td>scalar</td> <td></td></tr>
+     *   <tr><td>1</td>    <td>vector</td> <td></td></tr>
+     *   <tr><td>2</td>    <td>matrix</td> <td>Affine general parametric transformation</td></tr>
      *   <tr><td><var>k</var></td><td>rank <var>k</var> tensor</td></tr>
      * </table>
      *
@@ -352,47 +419,41 @@ public class TensorParameters<E> implements Serializable {
      * This method is invoked by {@link #getElementDescriptor(int[])} when a new descriptor needs
      * to be created.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation converts the given indices to a parameter name by invoking the
      * {@link #indicesToName(int[])} method, then creates a descriptor for an optional parameter
-     * of that name.
+     * of that name. The default value is given by {@link #getDefaultValue(int[])}.
      *
-     * {@section Subclassing}
+     * <p><b>Subclassing</b></p>
      * Subclasses can override this method if they want more control on descriptor properties
-     * like identification information, value domain and default values.
+     * like identification information, aliases or value domain.
      *
      * @param  indices The indices of the tensor element for which to create a parameter.
      * @return The parameter descriptor for the given tensor element.
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      *
      * @see #indicesToName(int[])
-     * @see #nameToIndices(String)
+     * @see #getDefaultValue(int[])
      */
     protected ParameterDescriptor<E> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        boolean isDiagonal = true;
-        for (int i=1; i<indices.length; i++) {
-            if (indices[i] != indices[i-1]) {
-                isDiagonal = false;
-                break;
-            }
-        }
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(Identifier.CODE_KEY, indicesToName(indices));
-        properties.put(Identifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
-        return new DefaultParameterDescriptor<>(properties, 0, 1, elementType, null, null, isDiagonal ? one : zero);
+        final Citation authority = dimensions[0].getName().getAuthority();
+        final String name = indicesToName(indices);
+        return new DefaultParameterDescriptor<>(
+                Collections.singletonMap(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
+                0, 1, elementType, null, null, getDefaultValue(indices));
     }
 
     /**
      * Returns the parameter descriptor name of a matrix or tensor element at the given indices.
      * The returned name shall be parsable by the {@link #nameToIndices(String)} method.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
      * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
      * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
      * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
      *
-     * {@section Subclassing}
+     * <p><b>Subclassing</b></p>
      * If a subclass overrides this method for creating different names, then that subclass shall
      * also override {@link #nameToIndices(String)} for parsing those names.
      *
@@ -418,7 +479,7 @@ public class TensorParameters<E> implements Serializable {
      * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
      * This method is the converse of {@link #indicesToName(int[])}.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation expects a name matching the “{@link #prefix} + <var>row</var> + {@link #separator} +
      * <var>column</var> + …” pattern and returns an array containing the <var>row</var>, <var>column</var> and other
      * indices, in that order.
@@ -445,6 +506,26 @@ public class TensorParameters<E> implements Serializable {
         }
         indices[last] = Integer.parseInt(name.substring(s));
         return indices;
+    }
+
+    /**
+     * Returns the default value for the parameter descriptor at the given indices.
+     * The default implementation returns 1 if all indices are equals, or 0 otherwise.
+     *
+     * @param  indices The indices of the tensor element for which to get the default value.
+     * @return The default value for the tensor element at the given indices, or {@code null} if none.
+     *
+     * @see DefaultParameterDescriptor#getDefaultValue()
+     *
+     * @since 0.6
+     */
+    protected E getDefaultValue(final int[] indices) {
+        for (int i=1; i<indices.length; i++) {
+            if (indices[i] != indices[i-1]) {
+                return zero;
+            }
+        }
+        return one;
     }
 
     /**

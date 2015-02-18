@@ -42,6 +42,16 @@ public final class HardCoded extends Static {
     /**
      * The {@value} code space.
      */
+    public static final String SIS = "SIS";
+
+    /**
+     * The {@value} code space.
+     */
+    public static final String OGC = Citations.OGC;
+
+    /**
+     * The {@value} code space.
+     */
     public static final String CRS = "CRS";
 
     /**
@@ -58,6 +68,18 @@ public final class HardCoded extends Static {
      * The {@code CRS:84} identifier for a coordinate reference system.
      */
     public static final byte CRS84 = 84;
+
+    /**
+     * EPSG code of the {@code A0} coefficient used in affine (general parametric) and polynomial transformations.
+     * Codes for parameters {@code A1} to {@code A8} inclusive follow, but the affine coefficients stop at {@code A2}.
+     */
+    public static final short A0 = 8623;
+
+    /**
+     * EPSG code of the {@code B0} coefficient used in affine (general parametric) and polynomial transformations.
+     * Codes for parameters {@code B1} to {@code B3} inclusive follow, but the affine coefficients stop at {@code B2}.
+     */
+    public static final short B0 = 8639;
 
     /**
      * Do not allow instantiation of this class.

@@ -45,10 +45,15 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Citations extends Static {
+    /**
+     * The {@value} code space.
+     */
+    public static final String OGC = "OGC";
+
     /**
      * The {@value} code space.
      */

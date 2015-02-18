@@ -50,7 +50,7 @@ import java.util.function.Function;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -58,6 +58,24 @@ public final class CollectionsExt extends Static {
      * Do not allow instantiation of this class.
      */
     private CollectionsExt() {
+    }
+
+    /**
+     * Returns the first element of the given iterable, or {@code null} if none.
+     * This method is null-safe. Note that the first element may be null.
+     *
+     * @param  <T> The type of elements contained in the iterable.
+     * @param  collection The iterable from which to get the first element, or {@code null}.
+     * @return The first element, or {@code null} if the given iterable is null or empty.
+     */
+    public static <T> T first(final Iterable<T> collection) {
+        if (collection != null) {
+            final Iterator<T> it = collection.iterator();
+            if (it != null && it.hasNext()) { // This check for null is paranoiac.
+                return it.next();
+            }
+        }
+        return null;
     }
 
     /**
