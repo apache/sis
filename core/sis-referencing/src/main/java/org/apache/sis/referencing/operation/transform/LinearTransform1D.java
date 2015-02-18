@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 
@@ -116,7 +115,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.descriptor(1, 1);
     }
 
     /**
@@ -128,7 +127,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(getMatrix());
     }
 
     /**

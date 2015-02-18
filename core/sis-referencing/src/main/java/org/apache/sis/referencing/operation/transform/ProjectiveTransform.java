@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -152,7 +151,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.descriptor(getSourceDimensions(), getTargetDimensions());
     }
 
     /**
@@ -163,7 +162,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(getMatrix());
     }
 
     /**
