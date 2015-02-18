@@ -79,7 +79,7 @@ public final class Citations extends Static {
 
     /**
      * Returns a "unlocalized" string representation of the given international string,
-     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation)},
+     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation, boolean)},
      * which is why we don't want the localized string.
      */
     private static String toString(final InternationalString title) {
@@ -291,10 +291,11 @@ public final class Citations extends Static {
      * Null references, empty character sequences and sequences of whitespaces only are ignored.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
+     * @param  strict {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
      * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
-    public static String getIdentifier(final Citation citation) {
+    public static String getIdentifier(final Citation citation, final boolean strict) {
         boolean isUnicode = false; // Whether 'identifier' is a Unicode identifier.
         String identifier = null;
         if (citation != null) {
@@ -343,6 +344,73 @@ public final class Citations extends Static {
                         }
                     }
                 }
+            }
+        }
+        return (isUnicode || !strict) ? identifier : null;
+    }
+
+    /**
+     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
+     * This method performs the following actions:
+     *
+     * <ul>
+     *   <li>First, invoke {@link #getIdentifier(Citation, boolean)}.</li>
+     *   <li>If the result of above method call is {@code null} or is not a
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier valid Unicode identifier},
+     *       then return {@code null}.</li>
+     *   <li>Otherwise remove the {@linkplain Character#isIdentifierIgnorable(int) ignorable identifier characters},
+     *       if any. Then:
+     *       <ul>
+     *         <li>If the result is an empty string, returns {@code null}.</li>
+     *         <li>Otherwise returns the result.</li>
+     *       </ul>
+     *   </li>
+     * </ul>
+     *
+     * If non-null, the result is suitable for use as a XML identifier except for rarely used characters
+     * (‘{@code µ}’, ‘{@code ª}’ (feminine ordinal indicator), ‘{@code º}’ (masculine ordinal indicator)
+     * and ‘{@code ⁔}’).
+     *
+     * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
+     * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @since 0.6
+     */
+    public static String getUnicodeIdentifier(final Citation citation) {
+        final String identifier = getIdentifier(citation, true);
+        if (identifier != null) {
+            /*
+             * First perform a quick check to see if there is any ignorable characters.
+             * We make this check because those characters are valid according Unicode
+             * but not according XML. However there is usually no such characters, so
+             * we will avoid the StringBuilder creation in the vast majority of times.
+             *
+             * Note that 'µ' and its friends are not ignorable, so we do not remove them.
+             * This method is "getUnicodeIdentifier", not "getXmlIdentifier".
+             */
+            final int length = identifier.length();
+            for (int i=0; i<length;) {
+                int c = identifier.codePointAt(i);
+                int n = Character.charCount(c);
+                if (Character.isIdentifierIgnorable(c)) {
+                    /*
+                     * Found an ignorable character. Create the buffer and copy non-ignorable characters.
+                     * Following algorithm is inefficient, since we fill the buffer character-by-character
+                     * (a more efficient approach would be to perform bulk appends). However we presume
+                     * that this block will be rarely executed, so it is not worth to optimize it.
+                     */
+                    final StringBuilder buffer = new StringBuilder(length - n).append(identifier, 0, i);
+                    while ((i += n) < length) {
+                        c = identifier.codePointAt(i);
+                        n = Character.charCount(c);
+                        if (!Character.isIdentifierIgnorable(c)) {
+                            buffer.appendCodePoint(c);
+                        }
+                    }
+                    return (buffer.length() != 0) ? buffer.toString() : null;
+                }
+                i += n;
             }
         }
         return identifier;

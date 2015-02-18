@@ -318,6 +318,10 @@ public final class IdentifiedObjects extends Static {
      *
      * @param  object The identified object, or {@code null}.
      * @return The first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
      */
     public static String getUnicodeIdentifier(final IdentifiedObject object) {
         if (object != null) {
@@ -474,10 +478,10 @@ public final class IdentifiedObjects extends Static {
         }
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
-        if (cs == null) {
-            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority());
+        if (cs == null || cs.isEmpty()) {
+            cs = org.apache.sis.internal.util.Citations.getUnicodeIdentifier(identifier.getAuthority());
         }
-        if (cs != null && !cs.isEmpty()) {
+        if (cs != null) {
             return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
         }
         return code;
