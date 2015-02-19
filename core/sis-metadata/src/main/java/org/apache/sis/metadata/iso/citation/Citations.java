@@ -21,6 +21,7 @@ import org.opengis.referencing.IdentifiedObject;        // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.metadata.iso.DefaultIdentifier;   // For javadoc
 
@@ -60,7 +61,7 @@ public final class Citations extends Static {
      *
      * @category Organization
      */
-    public static final Citation OGC = new SimpleCitation("OGC");
+    public static final Citation OGC = new SimpleCitation(Constants.OGC);
 
     /**
      * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
@@ -146,9 +147,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>(
-            org.apache.sis.internal.util.Citations.EPSG,
-            org.apache.sis.internal.util.Citations.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.EPSG, Constants.EPSG);
 
     /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.

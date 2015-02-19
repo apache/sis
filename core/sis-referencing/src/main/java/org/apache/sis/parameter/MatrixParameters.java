@@ -22,7 +22,8 @@ import java.io.ObjectStreamException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.internal.referencing.HardCoded;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -95,7 +96,41 @@ final class MatrixParameters extends TensorParameters<Double> {
      * are {@code "A0"}, {@code "A1"}, {@code "A2"}, {@code "B0"}, {@code "B1"} and {@code "B2"}.
      */
     private static boolean isEPSG(final int[] indices) {
-        return indices[0] < 2 && indices[1] < 3;
+        return indices[0] <  Affine.EPSG_DIMENSION &&
+               indices[1] <= Affine.EPSG_DIMENSION;   // Include translation column.
+    }
+
+    /**
+     * Returns 0 if the dimension parameters ({@code "num_row"} and {@code "num_col"}) shall be hidden.
+     * Those parameters need to be hidden for the EPSG:9624 operation method, since the EPSG database
+     * does not define those parameters.
+     */
+    @Override
+    final int numDimensions(final int[] actualSize) {
+        if (isEPSG() && actualSize[0] == Affine.EPSG_DIMENSION + 1
+                     && actualSize[1] == Affine.EPSG_DIMENSION + 1)
+        {
+            return 0;
+        }
+        return super.numDimensions(actualSize);
+    }
+
+    /**
+     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors for a tensor
+     * of the given size.  This is the total number of elements in the tensor, except for matrices which are intended
+     * to be affine (like {@link #EPSG}) where the last row is omitted.
+     */
+    @Override
+    final int numElements(final int[] actualSize) {
+        int numRow = actualSize[0];
+        int numCol = actualSize[1];
+        assert super.numElements(actualSize) == (numRow * numCol);
+        if (isEPSG() && numRow == Affine.EPSG_DIMENSION + 1
+                     && numCol == Affine.EPSG_DIMENSION + 1)
+        {
+            numRow--; // Ommit last row of an affine matrix.
+        }
+        return numRow * numCol;
     }
 
     /**
@@ -204,17 +239,17 @@ final class MatrixParameters extends TensorParameters<Double> {
              * For the WKT1 convention, create an alias matching the EPSG pattern ("A0", "A1", etc.) for all
              * indices but declare the EPSG authority and identifier only for A0, A1, A2, B0, B1 and B2.
              */
-            name = new NamedIdentifier(Citations.OGC, HardCoded.OGC, super.indicesToName(indices), null, null);
+            name = new NamedIdentifier(Citations.OGC, Constants.OGC, super.indicesToName(indices), null, null);
             final Citation authority;
             final String codeSpace;
             if (isEPSG(indices)) {
                 authority = Citations.OGP;
-                codeSpace = HardCoded.EPSG;
-                final int code = (indices[0] == 0 ? HardCoded.A0 : HardCoded.B0) + indices[1];
+                codeSpace = Constants.EPSG;
+                final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
                 identifier = new ImmutableIdentifier(authority, codeSpace, String.valueOf(code));
             } else {
                 authority  = Citations.SIS;
-                codeSpace  = HardCoded.SIS;
+                codeSpace  = Constants.SIS;
                 identifier = null;
             }
             final String c = indicesToAlias(indices);

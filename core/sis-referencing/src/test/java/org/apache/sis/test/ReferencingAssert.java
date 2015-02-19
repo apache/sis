@@ -34,9 +34,9 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.internal.referencing.HardCoded;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
@@ -77,7 +77,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         if (code == 0) {
             assertTrue("identifiers.isEmpty()", identifiers.isEmpty());
         } else {
-            assertEquals("identifier", HardCoded.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code,
+            assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code,
                     IdentifiedObjects.toString(TestUtilities.getSingleton(identifiers)));
         }
     }

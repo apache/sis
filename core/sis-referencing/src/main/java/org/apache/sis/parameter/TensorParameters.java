@@ -40,6 +40,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
@@ -126,7 +127,7 @@ import java.util.Objects;
  * one can use the following code:
  *
  * {@preformat java
- *   Map<String,?> properties = Collections.singletonMap("name", "My operation");
+ *   Map<String,?> properties = Collections.singletonMap(ParameterValueGroup.NAME_KEY, "Affine");
  *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
  * }
  *
@@ -136,6 +137,8 @@ import java.util.Objects;
  * @since   0.4
  * @version 0.6
  * @module
+ *
+ * @see MatrixSIS
  */
 public class TensorParameters<E> implements Serializable {
     /**
@@ -156,7 +159,7 @@ public class TensorParameters<E> implements Serializable {
      * This implementation accepts also parameters for matrix of different size (for example {@code "C4"} for row 3
      * and column 4), but such extensions are not official EPSG parameter names.
      *
-     * <p>If addition, each parameter accepts also the {@link WKT1} name (e.g. {@code "elt_1_2"})
+     * <p>In addition, each parameter accepts also the {@link WKT1} name (e.g. {@code "elt_1_2"})
      * as an {@linkplain ParameterDescriptor#getAlias() alias}.</p>
      *
      * @since 0.6
@@ -195,10 +198,10 @@ public class TensorParameters<E> implements Serializable {
          */
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
-        properties.put(Identifier.CODE_KEY, "num_row");
+        properties.put(Identifier.CODE_KEY, Constants.NUM_ROW);
         ParameterDescriptor<Integer> numRow = new DefaultParameterDescriptor<>(
                 properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        properties.put(Identifier.CODE_KEY, "num_col");
+        properties.put(Identifier.CODE_KEY, Constants.NUM_COL);
         ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<>(
                 properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
         WKT1 = new MatrixParameters("elt_", "_", numRow, numCol);
@@ -312,7 +315,7 @@ public class TensorParameters<E> implements Serializable {
             // Ignore - zero and one will be left to null.
         }
         int length = 1;
-        for (int i = Math.min(dimensions.length, CACHE_RANK); --i >= 0;) {
+        for (int i = Math.min(rank(), CACHE_RANK); --i >= 0;) {
             length *= CACHE_SIZE;
         }
         return new ParameterDescriptor[length];
@@ -463,9 +466,9 @@ public class TensorParameters<E> implements Serializable {
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      */
     protected String indicesToName(final int[] indices) throws IllegalArgumentException {
-        if (indices.length != dimensions.length) {
+        if (indices.length != rank()) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, dimensions.length, indices.length));
+                    Errors.Keys.UnexpectedArrayLength_2, rank(), indices.length));
         }
         final StringBuilder name = new StringBuilder();
         String s = prefix;
@@ -495,7 +498,7 @@ public class TensorParameters<E> implements Serializable {
         if (!name.regionMatches(true, 0, prefix, 0, s)) {
             return null;
         }
-        final int[] indices = new int[dimensions.length];
+        final int[] indices = new int[rank()];
         final int last = indices.length - 1;
         for (int i=0; i<last; i++) {
             final int split = name.indexOf(separator, s);
@@ -581,6 +584,28 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
+     * Returns the number of dimensions (e.g. {@code "num_row"} and {@code "num_col"}) when formatting the parameter
+     * descriptors for a tensor of the given size. This is the {@linkplain #rank() rank}, except in the special case
+     * of {@link #EPSG} with a matrix size matching the expectation of the standard EPSG:9624 operation method.
+     */
+    int numDimensions(final int[] actualSize) {
+        return actualSize.length;
+    }
+
+    /**
+     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors for a tensor
+     * of the given size.  This is the total number of elements in the tensor, except for matrices which are intended
+     * to be affine (like {@link #EPSG}) where the last row is omitted.
+     */
+    int numElements(final int[] actualSize) {
+        int n = actualSize[0];
+        for (int i=1; i<actualSize.length; i++) {
+            n *= actualSize[i];
+        }
+        return n;
+    }
+
+    /**
      * Returns all parameters in this group for a tensor of the specified dimensions.
      *
      * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
@@ -588,21 +613,19 @@ public class TensorParameters<E> implements Serializable {
      * @return The matrix parameters, including all elements.
      */
     final List<GeneralParameterDescriptor> descriptors(final int[] actualSize) {
-        final int rank = dimensions.length; // 2 for a matrix, may be higher for a tensor.
-        int length = actualSize[0];
-        for (int i=1; i<rank; i++) {
-            length *= actualSize[i];
-        }
-        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[rank + length];
-        System.arraycopy(dimensions, 0, parameters, 0, rank);
-        final int[] indices = new int[rank];
+        assert actualSize.length == rank();
+        final int numDimensions = numDimensions(actualSize);
+        final int numElements   = numElements(actualSize);
+        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[numDimensions + numElements];
+        System.arraycopy(dimensions, 0, parameters, 0, numDimensions);
+        final int[] indices = new int[rank()];
         /*
          * Iterates on all possible index values. Indes on the right side (usually the column index)
          * will vary faster, and index on the left side (usually the row index) will vary slowest.
          */
-        for (int i=0; i<length; i++) {
-            parameters[rank + i] = getElementDescriptor(indices);
-            for (int j=rank; --j >= 0;) {
+        for (int i=0; i<numElements; i++) {
+            parameters[numDimensions + i] = getElementDescriptor(indices);
+            for (int j=indices.length; --j >= 0;) {
                 if (++indices[j] < actualSize[j]) {
                     break;
                 }
@@ -666,7 +689,7 @@ public class TensorParameters<E> implements Serializable {
      * @return A new parameter group initialized to the given matrix.
      */
     public ParameterValueGroup createValueGroup(final Map<String,?> properties, final Matrix matrix) {
-        if (dimensions.length != 2) {
+        if (rank() != 2) {
             throw new IllegalStateException();
         }
         ArgumentChecks.ensureNonNull("matrix", matrix);
@@ -684,7 +707,7 @@ public class TensorParameters<E> implements Serializable {
      * @throws InvalidParameterNameException if a parameter name was not recognized.
      */
     public Matrix toMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
-        if (dimensions.length != 2) {
+        if (rank() != 2) {
             throw new IllegalStateException();
         }
         ArgumentChecks.ensureNonNull("parameters", parameters);

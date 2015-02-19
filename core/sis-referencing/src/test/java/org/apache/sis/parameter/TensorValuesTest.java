@@ -26,6 +26,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -54,8 +55,15 @@ public final strictfp class TensorValuesTest extends TestCase {
     /**
      * Creates an instance for a matrix using the WKT 1 conventions.
      */
-    private static ParameterValueGroup create() {
+    private static ParameterValueGroup createWKT1() {
         return TensorParameters.WKT1.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
+    }
+
+    /**
+     * Creates an instance for a matrix using the EPSG conventions.
+     */
+    private static ParameterValueGroup createEPSG() {
+        return TensorParameters.EPSG.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
     }
 
     /**
@@ -86,14 +94,14 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
-     * Tests {@link TensorValues#descriptors()}.
+     * Tests {@link TensorValues#descriptors()} using WKT1 contentions.
      */
     @Test
-    public void testDescriptors() {
+    public void testDescriptorsWKT1() {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
-        final ParameterValueGroup group = create();
+        final ParameterValueGroup group = createWKT1();
 
         group.parameter("num_row").setValue(1);
         group.parameter("num_col").setValue(1);
@@ -118,12 +126,48 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
+     * Tests {@link TensorValues#descriptors()} using EPSG contentions.
+     */
+    @Test
+    public void testDescriptorsEPSG() {
+        final Integer N3 = 3;
+        final ParameterValueGroup group = createEPSG();
+        List<GeneralParameterDescriptor> descriptors = group.getDescriptor().descriptors();
+        verifyDescriptorsEPSG(descriptors, 0);
+        /*
+         * Use non-standard matrix size. The "num_row" and "num_col"
+         * parameters shall be included in the list of descriptors.
+         */
+        group.parameter("num_row").setValue(2);
+        descriptors = group.getDescriptor().descriptors();
+        assertDescriptorEquals("num_row", N3, descriptors.get(0));
+        assertDescriptorEquals("num_col", N3, descriptors.get(1));
+        verifyDescriptorsEPSG(descriptors, 2);
+    }
+
+    /**
+     * Verifies that all remaining elements in the given descriptors, starting at index <var>i</var>,
+     * are A0, A1, A2, B0, B1, B1 parameters.
+     */
+    private static void verifyDescriptorsEPSG(final List<GeneralParameterDescriptor> descriptors, int i) {
+        final Double N0 = 0.0;
+        final Double N1 = 1.0;
+        assertDescriptorEquals("A0", N1, descriptors.get(i++));
+        assertDescriptorEquals("A1", N0, descriptors.get(i++));
+        assertDescriptorEquals("A2", N0, descriptors.get(i++));
+        assertDescriptorEquals("B0", N0, descriptors.get(i++));
+        assertDescriptorEquals("B1", N1, descriptors.get(i++));
+        assertDescriptorEquals("B2", N0, descriptors.get(i++));
+        assertEquals("size", i, descriptors.size());
+    }
+
+    /**
      * Tests {@link TensorValues#values()}.
      */
     @Test
     @DependsOnMethod("testParameter")
     public void testValues() {
-        final ParameterValueGroup group = create();
+        final ParameterValueGroup group = createWKT1();
         group.parameter("num_row").setValue(2);
         group.parameter("num_col").setValue(3);
         List<GeneralParameterValue> values = group.values();
@@ -155,7 +199,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
-        final ParameterValueGroup group = create();
+        final ParameterValueGroup group = createWKT1();
         final ParameterDescriptorGroup d = group.getDescriptor();
         assertDescriptorEquals("num_row", N3, d.descriptor("num_row"));
         assertDescriptorEquals("num_col", N3, d.descriptor("num_col"));
@@ -203,7 +247,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
-        final ParameterValueGroup group = create();
+        final ParameterValueGroup group = createWKT1();
         assertValueEquals("num_row", N3, group.parameter("num_row"));
         assertValueEquals("num_col", N3, group.parameter("num_col"));
         assertValueEquals("elt_0_0", N1, group.parameter("elt_0_0"));
@@ -244,7 +288,7 @@ public final strictfp class TensorValuesTest extends TestCase {
     @Test
     @DependsOnMethod("testParameter")
     public void testClone() {
-        final ParameterValueGroup group = create();
+        final ParameterValueGroup group = createWKT1();
         group.parameter("num_row").setValue(2);
         group.parameter("elt_0_1").setValue(4);
         group.parameter("elt_1_0").setValue(2);
@@ -267,28 +311,40 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
-     * Tests WKT formatting.
+     * Tests WKT 1 formatting.
+     * <ul>
+     *   <li>Group name shall be {@code "Affine"}.</li>
+     *   <li>Parameters {@code "num_row"} and {@code "num_col"} are mandatory.</li>
+     *   <li>Parameter names shall be of the form {@code "elt_0_0"}.</li>
+     *   <li>No identifier.</li>
+     * </ul>
      */
     @Test
-    public void testWKT() {
+    public void testWKT1() {
         final Matrix matrix = Matrices.createIdentity(4);
         matrix.setElement(0,2,  4);
         matrix.setElement(1,0, -2);
         matrix.setElement(2,3,  7);
-        final ParameterValueGroup group = TensorParameters.WKT1
-                .createValueGroup(singletonMap(TensorValues.NAME_KEY, "Affine"), matrix);
+        final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
+                singletonMap(TensorValues.NAME_KEY, "Affine"), matrix);
         validate(group);
-        assertWktEquals(
-                "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 4],\n"    +
-                "  Parameter[“num_col”, 4],\n"    +
-                "  Parameter[“elt_0_2”, 4.0],\n"  +
-                "  Parameter[“elt_1_0”, -2.0],\n" +
-                "  Parameter[“elt_2_3”, 7.0]]", group);
+        assertWktEquals(Convention.WKT1,
+                "PARAMETERGROUP[“Affine”,\n"      +
+                "  PARAMETER[“num_row”, 4],\n"    +
+                "  PARAMETER[“num_col”, 4],\n"    +
+                "  PARAMETER[“elt_0_2”, 4.0],\n"  +
+                "  PARAMETER[“elt_1_0”, -2.0],\n" +
+                "  PARAMETER[“elt_2_3”, 7.0]]", group);
     }
 
     /**
-     * Tests WKT formatting using EPSG parameter names.
+     * Tests WKT 2 formatting using EPSG parameter names.
+     * <ul>
+     *   <li>Group name shall be {@code "Affine general parametric transformation"}.</li>
+     *   <li>No {@code "num_row"} or {@code "num_col"} parameters.</li>
+     *   <li>Parameter names shall be of the form {@code "A0"}.</li>
+     *   <li>Identifiers present, but only for A0-A2 and B0-B2.</li>
+     * </ul>
      */
     @Test
     public void testWKT2() {
@@ -296,15 +352,13 @@ public final strictfp class TensorValuesTest extends TestCase {
         matrix.setElement(0,2,  4);
         matrix.setElement(1,0, -2);
         matrix.setElement(2,1,  7);
-        final ParameterValueGroup group = TensorParameters.EPSG
-                .createValueGroup(singletonMap(TensorValues.NAME_KEY, "Affine"), matrix);
+        final ParameterValueGroup group = TensorParameters.EPSG.createValueGroup(
+                singletonMap(TensorValues.NAME_KEY, "Affine general parametric transformation"), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 3],\n"    +
-                "  Parameter[“num_col”, 3],\n"    +
-                "  Parameter[“A2”, 4.0],\n"  +
-                "  Parameter[“B0”, -2.0],\n" +
+                "ParameterGroup[“Affine general parametric transformation”,\n" +
+                "  Parameter[“A2”, 4.0, Id[“EPSG”, 8625]],\n"  +
+                "  Parameter[“B0”, -2.0, Id[“EPSG”, 8639]],\n" +
                 "  Parameter[“C1”, 7.0]]", group);
     }
 
@@ -313,6 +367,6 @@ public final strictfp class TensorValuesTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        assertSerializedEquals(create());
+        assertSerializedEquals(createWKT1());
     }
 }

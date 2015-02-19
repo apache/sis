@@ -147,8 +147,8 @@ public final strictfp class MatrixParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetElementDescriptor")
     public void testDescriptors() {
-        TensorParametersTest.testDescriptors(TensorParameters.WKT1, TensorParametersTest.ELEMENT_NAMES, NAMES, IDENTIFIERS);
-        TensorParametersTest.testDescriptors(TensorParameters.EPSG, NAMES, TensorParametersTest.ELEMENT_NAMES, IDENTIFIERS);
+        TensorParametersTest.testDescriptors(TensorParameters.WKT1, false, TensorParametersTest.ELEMENT_NAMES, NAMES, IDENTIFIERS);
+        TensorParametersTest.testDescriptors(TensorParameters.EPSG, true,  NAMES, TensorParametersTest.ELEMENT_NAMES, IDENTIFIERS);
     }
 
     /**

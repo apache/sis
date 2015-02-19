@@ -27,7 +27,7 @@ import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Numbers;
 
@@ -81,7 +81,7 @@ final class TypeNames {
      * Creates a new factory of type names.
      */
     TypeNames(final NameFactory factory) {
-        ogcNS   = factory.createNameSpace(factory.createLocalName(null, Citations.OGC), null);
+        ogcNS   = factory.createNameSpace(factory.createLocalName(null, Constants.OGC), null);
         classNS = factory.createNameSpace(factory.createLocalName(null, "class"), null);
     }
 
@@ -158,7 +158,7 @@ final class TypeNames {
      */
     static Class<?> toClass(final String namespace, final String name) throws ClassNotFoundException {
         Class<?> c;
-        if (namespace == null || namespace.equalsIgnoreCase(Citations.OGC)) {
+        if (namespace == null || namespace.equalsIgnoreCase(Constants.OGC)) {
             c = MAPPING.get(name);
             if (c == null) {
                 c = Types.forStandardName(name);

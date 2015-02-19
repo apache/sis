@@ -211,11 +211,11 @@ public final strictfp class TensorParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetElementDescriptor")
     public void testDescriptors() {
-        testDescriptors(WKT1, ELEMENT_NAMES, null, null);
+        testDescriptors(WKT1, false, ELEMENT_NAMES, null, null);
     }
 
     /** Implementation of {@link #testDescriptors()} with user-supplied parameters. */
-    static void testDescriptors(final TensorParameters<Double> WKT1,
+    static void testDescriptors(final TensorParameters<Double> WKT1, final boolean isEPSG,
             final String[][] names, final String[][] aliases, final short[][] identifiers)
     {
         final Double  N0 = 0.0;
@@ -239,22 +239,27 @@ public final strictfp class TensorParametersTest extends TestCase {
         assertEquals("size", 8, descriptors.size());
 
         descriptors = WKT1.descriptors(new int[] {3, 3});
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(1), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get( 2), 0, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 3), 0, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 4), 0, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 5), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get( 6), 1, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 7), 1, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 8), 2, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 9), 2, 1);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(10), 2, 2);
-        assertEquals("size", 11, descriptors.size());
+        int i = 0;
+        if (!isEPSG) {
+            verifyDescriptor(SIZE_NAMES, null, null,  N3, descriptors.get(i++), 0, 0);
+            verifyDescriptor(SIZE_NAMES, null, null,  N3, descriptors.get(i++), 1, 0);
+        }
+        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 0, 0);
+        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 0, 1);
+        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 0, 2);
+        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 1, 0);
+        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 1, 1);
+        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 1, 2);
+        if (!isEPSG) {
+            verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 2, 0);
+            verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 2, 1);
+            verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 2, 2);
+        }
+        assertEquals("size", i, descriptors.size());
 
         descriptors = WKT1.descriptors(new int[] {4, 4});
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(1), 1, 0);
+        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get( 0), 0, 0);
+        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get( 1), 1, 0);
         verifyDescriptor(names, aliases, identifiers, N1, descriptors.get( 2), 0, 0);
         verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 3), 0, 1);
         verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 4), 0, 2);
