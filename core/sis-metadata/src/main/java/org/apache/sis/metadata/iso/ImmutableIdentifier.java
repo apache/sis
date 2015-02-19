@@ -39,7 +39,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Branch-dependent imports
@@ -357,7 +356,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
          */
         value = properties.get(CODESPACE_KEY);
         if (value == null && !properties.containsKey(CODESPACE_KEY)) {
-            codeSpace = getUnicodeIdentifier(authority);
+            codeSpace = org.apache.sis.internal.util.Citations.getUnicodeIdentifier(authority);
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {
@@ -559,7 +558,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     protected String formatTo(final Formatter formatter) {
         String keyword = null;
         if (code != null) {
-            final String cs = (codeSpace != null) ? codeSpace : getUnicodeIdentifier(authority);
+            final String cs = (codeSpace != null) ? codeSpace :
+                    org.apache.sis.internal.util.Citations.getIdentifier(authority, true);
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
