@@ -479,7 +479,7 @@ public final class IdentifiedObjects extends Static {
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
         if (cs == null || cs.isEmpty()) {
-            cs = org.apache.sis.internal.util.Citations.getUnicodeIdentifier(identifier.getAuthority());
+            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
         }
         if (cs != null) {
             return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
