@@ -14,40 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.util;
 
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.util.Citations;
 
 
 /**
  * Hard coded values (typically identifiers).
+ * The set of constants defined in this class may change in any SIS version - do not rely on them.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.6
  * @module
  */
-public final class HardCoded extends Static {
+public final class Constants extends Static {
     /**
      * The {@value} code space.
      */
-    public static final String EPSG = Citations.EPSG;
+    public static final String EPSG = "EPSG";
 
     /**
-     * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
+     * The {@value} code space.
      */
-    public static final String SEMI_MAJOR = "semi_major", SEMI_MINOR = "semi_minor";
+    public static final String OGC = "OGC";
 
     /**
      * The {@value} code space.
      */
     public static final String SIS = "SIS";
-
-    /**
-     * The {@value} code space.
-     */
-    public static final String OGC = Citations.OGC;
 
     /**
      * The {@value} code space.
@@ -70,6 +65,16 @@ public final class HardCoded extends Static {
     public static final byte CRS84 = 84;
 
     /**
+     * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
+     */
+    public static final String SEMI_MAJOR = "semi_major", SEMI_MINOR = "semi_minor";
+
+    /**
+     * Name of the {@value} matrix parameters.
+     */
+    public static final String NUM_ROW = "num_row", NUM_COL = "num_col";
+
+    /**
      * EPSG code of the {@code A0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code A1} to {@code A8} inclusive follow, but the affine coefficients stop at {@code A2}.
      */
@@ -84,6 +89,6 @@ public final class HardCoded extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private HardCoded() {
+    private Constants() {
     }
 }

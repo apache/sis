@@ -44,8 +44,8 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.HardCoded;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.parameter.Parameters;
@@ -501,8 +501,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             ParameterValue<?> mismatchedParam = null;
             double mismatchedValue = 0;
             try {
-                final ParameterValue<?> semiMajor = parameters.parameter(HardCoded.SEMI_MAJOR);
-                final ParameterValue<?> semiMinor = parameters.parameter(HardCoded.SEMI_MINOR);
+                final ParameterValue<?> semiMajor = parameters.parameter(Constants.SEMI_MAJOR);
+                final ParameterValue<?> semiMinor = parameters.parameter(Constants.SEMI_MINOR);
                 final Unit<Length>      axisUnit  = ellipsoid.getAxisUnit();
                 /*
                  * The two calls to getOptional(…) shall succeed before we write anything, in order to have a

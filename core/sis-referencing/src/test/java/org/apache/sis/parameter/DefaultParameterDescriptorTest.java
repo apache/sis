@@ -25,6 +25,9 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -39,7 +42,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
@@ -132,6 +135,20 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     {
         final MeasurementRange<Double> valueDomain = MeasurementRange.create(minimumValue, true, maximumValue, true, unit);
         return new DefaultParameterDescriptor<>(properties(name), 1, 1, double[].class, valueDomain, null, null);
+    }
+
+    /**
+     * Creates a descriptor with the given EPSG identifier.
+     *
+     * @param  name The parameter name.
+     * @param  code The parameter identifier.
+     * @return The descriptor with the given EPSG identifier.
+     */
+    static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
+        final Map<String, Object> properties = properties(name);
+        assertNull(properties.put(DefaultParameterDescriptor.IDENTIFIERS_KEY,
+                new ImmutableIdentifier(HardCodedCitations.OGP, Constants.EPSG, Short.toString(code))));
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, null);
     }
 
     /**
@@ -293,5 +310,19 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         assertWktEquals("Parameter[“Integer param”, 5]", create("Integer param", 4, 8, 5));
         assertWktEquals("Parameter[“Real number”, 5.0, LengthUnit[“metre”, 1]]", descriptor);
         assertEquals("Parameter[\"Real number\", 5.0, Unit[\"metre\", 1]]", descriptor.toString());
+    }
+
+    /**
+     * Tests WKT formatting of a parameter having an identifier.
+     *
+     * @see DefaultParameterDescriptorGroupTest#testIdentifiedParameterWKT()
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testWKT")
+    public void testIdentifiedParameterWKT() {
+        final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.A0);
+        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
     }
 }

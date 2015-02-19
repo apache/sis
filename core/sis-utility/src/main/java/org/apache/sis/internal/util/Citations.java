@@ -45,16 +45,6 @@ import java.util.Objects;
  */
 public final class Citations extends Static {
     /**
-     * The {@value} code space.
-     */
-    public static final String OGC = "OGC";
-
-    /**
-     * The {@value} code space.
-     */
-    public static final String EPSG = "EPSG";
-
-    /**
      * Do not allows instantiation of this class.
      */
     private Citations() {

@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.internal.util.Citations.EPSG;
+import static org.apache.sis.internal.util.Constants.EPSG;
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 

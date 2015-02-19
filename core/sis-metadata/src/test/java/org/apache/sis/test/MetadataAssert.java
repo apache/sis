@@ -24,7 +24,7 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-import static org.apache.sis.internal.util.Citations.EPSG;
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**

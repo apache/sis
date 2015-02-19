@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
@@ -123,7 +123,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultIdentifier
@@ -328,8 +328,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * since localizations are deferred to the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  properties The properties to be given to this identifier.
-     * @throws InvalidParameterValueException if a property has an invalid value.
-     * @throws IllegalArgumentException if a property is invalid for some other reason.
+     * @throws IllegalArgumentException if a property has an illegal value.
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
@@ -573,19 +572,35 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                     if (version != null) {
                         appendCode(formatter, version);
                     }
-                    final String citation = org.apache.sis.internal.util.Citations.getIdentifier(authority, false);
-                    if (citation != null && !citation.equals(cs)) {
-                        formatter.append(new Cite(citation));
+                    /*
+                     * In order to simplify the WKT, format the citation only if it is different than the code space.
+                     * We will also omit the citation if this identifier is for a parameter value, because parameter
+                     * values are handled in a special way by the international standard:
+                     *
+                     *   - ISO 19162 explicitely said that we shall format the identifier for the root element only,
+                     *     and omit the identifier for all inner elements EXCEPT parameter values and operation method.
+                     *   - Exclusion of identifier for inner elements is performed by the Formatter class, so it does
+                     *     not need to be checked here.
+                     *   - Parameter values are numerous, while operation methods typically appear only once in a WKT
+                     *     document. So we will simplify the parameter values only (not the operation methods) except
+                     *     if the parameter value is the root element (in which case we will format full identifier).
+                     */
+                    final FormattableObject enclosing = formatter.getEnclosingElement(1);
+                    final boolean              isRoot = formatter.getEnclosingElement(2) == null;
+                    if (isRoot || !(enclosing instanceof ParameterValue<?>)) {
+                        final String citation = org.apache.sis.internal.util.Citations.getIdentifier(authority, false);
+                        if (citation != null && !citation.equals(cs)) {
+                            formatter.append(new Cite(citation));
+                        }
                     }
                     /*
                      * Do not format the optional URI element for internal convention,
                      * because this property is currently computed rather than stored.
                      * Other conventions format only for the ID[…] of root element.
                      */
-                    if (convention != Convention.INTERNAL && formatter.getEnclosingElement(2) == null) {
-                        final FormattableObject parent = formatter.getEnclosingElement(1);
-                        if (parent != null && NameMeaning.usesURN(cs)) {
-                            final String type = NameMeaning.toObjectType(parent.getClass());
+                    if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
+                        if (NameMeaning.usesURN(cs)) {
+                            final String type = NameMeaning.toObjectType(enclosing.getClass());
                             if (type != null) {
                                 formatter.append(new URI(type, cs, version, code));
                             }

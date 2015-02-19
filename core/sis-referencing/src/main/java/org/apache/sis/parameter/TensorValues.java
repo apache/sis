@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 final class TensorValues<E> extends AbstractParameterDescriptor
@@ -166,13 +166,13 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
-        return descriptors.descriptors(dimensions());
+        return descriptors.descriptors(size());
     }
 
     /**
-     * Returns the current tensor dimensions.
+     * Returns the current tensor size for each dimensions.
      */
-    private int[] dimensions() {
+    private int[] size() {
         final int[] indices = new int[dimensions.length];
         for (int i=0; i<indices.length; i++) {
             indices[i] = dimensions[i].intValue();
@@ -191,7 +191,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     public GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
-        return descriptors.descriptor(this, name, dimensions());
+        return descriptors.descriptor(this, name, size());
     }
 
     /**
@@ -213,7 +213,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
             cause = exception;
         }
         if (indices != null) {
-            final int[] actualSize = dimensions();
+            final int[] actualSize = size();
             if (TensorParameters.isInBounds(indices, actualSize)) {
                 return parameter(indices, actualSize);
             }
@@ -298,9 +298,13 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterValue> values() {
-        final List<GeneralParameterValue> addTo = new ArrayList<>(16);
-        addTo.addAll(Arrays.asList(dimensions));
-        addValues(values, dimensions(), 0, addTo);
+        final List<GeneralParameterValue> addTo = new ArrayList<>();
+        for (final ParameterValue<Integer> dimension : dimensions) {
+            if (!isOmitted(dimension)) {
+                addTo.add(dimension);
+            }
+        }
+        addValues(values, size(), 0, addTo);
         return Collections.unmodifiableList(addTo);
     }
 
@@ -319,13 +323,26 @@ final class TensorValues<E> extends AbstractParameterDescriptor
                 }
             } else {
                 for (int i=0; i<length; i++) {
-                    final Object value = values[i];
-                    if (value != null) {
-                        addTo.add((ParameterValue<?>) value);
+                    final ParameterValue<?> parameter = (ParameterValue<?>) values[i];
+                    if (parameter != null && !isOmitted(parameter)) {
+                        addTo.add(parameter);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given parameter can be omitted. A parameter can be omitted
+     * if it is not mandatory and has a value equals to the default value.
+     */
+    private static boolean isOmitted(final ParameterValue<?> parameter) {
+        final Object value = parameter.getValue();
+        if (value == null) { // Implies that the default value is also null.
+            return true;
+        }
+        final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
+        return descriptor.getMinimumOccurs() == 0 && value.equals(descriptor.getDefaultValue());
     }
 
     /**

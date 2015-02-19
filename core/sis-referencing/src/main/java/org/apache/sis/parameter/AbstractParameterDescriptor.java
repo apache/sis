@@ -339,7 +339,10 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
             }
             return "ParameterGroup";
         } else if (this instanceof ParameterDescriptor<?>) {
-            formatter.appendAny(((ParameterDescriptor<?>) this).getDefaultValue());
+            final Object defaultValue = ((ParameterDescriptor<?>) this).getDefaultValue();
+            if (defaultValue != null) {
+                formatter.appendAny(defaultValue);
+            }
             final Unit<?> unit = ((ParameterDescriptor<?>) this).getUnit();
             if (unit != null) {
                 if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
