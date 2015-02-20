@@ -28,14 +28,14 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.test.Validators.validate;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.internal.util.Constants.NUM_ROW;
+import static org.apache.sis.internal.util.Constants.NUM_COL;
 
 
 /**
@@ -46,22 +46,18 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 0.6
  * @module
  */
-@DependsOn(ParametersTest.class)
-public final strictfp class TensorParametersTest extends TestCase {
+@DependsOn({
+    DefaultParameterDescriptorTest.class,
+    DefaultParameterValueTest.class,
+    ParametersTest.class
+})
+public strictfp class TensorParametersTest extends TestCase {
     /**
      * The parameters to use for testing purpose. Mostly identical to {@link TensorParameters#WKT1},
      * except that it is not an instance of the {@link MatrixParameters} subclass. Those parameters
      * do not contain EPSG aliases and identifiers.
      */
     private static TensorParameters<Double> WKT1;
-
-    /**
-     * The expected parameter names according the WKT 1 convention for the matrix size.
-     */
-    private static final String[][] SIZE_NAMES = {
-        {"num_row"},
-        {"num_col"}
-    };
 
     /**
      * The expected parameter names according the WKT 1 convention for the matrix elements.
@@ -76,18 +72,64 @@ public final strictfp class TensorParametersTest extends TestCase {
     };
 
     /**
-     * Creates the parameters to be used by the tests in this class.
+     * The instance tested by this class.
      */
-    @BeforeClass
+    final TensorParameters<Double> param;
+
+    /**
+     * The expected parameter names for all matrix elements.
+     * Example: {@link #ELEMENT_NAMES}.
+     */
+    private final String[][] names;
+
+    /**
+     * The expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * Example: {@link MatrixParametersTest#ALPHANUM_NAMES}.
+     */
+    private final String[][] aliases;
+
+    /**
+     * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
+     * Example: {@link MatrixParametersEPSGTest#IDENTIFIERS}.
+     */
+    private final short[][] identifiers;
+
+    /**
+     * Creates a new test case for {@link TensorParameters}.
+     */
     @SuppressWarnings("unchecked")
-    public static void createTensorParameters() {
-        WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
-                TensorParameters.WKT1.getDimensionDescriptor(0),
-                TensorParameters.WKT1.getDimensionDescriptor(1));
+    public TensorParametersTest() {
+        if (WKT1 == null) {
+            WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
+                    TensorParameters.WKT1.getDimensionDescriptor(0),
+                    TensorParameters.WKT1.getDimensionDescriptor(1));
+        }
+        param       = WKT1;
+        names       = ELEMENT_NAMES;
+        aliases     = null;
+        identifiers = null;
+    }
+
+    /**
+     * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
+     *
+     * @param param       The instance tested by this class.
+     * @param names       The expected parameter names for all matrix elements.
+     * @param aliases     The expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * @param identifiers The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
+     */
+    TensorParametersTest(final TensorParameters<Double> param, final String[][] names, final String[][] aliases,
+            final short[][] identifiers)
+    {
+        this.param       = param;
+        this.names       = names;
+        this.aliases     = aliases;
+        this.identifiers = identifiers;
     }
 
     /**
      * Discards the parameters used by the tests in this class.
+     * This method is invoked by JUnit only after all tests completed.
      */
     @AfterClass
     public static void clearTensorParameters() {
@@ -95,18 +137,29 @@ public final strictfp class TensorParametersTest extends TestCase {
     }
 
     /**
+     * Asserts that the given descriptor has the given name.
+     *
+     * @param names        The expected parameter name.
+     * @param defaultValue The expected parameter default value.
+     * @param actual       The actual parameter to verify.
+     */
+    private static void verifyDescriptor(final String name, final Number defaultValue,
+            final GeneralParameterDescriptor actual)
+    {
+        assertEquals("name", name, actual.getName().getCode());
+        assertEquals("defaultValue", defaultValue, ((ParameterDescriptor<?>) actual).getDefaultValue());
+    }
+
+    /**
      * Asserts that the given descriptor has the given name, alias, identifier and default value.
      *
-     * @param names        The expected parameter names for all matrix elements.
-     * @param aliases      The expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param identifiers  The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      * @param defaultValue The expected parameter default value.
      * @param actual       The actual parameter to verify.
      * @param row          Row index of the matrix element to test.
      * @param column       Column index of the matrix element to test.
      */
-    private static void verifyDescriptor(final String[][] names, final String[][] aliases, final short[][] identifiers,
-            final Number defaultValue, final GeneralParameterDescriptor actual, final int row, final int column)
+    private void verifyDescriptor(final Number defaultValue, final GeneralParameterDescriptor actual,
+            final int row, final int column)
     {
         assertEquals("name", names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
@@ -119,14 +172,9 @@ public final strictfp class TensorParametersTest extends TestCase {
      */
     @Test
     public void testGetDimensionDescriptor() {
-        testGetDimensionDescriptor(WKT1);
-    }
-
-    /** Implementation of {@link #testGetDimensionDescriptor()} with user-supplied parameters. */
-    static void testGetDimensionDescriptor(final TensorParameters<Double> WKT1) {
         final Integer N3 = 3;
-        verifyDescriptor(SIZE_NAMES, null, null, N3, WKT1.getDimensionDescriptor(0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null, N3, WKT1.getDimensionDescriptor(1), 1, 0);
+        verifyDescriptor(NUM_ROW, N3, param.getDimensionDescriptor(0));
+        verifyDescriptor(NUM_COL, N3, param.getDimensionDescriptor(1));
     }
 
     /**
@@ -135,27 +183,20 @@ public final strictfp class TensorParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testIndicesToName")
     public void testGetElementDescriptor() {
-        testGetElementDescriptor(WKT1, ELEMENT_NAMES, null, null);
-    }
-
-    /** Implementation of {@link #testGetElementDescriptor()} with user-supplied parameters. */
-    static void testGetElementDescriptor(final TensorParameters<Double> WKT1,
-            final String[][] names, final String[][] aliases, final short[][] identifiers)
-    {
         final Double N0 = 0.0;
         final Double N1 = 1.0;
-        final ParameterDescriptor<Double> e00 = WKT1.getElementDescriptor(0, 0);
-        final ParameterDescriptor<Double> e01 = WKT1.getElementDescriptor(0, 1);
-        final ParameterDescriptor<Double> e10 = WKT1.getElementDescriptor(1, 0);
-        final ParameterDescriptor<Double> e11 = WKT1.getElementDescriptor(1, 1);
-        verifyDescriptor(names, aliases, identifiers, N1, e00, 0, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, e01, 0, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, e10, 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, e11, 1, 1);
-        assertSame(e00, WKT1.getElementDescriptor(0, 0)); // Test caching.
-        assertSame(e01, WKT1.getElementDescriptor(0, 1));
-        assertSame(e10, WKT1.getElementDescriptor(1, 0));
-        assertSame(e11, WKT1.getElementDescriptor(1, 1));
+        final ParameterDescriptor<Double> e00 = param.getElementDescriptor(0, 0);
+        final ParameterDescriptor<Double> e01 = param.getElementDescriptor(0, 1);
+        final ParameterDescriptor<Double> e10 = param.getElementDescriptor(1, 0);
+        final ParameterDescriptor<Double> e11 = param.getElementDescriptor(1, 1);
+        verifyDescriptor(N1, e00, 0, 0);
+        verifyDescriptor(N0, e01, 0, 1);
+        verifyDescriptor(N0, e10, 1, 0);
+        verifyDescriptor(N1, e11, 1, 1);
+        assertSame(e00, param.getElementDescriptor(0, 0)); // Test caching.
+        assertSame(e01, param.getElementDescriptor(0, 1));
+        assertSame(e10, param.getElementDescriptor(1, 0));
+        assertSame(e11, param.getElementDescriptor(1, 1));
     }
 
     /**
@@ -165,8 +206,7 @@ public final strictfp class TensorParametersTest extends TestCase {
     public void testGetElementDescriptorOutsideCache() {
         final int row = TensorParameters.CACHE_SIZE + 1;
         final int col = TensorParameters.CACHE_SIZE + 2;
-        verifyDescriptor(new String[][] {{"elt_" + row + "_" + col}}, null, null, 0.0,
-                WKT1.getElementDescriptor(row, col), 0, 0);
+        verifyDescriptor("elt_" + row + "_" + col, 0.0, param.getElementDescriptor(row, col));
     }
 
     /**
@@ -174,13 +214,8 @@ public final strictfp class TensorParametersTest extends TestCase {
      */
     @Test
     public void testIndicesToName() {
-        testIndicesToName(WKT1);
-    }
-
-    /** Implementation of {@link #testIndicesToName()} with user-supplied parameters. */
-    static void testIndicesToName(final TensorParameters<Double> WKT1) {
-        assertEquals("elt_4_8", WKT1.indicesToName(new int[] {4, 8}));
-        assertEquals("elt_7_2", WKT1.indicesToName(new int[] {7, 2}));
+        assertEquals("elt_4_8", param.indicesToName(new int[] {4, 8}));
+        assertEquals("elt_7_2", param.indicesToName(new int[] {7, 2}));
     }
 
     /**
@@ -188,17 +223,12 @@ public final strictfp class TensorParametersTest extends TestCase {
      */
     @Test
     public void testNameToIndices() {
-        testNameToIndices(WKT1);
-    }
-
-    /** Implementation of {@link #testNameToIndices()} with user-supplied parameters. */
-    static void testNameToIndices(final TensorParameters<Double> WKT1) {
-        assertArrayEquals(new int[] {4, 8}, WKT1.nameToIndices("elt_4_8"));
-        assertArrayEquals(new int[] {7, 2}, WKT1.nameToIndices("elt_7_2"));
-        assertNull(WKT1.nameToIndices("other_7_2"));
-        assertNull(WKT1.nameToIndices("elt_7"));
+        assertArrayEquals(new int[] {4, 8}, param.nameToIndices("elt_4_8"));
+        assertArrayEquals(new int[] {7, 2}, param.nameToIndices("elt_7_2"));
+        assertNull(param.nameToIndices("other_7_2"));
+        assertNull(param.nameToIndices("elt_7"));
         try {
-            WKT1.nameToIndices("elt_7_2_3");
+            param.nameToIndices("elt_7_2_3");
             fail("Should not have parsed a name with too many indices.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
@@ -211,71 +241,66 @@ public final strictfp class TensorParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetElementDescriptor")
     public void testDescriptors() {
-        testDescriptors(WKT1, false, ELEMENT_NAMES, null, null);
-    }
+        final boolean isEPSG = (identifiers != null);
 
-    /** Implementation of {@link #testDescriptors()} with user-supplied parameters. */
-    static void testDescriptors(final TensorParameters<Double> WKT1, final boolean isEPSG,
-            final String[][] names, final String[][] aliases, final short[][] identifiers)
-    {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
-        List<GeneralParameterDescriptor> descriptors = WKT1.descriptors(new int[] {1, 1});
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(1), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(2), 0, 0);
+        List<GeneralParameterDescriptor> descriptors = param.descriptors(new int[] {1, 1});
+        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
+        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
+        verifyDescriptor(N1, descriptors.get(2), 0, 0);
         assertEquals("size", 3, descriptors.size());
 
-        descriptors = WKT1.descriptors(new int[] {2, 3});
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get(1), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(2), 0, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(3), 0, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(4), 0, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(5), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(6), 1, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(7), 1, 2);
+        descriptors = param.descriptors(new int[] {2, 3});
+        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
+        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
+        verifyDescriptor(N1, descriptors.get(2), 0, 0);
+        verifyDescriptor(N0, descriptors.get(3), 0, 1);
+        verifyDescriptor(N0, descriptors.get(4), 0, 2);
+        verifyDescriptor(N0, descriptors.get(5), 1, 0);
+        verifyDescriptor(N1, descriptors.get(6), 1, 1);
+        verifyDescriptor(N0, descriptors.get(7), 1, 2);
         assertEquals("size", 8, descriptors.size());
 
-        descriptors = WKT1.descriptors(new int[] {3, 3});
+        descriptors = param.descriptors(new int[] {3, 3});
         int i = 0;
         if (!isEPSG) {
-            verifyDescriptor(SIZE_NAMES, null, null,  N3, descriptors.get(i++), 0, 0);
-            verifyDescriptor(SIZE_NAMES, null, null,  N3, descriptors.get(i++), 1, 0);
+            verifyDescriptor(NUM_ROW, N3, descriptors.get(i++));
+            verifyDescriptor(NUM_COL, N3, descriptors.get(i++));
         }
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 0, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 0, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 0, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 1, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 1, 2);
+        verifyDescriptor(N1, descriptors.get(i++), 0, 0);
+        verifyDescriptor(N0, descriptors.get(i++), 0, 1);
+        verifyDescriptor(N0, descriptors.get(i++), 0, 2);
+        verifyDescriptor(N0, descriptors.get(i++), 1, 0);
+        verifyDescriptor(N1, descriptors.get(i++), 1, 1);
+        verifyDescriptor(N0, descriptors.get(i++), 1, 2);
         if (!isEPSG) {
-            verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 2, 0);
-            verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(i++), 2, 1);
-            verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(i++), 2, 2);
+            verifyDescriptor(N0, descriptors.get(i++), 2, 0);
+            verifyDescriptor(N0, descriptors.get(i++), 2, 1);
+            verifyDescriptor(N1, descriptors.get(i++), 2, 2);
         }
         assertEquals("size", i, descriptors.size());
 
-        descriptors = WKT1.descriptors(new int[] {4, 4});
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get( 0), 0, 0);
-        verifyDescriptor(SIZE_NAMES, null, null,      N3, descriptors.get( 1), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get( 2), 0, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 3), 0, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 4), 0, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 5), 0, 3);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 6), 1, 0);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get( 7), 1, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 8), 1, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get( 9), 1, 3);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(10), 2, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(11), 2, 1);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(12), 2, 2);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(13), 2, 3);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(14), 3, 0);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(15), 3, 1);
-        verifyDescriptor(names, aliases, identifiers, N0, descriptors.get(16), 3, 2);
-        verifyDescriptor(names, aliases, identifiers, N1, descriptors.get(17), 3, 3);
+        descriptors = param.descriptors(new int[] {4, 4});
+        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
+        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
+        verifyDescriptor(N1, descriptors.get( 2), 0, 0);
+        verifyDescriptor(N0, descriptors.get( 3), 0, 1);
+        verifyDescriptor(N0, descriptors.get( 4), 0, 2);
+        verifyDescriptor(N0, descriptors.get( 5), 0, 3);
+        verifyDescriptor(N0, descriptors.get( 6), 1, 0);
+        verifyDescriptor(N1, descriptors.get( 7), 1, 1);
+        verifyDescriptor(N0, descriptors.get( 8), 1, 2);
+        verifyDescriptor(N0, descriptors.get( 9), 1, 3);
+        verifyDescriptor(N0, descriptors.get(10), 2, 0);
+        verifyDescriptor(N0, descriptors.get(11), 2, 1);
+        verifyDescriptor(N1, descriptors.get(12), 2, 2);
+        verifyDescriptor(N0, descriptors.get(13), 2, 3);
+        verifyDescriptor(N0, descriptors.get(14), 3, 0);
+        verifyDescriptor(N0, descriptors.get(15), 3, 1);
+        verifyDescriptor(N0, descriptors.get(16), 3, 2);
+        verifyDescriptor(N1, descriptors.get(17), 3, 3);
         assertEquals("size", 18, descriptors.size());
     }
 
@@ -286,7 +311,7 @@ public final strictfp class TensorParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testDescriptors")
     public void testMatrixConversion() {
-        final int size = 8;
+        final int size = Math.min(6, TensorParameters.CACHE_SIZE);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int numRow = 2; numRow <= size; numRow++) {
             for (int numCol = 2; numCol <= size; numCol++) {
@@ -296,12 +321,13 @@ public final strictfp class TensorParametersTest extends TestCase {
                         matrix.setElement(j, i, 200*random.nextDouble() - 100);
                     }
                 }
-                final ParameterValueGroup group = WKT1.createValueGroup(singletonMap(NAME_KEY, "Test"), matrix);
+                final ParameterValueGroup group = param.createValueGroup(
+                        singletonMap(GeneralParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
                 assertEquals("num_row",  numRow, group.parameter("num_row").intValue());
                 assertEquals("num_col",  numCol, group.parameter("num_col").intValue());
-                assertEquals("elements", matrix, WKT1.toMatrix(group));
-                assertEquals("elements", matrix, WKT1.toMatrix(new ParameterValueGroupWrapper(group)));
+                assertEquals("elements", matrix, param.toMatrix(group));
+                assertEquals("elements", matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
             }
         }
     }
@@ -311,6 +337,6 @@ public final strictfp class TensorParametersTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        assertSerializedEquals(WKT1);
+        assertSerializedEquals(param);
     }
 }

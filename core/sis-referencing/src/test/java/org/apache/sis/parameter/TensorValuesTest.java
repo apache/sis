@@ -26,7 +26,6 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -311,7 +310,7 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
-     * Tests WKT 1 formatting.
+     * Tests {@link TensorParameters#WKT1} formatting.
      * <ul>
      *   <li>Group name shall be {@code "Affine"}.</li>
      *   <li>Parameters {@code "num_row"} and {@code "num_col"} are mandatory.</li>
@@ -328,17 +327,17 @@ public final strictfp class TensorValuesTest extends TestCase {
         final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
                 singletonMap(TensorValues.NAME_KEY, "Affine"), matrix);
         validate(group);
-        assertWktEquals(Convention.WKT1,
-                "PARAMETERGROUP[“Affine”,\n"      +
-                "  PARAMETER[“num_row”, 4],\n"    +
-                "  PARAMETER[“num_col”, 4],\n"    +
-                "  PARAMETER[“elt_0_2”, 4.0],\n"  +
-                "  PARAMETER[“elt_1_0”, -2.0],\n" +
-                "  PARAMETER[“elt_2_3”, 7.0]]", group);
+        assertWktEquals(
+                "ParameterGroup[“Affine”,\n"      +
+                "  Parameter[“num_row”, 4],\n"    +
+                "  Parameter[“num_col”, 4],\n"    +
+                "  Parameter[“elt_0_2”, 4.0],\n"  +
+                "  Parameter[“elt_1_0”, -2.0],\n" +
+                "  Parameter[“elt_2_3”, 7.0]]", group);
     }
 
     /**
-     * Tests WKT 2 formatting using EPSG parameter names.
+     * Tests {@link TensorParameters#EPSG} formatting.
      * <ul>
      *   <li>Group name shall be {@code "Affine general parametric transformation"}.</li>
      *   <li>No {@code "num_row"} or {@code "num_col"} parameters.</li>
