@@ -60,8 +60,8 @@ import java.util.Objects;
  * <ul>
  *   <li>Parameters (usually mandatory) for the tensor dimensions:
  *     <ul>
- *       <li>number of rows ({@code "num_row"} in WKT 1),</li>
- *       <li>number of columns ({@code "num_col"} in WKT 1),</li>
+ *       <li>number of rows (named {@code "num_row"} in {@linkplain #WKT1} conventions),</li>
+ *       <li>number of columns (named {@code "num_col"} in WKT1 conventions),</li>
  *       <li><i>etc.</i> for third-order or higher-order tensors.</li>
  *     </ul>
  *   </li>
@@ -76,7 +76,8 @@ import java.util.Objects;
  * <p><b>Parameters are not an efficient storage format for large tensors.</b>
  * Parameters are used only for small matrices/tensors to be specified in coordinate operations or processing libraries.
  * In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
- * For a more efficient matrix storage, see {@link org.apache.sis.referencing.operation.matrix.MatrixSIS}.</p>
+ * For a more efficient matrix storage,
+ * see the {@linkplain org.apache.sis.referencing.operation.matrix matrix package}.</p>
  *
  * {@section Formatting}
  * In the particular case of a tensor of {@linkplain #rank() rank} 2 (i.e. a matrix),
@@ -84,24 +85,24 @@ import java.util.Objects;
  * the matrix is implicitly {@linkplain Matrices#isAffine affine} and of dimension 3×3.
  *
  * <table class="sis">
- *   <caption>Well Known Text format for a matrix</caption>
+ *   <caption>Well Known Text (WKT) formats for matrix parameters</caption>
  * <tr>
- *   <th>Using EPSG names</th>
+ *   <th>Using EPSG:9624 names and identifiers</th>
  *   <th class="sep">Using OGC names</th>
  * </tr>
  * <tr><td>
  * {@preformat wkt
- *   Parameter["A0", <value>, ID["EPSG",8623]],
- *   Parameter["A1", <value>, ID["EPSG",8624]],
- *   Parameter["A2", <value>, ID["EPSG",8625]],
- *   Parameter["B0", <value>, ID["EPSG",8639]],
- *   Parameter["B1", <value>, ID["EPSG",8640]],
- *   Parameter["B2", <value>, ID["EPSG",8641]]
+ *   Parameter["A0", <value>, Id["EPSG", 8623]],
+ *   Parameter["A1", <value>, Id["EPSG", 8624]],
+ *   Parameter["A2", <value>, Id["EPSG", 8625]],
+ *   Parameter["B0", <value>, Id["EPSG", 8639]],
+ *   Parameter["B1", <value>, Id["EPSG", 8640]],
+ *   Parameter["B2", <value>, Id["EPSG", 8641]]
  * }
  *
  * <div class="note"><b>Note:</b>
  * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
- * but they are for polynomial transformations, not affine transformations.</div>
+ * but they are for polynomial transformations, not for affine transformations.</div>
  *
  * </td><td class="sep">
  * {@preformat wkt
@@ -122,13 +123,21 @@ import java.util.Objects;
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
  *
- * {@section Usage}
+ * {@section Usage examples}
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
  * one can use the following code:
  *
  * {@preformat java
  *   Map<String,?> properties = Collections.singletonMap(ParameterValueGroup.NAME_KEY, "Affine");
  *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
+ * }
+ *
+ * For setting the elements of a few values, then create a matrix from the parameter values:
+ *
+ * {@preformat java
+ *   p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
+ *   p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
+ *   Matrix m = TensorParameters.WKT1.toMatrix(p);
  * }
  *
  * @param <E> The type of tensor element values.
@@ -138,7 +147,7 @@ import java.util.Objects;
  * @version 0.6
  * @module
  *
- * @see MatrixSIS
+ * @see org.apache.sis.referencing.operation.matrix.Matrices
  */
 public class TensorParameters<E> implements Serializable {
     /**
@@ -204,7 +213,7 @@ public class TensorParameters<E> implements Serializable {
         properties.put(Identifier.CODE_KEY, Constants.NUM_COL);
         ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<>(
                 properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        WKT1 = new MatrixParameters("elt_", "_", numRow, numCol);
+        WKT1 = new MatrixParameters(numRow, numCol);
         /*
          * For the EPSG convention, there is no "num_row" or "num_col" parameters since the matrix
          * size if fixed to 3×3. However since we still need them, we will declare them as optional
@@ -214,7 +223,7 @@ public class TensorParameters<E> implements Serializable {
                 0, 1, Integer.class, valueDomain, null, defaultSize);
         numCol = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numCol),
                 0, 1, Integer.class, valueDomain, null, defaultSize);
-        EPSG = new MatrixParameters("", "", numRow, numCol);
+        EPSG = new MatrixParametersEPSG(numRow, numCol);
     }
 
     /**

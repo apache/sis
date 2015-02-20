@@ -24,7 +24,6 @@ import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.Identifier;
-import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import javax.measure.unit.Unit;

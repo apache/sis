@@ -76,6 +76,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.ParameterFormatTest.class,
     org.apache.sis.parameter.TensorParametersTest.class,
     org.apache.sis.parameter.MatrixParametersTest.class,
+    org.apache.sis.parameter.MatrixParametersEPSGTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
 
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,

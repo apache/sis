@@ -16,17 +16,16 @@
  */
 package org.apache.sis.parameter;
 
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the {@link MatrixParameters} class using the {@link TensorParameters#WKT1} and
- * {@link TensorParameters#EPSG} constants.
+ * Tests the {@link MatrixParameters} class using the {@link TensorParameters#WKT1} constant.
+ * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a
+ * different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -34,13 +33,13 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn(TensorParametersTest.class)
-public final strictfp class MatrixParametersTest extends TestCase {
+public strictfp class MatrixParametersTest extends TensorParametersTest {
     /**
      * The expected parameter names according the EPSG convention for the matrix elements.
      *
      * @see TensorParametersTest#ELEMENT_NAMES
      */
-    private static final String[][] NAMES = {
+    static final String[][] ALPHANUM_NAMES = {
         {"A0", "A1", "A2", "A3"},
         {"B0", "B1", "B2", "B3"},
         {"C0", "C1", "C2", "C3"},
@@ -48,24 +47,22 @@ public final strictfp class MatrixParametersTest extends TestCase {
     };
 
     /**
-     * The expected parameter identifiers for the matrix elements, or 0 if none.
-     * Note that the EPSG database contains A3 and B3 parameters, but they are
-     * for polynomial transformation, not affine transformation.
+     * Creates a new test case for {@link MatrixParameters}.
      */
-    private static final short[][] IDENTIFIERS = {
-        {8623, 8624, 8625, 0},
-        {8639, 8640, 8641, 0},
-        {   0,    0,    0, 0},
-        {   0,    0,    0, 0}
-    };
+    public MatrixParametersTest() {
+        super(TensorParameters.WKT1, ELEMENT_NAMES, ALPHANUM_NAMES, null);
+    }
 
     /**
-     * Tests {@link MatrixParameters#isEPSG()}.
+     * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
+     *
+     * @param param       The instance tested by this class.
+     * @param names       The expected parameter names for all matrix elements.
+     * @param aliases     The expected parameter aliases for all matrix elements, or {@code null} for no alias.
+     * @param identifiers The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      */
-    @Test
-    public void testIsEPSG() {
-        assertTrue (((MatrixParameters) TensorParameters.EPSG).isEPSG());
-        assertFalse(((MatrixParameters) TensorParameters.WKT1).isEPSG());
+    MatrixParametersTest(TensorParameters<Double> param, String[][] names, String[][] aliases, short[][] identifiers) {
+        super(param, names, aliases, identifiers);
     }
 
     /**
@@ -73,12 +70,9 @@ public final strictfp class MatrixParametersTest extends TestCase {
      */
     @Test
     public void testIndicesToAlias() {
-        assertEquals("A0", MatrixParameters.indicesToAlias(new int[] {0, 0}));
-        assertEquals("A1", MatrixParameters.indicesToAlias(new int[] {0, 1}));
-        assertEquals("A2", MatrixParameters.indicesToAlias(new int[] {0, 2}));
-        assertEquals("B0", MatrixParameters.indicesToAlias(new int[] {1, 0}));
-        assertEquals("B1", MatrixParameters.indicesToAlias(new int[] {1, 1}));
-        assertEquals("B2", MatrixParameters.indicesToAlias(new int[] {1, 2}));
+        assertEquals("K0", MatrixParameters.indicesToAlias(new int[] {10, 0}));
+        assertEquals("A6", MatrixParameters.indicesToAlias(new int[] { 0, 6}));
+        assertEquals("G4", MatrixParameters.indicesToAlias(new int[] { 6, 4}));
         assertNull(MatrixParameters.indicesToAlias(new int[] {27, 2}));
         assertNull(MatrixParameters.indicesToAlias(new int[] {2, 10}));
     }
@@ -88,76 +82,19 @@ public final strictfp class MatrixParametersTest extends TestCase {
      */
     @Test
     public void testAliasToIndices() {
-        assertArrayEquals(new int[] {0, 0}, MatrixParameters.aliasToIndices("A0"));
-        assertArrayEquals(new int[] {0, 1}, MatrixParameters.aliasToIndices("A1"));
-        assertArrayEquals(new int[] {0, 2}, MatrixParameters.aliasToIndices("A2"));
-        assertArrayEquals(new int[] {1, 0}, MatrixParameters.aliasToIndices("B0"));
-        assertArrayEquals(new int[] {1, 1}, MatrixParameters.aliasToIndices("B1"));
-        assertArrayEquals(new int[] {1, 2}, MatrixParameters.aliasToIndices("B2"));
+        assertArrayEquals(new int[] {10, 0}, MatrixParameters.aliasToIndices("K0"));
+        assertArrayEquals(new int[] { 0, 6}, MatrixParameters.aliasToIndices("A6"));
+        assertArrayEquals(new int[] { 6, 4}, MatrixParameters.aliasToIndices("G4"));
         assertNull(MatrixParameters.aliasToIndices("2B"));
         assertNull(MatrixParameters.aliasToIndices("elt_1_2"));
-    }
-
-    /**
-     * Tests {@link MatrixParameters#indicesToName(int[])}.
-     */
-    @Test
-    @DependsOnMethod({"testIsEPSG", "testIndicesToAlias"})
-    public void testIndicesToName() {
-        TensorParametersTest.testIndicesToName(TensorParameters.WKT1);
-        assertEquals("E8", TensorParameters.EPSG.indicesToName(new int[] {4, 8}));
-        assertEquals("H2", TensorParameters.EPSG.indicesToName(new int[] {7, 2}));
-    }
-
-    /**
-     * Tests {@link MatrixParameters#nameToIndices(String)}.
-     */
-    @Test
-    @DependsOnMethod({"testIsEPSG", "testAliasToIndices"})
-    public void testNameToIndices() {
-        TensorParametersTest.testNameToIndices(TensorParameters.WKT1);
-        assertArrayEquals(new int[] {4, 8}, TensorParameters.EPSG.nameToIndices("E8"));
-        assertArrayEquals(new int[] {7, 2}, TensorParameters.EPSG.nameToIndices("H2"));
-        assertNull(TensorParameters.EPSG.nameToIndices("other_7_2"));
-        assertNull(TensorParameters.EPSG.nameToIndices("elt_7"));
-    }
-
-    /**
-     * Tests {@link MatrixParameters#getDimensionDescriptor(int)}.
-     */
-    @Test
-    public void testGetDimensionDescriptor() {
-        TensorParametersTest.testGetDimensionDescriptor(TensorParameters.WKT1);
-        TensorParametersTest.testGetDimensionDescriptor(TensorParameters.EPSG);
-    }
-
-    /**
-     * Tests {@link TensorParameters#getElementDescriptor(int[])}.
-     */
-    @Test
-    @DependsOnMethod("testIndicesToName")
-    public void testGetElementDescriptor() {
-        TensorParametersTest.testGetElementDescriptor(TensorParameters.WKT1, TensorParametersTest.ELEMENT_NAMES, NAMES, IDENTIFIERS);
-        TensorParametersTest.testGetElementDescriptor(TensorParameters.EPSG, NAMES, TensorParametersTest.ELEMENT_NAMES, IDENTIFIERS);
-    }
-
-    /**
-     * Tests {@link TensorParameters#descriptors(int[])} for a 1×1, 2×3 and 3×3 matrices.
-     */
-    @Test
-    @DependsOnMethod("testGetElementDescriptor")
-    public void testDescriptors() {
-        TensorParametersTest.testDescriptors(TensorParameters.WKT1, false, TensorParametersTest.ELEMENT_NAMES, NAMES, IDENTIFIERS);
-        TensorParametersTest.testDescriptors(TensorParameters.EPSG, true,  NAMES, TensorParametersTest.ELEMENT_NAMES, IDENTIFIERS);
     }
 
     /**
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testIsEPSG")
+    @Override
     public void testSerialization() {
-        assertSame(TensorParameters.EPSG, assertSerializedEquals(TensorParameters.EPSG));
-        assertSame(TensorParameters.WKT1, assertSerializedEquals(TensorParameters.WKT1));
+        assertSame(param, assertSerializedEquals(param));
     }
 }

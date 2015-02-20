@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.io.PrintWriter;
 
 import org.junit.Test;
@@ -249,12 +248,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         for (final FrameworkMethod method : children) {
             sorter.apply(method);
         }
-        Arrays.sort(children, new Comparator<FrameworkMethod>() {
-            @Override
-            public int compare(FrameworkMethod o1, FrameworkMethod o2) {
-                return sorter.compare(describeChild(o1), describeChild(o2));
-            }
-        });
+        Arrays.sort(children, (FrameworkMethod o1, FrameworkMethod o2) -> sorter.compare(describeChild(o1), describeChild(o2)));
         sortDependantTestsLast(children);
         filteredChildren = children;
     }
@@ -298,8 +292,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     public void filter(final Filter filter) throws NoTestsRemainException {
         int count = 0;
         FrameworkMethod[] children = getFilteredChildren();
-        for (int i=0; i<children.length; i++) {
-            final FrameworkMethod method = children[i];
+        for (final FrameworkMethod method : children) {
             if (filter.shouldRun(describeChild(method))) {
                 try {
                     filter.apply(method);

@@ -24,10 +24,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-
-import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
@@ -59,7 +56,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @version 0.6
  * @module
  */
-final class MatrixParameters extends TensorParameters<Double> {
+class MatrixParameters extends TensorParameters<Double> {
     /**
      * For cross-version compatibility.
      */
@@ -68,74 +65,25 @@ final class MatrixParameters extends TensorParameters<Double> {
     /**
      * Constructs a descriptors provider.
      *
-     * @param prefix    The prefix to insert in front of parameter name for each tensor elements.
-     * @param separator The separator between dimension (row, column, …) indices in parameter names.
-     * @param numRow    The parameter for the number of rows.
-     * @param numCol    The parameter for the number of columns.
+     * @param numRow The parameter for the number of rows.
+     * @param numCol The parameter for the number of columns.
      */
-    MatrixParameters(final String prefix, final String separator,
-            final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol)
-    {
-        super(Double.class, prefix, separator, numRow, numCol);
-    }
-
-    /**
-     * {@code true} for using the EPSG names, or {@code false} for using the WKT1 names.
-     * Current implementation uses {@link #separator} emptiness as a criterion. This is
-     * an arbitrary choice that may change in any future SIS version. However we need a
-     * criterion which is preserved during serialization.
-     *
-     * @see #EPSG
-     */
-    final boolean isEPSG() {
-        return separator.isEmpty();
+    MatrixParameters(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
+        super(Double.class, "elt_", "_", numRow, numCol);
     }
 
     /**
      * Returns {@code true} if an official EPSG parameter exists for the given indices. Those parameters
      * are {@code "A0"}, {@code "A1"}, {@code "A2"}, {@code "B0"}, {@code "B1"} and {@code "B2"}.
      */
-    private static boolean isEPSG(final int[] indices) {
+    static boolean isEPSG(final int[] indices) {
         return indices[0] <  Affine.EPSG_DIMENSION &&
                indices[1] <= Affine.EPSG_DIMENSION;   // Include translation column.
     }
 
     /**
-     * Returns 0 if the dimension parameters ({@code "num_row"} and {@code "num_col"}) shall be hidden.
-     * Those parameters need to be hidden for the EPSG:9624 operation method, since the EPSG database
-     * does not define those parameters.
-     */
-    @Override
-    final int numDimensions(final int[] actualSize) {
-        if (isEPSG() && actualSize[0] == Affine.EPSG_DIMENSION + 1
-                     && actualSize[1] == Affine.EPSG_DIMENSION + 1)
-        {
-            return 0;
-        }
-        return super.numDimensions(actualSize);
-    }
-
-    /**
-     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors for a tensor
-     * of the given size.  This is the total number of elements in the tensor, except for matrices which are intended
-     * to be affine (like {@link #EPSG}) where the last row is omitted.
-     */
-    @Override
-    final int numElements(final int[] actualSize) {
-        int numRow = actualSize[0];
-        int numCol = actualSize[1];
-        assert super.numElements(actualSize) == (numRow * numCol);
-        if (isEPSG() && numRow == Affine.EPSG_DIMENSION + 1
-                     && numCol == Affine.EPSG_DIMENSION + 1)
-        {
-            numRow--; // Ommit last row of an affine matrix.
-        }
-        return numRow * numCol;
-    }
-
-    /**
      * Returns an alias for the given indices, or {@code null} if none.
-     * The default implementation formats:
+     * The current implementation formats:
      *
      * <ul>
      *   <li>the first index (the matrix row) as letter, starting from {@code 'A'},</li>
@@ -178,15 +126,6 @@ final class MatrixParameters extends TensorParameters<Double> {
     }
 
     /**
-     * Returns the parameter descriptor name of a matrix element at the given indices.
-     * Overridden as a matter of principle, but not used directly by this implementation.
-     */
-    @Override
-    protected String indicesToName(final int[] indices) throws IllegalArgumentException {
-        return isEPSG() ? indicesToAlias(indices) : super.indicesToName(indices);
-    }
-
-    /**
      * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
      * This implementation unconditionally checks for the EPSG name first since this is a very quick check.
      * If the given name does not use the EPSG syntax, then this method fallback on the WKT1 syntax.
@@ -195,70 +134,35 @@ final class MatrixParameters extends TensorParameters<Double> {
     protected int[] nameToIndices(final String name) throws IllegalArgumentException {
         int[] indices = aliasToIndices(name);
         if (indices == null) {
-            if (isEPSG()) {
-                if (WKT1 == this) {
-                    // Should never happen, but still unconditionally tested
-                    // (no 'assert' keyword) for preventing stack overflow.
-                    throw new AssertionError();
-                }
-                indices = WKT1.nameToIndices(name);
-            } else {
-                indices = super.nameToIndices(name);
-            }
+            indices = super.nameToIndices(name);
         }
         return indices;
     }
 
     /**
-     * Creates a new parameter descriptor for a matrix element at the given indices. This method creates both the
-     * OGC name (e.g. {@code "elt_1_2"}) and the EPSG name (e.g. {@code "B2"}), together with the EPSG identifier
-     * (e.g. {@code "EPSG:8641"}) it it exists. See {@link org.apache.sis.internal.referencing.provider.Affine}
-     * for a table summarizing the parameter names and identifiers.
+     * Creates a new parameter descriptor for a matrix element at the given indices.
+     * This method creates both the OGC name (e.g. {@code "elt_1_2"}) and the EPSG name (e.g. {@code "B2"}).
+     * The EPSG identifier are not created by this method, but rather by the {@link MatrixParametersEPSG} subclass.
      */
     @Override
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        final Object name, alias, identifier;
-        if (isEPSG()) {
-            /*
-             * For the EPSG convention, we recycle the names and identifiers created for the WKT1 convention but
-             * interchanging the name with the alias (since our WKT1 convention adds the EPSG names as aliases).
-             * We use WKT1 as the primary source because it is still very widely used, and works for arbitrary
-             * dimensions while the EPSG parameters are (officially) restricted to 3×3 matrices.
-             */
-            if (WKT1 == this) {
-                // Should never happen, but still unconditionally tested
-                // (no 'assert' keyword) for preventing stack overflow.
-                throw new AssertionError();
-            }
-            final ParameterDescriptor<Double> wkt = WKT1.getElementDescriptor(indices);
-            name       = first(wkt.getAlias());
-            alias      = wkt.getName();
-            identifier = first(wkt.getIdentifiers());
-        } else {
-            /*
-             * For the WKT1 convention, create an alias matching the EPSG pattern ("A0", "A1", etc.) for all
-             * indices but declare the EPSG authority and identifier only for A0, A1, A2, B0, B1 and B2.
-             */
-            name = new NamedIdentifier(Citations.OGC, Constants.OGC, super.indicesToName(indices), null, null);
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(ParameterDescriptor.NAME_KEY,
+                new NamedIdentifier(Citations.OGC, Constants.OGC, indicesToName(indices), null, null));
+        final String c = indicesToAlias(indices);
+        if (c != null) {
             final Citation authority;
             final String codeSpace;
             if (isEPSG(indices)) {
                 authority = Citations.OGP;
                 codeSpace = Constants.EPSG;
-                final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
-                identifier = new ImmutableIdentifier(authority, codeSpace, String.valueOf(code));
             } else {
                 authority  = Citations.SIS;
                 codeSpace  = Constants.SIS;
-                identifier = null;
             }
-            final String c = indicesToAlias(indices);
-            alias = (c != null) ? new NamedIdentifier(authority, codeSpace, c, null, null) : null;
+            properties.put(ParameterDescriptor.ALIAS_KEY,
+                    new NamedIdentifier(authority, codeSpace, c, null, null));
         }
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(ParameterDescriptor.NAME_KEY,        name);
-        properties.put(ParameterDescriptor.ALIAS_KEY,       alias);
-        properties.put(ParameterDescriptor.IDENTIFIERS_KEY, identifier);
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
     }
 
@@ -266,7 +170,6 @@ final class MatrixParameters extends TensorParameters<Double> {
      * On deserialization, replaces the deserialized instance by the unique instance if possible.
      */
     Object readResolve() throws ObjectStreamException {
-        final TensorParameters<?> candidate = isEPSG() ? EPSG : WKT1;
-        return equals(candidate) ? candidate : this;
+        return equals(WKT1) ? WKT1 : this;
     }
 }
