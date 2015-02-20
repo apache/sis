@@ -324,8 +324,8 @@ public strictfp class TensorParametersTest extends TestCase {
                 final ParameterValueGroup group = param.createValueGroup(
                         singletonMap(GeneralParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
-                assertEquals("num_row",  numRow, group.parameter("num_row").intValue());
-                assertEquals("num_col",  numCol, group.parameter("num_col").intValue());
+                assertEquals(NUM_ROW,    numRow, group.parameter(NUM_ROW).intValue());
+                assertEquals(NUM_COL,    numCol, group.parameter(NUM_COL).intValue());
                 assertEquals("elements", matrix, param.toMatrix(group));
                 assertEquals("elements", matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
             }

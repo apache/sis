@@ -31,6 +31,7 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -211,24 +212,24 @@ public final strictfp class CommonCRSTest extends TestCase {
      */
     @Test
     public void testForCode() throws FactoryException {
-        verifyForCode(CommonCRS.WGS84 .geographic(),            "EPSG", "4326");
-        verifyForCode(CommonCRS.WGS72 .geographic(),            "EPSG", "4322");
-        verifyForCode(CommonCRS.SPHERE.geographic(),            "EPSG", "4047");
-        verifyForCode(CommonCRS.NAD83 .geographic(),            "EPSG", "4269");
-        verifyForCode(CommonCRS.NAD27 .geographic(),            "EPSG", "4267");
-        verifyForCode(CommonCRS.ETRS89.geographic(),            "EPSG", "4258");
-        verifyForCode(CommonCRS.ED50  .geographic(),            "EPSG", "4230");
-        verifyForCode(CommonCRS.WGS84 .geocentric(),            "EPSG", "4978");
-        verifyForCode(CommonCRS.WGS72 .geocentric(),            "EPSG", "4984");
-        verifyForCode(CommonCRS.ETRS89.geocentric(),            "EPSG", "4936");
-        verifyForCode(CommonCRS.WGS84 .geographic3D(),          "EPSG", "4979");
-        verifyForCode(CommonCRS.WGS72 .geographic3D(),          "EPSG", "4985");
-        verifyForCode(CommonCRS.ETRS89.geographic3D(),          "EPSG", "4937");
-        verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "EPSG", "5714");
-        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),           "EPSG", "5715");
-        verifyForCode(CommonCRS.WGS84.normalizedGeographic(),   "CRS",  "84");
-        verifyForCode(CommonCRS.NAD83.normalizedGeographic(),   "CRS",  "83");
-        verifyForCode(CommonCRS.NAD27.normalizedGeographic(),   "CRS",  "27");
+        verifyForCode(CommonCRS.WGS84 .geographic(),            Constants.EPSG, "4326");
+        verifyForCode(CommonCRS.WGS72 .geographic(),            Constants.EPSG, "4322");
+        verifyForCode(CommonCRS.SPHERE.geographic(),            Constants.EPSG, "4047");
+        verifyForCode(CommonCRS.NAD83 .geographic(),            Constants.EPSG, "4269");
+        verifyForCode(CommonCRS.NAD27 .geographic(),            Constants.EPSG, "4267");
+        verifyForCode(CommonCRS.ETRS89.geographic(),            Constants.EPSG, "4258");
+        verifyForCode(CommonCRS.ED50  .geographic(),            Constants.EPSG, "4230");
+        verifyForCode(CommonCRS.WGS84 .geocentric(),            Constants.EPSG, "4978");
+        verifyForCode(CommonCRS.WGS72 .geocentric(),            Constants.EPSG, "4984");
+        verifyForCode(CommonCRS.ETRS89.geocentric(),            Constants.EPSG, "4936");
+        verifyForCode(CommonCRS.WGS84 .geographic3D(),          Constants.EPSG, "4979");
+        verifyForCode(CommonCRS.WGS72 .geographic3D(),          Constants.EPSG, "4985");
+        verifyForCode(CommonCRS.ETRS89.geographic3D(),          Constants.EPSG, "4937");
+        verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  Constants.EPSG, "5714");
+        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),           Constants.EPSG, "5715");
+        verifyForCode(CommonCRS.WGS84.normalizedGeographic(),   Constants.CRS,  "84");
+        verifyForCode(CommonCRS.NAD83.normalizedGeographic(),   Constants.CRS,  "83");
+        verifyForCode(CommonCRS.NAD27.normalizedGeographic(),   Constants.CRS,  "27");
     }
 
     /**

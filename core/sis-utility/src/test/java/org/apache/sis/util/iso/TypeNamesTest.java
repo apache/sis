@@ -29,6 +29,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.internal.util.Constants.OGC;
 
 
 /**
@@ -74,14 +75,14 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testBasicTypes() throws ClassNotFoundException {
-        verifyLookup("OGC", "URI",              URI.class);
-        verifyLookup("OGC", "PT_Locale",        Locale.class);
-        verifyLookup("OGC", "DateTime",         Date.class);
-        verifyLookup("OGC", "FreeText",         InternationalString.class);
-        verifyLookup("OGC", "CharacterString",  String.class);
-        verifyLookup("OGC", "Boolean",          Boolean.class);
-        verifyLookup("OGC", "Real",             Double.class);
-        verifyLookup("OGC", "Integer",          Integer.class);
+        verifyLookup(OGC, "URI",              URI.class);
+        verifyLookup(OGC, "PT_Locale",        Locale.class);
+        verifyLookup(OGC, "DateTime",         Date.class);
+        verifyLookup(OGC, "FreeText",         InternationalString.class);
+        verifyLookup(OGC, "CharacterString",  String.class);
+        verifyLookup(OGC, "Boolean",          Boolean.class);
+        verifyLookup(OGC, "Real",             Double.class);
+        verifyLookup(OGC, "Integer",          Integer.class);
     }
 
     /**
@@ -89,10 +90,10 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testNumbers() {
-        assertEquals("Short",  "OGC:Integer", toTypeName(Short .class));
-        assertEquals("Long",   "OGC:Integer", toTypeName(Long  .class));
-        assertEquals("Float",  "OGC:Real",    toTypeName(Float .class));
-        assertEquals("Double", "OGC:Real",    toTypeName(Double.class));
+        assertEquals("Short",  OGC+":Integer", toTypeName(Short .class));
+        assertEquals("Long",   OGC+":Integer", toTypeName(Long  .class));
+        assertEquals("Float",  OGC+":Real",    toTypeName(Float .class));
+        assertEquals("Double", OGC+":Real",    toTypeName(Double.class));
     }
 
     /**
@@ -102,8 +103,8 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testMetadataClasses() throws ClassNotFoundException {
-        verifyLookup("OGC", "MD_Metadata", Metadata.class);
-        verifyLookup("OGC", "SC_CRS",      CoordinateReferenceSystem.class);
+        verifyLookup(OGC, "MD_Metadata", Metadata.class);
+        verifyLookup(OGC, "SC_CRS",      CoordinateReferenceSystem.class);
     }
 
     /**
@@ -124,9 +125,9 @@ public final strictfp class TypeNamesTest extends TestCase {
     @Test
     public void testInvalidNames() throws ClassNotFoundException {
         assertEquals("Dummy:Real", Void.TYPE,    TypeNames.toClass("Dummy", "Real"));
-        assertEquals("OGC:Real",   Double.class, TypeNames.toClass("OGC",   "Real"));
+        assertEquals(OGC+":Real",  Double.class, TypeNames.toClass(OGC,     "Real"));
         assertEquals("Real",       Double.class, TypeNames.toClass(null,    "Real"));
         assertEquals("Dummy",      Void.TYPE,    TypeNames.toClass(null,    "Dummy")); // Considered not an error.
-        assertNull  ("OGC:Dummy",                TypeNames.toClass("OGC",   "Dummy")); // Considered an error.
+        assertNull  (OGC+":Dummy",               TypeNames.toClass(OGC,     "Dummy")); // Considered an error.
     }
 }

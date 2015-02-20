@@ -34,6 +34,8 @@ import org.junit.Test;
 import static java.util.Collections.singletonMap;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.internal.util.Constants.NUM_ROW;
+import static org.apache.sis.internal.util.Constants.NUM_COL;
 
 
 /**
@@ -102,19 +104,19 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Integer N3 = 3;
         final ParameterValueGroup group = createWKT1();
 
-        group.parameter("num_row").setValue(1);
-        group.parameter("num_col").setValue(1);
+        group.parameter(NUM_ROW).setValue(1);
+        group.parameter(NUM_COL).setValue(1);
         List<GeneralParameterDescriptor> descriptors = group.getDescriptor().descriptors();
-        assertDescriptorEquals("num_row", N3, descriptors.get(0));
-        assertDescriptorEquals("num_col", N3, descriptors.get(1));
+        assertDescriptorEquals( NUM_ROW,  N3, descriptors.get(0));
+        assertDescriptorEquals( NUM_COL,  N3, descriptors.get(1));
         assertDescriptorEquals("elt_0_0", N1, descriptors.get(2));
         assertEquals("size", 3, descriptors.size());
 
-        group.parameter("num_row").setValue(2);
-        group.parameter("num_col").setValue(3);
+        group.parameter(NUM_ROW).setValue(2);
+        group.parameter(NUM_COL).setValue(3);
         descriptors = group.getDescriptor().descriptors();
-        assertDescriptorEquals("num_row", N3, descriptors.get(0));
-        assertDescriptorEquals("num_col", N3, descriptors.get(1));
+        assertDescriptorEquals( NUM_ROW,  N3, descriptors.get(0));
+        assertDescriptorEquals( NUM_COL,  N3, descriptors.get(1));
         assertDescriptorEquals("elt_0_0", N1, descriptors.get(2));
         assertDescriptorEquals("elt_0_1", N0, descriptors.get(3));
         assertDescriptorEquals("elt_0_2", N0, descriptors.get(4));
@@ -137,10 +139,10 @@ public final strictfp class TensorValuesTest extends TestCase {
          * Use non-standard matrix size. The "num_row" and "num_col"
          * parameters shall be included in the list of descriptors.
          */
-        group.parameter("num_row").setValue(2);
+        group.parameter(NUM_ROW).setValue(2);
         descriptors = group.getDescriptor().descriptors();
-        assertDescriptorEquals("num_row", N3, descriptors.get(0));
-        assertDescriptorEquals("num_col", N3, descriptors.get(1));
+        assertDescriptorEquals(NUM_ROW, N3, descriptors.get(0));
+        assertDescriptorEquals(NUM_COL, N3, descriptors.get(1));
         verifyDescriptorsEPSG(descriptors, 2);
     }
 
@@ -167,11 +169,11 @@ public final strictfp class TensorValuesTest extends TestCase {
     @DependsOnMethod("testParameter")
     public void testValues() {
         final ParameterValueGroup group = createWKT1();
-        group.parameter("num_row").setValue(2);
-        group.parameter("num_col").setValue(3);
+        group.parameter(NUM_ROW).setValue(2);
+        group.parameter(NUM_COL).setValue(3);
         List<GeneralParameterValue> values = group.values();
-        assertValueEquals("num_row", 2, values.get(0));
-        assertValueEquals("num_col", 3, values.get(1));
+        assertValueEquals(NUM_ROW, 2, values.get(0));
+        assertValueEquals(NUM_COL, 3, values.get(1));
         assertEquals("size", 2, values.size());
         /*
          * Above list had no explicit parameters, since all of them had their default values.
@@ -182,8 +184,8 @@ public final strictfp class TensorValuesTest extends TestCase {
         group.parameter("elt_1_1").setValue(7);
         group.parameter("elt_1_2").setValue(6);
         values = group.values();
-        assertValueEquals("num_row", 2,   values.get(0));
-        assertValueEquals("num_col", 3,   values.get(1));
+        assertValueEquals( NUM_ROW,  2,   values.get(0));
+        assertValueEquals( NUM_COL,  3,   values.get(1));
         assertValueEquals("elt_0_1", 8.0, values.get(2));
         assertValueEquals("elt_1_1", 7.0, values.get(3));
         assertValueEquals("elt_1_2", 6.0, values.get(4));
@@ -200,8 +202,8 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Integer N3 = 3;
         final ParameterValueGroup group = createWKT1();
         final ParameterDescriptorGroup d = group.getDescriptor();
-        assertDescriptorEquals("num_row", N3, d.descriptor("num_row"));
-        assertDescriptorEquals("num_col", N3, d.descriptor("num_col"));
+        assertDescriptorEquals( NUM_ROW,  N3, d.descriptor( NUM_ROW ));
+        assertDescriptorEquals( NUM_COL,  N3, d.descriptor( NUM_COL ));
         assertDescriptorEquals("elt_0_0", N1, d.descriptor("elt_0_0"));
         assertDescriptorEquals("elt_0_1", N0, d.descriptor("elt_0_1"));
         assertDescriptorEquals("elt_0_2", N0, d.descriptor("elt_0_2"));
@@ -227,7 +229,7 @@ public final strictfp class TensorValuesTest extends TestCase {
          * If we reduce the matrix size, than it shall not be possible
          * anymore to get the descriptor in the row that we removed.
          */
-        group.parameter("num_col").setValue(2);
+        group.parameter(NUM_COL).setValue(2);
         try {
             d.descriptor("elt_2_2");
             fail("elt_2_2 should not exist.");
@@ -247,8 +249,8 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Double  N1 = 1.0;
         final Integer N3 = 3;
         final ParameterValueGroup group = createWKT1();
-        assertValueEquals("num_row", N3, group.parameter("num_row"));
-        assertValueEquals("num_col", N3, group.parameter("num_col"));
+        assertValueEquals( NUM_ROW,  N3, group.parameter( NUM_ROW ));
+        assertValueEquals( NUM_COL,  N3, group.parameter( NUM_COL ));
         assertValueEquals("elt_0_0", N1, group.parameter("elt_0_0"));
         assertValueEquals("elt_0_1", N0, group.parameter("elt_0_1"));
         assertValueEquals("elt_2_2", N1, group.parameter("elt_2_2"));
@@ -270,7 +272,7 @@ public final strictfp class TensorValuesTest extends TestCase {
          * If we reduce the matrix size, than it shall not be possible
          * anymore to get the descriptor in the row that we removed.
          */
-        group.parameter("num_col").setValue(2);
+        group.parameter(NUM_COL).setValue(2);
         try {
             group.parameter("elt_2_2");
             fail("elt_2_2 should not exist.");
@@ -288,21 +290,21 @@ public final strictfp class TensorValuesTest extends TestCase {
     @DependsOnMethod("testParameter")
     public void testClone() {
         final ParameterValueGroup group = createWKT1();
-        group.parameter("num_row").setValue(2);
+        group.parameter(NUM_ROW).setValue(2);
         group.parameter("elt_0_1").setValue(4);
         group.parameter("elt_1_0").setValue(2);
         /*
          * Creates a clone, modify some values, keep other values.
          */
         final ParameterValueGroup clone = group.clone();
-        clone.parameter("num_row").setValue(4);
+        clone.parameter(NUM_ROW).setValue(4);
         clone.parameter("elt_0_1").setValue(3);
         /*
          * Verify that changes in cloned values did not affected
          * values in the original object.
          */
-        assertEquals(2, group.parameter("num_row").intValue());
-        assertEquals(4, clone.parameter("num_row").intValue());
+        assertEquals(2, group.parameter(NUM_ROW).intValue());
+        assertEquals(4, clone.parameter(NUM_ROW).intValue());
         assertEquals(4, group.parameter("elt_0_1").intValue());
         assertEquals(3, clone.parameter("elt_0_1").intValue());
         assertEquals(2, group.parameter("elt_1_0").intValue());
