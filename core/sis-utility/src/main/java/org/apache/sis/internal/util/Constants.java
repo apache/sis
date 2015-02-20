@@ -82,6 +82,13 @@ public final class Constants extends Static {
     public static final String NUM_ROW = "num_row", NUM_COL = "num_col";
 
     /**
+     * The OGC name for <cite>Affine general parametric transformation"</cite>.
+     *
+     * @see org.apache.sis.internal.referencing.provider.Affine#NAME
+     */
+    public static final String AFFINE = "Affine";
+
+    /**
      * EPSG code of the {@code A0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code A1} to {@code A8} inclusive follow, but the affine coefficients stop at {@code A2}.
      */

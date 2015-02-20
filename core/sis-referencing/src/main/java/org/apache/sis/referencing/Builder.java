@@ -190,8 +190,8 @@ public abstract class Builder<B extends Builder<B>> {
     protected Builder() {
         assert verifyParameterizedType(getClass());
         properties  = new HashMap<>(8);
-        aliases     = new ArrayList<>(4);
-        identifiers = new ArrayList<>(4);
+        aliases     = new ArrayList<>();  // Will often stay empty (default constructor handles those cases well).
+        identifiers = new ArrayList<>();
     }
 
     /**

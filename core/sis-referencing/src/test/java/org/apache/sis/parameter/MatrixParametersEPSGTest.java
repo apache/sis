@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.6
  * @module
  */
-@DependsOn(TensorParametersTest.class)
+@DependsOn(MatrixParametersTest.class)
 public final strictfp class MatrixParametersEPSGTest extends MatrixParametersTest {
     /**
      * The expected parameter identifiers for the matrix elements, or 0 if none.
