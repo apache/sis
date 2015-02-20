@@ -79,7 +79,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation SIS = new SimpleCitation("SIS");
+    public static final Citation SIS = new SimpleCitation(Constants.SIS);
 
     /**
      * The <a href="http://www.esri.com">ESRI</a> organization.
