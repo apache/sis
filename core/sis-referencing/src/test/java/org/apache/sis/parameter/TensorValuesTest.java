@@ -26,6 +26,8 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -290,21 +292,21 @@ public final strictfp class TensorValuesTest extends TestCase {
     @DependsOnMethod("testParameter")
     public void testClone() {
         final ParameterValueGroup group = createWKT1();
-        group.parameter(NUM_ROW).setValue(2);
+        group.parameter( NUM_ROW ).setValue(2);
         group.parameter("elt_0_1").setValue(4);
         group.parameter("elt_1_0").setValue(2);
         /*
          * Creates a clone, modify some values, keep other values.
          */
         final ParameterValueGroup clone = group.clone();
-        clone.parameter(NUM_ROW).setValue(4);
+        clone.parameter( NUM_ROW ).setValue(4);
         clone.parameter("elt_0_1").setValue(3);
         /*
          * Verify that changes in cloned values did not affected
          * values in the original object.
          */
-        assertEquals(2, group.parameter(NUM_ROW).intValue());
-        assertEquals(4, clone.parameter(NUM_ROW).intValue());
+        assertEquals(2, group.parameter( NUM_ROW ).intValue());
+        assertEquals(4, clone.parameter( NUM_ROW ).intValue());
         assertEquals(4, group.parameter("elt_0_1").intValue());
         assertEquals(3, clone.parameter("elt_0_1").intValue());
         assertEquals(2, group.parameter("elt_1_0").intValue());
@@ -327,7 +329,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         matrix.setElement(1,0, -2);
         matrix.setElement(2,3,  7);
         final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
-                singletonMap(TensorValues.NAME_KEY, "Affine"), matrix);
+                singletonMap(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
         assertWktEquals(
                 "ParameterGroup[“Affine”,\n"      +
@@ -354,7 +356,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         matrix.setElement(1,0, -2);
         matrix.setElement(2,1,  7);
         final ParameterValueGroup group = TensorParameters.EPSG.createValueGroup(
-                singletonMap(TensorValues.NAME_KEY, "Affine general parametric transformation"), matrix);
+                singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
                 "ParameterGroup[“Affine general parametric transformation”,\n" +

@@ -66,6 +66,16 @@ public final class Affine extends AbstractProvider {
     private static final long serialVersionUID = 649555815622129472L;
 
     /**
+     * The operation method name as defined in the EPSG database.
+     * Must matches exactly the EPSG name (this will be verified by JUnit tests).
+     *
+     * <p>Note: in contrast, the name used by OGC is just "Affine".</p>
+     *
+     * @see org.apache.sis.internal.util.Constants#AFFINE
+     */
+    public static final String NAME = "Affine general parametric transformation";
+
+    /**
      * The number of dimensions used by the EPSG:9624 definition. This will be used as the
      * default number of dimensions. Operation methods of other dimensions, where we have
      * no EPSG definition, shall use the Well Known Text (WKT) parameter names.
@@ -73,7 +83,8 @@ public final class Affine extends AbstractProvider {
     public static final int EPSG_DIMENSION = 2;
 
     /**
-     * The maximal number of dimension to be cached in the {@link #cached} array.
+     * The maximal number of dimensions to be cached. Descriptors having more than
+     * this amount of dimensions will be recreated every time they are requested.
      */
     private static final int MAX_CACHED_DIMENSION = 6;
 

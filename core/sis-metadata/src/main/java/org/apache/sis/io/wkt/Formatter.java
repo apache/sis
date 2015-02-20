@@ -870,7 +870,7 @@ public class Formatter implements Localized {
                 final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
                 if (matrix != null) {
                     openElement(true, "Param_MT");
-                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append("Affine")
+                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append(Constants.AFFINE)
                           .appendCodePoint(symbols.getClosingQuote(0));
                     indent(+1);
                     append(matrix);

@@ -168,12 +168,12 @@ public class TensorParameters<E> implements Serializable {
      * This implementation accepts also parameters for matrix of different size (for example {@code "C4"} for row 3
      * and column 4), but such extensions are not official EPSG parameter names.
      *
-     * <p>In addition, each parameter accepts also the {@link WKT1} name (e.g. {@code "elt_1_2"})
+     * <p>In addition, each parameter accepts also the {@link #WKT1} name (e.g. {@code "elt_1_2"})
      * as an {@linkplain ParameterDescriptor#getAlias() alias}.</p>
      *
      * @since 0.6
      */
-    public static final TensorParameters<Double> EPSG;
+    static final TensorParameters<Double> EPSG;
 
     /**
      * Parses and creates matrix parameters with names matching the
@@ -544,7 +544,8 @@ public class TensorParameters<E> implements Serializable {
     /**
      * Returns the descriptor in this group for the specified name.
      *
-     * @param  name The case insensitive name of the parameter to search for.
+     * @param  caller     The {@link TensorValues} instance invoking this method, used only in case of errors.
+     * @param  name       The case insensitive name of the parameter to search for.
      * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      * @return The parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.

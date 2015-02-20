@@ -30,7 +30,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
 
 /**
  * A special case of {@link MatrixParameters} implementing the "magic" for the EPSG:9624 parameters.
- * The "magical" behavior is to hide {@code "num_row"}, {@cod "num_col"} and last row parameters if
+ * The "magical" behavior is to hide {@code "num_row"}, {@code "num_col"} and last row parameters if
  * the matrix has exactly the dimensions required by the EPSG:9624 operation method, which is 3×3.
  * The intend is to get a descriptor matching the one defined in the EPSG database.
  *

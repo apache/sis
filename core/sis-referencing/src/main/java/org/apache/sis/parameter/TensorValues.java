@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  */
-final class TensorValues<E> extends AbstractParameterDescriptor
+class TensorValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
 {
     /**
@@ -66,7 +66,11 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     private static final long serialVersionUID = -7747712999115044943L;
 
     /**
-     * A provider of matrix descriptors.
+     * A provider of descriptors for matrix parameters. This object is used like a collection of
+     * {@link ParameterDescriptor}s, even if it does not implement any standard collection API.
+     *
+     * @see TensorParameters#descriptor(ParameterDescriptorGroup, String, int[])
+     * @see TensorParameters#descriptors(int[])
      */
     private final TensorParameters<E> descriptors;
 
@@ -102,7 +106,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * If {@code clone} is true, the new group will be a clone of the given group.
      * If {@code clone} is false, the new group will be initialized to default values.
      */
-    private TensorValues(final TensorValues<E> other, final boolean clone) {
+    TensorValues(final TensorValues<E> other, final boolean clone) {
         super(other);
         descriptors = other.descriptors;
         dimensions = other.dimensions.clone();
@@ -156,7 +160,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * the description depends on {@code "num_row"} and {@code "num_col"} parameter values.
      */
     @Override
-    public ParameterDescriptorGroup getDescriptor() {
+    public final ParameterDescriptorGroup getDescriptor() {
         return this;
     }
 
@@ -165,8 +169,19 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * on the value of {@code "num_row"} and {@code "num_col"} parameters.
      */
     @Override
-    public List<GeneralParameterDescriptor> descriptors() {
-        return descriptors.descriptors(size());
+    public final List<GeneralParameterDescriptor> descriptors() {
+        return provider().descriptors(size());
+    }
+
+    /**
+     * Returns the object to use for computing parameter descriptions.
+     * This should always be the {@link #descriptors} field, unless we
+     * want to vary parameter descriptions according the matrix size.
+     *
+     * @return Object to use for computing parameter descriptions.
+     */
+    TensorParameters<E> provider() {
+        return descriptors;
     }
 
     /**
@@ -188,10 +203,10 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
-    public GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
+    public final GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
-        return descriptors.descriptor(this, name, size());
+        return provider().descriptor(this, name, size());
     }
 
     /**
@@ -202,13 +217,14 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
-    public ParameterValue<?> parameter(String name) throws ParameterNotFoundException {
+    public final ParameterValue<?> parameter(String name) throws ParameterNotFoundException {
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
         IllegalArgumentException cause = null;
+        final TensorParameters<E> provider = provider();
         int[] indices = null;
         try {
-            indices = descriptors.nameToIndices(name);
+            indices = provider.nameToIndices(name);
         } catch (IllegalArgumentException exception) {
             cause = exception;
         }
@@ -223,9 +239,9 @@ final class TensorValues<E> extends AbstractParameterDescriptor
          * Verify if the requested parameters is one of those that
          * specify the matrix/tensor size ("num_row" or "num_col").
          */
-        final int rank = descriptors.rank();
+        final int rank = provider.rank();
         for (int i=0; i<rank; i++) {
-            final ParameterDescriptor<Integer> param = descriptors.getDimensionDescriptor(i);
+            final ParameterDescriptor<Integer> param = provider.getDimensionDescriptor(i);
             if (IdentifiedObjects.isHeuristicMatchForName(param, name)) {
                 return dimensions[i];
             }
@@ -283,11 +299,12 @@ final class TensorValues<E> extends AbstractParameterDescriptor
             parent = (Object[]) element;
             element = parent[indices[i]];
         }
+        final TensorParameters<E> provider = provider();
         if (element == null) {
-            element = descriptors.getElementDescriptor(indices).createValue();
+            element = provider.getElementDescriptor(indices).createValue();
             parent[indices[rank - 1]] = element;
         }
-        return Parameters.cast((ParameterValue<?>) element, descriptors.getElementType());
+        return Parameters.cast((ParameterValue<?>) element, provider.getElementType());
     }
 
     /**
@@ -297,7 +314,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Never requested elements are left to their default value and omitted from the returned array.
      */
     @Override
-    public List<GeneralParameterValue> values() {
+    public final List<GeneralParameterValue> values() {
         final List<GeneralParameterValue> addTo = new ArrayList<>();
         for (final ParameterValue<Integer> dimension : dimensions) {
             if (!isOmitted(dimension)) {
@@ -362,6 +379,32 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     }
 
     /**
+     * Returns {@code true} if this matrix is square and affine with the given size.
+     * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
+     */
+    final boolean isAffine(int size) {
+        if (dimensions[0].intValue() != size ||
+            dimensions[1].intValue() != size)
+        {
+            return false;
+        }
+        if (values != null) {
+            final ParameterValue<?>[] row = (ParameterValue<?>[]) values[size - 1];
+            if (row != null) {
+                double expected = 1;
+                while (--size >= 0) {
+                    final ParameterValue<?> element = row[size];
+                    if (element != null && element.doubleValue() != expected) {
+                        return false;
+                    }
+                    expected = 0;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Creates a matrix from this group of parameters.
      * This operation is allowed only for tensors of {@linkplain #rank() rank} 2.
      *
@@ -394,7 +437,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      *
      * @param matrix The matrix to copy in this group of parameters.
      */
-    public void setMatrix(final Matrix matrix) {
+    final void setMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         dimensions[0].setValue(numRow);
@@ -406,7 +449,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
             ParameterValue<?>[] row = null;
             for (int i=0; i<numCol; i++) {
                 indices[1] = i;
-                ParameterDescriptor<E> descriptor = descriptors.getElementDescriptor(indices);
+                ParameterDescriptor<E> descriptor = provider().getElementDescriptor(indices);
                 final E def = descriptor.getDefaultValue();
                 final double element = matrix.getElement(j,i);
                 if (!(def instanceof Number) || !Numerics.equalsIgnoreZeroSign(element, ((Number) def).doubleValue())) {
@@ -429,7 +472,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Compares this object with the specified one for equality.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
+    public final boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true; // Slight optimization.
         }
@@ -447,7 +490,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * @return {@inheritDoc}
      */
     @Override
-    protected long computeHashCode() {
+    protected final long computeHashCode() {
         return super.computeHashCode() + descriptors.hashCode();
         // Do not use any field other than descriptors, because they are not immutable.
     }
@@ -459,7 +502,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * @return {@code "ParameterGroup"}.
      */
     @Override
-    protected String formatTo(final Formatter formatter) {
+    protected final String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
         WKTUtilities.append(this, formatter);
         return "ParameterGroup";
