@@ -23,7 +23,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -91,7 +91,7 @@ public final class NameMeaning extends Static {
      * @return {@code true} if the given code space is known to use the URN syntax.
      */
     public static boolean usesURN(final String codeSpace) {
-        return (codeSpace != null) && codeSpace.equalsIgnoreCase(Citations.EPSG);
+        return (codeSpace != null) && codeSpace.equalsIgnoreCase(Constants.EPSG);
     }
 
     /**

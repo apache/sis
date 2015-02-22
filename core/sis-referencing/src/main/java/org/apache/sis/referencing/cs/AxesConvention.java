@@ -16,7 +16,8 @@
  */
 package org.apache.sis.referencing.cs;
 
-import org.opengis.referencing.cs.AxisDirection; // For javadoc
+import org.opengis.referencing.cs.AxisDirection;    // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
 
 
 /**
@@ -136,6 +137,7 @@ public enum AxesConvention {
      * changes are more difficult to handle by coordinate operation factories.
      * </div>
      *
+     * @see CoordinateSystems#normalize(CoordinateSystem)
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
     NORMALIZED,

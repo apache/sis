@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.referencing;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
 
-import static org.apache.sis.internal.referencing.HardCoded.EPSG;
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**

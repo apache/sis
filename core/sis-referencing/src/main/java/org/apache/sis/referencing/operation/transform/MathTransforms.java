@@ -109,7 +109,7 @@ public final class MathTransforms extends Static {
      * @return The linear (usually affine) transform.
      *
      * @see #getMatrix(MathTransform)
-     * @see org.opengis.referencing.operation.MathTransformFactory#createAffineTransform(Matrix)
+     * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
      */
     public static LinearTransform linear(final Matrix matrix) {
         ensureNonNull("matrix", matrix);
@@ -157,7 +157,7 @@ public final class MathTransforms extends Static {
      * @throws MismatchedDimensionException if the output dimension of the first transform
      *         does not match the input dimension of the second transform.
      *
-     * @see MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+     * @see DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
      */
     public static MathTransform concatenate(final MathTransform tr1, final MathTransform tr2)
             throws MismatchedDimensionException

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -28,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class VersionTest extends TestCase {
@@ -68,6 +69,21 @@ public final strictfp class VersionTest extends TestCase {
         assertTrue(version.compareTo(new Version("1.6.b2")) == 0);
         assertTrue(version.compareTo(new Version("1.6.b1"))  > 0);
         assertTrue(version.compareTo(new Version("1.07.b1")) < 0);
+    }
+
+    /**
+     * Tests {@link Version#compareTo(Version, int)} with version numbers needed by our GML support.
+     */
+    @Test
+    public void testGML() {
+        assertTrue(LegacyNamespaces.VERSION_3_2.compareTo(LegacyNamespaces.VERSION_3_2_1, 2) == 0);
+        assertTrue(LegacyNamespaces.VERSION_3_2.compareTo(LegacyNamespaces.VERSION_3_2_1   )  < 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1   )  < 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1, 2)  < 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2_1, 1) == 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2     )  < 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2,   2)  < 0);
+        assertTrue(LegacyNamespaces.VERSION_3_0.compareTo(LegacyNamespaces.VERSION_3_2,   1) == 0);
     }
 
     /**

@@ -47,6 +47,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @see DefaultOperationMethod
  * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform
+ * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**
