@@ -23,9 +23,8 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the {@link MatrixParametersEPSG} class using the {@link TensorParameters#EPSG} constant.
- * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a
- * different instance.
+ * Tests the {@link MatrixParametersAlphaNum} class using the {@link TensorParameters#ALPHANUM} constant.
+ * This class inherits all the tests from {@link TensorParametersTest}, but applies them on a different instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -33,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn(MatrixParametersTest.class)
-public final strictfp class MatrixParametersEPSGTest extends MatrixParametersTest {
+public final strictfp class MatrixParametersAlphaNumTest extends MatrixParametersTest {
     /**
      * The expected parameter identifiers for the matrix elements, or 0 if none.
      * Note that the EPSG database contains A3 and B3 parameters, but they are
@@ -49,8 +48,8 @@ public final strictfp class MatrixParametersEPSGTest extends MatrixParametersTes
     /**
      * Creates a new test case for {@link MatrixParameters}.
      */
-    public MatrixParametersEPSGTest() {
-        super(TensorParameters.EPSG, ALPHANUM_NAMES, ELEMENT_NAMES, IDENTIFIERS);
+    public MatrixParametersAlphaNumTest() {
+        super(TensorParameters.ALPHANUM, ALPHANUM_NAMES, ELEMENT_NAMES, IDENTIFIERS);
     }
 
     /**
@@ -82,7 +81,7 @@ public final strictfp class MatrixParametersEPSGTest extends MatrixParametersTes
     }
 
     /**
-     * Tests {@link MatrixParametersEPSG#indicesToName(int[])}.
+     * Tests {@link MatrixParametersAlphaNum#indicesToName(int[])}.
      */
     @Test
     @Override

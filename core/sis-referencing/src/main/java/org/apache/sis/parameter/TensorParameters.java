@@ -41,7 +41,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
@@ -156,24 +155,54 @@ public class TensorParameters<E> implements Serializable {
     private static final long serialVersionUID = -7386537348359343836L;
 
     /**
-     * Parses and creates matrix parameters with names matching the <cite>"Affine parametric transformation"</cite>
-     * (EPSG:9624) operation method. The matrix size is 3×3 and the parameter names are {@code "A0"}, {@code "A1"},
-     * {@code "A2"}, {@code "B0"}, {@code "B1"} and {@code "B2"} where:
+     * Parses and creates matrix parameters with alphanumeric names.
+     * {@linkplain DefaultParameterDescriptor#getName() Names} are made of a letter indicating the row
+     * (first row is {@code "A"}), followed by a digit indicating the column index (first column is {@code "0"}).
+     * {@linkplain DefaultParameterDescriptor#getAlias() Aliases} are the names as they were defined in version 1
+     * of <cite>Well Known Text</cite> (WKT) format.
+     *
+     * <table class="sis">
+     *   <caption>Parameter names for a 3×3 matrix</caption>
+     *   <tr>
+     *     <th>Primary name</th>
+     *     <th class="sep">Alias</th>
+     *   </tr>
+     * <tr><td>
+     * {@preformat text
+     *   ┌            ┐
+     *   │ A0  A1  A2 │
+     *   │ B0  B1  B2 │
+     *   │ C0  C1  C2 │
+     *   └            ┘
+     * }</td><td class="sep">
+     * {@preformat text
+     *   ┌                             ┐
+     *   │ elt_0_0   elt_0_1   elt_0_2 │
+     *   │ elt_1_0   elt_1_1   elt_1_2 │
+     *   │ elt_2_0   elt_2_1   elt_2_2 │
+     *   └                             ┘
+     * }</td></tr>
+     * </table>
+     *
+     * {@section Relationship with EPSG}
+     * The above-cited group of parameters are close, but not identical, to the definitions provided
+     * by the <cite>"Affine general parametric transformation"</cite> (EPSG:9624) operation method.
+     * The differences are:
      *
      * <ul>
-     *   <li>the letter indicates the row (first row is {@code "A"}),
-     *   <li>the digit is the column index (first column is {@code "0"}).</li>
+     *   <li>EPSG:9624 is for matrices of size 3×3 and does not provide any way to specify the matrix size.
+     *       This {@code ALPHANUM} convention extends the definition to matrices of arbitrary size and accepts
+     *       {@code "num_row"} and {@code "num_col"} as optional parameters.</li>
+     *   <li>EPSG:9624 is restricted to affine matrices and consequently define parameters only for the two
+     *       first rows. This class accepts also parameters for the last row (namely {@code "C0"}, {@code "C1"}
+     *       and {@code "C2"} in a 3×3 matrices).</li>
      * </ul>
      *
-     * This implementation accepts also parameters for matrix of different size (for example {@code "C4"} for row 3
-     * and column 4), but such extensions are not official EPSG parameter names.
-     *
-     * <p>In addition, each parameter accepts also the {@link #WKT1} name (e.g. {@code "elt_1_2"})
-     * as an {@linkplain ParameterDescriptor#getAlias() alias}.</p>
+     * Because of the above-cited extensions, this {@code TensorParameters} constant can not be named {@code EPSG}.
      *
      * @since 0.6
      */
-    static final TensorParameters<Double> EPSG;
+    public static final TensorParameters<Double> ALPHANUM;
 
     /**
      * Parses and creates matrix parameters with names matching the
@@ -223,7 +252,7 @@ public class TensorParameters<E> implements Serializable {
                 0, 1, Integer.class, valueDomain, null, defaultSize);
         numCol = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numCol),
                 0, 1, Integer.class, valueDomain, null, defaultSize);
-        EPSG = new MatrixParametersEPSG(numRow, numCol);
+        ALPHANUM = new MatrixParametersAlphaNum(numRow, numCol);
     }
 
     /**
@@ -359,10 +388,23 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
+     * Verifies that the length of the given array is equals to the tensor rank.
+     */
+    private void verifyRank(final int[] indices) {
+        if (indices.length != rank()) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, rank(), indices.length));
+        }
+    }
+
+    /**
      * Returns the parameter descriptor for the dimension at the given index.
      *
      * @param  i The dimension index, from 0 inclusive to {@link #rank()} exclusive.
      * @return The parameter descriptor for the dimension at the given index.
+     *
+     * @see #getElementDescriptor(int...)
+     * @see #getAllDescriptors(int...)
      */
     public final ParameterDescriptor<Integer> getDimensionDescriptor(final int i) {
         return dimensions[i];
@@ -377,8 +419,12 @@ public class TensorParameters<E> implements Serializable {
      * @param  indices The indices of the tensor element for which to get the descriptor.
      * @return The parameter descriptor for the given tensor element.
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     *
+     * @see #getDimensionDescriptor(int)
+     * @see #getAllDescriptors(int...)
      */
     public final ParameterDescriptor<E> getElementDescriptor(final int... indices) {
+        verifyRank(indices);
         final int cacheIndex = cacheIndex(indices);
         if (cacheIndex >= 0) {
             final ParameterDescriptor<E> param;
@@ -414,6 +460,7 @@ public class TensorParameters<E> implements Serializable {
         int cacheIndex = 0;
         for (int i=0; i<indices.length; i++) {
             final int index = indices[i];
+            ArgumentChecks.ensurePositive("indices", index);
             if (i < CACHE_RANK) {
                 if (index >= 0 && index < CACHE_SIZE) {
                     cacheIndex = (cacheIndex * CACHE_SIZE) + index;
@@ -475,10 +522,7 @@ public class TensorParameters<E> implements Serializable {
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      */
     protected String indicesToName(final int[] indices) throws IllegalArgumentException {
-        if (indices.length != rank()) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, rank(), indices.length));
-        }
+        verifyRank(indices);
         final StringBuilder name = new StringBuilder();
         String s = prefix;
         for (final int i : indices) {
@@ -594,39 +638,34 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Returns the number of dimensions (e.g. {@code "num_row"} and {@code "num_col"}) when formatting the parameter
-     * descriptors for a tensor of the given size. This is the {@linkplain #rank() rank}, except in the special case
-     * of {@link #EPSG} with a matrix size matching the expectation of the standard EPSG:9624 operation method.
+     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors
+     * for a tensor of the given size. This is the total number of elements in the tensor.
      */
-    int numDimensions(final int[] actualSize) {
-        return actualSize.length;
-    }
-
-    /**
-     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors for a tensor
-     * of the given size.  This is the total number of elements in the tensor, except for matrices which are intended
-     * to be affine (like {@link #EPSG}) where the last row is omitted.
-     */
-    int numElements(final int[] actualSize) {
-        int n = actualSize[0];
-        for (int i=1; i<actualSize.length; i++) {
-            n *= actualSize[i];
+    private int numElements(final int[] actualSize) {
+        int n = 1;
+        for (int s : actualSize) {
+            ArgumentChecks.ensurePositive("actualSize", s);
+            n *= s;
         }
         return n;
     }
 
     /**
      * Returns all parameters in this group for a tensor of the specified dimensions.
+     * The returned array contains all descriptors returned by {@link #getDimensionDescriptor(int)}
+     * and {@link #getElementDescriptor(int...)}.
      *
-     * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
-     *         It is caller's responsibility to ensure that this array does not contain negative values.
-     * @return The matrix parameters, including all elements.
+     * @param  actualSize The matrix (or tensor) dimensions for which to get the parameters.
+     * @return The tensor parameters, including all elements.
+     *
+     * @see #getDimensionDescriptor(int)
+     * @see #getElementDescriptor(int...)
      */
-    final List<GeneralParameterDescriptor> descriptors(final int[] actualSize) {
-        assert actualSize.length == rank();
-        final int numDimensions = numDimensions(actualSize);
+    public ParameterDescriptor<?>[] getAllDescriptors(final int... actualSize) {
+        verifyRank(actualSize);
+        final int numDimensions = actualSize.length;
         final int numElements   = numElements(actualSize);
-        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[numDimensions + numElements];
+        final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[numDimensions + numElements];
         System.arraycopy(dimensions, 0, parameters, 0, numDimensions);
         final int[] indices = new int[rank()];
         /*
@@ -642,7 +681,7 @@ public class TensorParameters<E> implements Serializable {
                 indices[j] = 0; // We have done a full turn at that dimension. Will increment next dimension.
             }
         }
-        return UnmodifiableArrayList.wrap(parameters);
+        return parameters;
     }
 
     /**

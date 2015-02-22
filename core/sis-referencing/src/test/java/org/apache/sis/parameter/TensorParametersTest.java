@@ -17,11 +17,9 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.List;
 import java.util.Random;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.test.TestUtilities;
@@ -90,7 +88,7 @@ public strictfp class TensorParametersTest extends TestCase {
 
     /**
      * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     * Example: {@link MatrixParametersEPSGTest#IDENTIFIERS}.
+     * Example: {@link MatrixParametersAlphaNum#IDENTIFIERS}.
      */
     private final short[][] identifiers;
 
@@ -144,10 +142,10 @@ public strictfp class TensorParametersTest extends TestCase {
      * @param actual       The actual parameter to verify.
      */
     private static void verifyDescriptor(final String name, final Number defaultValue,
-            final GeneralParameterDescriptor actual)
+            final ParameterDescriptor<?> actual)
     {
         assertEquals("name", name, actual.getName().getCode());
-        assertEquals("defaultValue", defaultValue, ((ParameterDescriptor<?>) actual).getDefaultValue());
+        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
     }
 
     /**
@@ -158,13 +156,13 @@ public strictfp class TensorParametersTest extends TestCase {
      * @param row          Row index of the matrix element to test.
      * @param column       Column index of the matrix element to test.
      */
-    private void verifyDescriptor(final Number defaultValue, final GeneralParameterDescriptor actual,
+    private void verifyDescriptor(final Number defaultValue, final ParameterDescriptor<?> actual,
             final int row, final int column)
     {
         assertEquals("name", names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
         assertIdentifierEqualsEPSG((identifiers != null) ? identifiers[row][column] : 0, actual);
-        assertEquals("defaultValue", defaultValue, ((ParameterDescriptor<?>) actual).getDefaultValue());
+        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
     }
 
     /**
@@ -236,72 +234,65 @@ public strictfp class TensorParametersTest extends TestCase {
     }
 
     /**
-     * Tests {@link TensorParameters#descriptors(int[])} for a 1×1, 2×3 and 3×3 matrices.
+     * Tests {@link TensorParameters#getAllDescriptors(int[])} for a 1×1, 2×3 and 3×3 matrices.
      */
     @Test
     @DependsOnMethod("testGetElementDescriptor")
-    public void testDescriptors() {
-        final boolean isEPSG = (identifiers != null);
-
+    public void testGetAllDescriptors() {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
-        List<GeneralParameterDescriptor> descriptors = param.descriptors(new int[] {1, 1});
-        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
-        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
-        verifyDescriptor(N1, descriptors.get(2), 0, 0);
-        assertEquals("size", 3, descriptors.size());
+        ParameterDescriptor<?>[] descriptors = param.getAllDescriptors(1, 1);
+        verifyDescriptor(NUM_ROW, N3, descriptors[0]);
+        verifyDescriptor(NUM_COL, N3, descriptors[1]);
+        verifyDescriptor(N1, descriptors[2], 0, 0);
+        assertEquals("size", 3, descriptors.length);
 
-        descriptors = param.descriptors(new int[] {2, 3});
-        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
-        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
-        verifyDescriptor(N1, descriptors.get(2), 0, 0);
-        verifyDescriptor(N0, descriptors.get(3), 0, 1);
-        verifyDescriptor(N0, descriptors.get(4), 0, 2);
-        verifyDescriptor(N0, descriptors.get(5), 1, 0);
-        verifyDescriptor(N1, descriptors.get(6), 1, 1);
-        verifyDescriptor(N0, descriptors.get(7), 1, 2);
-        assertEquals("size", 8, descriptors.size());
+        descriptors = param.getAllDescriptors(2, 3);
+        verifyDescriptor(NUM_ROW, N3, descriptors[0]);
+        verifyDescriptor(NUM_COL, N3, descriptors[1]);
+        verifyDescriptor(N1, descriptors[2], 0, 0);
+        verifyDescriptor(N0, descriptors[3], 0, 1);
+        verifyDescriptor(N0, descriptors[4], 0, 2);
+        verifyDescriptor(N0, descriptors[5], 1, 0);
+        verifyDescriptor(N1, descriptors[6], 1, 1);
+        verifyDescriptor(N0, descriptors[7], 1, 2);
+        assertEquals("size", 8, descriptors.length);
 
-        descriptors = param.descriptors(new int[] {3, 3});
-        int i = 0;
-        if (!isEPSG) {
-            verifyDescriptor(NUM_ROW, N3, descriptors.get(i++));
-            verifyDescriptor(NUM_COL, N3, descriptors.get(i++));
-        }
-        verifyDescriptor(N1, descriptors.get(i++), 0, 0);
-        verifyDescriptor(N0, descriptors.get(i++), 0, 1);
-        verifyDescriptor(N0, descriptors.get(i++), 0, 2);
-        verifyDescriptor(N0, descriptors.get(i++), 1, 0);
-        verifyDescriptor(N1, descriptors.get(i++), 1, 1);
-        verifyDescriptor(N0, descriptors.get(i++), 1, 2);
-        if (!isEPSG) {
-            verifyDescriptor(N0, descriptors.get(i++), 2, 0);
-            verifyDescriptor(N0, descriptors.get(i++), 2, 1);
-            verifyDescriptor(N1, descriptors.get(i++), 2, 2);
-        }
-        assertEquals("size", i, descriptors.size());
+        descriptors = param.getAllDescriptors(3, 3);
+        verifyDescriptor(NUM_ROW, N3, descriptors[0]);
+        verifyDescriptor(NUM_COL, N3, descriptors[1]);
+        verifyDescriptor(N1, descriptors[ 2], 0, 0);
+        verifyDescriptor(N0, descriptors[ 3], 0, 1);
+        verifyDescriptor(N0, descriptors[ 4], 0, 2);
+        verifyDescriptor(N0, descriptors[ 5], 1, 0);
+        verifyDescriptor(N1, descriptors[ 6], 1, 1);
+        verifyDescriptor(N0, descriptors[ 7], 1, 2);
+        verifyDescriptor(N0, descriptors[ 8], 2, 0);
+        verifyDescriptor(N0, descriptors[ 9], 2, 1);
+        verifyDescriptor(N1, descriptors[10], 2, 2);
+        assertEquals("size", 11, descriptors.length);
 
-        descriptors = param.descriptors(new int[] {4, 4});
-        verifyDescriptor(NUM_ROW, N3, descriptors.get(0));
-        verifyDescriptor(NUM_COL, N3, descriptors.get(1));
-        verifyDescriptor(N1, descriptors.get( 2), 0, 0);
-        verifyDescriptor(N0, descriptors.get( 3), 0, 1);
-        verifyDescriptor(N0, descriptors.get( 4), 0, 2);
-        verifyDescriptor(N0, descriptors.get( 5), 0, 3);
-        verifyDescriptor(N0, descriptors.get( 6), 1, 0);
-        verifyDescriptor(N1, descriptors.get( 7), 1, 1);
-        verifyDescriptor(N0, descriptors.get( 8), 1, 2);
-        verifyDescriptor(N0, descriptors.get( 9), 1, 3);
-        verifyDescriptor(N0, descriptors.get(10), 2, 0);
-        verifyDescriptor(N0, descriptors.get(11), 2, 1);
-        verifyDescriptor(N1, descriptors.get(12), 2, 2);
-        verifyDescriptor(N0, descriptors.get(13), 2, 3);
-        verifyDescriptor(N0, descriptors.get(14), 3, 0);
-        verifyDescriptor(N0, descriptors.get(15), 3, 1);
-        verifyDescriptor(N0, descriptors.get(16), 3, 2);
-        verifyDescriptor(N1, descriptors.get(17), 3, 3);
-        assertEquals("size", 18, descriptors.size());
+        descriptors = param.getAllDescriptors(4, 4);
+        verifyDescriptor(NUM_ROW, N3, descriptors[0]);
+        verifyDescriptor(NUM_COL, N3, descriptors[1]);
+        verifyDescriptor(N1, descriptors[ 2], 0, 0);
+        verifyDescriptor(N0, descriptors[ 3], 0, 1);
+        verifyDescriptor(N0, descriptors[ 4], 0, 2);
+        verifyDescriptor(N0, descriptors[ 5], 0, 3);
+        verifyDescriptor(N0, descriptors[ 6], 1, 0);
+        verifyDescriptor(N1, descriptors[ 7], 1, 1);
+        verifyDescriptor(N0, descriptors[ 8], 1, 2);
+        verifyDescriptor(N0, descriptors[ 9], 1, 3);
+        verifyDescriptor(N0, descriptors[10], 2, 0);
+        verifyDescriptor(N0, descriptors[11], 2, 1);
+        verifyDescriptor(N1, descriptors[12], 2, 2);
+        verifyDescriptor(N0, descriptors[13], 2, 3);
+        verifyDescriptor(N0, descriptors[14], 3, 0);
+        verifyDescriptor(N0, descriptors[15], 3, 1);
+        verifyDescriptor(N0, descriptors[16], 3, 2);
+        verifyDescriptor(N1, descriptors[17], 3, 3);
+        assertEquals("size", 18, descriptors.length);
     }
 
     /**
@@ -309,7 +300,7 @@ public strictfp class TensorParametersTest extends TestCase {
      * {@link TensorParameters#toMatrix(ParameterValueGroup)}.
      */
     @Test
-    @DependsOnMethod("testDescriptors")
+    @DependsOnMethod("testGetAllDescriptors")
     public void testMatrixConversion() {
         final int size = Math.min(6, TensorParameters.CACHE_SIZE);
         final Random random = TestUtilities.createRandomNumberGenerator();
@@ -322,7 +313,7 @@ public strictfp class TensorParametersTest extends TestCase {
                     }
                 }
                 final ParameterValueGroup group = param.createValueGroup(
-                        singletonMap(GeneralParameterDescriptor.NAME_KEY, "Test"), matrix);
+                        singletonMap(ParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
                 assertEquals(NUM_ROW,    numRow, group.parameter(NUM_ROW).intValue());
                 assertEquals(NUM_COL,    numCol, group.parameter(NUM_COL).intValue());
