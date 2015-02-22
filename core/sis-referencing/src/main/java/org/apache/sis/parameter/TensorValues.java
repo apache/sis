@@ -34,6 +34,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
@@ -54,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 final class TensorValues<E> extends AbstractParameterDescriptor
@@ -66,7 +67,11 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     private static final long serialVersionUID = -7747712999115044943L;
 
     /**
-     * A provider of matrix descriptors.
+     * A provider of descriptors for matrix parameters. This object is used like a collection of
+     * {@link ParameterDescriptor}s, even if it does not implement any standard collection API.
+     *
+     * @see TensorParameters#descriptor(ParameterDescriptorGroup, String, int[])
+     * @see TensorParameters#getAllDescriptors(int[])
      */
     private final TensorParameters<E> descriptors;
 
@@ -102,7 +107,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * If {@code clone} is true, the new group will be a clone of the given group.
      * If {@code clone} is false, the new group will be initialized to default values.
      */
-    private TensorValues(final TensorValues<E> other, final boolean clone) {
+    TensorValues(final TensorValues<E> other, final boolean clone) {
         super(other);
         descriptors = other.descriptors;
         dimensions = other.dimensions.clone();
@@ -166,13 +171,13 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
-        return descriptors.descriptors(dimensions());
+        return UnmodifiableArrayList.<GeneralParameterDescriptor>wrap(descriptors.getAllDescriptors(size()));
     }
 
     /**
-     * Returns the current tensor dimensions.
+     * Returns the current tensor size for each dimensions.
      */
-    private int[] dimensions() {
+    private int[] size() {
         final int[] indices = new int[dimensions.length];
         for (int i=0; i<indices.length; i++) {
             indices[i] = dimensions[i].intValue();
@@ -191,7 +196,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     public GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
-        return descriptors.descriptor(this, name, dimensions());
+        return descriptors.descriptor(this, name, size());
     }
 
     /**
@@ -213,7 +218,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
             cause = exception;
         }
         if (indices != null) {
-            final int[] actualSize = dimensions();
+            final int[] actualSize = size();
             if (TensorParameters.isInBounds(indices, actualSize)) {
                 return parameter(indices, actualSize);
             }
@@ -298,9 +303,13 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterValue> values() {
-        final List<GeneralParameterValue> addTo = new ArrayList<>(16);
-        addTo.addAll(Arrays.asList(dimensions));
-        addValues(values, dimensions(), 0, addTo);
+        final List<GeneralParameterValue> addTo = new ArrayList<>();
+        for (final ParameterValue<Integer> dimension : dimensions) {
+            if (!isOmitted(dimension)) {
+                addTo.add(dimension);
+            }
+        }
+        addValues(values, size(), 0, addTo);
         return Collections.unmodifiableList(addTo);
     }
 
@@ -319,13 +328,26 @@ final class TensorValues<E> extends AbstractParameterDescriptor
                 }
             } else {
                 for (int i=0; i<length; i++) {
-                    final Object value = values[i];
-                    if (value != null) {
-                        addTo.add((ParameterValue<?>) value);
+                    final ParameterValue<?> parameter = (ParameterValue<?>) values[i];
+                    if (parameter != null && !isOmitted(parameter)) {
+                        addTo.add(parameter);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given parameter can be omitted. A parameter can be omitted
+     * if it is not mandatory and has a value equals to the default value.
+     */
+    private static boolean isOmitted(final ParameterValue<?> parameter) {
+        final Object value = parameter.getValue();
+        if (value == null) { // Implies that the default value is also null.
+            return true;
+        }
+        final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
+        return descriptor.getMinimumOccurs() == 0 && value.equals(descriptor.getDefaultValue());
     }
 
     /**
@@ -377,7 +399,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      *
      * @param matrix The matrix to copy in this group of parameters.
      */
-    public void setMatrix(final Matrix matrix) {
+    final void setMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         dimensions[0].setValue(numRow);

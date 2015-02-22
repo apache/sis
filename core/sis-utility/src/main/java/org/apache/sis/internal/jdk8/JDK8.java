@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jdk8;
 
+import java.util.Map;
 import java.util.Date;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -32,7 +33,7 @@ import javax.xml.bind.DatatypeConverter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class JDK8 {
@@ -59,6 +60,26 @@ public final class JDK8 {
      */
     public static double nextDown(final double value) {
         return Math.nextAfter(value, Double.NEGATIVE_INFINITY);
+    }
+
+    /**
+     * Stores the value in the given map, provided that no value were set.
+     * This implementation presumes that the map can not contain null values.
+     *
+     * @param  <K>   The type of keys.
+     * @param  <V>   The type of values.
+     * @param  map   The map where to store the value.
+     * @param  key   The key for the value to store.
+     * @param  value The value to store.
+     * @return The previous value, or {@code null} if none.
+     */
+    public static <K,V> V putIfAbsent(final Map<K,V> map, final K key, final V value) {
+        final V previous = map.put(key, value);
+        if (previous != null) {
+            // Restore previous value.
+            map.put(key, previous);
+        }
+        return previous;
     }
 
     /**

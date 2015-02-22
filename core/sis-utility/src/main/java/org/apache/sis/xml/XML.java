@@ -183,11 +183,10 @@ public final class XML extends Static {
      * algorithm by subclassing {@link ReferenceResolver} and configure a unmarshaller as below:</p>
      *
      * {@preformat java
-     *     ReferenceResolver myResolver = ...;
-     *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
-     *     um.setProperty(XML.RESOLVER, myResolver);
-     *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.recycle(um);
+     *     ReferenceResolver  myResolver = ...;
+     *     Map<String,Object> properties = new HashMap<>();
+     *     properties.put(XML.RESOLVER, myResolver);
+     *     Object obj = XML.unmarshal(source, properties);
      * }
      *
      * @see Unmarshaller#setProperty(String, Object)
@@ -196,7 +195,7 @@ public final class XML extends Static {
     public static final String RESOLVER = "org.apache.sis.xml.resolver";
 
     /**
-     * Control the behaviors of the (un)marshalling process when an element can not be processed,
+     * Controls the behaviors of the (un)marshalling process when an element can not be processed,
      * or alter the element values. The value for this property shall be an instance of {@link ValueConverter}.
      *
      * <p>If an element in a XML document can not be parsed (for example if a {@linkplain java.net.URL}
@@ -231,10 +230,9 @@ public final class XML extends Static {
      *     // Not all errors are trapped - see the ValueConverter
      *     // javadoc for more details.
      *     WarningCollector myWarningList = new WarningCollector();
-     *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
-     *     um.setProperty(XML.CONVERTER, myWarningList);
-     *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.recycle(um);
+     *     Map<String,Object> properties = new HashMap<>();
+     *     properties.put(XML.CONVERTER, myWarningList);
+     *     Object obj = XML.unmarshal(source, properties);
      *     if (!myWarningList.isEmpty()) {
      *         // Report here the warnings to the user.
      *     }

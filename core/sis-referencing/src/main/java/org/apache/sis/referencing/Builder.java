@@ -29,7 +29,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -190,8 +190,8 @@ public abstract class Builder<B extends Builder<B>> {
     protected Builder() {
         assert verifyParameterizedType(getClass());
         properties  = new HashMap<>(8);
-        aliases     = new ArrayList<>(4);
-        identifiers = new ArrayList<>(4);
+        aliases     = new ArrayList<>();  // Will often stay empty (default constructor handles those cases well).
+        identifiers = new ArrayList<>();
     }
 
     /**
@@ -464,7 +464,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(new ImmutableIdentifier(authority, Citations.getIdentifier(authority), identifier));
+        identifiers.add(new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier));
         return self();
     }
 

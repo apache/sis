@@ -1231,6 +1231,6 @@ class PropertyAccessor {
         if (type != implementation) {
             buffer.append(':').append(Classes.getShortName(type));
         }
-        return buffer.append(" from “").append(Citations.getIdentifier(standard)).append("”]").toString();
+        return buffer.append(" from “").append(Citations.getIdentifier(standard, false)).append("”]").toString();
     }
 }

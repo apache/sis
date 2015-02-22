@@ -38,22 +38,12 @@ import java.util.Objects;
  * defined in the {@link org.apache.sis.metadata.iso.citation.Citations} class, but the actual
  * implementation is defined here since it is needed by some utility methods.
  *
- * {@section Argument checks}
- * Every methods in this class accept {@code null} argument. This is different from the methods
- * in the {@link org.apache.sis.metadata.iso.citation.Citations} facade, which perform checks
- * against null argument for trapping user errors.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Citations extends Static {
-    /**
-     * The {@value} code space.
-     */
-    public static final String EPSG = "EPSG";
-
     /**
      * Do not allows instantiation of this class.
      */
@@ -74,7 +64,7 @@ public final class Citations extends Static {
 
     /**
      * Returns a "unlocalized" string representation of the given international string,
-     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation)},
+     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation, boolean)},
      * which is why we don't want the localized string.
      */
     private static String toString(final InternationalString title) {
@@ -82,16 +72,14 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getTitle() title} or
-     * {@linkplain Citation#getAlternateTitles() alternate title} in {@code c1} is leniently
-     * equal to a title or alternate title in {@code c2}. The comparison is case-insensitive
-     * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
-     * letter or a digit}. The titles ordering is not significant.
+     * Returns {@code true} if the two citations have at least one title in common,
+     * ignoring case and non-alphanumeric characters.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#titleMatches(Citation, Citation)}
+     * for the public documentation of this method.
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and at least one title or
-     *         alternate title matches.
+     * @return {@code true} if both arguments are non-null, and at least one title or alternate title matches.
      */
     public static boolean titleMatches(final Citation c1, final Citation c2) {
         if (c1 != null && c2 != null) {
@@ -125,14 +113,14 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if the {@linkplain Citation#getTitle() title} or any
-     * {@linkplain Citation#getAlternateTitles() alternate title} in the given citation
-     * matches the given string. The comparison is case-insensitive and ignores every character
-     * which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
+     * Returns {@code true} if the given citation has at least one title equals to the given string,
+     * ignoring case and non-alphanumeric characters.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#titleMatches(Citation, String)}
+     * for the public documentation of this method.
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  title The title or alternate title to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and the title or alternate
+     * @return {@code true} if both arguments are non-null, and the title or an alternate
      *         title matches the given string.
      */
     public static boolean titleMatches(final Citation citation, final CharSequence title) {
@@ -164,22 +152,15 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier}
-     * {@linkplain Identifier#getCode() code} in {@code c1} is equal to an identifier code in
-     * {@code c2}. {@linkplain Identifier#getCodeSpace() Code spaces} are compared only if
-     * provided in the two identifiers being compared. Comparisons are case-insensitive and ignores
-     * every character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
-     * The identifier ordering is not significant.
-     *
-     * <p>If (and <em>only</em> if) the citations do not contains any identifier, then this method
-     * fallback on titles comparison using the {@link #titleMatches(Citation,Citation) titleMatches}
-     * method. This fallback exists for compatibility with client codes using the citation
-     * {@linkplain Citation#getTitle() titles} without identifiers.</p>
+     * Returns {@code true} if the two citations have at least one identifier in common,
+     * ignoring case and non-alphanumeric characters. If and <em>only</em> if the citations
+     * do not contain any identifier, then this method fallback on titles comparison.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, Citation)}
+     * for the public documentation of this method.
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and at least one identifier,
-     *         title or alternate title matches.
+     * @return {@code true} if both arguments are non-null, and at least one identifier matches.
      */
     public static boolean identifierMatches(Citation c1, Citation c2) {
         if (c1 != null && c2 != null) {
@@ -211,24 +192,16 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier}
-     * in the given citation have a {@linkplain Identifier#getCode() code} matching the given
-     * one. The comparison is case-insensitive and ignores every character which is not a
-     * {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
-     *
-     * <p>If a match is found, if the given {@code identifier} is non-null and if the code space
-     * of both objects is non-null, then the code space is also compared.</p>
-     *
-     * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
-     * fallback on titles comparison using the {@link #titleMatches(Citation, CharSequence) titleMatches}
-     * method. This fallback exists for compatibility with client codes using citation
-     * {@linkplain Citation#getTitle() title} without identifiers.</p>
+     * Returns {@code true} if the given citation has at least one identifier equals to the given string,
+     * ignoring case and non-alphanumeric characters. If and <em>only</em> if the citations do not contain
+     * any identifier, then this method fallback on titles comparison.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, String)}
+     * for the public documentation of this method.
      *
      * @param  citation   The citation to check for, or {@code null}.
      * @param  identifier The identifier to compare, or {@code null} to unknown.
      * @param  code       The identifier code to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and the title or alternate title
-     *         matches the given string.
+     * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final Identifier identifier, final CharSequence code) {
         if (citation != null && code != null) {
@@ -257,39 +230,23 @@ public final class Citations extends Static {
 
     /**
      * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
-     * This method is useful for extracting the namespace from an authority, for example {@code "EPSG"}.
-     * The implementation performs the following choices:
+     * This method removes leading and trailing {@linkplain Character#isWhitespace(int) whitespaces}.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#getIdentifier(Citation)}
+     * for the public documentation of this method.
      *
+     * <p><b>Which method to use:</b></p>
      * <ul>
-     *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getIdentifiers() identifier}, then:
-     *     <ul>
-     *       <li>If at least one identifier is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
-     *           unicode identifier}, then the shortest of those identifiers is returned.</li>
-     *       <li>Otherwise the shortest identifier is returned, despite not being a Unicode identifier.</li>
-     *     </ul></li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getTitle() title} or
-     *       {@linkplain Citation#getAlternateTitles() alternate title}, then:
-     *     <ul>
-     *       <li>If at least one title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
-     *           unicode identifier}, then the shortest of those titles is returned.</li>
-     *       <li>Otherwise the shortest title is returned, despite not being a Unicode identifier.</li>
-     *     </ul></li>
-     *   <li>Otherwise this method returns {@code null}.</li>
+     *   <li>For information purpose (e.g. some {@code toString()} methods), use {@code getIdentifier(…, false)}.</li>
+     *   <li>For WKT formatting, use {@code getIdentifier(…, true)} in order to preserve formatting characters.</li>
+     *   <li>For assigning a value to a {@code codeSpace} field, use {@link #getUnicodeIdentifier(Citation)}.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations.</div>
-     *
-     * This method ignores leading and trailing whitespaces of every character sequences.
-     * Null references, empty character sequences and sequences of whitespaces only are ignored.
-     *
      * @param  citation The citation for which to get the identifier, or {@code null}.
+     * @param  strict {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
      * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
-    public static String getIdentifier(final Citation citation) {
+    public static String getIdentifier(final Citation citation, final boolean strict) {
         boolean isUnicode = false; // Whether 'identifier' is a Unicode identifier.
         String identifier = null;
         if (citation != null) {
@@ -338,6 +295,66 @@ public final class Citations extends Static {
                         }
                     }
                 }
+            }
+        }
+        return (isUnicode || !strict) ? identifier : null;
+    }
+
+    /**
+     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
+     * This method removes {@linkplain Character#isIdentifierIgnorable(int) ignorable characters}.
+     * See {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}
+     * for the public documentation of this method.
+     *
+     * {@section When to use}
+     * Use this method when assigning values to be returned by methods like {@link Identifier#getCodeSpace()},
+     * since those values are likely to be compared without special care about ignorable identifier characters.
+     * But if the intend is to format a more complex string like WKT or {@code toString()}, then we suggest to
+     * use {@code getIdentifier(citation, true)} instead, which will produce the same result but preserving the
+     * ignorable characters, which can be useful for formatting purpose.
+     *
+     * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
+     * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @since 0.6
+     */
+    public static String getUnicodeIdentifier(final Citation citation) {
+        final String identifier = getIdentifier(citation, true);
+        if (identifier != null) {
+            /*
+             * First perform a quick check to see if there is any ignorable characters.
+             * We make this check because those characters are valid according Unicode
+             * but not according XML. However there is usually no such characters, so
+             * we will avoid the StringBuilder creation in the vast majority of times.
+             *
+             * Note that 'µ' and its friends are not ignorable, so we do not remove them.
+             * This method is "getUnicodeIdentifier", not "getXmlIdentifier".
+             */
+            final int length = identifier.length();
+            for (int i=0; i<length;) {
+                int c = identifier.codePointAt(i);
+                int n = Character.charCount(c);
+                if (Character.isIdentifierIgnorable(c)) {
+                    /*
+                     * Found an ignorable character. Create the buffer and copy non-ignorable characters.
+                     * Following algorithm is inefficient, since we fill the buffer character-by-character
+                     * (a more efficient approach would be to perform bulk appends). However we presume
+                     * that this block will be rarely executed, so it is not worth to optimize it.
+                     */
+                    final StringBuilder buffer = new StringBuilder(length - n).append(identifier, 0, i);
+                    while ((i += n) < length) {
+                        c = identifier.codePointAt(i);
+                        n = Character.charCount(c);
+                        if (!Character.isIdentifierIgnorable(c)) {
+                            buffer.appendCodePoint(c);
+                        }
+                    }
+                    // No need to verify if the buffer is empty, because ignorable
+                    // characters are not legal Unicode identifier start.
+                    return buffer.toString();
+                }
+                i += n;
             }
         }
         return identifier;
