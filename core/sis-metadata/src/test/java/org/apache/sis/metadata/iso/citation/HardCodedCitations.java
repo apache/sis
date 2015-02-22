@@ -23,6 +23,7 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
 import static java.util.Collections.singleton;
@@ -52,7 +53,7 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
         c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier("OGC")));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
         c.freeze();
         OGC = c;
     }
@@ -134,7 +135,7 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier("EPSG")));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.EPSG)));
         c.setCitedResponsibleParties(singleton(p));
         c.freeze();
         EPSG = c;
@@ -156,7 +157,7 @@ public final strictfp class HardCodedCitations extends Static {
      */
     public static final DefaultCitation SIS;
     static {
-        final DefaultCitation c = new DefaultCitation("SIS");
+        final DefaultCitation c = new DefaultCitation(Constants.SIS);
         c.freeze();
         SIS = c;
     }

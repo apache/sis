@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
@@ -78,6 +77,7 @@ import ucar.nc2.constants.CF;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
+import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
@@ -258,14 +258,6 @@ final class MetadataReader {
             decoder.listeners.warning(errors().getString(Errors.Keys.UnknownEnumValue_2, codeType, name), null);
         }
         return code;
-    }
-
-    /**
-     * Returns the first element of the given collection.
-     */
-    private static <T> T first(final Collection<T> collection) {
-        final Iterator<T> it = collection.iterator();
-        return it.hasNext() ? it.next() : null;
     }
 
     /**

@@ -333,6 +333,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalMemberType_2 = 37;
 
         /**
+         * Dimensions of “{0}” operation can not be ({1} → {2}).
+         */
+        public static final short IllegalOperationDimension_3 = 180;
+
+        /**
          * This operation can not be applied to values of class ‘{0}’.
          */
         public static final short IllegalOperationForValueClass_1 = 141;
@@ -583,6 +588,11 @@ public final class Errors extends IndexedResourceBundle {
          * No code “{2}” from authority “{0}” found for object of type ‘{1}’.
          */
         public static final short NoSuchAuthorityCode_3 = 137;
+
+        /**
+         * No operation method found for name of identifier “{0}”.
+         */
+        public static final short NoSuchOperationMethod_1 = 179;
 
         /**
          * No unit of measurement has been specified.

@@ -23,7 +23,9 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
+
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
@@ -66,8 +68,8 @@ public strictfp class MetadataAssert extends Assert {
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier identifier) {
         assertNotNull(identifier);
         assertEquals("code",      expected, identifier.getCode());
-        assertEquals("codeSpace", Citations.EPSG, (identifier instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) identifier).getCodeSpace() : null);
-        assertEquals("authority", "OGP",  Citations.getIdentifier(identifier.getAuthority()));
+        assertEquals("codeSpace", EPSG, (identifier instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) identifier).getCodeSpace() : null);
+        assertEquals("authority", "OGP", Citations.getIdentifier(identifier.getAuthority()));
     }
 
     /**

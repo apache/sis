@@ -103,7 +103,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getIdentifier(authority);
+        return Citations.getUnicodeIdentifier(authority);
     }
 
     /**
@@ -209,7 +209,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
      */
     public String toWKT() {
         final StringBuilder buffer = new StringBuilder(40).append("ID[");
-        append(buffer, Citations.getIdentifier(authority)); // Do not invoke getCodeSpace().
+        append(buffer, Citations.getIdentifier(authority, true));   // Do not invoke getCodeSpace().
         append(buffer.append(", "), code);
         return buffer.append(']').toString();
     }

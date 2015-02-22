@@ -70,7 +70,7 @@ final class IdentifiedObjectFormat extends Format {
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
         if (cs == null || cs.isEmpty()) {
-            cs = Citations.getIdentifier(identifier.getAuthority());
+            cs = Citations.getIdentifier(identifier.getAuthority(), true);
         }
         if (cs != null) {
             toAppendTo.append(cs).append(DefaultNameSpace.DEFAULT_SEPARATOR);

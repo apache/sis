@@ -204,6 +204,8 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
         assertTrue("The matrix declared by the MathTransform is not equal to the one given at creation time.",
                 Matrices.equals(matrix, tm, tolerance, false));
 
-        assertSame("ParameterDescriptor", Affine.PARAMETERS, ((Parameterized) transform).getParameterDescriptors());
+        assertSame("ParameterDescriptor",
+                Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), true).getParameters(),
+                ((Parameterized) transform).getParameterDescriptors());
     }
 }

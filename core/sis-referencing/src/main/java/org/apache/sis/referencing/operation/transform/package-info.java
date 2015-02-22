@@ -37,6 +37,18 @@
  * <p>This package does not include map projections, which are a special kind of transforms defined
  * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
  *
+ *
+ * {@section Creating math transforms}
+ * {@code MathTransform} instances can be created either directly or indirectly.
+ * The recommended way is the indirect one: first
+ * {@linkplain org.apache.sis.referencing.CRS#findOperation find the coordinate operation}
+ * (generally from a pair of <var>source</var> and <var>target</var> CRS), then invoke
+ * {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.
+ * However sophisticated users can also create math transforms explicitely from a group of parameter values
+ * using the {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory math
+ * transform factory}.
+ *
+ *
  * {@section Non-spatial coordinates}
  * {@code MathTransform} usually performs conversions or transformations from points given in a
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
@@ -48,8 +60,9 @@
  * transfer functions}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Adrian Custer (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 package org.apache.sis.referencing.operation.transform;
