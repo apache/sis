@@ -437,7 +437,7 @@ public class TensorParameters<E> implements Serializable {
         }
         /*
          * Parameter not found in the cache. Create a new one and cache it for future reuse.
-         * Note that an other thread could have created the same descriptor in the main time,
+         * Note that an other thread could have created the same descriptor in the meantime,
          * so we will need to check again.
          */
         final ParameterDescriptor<E> param = createElementDescriptor(indices);
@@ -660,6 +660,8 @@ public class TensorParameters<E> implements Serializable {
      *
      * @see #getDimensionDescriptor(int)
      * @see #getElementDescriptor(int...)
+     *
+     * @since 0.6
      */
     public ParameterDescriptor<?>[] getAllDescriptors(final int... actualSize) {
         verifyRank(actualSize);

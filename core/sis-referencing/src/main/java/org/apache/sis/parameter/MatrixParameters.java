@@ -19,11 +19,12 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.ObjectStreamException;
-import org.opengis.metadata.citation.Citation;
+import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.EPSGName;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -160,17 +161,13 @@ class MatrixParameters extends TensorParameters<Double> {
                 new NamedIdentifier(Citations.OGC, Constants.OGC, indicesToName(indices), null, null));
         final String c = indicesToAlias(indices);
         if (c != null) {
-            final Citation authority;
-            final String codeSpace;
+            final GenericName alias;
             if (isEPSG(indices)) {
-                authority = Citations.OGP;
-                codeSpace = Constants.EPSG;
+                alias = EPSGName.create(c);
             } else {
-                authority  = Citations.SIS;
-                codeSpace  = Constants.SIS;
+                alias = new NamedIdentifier(Citations.SIS, Constants.SIS, c, null, null);
             }
-            properties.put(ParameterDescriptor.ALIAS_KEY,
-                    new NamedIdentifier(authority, codeSpace, c, null, null));
+            properties.put(ParameterDescriptor.ALIAS_KEY, alias);
         }
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
     }

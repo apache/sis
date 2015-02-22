@@ -133,7 +133,7 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.descriptor(dimension, dimension);
+        return Affine.getProvider(dimension, dimension, true).getParameters();
     }
 
     /**

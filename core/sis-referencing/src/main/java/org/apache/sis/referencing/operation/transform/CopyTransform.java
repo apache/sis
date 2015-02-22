@@ -309,7 +309,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.descriptor(srcDim, getTargetDimensions());
+        return Affine.getProvider(srcDim, getTargetDimensions(), true).getParameters();
     }
 
     /**

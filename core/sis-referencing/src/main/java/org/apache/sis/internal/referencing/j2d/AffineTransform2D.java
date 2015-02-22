@@ -191,7 +191,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.descriptor(2, 2);
+        return Affine.getProvider(2, 2, true).getParameters();
     }
 
     /**
@@ -201,7 +201,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(getMatrix());
+        return Affine.parameters(matrix);
     }
 
     /**
