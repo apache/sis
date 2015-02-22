@@ -34,7 +34,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -394,9 +394,28 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUnicodeIdentifier() {
+        assertFalse(        isUnicodeIdentifier(null));
         assertTrue ("A123", isUnicodeIdentifier("A123"));
         assertFalse("123A", isUnicodeIdentifier("123A"));
-        assertFalse(        isUnicodeIdentifier(null));
+        assertTrue ("A_1",  isUnicodeIdentifier("A_1"));
+        assertFalse("A-1",  isUnicodeIdentifier("A-1"));
+        assertFalse("A+1",  isUnicodeIdentifier("A+1"));
+        assertFalse("A/1",  isUnicodeIdentifier("A/1"));
+        assertFalse("A\\1", isUnicodeIdentifier("A\\1"));
+        assertFalse("A*1",  isUnicodeIdentifier("A*1"));
+        assertFalse("A.1",  isUnicodeIdentifier("A.1"));
+        assertFalse("A,1",  isUnicodeIdentifier("A,1"));
+        assertFalse("A:1",  isUnicodeIdentifier("A:1"));
+        assertFalse("A;1",  isUnicodeIdentifier("A;1"));
+        assertFalse("A#1",  isUnicodeIdentifier("A#1"));
+        assertFalse("A?1",  isUnicodeIdentifier("A?1"));
+        assertFalse("A!1",  isUnicodeIdentifier("A!1"));
+        assertFalse("A°1",  isUnicodeIdentifier("A°1"));  // Degree
+        assertTrue ("Aº1",  isUnicodeIdentifier("Aº1"));  // Masculine ordinal
+        assertFalse("A 1",  isUnicodeIdentifier("A 1"));  // Ordinary space
+        assertFalse("A 1",  isUnicodeIdentifier("A" + Characters.NO_BREAK_SPACE + "1"));
+        assertFalse("A‐1",  isUnicodeIdentifier("A" + Characters.HYPHEN         + "1"));
+        assertTrue ("A­1",  isUnicodeIdentifier("A" + Characters.SOFT_HYPHEN    + "1"));
     }
 
     /**

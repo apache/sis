@@ -65,11 +65,11 @@ import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.apache.sis.internal.referencing.HardCoded.CRS;
-import static org.apache.sis.internal.referencing.HardCoded.EPSG;
-import static org.apache.sis.internal.referencing.HardCoded.CRS27;
-import static org.apache.sis.internal.referencing.HardCoded.CRS83;
-import static org.apache.sis.internal.referencing.HardCoded.CRS84;
+import static org.apache.sis.internal.util.Constants.CRS;
+import static org.apache.sis.internal.util.Constants.EPSG;
+import static org.apache.sis.internal.util.Constants.CRS27;
+import static org.apache.sis.internal.util.Constants.CRS83;
+import static org.apache.sis.internal.util.Constants.CRS84;
 
 
 /**

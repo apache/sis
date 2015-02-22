@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -142,10 +141,10 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
     /**
      * Tests whether this transform does not move any points.
      *
-     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
      * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</span>
+     * instead than using a factory method.</div>
      */
     @Override
     public boolean isIdentity() {
@@ -310,7 +309,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.getProvider(srcDim, getTargetDimensions(), true).getParameters();
     }
 
     /**
@@ -318,7 +317,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(getMatrix());
     }
 
     /**

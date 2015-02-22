@@ -19,10 +19,13 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Collections;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -38,7 +41,7 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
@@ -179,6 +182,33 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
                 "  Parameter[“Mandatory 2”, 10],\n" +
                 "  Parameter[“Optional 3”, 10],\n" +
                 "  Parameter[“Optional 4”, 10]]", M1_M1_O1_O2);
+    }
+
+    /**
+     * Tests WKT formatting of a group with a parameter having an identifier.
+     *
+     * @see DefaultParameterDescriptorTest#testIdentifiedParameterWKT()
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testWKT")
+    public void testIdentifiedParameterWKT() {
+        /*
+         * Test below is identical to DefaultParameterDescriptorTest.testIdentifiedParameterWKT(),
+         * but is reproduced here for easier comparison with the test following it.
+         */
+        final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0);
+        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        /*
+         * When the parameter is part of a larger element, we expect a simplification.
+         * Here, the URI should be omitted because it is a long value which does not
+         * bring new information, since it is computed from other values.
+         */
+        final DefaultParameterDescriptorGroup group = new DefaultParameterDescriptorGroup(
+                Collections.singletonMap(NAME_KEY, "Affine"), 1, 1, descriptor);
+        assertWktEquals("ParameterGroup[“Affine”,\n" +
+                        "  Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”]]]]", group);
     }
 
     /**
