@@ -127,8 +127,9 @@ class MatrixParameters extends TensorParameters<Double> {
 
     /**
      * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
-     * This implementation unconditionally checks for the EPSG name first since this is a very quick check.
-     * If the given name does not use the EPSG syntax, then this method fallback on the WKT1 syntax.
+     * This implementation unconditionally checks for the alphanumeric (EPSG-like) name first since
+     * this is a very quick check. If the given name does not use the EPSG syntax, then this method
+     * fallback on the WKT1 syntax.
      */
     @Override
     protected int[] nameToIndices(final String name) throws IllegalArgumentException {
@@ -141,8 +142,16 @@ class MatrixParameters extends TensorParameters<Double> {
 
     /**
      * Creates a new parameter descriptor for a matrix element at the given indices.
-     * This method creates both the OGC name (e.g. {@code "elt_1_2"}) and the EPSG name (e.g. {@code "B2"}).
-     * The EPSG identifier are not created by this method, but rather by the {@link MatrixParametersEPSG} subclass.
+     * This method creates:
+     *
+     * <ul>
+     *   <li>The OGC name (e.g. {@code "elt_1_2"}) as primary name</li>
+     *   <li>The EPSG name (e.g. {@code "B2"}) as an alias</li>
+     * </ul>
+     *
+     * This method does <strong>not</strong> create the EPSG identifiers (e.g. EPSG:8641) because the primary name
+     * created by this method is not the EPSG name. However the {@link MatrixParametersAlphaNum} subclass uses the
+     * EPSG name as the primary name. Consequently that subclass will create the EPSG identifier.
      */
     @Override
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {

@@ -63,10 +63,10 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
-     * Creates an instance for a matrix using the EPSG conventions.
+     * Creates an instance for a matrix using the alphanumeric (EPSG) conventions.
      */
-    private static ParameterValueGroup createEPSG() {
-        return TensorParameters.EPSG.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
+    private static ParameterValueGroup createAlphaNumeric() {
+        return TensorParameters.ALPHANUM.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
     }
 
     /**
@@ -100,7 +100,7 @@ public final strictfp class TensorValuesTest extends TestCase {
      * Tests {@link TensorValues#descriptors()} using WKT1 contentions.
      */
     @Test
-    public void testDescriptorsWKT1() {
+    public void testDescriptors() {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
         final Integer N3 = 3;
@@ -129,39 +129,28 @@ public final strictfp class TensorValuesTest extends TestCase {
     }
 
     /**
-     * Tests {@link TensorValues#descriptors()} using EPSG contentions.
+     * Tests {@link TensorValues#descriptors()} using alphanumeric (EPSG) contentions.
      */
     @Test
-    public void testDescriptorsEPSG() {
+    @DependsOnMethod("testDescriptors")
+    public void testAlphaNumericDescriptors() {
+        final Double  N0 = 0.0;
+        final Double  N1 = 1.0;
         final Integer N3 = 3;
-        final ParameterValueGroup group = createEPSG();
-        List<GeneralParameterDescriptor> descriptors = group.getDescriptor().descriptors();
-        verifyDescriptorsEPSG(descriptors, 0);
-        /*
-         * Use non-standard matrix size. The "num_row" and "num_col"
-         * parameters shall be included in the list of descriptors.
-         */
-        group.parameter(NUM_ROW).setValue(2);
-        descriptors = group.getDescriptor().descriptors();
+        final ParameterValueGroup group = createAlphaNumeric();
+        final List<GeneralParameterDescriptor> descriptors = group.getDescriptor().descriptors();
         assertDescriptorEquals(NUM_ROW, N3, descriptors.get(0));
         assertDescriptorEquals(NUM_COL, N3, descriptors.get(1));
-        verifyDescriptorsEPSG(descriptors, 2);
-    }
-
-    /**
-     * Verifies that all remaining elements in the given descriptors, starting at index <var>i</var>,
-     * are A0, A1, A2, B0, B1, B1 parameters.
-     */
-    private static void verifyDescriptorsEPSG(final List<GeneralParameterDescriptor> descriptors, int i) {
-        final Double N0 = 0.0;
-        final Double N1 = 1.0;
-        assertDescriptorEquals("A0", N1, descriptors.get(i++));
-        assertDescriptorEquals("A1", N0, descriptors.get(i++));
-        assertDescriptorEquals("A2", N0, descriptors.get(i++));
-        assertDescriptorEquals("B0", N0, descriptors.get(i++));
-        assertDescriptorEquals("B1", N1, descriptors.get(i++));
-        assertDescriptorEquals("B2", N0, descriptors.get(i++));
-        assertEquals("size", i, descriptors.size());
+        assertDescriptorEquals("A0",    N1, descriptors.get( 2));
+        assertDescriptorEquals("A1",    N0, descriptors.get( 3));
+        assertDescriptorEquals("A2",    N0, descriptors.get( 4));
+        assertDescriptorEquals("B0",    N0, descriptors.get( 5));
+        assertDescriptorEquals("B1",    N1, descriptors.get( 6));
+        assertDescriptorEquals("B2",    N0, descriptors.get( 7));
+        assertDescriptorEquals("C0",    N0, descriptors.get( 8));
+        assertDescriptorEquals("C1",    N0, descriptors.get( 9));
+        assertDescriptorEquals("C2",    N1, descriptors.get(10));
+        assertEquals("size", 11, descriptors.size());
     }
 
     /**
@@ -324,27 +313,27 @@ public final strictfp class TensorValuesTest extends TestCase {
      */
     @Test
     public void testWKT1() {
-        final Matrix matrix = Matrices.createIdentity(4);
+        final Matrix matrix = Matrices.createIdentity(3);
         matrix.setElement(0,2,  4);
         matrix.setElement(1,0, -2);
-        matrix.setElement(2,3,  7);
+        matrix.setElement(2,2,  7);
         final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
                 singletonMap(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
         assertWktEquals(
                 "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 4],\n"    +
-                "  Parameter[“num_col”, 4],\n"    +
+                "  Parameter[“num_row”, 3],\n"    +   // Shall be shown even if equals to the defautl value.
+                "  Parameter[“num_col”, 3],\n"    +
                 "  Parameter[“elt_0_2”, 4.0],\n"  +
                 "  Parameter[“elt_1_0”, -2.0],\n" +
-                "  Parameter[“elt_2_3”, 7.0]]", group);
+                "  Parameter[“elt_2_2”, 7.0]]", group);
     }
 
     /**
-     * Tests {@link TensorParameters#EPSG} formatting.
+     * Tests {@link TensorParameters#ALPHANUM} formatting.
      * <ul>
      *   <li>Group name shall be {@code "Affine general parametric transformation"}.</li>
-     *   <li>No {@code "num_row"} or {@code "num_col"} parameters.</li>
+     *   <li>No {@code "num_row"} or {@code "num_col"} parameters if their value is equals to 3.</li>
      *   <li>Parameter names shall be of the form {@code "A0"}.</li>
      *   <li>Identifiers present, but only for A0-A2 and B0-B2.</li>
      * </ul>
@@ -354,15 +343,15 @@ public final strictfp class TensorValuesTest extends TestCase {
         final Matrix matrix = Matrices.createIdentity(3);
         matrix.setElement(0,2,  4);
         matrix.setElement(1,0, -2);
-        matrix.setElement(2,1,  7);
-        final ParameterValueGroup group = TensorParameters.EPSG.createValueGroup(
+        matrix.setElement(2,2,  7);
+        final ParameterValueGroup group = TensorParameters.ALPHANUM.createValueGroup(
                 singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
                 "ParameterGroup[“Affine general parametric transformation”,\n" +
                 "  Parameter[“A2”, 4.0, Id[“EPSG”, 8625]],\n"  +
                 "  Parameter[“B0”, -2.0, Id[“EPSG”, 8639]],\n" +
-                "  Parameter[“C1”, 7.0]]", group);
+                "  Parameter[“C2”, 7.0]]", group);
     }
 
     /**

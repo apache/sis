@@ -19,9 +19,9 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.ObjectStreamException;
+import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -29,17 +29,29 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
 
 
 /**
- * A special case of {@link MatrixParameters} implementing the "magic" for the EPSG:9624 parameters.
- * The "magical" behavior is to hide {@code "num_row"}, {@code "num_col"} and last row parameters if
- * the matrix has exactly the dimensions required by the EPSG:9624 operation method, which is 3×3.
- * The intend is to get a descriptor matching the one defined in the EPSG database.
+ * A special case of {@link MatrixParameters} which create EPSG:9624 parameter names and identifiers.
+ * The parameters created by this class are close, but not identical, to the EPSG:9624 definition of
+ * {@code "A0"}, {@code "A1"}, {@code "A2"}, {@code "B0"}, {@code "B1"} and {@code "B2"}.
+ * The differences are:
+ *
+ * <ul>
+ *   <li>EPSG:9624 is only for matrices of size 3×3 and consequently does not have {@code "num_row"} and
+ *       {@code "num_col"} parameters. This class extends the definition to matrices of arbitrary size
+ *       and consequently accepts {@code "num_row"} and {@code "num_col"} as optional parameters.</li>
+ *   <li>EPSG:9624 is restricted to affine matrices and consequently define parameters only for the two
+ *       first rows. This class accepts also parameters for the last row (namely {@code "C0"}, {@code "C1"}
+ *       and {@code "C2"} in a 3×3 matrices).</li>
+ * </ul>
+ *
+ * Because of the above-cited extensions, this class is not named like "EPSG matrix parameters", but rater
+ * like "Alphanumeric matrix parameters"
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-final class MatrixParametersEPSG extends MatrixParameters {
+final class MatrixParametersAlphaNum extends MatrixParameters {
     /**
      * For cross-version compatibility.
      */
@@ -51,41 +63,8 @@ final class MatrixParametersEPSG extends MatrixParameters {
      * @param numRow The parameter for the number of rows.
      * @param numCol The parameter for the number of columns.
      */
-    MatrixParametersEPSG(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
+    MatrixParametersAlphaNum(final ParameterDescriptor<Integer> numRow, final ParameterDescriptor<Integer> numCol) {
         super(numRow, numCol);
-    }
-
-    /**
-     * Returns 0 if the dimension parameters ({@code "num_row"} and {@code "num_col"}) shall be hidden.
-     * Those parameters need to be hidden for the EPSG:9624 operation method, since the EPSG database
-     * does not define those parameters.
-     */
-    @Override
-    final int numDimensions(final int[] actualSize) {
-        if (actualSize[0] == Affine.EPSG_DIMENSION + 1 &&
-            actualSize[1] == Affine.EPSG_DIMENSION + 1)
-        {
-            return 0;
-        }
-        return super.numDimensions(actualSize);
-    }
-
-    /**
-     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors for a tensor
-     * of the given size.  This is the total number of elements in the tensor, except for matrices which are intended
-     * to be affine (like {@link #EPSG}) where the last row is omitted.
-     */
-    @Override
-    final int numElements(final int[] actualSize) {
-        int numRow = actualSize[0];
-        int numCol = actualSize[1];
-        assert super.numElements(actualSize) == (numRow * numCol);
-        if (numRow == Affine.EPSG_DIMENSION + 1 &&
-            numCol == Affine.EPSG_DIMENSION + 1)
-        {
-            numRow--; // Ommit last row of an affine matrix.
-        }
-        return numRow * numCol;
     }
 
     /**
@@ -100,7 +79,7 @@ final class MatrixParametersEPSG extends MatrixParameters {
     /**
      * Creates a new parameter descriptor for a matrix element at the given indices. This method creates both the
      * OGC name (e.g. {@code "elt_1_2"}) and the EPSG name (e.g. {@code "B2"}), together with the EPSG identifier
-     * (e.g. {@code "EPSG:8641"}) it it exists. See {@link org.apache.sis.internal.referencing.provider.Affine}
+     * (e.g. {@code "EPSG:8641"}) if it exists. See {@link org.apache.sis.internal.referencing.provider.Affine}
      * for a table summarizing the parameter names and identifiers.
      */
     @Override
@@ -117,12 +96,19 @@ final class MatrixParametersEPSG extends MatrixParameters {
             throw new AssertionError();
         }
         final ParameterDescriptor<Double> wkt = WKT1.getElementDescriptor(indices);   // Really 'WKT1', not 'super'.
+        final GenericName name = first(wkt.getAlias());
+        if (name == null) {
+            /*
+             * Outside the range of names (e.g. more than 26 rows or more than 10 columns).
+             * Returns the OGC name as-is.
+             */
+            return wkt;
+        }
         final Map<String,Object> properties = new HashMap<>(6);
         properties.put(ParameterDescriptor.NAME_KEY, first(wkt.getAlias()));
         properties.put(ParameterDescriptor.ALIAS_KEY, wkt.getName());
         /*
-         * For the WKT1 convention, create an alias matching the EPSG pattern ("A0", "A1", etc.) for all
-         * indices but declare the EPSG authority and identifier only for A0, A1, A2, B0, B1 and B2.
+         * Declare the EPSG identifier only for A0, A1, A2, B0, B1 and B2.
          */
         if (isEPSG(indices)) {
             final ImmutableIdentifier id;
@@ -130,7 +116,7 @@ final class MatrixParametersEPSG extends MatrixParameters {
             id = new ImmutableIdentifier(Citations.OGP, Constants.EPSG, String.valueOf(code));
             properties.put(ParameterDescriptor.IDENTIFIERS_KEY, id);
         }
-        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
+        return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
     }
 
     /**
@@ -138,6 +124,6 @@ final class MatrixParametersEPSG extends MatrixParameters {
      */
     @Override
     Object readResolve() throws ObjectStreamException {
-        return EPSG;
+        return equals(ALPHANUM) ? ALPHANUM : this;
     }
 }
