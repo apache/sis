@@ -17,10 +17,11 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
+import java.util.Arrays;
 import java.util.Collections;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
@@ -29,8 +30,8 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.TensorParameters;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -76,6 +77,11 @@ public final class Affine extends AbstractProvider {
     public static final String NAME = "Affine general parametric transformation";
 
     /**
+     * The EPSG:9624 compliant instance, created when first needed.
+     */
+    private static volatile Affine EPSG_METHOD;
+
+    /**
      * The number of dimensions used by the EPSG:9624 definition. This will be used as the
      * default number of dimensions. Operation methods of other dimensions, where we have
      * no EPSG definition, shall use the Well Known Text (WKT) parameter names.
@@ -96,56 +102,69 @@ public final class Affine extends AbstractProvider {
     private static final Affine[] cached = new Affine[MAX_CACHED_DIMENSION * MAX_CACHED_DIMENSION];
 
     /**
-     * Returns the index where to store a method of the given dimensions in the {@link #cached} array,
-     * or -1 if it should not be cached.
+     * A map containing identification properties for creating {@code OperationMethod} or
+     * {@code ParameterDescriptorGroup} instances.
      */
-    static int cacheIndex(int sourceDimensions, int targetDimensions) {
-        if (--sourceDimensions >= 0 && sourceDimensions < MAX_CACHED_DIMENSION &&
-            --targetDimensions >= 0 && targetDimensions < MAX_CACHED_DIMENSION)
-        {
-            return sourceDimensions * MAX_CACHED_DIMENSION + targetDimensions;
-        }
-        return -1;
+    private static final Map<String,?> IDENTIFICATION_EPSG, IDENTIFICATION_OGC;
+    static {
+        final NamedIdentifier nameOGC = new NamedIdentifier(Citations.OGC, Constants.OGC, Constants.AFFINE, null, null);
+        IDENTIFICATION_OGC = Collections.singletonMap(NAME_KEY, nameOGC);
+        IDENTIFICATION_EPSG = EPSGName.properties(9624, NAME, nameOGC);
     }
 
     /**
-     * Index equivalent to {@link cacheIndex(EPSG_DIMENSION, EPSG_DIMENSION)}.
-     * We expand the computation inline for allowing the compiler to replace the whole
-     * expression by a single constant.
-     */
-    static final int EPSG_INDEX = (EPSG_DIMENSION - 1) * MAX_CACHED_DIMENSION + (EPSG_DIMENSION - 1);
-
-    /**
-     * Creates a provider for affine transform with a default matrix size.
+     * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
+     * This constructor is public for the needs of {@link java.util.ServiceLoader} — do not invoke explicitely.
+     * If an instance of {@code Affine()} is desired, invoke {@code getProvider(EPSG_DIMENSION, EPSG_DIMENSION)}
+     * instead.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
      */
     public Affine() {
-        super(EPSG_DIMENSION, EPSG_DIMENSION, new DefaultParameterDescriptorGroup(
-                Collections.singletonMap(NAME_KEY, new NamedIdentifier(Citations.EPSG, NAME)), 1, 1,
-                TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION)));
+        super(IDENTIFICATION_EPSG, EPSG_DIMENSION, EPSG_DIMENSION, new Descriptor(IDENTIFICATION_EPSG,
+                Arrays.copyOfRange( // Discards param 0 and 1, take only the ones in index range [2…7].
+                        TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1), 2, 8)));
         /*
-         * Unconditionally cache this instance because this constructor is typically invoked by ServiceLoader
-         * when DefaultMathTransformFactory scans the classpath. This normally happen only once, so the instance
-         * that we create here is probably the unique instance than we want to keep for the JVM lifetime.
+         * Do caching ourselves because this constructor is usually not invoked by getProvider(int, int).
+         * It is usually invoked when DefaultMathTransformFactory scans the classpath with a ServiceLoader.
+         * This normally happen only once, so this instance is probably the unique instance to keep in the JVM.
          */
-        synchronized (cached) {
-            cached[EPSG_INDEX] = this;
-        }
+        EPSG_METHOD = this;
     }
 
     /**
      * Creates a provider for affine transform with the specified dimensions.
+     * This is created when first needed by {@link #getProvider(int, int)}.
+     *
+     * @see #getProvider(int, int)
      */
     private Affine(final int sourceDimensions, final int targetDimensions) {
-        super(sourceDimensions, targetDimensions, new DefaultParameterDescriptorGroup(
-                Collections.singletonMap(NAME_KEY, new NamedIdentifier(Citations.OGC, Constants.AFFINE)), 1, 1,
-                TensorParameters.WKT1.getAllDescriptors(sourceDimensions, targetDimensions)));
+        super(IDENTIFICATION_OGC, sourceDimensions, targetDimensions, new Descriptor(IDENTIFICATION_OGC,
+                TensorParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1)));
     }
 
     /**
-     * Returns {@code true} if the given dimensions are those of EPSG:9624 operation method.
+     * The parameter descriptor to be returned by {@link Affine#getParameters()}.
+     * The only purpose of this class is to override the {@link #createValue()} method.
      */
-    private static boolean isEPSG(final int sourceDimensions, final int targetDimensions) {
-        return (sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION);
+    private static final class Descriptor extends DefaultParameterDescriptorGroup {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 8320799650519834830L;
+
+        /** Creates a new descriptor for the given parameters. */
+        Descriptor(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
+            super(properties, 1, 1, parameters);
+        }
+
+        /**
+         * Returns default parameter values for the "Affine" operation. Unconditionally use the WKT1 parameter names,
+         * regardless of whether this descriptor is for the EPSG:9624 case, because the caller is free to change the
+         * matrix size, in which case (strictly speaking) the parameters would no longer be for EPSG:9624 operation.
+         */
+        @Override
+        public ParameterValueGroup createValue() {
+            return TensorParameters.WKT1.createValueGroup(IDENTIFICATION_OGC);
+        }
     }
 
     /**
@@ -183,7 +202,20 @@ public final class Affine extends AbstractProvider {
      */
     @Override
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        return getProvider(sourceDimensions, targetDimensions);
+        return getProvider(sourceDimensions, targetDimensions, false);
+    }
+
+    /**
+     * Returns the index where to store a method of the given dimensions in the {@link #cached} array,
+     * or -1 if it should not be cached.
+     */
+    private static int cacheIndex(int sourceDimensions, int targetDimensions) {
+        if (--sourceDimensions >= 0 && sourceDimensions < MAX_CACHED_DIMENSION &&
+            --targetDimensions >= 0 && targetDimensions < MAX_CACHED_DIMENSION)
+        {
+            return sourceDimensions * MAX_CACHED_DIMENSION + targetDimensions;
+        }
+        return -1;
     }
 
     /**
@@ -192,50 +224,54 @@ public final class Affine extends AbstractProvider {
      *
      * @param sourceDimensions The number of source dimensions.
      * @param targetDimensions The number of target dimensions.
+     * @param isAffine {@code true} if the transform is affine.
      * @return The provider for transforms of the given source and target dimensions.
      */
-    private static Affine getProvider(final int sourceDimensions, final int targetDimensions) {
-        final int i = cacheIndex(sourceDimensions, targetDimensions);
-        if (i >= 0) {
-            final Affine method;
-            synchronized (Affine.class) {
-                method = cached[i];
+    public static Affine getProvider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
+        Affine method;
+        if (isAffine && sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION) {
+            /*
+             * Matrix complies with EPSG:9624 definition. This is the most common case. We do perform synchronization
+             * for this field since it is okay if the same object is created twice (they should be identical).
+             */
+            method = EPSG_METHOD;
+            if (method == null) {
+                method = new Affine();
             }
-            if (method != null) {
-                return method;
-            }
-        }
-        /*
-         * At this point, no existing instance has been found in the cache.
-         * Create a new instance and cache it if its dimension is not too large.
-         */
-        final Affine method = isEPSG(sourceDimensions, targetDimensions)
-                ? new Affine() : new Affine(sourceDimensions, targetDimensions);
-        if (i >= 0) {
-            synchronized (Affine.class) {
-                final Affine other = cached[i];     // May have been created in another thread.
-                if (other != null) {
-                    return other;
+        } else {
+            /*
+             * All other cases. We will use the WKT1 parameter names instead than the EPSG ones.
+             */
+            final int index = cacheIndex(sourceDimensions, targetDimensions);
+            if (index >= 0) {
+                synchronized (cached) {
+                    method = cached[index];
                 }
-                cached[i] = method;
+                if (method != null) {
+                    return method;
+                }
+            }
+            /*
+             * At this point, no existing instance has been found in the cache.
+             * Create a new instance and cache it if its dimension is not too large.
+             */
+            method = new Affine(sourceDimensions, targetDimensions);
+            if (index >= 0) {
+                synchronized (cached) {
+                    final Affine other = cached[index];     // May have been created in another thread.
+                    if (other != null) {
+                        return other;
+                    }
+                    cached[index] = method;
+                }
             }
         }
         return method;
     }
 
     /**
-     * Returns the parameter descriptor for the given dimensions.
-     *
-     * @param sourceDimensions The number of source dimensions.
-     * @param targetDimensions The number of target dimensions.
-     * @return The parameters descriptor for the given dimensions.
-     */
-    public static ParameterDescriptorGroup descriptor(final int sourceDimensions, final int targetDimensions) {
-        return getProvider(sourceDimensions, targetDimensions).getParameters();
-    }
-
-    /**
-     * Returns the parameter values for the given matrix.
+     * Returns the parameter values for the given matrix. This method is invoked by implementations of
+     * {@link org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()}.
      *
      * @param  matrix The matrix for which to get parameter values.
      * @return The parameters of the given matrix.
@@ -243,8 +279,15 @@ public final class Affine extends AbstractProvider {
     public static ParameterValueGroup parameters(final Matrix matrix) {
         final int sourceDimensions = matrix.getNumCol() - 1;
         final int targetDimensions = matrix.getNumRow() - 1;
-        Map<String,?> properties = IdentifiedObjects.getProperties(descriptor(sourceDimensions, targetDimensions));
-        return (isEPSG(sourceDimensions, targetDimensions) ? TensorParameters.ALPHANUM : TensorParameters.WKT1)
-                .createValueGroup(properties, matrix);
+        final TensorParameters<Double> parameters;
+        final Map<String,?> properties;
+        if (sourceDimensions == EPSG_DIMENSION && targetDimensions == EPSG_DIMENSION && Matrices.isAffine(matrix)) {
+            parameters = TensorParameters.ALPHANUM;
+            properties = IDENTIFICATION_EPSG;
+        } else {
+            parameters = TensorParameters.WKT1;
+            properties = IDENTIFICATION_OGC;
+        }
+        return parameters.createValueGroup(properties, matrix);
     }
 }

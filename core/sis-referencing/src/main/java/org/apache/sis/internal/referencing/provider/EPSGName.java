@@ -18,6 +18,8 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.opengis.metadata.Identifier;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -43,14 +45,21 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
     /**
      * Version of the operation method, or {@code null} if unknown.
      *
-     * This is unspecified in current Apache SIS implementation.
+     * <p>This is unspecified in current Apache SIS implementation.
      * However future SIS implementations may fetch this information from the EPSG database.
+     * In the meantime, we use this constant as a way to track the places in Apache SIS code
+     * base where this information is desired.</p>
      */
     private static final String VERSION = null;
 
     /**
      * Placeholder for what may be (in a future Apache SIS version) an implementation
      * capable to fetch the remarks from the database using the given identifier code.
+     *
+     * <p>This is unspecified in current Apache SIS implementation.
+     * However future SIS implementations may fetch this information from the EPSG database.
+     * In the meantime, we use this constant as a way to track the places in Apache SIS code
+     * base where this information is desired.</p>
      */
     private static final InternationalString REMARKS = null;
 
@@ -58,6 +67,26 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * Do not allow (for now) instantiation of this class.
      */
     private EPSGName() {
+    }
+
+    /**
+     * Creates an EPSG name or alias.
+     *
+     * @param code The EPSG name to be returned by {@link NamedIdentifier#getCode()}.
+     * @return An EPSG name or alias for the given string.
+     */
+    public static NamedIdentifier create(final String code) {
+        return new NamedIdentifier(Citations.OGP, Constants.EPSG, code, VERSION, REMARKS);
+    }
+
+    /**
+     * Creates an EPSG identifier.
+     *
+     * @param  code The EPSG code.
+     * @return The EPSG identifier for the given numerical value.
+     */
+    public static Identifier identifier(final int code) {
+        return new ImmutableIdentifier(Citations.OGP, Constants.EPSG, String.valueOf(code).intern(), VERSION, REMARKS);
     }
 
     /**
@@ -69,15 +98,27 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @param  nameOGC    The OGC name, or {@code null} if none.
      * @return A map of properties for building the operation method.
      */
-    public static Map<String,Object> properties(final short identifier, final String name, final String nameOGC) {
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY, new NamedIdentifier(
-                Citations.OGP, Constants.EPSG, name, VERSION, REMARKS));
-        properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
-                Citations.OGP, Constants.EPSG, Short.toString(identifier).intern(), VERSION, REMARKS));
-        if (nameOGC != null) {
+    public static Map<String,Object> properties(final int identifier, final String name, final String nameOGC) {
+        return properties(identifier, name, (nameOGC == null) ? null :
             // Version and remarks are intentionally null here, since they are not EPSG version or remarks.
-            properties.put(ALIAS_KEY, new NamedIdentifier(Citations.OGC, Constants.OGC, nameOGC, null, null));
+            new NamedIdentifier(Citations.OGC, Constants.OGC, nameOGC, null, null));
+    }
+
+    /**
+     * Creates a map of properties to be given to the construction of an operation method.
+     * The returned map is modifiable - callers can add or remove entries after this method call.
+     *
+     * @param  identifier The EPSG code.
+     * @param  name       The EPSG name.
+     * @param  nameOGC    The OGC name, or {@code null} if none.
+     * @return A map of properties for building the operation method.
+     */
+    public static Map<String,Object> properties(final int identifier, final String name, final GenericName nameOGC) {
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(IDENTIFIERS_KEY, identifier(identifier));
+        properties.put(NAME_KEY, create(name));
+        if (nameOGC != null) {
+            properties.put(ALIAS_KEY, nameOGC);
         }
         return properties;
     }

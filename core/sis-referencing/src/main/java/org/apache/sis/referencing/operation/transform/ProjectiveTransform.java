@@ -151,7 +151,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.descriptor(getSourceDimensions(), getTargetDimensions());
+        return Affine.getProvider(getSourceDimensions(), getTargetDimensions(), Matrices.isAffine(this)).getParameters();
     }
 
     /**
@@ -162,7 +162,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(getMatrix());
+        return Affine.parameters(this);
     }
 
     /**

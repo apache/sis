@@ -130,7 +130,7 @@ public strictfp class ProjectiveTransformTest extends AffineTransformTest {
                 Matrices.equals(matrix, tm, tolerance, false));
 
         assertSame("ParameterDescriptor",
-                Affine.descriptor(transform.getSourceDimensions(), transform.getTargetDimensions()),
+                Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), true).getParameters(),
                 ((Parameterized) transform).getParameterDescriptors());
     }
 }

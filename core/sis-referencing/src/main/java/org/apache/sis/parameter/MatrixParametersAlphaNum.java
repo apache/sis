@@ -22,8 +22,7 @@ import java.io.ObjectStreamException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.referencing.provider.EPSGName;
 
 import static org.apache.sis.internal.util.CollectionsExt.first;
 
@@ -111,10 +110,8 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
          * Declare the EPSG identifier only for A0, A1, A2, B0, B1 and B2.
          */
         if (isEPSG(indices)) {
-            final ImmutableIdentifier id;
             final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
-            id = new ImmutableIdentifier(Citations.OGP, Constants.EPSG, String.valueOf(code));
-            properties.put(ParameterDescriptor.IDENTIFIERS_KEY, id);
+            properties.put(ParameterDescriptor.IDENTIFIERS_KEY, EPSGName.identifier(code));
         }
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
     }

@@ -43,6 +43,22 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
     private static final long serialVersionUID = 2239172887926695217L;
 
     /**
+     * Constructs a math transform provider from the given properties and a set of parameters.
+     *
+     * @param properties      Set of properties. Shall contain at least {@code "name"}.
+     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
+     * @param targetDimension Number of dimensions in the target CRS of this operation method.
+     * @param parameters      The set of parameters (never {@code null}).
+     */
+    AbstractProvider(final Map<String,?> properties,
+                     final int sourceDimension,
+                     final int targetDimension,
+                     final ParameterDescriptorGroup parameters)
+    {
+        super(properties, sourceDimension, targetDimension, parameters);
+    }
+
+    /**
      * Constructs a math transform provider from a set of parameters. The provider name and
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *

@@ -60,7 +60,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     public void testIdentity() throws TransformException {
         transform = new CopyTransform(3, 0, 1, 2);
         validate();
-        verifyParameters(Affine.descriptor(3, 3), null);
+        verifyParameters(Affine.getProvider(3, 3, true).getParameters(), null);
         verifyIsIdentity(true);
 
         final double[] source = generateRandomCoordinates();
