@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
@@ -33,10 +34,13 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
@@ -53,9 +57,13 @@ import java.util.Objects;
  *
  * <p>Each group of parameters contains the following elements:</p>
  * <ul>
- *   <li>A mandatory parameter for the number of rows ({@code "num_row"} in WKT 1).</li>
- *   <li>A mandatory parameter for the number of columns ({@code "num_col"} in WKT 1).</li>
- *   <li>(<i>etc.</i> for third-order or higher-order tensors).</li>
+ *   <li>Parameters (usually mandatory) for the tensor dimensions:
+ *     <ul>
+ *       <li>number of rows (named {@code "num_row"} in {@linkplain #WKT1} conventions),</li>
+ *       <li>number of columns (named {@code "num_col"} in WKT1 conventions),</li>
+ *       <li><i>etc.</i> for third-order or higher-order tensors.</li>
+ *     </ul>
+ *   </li>
  *   <li>A maximum of {@code num_row} × {@code num_col} × … optional parameters for the matrix or tensor element values.
  *       Parameter names depend on the formatting convention.</li>
  * </ul>
@@ -67,11 +75,35 @@ import java.util.Objects;
  * <p><b>Parameters are not an efficient storage format for large tensors.</b>
  * Parameters are used only for small matrices/tensors to be specified in coordinate operations or processing libraries.
  * In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
- * For a more efficient matrix storage, see {@link org.apache.sis.referencing.operation.matrix.MatrixSIS}.</p>
+ * For a more efficient matrix storage,
+ * see the {@linkplain org.apache.sis.referencing.operation.matrix matrix package}.</p>
  *
  * {@section Formatting}
- * The parameters format for a matrix is typically like below:
+ * In the particular case of a tensor of {@linkplain #rank() rank} 2 (i.e. a matrix),
+ * the parameters are typically formatted as below. Note that in the EPSG convention,
+ * the matrix is implicitly {@linkplain Matrices#isAffine affine} and of dimension 3×3.
  *
+ * <table class="sis">
+ *   <caption>Well Known Text (WKT) formats for matrix parameters</caption>
+ * <tr>
+ *   <th>Using EPSG:9624 names and identifiers</th>
+ *   <th class="sep">Using OGC names</th>
+ * </tr>
+ * <tr><td>
+ * {@preformat wkt
+ *   Parameter["A0", <value>, Id["EPSG", 8623]],
+ *   Parameter["A1", <value>, Id["EPSG", 8624]],
+ *   Parameter["A2", <value>, Id["EPSG", 8625]],
+ *   Parameter["B0", <value>, Id["EPSG", 8639]],
+ *   Parameter["B1", <value>, Id["EPSG", 8640]],
+ *   Parameter["B2", <value>, Id["EPSG", 8641]]
+ * }
+ *
+ * <div class="note"><b>Note:</b>
+ * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
+ * but they are for polynomial transformations, not for affine transformations.</div>
+ *
+ * </td><td class="sep">
  * {@preformat wkt
  *   Parameter["num_row", 3],
  *   Parameter["num_col", 3],
@@ -84,28 +116,38 @@ import java.util.Objects;
  *   ...
  *   Parameter["elt_<num_row-1>_<num_col-1>", <value>]
  * }
+ * </td></tr></table>
  *
  * Those groups are extensible, i.e. the number of <code>"elt_<var>row</var>_<var>col</var>"</code> parameters
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
  *
- * {@section Usage}
+ * {@section Usage examples}
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
- * on can use the following code:
+ * one can use the following code:
  *
  * {@preformat java
- *   Map<String,?> properties = Collections.singletonMap("name", "My operation");
+ *   Map<String,?> properties = Collections.singletonMap(ParameterValueGroup.NAME_KEY, "Affine");
  *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
+ * }
+ *
+ * For setting the elements of a few values, then create a matrix from the parameter values:
+ *
+ * {@preformat java
+ *   p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
+ *   p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
+ *   Matrix m = TensorParameters.WKT1.toMatrix(p);
  * }
  *
  * @param <E> The type of tensor element values.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
+ *
+ * @see org.apache.sis.referencing.operation.matrix.Matrices
  */
-@SuppressWarnings("unchecked")
 public class TensorParameters<E> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -113,17 +155,70 @@ public class TensorParameters<E> implements Serializable {
     private static final long serialVersionUID = -7386537348359343836L;
 
     /**
-     * Parses and creates parameters names for matrices matching the
+     * Parses and creates matrix parameters with alphanumeric names.
+     * {@linkplain DefaultParameterDescriptor#getName() Names} are made of a letter indicating the row
+     * (first row is {@code "A"}), followed by a digit indicating the column index (first column is {@code "0"}).
+     * {@linkplain DefaultParameterDescriptor#getAlias() Aliases} are the names as they were defined in version 1
+     * of <cite>Well Known Text</cite> (WKT) format.
+     *
+     * <table class="sis">
+     *   <caption>Parameter names for a 3×3 matrix</caption>
+     *   <tr>
+     *     <th>Primary name</th>
+     *     <th class="sep">Alias</th>
+     *   </tr>
+     * <tr><td>
+     * {@preformat text
+     *   ┌            ┐
+     *   │ A0  A1  A2 │
+     *   │ B0  B1  B2 │
+     *   │ C0  C1  C2 │
+     *   └            ┘
+     * }</td><td class="sep">
+     * {@preformat text
+     *   ┌                             ┐
+     *   │ elt_0_0   elt_0_1   elt_0_2 │
+     *   │ elt_1_0   elt_1_1   elt_1_2 │
+     *   │ elt_2_0   elt_2_1   elt_2_2 │
+     *   └                             ┘
+     * }</td></tr>
+     * </table>
+     *
+     * {@section Relationship with EPSG}
+     * The above-cited group of parameters are close, but not identical, to the definitions provided
+     * by the <cite>"Affine general parametric transformation"</cite> (EPSG:9624) operation method.
+     * The differences are:
+     *
+     * <ul>
+     *   <li>EPSG:9624 is for matrices of size 3×3 and does not provide any way to specify the matrix size.
+     *       This {@code ALPHANUM} convention extends the definition to matrices of arbitrary size and accepts
+     *       {@code "num_row"} and {@code "num_col"} as optional parameters.</li>
+     *   <li>EPSG:9624 is restricted to affine matrices and consequently define parameters only for the two
+     *       first rows. This class accepts also parameters for the last row (namely {@code "C0"}, {@code "C1"}
+     *       and {@code "C2"} in a 3×3 matrices).</li>
+     * </ul>
+     *
+     * Because of the above-cited extensions, this {@code TensorParameters} constant can not be named {@code EPSG}.
+     *
+     * @since 0.6
+     */
+    public static final TensorParameters<Double> ALPHANUM;
+
+    /**
+     * Parses and creates matrix parameters with names matching the
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text</a>
      * version 1 (WKT 1) convention.
      *
      * <ul>
      *   <li>First parameter is {@code "num_row"}.</li>
      *   <li>Second parameter is {@code "num_col"}.</li>
-     *   <li>All other parameters are of the form <code>"elt_<var>row</var>_<var>col</var>"</code>.</li>
+     *   <li>All other parameters are of the form <code>"elt_</code><var>row</var><code>_</code><var>col</var><code>"</code>.
+     *       Those parameters have alias of the form {@code "A0"}, {@code "A1"}, <i>etc.</i> where the letter indicates
+     *       the row (first row is {@code "A"}) and the digit is the column index (first column is {@code "0"}).</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b> {@code "elt_2_1"} is the element name for the value at line 2 and row 1.</div>
+     * <div class="note"><b>Example:</b> {@code "elt_1_2"} is the element name for the value at row 1 and column 2.
+     * Its alias is {@code "B2"}, which is the EPSG name for the same parameter.</div>
      */
     public static final TensorParameters<Double> WKT1;
     static {
@@ -135,15 +230,29 @@ public class TensorParameters<E> implements Serializable {
          *       elements.
          */
         final NumberRange<Integer> valueDomain = NumberRange.create(1, true, 50, true);
-        final Integer defaultSize = 3;
-        final ParameterDescriptor<Integer> numRow, numCol;
+        final Integer defaultSize = Affine.EPSG_DIMENSION + 1;
+        /*
+         * For the WKT1 convention, the "num_row" and "num_col" parameters are mandatory.
+         */
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(Identifier.AUTHORITY_KEY, Citations.OGC);
-        properties.put(Identifier.CODE_KEY, "num_row");
-        numRow = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        properties.put(Identifier.CODE_KEY, "num_col");
-        numCol = new DefaultParameterDescriptor<>(properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
-        WKT1 = new TensorParameters<>(Double.class, "elt_", "_", numRow, numCol);
+        properties.put(Identifier.CODE_KEY, Constants.NUM_ROW);
+        ParameterDescriptor<Integer> numRow = new DefaultParameterDescriptor<>(
+                properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
+        properties.put(Identifier.CODE_KEY, Constants.NUM_COL);
+        ParameterDescriptor<Integer> numCol = new DefaultParameterDescriptor<>(
+                properties, 1, 1, Integer.class, valueDomain, null, defaultSize);
+        WKT1 = new MatrixParameters(numRow, numCol);
+        /*
+         * For the EPSG convention, there is no "num_row" or "num_col" parameters since the matrix
+         * size if fixed to 3×3. However since we still need them, we will declare them as optional
+         * and we will hide them from the descriptor unless the matrix size is different than 3×3.
+         */
+        numRow = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numRow),
+                0, 1, Integer.class, valueDomain, null, defaultSize);
+        numCol = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numCol),
+                0, 1, Integer.class, valueDomain, null, defaultSize);
+        ALPHANUM = new MatrixParametersAlphaNum(numRow, numCol);
     }
 
     /**
@@ -207,7 +316,7 @@ public class TensorParameters<E> implements Serializable {
      *                    Length may be different if the caller wants to generalize usage of this class to tensors.
      */
     @SafeVarargs
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
     {
@@ -235,7 +344,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>This method is invoked by constructor and on deserialization.</p>
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> ParameterDescriptor<T>[] createCache() {
         if (Number.class.isAssignableFrom(elementType)) try {
             one  = (E) Numbers.wrap(1, (Class) elementType);
@@ -244,7 +353,7 @@ public class TensorParameters<E> implements Serializable {
             // Ignore - zero and one will be left to null.
         }
         int length = 1;
-        for (int i = Math.min(dimensions.length, CACHE_RANK); --i >= 0;) {
+        for (int i = Math.min(rank(), CACHE_RANK); --i >= 0;) {
             length *= CACHE_SIZE;
         }
         return new ParameterDescriptor[length];
@@ -265,10 +374,10 @@ public class TensorParameters<E> implements Serializable {
      *
      * <table class="sis">
      *   <caption>Tensor types implied by rank</caption>
-     *   <tr><th>Rank</th> <th>Type</th></tr>
-     *   <tr><td>0</td>    <td>scalar</td></tr>
-     *   <tr><td>1</td>    <td>vector</td></tr>
-     *   <tr><td>2</td>    <td>matrix</td></tr>
+     *   <tr><th>Rank</th> <th>Type</th>   <th>Used with</th></tr>
+     *   <tr><td>0</td>    <td>scalar</td> <td></td></tr>
+     *   <tr><td>1</td>    <td>vector</td> <td></td></tr>
+     *   <tr><td>2</td>    <td>matrix</td> <td>Affine general parametric transformation</td></tr>
      *   <tr><td><var>k</var></td><td>rank <var>k</var> tensor</td></tr>
      * </table>
      *
@@ -279,10 +388,23 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
+     * Verifies that the length of the given array is equals to the tensor rank.
+     */
+    private void verifyRank(final int[] indices) {
+        if (indices.length != rank()) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, rank(), indices.length));
+        }
+    }
+
+    /**
      * Returns the parameter descriptor for the dimension at the given index.
      *
      * @param  i The dimension index, from 0 inclusive to {@link #rank()} exclusive.
      * @return The parameter descriptor for the dimension at the given index.
+     *
+     * @see #getElementDescriptor(int...)
+     * @see #getAllDescriptors(int...)
      */
     public final ParameterDescriptor<Integer> getDimensionDescriptor(final int i) {
         return dimensions[i];
@@ -297,8 +419,12 @@ public class TensorParameters<E> implements Serializable {
      * @param  indices The indices of the tensor element for which to get the descriptor.
      * @return The parameter descriptor for the given tensor element.
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
+     *
+     * @see #getDimensionDescriptor(int)
+     * @see #getAllDescriptors(int...)
      */
     public final ParameterDescriptor<E> getElementDescriptor(final int... indices) {
+        verifyRank(indices);
         final int cacheIndex = cacheIndex(indices);
         if (cacheIndex >= 0) {
             final ParameterDescriptor<E> param;
@@ -311,7 +437,7 @@ public class TensorParameters<E> implements Serializable {
         }
         /*
          * Parameter not found in the cache. Create a new one and cache it for future reuse.
-         * Note that an other thread could have created the same descriptor in the main time,
+         * Note that an other thread could have created the same descriptor in the meantime,
          * so we will need to check again.
          */
         final ParameterDescriptor<E> param = createElementDescriptor(indices);
@@ -334,6 +460,7 @@ public class TensorParameters<E> implements Serializable {
         int cacheIndex = 0;
         for (int i=0; i<indices.length; i++) {
             final int index = indices[i];
+            ArgumentChecks.ensurePositive("indices", index);
             if (i < CACHE_RANK) {
                 if (index >= 0 && index < CACHE_SIZE) {
                     cacheIndex = (cacheIndex * CACHE_SIZE) + index;
@@ -352,47 +479,41 @@ public class TensorParameters<E> implements Serializable {
      * This method is invoked by {@link #getElementDescriptor(int[])} when a new descriptor needs
      * to be created.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation converts the given indices to a parameter name by invoking the
      * {@link #indicesToName(int[])} method, then creates a descriptor for an optional parameter
-     * of that name.
+     * of that name. The default value is given by {@link #getDefaultValue(int[])}.
      *
-     * {@section Subclassing}
+     * <p><b>Subclassing</b></p>
      * Subclasses can override this method if they want more control on descriptor properties
-     * like identification information, value domain and default values.
+     * like identification information, aliases or value domain.
      *
      * @param  indices The indices of the tensor element for which to create a parameter.
      * @return The parameter descriptor for the given tensor element.
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      *
      * @see #indicesToName(int[])
-     * @see #nameToIndices(String)
+     * @see #getDefaultValue(int[])
      */
     protected ParameterDescriptor<E> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
-        boolean isDiagonal = true;
-        for (int i=1; i<indices.length; i++) {
-            if (indices[i] != indices[i-1]) {
-                isDiagonal = false;
-                break;
-            }
-        }
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(Identifier.CODE_KEY, indicesToName(indices));
-        properties.put(Identifier.AUTHORITY_KEY, dimensions[0].getName().getAuthority());
-        return new DefaultParameterDescriptor<>(properties, 0, 1, elementType, null, null, isDiagonal ? one : zero);
+        final Citation authority = dimensions[0].getName().getAuthority();
+        final String name = indicesToName(indices);
+        return new DefaultParameterDescriptor<>(
+                Collections.singletonMap(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
+                0, 1, elementType, null, null, getDefaultValue(indices));
     }
 
     /**
      * Returns the parameter descriptor name of a matrix or tensor element at the given indices.
      * The returned name shall be parsable by the {@link #nameToIndices(String)} method.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
      * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
      * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
      * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
      *
-     * {@section Subclassing}
+     * <p><b>Subclassing</b></p>
      * If a subclass overrides this method for creating different names, then that subclass shall
      * also override {@link #nameToIndices(String)} for parsing those names.
      *
@@ -401,10 +522,7 @@ public class TensorParameters<E> implements Serializable {
      * @throws IllegalArgumentException If the given array does not have the expected length or have illegal value.
      */
     protected String indicesToName(final int[] indices) throws IllegalArgumentException {
-        if (indices.length != dimensions.length) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.UnexpectedArrayLength_2, dimensions.length, indices.length));
-        }
+        verifyRank(indices);
         final StringBuilder name = new StringBuilder();
         String s = prefix;
         for (final int i : indices) {
@@ -418,7 +536,7 @@ public class TensorParameters<E> implements Serializable {
      * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
      * This method is the converse of {@link #indicesToName(int[])}.
      *
-     * {@section Default implementation}
+     * <p><b>Default implementation</b></p>
      * The default implementation expects a name matching the “{@link #prefix} + <var>row</var> + {@link #separator} +
      * <var>column</var> + …” pattern and returns an array containing the <var>row</var>, <var>column</var> and other
      * indices, in that order.
@@ -433,7 +551,7 @@ public class TensorParameters<E> implements Serializable {
         if (!name.regionMatches(true, 0, prefix, 0, s)) {
             return null;
         }
-        final int[] indices = new int[dimensions.length];
+        final int[] indices = new int[rank()];
         final int last = indices.length - 1;
         for (int i=0; i<last; i++) {
             final int split = name.indexOf(separator, s);
@@ -448,9 +566,30 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
+     * Returns the default value for the parameter descriptor at the given indices.
+     * The default implementation returns 1 if all indices are equals, or 0 otherwise.
+     *
+     * @param  indices The indices of the tensor element for which to get the default value.
+     * @return The default value for the tensor element at the given indices, or {@code null} if none.
+     *
+     * @see DefaultParameterDescriptor#getDefaultValue()
+     *
+     * @since 0.6
+     */
+    protected E getDefaultValue(final int[] indices) {
+        for (int i=1; i<indices.length; i++) {
+            if (indices[i] != indices[i-1]) {
+                return zero;
+            }
+        }
+        return one;
+    }
+
+    /**
      * Returns the descriptor in this group for the specified name.
      *
-     * @param  name The case insensitive name of the parameter to search for.
+     * @param  caller     The {@link TensorValues} instance invoking this method, used only in case of errors.
+     * @param  name       The case insensitive name of the parameter to search for.
      * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
      * @return The parameter for the given name.
      * @throws ParameterNotFoundException if there is no parameter for the given name.
@@ -499,35 +638,52 @@ public class TensorParameters<E> implements Serializable {
     }
 
     /**
-     * Returns all parameters in this group for a tensor of the specified dimensions.
-     *
-     * @param  actualSize The current values of parameters that define the matrix (or tensor) dimensions.
-     *         It is caller's responsibility to ensure that this array does not contain negative values.
-     * @return The matrix parameters, including all elements.
+     * Returns the number of elements (e.g. {@code "elt_0_0"}) when formatting the parameter descriptors
+     * for a tensor of the given size. This is the total number of elements in the tensor.
      */
-    final List<GeneralParameterDescriptor> descriptors(final int[] actualSize) {
-        final int rank = dimensions.length; // 2 for a matrix, may be higher for a tensor.
-        int length = actualSize[0];
-        for (int i=1; i<rank; i++) {
-            length *= actualSize[i];
+    private int numElements(final int[] actualSize) {
+        int n = 1;
+        for (int s : actualSize) {
+            ArgumentChecks.ensurePositive("actualSize", s);
+            n *= s;
         }
-        final GeneralParameterDescriptor[] parameters = new GeneralParameterDescriptor[rank + length];
-        System.arraycopy(dimensions, 0, parameters, 0, rank);
-        final int[] indices = new int[rank];
+        return n;
+    }
+
+    /**
+     * Returns all parameters in this group for a tensor of the specified dimensions.
+     * The returned array contains all descriptors returned by {@link #getDimensionDescriptor(int)}
+     * and {@link #getElementDescriptor(int...)}.
+     *
+     * @param  actualSize The matrix (or tensor) dimensions for which to get the parameters.
+     * @return The tensor parameters, including all elements.
+     *
+     * @see #getDimensionDescriptor(int)
+     * @see #getElementDescriptor(int...)
+     *
+     * @since 0.6
+     */
+    public ParameterDescriptor<?>[] getAllDescriptors(final int... actualSize) {
+        verifyRank(actualSize);
+        final int numDimensions = actualSize.length;
+        final int numElements   = numElements(actualSize);
+        final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[numDimensions + numElements];
+        System.arraycopy(dimensions, 0, parameters, 0, numDimensions);
+        final int[] indices = new int[rank()];
         /*
          * Iterates on all possible index values. Indes on the right side (usually the column index)
          * will vary faster, and index on the left side (usually the row index) will vary slowest.
          */
-        for (int i=0; i<length; i++) {
-            parameters[rank + i] = getElementDescriptor(indices);
-            for (int j=rank; --j >= 0;) {
+        for (int i=0; i<numElements; i++) {
+            parameters[numDimensions + i] = getElementDescriptor(indices);
+            for (int j=indices.length; --j >= 0;) {
                 if (++indices[j] < actualSize[j]) {
                     break;
                 }
                 indices[j] = 0; // We have done a full turn at that dimension. Will increment next dimension.
             }
         }
-        return UnmodifiableArrayList.wrap(parameters);
+        return parameters;
     }
 
     /**
@@ -584,7 +740,7 @@ public class TensorParameters<E> implements Serializable {
      * @return A new parameter group initialized to the given matrix.
      */
     public ParameterValueGroup createValueGroup(final Map<String,?> properties, final Matrix matrix) {
-        if (dimensions.length != 2) {
+        if (rank() != 2) {
             throw new IllegalStateException();
         }
         ArgumentChecks.ensureNonNull("matrix", matrix);
@@ -602,7 +758,7 @@ public class TensorParameters<E> implements Serializable {
      * @throws InvalidParameterNameException if a parameter name was not recognized.
      */
     public Matrix toMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
-        if (dimensions.length != 2) {
+        if (rank() != 2) {
             throw new IllegalStateException();
         }
         ArgumentChecks.ensureNonNull("parameters", parameters);

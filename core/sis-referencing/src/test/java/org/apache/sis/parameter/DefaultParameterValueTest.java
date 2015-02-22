@@ -24,6 +24,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -40,7 +41,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
@@ -599,5 +600,17 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         assertWktEquals(Convention.WKT1, "PARAMETER[“Length”, 30.0]", length);
         assertWktEquals(Convention.WKT2, "Parameter[“Count”, 4]", count);
         assertWktEquals(Convention.WKT2, "Parameter[“Length”, 30.0, LengthUnit[“cm”, 0.01]]", length);
+    }
+
+    /**
+     * Tests WKT formatting of a parameter having an identifier.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testWKT")
+    public void testIdentifiedParameterWKT() {
+        final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0));
+        assertWktEquals("Parameter[“A0”, null, Id[“EPSG”, 8623, Citation[“OGP”]]]", parameter);
     }
 }

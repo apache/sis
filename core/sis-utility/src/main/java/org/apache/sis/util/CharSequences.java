@@ -18,6 +18,8 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import java.nio.CharBuffer;
+import org.opengis.metadata.citation.Citation;      // For javadoc
+import org.opengis.referencing.IdentifiedObject;    // For javadoc
 
 import static java.lang.Character.*;
 
@@ -1544,8 +1546,42 @@ cmp:    while (ia < lga) {
      * Unicode identifier start} and all remaining characters (if any) are
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts}.
      *
+     * {@section Relationship with legal XML identifiers}
+     * Most legal Unicode identifiers are also legal XML identifiers, but the converse is not true.
+     * The most noticeable differences are the ‘{@code :}’, ‘{@code -}’ and ‘{@code .}’ characters,
+     * which are legal in XML identifiers but not in Unicode.
+     *
+     * <table class="sis">
+     *   <caption>Characters legal in one set but not in the other</caption>
+     *   <tr><th colspan="2">Not legal in Unicode</th>    <th class="sep" colspan="2">Not legal in XML</th></tr>
+     *   <tr><td>{@code :}</td><td>(colon)</td>           <td class="sep">{@code µ}</td><td>(micro sign)</td></tr>
+     *   <tr><td>{@code -}</td><td>(hyphen or minus)</td> <td class="sep">{@code ª}</td><td>(feminine ordinal indicator)</td></tr>
+     *   <tr><td>{@code .}</td><td>(dot)</td>             <td class="sep">{@code º}</td><td>(masculine ordinal indicator)</td></tr>
+     *   <tr><td>{@code ·}</td><td>(middle dot)</td>      <td class="sep">{@code ⁔}</td><td>(inverted undertie)</td></tr>
+     *   <tr>
+     *     <td colspan="2">Many punctuation, symbols, <i>etc</i>.</td>
+     *     <td colspan="2" class="sep">{@linkplain Character#isIdentifierIgnorable(int) Identifier ignorable} characters.</td>
+     *   </tr>
+     * </table>
+     *
+     * Note that the ‘{@code _}’ (underscore) character is legal according both Unicode and XML, while spaces,
+     * ‘{@code !}’, ‘{@code #}’, ‘{@code *}’, ‘{@code /}’, ‘{@code ?}’ and most other punctuation characters are not.
+     *
+     * {@section Usage in Apache SIS}
+     * In its handling of {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier identifiers}, Apache SIS favors
+     * Unicode identifiers without {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters since those
+     * identifiers are legal XML identifiers except for the above-cited rarely used characters. As a side effect,
+     * this policy excludes ‘{@code :}’, ‘{@code -}’ and ‘{@code .}’ which would normally be legal XML identifiers.
+     * But since those characters could easily be confused with
+     * {@linkplain org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR namespace separators},
+     * this exclusion is considered desirable.
+     *
      * @param  identifier The character sequence to test, or {@code null}.
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.referencing.IdentifiedObjects#getUnicodeIdentifier(IdentifiedObject)
      */
     public static boolean isUnicodeIdentifier(final CharSequence identifier) {
         final int length = length(identifier);

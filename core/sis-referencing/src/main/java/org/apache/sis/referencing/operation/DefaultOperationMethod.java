@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.Formula;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -45,12 +45,30 @@ import java.util.Objects;
 
 
 /**
- * Defines the algorithm and describes the parameters used to perform a coordinate operation. An {@code OperationMethod}
- * contains an arbitrary amount of {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor parameter descriptors}.
- * Values for those parameters will be assigned by {@linkplain DefaultSingleOperation coordinate operations}.
+ * Describes the algorithm and parameters used to perform a coordinate operation. An {@code OperationMethod}
+ * is a kind of metadata: it does not perform any coordinate operation (e.g. map projection) by itself, but
+ * tells us what is needed in order to perform such operation.
  *
- * <div class="note"><b>Departure from the ISO 19111 standard:</b>
- * the following properties are mandatory according ISO 19111,
+ * <p>The most important parts of an {@code OperationMethod} are its {@linkplain #getName() name} and its
+ * {@linkplain #getParameters() group of parameter descriptors}. The parameter descriptors do not contain
+ * any value, but tell us what are the expected parameters, together with their units of measurement.</p>
+ *
+ * <div class="note"><b>Example:</b>
+ * An operation method named “<cite>Mercator (variant A)</cite>” (EPSG:9804) expects the following parameters:
+ * <ul>
+ *   <li>“<cite>Latitude of natural origin</cite>” in degrees. Default value is 0°.</li>
+ *   <li>“<cite>Longitude of natural origin</cite>” in degrees. Default value is 0°.</li>
+ *   <li>“<cite>Scale factor at natural origin</cite>” as a dimensionless number. Default value is 1.</li>
+ *   <li>“<cite>False easting</cite>” in metres. Default value is 0 m.</li>
+ *   <li>“<cite>False northing</cite>” in metres. Default value is 0 m.</li>
+ * </ul></div>
+ *
+ * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However it is
+ * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
+ * since names can sometime be ambiguous or be spelled in different ways.
+ *
+ * <div class="note"><b>Departure from the ISO 19111 standard</b><br>
+ * The following properties are mandatory according ISO 19111,
  * but may be missing under some conditions in Apache SIS:
  * <ul>
  *   <li>The {@linkplain #getFormula() formula} if it has not been provided to the
@@ -60,18 +78,44 @@ import java.util.Objects;
  *     constructor can not infer them.</li>
  * </ul></div>
  *
+ * {@section Relationship with other classes or interfaces}
+ * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
+ * When values have been assigned to parameters, the result is a {@link SingleOperation}.
+ * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
+ * coordinate operation. See {@link #getOperationType()} for more information.
+ *
+ * <p>The interface performing the actual work of taking coordinates in the
+ * {@linkplain AbstractCoordinateOperation#getSourceCRS() source CRS} and calculating the new coordinates in the
+ * {@linkplain AbstractCoordinateOperation#getTargetCRS() target CRS} is {@link MathTransform}.
+ * In order to allow Apache SIS to instantiate those {@code MathTransform}s from given parameter values,
+ * {@code DefaultOperationMethod} subclasses should implement the
+ * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
+ *
+ * {@section Immutability and thread safety}
+ * This class is immutable and thread-safe if all properties given to the constructor are also immutable and thread-safe.
+ * It is strongly recommended for all subclasses to be thread-safe, especially the
+ * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} implementations to be used with
+ * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 0.6
  * @since   0.5
  * @module
  *
  * @see DefaultSingleOperation
+ * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
 public class DefaultOperationMethod extends AbstractIdentifiedObject implements OperationMethod {
+    /*
+     * NOTE FOR JAVADOC WRITER:
+     * The "method" word is ambiguous here, because it can be "Java method" or "coordinate operation method".
+     * In this class, we reserve the "method" word for "coordinate operation method" as much as possible.
+     */
+
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8181774670648793964L;
+    private static final long serialVersionUID = 2870579345991143357L;
 
     /**
      * Formula(s) or procedure used by this operation method. This may be a reference to a publication.
@@ -85,14 +129,14 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be {@code null} if this method can work with any number of
      * source dimensions (e.g. <cite>Affine Transform</cite>).
      */
-    private final Integer sourceDimension;
+    private final Integer sourceDimensions;
 
     /**
      * Number of dimensions in the target CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * target dimensions (e.g. <cite>Affine Transform</cite>).
      */
-    private final Integer targetDimension;
+    private final Integer targetDimensions;
 
     /**
      * The set of parameters, or {@code null} if none.
@@ -145,19 +189,19 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
      *
-     * @param properties      Set of properties. Shall contain at least {@code "name"}.
-     * @param sourceDimension Number of dimensions in the source CRS of this operation method, or {@code null}.
-     * @param targetDimension Number of dimensions in the target CRS of this operation method, or {@code null}.
-     * @param parameters      Description of parameters expected by this operation.
+     * @param properties       Set of properties. Shall contain at least {@code "name"}.
+     * @param sourceDimensions Number of dimensions in the source CRS of this operation method, or {@code null}.
+     * @param targetDimensions Number of dimensions in the target CRS of this operation method, or {@code null}.
+     * @param parameters       Description of parameters expected by this operation.
      */
     public DefaultOperationMethod(final Map<String,?> properties,
-                                  final Integer sourceDimension,
-                                  final Integer targetDimension,
+                                  final Integer sourceDimensions,
+                                  final Integer targetDimensions,
                                   final ParameterDescriptorGroup parameters)
     {
         super(properties);
-        if (sourceDimension != null) ensurePositive("sourceDimension", sourceDimension);
-        if (targetDimension != null) ensurePositive("targetDimension", targetDimension);
+        if (sourceDimensions != null) ensurePositive("sourceDimensions", sourceDimensions);
+        if (targetDimensions != null) ensurePositive("targetDimensions", targetDimensions);
         ensureNonNull("parameters", parameters);
 
         Object value = properties.get(FORMULA_KEY);
@@ -171,9 +215,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             throw new IllegalArgumentException(Errors.getResources(properties)
                     .getString(Errors.Keys.IllegalPropertyClass_2, FORMULA_KEY, value.getClass()));
         }
-        this.parameters      = parameters;
-        this.sourceDimension = sourceDimension;
-        this.targetDimension = targetDimension;
+        this.parameters       = parameters;
+        this.sourceDimensions = sourceDimensions;
+        this.targetDimensions = targetDimensions;
     }
 
     /**
@@ -185,8 +229,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     public DefaultOperationMethod(final MathTransform transform) {
         super(getProperties(transform));
-        sourceDimension = transform.getSourceDimensions();
-        targetDimension = transform.getTargetDimensions();
+        sourceDimensions = transform.getSourceDimensions();
+        targetDimensions = transform.getTargetDimensions();
         if (transform instanceof Parameterized) {
             parameters = ((Parameterized) transform).getParameterDescriptors();
         } else {
@@ -250,15 +294,15 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     protected DefaultOperationMethod(final OperationMethod method) {
         super(method);
-        formula         = method.getFormula();
-        parameters      = method.getParameters();
-        sourceDimension = method.getSourceDimensions();
-        targetDimension = method.getTargetDimensions();
+        formula          = method.getFormula();
+        parameters       = method.getParameters();
+        sourceDimensions = method.getSourceDimensions();
+        targetDimensions = method.getTargetDimensions();
     }
 
     /**
      * Returns a SIS operation method implementation with the same values than the given arbitrary implementation.
-     * If the given object is {@code null}, then this method returns {@code null}.
+     * If the given object is {@code null}, then {@code null} is returned.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
      * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
      *
@@ -276,44 +320,132 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The source and target dimensions may be {@code null} if this method can work with any number of dimensions
      * (e.g. <cite>Affine Transform</cite>).
      *
-     * @param method The operation method to copy.
-     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
-     * @param targetDimension Number of dimensions in the target CRS of this operation method.
+     * @param method           The operation method to copy.
+     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
      */
     private DefaultOperationMethod(final OperationMethod method,
-                                   final Integer sourceDimension,
-                                   final Integer targetDimension)
+                                   final Integer sourceDimensions,
+                                   final Integer targetDimensions)
     {
         super(method);
         this.formula    = method.getFormula();
         this.parameters = method.getParameters();
-        this.sourceDimension = sourceDimension;
-        this.targetDimension = targetDimension;
+        this.sourceDimensions = sourceDimensions;
+        this.targetDimensions = targetDimensions;
     }
 
     /**
-     * Returns an operation method with the same values than the specified one except the dimensions.
-     * The source and target dimensions may be {@code null} if this method can work with any number of dimensions
-     * (e.g. <cite>Affine Transform</cite>).
+     * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
+     * This method accepts to change a dimension only if the value specified by the original method
+     * is {@code null}. Otherwise an {@link IllegalArgumentException} is thrown.
      *
-     * @param  method The operation method to redimension, or {@code null}.
-     * @param  sourceDimension Number of dimensions in the source CRS of this operation method.
-     * @param  targetDimension Number of dimensions in the target CRS of this operation method.
-     * @return The redimensioned operation method, or {@code method} if the given method was {@code null}
-     *         or already had th given dimensions.
+     * @param method           The operation method to redimension.
+     * @param sourceDimensions The desired new source dimensions.
+     * @param methodSource     The current number of source dimensions (may be {@code null}).
+     * @param targetDimensions The desired new target dimensions.
+     * @param methodTarget     The current number of target dimensions (may be {@code null}).
+     * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
+     */
+    private static OperationMethod redimension(final OperationMethod method,
+            final int sourceDimensions, final Integer methodSource,
+            final int targetDimensions, final Integer methodTarget)
+    {
+        boolean sourceValids = (methodSource != null) && (methodSource == sourceDimensions);
+        boolean targetValids = (methodTarget != null) && (methodTarget == targetDimensions);
+        if (sourceValids && targetValids) {
+            return method;
+        }
+        sourceValids |= (methodSource == null);
+        targetValids |= (methodTarget == null);
+        ensurePositive("sourceDimensions", sourceDimensions);
+        ensurePositive("targetDimensions", targetDimensions);
+        if (!sourceValids || !targetValids) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOperationDimension_3,
+                    method.getName().getCode(), sourceDimensions, targetDimensions));
+        }
+        return new DefaultOperationMethod(method, sourceDimensions, targetDimensions);
+    }
+
+    /**
+     * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
+     * The need to change an {@code OperationMethod} dimensionality may occur in two contexts:
+     *
+     * <ul>
+     *   <li><p>When the original method can work with any number of dimensions. Those methods do not know
+     *     in advance the number of dimensions, which is fixed only after the actual {@link MathTransform}
+     *     instance has been created.
+     *     Example: <cite>Affine</cite> conversion.</p></li>
+     *   <li><p>When a three-dimensional method can also be used in the two-dimensional case, typically by
+     *     assuming that the ellipsoidal height is zero everywhere.
+     *     Example: <cite>Molodensky</cite> transform.</p></li>
+     * </ul>
+     *
+     * This {@code redimension(…)} implementation performs the following choice:
+     *
+     * <ul>
+     *   <li><p>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
+     *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
+     *     For example the <cite>Molodensky</cite> method needs to override.</p></li>
+     *   <li>Otherwise for each dimension (<var>source</var> and <var>target</var>):
+     *     <ul>
+     *       <li>If the corresponding dimension of the given method is {@code null}, then
+     *         set that dimension to the given value in a new {@code OperationMethod}.</li>
+     *       <li>Otherwise if the given value is not equal to the corresponding dimension
+     *         in the given method, throw an {@link IllegalArgumentException}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param  method           The operation method to redimension, or {@code null}.
+     * @param  sourceDimensions The desired number of input dimensions.
+     * @param  targetDimensions The desired number of output dimensions.
+     * @return The redimensioned operation method, or {@code null} if the given method was null,
+     *         or {@code method} if no change is needed.
+     * @throws IllegalArgumentException if the given dimensions are illegal for the given operation method.
      */
     public static OperationMethod redimension(OperationMethod method,
-                                        final Integer sourceDimension,
-                                        final Integer targetDimension)
+            final int sourceDimensions, final int targetDimensions)
     {
-        if (sourceDimension != null) ensurePositive("sourceDimension", sourceDimension);
-        if (targetDimension != null) ensurePositive("targetDimension", targetDimension);
-        if (method != null && !(Objects.equals(sourceDimension, method.getSourceDimensions())
-                             && Objects.equals(targetDimension, method.getTargetDimensions())))
-        {
-            method = new DefaultOperationMethod(method, sourceDimension, targetDimension);
+        if (method != null) {
+            if (method instanceof DefaultOperationMethod) {
+                return ((DefaultOperationMethod) method).redimension(sourceDimensions, targetDimensions);
+            } else {
+                method = redimension(method, sourceDimensions, method.getSourceDimensions(),
+                                             targetDimensions, method.getTargetDimensions());
+            }
         }
         return method;
+    }
+
+    /**
+     * Returns this operation method with different dimensions, if we are allowed to change dimensionality.
+     * See {@link #redimension(OperationMethod, int, int)} for more information.
+     *
+     * <p>The default implementation performs the following choice:
+     * for each dimension (<var>source</var> and <var>target</var>):</p>
+     * <ul>
+     *   <li>If the corresponding dimension of the given method is {@code null}, then
+     *       set that dimension to the given value in a new {@code OperationMethod}.</li>
+     *   <li>Otherwise if the given value is not equal to the corresponding dimension
+     *       in the given method, throw an {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * Subclasses should override this method if they can work with different number of dimensions.
+     * For example a <cite>Molodensky</cite> transform usually works in a three-dimensional space,
+     * but can also work in a two-dimensional space by assuming that the ellipsoidal height is zero
+     * everywhere.
+     *
+     * @param  sourceDimensions The desired number of input dimensions.
+     * @param  targetDimensions The desired number of output dimensions.
+     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     * @throws IllegalArgumentException if the given dimensions are illegal for this operation method.
+     *
+     * @since 0.6
+     */
+    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+        return redimension(this, sourceDimensions, this.sourceDimensions,
+                                 targetDimensions, this.targetDimensions);
     }
 
     /**
@@ -321,7 +453,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The SIS implementation returns {@code OperationMethod.class}.
      *
      * <div class="note"><b>Note for implementors:</b>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code OperationMethod}
+     * Subclasses usually do not need to override this information since GeoAPI does not define {@code OperationMethod}
      * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
@@ -337,29 +469,31 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
      *
      * <ul>
-     *   <li>{@link org.opengis.referencing.operation.Transformation}
+     *   <li><p>{@link org.opengis.referencing.operation.Transformation}
      *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
      *     which the operation parameters were determined. Those errors do not depend on the floating point precision
-     *     or the accuracy of the implementation algorithm.</li>
-     *   <li>{@link org.opengis.referencing.operation.Conversion}
+     *     or the accuracy of the implementation algorithm.</p></li>
+     *   <li><p>{@link org.opengis.referencing.operation.Conversion}
      *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
-     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
-     *   <li>{@link org.opengis.referencing.operation.Projection}
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</p></li>
+     *   <li><p>{@link org.opengis.referencing.operation.Projection}
      *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
      *     to plane (map) coordinates. This type can optionally be refined with one of the
      *     {@link org.opengis.referencing.operation.CylindricalProjection},
      *     {@link org.opengis.referencing.operation.ConicProjection} or
-     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
+     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</p></li>
      * </ul>
      *
-     * In case of doubt, this method can conservatively return the base type.
-     * The default implementation returns {@code CoordinateOperation.class},
+     * In case of doubt, {@code getOperationType()} can conservatively return the base type.
+     * The default implementation returns {@code SingleOperation.class},
      * which is the most conservative return value.
      *
      * @return Interface implemented by all coordinate operations that use this method.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getAvailableMethods(Class)
      */
-    public Class<? extends CoordinateOperation> getOperationType() {
-        return CoordinateOperation.class;
+    public Class<? extends SingleOperation> getOperationType() {
+        return SingleOperation.class;
     }
 
     /**
@@ -371,6 +505,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
      *
      * @return The formula used by this method, or {@code null} if unknown.
+     *
+     * @see DefaultFormula
+     * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
      */
     @Override
     public Formula getFormula() {
@@ -382,10 +519,12 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
      * @return The dimension of source CRS, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
      */
     @Override
     public Integer getSourceDimensions() {
-        return sourceDimension;
+        return sourceDimensions;
     }
 
     /**
@@ -393,10 +532,12 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be null if unknown, as in an <cite>Affine Transform</cite>.
      *
      * @return The dimension of target CRS, or {@code null} if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
      */
     @Override
     public Integer getTargetDimensions() {
-        return targetDimension;
+        return targetDimensions;
     }
 
     /**
@@ -404,7 +545,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@linkplain #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
      *
      * @return The parameters, or {@code null} if unknown.
      */
@@ -435,10 +576,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 case STRICT: {
                     // Name and identifiers have been compared by super.equals(object, mode).
                     final DefaultOperationMethod that = (DefaultOperationMethod) object;
-                    return Objects.equals(this.formula,         that.formula) &&
-                           Objects.equals(this.sourceDimension, that.sourceDimension) &&
-                           Objects.equals(this.targetDimension, that.targetDimension) &&
-                           Objects.equals(this.parameters,      that.parameters);
+                    return Objects.equals(this.formula,          that.formula) &&
+                           Objects.equals(this.sourceDimensions, that.sourceDimensions) &&
+                           Objects.equals(this.targetDimensions, that.targetDimensions) &&
+                           Objects.equals(this.parameters,       that.parameters);
                 }
                 case BY_CONTRACT: {
                     // Name and identifiers have been compared by super.equals(object, mode).
@@ -487,7 +628,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(sourceDimension, targetDimension, parameters);
+        return super.computeHashCode() + Objects.hash(sourceDimensions, targetDimensions, parameters);
     }
 
     /**
@@ -515,7 +656,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              * Transformation, ConcatenatedOperation, PassThroughOperation, or any user-defined type that
              * do not extend Projection. All other operation types are accepted.
              */
-            final Class<? extends CoordinateOperation> type = getOperationType();
+            final Class<? extends SingleOperation> type = getOperationType();
             if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
                 return "Projection";
             }

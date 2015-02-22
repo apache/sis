@@ -92,6 +92,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short LocalesDiscarded = 3;
 
         /**
+         * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
+         * not match the definition of the “{0}” ellipsoid.
+         */
+        public static final short MismatchedEllipsoidAxisLength_3 = 9;
+
+        /**
          * Property “{0}” is hidden by “{1}”.
          */
         public static final short PropertyHiddenBy_2 = 4;

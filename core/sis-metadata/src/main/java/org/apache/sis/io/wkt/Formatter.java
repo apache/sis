@@ -45,6 +45,7 @@ import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
@@ -65,6 +66,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Range;
@@ -619,6 +621,8 @@ public class Formatter implements Localized {
          */
         if (info != null) {
             appendComplement(info, stackDepth == 0);
+        } else if (convention.majorVersion() != 1 && object instanceof GeneralParameterValue) {
+            appendComplement(((GeneralParameterValue) object).getDescriptor(), false);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
@@ -866,7 +870,7 @@ public class Formatter implements Localized {
                 final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
                 if (matrix != null) {
                     openElement(true, "Param_MT");
-                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append("Affine")
+                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append(Constants.AFFINE)
                           .appendCodePoint(symbols.getClosingQuote(0));
                     indent(+1);
                     append(matrix);
@@ -898,7 +902,9 @@ public class Formatter implements Localized {
         boolean columns = false;
         do {
             openElement(true, "Parameter");
-            buffer.appendCodePoint(openQuote).append(columns ? "num_col" : "num_row").appendCodePoint(closeQuote);
+            buffer.appendCodePoint(openQuote)
+                  .append(columns ? Constants.NUM_COL : Constants.NUM_ROW)
+                  .appendCodePoint(closeQuote);
             append(columns ? numCol : numRow);
             closeElement(false);
         } while ((columns = !columns) == true);

@@ -249,8 +249,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
             buffer.append(codespace).append(DefaultNameSpace.DEFAULT_SEPARATOR);
         }
         buffer.append(code).append('"');
-        if (authority != null) {
-            buffer.append(", ID[\"").append(Citations.getIdentifier(authority)).append("\"]");
+        final String identifier = Citations.getIdentifier(authority, true);
+        if (identifier != null) {
+            buffer.append(", ID[\"").append(identifier).append("\"]");
         }
         return buffer.append(']').toString();
     }

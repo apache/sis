@@ -32,7 +32,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.XPaths;
 
 import static java.lang.Math.PI;
@@ -356,7 +356,7 @@ public final class Units extends Static {
          * we want to try to parse as a xpointer before to give up.
          */
         if (isURI(uom)) {
-            String code = DefinitionURI.codeOf("uom", Citations.EPSG, uom);
+            String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
             if (code != null && code != uom) try { // Really identity check, see above comment.
                 return valueOfEPSG(Integer.parseInt(code));
             } catch (NumberFormatException e) {

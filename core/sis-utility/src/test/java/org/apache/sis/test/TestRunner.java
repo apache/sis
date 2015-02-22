@@ -298,8 +298,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     public void filter(final Filter filter) throws NoTestsRemainException {
         int count = 0;
         FrameworkMethod[] children = getFilteredChildren();
-        for (int i=0; i<children.length; i++) {
-            final FrameworkMethod method = children[i];
+        for (final FrameworkMethod method : children) {
             if (filter.shouldRun(describeChild(method))) {
                 try {
                     filter.apply(method);

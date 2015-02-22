@@ -17,11 +17,13 @@
 package org.apache.sis.metadata.iso.citation;
 
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.IdentifiedObject;        // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.metadata.iso.DefaultIdentifier; // For javadoc
+import org.apache.sis.metadata.iso.DefaultIdentifier;   // For javadoc
 
 
 /**
@@ -38,7 +40,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier; // For javadoc
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Citations extends Static {
@@ -59,7 +61,7 @@ public final class Citations extends Static {
      *
      * @category Organization
      */
-    public static final Citation OGC = new SimpleCitation("OGC");
+    public static final Citation OGC = new SimpleCitation(Constants.OGC);
 
     /**
      * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
@@ -77,7 +79,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation SIS = new SimpleCitation("SIS");
+    public static final Citation SIS = new SimpleCitation(Constants.SIS);
 
     /**
      * The <a href="http://www.esri.com">ESRI</a> organization.
@@ -145,9 +147,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>(
-            org.apache.sis.internal.util.Citations.EPSG,
-            org.apache.sis.internal.util.Citations.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.EPSG, Constants.EPSG);
 
     /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
@@ -219,8 +219,7 @@ public final class Citations extends Static {
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and at least one title or
-     *         alternate title matches.
+     * @return {@code true} if both arguments are non-null, and at least one title or alternate title matches.
      */
     public static boolean titleMatches(final Citation c1, final Citation c2) {
         return org.apache.sis.internal.util.Citations.titleMatches(c1, c2);
@@ -234,10 +233,10 @@ public final class Citations extends Static {
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  title The title or alternate title to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and the title or alternate
+     * @return {@code true} if both arguments are non-null, and the title or an alternate
      *         title matches the given string.
      */
-    public static boolean titleMatches(final Citation citation, String title) {
+    public static boolean titleMatches(final Citation citation, final String title) {
         return org.apache.sis.internal.util.Citations.titleMatches(citation, title);
     }
 
@@ -256,10 +255,7 @@ public final class Citations extends Static {
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and at least one identifier,
-     *         title or alternate title matches.
-     *
-     * @see org.apache.sis.referencing.IdentifierMatching
+     * @return {@code true} if both arguments are non-null, and at least one identifier matches.
      */
     public static boolean identifierMatches(final Citation c1, final Citation c2) {
         return org.apache.sis.internal.util.Citations.identifierMatches(c1, c2);
@@ -278,10 +274,7 @@ public final class Citations extends Static {
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  identifier The identifier to compare, or {@code null}.
-     * @return {@code true} if both arguments are non-null, and the title or alternate title
-     *         matches the given string.
-     *
-     * @see org.apache.sis.referencing.IdentifierMatching
+     * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final String identifier) {
         return org.apache.sis.internal.util.Citations.identifierMatches(citation, null, identifier);
@@ -289,8 +282,8 @@ public final class Citations extends Static {
 
     /**
      * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
-     * This method is useful for extracting the namespace from an authority, for example {@code "EPSG"}.
-     * The implementation performs the following choices:
+     * This method is useful for extracting the namespace from an authority (e.g. {@code "EPSG"})
+     * for display purpose. This method performs the following choices:
      *
      * <ul>
      *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
@@ -312,16 +305,57 @@ public final class Citations extends Static {
      *
      * <div class="note"><b>Note:</b>
      * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations.</div>
+     * that those titles are often used for abbreviations. However titles are never searched
+     * if the given citation contains at least one identifier.</div>
      *
-     * This method ignores leading and trailing whitespaces of every character sequences.
-     * Null references, empty character sequences and sequences of whitespaces only are ignored.
+     * This method ignores leading and trailing {@linkplain Character#isWhitespace(int) whitespaces}
+     * in every character sequences. Null or empty trimmed character sequences are ignored.
+     * This method does <em>not</em> remove {@linkplain Character#isIdentifierIgnorable(int) ignorable characters}.
+     * The result is a string which is <em>likely</em>, but not guaranteed, to be a valid XML or Unicode identifier.
+     * The returned string is useful when an "identifier-like" string is desired for display or information purpose,
+     * but does not need to be a strictly valid identifier.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
      * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
-        return org.apache.sis.internal.util.Citations.getIdentifier(citation);
+        return org.apache.sis.internal.util.Citations.getIdentifier(citation, false);
+    }
+
+    /**
+     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
+     * This method is useful for extracting the namespace from an authority (e.g. {@code "EPSG"})
+     * for processing purpose. This method performs the following actions:
+     *
+     * <ul>
+     *   <li>First, invoke {@link #getIdentifier(Citation)}.</li>
+     *   <li>If the result of above method call is {@code null} or is not a
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier valid Unicode identifier},
+     *       then return {@code null}.</li>
+     *   <li>Otherwise remove the {@linkplain Character#isIdentifierIgnorable(int) ignorable characters},
+     *       if any, and returns the result.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * examples of ignorable identifier characters are <cite>zero width space</cite> or <cite>word joiner</cite>.
+     * Those characters are illegal in XML identifiers, and should therfore be removed if the Unicode identifier
+     * may also be used as XML identifier.</div>
+     *
+     * If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters
+     * ({@code µ}, {@code ª} (feminine ordinal indicator), {@code º} (masculine ordinal indicator) and {@code ⁔}).
+     *
+     * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
+     * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.referencing.IdentifiedObjects#getUnicodeIdentifier(IdentifiedObject)
+     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
+     *
+     * @since 0.6
+     */
+    public static String getUnicodeIdentifier(final Citation citation) {
+        return org.apache.sis.internal.util.Citations.getUnicodeIdentifier(citation);
     }
 }

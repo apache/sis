@@ -318,6 +318,10 @@ public final class IdentifiedObjects extends Static {
      *
      * @param  object The identified object, or {@code null}.
      * @return The first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
      */
     public static String getUnicodeIdentifier(final IdentifiedObject object) {
         if (object != null) {
@@ -392,31 +396,30 @@ public final class IdentifiedObjects extends Static {
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             ensureNonNull("object", object);
-            return isHeuristicMatchForName(object, object.getAlias(), name);
+            return isHeuristicMatchForName(object.getName(), object.getAlias(), name);
         }
     }
 
     /**
-     * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} of the given object
-     * or one of the given alias matches the given name. The comparison ignores case, some Latin diacritical signs
+     * Returns {@code true} if the given {@linkplain AbstractIdentifiedObject#getName() primary name} or one
+     * of the given aliases matches the given name. The comparison ignores case, some Latin diacritical signs
      * and any characters that are not letters or digits.
      *
-     * @param  object  The object to check.
-     * @param  aliases The list of alias in {@code object} (may be {@code null}).
-     *                 This method will never modify this list. Consequently, the
-     *                 given list can be a direct reference to an internal list.
-     * @param  name    The name for which to check for equality.
+     * @param  name     The name of the {@code IdentifiedObject} to check.
+     * @param  aliases  The list of alias in the {@code IdentifiedObject} (may be {@code null}).
+     *                  This method will never modify this list. Consequently, the
+     *                  given list can be a direct reference to an internal list.
+     * @param  toSearch The name for which to check for equality.
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
-    static boolean isHeuristicMatchForName(final IdentifiedObject object, final Collection<GenericName> aliases,
-            CharSequence name)
+    static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
+            CharSequence toSearch)
     {
-        name = CharSequences.toASCII(name);
-        final Identifier id = object.getName();
-        if (id != null) { // Paranoiac check.
-            final CharSequence code = CharSequences.toASCII(id.getCode());
+        toSearch = CharSequences.toASCII(toSearch);
+        if (name != null) { // Paranoiac check.
+            final CharSequence code = CharSequences.toASCII(name.getCode());
             if (code != null) { // Paranoiac check.
-                if (CharSequences.equalsFiltered(name, code, LETTERS_AND_DIGITS, true)) {
+                if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
                     return true;
                 }
             }
@@ -425,7 +428,7 @@ public final class IdentifiedObjects extends Static {
             for (final GenericName alias : aliases) {
                 if (alias != null) { // Paranoiac check.
                     final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
-                    if (CharSequences.equalsFiltered(name, tip, LETTERS_AND_DIGITS, true)) {
+                    if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
                         return true;
                     }
                     /*
@@ -475,10 +478,10 @@ public final class IdentifiedObjects extends Static {
         }
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
-        if (cs == null) {
-            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority());
+        if (cs == null || cs.isEmpty()) {
+            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
         }
-        if (cs != null && !cs.isEmpty()) {
+        if (cs != null) {
             return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
         }
         return code;

@@ -377,7 +377,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public double doubleValue(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
-        return getConverterTo(unit).convert(doubleValue());
+        final double value = doubleValue(); // Invoke first in case it throws an exception.
+        return getConverterTo(unit).convert(value);
     }
 
     /**
@@ -781,6 +782,11 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
+        /*
+         * In the WKT 1 specification, the unit of measurement is given by the context.
+         * If this parameter value does not use the same unit, then we must convert it.
+         * Otherwise we can write the value as-is.
+         */
         if (isWKT1 && targetUnit != null) {
             double convertedValue;
             try {
@@ -795,8 +801,15 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } else {
             formatter.appendAny(value);
         }
+        /*
+         * In the WKT 2 specification, the unit and the identifier are optional but recommended.
+         * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
+         * The only exception is when the parameter unit is not the same than the contextual unit,
+         * in which case we have no choice: we must format that unit.
+         */
         if (unit != null && !isWKT1 && (!convention.isSimplified() || !unit.equals(targetUnit))) {
             formatter.append(unit);
+            // ID will be added by the Formatter itself.
         }
         return "Parameter";
     }

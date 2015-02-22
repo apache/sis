@@ -33,9 +33,11 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;  // For javadoc
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
+
+import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -182,7 +184,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param code      The code. This parameter is mandatory.
      */
     public NamedIdentifier(final Citation authority, final String code) {
-        super(authority, Citations.getIdentifier(authority), code);
+        super(authority, getUnicodeIdentifier(authority), code);
     }
 
     /**
@@ -238,14 +240,14 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private GenericName createName(final Citation authority, final CharSequence code) {
         final NameFactory factory = DefaultFactories.NAMES;
-        final String title = Citations.getIdentifier(authority); // Whitespaces trimed by Citations.
+        final String identifier = getUnicodeIdentifier(authority);      // Whitespaces trimed by Citations.
         NameSpace scope = null;
-        if (title != null) {
+        if (identifier != null) {
             synchronized (SCOPES) {
-                scope = SCOPES.get(title);
+                scope = SCOPES.get(identifier);
                 if (scope == null) {
-                    scope = factory.createNameSpace(factory.createLocalName(null, title), null);
-                    SCOPES.put(title, scope);
+                    scope = factory.createNameSpace(factory.createLocalName(null, identifier), null);
+                    SCOPES.put(identifier, scope);
                 }
             }
         }

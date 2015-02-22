@@ -13,12 +13,12 @@ directory of all SIS-related projects):
   mkdir SIS
   svn checkout http://svn.apache.org/repos/asf/sis/branches/JDK7 SIS/JDK7
   mkdir GeoAPI
-  svn checkout http://svn.code.sf.net/p/geoapi/code/trunk GeoAPI/trunk
+  git clone http://github.com/opengeospatial/geoapi GeoAPI/master
 
 Above commands should create the following directory structure:
 
   +-- GeoAPI
-  |   +-- trunk
+  |   +-- master
   |       +-- README.txt
   |       +-- etc...
   +-- SIS
