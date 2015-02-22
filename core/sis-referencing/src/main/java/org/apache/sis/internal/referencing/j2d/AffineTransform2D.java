@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -192,7 +191,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.getProvider(2, 2, true).getParameters();
     }
 
     /**
@@ -202,7 +201,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(matrix);
     }
 
     /**
@@ -410,6 +409,10 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
         }
         return true;
     }
+
+    /*
+     * Intentionally no hashCode() method. See equals(Object) for explanation.
+     */
 
     /**
      * Returns a new affine transform which is a modifiable copy of this transform. This implementation always

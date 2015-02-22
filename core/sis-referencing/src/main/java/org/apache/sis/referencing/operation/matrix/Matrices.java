@@ -67,6 +67,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.4
  * @version 0.5
  * @module
+ *
+ * @see org.apache.sis.parameter.TensorParameters
  */
 public final class Matrices extends Static {
     /**

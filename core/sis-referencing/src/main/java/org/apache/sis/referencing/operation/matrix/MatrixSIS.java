@@ -41,6 +41,8 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see Matrices
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**

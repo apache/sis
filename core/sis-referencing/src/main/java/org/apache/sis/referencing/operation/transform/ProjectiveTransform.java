@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -152,7 +151,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.PARAMETERS;
+        return Affine.getProvider(getSourceDimensions(), getTargetDimensions(), Matrices.isAffine(this)).getParameters();
     }
 
     /**
@@ -163,7 +162,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return TensorParameters.WKT1.createValueGroup(Affine.IDENTIFICATION, getMatrix());
+        return Affine.parameters(this);
     }
 
     /**
@@ -205,10 +204,10 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     /**
      * Tests whether this transform does not move any points.
      *
-     * <span class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
      * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead than using a factory method.</span>
+     * instead than using a factory method.</div>
      */
     @Override
     public boolean isIdentity() {

@@ -768,7 +768,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      */
     public boolean isHeuristicMatchForName(final String name) {
-        return IdentifiedObjects.isHeuristicMatchForName(this, alias, name);
+        return IdentifiedObjects.isHeuristicMatchForName(this.name, alias, name);
     }
 
     /**

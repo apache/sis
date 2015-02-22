@@ -24,6 +24,7 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
@@ -49,7 +50,7 @@ import static org.apache.sis.internal.util.Numerics.epsilonEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class ReferencingUtilities extends Static {
@@ -164,6 +165,27 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return sameContent;
+    }
+
+    /**
+     * Returns the ellipsoid used by the specified coordinate reference system, providing that
+     * the two first dimensions use an instance of {@link GeographicCRS}. Otherwise (i.e. if the
+     * two first dimensions are not geographic), returns {@code null}.
+     *
+     * @param  crs The coordinate reference system for which to get the ellipsoid.
+     * @return The ellipsoid in the given CRS, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    public static Ellipsoid getEllipsoidOfGeographicCRS(CoordinateReferenceSystem crs) {
+        while (!(crs instanceof GeographicCRS)) {
+            if (crs instanceof CompoundCRS) {
+                crs = ((CompoundCRS) crs).getComponents().get(0);
+            } else {
+                return null;
+            }
+        }
+        return ((GeographicCRS) crs).getDatum().getEllipsoid();
     }
 
     /**

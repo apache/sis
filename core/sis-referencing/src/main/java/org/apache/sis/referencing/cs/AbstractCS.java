@@ -360,6 +360,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     /**
      * Returns a coordinate system of the same type than this CS but with different axes.
      * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
+     *
+     * @param  axes The set of axes to give to the new coordinate system.
+     * @return A new coordinate system of the same type than {@code this}, but using the given axes.
      */
     AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);

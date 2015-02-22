@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @Suite.SuiteClasses({
@@ -75,11 +75,16 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.ParameterBuilderTest.class,
     org.apache.sis.parameter.ParameterFormatTest.class,
     org.apache.sis.parameter.TensorParametersTest.class,
+    org.apache.sis.parameter.MatrixParametersTest.class,
+    org.apache.sis.parameter.MatrixParametersAlphaNumTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
 
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
+    org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
     org.apache.sis.internal.referencing.OperationMethodsTest.class,
+    org.apache.sis.internal.referencing.provider.AffineTest.class,
 
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,

@@ -190,6 +190,8 @@ public final class DelayedExecutor extends DaemonThread {
      * Returns {@code true} if this thread seems to be stalled. This method checks the head
      * of the queue. If the delay for that head has expired and the head is not removed in
      * the next 5 seconds, then we will presume that the thread is stalled or dead.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     protected boolean isStalled() {
