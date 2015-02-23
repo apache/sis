@@ -116,7 +116,8 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
         }
         // Maintenance note: following check shall be consistent with the one in 'contains(Object)'.
         if (method instanceof DefaultOperationMethod) {
-            if (!type.isAssignableFrom(((DefaultOperationMethod) method).getOperationType())) {
+            final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
+            if (c != null && !type.isAssignableFrom(c)) {
                 return false;
             }
         }
@@ -217,7 +218,8 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
     public boolean contains(final Object object) {
         // Maintenance note: following check shall be consistent with the one in 'transfer()'.
         if (object instanceof DefaultOperationMethod) {
-            if (!type.isAssignableFrom(((DefaultOperationMethod) object).getOperationType())) {
+            final Class<? extends SingleOperation> c = ((DefaultOperationMethod) object).getOperationType();
+            if (c != null && !type.isAssignableFrom(c)) {
                 return false;
             }
         } else if (!(object instanceof OperationMethod)) {

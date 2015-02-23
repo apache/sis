@@ -44,6 +44,7 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -226,7 +227,25 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #reload()
      */
     public DefaultMathTransformFactory() {
-        this(ServiceLoader.load(OperationMethod.class));
+        /*
+         * WORKAROUND for a JDK bug: ServiceLoader do not support usage of two Iterator.
+         * Steps to reproduce:
+         *
+         *     ServiceLoader<ServiceLoaderTest> loader = ServiceLoader.load(ServiceLoaderTest.class);
+         *
+         *     Iterator<ServiceLoaderTest> it1 = loader.iterator();
+         *     assertTrue   ( it1.hasNext() );
+         *     assertNotNull( it1.next())   );
+         *
+         *     Iterator<ServiceLoaderTest> it2 = loader.iterator();
+         *     assertTrue   ( it1.hasNext()) );
+         *     assertTrue   ( it2.hasNext()) );
+         *     assertNotNull( it1.next())    );
+         *     assertNotNull( it2.next())    );     // ConcurrentModificationException here !!!
+         *
+         * Wrapping the ServiceLoader in a LazySet avoid this issue.
+         */
+        this(new LazySet<>(ServiceLoader.load(OperationMethod.class).iterator()));
     }
 
     /**
@@ -294,6 +313,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(final Class<? extends SingleOperation> type) {
+        ArgumentChecks.ensureNonNull("type", type);
         OperationMethodSet set;
         synchronized (methodsByType) {
             set = methodsByType.get(type);
@@ -455,6 +475,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
         if (Double.isNaN(actual)) {
             parameter.setValue(expected, unit);
+            return false;
         }
         return true;
     }
