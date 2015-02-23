@@ -30,7 +30,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.metadata.Identifier;
@@ -186,7 +185,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * {@section Relationship with EPSG}
      * The above-cited group of parameters are close, but not identical, to the definitions provided
-     * by the <cite>"Affine general parametric transformation"</cite> (EPSG:9624) operation method.
+     * by the <cite>"Affine parametric transformation"</cite> (EPSG:9624) operation method.
      * The differences are:
      *
      * <ul>
@@ -377,7 +376,7 @@ public class TensorParameters<E> implements Serializable {
      *   <tr><th>Rank</th> <th>Type</th>   <th>Used with</th></tr>
      *   <tr><td>0</td>    <td>scalar</td> <td></td></tr>
      *   <tr><td>1</td>    <td>vector</td> <td></td></tr>
-     *   <tr><td>2</td>    <td>matrix</td> <td>Affine general parametric transformation</td></tr>
+     *   <tr><td>2</td>    <td>matrix</td> <td>Affine parametric transformation</td></tr>
      *   <tr><td><var>k</var></td><td>rank <var>k</var> tensor</td></tr>
      * </table>
      *
