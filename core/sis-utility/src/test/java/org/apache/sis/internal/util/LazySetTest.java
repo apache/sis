@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public final strictfp class LazySetTest extends TestCase {
      * Creates the set to use for testing purpose.
      */
     private static LazySet<String> create() {
-        return new LazySet<>(Arrays.asList(LABELS).iterator());
+        return new LazySet<>(Arrays.asList(LABELS));
     }
 
     /**
@@ -75,6 +76,38 @@ public final strictfp class LazySetTest extends TestCase {
     public void testIteration() {
         final LazySet<String> set = create();
         assertArrayEquals(LABELS, set.toArray());
+        assertEquals(LABELS.length, set.size());
+    }
+
+    /**
+     * Tests iteration using two iterators with interleaved calls to {@link Iterator#next()}.
+     */
+    @Test
+    @DependsOnMethod("testIteration")
+    public void testInterleavedIteration() {
+        final LazySet<String> set = create();
+
+        final Iterator<String> it1 = set.iterator();
+        assertTrue(it1.hasNext());
+        assertEquals("one", it1.next());
+
+        final Iterator<String> it2 = set.iterator();
+        assertTrue  (it2.hasNext());
+        assertEquals("one", it2.next());
+
+        assertTrue  (it1.hasNext());
+        assertTrue  (it2.hasNext());
+        assertEquals("two",   it1.next());
+        assertEquals("two",   it2.next());
+        assertEquals("three", it2.next());
+        assertEquals("four",  it2.next());
+        assertFalse (it2.hasNext());
+        assertTrue  (it1.hasNext());
+        assertEquals("three", it1.next());
+        assertEquals("four",  it1.next());
+        assertFalse (it2.hasNext());
+        assertFalse (it1.hasNext());
+
         assertEquals(LABELS.length, set.size());
     }
 }

@@ -20,12 +20,20 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.util.NoSuchElementException;
+import org.apache.sis.util.Workaround;
 
 
 /**
  * An immutable set built from an iterator, which will be filled only when needed.
- * This implementation do <strong>not</strong> check if all elements in the iterator
- * are really unique; we assume that it was already verified by the caller.
+ * This implementation does <strong>not</strong> check if all elements in the iterator
+ * are really unique; we assume that this condition was already verified by the caller.
+ *
+ * <p>One usage of {@code LazySet} is to workaround a {@link java.util.ServiceLoader} bug which block usage of two
+ * {@link Iterator} instances together: the first iteration must be fully completed or abandoned before we can start
+ * a new iteration. See
+ * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#DefaultMathTransformFactory()}.</p>
+ *
+ * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
  * @param <E> The type of elements in the set.
  *
@@ -34,14 +42,23 @@ import java.util.NoSuchElementException;
  * @version 0.6
  * @module
  */
+@Workaround(library="JDK", version="1.8.0_31-b13")
 public final class LazySet<E> extends AbstractSet<E> {
     /**
-     * The iterator to use for filling this set, or {@code null} if the iteration is over.
+     * The original source of elements, or {@code null} if unknown.
+     */
+    public final Iterable<? extends E> source;
+
+    /**
+     * The iterator to use for filling this set, or {@code null} if the iteration did not started yet
+     * or is finished. Those two cases can be distinguished by looking whether the {@link #elements}
+     * array is null or not.
      */
     private Iterator<? extends E> iterator;
 
     /**
-     * The elements in this set. This array will grown as needed.
+     * The elements in this set, or {@code null} if the iteration did not started yet.
+     * After the iteration started, this array will grow as needed.
      */
     private E[] elements;
 
@@ -52,6 +69,18 @@ public final class LazySet<E> extends AbstractSet<E> {
     private int position;
 
     /**
+     * Constructs a set to be filled by the elements from the specified source. Iteration will starts
+     * only when first needed, and at most one iteration will be performed (unless {@link #reload()}
+     * is invoked).
+     *
+     * @param source The source of elements to use for filling the set.
+     */
+    @SuppressWarnings("unchecked")
+    public LazySet(final Iterable<? extends E> source) {
+        this.source = source;
+    }
+
+    /**
      * Constructs a set to be filled using the specified iterator.
      * Iteration in the given iterator will occurs only when needed.
      *
@@ -59,16 +88,41 @@ public final class LazySet<E> extends AbstractSet<E> {
      */
     @SuppressWarnings("unchecked")
     public LazySet(final Iterator<? extends E> iterator) {
+        source = null;
         this.iterator = iterator;
         elements = (E[]) new Object[4];
+    }
+
+    /**
+     * Notify this {@code LazySet} that it should re-fetch the elements from the {@linkplain #source}.
+     */
+    public void reload() {
+        if (source != null) {
+            iterator = null;
+            elements = null;
+            position = 0;
+        }
+    }
+
+    /**
+     * Returns the iterator over the source elements, or {@code null} if the iteration is finished.
+     */
+    @SuppressWarnings("unchecked")
+    private Iterator<? extends E> sourceElements() {
+        if (iterator == null && elements == null && source != null) {
+            iterator = source.iterator();
+            elements = (E[]) new Object[4];
+        }
+        return iterator;
     }
 
     /**
      * Returns {@code true} if the {@link #iterator} is non-null and have more elements to return.
      */
     private boolean hasNext() {
-        if (iterator != null) {
-            if (iterator.hasNext()) {
+        final Iterator<? extends E> it = sourceElements();
+        if (it != null) {
+            if (it.hasNext()) {
                 return true;
             }
             iterator = null;
@@ -94,9 +148,10 @@ public final class LazySet<E> extends AbstractSet<E> {
      */
     @Override
     public int size() {
-        if (iterator != null) {
-            while (iterator.hasNext()) {
-                addNext();
+        final Iterator<? extends E> it = sourceElements();
+        if (it != null) {
+            while (it.hasNext()) {
+                cache(it.next());
             }
             iterator = null;
         }
@@ -104,14 +159,13 @@ public final class LazySet<E> extends AbstractSet<E> {
     }
 
     /**
-     * Adds the next element from the iterator to this set. This method does not check if more
-     * element were available; the check must have been done before to invoke this method.
+     * Adds the given element to the {@link #elements} array.
      */
-    private void addNext() {
+    private void cache(final E element) {
         if (position >= elements.length) {
             elements = Arrays.copyOf(elements, position*2);
         }
-        elements[position++] = iterator.next();
+        elements[position++] = element;
     }
 
     /**
@@ -135,7 +189,7 @@ public final class LazySet<E> extends AbstractSet<E> {
     final E get(final int index) {
         if (index >= position) {
             if (hasNext()) {
-                addNext();
+                cache(iterator.next());
             } else {
                 throw new NoSuchElementException();
             }

@@ -228,16 +228,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     public DefaultMathTransformFactory() {
         /*
-         * WORKAROUND for a JDK bug: ServiceLoader do not support usage of two Iterator.
-         * Steps to reproduce:
+         * WORKAROUND for a JDK bug: ServiceLoader does not support usage of two Iterator instances
+         * before the first iteration is finished. Steps to reproduce:
          *
-         *     ServiceLoader<ServiceLoaderTest> loader = ServiceLoader.load(ServiceLoaderTest.class);
+         *     ServiceLoader<?> loader = ServiceLoader.load(OperationMethod.class);
          *
-         *     Iterator<ServiceLoaderTest> it1 = loader.iterator();
+         *     Iterator<?> it1 = loader.iterator();
          *     assertTrue   ( it1.hasNext() );
          *     assertNotNull( it1.next())   );
          *
-         *     Iterator<ServiceLoaderTest> it2 = loader.iterator();
+         *     Iterator<?> it2 = loader.iterator();
          *     assertTrue   ( it1.hasNext()) );
          *     assertTrue   ( it2.hasNext()) );
          *     assertNotNull( it1.next())    );
@@ -897,8 +897,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public void reload() {
         synchronized (methods) {
             methodsByName.clear();
-            if (methods instanceof ServiceLoader<?>) {
-                ((ServiceLoader<?>) methods).reload();
+            Iterable<? extends OperationMethod> m = methods;
+            if (m instanceof LazySet<?>) { // Workaround for JDK bug. See DefaultMathTransformFactory() constructor.
+                ((LazySet<?>) m).reload();
+                m = ((LazySet<? extends OperationMethod>) m).source;
+            }
+            if (m instanceof ServiceLoader<?>) {
+                ((ServiceLoader<?>) m).reload();
             }
             synchronized (methodsByType) {
                 for (final OperationMethodSet c : methodsByType.values()) {
