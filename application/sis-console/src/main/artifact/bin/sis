@@ -29,4 +29,6 @@ then
 fi
 
 # Execute SIS with any optional JAR that the user may put in the 'lib' directory.
-java -classpath "$BASE_DIR/lib/*" org.apache.sis.console.Command $SIS_OPTS "$@"
+java -classpath "$BASE_DIR/lib/*" \
+     -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
+     org.apache.sis.console.Command $SIS_OPTS "$@"
