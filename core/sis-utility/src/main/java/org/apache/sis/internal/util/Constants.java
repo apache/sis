@@ -82,7 +82,7 @@ public final class Constants extends Static {
     public static final String NUM_ROW = "num_row", NUM_COL = "num_col";
 
     /**
-     * The OGC name for <cite>Affine general parametric transformation"</cite>.
+     * The OGC name for <cite>"Affine parametric transformation"</cite>.
      *
      * @see org.apache.sis.internal.referencing.provider.Affine#NAME
      */
