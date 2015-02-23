@@ -36,7 +36,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * The provider for "<cite>Affine general parametric transformation</cite>" (EPSG:9624).
+ * The provider for "<cite>Affine parametric transformation</cite>" (EPSG:9624).
  * The set of available parameters depends on the matrix size, which is 3×3 by default.
  *
  * <table class="sis">
@@ -74,7 +74,7 @@ public final class Affine extends AbstractProvider {
      *
      * @see org.apache.sis.internal.util.Constants#AFFINE
      */
-    public static final String NAME = "Affine general parametric transformation";
+    public static final String NAME = "Affine parametric transformation";
 
     /**
      * The EPSG:9624 compliant instance, created when first needed.
