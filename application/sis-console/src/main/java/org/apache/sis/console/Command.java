@@ -17,6 +17,8 @@
 package org.apache.sis.console;
 
 import java.util.Locale;
+import java.util.logging.LogManager;
+import java.util.logging.ConsoleHandler;
 import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -62,7 +64,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class Command {
@@ -229,7 +231,24 @@ public final class Command {
      * @param args Command-line options.
      */
     public static void main(final String[] args) {
-        MonolineFormatter.install();
+        /*
+         * The logging configuration is given by the "conf/logging.properties" file in the Apache SIS
+         * installation directory. By default, that configuration file contains the following line:
+         *
+         *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+         *
+         * However this configuration is silently ignored by LogManager at JVM startup time, probably
+         * because the Apache SIS class is not on the system classpath. So we check again for this
+         * configuration line here, and manually install our log formatter only if the above-cited
+         * line is present.
+         */
+        final LogManager manager = LogManager.getLogManager();
+        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
+            MonolineFormatter.install();
+        }
+        /*
+         * Now run the command.
+         */
         final Command c;
         try {
             c = new Command(args);
