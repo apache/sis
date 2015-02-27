@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.opengis.util.Enumerated;
 import org.opengis.util.InternationalString;
@@ -68,7 +69,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
@@ -404,7 +405,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 }
                 replacement = message;
             } else if (element instanceof Class<?>) {
-                replacement = Classes.getShortName((Class<?>) element);
+                replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof Enumerated) {
                 replacement = Types.getCodeTitle((Enumerated) element).toString(getLocale());
             }
@@ -418,6 +419,23 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             }
         }
         return array;
+    }
+
+    /**
+     * If the given class is not public, returns the first public interface or the first public super-class.
+     * This is for avoiding confusing the user with private class in message like "Value can not be instance
+     * of XYZ". In the worst case (nothing public other than {@code Object}), returns {@code Object.class}.
+     */
+    private static Class<?> getPublicType(Class<?> c) {
+        while (!Modifier.isPublic(c.getModifiers())) {
+            for (final Class<?> type : c.getInterfaces()) {
+                if (Modifier.isPublic(type.getModifiers())) {
+                    return type;
+                }
+            }
+            c = c.getSuperclass();
+        }
+        return c;
     }
 
     /**
