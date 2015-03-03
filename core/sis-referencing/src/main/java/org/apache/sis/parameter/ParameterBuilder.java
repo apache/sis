@@ -83,7 +83,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class ParameterBuilder extends Builder<ParameterBuilder> {
@@ -160,7 +160,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     public ParameterDescriptor<Double> createStrictlyPositive(final double defaultValue, final Unit<?> unit) {
         final Range<Double> valueDomain;
         if (unit != null) {
-            valueDomain = MeasurementRange.create(0.0, false, Double.POSITIVE_INFINITY, false, unit);
+            valueDomain = MeasurementRange.createGreaterThan(0.0, unit);
         } else {
             valueDomain = NumberRange.create(0.0, false, Double.POSITIVE_INFINITY, false);
         }
@@ -285,19 +285,6 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Creates a descriptor group for the given parameters. This is a convenience method for
-     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
-     * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
-     *
-     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
-     *         for the group to create.
-     * @return The parameter descriptor group.
-     */
-    public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
-        return createGroup(required ? 1 : 0, 1, parameters);
-    }
-
-    /**
      * Creates a descriptor group for the given cardinality and parameters.
      *
      * @param  minimumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
@@ -315,6 +302,63 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         onCreate(false);
         try {
             group = new DefaultParameterDescriptorGroup(properties, minimumOccurs, maximumOccurs, parameters);
+        } finally {
+            onCreate(true);
+        }
+        return group;
+    }
+
+    /**
+     * Creates a descriptor group for the given parameters. This is a convenience method for
+     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
+     * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
+     *
+     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *         for the group to create.
+     * @return The parameter descriptor group.
+     */
+    public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
+        return createGroup(required ? 1 : 0, 1, parameters);
+    }
+
+    /**
+     * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
+     * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
+     * not explicitely included in parameter definitions since the axis lengths can be inferred from the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid}.
+     * However {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.
+     *
+     * <p>In addition, this method will also add hidden parameters for alternative ways to express some parameters.
+     * Those hidden parameters never appear in the {@linkplain DefaultParameterDescriptorGroup#descriptors() list
+     * of parameters}. However when one of those parameters is read or written, the work will be delegated to the
+     * standard parameters.</p>
+     *
+     * <table class="sis">
+     *   <caption>Parameters automatically added by this method</caption>
+     *   <tr><th>Name</th>                         <th>Visibility</th> <th>Comment</th></tr>
+     *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter in WKT 1.</td></tr>
+     *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter in WKT 1.</td></tr>
+     *   <tr><td>{@code "earth_radius"}</td>       <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "standard_parallel"}</td>  <td>Hidden</td>
+     *     <td>Array of 1 or 2 elements mapped to {@code "standard_parallel_1"} and {@code "standard_parallel_2"}.</td></tr>
+     * </table>
+     *
+     * Map projection parameter groups always have a {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs()
+     * minimum} and {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum occurrence} of 1,
+     * regardless the value given to {@link #setRequired(boolean)}.
+     *
+     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *         for the group to create.
+     * @return The parameter descriptor group for a map projection.
+     *
+     * @since 0.6
+     */
+    public ParameterDescriptorGroup createGroupForMapProjection(final ParameterDescriptor<?>... parameters) {
+        final ParameterDescriptorGroup group;
+        onCreate(false);
+        try {
+            group = new MapProjectionDescriptor(properties, parameters);
         } finally {
             onCreate(true);
         }

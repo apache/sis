@@ -26,6 +26,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -77,6 +78,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
+    @Workaround(library="JDK", version="1.7")
     private static Map<String,Object> toMap(final IdentifiedObject parameters) {
         ArgumentChecks.ensureNonNull("parameters", parameters);
         final Map<String,Object> properties = new HashMap<>(4);

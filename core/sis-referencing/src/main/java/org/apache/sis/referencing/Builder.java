@@ -325,9 +325,8 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final CharSequence name) {
         ensureNonNull("name", name);
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, name.toString());
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : NAMES.createLocalName(namespace(), name));
         }
         return self();
@@ -369,9 +368,8 @@ public abstract class Builder<B extends Builder<B>> {
         } else {
             identifier = new NamedIdentifier(authority, name.toString());
         }
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, identifier);
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, identifier) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(identifier);
         }
         return self();
@@ -396,9 +394,8 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final Identifier name) {
         ensureNonNull("name", name);
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, name);
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : new NamedIdentifier(name));
         }
         return self();
@@ -545,13 +542,20 @@ public abstract class Builder<B extends Builder<B>> {
      * @see #properties
      */
     protected void onCreate(final boolean cleanup) {
-        properties.put(IdentifiedObject.ALIAS_KEY,       cleanup ? null : aliases    .toArray(new GenericName[aliases    .size()]));
-        properties.put(IdentifiedObject.IDENTIFIERS_KEY, cleanup ? null : identifiers.toArray(new Identifier [identifiers.size()]));
+        final GenericName[] valueAlias;
+        final Identifier[]  valueIds;
         if (cleanup) {
             properties .put(IdentifiedObject.NAME_KEY, null);
             properties .remove(IdentifiedObject.REMARKS_KEY);
             aliases    .clear();
             identifiers.clear();
+            valueAlias = null;
+            valueIds   = null;
+        } else {
+            valueAlias = aliases    .toArray(new GenericName[aliases    .size()]);
+            valueIds   = identifiers.toArray(new Identifier [identifiers.size()]);
         }
+        properties.put(IdentifiedObject.ALIAS_KEY,       valueAlias);
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, valueIds);
     }
 }
