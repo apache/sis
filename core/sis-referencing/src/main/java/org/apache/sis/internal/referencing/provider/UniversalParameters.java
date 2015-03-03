@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -33,7 +31,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -78,8 +75,10 @@ import static org.apache.sis.metadata.iso.citation.Citations.*;
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @todo We should replace this class by usage of the EPSG "Alias" table.
  */
-public final class UniversalParameters extends DefaultParameterDescriptor<Double> {
+final class UniversalParameters extends DefaultParameterDescriptor<Double> {
     /**
      * For cross-version compatibility.
      */
@@ -87,58 +86,6 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
 
     /**
      * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor semi-major}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
-     *
-     * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajor"} and {@code "a"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor
-     */
-    public static final UniversalParameters SEMI_MAJOR = new UniversalParameters(new NamedIdentifier[] {
-            new NamedIdentifier(OGC,     Constants.SEMI_MAJOR),
-            new NamedIdentifier(ESRI,    "Semi_Major"),
-            new NamedIdentifier(NETCDF,  "semi_major_axis"),
-            new NamedIdentifier(GEOTIFF, "SemiMajor"),
-            new NamedIdentifier(PROJ4,   "a")
-        }, Double.NaN, 0, Double.POSITIVE_INFINITY, SI.METRE, true);
-
-    /**
-     * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor semi-minor}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
-     *
-     * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor
-     */
-    public static final UniversalParameters SEMI_MINOR = new UniversalParameters(new NamedIdentifier[] {
-            new NamedIdentifier(OGC,     Constants.SEMI_MINOR),
-            new NamedIdentifier(ESRI,    "Semi_Minor"),
-            new NamedIdentifier(NETCDF,  "semi_minor_axis"),
-            new NamedIdentifier(GEOTIFF, "SemiMinor"),
-            new NamedIdentifier(PROJ4,   "b")
-        }, Double.NaN, 0, Double.POSITIVE_INFINITY, SI.METRE, true);
-
-    /**
-     * All names known to Apache SIS for the Earth radius parameter.
-     * This is used in some NetCDF files instead of {@link #SEMI_MAJOR} and {@link #SEMI_MINOR}.
-     * This is not a standard parameter.
-     */
-    static final ParameterDescriptor<Double> EARTH_RADIUS = createDescriptor(new NamedIdentifier[] {
-            new NamedIdentifier(NETCDF, MapProjectionDescriptor.EARTH_RADIUS)
-        }, Double.NaN, 0.0, Double.POSITIVE_INFINITY, SI.METRE, false);
-
-    /**
-     * All known names for the inverse flattening parameter.
-     * This is used in some NetCDF files instead of {@link #SEMI_MINOR}.
-     * This is not a standard parameter.
-     */
-    static final ParameterDescriptor<Double> INVERSE_FLATTENING = createDescriptor(new NamedIdentifier[] {
-            new NamedIdentifier(NETCDF, MapProjectionDescriptor.INVERSE_FLATTENING)
-        }, Double.NaN, 0.0, Double.POSITIVE_INFINITY, Unit.ONE, false);
-
-    /**
-     * All known names for the
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#centralMeridian
      * central meridian} parameter.
      * This parameter is mandatory - meaning that it appears in {@link ParameterValueGroup}
@@ -176,7 +123,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, 0, -180, 180, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the
+     * All names known to Apache SIS for the
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#latitudeOfOrigin
      * latitude of origin} parameter.
      * This parameter is mandatory - meaning that it appears in {@link ParameterValueGroup}
@@ -195,14 +142,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
     public static final UniversalParameters LATITUDE_OF_ORIGIN;
 
     /**
-     * All known names for the standard parallels parameter, as an array of 1 or 2 elements.
-     * This is used in some NetCDF files instead of {@link #STANDARD_PARALLEL_1} and
-     * {@link #STANDARD_PARALLEL_2}. This is not a standard parameter.
-     */
-    static final ParameterDescriptor<double[]> STANDARD_PARALLEL;
-
-    /**
-     * All known names for the standard parallel 1 parameter.
+     * All names known to Apache SIS for the standard parallel 1 parameter.
      * This parameter is optional. The range of valid values is [-90 … 90]°.
      *
      * <blockquote><b>EPSG description:</b> For a conic projection with two standard parallels,
@@ -224,7 +164,6 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
     static {
         final NamedIdentifier esri = new NamedIdentifier(ESRI, "Standard_Parallel_1");
         final NamedIdentifier epsg = new NamedIdentifier(EPSG, "Latitude of 1st standard parallel");
-        final NamedIdentifier nc   = new NamedIdentifier(NETCDF, MapProjectionDescriptor.STANDARD_PARALLEL);
 
         LATITUDE_OF_ORIGIN = new UniversalParameters(new NamedIdentifier[] {
             new NamedIdentifier(EPSG,    "Latitude of false origin"),
@@ -243,23 +182,20 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
             new NamedIdentifier(PROJ4,   "lat_0")
         }, 0, -90, 90, NonSI.DEGREE_ANGLE, true);
 
-        STANDARD_PARALLEL = new DefaultParameterDescriptor<>(Collections.singletonMap(NAME_KEY, nc), 1, 1,
-            double[].class, null, null, null);
-
         STANDARD_PARALLEL_1 = new UniversalParameters(new NamedIdentifier[] {
             new NamedIdentifier(EPSG,    "Latitude of standard parallel"), epsg,
             new NamedIdentifier(EPSG,    "Latitude of pseudo standard parallel"),
-            new NamedIdentifier(OGC,     MapProjectionDescriptor.STANDARD_PARALLEL_1),
+            new NamedIdentifier(OGC,     Constants.STANDARD_PARALLEL_1),
             new NamedIdentifier(OGC,     "pseudo_standard_parallel_1"),
             new NamedIdentifier(ESRI,    "Pseudo_Standard_Parallel_1"), esri,
-            new NamedIdentifier(NETCDF,  "standard_parallel[1]"), nc, // Because this parameter is an array.
+            new NamedIdentifier(NETCDF,  "standard_parallel[1]"), // Because this parameter is an array.
             new NamedIdentifier(GEOTIFF, "StdParallel1"),
             new NamedIdentifier(PROJ4,   "lat_1")
         }, Double.NaN, -90, 90, NonSI.DEGREE_ANGLE, false);
     }
 
     /**
-     * All known names for the standard parallel 2 parameter.
+     * All names known to Apache SIS for the standard parallel 2 parameter.
      * This parameter is optional. The range of valid values is [-90 … 90]°.
      *
      * <blockquote><b>EPSG description:</b> For a conic projection with two standard parallels,
@@ -271,7 +207,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
      */
     public static final UniversalParameters STANDARD_PARALLEL_2 = new UniversalParameters(new NamedIdentifier[] {
             new NamedIdentifier(EPSG,    "Latitude of 2nd standard parallel"),
-            new NamedIdentifier(OGC,     MapProjectionDescriptor.STANDARD_PARALLEL_2),
+            new NamedIdentifier(OGC,     Constants.STANDARD_PARALLEL_2),
             new NamedIdentifier(ESRI,    "Standard_Parallel_2"),
             new NamedIdentifier(NETCDF,  "standard_parallel[2]"),
             new NamedIdentifier(GEOTIFF, "StdParallel2"),
@@ -279,7 +215,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -90, 90, NonSI.DEGREE_ANGLE, false);
 
     /**
-     * All known names for the {@code latitudeOf1stPoint} parameter.
+     * All names known to Apache SIS for the {@code latitudeOf1stPoint} parameter.
      * This parameter is mandatory and has no default value.
      * The range of valid values is [-90 … 90]°.
      */
@@ -288,7 +224,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -90, 90, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the {@code longitudeOf1stPoint} parameter.
+     * All names known to Apache SIS for the {@code longitudeOf1stPoint} parameter.
      * This parameter is mandatory and has no default value.
      * The range of valid values is [-180 … 180]°.
      */
@@ -297,7 +233,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -180, 180, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the {@code latitudeOf2ndPoint} parameter.
+     * All names known to Apache SIS for the {@code latitudeOf2ndPoint} parameter.
      * This parameter is mandatory and has no default value.
      * The range of valid values is [-90 … 90]°.
      */
@@ -306,7 +242,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -90, 90, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the {@code longitudeOf2ndPoint} parameter.
+     * All names known to Apache SIS for the {@code longitudeOf2ndPoint} parameter.
      * This parameter is mandatory and has no default value.
      * The range of valid values is [-180 … 180]°.
      */
@@ -315,7 +251,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -180, 180, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the {@code azimuth} parameter.
+     * All names known to Apache SIS for the {@code azimuth} parameter.
      * This parameter is mandatory and has no default value.
      *
      * <blockquote><b>EPSG description:</b> The azimuthal direction (north zero, east of north being positive)
@@ -334,7 +270,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -360, 360, NonSI.DEGREE_ANGLE, true);
 
     /**
-     * All known names for the {@code rectifiedGridAngle} parameter.
+     * All names known to Apache SIS for the {@code rectifiedGridAngle} parameter.
      * This is an optional parameter with valid values ranging [-360 … 360]°.
      * The default value is the value of the {@linkplain #AZIMUTH azimuth} parameter.
      *
@@ -353,7 +289,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, Double.NaN, -360, 360, NonSI.DEGREE_ANGLE, false);
 
     /**
-     * All known names for the
+     * All names known to Apache SIS for the
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor
      * scale factor} parameter.
      * This parameter is mandatory - meaning that it appears in {@link ParameterValueGroup}
@@ -381,7 +317,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, 1, 0, Double.POSITIVE_INFINITY, Unit.ONE, true);
 
     /**
-     * All known names for the {@code "X_Scale"} parameter.
+     * All names known to Apache SIS for the {@code "X_Scale"} parameter.
      * This parameter is optional and its default value is 1.
      * The range of valid values is unrestricted (but value 0 is not recommended).
      * In particular, negative values can be used for reverting the axis orientation.
@@ -396,7 +332,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, false);
 
     /**
-     * All known names for the {@code "Y_Scale"} parameter.
+     * All names known to Apache SIS for the {@code "Y_Scale"} parameter.
      * This parameter is optional and its default value is 1.
      * The range of valid values is unrestricted (but value 0 is not recommended).
      * In particular, negative values can be used for reverting the axis orientation.
@@ -411,7 +347,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Unit.ONE, false);
 
     /**
-     * All known names for the
+     * All names known to Apache SIS for the
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseEasting
      * false easting} parameter.
      * This parameter is mandatory - meaning that it appears in {@link ParameterValueGroup}
@@ -436,7 +372,7 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         }, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, true);
 
     /**
-     * All known names for the
+     * All names known to Apache SIS for the
      * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseNorthing
      * false northing} parameter.
      * This parameter is mandatory - meaning that it appears in {@link ParameterValueGroup}
@@ -704,78 +640,6 @@ public final class UniversalParameters extends DefaultParameterDescriptor<Double
         final MeasurementRange<Double> valueDomain = MeasurementRange.create(minimum, true, maximum, true, unit);
         return new DefaultParameterDescriptor<>(toMap(identifiers), required ? 1 : 0, 1,
                 Double.class, valueDomain, null, Double.isNaN(defaultValue) ? null : defaultValue);
-    }
-
-    /**
-     * Constructs a parameter group from a set of alias. The parameter group is
-     * identified by codes provided by one or more authorities. Common authorities are
-     * {@link Citations#OGC OGC} and {@link Citations#EPSG EPSG} for example.
-     *
-     * <p>Special rules:</p>
-     * <ul>
-     *   <li>The first entry in the {@code identifiers} array is the
-     *       {@linkplain ParameterDescriptorGroup#getName() primary name}.</li>
-     *   <li>If an identifier does not implements the {@link GenericName} interface, it is
-     *       used as an {@linkplain ParameterDescriptorGroup#getIdentifiers identifiers}.</li>
-     *   <li>All others are {@linkplain ParameterDescriptorGroup#getAlias aliases}.</li>
-     * </ul>
-     *
-     * <b>Note:</b> This method may modify in-place the given parameters array.
-     * Do not pass a cached array.
-     *
-     * @param  identifiers  The operation identifiers. Must contains at least one entry.
-     * @param  excludes     The authorities to exclude from all parameters, or {@code null} if none.
-     * @param  parameters   The set of parameters, or {@code null} or an empty array if none.
-     * @param  dynamicParameters   Non-standard dynamic parameters to add as bitwise combination of
-     *                      {@link MapProjectionDescriptor}, or 0 if none.
-     * @return The descriptor for the given identifiers.
-     */
-    static ParameterDescriptorGroup createDescriptorGroup(final Identifier[] identifiers,
-            final Citation[] excludes, final DefaultParameterDescriptor<?>[] parameters, final int dynamicParameters)
-    {
-        if (excludes != null) {
-            final Map<String,Object> properties = new HashMap<>();
-            for (int i=0; i<parameters.length; i++) {
-                final DefaultParameterDescriptor<?> param = parameters[i];
-                if (param.getValueClass() != Double.class) {
-                    continue;
-                }
-                properties.putAll(IdentifiedObjects.getProperties(param));
-                boolean forAlias = false;
-                boolean modified = false;
-                Object[] aliases;
-                do { // Executed exactly twice: once for identifier, then once for aliases.
-                    final String key = forAlias ? ALIAS_KEY : IDENTIFIERS_KEY;
-                    aliases = (Object[]) properties.get(key);
-                    if (aliases != null) {
-                        int n = 0;
-                        for (final Object alias : aliases) {
-                            if (alias instanceof Identifier) {
-                                if (ArraysExt.contains(excludes, ((Identifier) alias).getAuthority())) {
-                                    continue;
-                                }
-                            }
-                            aliases[n++] = alias;
-                        }
-                        // If at least one alias or identifier has been removed, remember that we
-                        // will need to create a new parameter in replacement to the provided one.
-                        if (n != aliases.length) {
-                            properties.put(key, Arrays.copyOf(aliases, n));
-                            modified = true;
-                        }
-                    }
-                } while ((forAlias = !forAlias) == true);
-                if (modified) {
-                    properties.put(NAME_KEY, aliases[0]); // In case the primary name was one of the excluded names.
-                    parameters[i] = new DefaultParameterDescriptor<>(properties, param.getMinimumOccurs(), 1,
-                            Double.class, param.getValueDomain(), null, (Double) param.getDefaultValue());
-                }
-                properties.clear();
-            }
-        }
-        final Map<String,Object> properties = toMap(identifiers);
-        return (dynamicParameters == 0) ? new DefaultParameterDescriptorGroup(properties, 1, 1, parameters) :
-                new MapProjectionDescriptor(properties, parameters, dynamicParameters);
     }
 
     /**

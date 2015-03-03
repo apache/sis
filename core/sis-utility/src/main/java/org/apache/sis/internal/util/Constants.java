@@ -74,12 +74,20 @@ public final class Constants extends Static {
     /**
      * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
      */
-    public static final String SEMI_MAJOR = "semi_major", SEMI_MINOR = "semi_minor";
+    public static final String SEMI_MAJOR = "semi_major",
+                               SEMI_MINOR = "semi_minor";
+
+    /**
+     * The OGC parameter name for the standard parallels.
+     */
+    public static final String STANDARD_PARALLEL_1 = "standard_parallel_1",
+                               STANDARD_PARALLEL_2 = "standard_parallel_2";
 
     /**
      * Name of the {@value} matrix parameters.
      */
-    public static final String NUM_ROW = "num_row", NUM_COL = "num_col";
+    public static final String NUM_ROW = "num_row",
+                               NUM_COL = "num_col";
 
     /**
      * The OGC name for <cite>"Affine parametric transformation"</cite>.
