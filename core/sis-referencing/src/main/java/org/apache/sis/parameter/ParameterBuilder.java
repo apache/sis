@@ -35,19 +35,25 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementor.
  *
  * {@section Identification properties}
- * Each parameter must have a name, which can be specified by any of the {@code addName(…)} methods.
- * Parameters can optionally have an arbitrary amount of aliases, which are also specified by the
- * {@code addName(…)} methods — each call after the first one adds an alias.
- *
- * <p>Parameters can also have an arbitrary amount of identifiers, which are specified by the
- * {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
- * the method many time.</p>
- *
- * <p>Parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p>
- *
- * <p>All the above-cited properties are cleared after a call to any {@code createXXX(…)} method,
+ * The following properties are cleared after a call to any {@code createXXX(…)} method,
  * since those properties are specific to the each parameter. Other properties like codespace,
- * version and cardinality are left unchanged because they may be shared by many parameters.</p>
+ * version and cardinality are left unchanged because they may be shared by many parameters.
+ *
+ * <table class="compact" style="margin-left: 18 px" summary="Parameter properties.">
+ *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b></td>
+ *   <td>Each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
+ *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
+ *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</td></tr>
+ *
+ *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b></td>
+ *   <td>Parameters can also have an arbitrary amount of identifiers, which are specified by any of the
+ *   {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier can be
+ *   added by invoking the method many time.</td></tr>
+ *
+ *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b></td>
+ *   <td>Parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</td></tr>
+ * </table>
+ *
  *
  * {@section Usage example}
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
@@ -59,7 +65,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
+ *   builder.setCodeSpace(Citations.OGP, "EPSG")
+ *          .setRequired(true);
+ *
  *   ParameterDescriptor<?>[] parameters = {
  *       builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
  *       builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
