@@ -43,29 +43,29 @@ import java.util.Objects;
  * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
  * easier — they do not add any new functionality compared to {@link org.opengis.referencing.ObjectFactory}.
  * Builder methods like {@link #addName(CharSequence)} and {@link #addIdentifier(String)} provide convenient ways
- * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods at
- * {@code IdentifiedObject} creation time. Creations happen when any {@code createXXX(…)} method defined in
- * the builder subclasses is invoked.
+ * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods when any
+ * {@code createXXX(…)} method is invoked.
  *
  * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
- * <blockquote><table class="compact" summary="Builder properties.">
- * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
- *     <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *     {@code addName(…)} methods defined in this class.</td></tr>
  *
- * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
- *     <td>Identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *     by the {@code addName(…)} methods — each call after the first one adds an alias.</td></tr>
+ * <table class="compact" style="margin-left: 18 px" summary="Builder properties.">
+ *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b></td>
+ *   <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
+ *   {@link #addName(CharSequence) addName(…)} methods defined in this class.</td></tr>
  *
- * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
- *     <td>Identified objects can also have an arbitrary amount of identifiers, which are specified by the
- *     {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
- *     the method many time.</td></tr>
+ *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b></td>
+ *   <td>Identified objects can optionally have an arbitrary amount of aliases, which are also specified
+ *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</td></tr>
  *
- * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
- *     <td>Identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
- *         method.</td></tr>
- * </table></blockquote>
+ *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b></td>
+ *   <td>Identified objects can also have an arbitrary amount of identifiers, which are specified by any
+ *   of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
+ *   can be added by invoking the method many time.</td></tr>
+ *
+ *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b></td>
+ *   <td>Identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
+ *   method.</td></tr>
+ * </table>
  *
  * {@section Builder property lifetimes}
  * The same builder can be used for creating many objects, since constructing a Coordinate Reference System (CRS)
@@ -106,17 +106,17 @@ import java.util.Objects;
  * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
  *
  * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
- * <blockquote><table class="compact" summary="IdentifiedObject properties.">
- * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
+ * <table class="compact" style="margin-left: 18 px" summary="IdentifiedObject properties.">
+ * <tr><td>{@linkplain AbstractIdentifiedObject#getName() Name}:</td>
  *     <td>{@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
+ * <tr><td>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</td>
  *     <td>{@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
  *         {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
+ * <tr><td>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
  *     <td>{@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
+ * <tr><td>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</td>
  *     <td>{@code "The “Mercator (1SP)” method name was used prior to October 2010."}</td></tr>
- * </table></blockquote>
+ * </table>
  *
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
