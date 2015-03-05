@@ -20,6 +20,9 @@ import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
+import org.opengis.referencing.crs.CoordinateReferenceSystem;   // For javadoc
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
@@ -39,7 +42,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * since those properties are specific to the each parameter. Other properties like codespace,
  * version and cardinality are left unchanged because they may be shared by many parameters.
  *
- * <table class="compact" style="margin-left: 18 px" summary="Parameter properties.">
+ * <table class="sis">
+ *   <caption>{@code IdentifiedObject} properties</caption>
+ *   <tr>
+ *     <th>Property</th>
+ *     <th>Description</th>
+ *   </tr>
+ *
  *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b></td>
  *   <td>Each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
  *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
@@ -58,35 +67,57 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@section Usage example}
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
- * The following example creates parameters for "<cite>Mercator (variant A)</cite>" projection method (EPSG:9804)
- * with all parameter names in the "EPSG" namespace. The default values define a projection centered on (0°,0°),
- * with no scale factor and no false easting/northing. The projection is valid from 80°S to 84°N and on all the
- * longitude range (±180°).
+ * The following example creates parameters for "<cite>Mercator (variant A)</cite>"
+ * projection method (EPSG:9804) with the following characteristics:
+ *
+ * <ul>
+ *   <li>A single name or identifier in the "EPSG" namespace, except:
+ *     <ul>
+ *       <li><cite>Longitude of natural origin</cite> parameter, which illustrates the case of parameters having
+ *           more than one name because different softwares or standards use different conventions.</li>
+ *       <li><cite>"Mercator (variant A)"</cite> projection, which is commonly known under different names.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Default values define a projection centered on (0°,0°), with no scale factor and no false easting/northing.</li>
+ *   <li>Projection is valid from 80°S to 84°N and on all the longitude range (±180°).</li>
+ * </ul>
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.setCodeSpace(Citations.OGP, "EPSG")
- *          .setRequired(true);
+ *   builder.setCodeSpace(Citations.OGP, "EPSG")                    // The default namespace to be used below.
+ *          .setRequired(true);                                     // All parameters will be considered mandatory.
  *
+ *   // Constructs the list of parameters.
  *   ParameterDescriptor<?>[] parameters = {
- *       builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
- *       builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
- *       builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
- *       builder.addName("False easting")                 .create(0, SI.METRE),
- *       builder.addName("False northing")                .create(0, SI.METRE)
+ *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
+ *              .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),  // Latitude of Mercator projection can not go to the poles.
+ *
+ *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
+ *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
+ *              .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
+ *              .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
+ *              .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),  // Projection is valid on all the longitude range (±180°).
+ *
+ *       builder.addName("Scale factor at natural origin")
+ *              .createStrictlyPositive(1, Unit.ONE),
+ *
+ *       builder.addName("False easting")
+ *              .create(0, SI.METRE),
+ *
+ *       builder.addName("False northing")
+ *              .create(0, SI.METRE)
  *   };
- * }
  *
- * Parameters often have more than one name, because different softwares or standards use different conventions.
- * In the above example, the line creating the <cite>Longitude of natural origin</cite> parameter could be replaced
- * by the following code in order to declare its aliases:
- *
- * {@preformat java
- *   builder.addIdentifier("8802")                         // Primary key in builder default namespace (EPSG in this example).
- *          .addName("Longitude of natural origin")        // Primary name in builder default namespace (EPSG in this example).
- *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
- *          .addName(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
- *          .createBounded(-80, +84, 0, NonSI.DEGREE_ANGLE);
+ *   // Put all above parameters in a group.
+ *   ParameterDescriptorGroup group = builder
+ *           .addIdentifier("9804")                                 // Defined in implicit "EPSG" namespace.
+ *           .addName      ("Mercator (variant A)")                 // Defined in implicit "EPSG" namespace.
+ *           .addName      ("Mercator (1SP)")                       // Defined in implicit "EPSG" namespace.
+ *           .addName      (Citations.OGC, "Mercator_1SP")          // "OGC" namespace explicitly shown by toString().
+ *           .addName      (Citations.GEOTIFF, "CT_Mercator")       // "GeoTIFF" namespace explicitly shown by toString().
+ *           .addIdentifier(Citations.GEOTIFF, "7")
+ *           .setRemarks   ("The “Mercator (1SP)” method name was used prior to October 2010.")
+ *           .createGroupForMapProjection(parameters);
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -333,10 +364,10 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
      * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
      * not explicitely included in parameter definitions since the axis lengths can be inferred from the
-     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid}.
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid}.
      * However {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.
      *
-     * <p>In addition, this method will also add hidden parameters for alternative ways to express some parameters.
+     * <p>In addition, this method adds hidden parameters for alternative ways to express some standard parameters.
      * Those hidden parameters never appear in the {@linkplain DefaultParameterDescriptorGroup#descriptors() list
      * of parameters}. However when one of those parameters is read or written, the work will be delegated to the
      * standard parameters.</p>
@@ -344,8 +375,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * <table class="sis">
      *   <caption>Parameters automatically added by this method</caption>
      *   <tr><th>Name</th>                         <th>Visibility</th> <th>Comment</th></tr>
-     *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter in WKT 1.</td></tr>
-     *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter in WKT 1.</td></tr>
+     *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
+     *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
      *   <tr><td>{@code "earth_radius"}</td>       <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
      *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
      *   <tr><td>{@code "standard_parallel"}</td>  <td>Hidden</td>
@@ -359,6 +390,8 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
      *         for the group to create.
      * @return The parameter descriptor group for a map projection.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
      *
      * @since 0.6
      */

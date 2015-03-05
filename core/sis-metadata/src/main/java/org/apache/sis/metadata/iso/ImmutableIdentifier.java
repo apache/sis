@@ -457,7 +457,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
 
     /**
      * Identifier of the version of the associated code space or code, as specified by the code authority.
-     * This version is included only when the {@linkplain #getCode() code}uses versions. When appropriate,
+     * This version is included only when the {@linkplain #getCode() code} uses versions. When appropriate,
      * the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
