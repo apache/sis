@@ -48,71 +48,59 @@ import java.util.Objects;
  *
  * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
  *
- * <table class="sis">
- *   <caption>{@code IdentifiedObject} properties</caption>
- *   <tr>
- *     <th>Property</th>
- *     <th>Description</th>
- *   </tr>
+ * <ul>
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
+ *       each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
+ *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</p></li>
  *
- *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b></td>
- *   <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *   {@link #addName(CharSequence) addName(…)} methods defined in this class.</td></tr>
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b>
+ *       identified objects can optionally have an arbitrary amount of aliases, which are also specified
+ *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
  *
- *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b></td>
- *   <td>Identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</td></tr>
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
+ *       identified objects can also have an arbitrary amount of identifiers, which are specified by any
+ *       of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
+ *       can be added by invoking the method many time.</p></li>
  *
- *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b></td>
- *   <td>Identified objects can also have an arbitrary amount of identifiers, which are specified by any
- *   of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
- *   can be added by invoking the method many time.</td></tr>
- *
- *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b></td>
- *   <td>Identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
- *   method.</td></tr>
- * </table>
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b>
+ *       identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
+ *       method.</p></li>
+ * </ul>
  *
  * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
  * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
  *
- * <table class="sis">
- *   <caption>{@code Identifier} properties</caption>
- *   <tr>
- *     <th>Property</th>
- *     <th>Description</th>
- *   </tr>
+ * <ul>
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
+ *       each {@code Identifier} name or code can be local to a code space defined by an authority.
+ *       Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
+ *       and usually (but not necessarily) apply to all {@code Identifier} instances.</p></li>
  *
- *   <tr><td><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b></td>
- *   <td>Each {@code Identifier} name or code can be local to a code space defined by an authority.
- *   Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
- *   and usually (but not necessarily) apply to all {@code Identifier} instances.</td></tr>
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b>
+ *       identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
+ *       The version usually (but not necessarily) applies to all {@code Identifier} instances.</p></li>
  *
- *   <tr><td><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b></td>
- *   <td>Identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
- *   The version usually (but not necessarily) applies to all {@code Identifier} instances.</td></tr>
- *
- *   <tr><td><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b></td>
- *   <td>Identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
- *   The description applies only to the next identifier to create.</td></tr>
- * </table>
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b>
+ *       identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
+ *       The description applies only to the next identifier to create.</p></li>
+ * </ul>
  *
  * {@section Namespaces and scopes}
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
  * <ul>
- *   <li>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
+ *   <li><p>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
  *       with the above-cited authority, code space, version and description information.
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} or identifier,
- *       in which the code space information is stored but not shown by the {@code toString()} method.</li>
+ *       in which the code space information is stored but not shown by the {@code toString()} method.</p></li>
  *
- *   <li>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
+ *   <li><p>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
  *       {@link Citation} argument, ignoring any authority or code space information given to this {@code Builder}.
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
- *       in which the code space information is shown by the {@code toString()} method.</li>
+ *       in which the code space information is shown by the {@code toString()} method.</p></li>
  *
- *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *   <li><p>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
  *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
- *       information given to the {@code Builder} are ignored.</li>
+ *       information given to the {@code Builder} are ignored.</p></li>
  * </ul>
  *
  * <div class="note"><b>Example:</b>
@@ -144,18 +132,21 @@ import java.util.Objects;
  * In order to simplify that common usage, two groups of properties have different lifetimes in the {@code Builder} class:
  *
  * <ul>
- *   <li>{@linkplain NamedIdentifier#getAuthority() Authority},
+ *   <li><p>
+ *       {@linkplain NamedIdentifier#getAuthority() Authority},
  *       {@linkplain NamedIdentifier#getCodeSpace() code space} and
  *       {@linkplain NamedIdentifier#getVersion()   version}:<br>
- *       Kept until they are specified again, because those properties are typically shared by all components.</li>
- *
- *   <li>{@linkplain AbstractIdentifiedObject#getName()        Name},
+ *       Kept until they are specified again, because those properties are typically shared by all components.
+ *   </p></li>
+ *   <li><p>
+ *       {@linkplain AbstractIdentifiedObject#getName()        Name},
  *       {@linkplain AbstractIdentifiedObject#getAlias()       aliases},
  *       {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers},
  *       {@linkplain ImmutableIdentifier#getDescription()      description} and
  *       {@linkplain AbstractIdentifiedObject#getRemarks()     remarks}:<br>
  *       Cleared after each call to a {@code createXXX(…)} method, because those properties are usually specific
- *       to a particular {@code IdentifiedObject} or {@code Identifier} instance.</li>
+ *       to a particular {@code IdentifiedObject} or {@code Identifier} instance.
+ *   </p></li>
  * </ul>
  *
  * {@section Usage examples}

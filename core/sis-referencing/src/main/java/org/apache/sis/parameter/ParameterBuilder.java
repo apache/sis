@@ -42,45 +42,31 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * since those properties are specific to the each parameter. Other properties like codespace,
  * version and cardinality are left unchanged because they may be shared by many parameters.
  *
- * <table class="sis">
- *   <caption>{@code IdentifiedObject} properties</caption>
- *   <tr>
- *     <th>Property</th>
- *     <th>Description</th>
- *   </tr>
- *
- *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b></td>
- *   <td>Each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
+ * <ul>
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
+ *   each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
  *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
- *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</td></tr>
+ *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
  *
- *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b></td>
- *   <td>Parameters can also have an arbitrary amount of identifiers, which are specified by any of the
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b>
+ *   parameters can also have an arbitrary amount of identifiers, which are specified by any of the
  *   {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier can be
- *   added by invoking the method many time.</td></tr>
+ *   added by invoking the method many time.</p></li>
  *
- *   <tr><td><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b></td>
- *   <td>Parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</td></tr>
- * </table>
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b>
+ *   parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p></li>
+ * </ul>
  *
  *
  * {@section Usage example}
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
- * The following example creates parameters for "<cite>Mercator (variant A)</cite>"
- * projection method (EPSG:9804) with the following characteristics:
- *
- * <ul>
- *   <li>A single name or identifier in the "EPSG" namespace, except:
- *     <ul>
- *       <li><cite>Longitude of natural origin</cite> parameter, which illustrates the case of parameters having
- *           more than one name because different softwares or standards use different conventions.</li>
- *       <li><cite>"Mercator (variant A)"</cite> projection, which is commonly known under different names.</li>
- *     </ul>
- *   </li>
- *   <li>Default values define a projection centered on (0°,0°), with no scale factor and no false easting/northing.</li>
- *   <li>Projection is valid from 80°S to 84°N and on all the longitude range (±180°).</li>
- * </ul>
+ * The following example creates parameters for <cite>"Mercator (variant A)"</cite>
+ * projection method (EPSG:9804), previously known as <cite>"Mercator (1SP)"</cite>,
+ * centered by default on (0°,0°) with no scale factor and no false easting/northing.
+ * The projection is valid from 80°S to 84°N and on all the longitude range (±180°).
+ * In this example, the <cite>"Longitude of natural origin"</cite> parameter is giving different aliases
+ * for illustrating the case of different softwares or standards using different conventions.
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
