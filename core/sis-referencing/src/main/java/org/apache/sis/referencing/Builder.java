@@ -46,9 +46,15 @@ import java.util.Objects;
  * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods when any
  * {@code createXXX(…)} method is invoked.
  *
- * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
+ * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
  *
- * <table class="compact" style="margin-left: 18 px" summary="Builder properties.">
+ * <table class="sis">
+ *   <caption>{@code IdentifiedObject} properties</caption>
+ *   <tr>
+ *     <th>Property</th>
+ *     <th>Description</th>
+ *   </tr>
+ *
  *   <tr><td><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b></td>
  *   <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
  *   {@link #addName(CharSequence) addName(…)} methods defined in this class.</td></tr>
@@ -67,57 +73,92 @@ import java.util.Objects;
  *   method.</td></tr>
  * </table>
  *
+ * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
+ * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
+ *
+ * <table class="sis">
+ *   <caption>{@code Identifier} properties</caption>
+ *   <tr>
+ *     <th>Property</th>
+ *     <th>Description</th>
+ *   </tr>
+ *
+ *   <tr><td><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b></td>
+ *   <td>Each {@code Identifier} name or code can be local to a code space defined by an authority.
+ *   Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
+ *   and usually (but not necessarily) apply to all {@code Identifier} instances.</td></tr>
+ *
+ *   <tr><td><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b></td>
+ *   <td>Identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
+ *   The version usually (but not necessarily) applies to all {@code Identifier} instances.</td></tr>
+ *
+ *   <tr><td><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b></td>
+ *   <td>Identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
+ *   The description applies only to the next identifier to create.</td></tr>
+ * </table>
+ *
+ * {@section Namespaces and scopes}
+ * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
+ * <ul>
+ *   <li>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
+ *       with the above-cited authority, code space, version and description information.
+ *       The result is a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} or identifier,
+ *       in which the code space information is stored but not shown by the {@code toString()} method.</li>
+ *
+ *   <li>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
+ *       {@link Citation} argument, ignoring any authority or code space information given to this {@code Builder}.
+ *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
+ *       in which the code space information is shown by the {@code toString()} method.</li>
+ *
+ *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
+ *       information given to the {@code Builder} are ignored.</li>
+ * </ul>
+ *
+ * <div class="note"><b>Example:</b>
+ * The EPSG database defines a projection named "<cite>Mercator (variant A)</cite>" (EPSG:9804).
+ * This projection was named "<cite>Mercator (1SP)</cite>" in older EPSG database versions.
+ * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
+ * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
+ *
+ * {@preformat java
+ *   builder.setCodespace (Citations.OGP, "EPSG")
+ *          .addName("Mercator (variant A)")
+ *          .addName("Mercator (1SP)")
+ *          .addName(Citations.OGC, "Mercator_1SP")
+ * }
+ *
+ * The {@code toString()} representation of those three names are {@code "Mercator (variant A)"},
+ * {@code "Mercator (1SP)"} (note the absence of {@code "EPSG:"} prefix, which is stored as the
+ * name {@linkplain org.apache.sis.util.iso.DefaultLocalName#scope() scope} but not shown) and
+ * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
+ *
+ *
  * {@section Builder property lifetimes}
- * The same builder can be used for creating many objects, since constructing a Coordinate Reference System (CRS)
- * may require constructing many components (coordinate system, datum, ellipsoid, prime meridian, <i>etc.</i>),
- * some of them sharing common properties. In order to simplify the most common usages, identification
- * properties have two different lifetimes in the {@code Builder} class:
+ * Some complex objects require the creation of many components. For example constructing a
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
+ * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
+ * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum} and an
+ * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} among other components.
+ * However all those components often (but not necessarily) share the same authority, code space and version information.
+ * In order to simplify that common usage, two groups of properties have different lifetimes in the {@code Builder} class:
  *
  * <ul>
- *   <li>{@linkplain NamedIdentifier#getAuthority() Authority}, {@linkplain NamedIdentifier#getCodeSpace() code space}
- *       and {@linkplain NamedIdentifier#getVersion() version} information specified to this {@code Builder} will stay
- *       active until they are specified again, because those information are typically shared by all components.</li>
- *   <li>Other properties (name, aliases, identifiers and remarks) are cleared after each call to a {@code createXXX(…)}
- *       method, because they are usually specific to a particular {@code IdentifiedObject} instance.</li>
+ *   <li>{@linkplain NamedIdentifier#getAuthority() Authority},
+ *       {@linkplain NamedIdentifier#getCodeSpace() code space} and
+ *       {@linkplain NamedIdentifier#getVersion()   version}:<br>
+ *       Kept until they are specified again, because those properties are typically shared by all components.</li>
+ *
+ *   <li>{@linkplain AbstractIdentifiedObject#getName()        Name},
+ *       {@linkplain AbstractIdentifiedObject#getAlias()       aliases},
+ *       {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers},
+ *       {@linkplain ImmutableIdentifier#getDescription()      description} and
+ *       {@linkplain AbstractIdentifiedObject#getRemarks()     remarks}:<br>
+ *       Cleared after each call to a {@code createXXX(…)} method, because those properties are usually specific
+ *       to a particular {@code IdentifiedObject} or {@code Identifier} instance.</li>
  * </ul>
  *
  * {@section Usage examples}
- * The "<cite>Mercator (variant A)</cite>" projection (EPSG:9804) is also known as "<cite>Mercator (1SP)</cite>".
- * OGC and GeoTIFF use slightly different names, and GeoTIFF has its own code (7).
- * Those information can be specified as below:
- *
- * {@preformat java
- *   Builder builder = new Builder();
- *   builder.setCodespace (Citations.OGP, "EPSG")
- *          .addName      ("Mercator (variant A)")             // Defined in EPSG namespace.
- *          .addName      ("Mercator (1SP)")                   // Defined in EPSG namespace.
- *          .addIdentifier("9804")                             // Defined in EPSG namespace.
- *          .addName      (Citations.OGC,     "Mercator_1SP")
- *          .addName      (Citations.GEOTIFF, "CT_Mercator")
- *          .addIdentifier(Citations.GEOTIFF, "7")
- *          .setRemarks("The “Mercator (1SP)” method name was used prior to October 2010.");
- *   // At this point, the createXXX(…) method to invoke depends on the Builder subclass.
- * }
- *
- * The two first names, which use the default namespace specified by the call to {@code setCodeSpace(…)},
- * will have the {@code "EPSG"} {@linkplain NamedIdentifier#scope() scope}. Since scopes are not shown
- * in {@linkplain NamedIdentifier#toString() string representation of names}, the string representation
- * of the two first names will omit the {@code "EPSG:"} prefix. However the string representation of the
- * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
- *
- * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
- * <table class="compact" style="margin-left: 18 px" summary="IdentifiedObject properties.">
- * <tr><td>{@linkplain AbstractIdentifiedObject#getName() Name}:</td>
- *     <td>{@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</td></tr>
- * <tr><td>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</td>
- *     <td>{@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
- *         {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</td></tr>
- * <tr><td>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
- *     <td>{@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</td></tr>
- * <tr><td>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</td>
- *     <td>{@code "The “Mercator (1SP)” method name was used prior to October 2010."}</td></tr>
- * </table>
- *
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
@@ -259,8 +300,15 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Sets the {@code Identifier} authority and code space. This method is typically invoked only once,
-     * since a compound object often uses the same code space for all individual components.
+     * Sets the {@code Identifier} authority and code space.
+     * The code space is often the authority's abbreviation, but not necessarily.
+     *
+     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) objects identified by codes from the
+     * EPSG database are maintained by the {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGP OGP}
+     * authority, but the code space is {@code "EPSG"} for historical reasons.</div>
+     *
+     * This method is typically invoked only once, since a compound object often uses the same code space
+     * for all individual components.
      *
      * <p><b>Condition:</b>
      * this method can not be invoked after one or more names or identifiers have been added (by calls to the
@@ -275,6 +323,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
+     *
+     * @see ImmutableIdentifier#getAuthority()
+     * @see ImmutableIdentifier#getCodeSpace()
      */
     public B setCodeSpace(final Citation authority, final String codespace) {
         if (!setProperty(Identifier.CODESPACE_KEY, codespace)) {
@@ -421,7 +472,7 @@ public abstract class Builder<B extends Builder<B>> {
     public B addName(final GenericName name) {
         ensureNonNull("name", name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
-            properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(name));
+            properties.put(IdentifiedObject.NAME_KEY, (name instanceof Identifier) ? name : new NamedIdentifier(name));
         } else {
             aliases.add(name);
         }
