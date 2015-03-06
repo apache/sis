@@ -42,7 +42,7 @@ import org.apache.sis.util.Workaround;
  *       {@code "standard_parallel_1"} and {@code "standard_parallel_2"}</li>
  * </ul>
  *
- * The main purpose of this class is to supported transparently the NetCDF ways to express some parameter values.
+ * The main purpose of this class is to support transparently the NetCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -93,7 +93,7 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * @param parameters The "real" parameters.
      */
     MapProjectionDescriptor(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
-        super(properties, 1, 1, addAxisLength(parameters));
+        super(properties, addAxisLengths(parameters));
         boolean hasP1 = false;
         boolean hasP2 = false;
         for (final ParameterDescriptor<?> param : parameters) {
@@ -119,7 +119,7 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static ParameterDescriptor<?>[] addAxisLength(final ParameterDescriptor<?>[] parameters) {
+    private static ParameterDescriptor<?>[] addAxisLengths(final ParameterDescriptor<?>[] parameters) {
         final ParameterDescriptor<?>[] ext = new ParameterDescriptor<?>[parameters.length + 2];
         ext[0] = MapProjection.SEMI_MAJOR;
         ext[1] = MapProjection.SEMI_MINOR;
