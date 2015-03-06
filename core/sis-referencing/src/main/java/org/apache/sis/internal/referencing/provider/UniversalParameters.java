@@ -604,45 +604,6 @@ final class UniversalParameters extends DefaultParameterDescriptor<Double> {
     }
 
     /**
-     * Constructs a parameter descriptor for a floating point value. The parameter is
-     * identified by codes in the namespace of one or more authorities ({@link Citations#OGC OGC},
-     * {@link Citations#EPSG EPSG}, <i>etc.</i>). Those codes are declared as elements in the
-     * {@code identifiers} array argument. The first element ({@code identifiers[0]}) is both the
-     * {@linkplain ParameterDescriptor#getName main name} and the
-     * {@linkplain ParameterDescriptor#getIdentifiers identifiers}.
-     * All others elements are {@linkplain ParameterDescriptor#getAlias aliases}.
-     *
-     * <p>The {@code required} argument is handled as below:</p>
-     * <ul>
-     *   <li><p>If {@code true}, then the descriptor created by this method is flagged as
-     *   <cite>mandatory</cite>, meaning that it will always appear in the list of parameter values
-     *   that a user shall provide. However the value will be initialized with the given default
-     *   value (if different than {@linkplain Double#NaN NaN}), so the user may not needs to supply
-     *   explicitly a value.</p></li>
-     *
-     *   <li><p>If {@code false}, then the descriptor created by this method is flagged as
-     *   <cite>optional</cite>, meaning that it will appear in the list of parameter values
-     *   only if set to a value different than the default value.</p></li>
-     * </ul>
-     *
-     * @param  identifiers  The parameter identifiers. Must contains at least one entry.
-     * @param  defaultValue The default value for the parameter, or {@link Double#NaN} if none.
-     * @param  minimum      The minimum parameter value, or {@link Double#NEGATIVE_INFINITY} if none.
-     * @param  maximum      The maximum parameter value, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  unit         The unit for default, minimum and maximum values.
-     * @param  required     {@code true} if the parameter is mandatory, or {@code false} if optional.
-     * @return The descriptor for the given identifiers.
-     */
-    static ParameterDescriptor<Double> createDescriptor(
-            final Identifier[] identifiers, final double defaultValue,
-            final double minimum, final double maximum, final Unit<?> unit, final boolean required)
-    {
-        final MeasurementRange<Double> valueDomain = MeasurementRange.create(minimum, true, maximum, true, unit);
-        return new DefaultParameterDescriptor<>(toMap(identifiers), required ? 1 : 0, 1,
-                Double.class, valueDomain, null, Double.isNaN(defaultValue) ? null : defaultValue);
-    }
-
-    /**
      * Puts the identifiers into a properties map suitable for {@link ParameterDescriptorGroup} constructor.
      * The first identifier is used as the primary name. All other elements are aliases.
      */
