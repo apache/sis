@@ -23,6 +23,9 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.util.ArgumentChecks;
@@ -94,5 +97,12 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
             properties.put(ALIAS_KEY, aliases.toArray(new GenericName[size]));
         }
         return properties;
+    }
+
+    /**
+     * Creates the parameter builder with the default namespace set to EPSG.
+     */
+    static ParameterBuilder builder() {
+        return new ParameterBuilder().setCodeSpace(Citations.OGP, Constants.EPSG).setRequired(true);
     }
 }

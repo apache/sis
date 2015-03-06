@@ -145,6 +145,13 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Boxes the given value if non-NaN, or returns {@code null} if the value is {@code NaN}.
+     */
+    private static Double valueOf(final double value) {
+        return Double.isNaN(value) ? null : Double.valueOf(value);
+    }
+
+    /**
      * Creates a descriptor for floating point values without domain restriction.
      * All {@code double} values are considered valid.
      *
@@ -159,7 +166,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else {
             valueDomain = null;
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
@@ -189,7 +196,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else {
             valueDomain = NumberRange.create(0.0, false, Double.POSITIVE_INFINITY, false);
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
@@ -212,7 +219,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else {
             valueDomain = null;
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
