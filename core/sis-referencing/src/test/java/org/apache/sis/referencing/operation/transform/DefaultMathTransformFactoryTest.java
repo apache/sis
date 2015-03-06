@@ -17,11 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
@@ -50,7 +45,7 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     OperationMethodSetTest.class
 })
 public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
@@ -128,29 +123,5 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
          */
         assertTrue("Conversions should be a subset of transforms.",  transforms .containsAll(conversions));
         assertTrue("Projections should be a subset of conversions.", conversions.containsAll(projections));
-    }
-
-    /**
-     * Ensures that every parameter instance is unique. Actually this test is not strong requirement.
-     * This is only for sharing existing resources by avoiding unnecessary objects duplication.
-     */
-    @Test
-    @DependsOnMethod("testGetAvailableMethods")
-    public void ensureParameterUniqueness() {
-        final Map<GeneralParameterDescriptor, String> groupNames = new IdentityHashMap<>();
-        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> existings = new HashMap<>();
-        for (final OperationMethod method : factory.getAvailableMethods(SingleOperation.class)) {
-            final ParameterDescriptorGroup group = method.getParameters();
-            final String name = group.getName().getCode();
-            for (final GeneralParameterDescriptor param : group.descriptors()) {
-                assertFalse("Parameter declared twice in the same group.", name.equals(groupNames.put(param, name)));
-                final GeneralParameterDescriptor existing = existings.put(param, param);
-                if (existing != null && existing != param) {
-                    fail("Parameter “" + param.getName().getCode() + "” defined in “" + name + '”'
-                       + " was already defined in “" + groupNames.get(existing) + "”."
-                       + " The same instance could be shared.");
-                }
-            }
-        }
     }
 }
