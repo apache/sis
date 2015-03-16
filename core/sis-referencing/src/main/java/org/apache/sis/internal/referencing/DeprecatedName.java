@@ -36,9 +36,9 @@ public final class DeprecatedName extends NamedIdentifier {
     private static final long serialVersionUID = 1792369861343798471L;
 
     /**
-     * Creates a new deprecated name with the same authority, code, version and remarks than the identifier.
+     * Creates a new deprecated name with the same authority, code, version and remarks than the given identifier.
      *
-     * @param identifier The identifier.
+     * @param identifier The identifier to deprecate.
      */
     public DeprecatedName(final Identifier identifier) {
         super(identifier);
