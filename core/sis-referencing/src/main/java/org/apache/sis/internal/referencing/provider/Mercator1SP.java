@@ -144,7 +144,7 @@ public final class Mercator1SP extends MapProjection {
             .addName("Mercator (variant A)")    // Starting from EPSG version 7.6
             .addName("Mercator (Spherical)")
             .addIdentifier(        new DeprecatedCode((short) 9841, (short) 1026))      // The spherical (1SP) case
-            .addName((GenericName) new DeprecatedName("Mercator (1SP)"))                // Prior to EPSG version 7.6.
+            .addName((GenericName) new DeprecatedName("Mercator (1SP)"))                // Prior to EPSG version 7.6
             .addName((GenericName) new DeprecatedName("Mercator (1SP) (Spherical)"))
             .addName(Citations.OGC,     "Mercator_1SP")
             .addName(Citations.GEOTIFF, "CT_Mercator")
@@ -152,9 +152,8 @@ public final class Mercator1SP extends MapProjection {
             .addIdentifier(Citations.GEOTIFF,  "7")
 //          .addIdentifier(Citations.MAP_INFO, "10")
 //          .addIdentifier(Citations.MAP_INFO, "26")
-            .createGroup(SEMI_MAJOR, SEMI_MINOR,
-                         LATITUDE_OF_ORIGIN, CENTRAL_MERIDIAN, SCALE_FACTOR,
-                         FALSE_EASTING, FALSE_NORTHING);
+            .createGroupForMapProjection(LATITUDE_OF_ORIGIN, CENTRAL_MERIDIAN,
+                    SCALE_FACTOR, FALSE_EASTING, FALSE_NORTHING);
     }
 
     /**
