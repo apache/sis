@@ -16,45 +16,46 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.opengis.metadata.Identifier;
+import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A name which is deprecated (when associated to a given object) in the EPSG database.
+ * A reference identifier for a deprecated EPSG codes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public final class DeprecatedName extends NamedIdentifier {
+public final class DeprecatedCode extends ImmutableIdentifier {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1792369861343798471L;
+    private static final long serialVersionUID = 357222258307746767L;
 
     /**
-     * Creates a new deprecated name with the same authority, code, version and remarks than the identifier.
+     * Creates a deprecated identifier.
      *
-     * @param identifier The identifier.
+     * @param code Identifier code from the EPSG authority.
+     * @param supersededBy The code that replace this one.
      */
-    public DeprecatedName(final Identifier identifier) {
-        super(identifier);
+    public DeprecatedCode(final short code, final short supersededBy) {
+        super(Citations.OGP, Constants.EPSG, Short.toString(code).intern(), null, remarks(supersededBy));
     }
 
     /**
-     * Creates a new deprecated EPSG name.
-     *
-     * @param name The EPSG name.
+     * Formats a "Superseded by" international string.
      */
-    public DeprecatedName(final String name) {
-        super(Citations.EPSG, name);
+    private static InternationalString remarks(final int supersededBy) {
+        return Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
     }
 
     /**
-     * Returns {@code true} since this name is deprecated.
+     * Returns {@code true} since this code is deprecated.
      *
      * @return {@code true}.
      */

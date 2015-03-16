@@ -25,7 +25,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 /**
  * Placeholder for a mandatory parameter value which has not yet been initialized.
  * {@code UninitializedParameter} are immutable and contains only the descriptor of
- * the parameter to initialize. {@code UninitializedParameter} are replaced by the
+ * the parameter to initialize. {@code UninitializedParameter}s are replaced by the
  * actual parameter when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
