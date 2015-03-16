@@ -83,6 +83,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.internal.referencing.provider.AffineTest.class,
+    org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,

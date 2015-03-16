@@ -30,6 +30,9 @@ import org.apache.sis.parameter.Parameters;
 
 /**
  * The provider for "<cite>Longitude rotation</cite>" (EPSG:9601).
+ * The "Longitude rotation" is created as an affine transform containing only a translation term in degrees.
+ * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform} can
+ * be efficiently concatenated with other affine transform instances.
  *
  * <blockquote><p><b>Operation name:</b> {@code Longitude rotation}</p>
  * <table class="sis">
@@ -37,6 +40,9 @@ import org.apache.sis.parameter.Parameters;
  *   <tr><th>Parameter name</th> <th>Default value</th></tr>
  *   <tr><td>{@code Longitude offset}</td> <td></td></tr>
  * </table></blockquote>
+ *
+ * The Apache SIS implementation of this operation method always perform the longitude rotation in degrees.
+ * The longitude axis of source and target CRS shall be converted to degrees before this operation is applied.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -50,6 +56,11 @@ public final class LongitudeRotation extends AbstractProvider {
     private static final long serialVersionUID = -2104496465933824935L;
 
     /**
+     * The name of the {@link #OFFSET} parameter.
+     */
+    static final String NAME = "Longitude offset";
+
+    /**
      * The operation parameter descriptor for the "<cite>longitude offset</cite>" parameter value.
      */
     private static final ParameterDescriptor<Double> OFFSET;
@@ -60,7 +71,7 @@ public final class LongitudeRotation extends AbstractProvider {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        OFFSET = builder.addName("Longitude offset").createBounded(-180, +180, Double.NaN, NonSI.DEGREE_ANGLE);
+        OFFSET     = builder.addIdentifier("8602").addName(NAME).createBounded(-180, +180, Double.NaN, NonSI.DEGREE_ANGLE);
         PARAMETERS = builder.addIdentifier("9601").addName("Longitude rotation").createGroup(OFFSET);
     }
 
@@ -83,6 +94,11 @@ public final class LongitudeRotation extends AbstractProvider {
 
     /**
      * Creates a transform from the specified group of parameter values.
+     * The parameter value is unconditionally converted to degrees.
+     *
+     * <p>The operation is created as an affine transform. We do not override the
+     * {@link AffineTransform2D#getParameterDescriptors()} and {@link AffineTransform2D#getParameterValues()} methods
+     * in order to make that fact clearer.</p>
      *
      * @param  values The group of parameter values.
      * @return The created math transform.
@@ -91,46 +107,6 @@ public final class LongitudeRotation extends AbstractProvider {
     @Override
     public MathTransform createMathTransform(final ParameterValueGroup values) throws ParameterNotFoundException {
         final double offset = Parameters.castOrWrap(values).doubleValue(OFFSET);
-        return new Transform(offset);
-    }
-
-    /**
-     * The "Longitude rotation" transform, as an affine transform containing only a translation term.
-     * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform}
-     * can be efficiently concatenated with other affine transform instances.
-     */
-    private static final class Transform extends AffineTransform2D {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 1267160949067495041L;
-
-        /**
-         * Creates a new longitude rotation for the given offset.
-         */
-        Transform(final double offset) {
-            super(1, 0, 0, 1, offset, 0);
-        }
-
-        /**
-         * Returns the parameter descriptors for this math transform.
-         */
-        @Override
-        public ParameterDescriptorGroup getParameterDescriptors() {
-            return PARAMETERS;
-        }
-
-        /**
-         * Returns the matrix elements as a group of parameters values. The number of parameters
-         * depends on the matrix size. Only matrix elements different from their default value
-         * will be included in this group.
-         */
-        @Override
-        public ParameterValueGroup getParameterValues() {
-            assert (getType() & ~TYPE_TRANSLATION) == 0;  // This transform shall perform only a translation.
-            final ParameterValueGroup p = PARAMETERS.createValue();
-            p.parameter("Longitude offset").setValue(getTranslateX());
-            return p;
-        }
+        return new AffineTransform2D(1, 0, 0, 1, offset, 0);
     }
 }
