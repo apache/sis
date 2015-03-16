@@ -20,7 +20,10 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.measure.unit.SI;
 import org.opengis.util.GenericName;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.Projection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
@@ -31,7 +34,9 @@ import static org.apache.sis.metadata.iso.citation.Citations.*;
 
 
 /**
- * Base class for all map projection providers defined in this package.
+ * Base class for all map projection providers defined in this package. This base class defines some descriptors
+ * for the most commonly used parameters. Subclasses will declare additional parameters and group them in a
+ * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -108,4 +113,14 @@ public abstract class MapProjection extends AbstractProvider {
     public Class<? extends Projection> getOperationType() {
         return Projection.class;
     }
+
+    /**
+     * Creates a map projection from the specified group of parameter values.
+     *
+     * @param  values The group of parameter values.
+     * @return The created map projection.
+     * @throws ParameterNotFoundException if a required parameter was not found.
+     */
+    @Override
+    public abstract MathTransform2D createMathTransform(ParameterValueGroup values) throws ParameterNotFoundException;
 }

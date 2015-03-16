@@ -43,7 +43,7 @@ import java.util.Objects;
 
 
 /**
- * Specifies the relationship of a coordinate system to the earth.
+ * Specifies the relationship of a {@linkplain org.apache.sis.referencing.cs.AbstractCS Coordinate System} to the earth.
  * A datum can be defined as a set of real points on the earth that have coordinates.
  * Each datum subtype can be associated with only specific types of
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate systems}, thus creating specific types of

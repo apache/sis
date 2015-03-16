@@ -34,7 +34,7 @@
  * than the behavior found in other softwares. Those particularities apply only when the math transform is
  * {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
  * created directly}. Users do not need to care about them when the coordinate operation is
- * {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createOperation
+ * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createOperation
  * inferred by Apache SIS for a given pair of CRS}.
  *
  * <ul>

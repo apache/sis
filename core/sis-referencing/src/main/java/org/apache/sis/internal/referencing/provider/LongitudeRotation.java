@@ -96,9 +96,12 @@ public final class LongitudeRotation extends AbstractProvider {
      * Creates a transform from the specified group of parameter values.
      * The parameter value is unconditionally converted to degrees.
      *
-     * <p>The operation is created as an affine transform. We do not override the
+     * <p>The operation is created as an affine transform between two two-dimensional CRS. We do not override the
      * {@link AffineTransform2D#getParameterDescriptors()} and {@link AffineTransform2D#getParameterValues()} methods
-     * in order to make that fact clearer.</p>
+     * in order to make that fact clearer, in the hope to reduce ambiguity about the nature of the transform.
+     * Note also that the "Longitude rotation" operation has unit of measurement while the "Affine" operation
+     * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
+     * operation was shown as a "Longitude rotation".</p>
      *
      * @param  values The group of parameter values.
      * @return The created math transform.
