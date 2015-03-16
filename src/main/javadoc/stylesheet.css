@@ -187,6 +187,9 @@ ul.verbose li {
   margin-bottom: 6px;
 }
 
+span.deprecated {
+  text-decoration: line-through;
+}
 
 
 

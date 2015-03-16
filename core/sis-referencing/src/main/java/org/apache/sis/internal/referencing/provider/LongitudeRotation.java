@@ -68,10 +68,10 @@ public final class LongitudeRotation extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        OFFSET     = builder.addIdentifier("8602").addName(NAME).createBounded(-180, +180, Double.NaN, NonSI.DEGREE_ANGLE);
+        OFFSET = createLongitude(builder.addIdentifier("8602").addName(NAME));
         PARAMETERS = builder.addIdentifier("9601").addName("Longitude rotation").createGroup(OFFSET);
     }
 

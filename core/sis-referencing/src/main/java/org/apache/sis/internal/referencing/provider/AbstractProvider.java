@@ -19,11 +19,18 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import javax.measure.unit.Unit;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -104,5 +111,39 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      */
     static ParameterBuilder builder() {
         return new ParameterBuilder().setCodeSpace(Citations.OGP, Constants.EPSG).setRequired(true);
+    }
+
+    /**
+     * Creates a descriptor for a latitude parameter in degrees.
+     */
+    static ParameterDescriptor<Double> createLatitude(final ParameterBuilder builder, final boolean includePoles) {
+        return builder.createBounded(MeasurementRange.create(
+                Latitude.MIN_VALUE, includePoles,
+                Latitude.MAX_VALUE, includePoles,
+                NonSI.DEGREE_ANGLE), 0.0);
+    }
+
+    /**
+     * Creates a descriptor for a longitude parameter in degrees.
+     */
+    static ParameterDescriptor<Double> createLongitude(final ParameterBuilder builder) {
+        return builder.createBounded(MeasurementRange.create(
+                Longitude.MIN_VALUE, true,
+                Longitude.MAX_VALUE, true,
+                NonSI.DEGREE_ANGLE), 0.0);
+    }
+
+    /**
+     * Creates a descriptor for a scale parameter with a default value of 1.
+     */
+    static ParameterDescriptor<Double> createScale(final ParameterBuilder builder) {
+        return builder.createStrictlyPositive(1.0, Unit.ONE);
+    }
+
+    /**
+     * Creates a false easting or northing parameter in metre with a default value of 0.
+     */
+    static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
+        return builder.create(0.0, SI.METRE);
     }
 }

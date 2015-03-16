@@ -118,7 +118,7 @@ public abstract class MapProjection extends AbstractProvider {
      * Creates a map projection from the specified group of parameter values.
      *
      * @param  values The group of parameter values.
-     * @return The created map projection.
+     * @return The map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
