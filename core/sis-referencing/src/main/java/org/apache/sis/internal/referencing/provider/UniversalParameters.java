@@ -111,7 +111,6 @@ final class UniversalParameters extends DefaultParameterDescriptor<Double> {
             new NamedIdentifier(OGC,     "longitude_of_center"),
             new NamedIdentifier(ESRI,    "Central_Meridian"),
             new NamedIdentifier(ESRI,    "Longitude_Of_Center"),
-            new NamedIdentifier(ESRI,    "Longitude_Of_Origin"),
             new NamedIdentifier(NETCDF,  "longitude_of_projection_origin"),
             new NamedIdentifier(NETCDF,  "longitude_of_central_meridian"),
             new NamedIdentifier(GEOTIFF, "NatOriginLong"),
