@@ -77,7 +77,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
         assertSame("Authority", Citations.OGC, actual.getAuthority());
-        Assert.assertIdentifierEquals(null, "OGC", "OGC", null, expected, actual);
+        assertIdentifierEquals(null, "OGC", "OGC", null, expected, actual);
     }
 
     /**

@@ -24,7 +24,6 @@ import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
