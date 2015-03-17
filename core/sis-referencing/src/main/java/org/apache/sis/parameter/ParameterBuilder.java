@@ -20,6 +20,9 @@ import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
+import org.opengis.referencing.crs.CoordinateReferenceSystem;   // For javadoc
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
@@ -35,55 +38,77 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementor.
  *
  * {@section Identification properties}
- * Each parameter must have a name, which can be specified by any of the {@code addName(…)} methods.
- * Parameters can optionally have an arbitrary amount of aliases, which are also specified by the
- * {@code addName(…)} methods — each call after the first one adds an alias.
- *
- * <p>Parameters can also have an arbitrary amount of identifiers, which are specified by the
- * {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
- * the method many time.</p>
- *
- * <p>Parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p>
- *
- * <p>All the above-cited properties are cleared after a call to any {@code createXXX(…)} method,
+ * The following properties are cleared after a call to any {@code createXXX(…)} method,
  * since those properties are specific to the each parameter. Other properties like codespace,
- * version and cardinality are left unchanged because they may be shared by many parameters.</p>
+ * version and cardinality are left unchanged because they may be shared by many parameters.
+ *
+ * <ul>
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
+ *   each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
+ *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
+ *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
+ *
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b>
+ *   parameters can also have an arbitrary amount of identifiers, which are specified by any of the
+ *   {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier can be
+ *   added by invoking the method many time.</p></li>
+ *
+ *   <li><p><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b>
+ *   parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p></li>
+ * </ul>
+ *
  *
  * {@section Usage example}
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
- * The following example creates parameters for "<cite>Mercator (variant A)</cite>" projection method (EPSG:9804)
- * with all parameter names in the "EPSG" namespace. The default values define a projection centered on (0°,0°),
- * with no scale factor and no false easting/northing. The projection is valid from 80°S to 84°N and on all the
- * longitude range (±180°).
+ * The following example creates parameters for <cite>"Mercator (variant A)"</cite>
+ * projection method (EPSG:9804), previously known as <cite>"Mercator (1SP)"</cite>,
+ * centered by default on (0°,0°) with no scale factor and no false easting/northing.
+ * The projection is valid from 80°S to 84°N and on all the longitude range (±180°).
+ * In this example, the <cite>"Longitude of natural origin"</cite> parameter is giving different aliases
+ * for illustrating the case of different softwares or standards using different conventions.
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
+ *   builder.setCodeSpace(Citations.OGP, "EPSG")                    // The default namespace to be used below.
+ *          .setRequired(true);                                     // All parameters will be considered mandatory.
+ *
+ *   // Constructs the list of parameters.
  *   ParameterDescriptor<?>[] parameters = {
- *       builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
- *       builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
- *       builder.addName("Scale factor at natural origin").createStrictlyPositive(1, Unit.ONE),
- *       builder.addName("False easting")                 .create(0, SI.METRE),
- *       builder.addName("False northing")                .create(0, SI.METRE)
+ *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
+ *              .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),  // Latitude of Mercator projection can not go to the poles.
+ *
+ *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
+ *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
+ *              .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
+ *              .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
+ *              .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),  // Projection is valid on all the longitude range (±180°).
+ *
+ *       builder.addName("Scale factor at natural origin")
+ *              .createStrictlyPositive(1, Unit.ONE),
+ *
+ *       builder.addName("False easting")
+ *              .create(0, SI.METRE),
+ *
+ *       builder.addName("False northing")
+ *              .create(0, SI.METRE)
  *   };
- * }
  *
- * Parameters often have more than one name, because different softwares or standards use different conventions.
- * In the above example, the line creating the <cite>Longitude of natural origin</cite> parameter could be replaced
- * by the following code in order to declare its aliases:
- *
- * {@preformat java
- *   builder.addIdentifier("8802")                         // Primary key in builder default namespace (EPSG in this example).
- *          .addName("Longitude of natural origin")        // Primary name in builder default namespace (EPSG in this example).
- *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
- *          .addName(Citations.GEOTIFF, "NatOriginLong")   // Second alias in "GeoTIFF" namespace.
- *          .createBounded(-80, +84, 0, NonSI.DEGREE_ANGLE);
+ *   // Put all above parameters in a group.
+ *   ParameterDescriptorGroup group = builder
+ *           .addIdentifier("9804")                                 // Defined in implicit "EPSG" namespace.
+ *           .addName      ("Mercator (variant A)")                 // Defined in implicit "EPSG" namespace.
+ *           .addName      ("Mercator (1SP)")                       // Defined in implicit "EPSG" namespace.
+ *           .addName      (Citations.OGC, "Mercator_1SP")          // "OGC" namespace explicitly shown by toString().
+ *           .addName      (Citations.GEOTIFF, "CT_Mercator")       // "GeoTIFF" namespace explicitly shown by toString().
+ *           .addIdentifier(Citations.GEOTIFF, "7")
+ *           .setRemarks   ("The “Mercator (1SP)” method name was used prior to October 2010.")
+ *           .createGroupForMapProjection(parameters);
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class ParameterBuilder extends Builder<ParameterBuilder> {
@@ -120,6 +145,13 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Boxes the given value if non-NaN, or returns {@code null} if the value is {@code NaN}.
+     */
+    private static Double valueOf(final double value) {
+        return Double.isNaN(value) ? null : Double.valueOf(value);
+    }
+
+    /**
      * Creates a descriptor for floating point values without domain restriction.
      * All {@code double} values are considered valid.
      *
@@ -134,7 +166,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else {
             valueDomain = null;
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
@@ -160,11 +192,11 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     public ParameterDescriptor<Double> createStrictlyPositive(final double defaultValue, final Unit<?> unit) {
         final Range<Double> valueDomain;
         if (unit != null) {
-            valueDomain = MeasurementRange.create(0.0, false, Double.POSITIVE_INFINITY, false, unit);
+            valueDomain = MeasurementRange.createGreaterThan(0.0, unit);
         } else {
             valueDomain = NumberRange.create(0.0, false, Double.POSITIVE_INFINITY, false);
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
@@ -187,7 +219,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         } else {
             valueDomain = null;
         }
-        return create(Double.class, valueDomain, null, Double.valueOf(defaultValue));
+        return create(Double.class, valueDomain, null, valueOf(defaultValue));
     }
 
     /**
@@ -285,19 +317,6 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
-     * Creates a descriptor group for the given parameters. This is a convenience method for
-     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
-     * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
-     *
-     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
-     *         for the group to create.
-     * @return The parameter descriptor group.
-     */
-    public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
-        return createGroup(required ? 1 : 0, 1, parameters);
-    }
-
-    /**
      * Creates a descriptor group for the given cardinality and parameters.
      *
      * @param  minimumOccurs The {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs() minimum}
@@ -315,6 +334,70 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
         onCreate(false);
         try {
             group = new DefaultParameterDescriptorGroup(properties, minimumOccurs, maximumOccurs, parameters);
+        } finally {
+            onCreate(true);
+        }
+        return group;
+    }
+
+    /**
+     * Creates a descriptor group for the given parameters. This is a convenience method for
+     * {@link #createGroup(int, int, GeneralParameterDescriptor[])} with a cardinality of [0 … 1]
+     * or [1 … 1] depending on the value given to the last call to {@link #setRequired(boolean)}.
+     *
+     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *         for the group to create.
+     * @return The parameter descriptor group.
+     */
+    public ParameterDescriptorGroup createGroup(final GeneralParameterDescriptor... parameters) {
+        return createGroup(required ? 1 : 0, 1, parameters);
+    }
+
+    /**
+     * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
+     * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
+     * not explicitely included in parameter definitions since the axis lengths can be inferred from the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid}.
+     * However {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.
+     *
+     * <p>In addition, this method adds hidden parameters for alternative ways to express some standard parameters.
+     * Those hidden parameters never appear in the {@linkplain DefaultParameterDescriptorGroup#descriptors() list
+     * of parameters}. However when one of those parameters is read or written, the work will be delegated to the
+     * standard parameters.</p>
+     *
+     * <table class="sis">
+     *   <caption>Parameters automatically added by this method</caption>
+     *   <tr><th>Name</th>                         <th>Visibility</th> <th>Comment</th></tr>
+     *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
+     *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
+     *   <tr><td>{@code "earth_radius"}</td>       <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "standard_parallel"}</td>  <td>Hidden</td>
+     *     <td>Array of 1 or 2 elements mapped to {@code "standard_parallel_1"} and {@code "standard_parallel_2"}.</td></tr>
+     * </table>
+     *
+     * <div class="note"><b>Note:</b>
+     * When the {@code "earth_radius"} parameter is read, its value is the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}
+     * computed from the semi-major and semi-minor axis lengths.</div>
+     *
+     * Map projection parameter groups always have a {@linkplain DefaultParameterDescriptorGroup#getMinimumOccurs()
+     * minimum} and {@linkplain DefaultParameterDescriptorGroup#getMaximumOccurs() maximum occurrence} of 1,
+     * regardless the value given to {@link #setRequired(boolean)}.
+     *
+     * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
+     *         for the group to create.
+     * @return The parameter descriptor group for a map projection.
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
+     *
+     * @since 0.6
+     */
+    public ParameterDescriptorGroup createGroupForMapProjection(final ParameterDescriptor<?>... parameters) {
+        final ParameterDescriptorGroup group;
+        onCreate(false);
+        try {
+            group = new MapProjectionDescriptor(properties, parameters);
         } finally {
             onCreate(true);
         }

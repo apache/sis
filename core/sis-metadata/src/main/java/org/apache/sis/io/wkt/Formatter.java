@@ -91,7 +91,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class Formatter implements Localized {
@@ -1243,12 +1243,15 @@ public class Formatter implements Localized {
             append((FormattableObject) value);
         } else if (value instanceof IdentifiedObject) {
             append(ReferencingServices.getInstance().toFormattableObject((IdentifiedObject) value));
-        }
-        else if (value instanceof MathTransform)         append((MathTransform)         value);
-        else if (value instanceof Matrix)                append((Matrix)                value);
-        else if (value instanceof Unit<?>)               append((Unit<?>)               value);
-        else if (value instanceof GeographicBoundingBox) append((GeographicBoundingBox) value, BBOX_ACCURACY);
-        else if (value instanceof VerticalExtent) {
+        } else if (value instanceof MathTransform) {
+            append((MathTransform) value);
+        } else if (value instanceof Matrix) {
+            append((Matrix) value);
+        } else if (value instanceof Unit<?>) {
+            append((Unit<?>) value);
+        } else if (value instanceof GeographicBoundingBox) {
+            append((GeographicBoundingBox) value, BBOX_ACCURACY);
+        } else if (value instanceof VerticalExtent) {
             appendVerticalExtent(Extents.getVerticalRange(new SimpleExtent(null, (VerticalExtent) value, null)));
         } else if (value instanceof TemporalExtent) {
             appendTemporalExtent(Extents.getTimeRange(new SimpleExtent(null, null, (TemporalExtent) value)));

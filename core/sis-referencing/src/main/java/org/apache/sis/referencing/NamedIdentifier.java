@@ -36,6 +36,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;  // For javadoc
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 
@@ -89,7 +90,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
@@ -160,36 +161,35 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     }
 
     /**
-     * Constructs an identifier from an authority and localizable code.
-     * This is a convenience constructor for commonly-used parameters.
-     *
-     * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
-     *                  or {@code null} if not available.
-     * @param code      The code. The {@code code.toString(Locale.ROOT)} return value will be used for the
-     *                  {@link #getCode() code} property, and the complete international string will be used
-     *                  for the {@link #getName() name} property.
-     */
-    public NamedIdentifier(final Citation authority, final InternationalString code) {
-        this(authority, code.toString(Locale.ROOT));
-        name = createName(authority, code);
-        isNameSupplied = true; // Because 'code' is an international string.
-    }
-
-    /**
      * Constructs an identifier from an authority and code.
      * This is a convenience constructor for commonly-used parameters.
      *
-     * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
-     *                  or {@code null} if not available.
-     * @param code      The code. This parameter is mandatory.
+     * <p>If the given code is an {@link InternationalString}, then the {@code code.toString(Locale.ROOT)}
+     * return value will be used for the {@link #getCode() code} property, and the complete international
+     * string will be used for the {@link #getName() name} property.</p>
+     *
+     * @param authority
+     *          Organization or party responsible for definition and maintenance of the code
+     *          space or code, or {@code null} if not available.
+     * @param code
+     *          Identifier code or name, optionally from a controlled list or pattern defined by
+     *          the authority. The code can not be null.
      */
-    public NamedIdentifier(final Citation authority, final String code) {
-        super(authority, getUnicodeIdentifier(authority), code);
+    public NamedIdentifier(final Citation authority, final CharSequence code) {
+        super(authority, getUnicodeIdentifier(authority), toString(code));
+        if (code instanceof InternationalString) {
+            name = createName(authority, code);
+            isNameSupplied = true; // Because 'code' is an international string.
+        }
     }
 
     /**
-     * Creates an identifier from the specified code and authority,
+     * Constructs an identifier from an authority and localizable code,
      * with an optional version number and remarks.
+     *
+     * <p>If the given code is an {@link InternationalString}, then the {@code code.toString(Locale.ROOT)}
+     * return value will be used for the {@link #getCode() code} property, and the complete international
+     * string will be used for the {@link #getName() name} property.</p>
      *
      * @param authority
      *          Organization or party responsible for definition and maintenance of the code
@@ -206,10 +206,26 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param remarks
      *          Comments on or information about this identifier, or {@code null} if none.
      */
-    public NamedIdentifier(final Citation authority, final String codeSpace,
-            final String code, final String version, final InternationalString remarks)
+    public NamedIdentifier(final Citation authority, final String codeSpace, final CharSequence code,
+            final String version, final InternationalString remarks)
     {
-        super(authority, codeSpace, code, version, remarks);
+        super(authority, codeSpace, toString(code), version, remarks);
+        if (code instanceof InternationalString) {
+            name = createName(authority, code);
+            isNameSupplied = true; // Because 'code' is an international string.
+        }
+    }
+
+    /**
+     * Returns the unlocalized string representation of the given code.
+     */
+    private static String toString(final CharSequence code) {
+        ArgumentChecks.ensureNonNull("code", code);
+        if (code instanceof InternationalString) {
+            return ((InternationalString) code).toString(Locale.ROOT);
+        } else {
+            return code.toString();
+        }
     }
 
     /**

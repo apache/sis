@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -243,6 +244,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
+    @Workaround(library="JDK", version="1.7")
     private static Map<String,?> getProperties(final MathTransform transform) {
         ensureNonNull("transform", transform);
         if (transform instanceof Parameterized) {

@@ -51,7 +51,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see RangeFormat
@@ -109,6 +109,22 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
+     * Constructs a range of {@code double} values greater than the given value.
+     * The {@code minValue} is often zero for creating a range of strictly positive values.
+     * This method may return a shared instance, at implementation choice.
+     *
+     * @param  minValue The minimal value (exclusive), or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  unit The unit of measurement, or {@code null} if unknown.
+     * @return The new range of numeric values greater than the given value.
+     *
+     * @since 0.6
+     */
+    public static MeasurementRange<Double> createGreaterThan(final double minValue, final Unit<?> unit) {
+        return unique(new MeasurementRange<>(Double.class,
+                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), false, null, false, unit));
+    }
+
+    /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
      * This method performs the same work than {@link NumberRange#createBestFit
      * NumberRange.createBestFit(…)} with an additional {@code unit} argument.
@@ -133,7 +149,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
         if (type == null) {
             return null;
         }
-        return (MeasurementRange) unique(new MeasurementRange(type,
+        return unique(new MeasurementRange(type,
                 Numbers.cast(minValue, type), isMinIncluded,
                 Numbers.cast(maxValue, type), isMaxIncluded, unit));
     }

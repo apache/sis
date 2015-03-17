@@ -210,6 +210,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *         and there is no default value.
      *
      * @see #setValue(Object)
+     * @see Parameters#getValue(ParameterDescriptor)
      */
     @Override
     public T getValue() {
@@ -228,6 +229,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @throws IllegalStateException if the value is not defined and there is no default value.
      *
      * @see #setValue(boolean)
+     * @see Parameters#booleanValue(ParameterDescriptor)
      */
     @Override
     public boolean booleanValue() throws IllegalStateException {
@@ -251,6 +253,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #setValue(int)
      * @see #intValueList()
+     * @see Parameters#intValue(ParameterDescriptor)
      */
     @Override
     public int intValue() throws IllegalStateException {
@@ -277,6 +280,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #setValue(Object)
      * @see #intValue()
+     * @see Parameters#intValueList(ParameterDescriptor)
      */
     @Override
     public int[] intValueList() throws IllegalStateException {
@@ -302,6 +306,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #getUnit()
      * @see #setValue(double)
      * @see #doubleValueList()
+     * @see Parameters#doubleValue(ParameterDescriptor)
      */
     @Override
     public double doubleValue() throws IllegalStateException {
@@ -374,6 +379,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #getUnit()
      * @see #setValue(double,Unit)
      * @see #doubleValueList(Unit)
+     * @see Parameters#doubleValue(ParameterDescriptor)
      */
     @Override
     public double doubleValue(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
@@ -398,6 +404,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #getUnit()
      * @see #setValue(double[],Unit)
      * @see #doubleValue(Unit)
+     * @see Parameters#doubleValueList(ParameterDescriptor)
      */
     @Override
     public double[] doubleValueList(final Unit<?> unit) throws IllegalArgumentException, IllegalStateException {
@@ -419,6 +426,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getValue()
      * @see #setValue(Object)
+     * @see Parameters#stringValue(ParameterDescriptor)
      */
     @Override
     public String stringValue() throws IllegalStateException {

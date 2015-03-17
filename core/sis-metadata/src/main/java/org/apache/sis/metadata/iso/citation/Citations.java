@@ -75,6 +75,28 @@ public final class Citations extends Static {
     public static final Citation OGP = new SimpleCitation("OGP");
 
     /**
+     * The <a href="http://www.epsg.org">EPSG</a> dataset. This citation is used as an authority for
+     * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
+     * identifiers.
+     *
+     * <div class="note"><b>Historical note:</b>
+     * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
+     * But this meaning does not apply anymore since the European and American associations merged
+     * into the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
+     * The legacy acronym now applies only to the database Coordinate Reference System definitions,
+     * known as <cite>EPSG dataset</cite>.</div>
+     *
+     * @see #OGP
+     * @see #AUTO
+     * @see #AUTO2
+     * @see #CRS
+     * @category Code space
+     *
+     * @since 0.4
+     */
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.EPSG, Constants.EPSG);
+
+    /**
      * The <a href="http://sis.apache.org">Apache SIS</a> project.
      *
      * @since 0.4
@@ -111,12 +133,13 @@ public final class Citations extends Static {
 
     /**
      * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
+     * This specification identifies some map projections by their own numerical codes.
      *
-     * @category Specification
+     * @category Code space
      *
      * @since 0.4
      */
-    public static final Citation GEOTIFF = new SimpleCitation("GeoTIFF");
+    public static final IdentifierSpace<Integer> GEOTIFF = new Authority<>("GeoTIFF", "GeoTIFF");
 
     /**
      * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
@@ -125,29 +148,16 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "PROJ4");
+    public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "Proj4");
 
     /**
-     * The <a href="http://www.epsg.org">EPSG</a> dataset. This citation is used as an authority for
-     * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
-     * identifiers.
+     * The MapInfo software. This software defines its own projection codes.
      *
-     * <div class="note"><b>Historical note:</b>
-     * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
-     * But this meaning does not apply anymore since the European and American associations merged
-     * into the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
-     * The legacy acronym now applies only to the database Coordinate Reference System definitions,
-     * known as <cite>EPSG dataset</cite>.</div>
-     *
-     * @see #OGP
-     * @see #AUTO
-     * @see #AUTO2
-     * @see #CRS
      * @category Code space
      *
-     * @since 0.4
+     * @since 0.6
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.EPSG, Constants.EPSG);
+    public static final IdentifierSpace<Integer> MAP_INFO = new Authority<>("MapInfo", "MapInfo");
 
     /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
@@ -175,7 +185,7 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      */
     private static final Citation[] CITATIONS = {
-        ISO, OGC, OGP, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, EPSG, ISBN, ISSN
+        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, MAP_INFO, ISBN, ISSN
     };
 
     /**

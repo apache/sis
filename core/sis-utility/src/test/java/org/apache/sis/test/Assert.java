@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -142,13 +143,15 @@ public strictfp class Assert extends org.opengis.test.Assert {
     }
 
     /**
-     * Asserts that the given set contains the same elements.
+     * Asserts that the given set contains the same elements, ignoring order.
      * In case of failure, this method lists the missing or unexpected elements.
+     *
+     * <p>The given collections are typically instances of {@link Set}, but this is not mandatory.</p>
      *
      * @param expected The expected set, or {@code null}.
      * @param actual   The actual set, or {@code null}.
      */
-    public static void assertSetEquals(final Set<?> expected, final Set<?> actual) {
+    public static void assertSetEquals(final Collection<?> expected, final Collection<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
             final Set<Object> r = new LinkedHashSet<>(expected);
             assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
@@ -157,7 +160,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
             assertTrue("The two sets are disjoint.",                 r.removeAll(expected));
             assertTrue("The set contains unexpected elements: " + r, r.isEmpty());
         }
-        assertEquals("Set.equals(Object) failed:", expected, actual);
+        if (expected instanceof Set<?> && actual instanceof Set<?>) {
+            assertEquals("Set.equals(Object) failed:", expected, actual);
+        }
     }
 
     /**

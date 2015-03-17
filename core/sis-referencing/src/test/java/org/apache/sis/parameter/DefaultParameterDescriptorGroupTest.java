@@ -47,6 +47,11 @@ import static org.opengis.referencing.IdentifiedObject.*;
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
+     * The default value used by the parameters in the {@link #M1_M1_O1_O2} descriptor.
+     */
+    static final Integer DEFAULT_VALUE = 10;
+
+    /**
      * A group of 4 parameters of type {@link Integer} with default value 10.
      * The two first parameters are mandatory, while the two last parameters are optional.
      * The very last parameter has a maximum number of occurrence of 2, which is illegal
@@ -54,7 +59,6 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
     static {
-        final Integer DEFAULT_VALUE = 10;
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<>(4);
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
