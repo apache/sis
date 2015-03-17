@@ -136,19 +136,19 @@ public final class Mercator1SP extends MapProjection {
                 .addName(Citations.PROJ4,   "y_0"));
 
         PARAMETERS = builder
-            .addIdentifier("9804")              // The ellipsoidal case
-            .addIdentifier("1026")              // The spherical case
-            .addName("Mercator (variant A)")    // Starting from EPSG version 7.6
-            .addName("Mercator (Spherical)")    // Starting from EPSG version 7.6
-            .addDeprecatedIdentifier("9841",                 "1026")                    // The spherical (1SP) case
-            .addDeprecatedName("Mercator (1SP)",             "Mercator (variant A)")    // Prior to EPSG version 7.6
-            .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")    // Prior to EPSG version 7.6
+            .addIdentifier(             "9804")                                                 // The ellipsoidal case
+            .addIdentifier(             "1026")                                                 // The spherical case
+            .addDeprecatedIdentifier(   "9841", "1026")                                         // The spherical (1SP) case
+            .addName(                   "Mercator (variant A)")                                 // Starting from EPSG version 7.6
+            .addName(                   "Mercator (Spherical)")                                 // Starting from EPSG version 7.6
+            .addDeprecatedName(         "Mercator (1SP)",             "Mercator (variant A)")   // Prior to EPSG version 7.6
+            .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")   // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_1SP")
             .addName(Citations.GEOTIFF, "CT_Mercator")
             .addName(Citations.PROJ4,   "merc")
-            .addIdentifier(Citations.GEOTIFF,  "7")
-//          .addIdentifier(Citations.MAP_INFO, "10")
-//          .addIdentifier(Citations.MAP_INFO, "26")
+            .addIdentifier(Citations.GEOTIFF,   "7")
+            .addIdentifier(Citations.MAP_INFO, "10")
+            .addIdentifier(Citations.MAP_INFO, "26")
             .createGroupForMapProjection(LATITUDE_OF_ORIGIN, CENTRAL_MERIDIAN,
                     SCALE_FACTOR, FALSE_EASTING, FALSE_NORTHING);
     }

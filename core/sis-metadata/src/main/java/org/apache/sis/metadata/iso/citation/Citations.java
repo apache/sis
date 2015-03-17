@@ -151,6 +151,15 @@ public final class Citations extends Static {
     public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "Proj4");
 
     /**
+     * The MapInfo software. This software defines its own projection codes.
+     *
+     * @category Code space
+     *
+     * @since 0.6
+     */
+    public static final IdentifierSpace<Integer> MAP_INFO = new Authority<>("MapInfo", "MapInfo");
+
+    /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
@@ -176,7 +185,7 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      */
     private static final Citation[] CITATIONS = {
-        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, ISBN, ISSN
+        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, MAP_INFO, ISBN, ISSN
     };
 
     /**
