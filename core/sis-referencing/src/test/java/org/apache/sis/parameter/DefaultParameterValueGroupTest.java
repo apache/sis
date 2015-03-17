@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -42,7 +43,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -143,8 +144,8 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertEquals("parameter(“Mandatory 2”)", 20, group.parameter("Mandatory 2").intValue());
         values.clear();
         assertEquals("size", 2, values.size());
-        assertEquals("parameter(“Mandatory 2”)", 10, group.parameter("Mandatory 2").intValue());
-        // The above 10 is the default value specified by the descriptor.
+        assertEquals("parameter(“Mandatory 2”)", DefaultParameterDescriptorGroupTest.DEFAULT_VALUE,
+                group.parameter("Mandatory 2").getValue());
     }
 
     /**
@@ -164,9 +165,8 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             assertNotNull(e.getMessage());
         }
-        assertEquals(10, ((ParameterValue<?>) values.get(0)).intValue());
-        assertEquals(10, ((ParameterValue<?>) values.get(1)).intValue());
-        // 10 is the default value specified by the descriptor.
+        assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, ((ParameterValue<?>) values.get(0)).getValue());
+        assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, ((ParameterValue<?>) values.get(1)).getValue());
     }
 
     /**
@@ -226,6 +226,63 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         for (int i=0; i<parameters.length; i++) {
             assertSame(parameters[i], values.get(i));
         }
+    }
+
+    /**
+     * Tests {@code DefaultParameterValueGroup.values().addAll(…)} with subgroups.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod({"testValuesAddAll", "testAddGroup"})
+    public void testValuesAddAllWithSubgroups() {
+        final DefaultParameterDescriptorGroup group, subGroup;
+        final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
+        subGroup = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"),
+                2, 4, descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        descriptors.add(subGroup);
+        group = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theGroup"),
+                descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        /*
+         * Prepare the GeneralParameterValue instances that we are going to add in the above group.
+         * We assign arbitrary integer values to each instance if order to be able to differentiate
+         * them, but the purpose of this test is not to verify those integer values.
+         *
+         * We intentionally:
+         *   - Omit the creation of a mandatory parameter value
+         *   - Create more sub-groups than the minimum required.
+         */
+        final ParameterValue<?>   v2 = (ParameterValue<?>) descriptor.descriptor("Mandatory 2").createValue();
+        final ParameterValue<?>   v3 = (ParameterValue<?>) descriptor.descriptor( "Optional 3").createValue();
+        final ParameterValueGroup g1 = subGroup.createValue();
+        final ParameterValueGroup g2 = subGroup.createValue();
+        final ParameterValueGroup g3 = subGroup.createValue();
+        v2.setValue(4);
+        v3.setValue(8);
+        g1.parameter("Mandatory 1").setValue(3);
+        g2.parameter( "Optional 4").setValue(7);
+        g3.parameter("Mandatory 2").setValue(5);
+        final List<GeneralParameterValue> expected = new ArrayList<>(6);
+        assertTrue(expected.add(v2));
+        assertTrue(expected.add(v3));
+        assertTrue(expected.add(g1));
+        assertTrue(expected.add(g2));
+        assertTrue(expected.add(g3));
+        /*
+         * A newly created group should be initialized with 4 GeneralParameterValue instances because of
+         * the mandatory ones. After we added our own instances created above, the group should contains
+         * 6 instances (one more than what we added) because of the "Mandatory 1" parameter that we did
+         * not provided. Note that the element order in the 'values' collection does not need to be the
+         * order in which we provided our GeneralParameterValue instances.
+         */
+        final List<GeneralParameterValue> values = group.createValue().values();
+        assertEquals("Initial size", 4,         values.size());
+        assertTrue  ("List shall be modified",  values.addAll(expected));
+        assertEquals("Size after addAll(…)", 6, values.size());
+        final ParameterValue<?> v1 = (ParameterValue<?>) values.get(0);
+        assertEquals("Default value", DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, v1.getValue());
+        assertTrue(expected.add(v1));
+        assertSetEquals(expected, values);
     }
 
     /**

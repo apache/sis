@@ -67,6 +67,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
 
     /**
      * The parameter values in the group. The length of this array is the list capacity.
+     * This array will growth as needed.
      */
     private GeneralParameterValue[] values;
 
