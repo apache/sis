@@ -71,7 +71,8 @@ package org.apache.sis.util;
  *     <td>Parses axis names and creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}
  *         instances.</td></tr>
  * <tr><td>{@link org.apache.sis.parameter.Parameters}</td>
- *     <td>Creates, searches or modifies {@link org.opengis.parameter.ParameterValue} instances.</td></tr>
+ *     <td>Creates, searches or modifies {@link org.opengis.parameter.ParameterValue} instances
+ *         in a group of parameters.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
@@ -97,7 +98,7 @@ package org.apache.sis.util;
  *     <td>Create {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
  * </table>
  *
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module

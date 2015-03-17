@@ -122,6 +122,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
               pz(elements[1]), pz(elements[4]),
               pz(elements[2]), pz(elements[5]));
         matrix = new AffineMatrix(this, elements);
+        // Do not call freeze(), as it was implied by above line.
     }
 
     /**
