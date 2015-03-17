@@ -28,9 +28,10 @@ import org.opengis.referencing.operation.Projection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 
-import static org.apache.sis.metadata.iso.citation.Citations.*;
+import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
 
 /**
@@ -73,24 +74,25 @@ public abstract class MapProjection extends AbstractProvider {
     static {
         final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, SI.METRE);
         final GenericName[] aliases = {
-            new NamedIdentifier(ESRI,    "Semi_Major"),
-            new NamedIdentifier(NETCDF,  "semi_major_axis"),
-            new NamedIdentifier(GEOTIFF, "SemiMajor"),
-            new NamedIdentifier(PROJ4,   "a")
+            new NamedIdentifier(Citations.ESRI,    "Semi_Major"),
+            new NamedIdentifier(Citations.NETCDF,  "semi_major_axis"),
+            new NamedIdentifier(Citations.GEOTIFF, "SemiMajor"),
+            new NamedIdentifier(Citations.PROJ4,   "a")
         };
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY,  Constants.SEMI_MAJOR);
-        properties.put(ALIAS_KEY, aliases);
+        properties.put(AUTHORITY_KEY, Citations.OGC);
+        properties.put(NAME_KEY,      Constants.SEMI_MAJOR);
+        properties.put(ALIAS_KEY,     aliases);
         SEMI_MAJOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
         /*
          * Change in-place the name and aliases (we do not need to create new objects)
          * before to create the SEMI_MINOR descriptor.
          */
         properties.put(NAME_KEY, Constants.SEMI_MINOR);
-        aliases[0] = new NamedIdentifier(ESRI,    "Semi_Minor");
-        aliases[1] = new NamedIdentifier(NETCDF,  "semi_minor_axis");
-        aliases[2] = new NamedIdentifier(GEOTIFF, "SemiMinor");
-        aliases[3] = new NamedIdentifier(PROJ4,   "b");
+        aliases[0] = new NamedIdentifier(Citations.ESRI,    "Semi_Minor");
+        aliases[1] = new NamedIdentifier(Citations.NETCDF,  "semi_minor_axis");
+        aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinor");
+        aliases[3] = new NamedIdentifier(Citations.PROJ4,   "b");
         SEMI_MINOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
     }
 

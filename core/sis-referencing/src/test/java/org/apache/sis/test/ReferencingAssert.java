@@ -17,7 +17,6 @@
 package org.apache.sis.test;
 
 import java.util.Collection;
-import java.util.Set;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
@@ -34,13 +33,14 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
 import static java.lang.StrictMath.*;
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
@@ -65,20 +65,53 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     }
 
     /**
-     * Asserts that the string representation of the unique identifier of the given object is equals to the given
+     * Asserts that the given identifier has the expected code and the {@code "OGC"} code space.
+     * The authority is expected to be {@link Citations#OGC}. We expect the exact same authority
+     * instance because identifiers in OGC namespace are often hard-coded in SIS.
+     *
+     * @param expected The expected identifier code.
+     * @param actual   The identifier to verify.
+     *
+     * @since 0.6
+     */
+    public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
+        assertNotNull(actual);
+        assertSame("Authority", Citations.OGC, actual.getAuthority());
+        Assert.assertIdentifierEquals(null, "OGC", "OGC", null, expected, actual);
+    }
+
+    /**
+     * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
+     * The authority is expected to have the {@code "OGP"} title or alternate title.
+     *
+     * @param expected The expected identifier code.
+     * @param actual   The identifier to verify.
+     *
+     * @since 0.5
+     */
+    public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
+        assertNotNull(actual);
+        assertEquals("code",       expected, actual.getCode());
+        assertEquals("codeSpace",  EPSG,  actual.getCodeSpace());
+        assertEquals("authority",  "OGP", Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+                IdentifiedObjects.toString(actual));
+    }
+
+    /**
+     * Asserts that the string representation of the unique identifier in the given collection is equals to the given
      * EPSG code. As a special case if the given code is 0, then this method verifies that the given object has no
      * identifier.
      *
-     * @param code   The expected EPSG code, or {@code 0} if we expect no EPSG code.
-     * @param object The object for which to test the EPSG code.
+     * @param expected    The expected EPSG code, or {@code 0} if we expect no EPSG code.
+     * @param actual The set of identifiers in which to verify the EPSG code.
      */
-    public static void assertIdentifierEqualsEPSG(final int code, final IdentifiedObject object) {
-        final Set<Identifier> identifiers = object.getIdentifiers();
-        if (code == 0) {
-            assertTrue("identifiers.isEmpty()", identifiers.isEmpty());
+    public static void assertEpsgIdentifierEquals(final int expected, final Collection<? extends Identifier> actual) {
+        assertNotNull(actual);
+        if (expected == 0) {
+            assertTrue("identifiers.isEmpty()", actual.isEmpty());
         } else {
-            assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code,
-                    IdentifiedObjects.toString(TestUtilities.getSingleton(identifiers)));
+            assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual));
         }
     }
 
