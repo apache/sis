@@ -22,9 +22,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.metadata.iso.citation.Citations;
-
-import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
@@ -53,22 +50,6 @@ public strictfp class MetadataAssert extends Assert {
      * For subclass constructor only.
      */
     protected MetadataAssert() {
-    }
-
-    /**
-     * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
-     * The authority is expected to have the {@code "OGP"} title or alternate title.
-     *
-     * @param expected   The expected identifier code.
-     * @param identifier The identifier to verify.
-     *
-     * @since 0.5
-     */
-    public static void assertEpsgIdentifierEquals(final String expected, final Identifier identifier) {
-        assertNotNull(identifier);
-        assertEquals("code",      expected, identifier.getCode());
-        assertEquals("codeSpace", EPSG,  identifier.getCodeSpace());
-        assertEquals("authority", "OGP", Citations.getIdentifier(identifier.getAuthority()));
     }
 
     /**
