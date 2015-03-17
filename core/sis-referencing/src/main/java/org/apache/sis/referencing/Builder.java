@@ -178,7 +178,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {
@@ -282,12 +282,36 @@ public abstract class Builder<B extends Builder<B>> {
      */
     private NameSpace namespace() {
         if (namespace == null) {
-            final String codespace = (String) properties.get(Identifier.CODESPACE_KEY);
+            final String codespace = getCodeSpace();
             if (codespace != null) {
                 namespace = NAMES.createNameSpace(NAMES.createLocalName(null, codespace), null);
             }
         }
         return namespace;
+    }
+
+    /**
+     * Returns the value of the first argument given by the last call to {@link #setCodeSpace(Citation, String)},
+     * or {@code null} if none. The default value is {@code null}.
+     *
+     * @return The citation specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private Citation getAuthority() {
+        return (Citation) properties.get(Identifier.AUTHORITY_KEY);
+    }
+
+    /**
+     * Returns the value of the last argument given by the last call to {@link #setCodeSpace(Citation, String)},
+     * or {@code null} if none. The default value is {@code null}.
+     *
+     * @return The string specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private String getCodeSpace() {
+        return (String) properties.get(Identifier.CODESPACE_KEY);
     }
 
     /**
@@ -324,6 +348,18 @@ public abstract class Builder<B extends Builder<B>> {
         }
         setProperty(Identifier.AUTHORITY_KEY, authority);
         return self();
+    }
+
+    /**
+     * Returns the value given by the last call to {@link #setVersion(String)}, or {@code null} if none.
+     * The default value is {@code null}.
+     *
+     * @return The value specified by the last call to {@code setVersion(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private String getVersion() {
+        return (String) properties.get(Identifier.VERSION_KEY);
     }
 
     /**
@@ -404,12 +440,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final Citation authority, final CharSequence name) {
         ensureNonNull("name", name);
-        final NamedIdentifier identifier;
-        if (name instanceof InternationalString) {
-            identifier = new NamedIdentifier(authority, (InternationalString) name);
-        } else {
-            identifier = new NamedIdentifier(authority, name.toString());
-        }
+        final NamedIdentifier identifier = new NamedIdentifier(authority, name);
         if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, identifier) != null) {
             // A primary name is already present. Add the given name as an alias instead.
             aliases.add(identifier);
@@ -471,6 +502,32 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
+     * Adds a deprecated name given by a {@code CharSequence}. Some objects have deprecated names for historical reasons.
+     * The deprecated name typically has a replacement, which can be given by the {@code supersededBy} argument.
+     * The later, if non-null, shall be a name specified by a previous call to an {@code addName(…)} method.
+     *
+     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space} and
+     * {@link #setVersion(String) version} information for creating the deprecated {@link NamedIdentifier} object.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  name The {@code IdentifiedObject} deprecated name.
+     * @param  supersededBy The name to use instead of this one, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B addDeprecatedName(final CharSequence name, final CharSequence supersededBy) {
+        ensureNonNull("name", name);
+        final DeprecatedName dn = new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), supersededBy);
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, dn) != null) {
+            aliases.add(dn);
+        }
+        return self();
+    }
+
+    /**
      * Adds an {@code IdentifiedObject} identifier given by a {@code String}.
      * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
      * and {@link #setVersion(String) version} information for creating the {@link Identifier} object.
@@ -483,8 +540,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(new ImmutableIdentifier((Citation) properties.get(Identifier.AUTHORITY_KEY),
-                (String) properties.get(Identifier.CODESPACE_KEY), identifier));
+        identifiers.add(new ImmutableIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion(), null));
         return self();
     }
 
@@ -503,6 +559,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
+        // Do not use the version information since it applies to the default authority rather than the given one.
         identifiers.add(new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier));
         return self();
     }
@@ -522,6 +579,30 @@ public abstract class Builder<B extends Builder<B>> {
     public B addIdentifier(final Identifier identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(identifier);
+        return self();
+    }
+
+    /**
+     * Adds a deprecated identifier given by a {@code String}. Some objects have deprecated identifiers for
+     * historical reasons. The deprecated identifier typically has a replacement, which can be given by the
+     * {@code supersededBy} argument. The later, if non-null, shall be an identifier specified by a previous
+     * call to an {@code addIdentifier(…)} method.
+     *
+     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
+     * and {@link #setVersion(String) version} information for creating the deprecated {@link Identifier} object.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  identifier   The {@code IdentifiedObject} deprecated identifier.
+     * @param  supersededBy The identifier to use instead of this one, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B addDeprecatedIdentifier(final String identifier, final String supersededBy) {
+        ensureNonNull("identifier", identifier);
+        identifiers.add(new DeprecatedCode(getAuthority(), getCodeSpace(), identifier, getVersion(), supersededBy));
         return self();
     }
 

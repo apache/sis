@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.referencing;
 
-import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Constants;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A reference identifier for a deprecated EPSG codes.
+ * An identifier for a deprecated identifier.
+ * This is used mostly for deprecated EPSG codes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public final class DeprecatedCode extends ImmutableIdentifier {
+final class DeprecatedCode extends ImmutableIdentifier {
     /**
      * For cross-version compatibility.
      */
@@ -40,22 +39,17 @@ public final class DeprecatedCode extends ImmutableIdentifier {
     /**
      * Creates a deprecated identifier.
      *
-     * @param code Identifier code from the EPSG authority.
      * @param supersededBy The code that replace this one.
      */
-    public DeprecatedCode(final short code, final short supersededBy) {
-        super(Citations.OGP, Constants.EPSG, Short.toString(code).intern(), null, remarks(supersededBy));
+    DeprecatedCode(final Citation authority, final String codeSpace,
+            final String code, final String version, final CharSequence supersededBy)
+    {
+        super(authority, codeSpace, code, version,
+                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
     }
 
     /**
-     * Formats a "Superseded by" international string.
-     */
-    private static InternationalString remarks(final int supersededBy) {
-        return Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
-    }
-
-    /**
-     * Returns {@code true} since this code is deprecated.
+     * Returns {@code true} since this identifier is deprecated.
      *
      * @return {@code true}.
      */

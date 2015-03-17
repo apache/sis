@@ -14,43 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.referencing;
 
-import org.opengis.metadata.Identifier;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.NamedIdentifier;
+import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A name which is deprecated (when associated to a given object) in the EPSG database.
+ * A deprecated name.
+ * This is used mostly for names which were used in legacy versions of the EPSG database.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public final class DeprecatedName extends NamedIdentifier {
+final class DeprecatedName extends NamedIdentifier {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1792369861343798471L;
 
     /**
-     * Creates a new deprecated name with the same authority, code, version and remarks than the given identifier.
-     *
-     * @param identifier The identifier to deprecate.
-     */
-    public DeprecatedName(final Identifier identifier) {
-        super(identifier);
-    }
-
-    /**
      * Creates a new deprecated EPSG name.
      *
-     * @param name The EPSG name.
+     * @param supersededBy The name that replace this one.
      */
-    public DeprecatedName(final String name) {
-        super(Citations.EPSG, name);
+    DeprecatedName(final Citation authority, final String codeSpace, final CharSequence code, final String version,
+            final CharSequence supersededBy)
+    {
+        super(authority, codeSpace, code, version,
+                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
     }
 
     /**
