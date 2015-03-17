@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.LoggingWatcher;
@@ -34,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
@@ -55,6 +56,21 @@ public final strictfp class DefaultResolutionTest extends TestCase {
             assertTrue(message.contains("equivalentScale"));
         }
     };
+
+    /**
+     * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-195">SIS-195</a>
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testConstructor() {
+        final DefaultRepresentativeFraction scale = new DefaultRepresentativeFraction();
+        scale.setDenominator(100);
+        final DefaultResolution metadata = new DefaultResolution(scale);
+        assertSame(scale, metadata.getEquivalentScale());
+    }
 
     /**
      * Tests the various setter methods. Since they are exclusive properties,
