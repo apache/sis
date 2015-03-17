@@ -27,8 +27,8 @@
  *     do not contain the actual parameter value.</li>
  *   <li><b>Parameter values</b> are (<var>descriptor</var>, <var>value</var>) tuples, together with convenience methods
  *     for performing unit conversions and getting the values as instances of some commonly used types.</li>
- *   <li>Builders, formatters and static methods aim to simplify the creation of {@code ParameterDescriptor}s,
- *     the search for parameter values and visualizing them in a tabular format.</li>
+ *   <li><b>Builders</b>, <b>formatters</b> and search methods aim to simplify the creation of
+ *     {@code ParameterDescriptor}s, the search for parameter values and visualizing them in a tabular format.</li>
  * </ul>
  *
  * <p>Parameters are organized in <cite>groups</cite>.
@@ -84,8 +84,8 @@
  * if the given value is not assignable to the expected class or is not inside the value domain.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.5
- * @version 0.4
+ * @since   0.4
+ * @version 0.6
  * @module
  */
 package org.apache.sis.parameter;
