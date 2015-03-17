@@ -20,7 +20,9 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.test.DependsOnMethod;
@@ -38,7 +40,7 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn(ValueMapTest.class)
@@ -52,6 +54,11 @@ public final strictfp class PrunerTest extends TestCase {
      * A child of the metadata object being tested.
      */
     private final DefaultDataIdentification identification;
+
+    /**
+     * A child of an other child metadata object being tested.
+     */
+    private final DefaultRepresentativeFraction scale;
 
     /**
      * A child of the metadata object being tested.
@@ -69,10 +76,12 @@ public final strictfp class PrunerTest extends TestCase {
     public PrunerTest() {
         metadata       = new DefaultMetadata();
         identification = new DefaultDataIdentification();
+        scale          = new DefaultRepresentativeFraction();
         extent         = new DefaultExtent();
         bbox           = new DefaultGeographicBoundingBox();
         extent.setGeographicElements(singleton(bbox));
         identification.setExtents(singleton(extent));
+        identification.setSpatialResolutions(singleton(new DefaultResolution(scale)));
         metadata.setIdentificationInfo(singleton(identification));
     }
 
@@ -86,6 +95,7 @@ public final strictfp class PrunerTest extends TestCase {
          */
         assertTrue("GeographicBoundingBox", bbox.isEmpty());
         assertTrue("Extent",                extent.isEmpty());
+        assertTrue("Scale",                 scale.isEmpty());
         assertTrue("DataIdentification",    identification.isEmpty());
         assertTrue("Metadata",              metadata.isEmpty());
         /*
@@ -94,6 +104,7 @@ public final strictfp class PrunerTest extends TestCase {
         identification.setCitation(new DefaultCitation("A citation title"));
         assertTrue ("GeographicBoundingBox", bbox.isEmpty());
         assertTrue ("Extent",                extent.isEmpty());
+        assertTrue ("Scale",                 scale.isEmpty());
         assertFalse("DataIdentification",    identification.isEmpty());
         assertFalse("Metadata",              metadata.isEmpty());
         /*
@@ -102,6 +113,7 @@ public final strictfp class PrunerTest extends TestCase {
         metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers"));
         assertTrue ("GeographicBoundingBox", bbox.isEmpty());
         assertTrue ("Extent",                extent.isEmpty());
+        assertTrue ("Scale",                 scale.isEmpty());
         assertFalse("DataIdentification",    identification.isEmpty());
         assertFalse("Metadata",              metadata.isEmpty());
         /*
@@ -110,13 +122,26 @@ public final strictfp class PrunerTest extends TestCase {
         identification.setCitation(new DefaultCitation("  "));
         assertTrue ("GeographicBoundingBox", bbox.isEmpty());
         assertTrue ("Extent",                extent.isEmpty());
+        assertTrue ("Scale",                 scale.isEmpty());
         assertTrue ("DataIdentification",    identification.isEmpty());
+        assertFalse("Metadata",              metadata.isEmpty());
+        /*
+         * Set a representative fraction.
+         */
+        scale.setDenominator(1000);
+        assertTrue ("GeographicBoundingBox", bbox.isEmpty());
+        assertTrue ("Extent",                extent.isEmpty());
+        assertFalse("Scale",                 scale.isEmpty());
+        assertFalse("DataIdentification",    identification.isEmpty());
         assertFalse("Metadata",              metadata.isEmpty());
         /*
          * Set an empty string in an element.
          */
+        scale.setScale(Double.NaN);
         metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   "));
-        assertTrue("Metadata", metadata.isEmpty());
+        assertTrue("Scale",                 scale.isEmpty());
+        assertTrue("DataIdentification",    identification.isEmpty());
+        assertTrue("Metadata",              metadata.isEmpty());
     }
 
     /**
