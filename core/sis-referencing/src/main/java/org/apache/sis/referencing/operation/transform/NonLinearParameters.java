@@ -1,0 +1,241 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.referencing.operation.transform;
+
+import java.util.Objects;
+import java.io.Serializable;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+
+/**
+ * The parameters of a math transform as a tuple of
+ * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms.
+ * The normalize and denormalize parts must be affine transforms.
+ *
+ * <p>This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
+ * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection unitary projection}.
+ * See the {@linkplain org.apache.sis.referencing.operation.projection projection package} for details.</p>
+ *
+ * <div class="note"><b>Note:</b>
+ * Serialization of this class is appropriate for short-term storage or RMI use, but may not be compatible
+ * with future versions. For long term storage, WKT (Well Know Text) or XML are more appropriate.</div>
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.6
+ * @version 0.6
+ * @module
+ */
+public abstract class NonLinearParameters extends FormattableObject implements Parameterized, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 4899134192407586472L;
+
+    /**
+     * The descriptor that represents this tuple as a whole. The parameter values may take effect in either the
+     * {@linkplain #normalize(boolean) normalize/denormalize} transforms or in the kernel.
+     *
+     * @see #getParameterDescriptors()
+     */
+    private final ParameterDescriptorGroup descriptor;
+
+    /**
+     * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
+     * the kernel operation. On {@code NonLinearParameters} construction, those affines are initially identity
+     * transforms. Subclasses should set the coefficients according their parameter values.
+     *
+     * @see #normalize(boolean)
+     */
+    private MatrixSIS normalize, denormalize;
+
+    /**
+     * Creates a new {@code NonLinearParameters} for the given coordinate operation method.
+     * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
+     * shall describe the parameters of this tuple as a whole, including the affine transforms applied before and after
+     * the non-linear kernel. Subclasses shall initialize those {@linkplain #normalize(boolean) normalize/denormalize}
+     * affine transforms when they have enough information for doing so.
+     *
+     * @param method The operation method for which to describe the non-linear parameters.
+     */
+    protected NonLinearParameters(final OperationMethod method) {
+        ensureNonNull("method", method);
+        descriptor  = method.getParameters();
+        normalize   = linear("sourceDimensions", method.getSourceDimensions());
+        denormalize = linear("targetDimensions", method.getTargetDimensions());
+    }
+
+    /**
+     * Creates a matrix for a linear part of the tupple.
+     */
+    private static MatrixSIS linear(final String name, final Integer size) {
+        if (size == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
+        }
+        return Matrices.createIdentity(size);
+    }
+
+    /**
+     * The affine transforms to be applied before or after the kernel operation. Those affines are initially
+     * identity transforms. Subclasses should invoke this method at construction time (or at some time close
+     * to construction) in order to set the affine coefficients.
+     *
+     * @param norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
+     *        or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
+     * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
+     */
+    public final MatrixSIS normalize(final boolean norm) {
+        return norm ? normalize : denormalize;
+    }
+
+    /**
+     * Creates a chain of {@linkplain ConcatenatedTransform concatenated transforms} from the
+     * <cite>normalize</cite> transform, the given kernel and the <cite>denormalize</cite> transform.
+     *
+     * @param  kernel The (usually non-linear) kernel.
+     * @return The concatenation of (<cite>normalize</cite> – the given kernel – <cite>denormalize</cite>) transforms.
+     */
+    final MathTransform createConcatenatedTransform(final MathTransformFactory factory, final MathTransform kernel)
+            throws FactoryException
+    {
+        return factory.createConcatenatedTransform(
+               factory.createConcatenatedTransform(
+               factory.createAffineTransform(normalize), kernel),
+               factory.createAffineTransform(denormalize));
+    }
+
+    /**
+     * Returns the descriptor that represents this tuple as a whole. The parameter values may take effect
+     * in either the {@linkplain #normalize(boolean) normalize/denormalize} transforms or in the kernel.
+     *
+     * <div class="note"><b>Note:</b>
+     * The definition of "kernel" is left to implementors. In the particular case of Apache SIS implementation of map
+     * projections, kernels are subclasses of {@link org.apache.sis.referencing.operation.projection.UnitaryProjection}.
+     * </div>
+     *
+     * @return The description of the parameters.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return descriptor;
+    }
+
+    /**
+     * Returns the parameters that describe this tuple as a whole.
+     * Changes to the returned parameters will not affect this object.
+     *
+     * @return A copy of the parameter values.
+     */
+    @Override
+    public abstract ParameterValueGroup getParameterValues();
+
+    /**
+     * Returns a hash code value for this object. This value is
+     * implementation-dependent and may change in any future version.
+     */
+    @Override
+    public int hashCode() {
+        return (normalize.hashCode() + 31*denormalize.hashCode()) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Compares the given object with the parameters for equality.
+     *
+     * @param  object The object to compare with the parameters.
+     * @return {@code true} if the given object is equal to this one.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final NonLinearParameters that = (NonLinearParameters) object;
+            return Objects.equals(descriptor,  that.descriptor) &&
+                   Objects.equals(normalize,   that.normalize)  &&
+                   Objects.equals(denormalize, that.denormalize);
+        }
+        return false;
+    }
+
+    /**
+     * Process to the <cite>Well Known Text</cite> (WKT) formatting of the forward transform.
+     * The content is inferred from the parameter values returned by the {@link #getParameterValues()} method.
+     *
+     * @return {@code "Param_MT"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final ParameterValueGroup parameters = getParameterValues();
+        WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
+        WKTUtilities.append(parameters, formatter);
+        if (formatter.getConvention().majorVersion() != 1) {
+            formatter.setInvalidWKT(MathTransform.class, null);
+        }
+        return "Param_MT";
+    }
+
+    /**
+     * Formats the <cite>Well Known Text</cite> for the inverse of the transform that would be built
+     * from the enclosing {@code NonLinearParameters}.
+     */
+    final class InverseWKT extends FormattableObject implements Parameterized {
+        /**
+         * Creates a new object to be formatted instead than the enclosing transform.
+         */
+        InverseWKT() {
+        }
+
+        /**
+         * Returns the parameters descriptor.
+         */
+        @Override
+        public ParameterDescriptorGroup getParameterDescriptors() {
+            return NonLinearParameters.this.getParameterDescriptors();
+        }
+
+        /**
+         * Returns the parameter values.
+         */
+        @Override
+        public ParameterValueGroup getParameterValues() {
+            return NonLinearParameters.this.getParameterValues();
+        }
+
+        /**
+         * Process to the WKT formatting of the inverse transform.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(NonLinearParameters.this);
+            if (formatter.getConvention().majorVersion() != 1) {
+                formatter.setInvalidWKT(MathTransform.class, null);
+            }
+            return "Inverse_MT";
+        }
+    }
+}
