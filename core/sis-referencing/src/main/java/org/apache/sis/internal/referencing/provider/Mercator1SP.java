@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -24,8 +23,6 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.referencing.DeprecatedCode;
-import org.apache.sis.internal.referencing.DeprecatedName;
 
 
 /**
@@ -142,10 +139,10 @@ public final class Mercator1SP extends MapProjection {
             .addIdentifier("9804")              // The ellipsoidal case
             .addIdentifier("1026")              // The spherical case
             .addName("Mercator (variant A)")    // Starting from EPSG version 7.6
-            .addName("Mercator (Spherical)")
-            .addIdentifier(        new DeprecatedCode((short) 9841, (short) 1026))      // The spherical (1SP) case
-            .addName((GenericName) new DeprecatedName("Mercator (1SP)"))                // Prior to EPSG version 7.6
-            .addName((GenericName) new DeprecatedName("Mercator (1SP) (Spherical)"))
+            .addName("Mercator (Spherical)")    // Starting from EPSG version 7.6
+            .addDeprecatedIdentifier("9841",                 "1026")                    // The spherical (1SP) case
+            .addDeprecatedName("Mercator (1SP)",             "Mercator (variant A)")    // Prior to EPSG version 7.6
+            .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")    // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_1SP")
             .addName(Citations.GEOTIFF, "CT_Mercator")
             .addName(Citations.PROJ4,   "merc")
