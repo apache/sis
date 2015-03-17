@@ -43,6 +43,7 @@ import org.apache.sis.internal.util.X364;
 
 import static org.apache.sis.internal.util.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
 
 /**
@@ -308,7 +309,7 @@ final class ParameterTableRow {
             final Colors colors, final boolean colorsForRows, final String lineSeparator) throws IOException
     {
         if (codespaceWidth != 0) {
-            codespaceWidth++; // Add a space between codespace and code in e.g. "OGC: Mercator".
+            codespaceWidth += 2; // Add a colon and space between codespace and code in e.g. "OGC: Mercator".
         }
         boolean isNewLine = false;
         for (final Map.Entry<String,Set<Object>> entry : identifiers.entrySet()) {
@@ -329,9 +330,9 @@ final class ParameterTableRow {
                     int pad = codespaceWidth;
                     if (codespace != null) {
                         writeColor(out, FAINT, colorsForRows);
-                        out.append(codespace).append(':');
+                        out.append(codespace).append(DEFAULT_SEPARATOR);
                         writeColor(out, NORMAL, colorsForRows);
-                        pad -= codespace.length();
+                        pad -= (codespace.length() + 1);
                     }
                     out.append(spaces(pad));
                 }

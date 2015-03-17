@@ -16,8 +16,9 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Collection;
 import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
 import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
@@ -42,12 +43,14 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,
-    DefaultParameterValueTest.class
+    DefaultParameterDescriptorGroupTest.class,
+    DefaultParameterValueTest.class,
+    DefaultParameterValueGroupTest.class
 })
 public final strictfp class ParametersTest extends TestCase {
     /**
@@ -154,5 +157,39 @@ public final strictfp class ParametersTest extends TestCase {
         assertEquals("Optional 4",  40, destination.parameter("Optional 4") .intValue());
         assertEquals("Optional 4 (second occurrence)", 50,
                 ((ParameterValue<?>) destination.values().get(4)).intValue());
+    }
+
+    /**
+     * Tests {@link Parameters#getValue(ParameterDescriptor)} and {@link Parameters#intValue(ParameterDescriptor)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testGetIntValue() {
+        final ParameterDescriptor<Integer> descriptor = DefaultParameterDescriptorTest.create("My param", 5, 15, 10);
+        final ParameterDescriptor<Integer> incomplete = DefaultParameterDescriptorTest.createSimpleOptional("My param", Integer.class);
+        final Parameters group = Parameters.castOrWrap(new DefaultParameterDescriptorGroup(Collections.singletonMap(
+                DefaultParameterDescriptorGroup.NAME_KEY, "My group"), 1, 1, incomplete).createValue());
+        /*
+         * Test when the ParameterValueGroup is empty. We test both with the "incomplete" descriptor,
+         * which contain no default value, and with the complete one, which provide a default value.
+         */
+        assertNull("No value and no default value.", group.getValue(incomplete));
+        assertEquals("No value, should fallback on default.", Integer.valueOf(10), group.getValue(descriptor));
+        try {
+            group.intValue(incomplete);
+            fail("Can not return when there is no value.");
+        } catch (IllegalStateException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("My param"));
+        }
+        /*
+         * Define a value and test again.
+         */
+        group.parameter("My param").setValue(12);
+        assertEquals(Integer.valueOf(12), group.getValue(incomplete));
+        assertEquals(Integer.valueOf(12), group.getValue(descriptor));
+        assertEquals(12, group.intValue(incomplete));
+        assertEquals(12, group.intValue(descriptor));
     }
 }

@@ -154,7 +154,24 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     {
         super(properties, minimumOccurs, maximumOccurs);
         ArgumentChecks.ensureNonNull("parameters", parameters);
-        parameters = parameters.clone();
+        verifyNames(properties, parameters = parameters.clone());
+        descriptors = asList(parameters);
+    }
+
+    /**
+     * Creates a mandatory parameter group without cloning the given array. This constructor shall
+     * be used only when we know that the given array is already a copy of the user-provided array.
+     */
+    DefaultParameterDescriptorGroup(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
+        super(properties, 1, 1);
+        verifyNames(properties, parameters.clone());
+        descriptors = asList(parameters);
+    }
+
+    /**
+     * Ensures that the given name array does not contain duplicate values.
+     */
+    private static void verifyNames(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         for (int i=0; i<parameters.length; i++) {
             ArgumentChecks.ensureNonNullElement("parameters", i, parameters);
             final String name = parameters[i].getName().getCode();
@@ -166,7 +183,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
                 }
             }
         }
-        descriptors = asList(parameters);
     }
 
     /**

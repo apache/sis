@@ -32,8 +32,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -87,7 +86,7 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     public void testConstruction() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2", 2);
         assertEpsgIdentifierEquals("Mercator (variant A)", method.getName());
-        assertEpsgIdentifierEquals("9804", getSingleton(method.getIdentifiers()));
+        assertEpsgIdentifierEquals(9804, method.getIdentifiers());
         assertEquals("formula", "EPSG guidance note #7-2", method.getFormula().getCitation().getTitle().toString());
         assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
         assertEquals("targetDimensions", Integer.valueOf(2), method.getTargetDimensions());

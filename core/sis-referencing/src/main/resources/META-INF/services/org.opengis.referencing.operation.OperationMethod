@@ -1,0 +1,3 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
+org.apache.sis.internal.referencing.provider.Affine
+org.apache.sis.internal.referencing.provider.LongitudeRotation

@@ -22,6 +22,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -34,7 +35,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -44,9 +45,38 @@ import static org.junit.Assert.*;
 })
 public final strictfp class ParameterBuilderTest extends TestCase {
     /**
+     * Tests various {@code create(…)} methods.
+     */
+    @Test
+    public void testCreate() {
+        final ParameterBuilder builder = new ParameterBuilder();
+        ParameterDescriptor<Double> p = builder.addName("Test 1").create(0, SI.METRE);
+        assertEquals("name", "Test 1",    p.getName().getCode());
+        assertEquals("defaultValue", 0.0, p.getDefaultValue(), 0);
+        assertNull  ("minimumValue",      p.getMinimumValue());
+        assertNull  ("maximumValue",      p.getMaximumValue());
+        assertEquals("unit", SI.METRE,    p.getUnit());
+
+        p = builder.addName("Test 2").create(Double.NaN, SI.METRE);
+        assertEquals("name", "Test 2",    p.getName().getCode());
+        assertNull  ("defaultValue",      p.getDefaultValue());
+        assertNull  ("minimumValue",      p.getMinimumValue());
+        assertNull  ("maximumValue",      p.getMaximumValue());
+        assertEquals("unit", SI.METRE,    p.getUnit());
+
+        p = builder.addName("Test 3").createBounded(1, 4, 3, SI.METRE);
+        assertEquals("name", "Test 3",    p.getName().getCode());
+        assertEquals("defaultValue", 3.0, p.getDefaultValue(), 0);
+        assertEquals("minimumValue", 1.0, p.getMinimumValue());
+        assertEquals("maximumValue", 4.0, p.getMaximumValue());
+        assertEquals("unit", SI.METRE,    p.getUnit());
+    }
+
+    /**
      * Tests the "<cite>Mercator (variant A)</cite>" example given in Javadoc.
      */
     @Test
+    @DependsOnMethod("testCreate")
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(HardCodedCitations.OGP, "EPSG").setRequired(true);

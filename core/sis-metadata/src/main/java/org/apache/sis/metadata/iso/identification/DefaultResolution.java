@@ -55,7 +55,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractIdentification#getSpatialResolutions()
@@ -121,7 +121,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @since 0.4
      */
     public DefaultResolution(final RepresentativeFraction scale) {
-        value = scale;
+        if (scale != null) {
+            value = scale;
+            property = SCALE;
+        }
     }
 
     // Note: there is not yet DefaultResolution(double) method because

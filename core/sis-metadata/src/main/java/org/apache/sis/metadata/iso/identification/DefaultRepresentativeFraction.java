@@ -35,6 +35,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -62,14 +63,14 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultResolution#getEquivalentScale()
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
-public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject {
+public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -236,6 +237,26 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @Override
     public int intValue() {
         return (denominator == 1) ? 1 : 0;
+    }
+
+    /**
+     * Returns {@code true} if no scale is defined.
+     * The following relationship shall hold:
+     *
+     * {@preformat java
+     *   assert isEmpty() == Double.isNaN(doubleValue());
+     * }
+     *
+     * @return {@code true} if no scale is defined.
+     *
+     * @see #doubleValue()
+     * @see #floatValue()
+     *
+     * @since 0.6
+     */
+    @Override
+    public boolean isEmpty() {
+        return (denominator == 0);
     }
 
     /**

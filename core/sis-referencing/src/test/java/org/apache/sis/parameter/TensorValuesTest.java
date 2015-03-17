@@ -332,7 +332,7 @@ public final strictfp class TensorValuesTest extends TestCase {
     /**
      * Tests {@link TensorParameters#ALPHANUM} formatting.
      * <ul>
-     *   <li>Group name shall be {@code "Affine general parametric transformation"}.</li>
+     *   <li>Group name shall be {@code "Affine parametric transformation"}.</li>
      *   <li>No {@code "num_row"} or {@code "num_col"} parameters if their value is equals to 3.</li>
      *   <li>Parameter names shall be of the form {@code "A0"}.</li>
      *   <li>Identifiers present, but only for A0-A2 and B0-B2.</li>
@@ -348,7 +348,7 @@ public final strictfp class TensorValuesTest extends TestCase {
                 singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine general parametric transformation”,\n" +
+                "ParameterGroup[“Affine parametric transformation”,\n" +
                 "  Parameter[“A2”, 4.0, Id[“EPSG”, 8625]],\n"  +
                 "  Parameter[“B0”, -2.0, Id[“EPSG”, 8639]],\n" +
                 "  Parameter[“C2”, 7.0]]", group);

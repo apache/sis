@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @Suite.SuiteClasses({
@@ -78,6 +78,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.CodeListSetTest.class,
     org.apache.sis.internal.util.CollectionsExtTest.class,
     org.apache.sis.internal.util.AbstractMapTest.class,
+    org.apache.sis.internal.util.LazySetTest.class,
 
     // GeoAPI most basic types.
     org.apache.sis.internal.util.DefinitionURITest.class,
