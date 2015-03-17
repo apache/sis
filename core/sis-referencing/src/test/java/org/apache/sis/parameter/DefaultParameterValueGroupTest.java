@@ -234,7 +234,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      * @since 0.6
      */
     @Test
-    @DependsOnMethod({"testValuesAddAll", "testAddGroup"})
+    @DependsOnMethod({"testValuesAddAll", "testAddGroup", "testEqualsAndHashCode"})
     public void testValuesAddAllWithSubgroups() {
         final DefaultParameterDescriptorGroup group, subGroup;
         final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
