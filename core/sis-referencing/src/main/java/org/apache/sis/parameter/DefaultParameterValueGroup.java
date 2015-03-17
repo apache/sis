@@ -97,15 +97,13 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
  */
-public class DefaultParameterValueGroup implements ParameterValueGroup,
-        LenientComparable, Serializable, Cloneable
-{
+public class DefaultParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -157,6 +155,8 @@ public class DefaultParameterValueGroup implements ParameterValueGroup,
      * The list will verify those conditions and throws {@link org.opengis.parameter.InvalidParameterNameException},
      * {@link org.opengis.parameter.InvalidParameterCardinalityException} or other runtime exceptions if a condition
      * is not meet.
+     *
+     * @return The values in this group.
      */
     @Override
     public List<GeneralParameterValue> values() {
@@ -197,13 +197,49 @@ public class DefaultParameterValueGroup implements ParameterValueGroup,
      * @param  name The name of the parameter to search for.
      * @return The parameter value for the given name.
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
+     *
+     * @see #getValue(ParameterDescriptor)
      */
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+        ParameterValue<?> value = parameterIfExist(name);
+        if (value == null) {
+            /*
+             * No existing parameter found. Maybe the parameter is optional and not yet created.
+             * Get the descriptor of that parameter. If the descriptor is not found, or is not
+             * a descriptor for a single parameter (not a group), or the parameter is disabled
+             * (maximum occurrence = 0), behaves as if the parameter was not found.
+             */
+            final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
+            if (!(descriptor instanceof ParameterDescriptor<?>) || descriptor.getMaximumOccurs() == 0) {
+                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                        values.descriptor.getName(), name), name);
+            }
+            /*
+             * Create the optional parameter and add it to our internal list. Note that this is
+             * not the only place were a ParameterValue may be created,  so do not extract just
+             * this call to 'createValue()' in a user-overrideable method.
+             */
+            value = ((ParameterDescriptor<?>) descriptor).createValue();
+            values.addUnchecked(value);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the value in this group for the specified name if it exists, or {@code null} if none.
+     * This method does not create any new {@code ParameterValue} instance.
+     */
+    @Override
+    final ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final ParameterValueList values = this.values; // Protect against accidental changes.
-
-        // Quick search for an exact match.
+        /*
+         * Quick search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)',
+         * we avoid the creation of mandatory ParameterValue which was deferred. If we find
+         * a matching name, the ParameterValue will be lazily created (if not already done)
+         * by the call to 'get(i)'.
+         */
         final int size = values.size();
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
@@ -213,8 +249,11 @@ public class DefaultParameterValueGroup implements ParameterValueGroup,
                 }
             }
         }
-        // More costly search before to give up.
-        int fallback = -1, ambiguity = -1;
+        /*
+         * More costly search, including aliases, before to give up.
+         */
+        int fallback  = -1;
+        int ambiguity = -1;
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptor<?>) {
@@ -229,23 +268,12 @@ public class DefaultParameterValueGroup implements ParameterValueGroup,
         }
         if (fallback >= 0) {
             if (ambiguity < 0) {
-                return (ParameterValue<?>) values.get(fallback);
+                return (ParameterValue<?>) values.get(fallback);   // May lazily create a ParameterValue.
             }
             throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
                     values.descriptor(fallback).getName(), values.descriptor(ambiguity).getName(), name), name);
         }
-        /*
-         * No existing parameter found. The parameter may be optional. Check if a descriptor exists.
-         * If such a descriptor is found, create the parameter, add it to the values list and returns it.
-         */
-        final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
-        if (descriptor instanceof ParameterDescriptor<?> && descriptor.getMaximumOccurs() != 0) {
-            final ParameterValue<?> value = ((ParameterDescriptor<?>) descriptor).createValue();
-            values.addUnchecked(value);
-            return value;
-        }
-        throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
-                values.descriptor.getName(), name), name);
+        return null;
     }
 
     /**
@@ -385,16 +413,12 @@ public class DefaultParameterValueGroup implements ParameterValueGroup,
      * Included parameter values and subgroups are cloned recursively.
      *
      * @return A copy of this group of parameter values.
+     *
+     * @see #copy(ParameterValueGroup, ParameterValueGroup)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public DefaultParameterValueGroup clone() {
-        final DefaultParameterValueGroup copy;
-        try {
-            copy = (DefaultParameterValueGroup) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
-        }
+        final DefaultParameterValueGroup copy = (DefaultParameterValueGroup) super.clone();
         copy.values = new ParameterValueList(copy.values);
         return copy;
     }

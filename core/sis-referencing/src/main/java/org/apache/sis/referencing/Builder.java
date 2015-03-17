@@ -37,87 +37,120 @@ import static org.apache.sis.internal.system.DefaultFactories.NAMES;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
  * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
  * easier — they do not add any new functionality compared to {@link org.opengis.referencing.ObjectFactory}.
  * Builder methods like {@link #addName(CharSequence)} and {@link #addIdentifier(String)} provide convenient ways
- * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods at
- * {@code IdentifiedObject} creation time. Creations happen when any {@code createXXX(…)} method defined in
- * the builder subclasses is invoked.
+ * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods when any
+ * {@code createXXX(…)} method is invoked.
  *
- * <p>This base class provides method for defining the following {@link IdentifiedObject} properties:</p>
- * <blockquote><table class="compact" summary="Builder properties.">
- * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
- *     <td>Each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *     {@code addName(…)} methods defined in this class.</td></tr>
- *
- * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
- *     <td>Identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *     by the {@code addName(…)} methods — each call after the first one adds an alias.</td></tr>
- *
- * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
- *     <td>Identified objects can also have an arbitrary amount of identifiers, which are specified by the
- *     {@code addIdentifier(…)} methods. Like names, more than one identifier can be added by invoking
- *     the method many time.</td></tr>
- *
- * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
- *     <td>Identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
- *         method.</td></tr>
- * </table></blockquote>
- *
- * {@section Builder property lifetimes}
- * The same builder can be used for creating many objects, since constructing a Coordinate Reference System (CRS)
- * may require constructing many components (coordinate system, datum, ellipsoid, prime meridian, <i>etc.</i>),
- * some of them sharing common properties. In order to simplify the most common usages, identification
- * properties have two different lifetimes in the {@code Builder} class:
+ * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
  *
  * <ul>
- *   <li>{@linkplain NamedIdentifier#getAuthority() Authority}, {@linkplain NamedIdentifier#getCodeSpace() code space}
- *       and {@linkplain NamedIdentifier#getVersion() version} information specified to this {@code Builder} will stay
- *       active until they are specified again, because those information are typically shared by all components.</li>
- *   <li>Other properties (name, aliases, identifiers and remarks) are cleared after each call to a {@code createXXX(…)}
- *       method, because they are usually specific to a particular {@code IdentifiedObject} instance.</li>
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
+ *       each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
+ *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</p></li>
+ *
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b>
+ *       identified objects can optionally have an arbitrary amount of aliases, which are also specified
+ *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
+ *
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
+ *       identified objects can also have an arbitrary amount of identifiers, which are specified by any
+ *       of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
+ *       can be added by invoking the method many time.</p></li>
+ *
+ *   <li><p><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b>
+ *       identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
+ *       method.</p></li>
+ * </ul>
+ *
+ * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
+ * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
+ *
+ * <ul>
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
+ *       each {@code Identifier} name or code can be local to a code space defined by an authority.
+ *       Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
+ *       and usually (but not necessarily) apply to all {@code Identifier} instances.</p></li>
+ *
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b>
+ *       identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
+ *       The version usually (but not necessarily) applies to all {@code Identifier} instances.</p></li>
+ *
+ *   <li><p><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b>
+ *       identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
+ *       The description applies only to the next identifier to create.</p></li>
+ * </ul>
+ *
+ * {@section Namespaces and scopes}
+ * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
+ * <ul>
+ *   <li><p>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
+ *       with the above-cited authority, code space, version and description information.
+ *       The result is a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} or identifier,
+ *       in which the code space information is stored but not shown by the {@code toString()} method.</p></li>
+ *
+ *   <li><p>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
+ *       {@link Citation} argument, ignoring any authority or code space information given to this {@code Builder}.
+ *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
+ *       in which the code space information is shown by the {@code toString()} method.</p></li>
+ *
+ *   <li><p>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
+ *       information given to the {@code Builder} are ignored.</p></li>
+ * </ul>
+ *
+ * <div class="note"><b>Example:</b>
+ * The EPSG database defines a projection named "<cite>Mercator (variant A)</cite>" (EPSG:9804).
+ * This projection was named "<cite>Mercator (1SP)</cite>" in older EPSG database versions.
+ * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
+ * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
+ *
+ * {@preformat java
+ *   builder.setCodespace (Citations.OGP, "EPSG")
+ *          .addName("Mercator (variant A)")
+ *          .addName("Mercator (1SP)")
+ *          .addName(Citations.OGC, "Mercator_1SP")
+ * }
+ *
+ * The {@code toString()} representation of those three names are {@code "Mercator (variant A)"},
+ * {@code "Mercator (1SP)"} (note the absence of {@code "EPSG:"} prefix, which is stored as the
+ * name {@linkplain org.apache.sis.util.iso.DefaultLocalName#scope() scope} but not shown) and
+ * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
+ *
+ *
+ * {@section Builder property lifetimes}
+ * Some complex objects require the creation of many components. For example constructing a
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
+ * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
+ * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum} and an
+ * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} among other components.
+ * However all those components often (but not necessarily) share the same authority, code space and version information.
+ * In order to simplify that common usage, two groups of properties have different lifetimes in the {@code Builder} class:
+ *
+ * <ul>
+ *   <li><p>
+ *       {@linkplain NamedIdentifier#getAuthority() Authority},
+ *       {@linkplain NamedIdentifier#getCodeSpace() code space} and
+ *       {@linkplain NamedIdentifier#getVersion()   version}:<br>
+ *       Kept until they are specified again, because those properties are typically shared by all components.
+ *   </p></li>
+ *   <li><p>
+ *       {@linkplain AbstractIdentifiedObject#getName()        Name},
+ *       {@linkplain AbstractIdentifiedObject#getAlias()       aliases},
+ *       {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers},
+ *       {@linkplain ImmutableIdentifier#getDescription()      description} and
+ *       {@linkplain AbstractIdentifiedObject#getRemarks()     remarks}:<br>
+ *       Cleared after each call to a {@code createXXX(…)} method, because those properties are usually specific
+ *       to a particular {@code IdentifiedObject} or {@code Identifier} instance.
+ *   </p></li>
  * </ul>
  *
  * {@section Usage examples}
- * The "<cite>Mercator (variant A)</cite>" projection (EPSG:9804) is also known as "<cite>Mercator (1SP)</cite>".
- * OGC and GeoTIFF use slightly different names, and GeoTIFF has its own code (7).
- * Those information can be specified as below:
- *
- * {@preformat java
- *   Builder builder = new Builder();
- *   builder.setCodespace (Citations.OGP, "EPSG")
- *          .addName      ("Mercator (variant A)")             // Defined in EPSG namespace.
- *          .addName      ("Mercator (1SP)")                   // Defined in EPSG namespace.
- *          .addIdentifier("9804")                             // Defined in EPSG namespace.
- *          .addName      (Citations.OGC,     "Mercator_1SP")
- *          .addName      (Citations.GEOTIFF, "CT_Mercator")
- *          .addIdentifier(Citations.GEOTIFF, "7")
- *          .setRemarks("The “Mercator (1SP)” method name was used prior to October 2010.");
- *   // At this point, the createXXX(…) method to invoke depends on the Builder subclass.
- * }
- *
- * The two first names, which use the default namespace specified by the call to {@code setCodeSpace(…)},
- * will have the {@code "EPSG"} {@linkplain NamedIdentifier#scope() scope}. Since scopes are not shown
- * in {@linkplain NamedIdentifier#toString() string representation of names}, the string representation
- * of the two first names will omit the {@code "EPSG:"} prefix. However the string representation of the
- * two last names will be {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} respectively.
- *
- * <p>The {@code IdentificationObject} created by this example will have the following properties:</p>
- * <blockquote><table class="compact" summary="IdentifiedObject properties.">
- * <tr><td>{@link AbstractIdentifiedObject#getName() Name}:</td>
- *     <td>{@code "Mercator (variant A)"} as a local name in {@code "EPSG"} scope.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getAlias() Aliases}:</td>
- *     <td>{@code "Mercator (1SP)"} as a local name in {@code "EPSG"} scope,
- *         {@code "OGC:Mercator_1SP"} and {@code "GeoTIFF:CT_Mercator"} as scoped names.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getIdentifiers() Identifiers}:</td>
- *     <td>{@code "EPSG:9804"} and {@code "GeoTIFF:7"}.</td></tr>
- * <tr><td>{@link AbstractIdentifiedObject#getRemarks() Remarks}:</td>
- *     <td>{@code "The “Mercator (1SP)” method name was used prior to October 2010."}</td></tr>
- * </table></blockquote>
- *
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
@@ -146,7 +179,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract class Builder<B extends Builder<B>> {
@@ -250,7 +283,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     private NameSpace namespace() {
         if (namespace == null) {
-            final String codespace = (String) properties.get(Identifier.CODESPACE_KEY);
+            final String codespace = getCodeSpace();
             if (codespace != null) {
                 namespace = NAMES.createNameSpace(NAMES.createLocalName(null, codespace), null);
             }
@@ -259,8 +292,39 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Sets the {@code Identifier} authority and code space. This method is typically invoked only once,
-     * since a compound object often uses the same code space for all individual components.
+     * Returns the value of the first argument given by the last call to {@link #setCodeSpace(Citation, String)},
+     * or {@code null} if none. The default value is {@code null}.
+     *
+     * @return The citation specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private Citation getAuthority() {
+        return (Citation) properties.get(Identifier.AUTHORITY_KEY);
+    }
+
+    /**
+     * Returns the value of the last argument given by the last call to {@link #setCodeSpace(Citation, String)},
+     * or {@code null} if none. The default value is {@code null}.
+     *
+     * @return The string specified by the last call to {@code setCodeSpace(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private String getCodeSpace() {
+        return (String) properties.get(Identifier.CODESPACE_KEY);
+    }
+
+    /**
+     * Sets the {@code Identifier} authority and code space.
+     * The code space is often the authority's abbreviation, but not necessarily.
+     *
+     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) objects identified by codes from the
+     * EPSG database are maintained by the {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGP OGP}
+     * authority, but the code space is {@code "EPSG"} for historical reasons.</div>
+     *
+     * This method is typically invoked only once, since a compound object often uses the same code space
+     * for all individual components.
      *
      * <p><b>Condition:</b>
      * this method can not be invoked after one or more names or identifiers have been added (by calls to the
@@ -275,6 +339,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      * @throws IllegalStateException if {@code addName(…)} or {@code addIdentifier(…)} has been invoked at least
      *         once since builder construction or since the last call to a {@code createXXX(…)} method.
+     *
+     * @see ImmutableIdentifier#getAuthority()
+     * @see ImmutableIdentifier#getCodeSpace()
      */
     public B setCodeSpace(final Citation authority, final String codespace) {
         if (!setProperty(Identifier.CODESPACE_KEY, codespace)) {
@@ -282,6 +349,18 @@ public abstract class Builder<B extends Builder<B>> {
         }
         setProperty(Identifier.AUTHORITY_KEY, authority);
         return self();
+    }
+
+    /**
+     * Returns the value given by the last call to {@link #setVersion(String)}, or {@code null} if none.
+     * The default value is {@code null}.
+     *
+     * @return The value specified by the last call to {@code setVersion(…)}, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    private String getVersion() {
+        return (String) properties.get(Identifier.VERSION_KEY);
     }
 
     /**
@@ -325,9 +404,8 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final CharSequence name) {
         ensureNonNull("name", name);
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, name.toString());
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, name.toString()) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : NAMES.createLocalName(namespace(), name));
         }
         return self();
@@ -363,15 +441,9 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final Citation authority, final CharSequence name) {
         ensureNonNull("name", name);
-        final NamedIdentifier identifier;
-        if (name instanceof InternationalString) {
-            identifier = new NamedIdentifier(authority, (InternationalString) name);
-        } else {
-            identifier = new NamedIdentifier(authority, name.toString());
-        }
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, identifier);
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        final NamedIdentifier identifier = new NamedIdentifier(authority, name);
+        if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, identifier) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(identifier);
         }
         return self();
@@ -396,9 +468,8 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final Identifier name) {
         ensureNonNull("name", name);
-        final Object old = properties.put(IdentifiedObject.NAME_KEY, name);
-        if (old != null) {
-            properties.put(IdentifiedObject.NAME_KEY, old); // Restore previous value.
+        if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, name) != null) {
+            // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : new NamedIdentifier(name));
         }
         return self();
@@ -424,9 +495,35 @@ public abstract class Builder<B extends Builder<B>> {
     public B addName(final GenericName name) {
         ensureNonNull("name", name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
-            properties.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(name));
+            properties.put(IdentifiedObject.NAME_KEY, (name instanceof Identifier) ? name : new NamedIdentifier(name));
         } else {
             aliases.add(name);
+        }
+        return self();
+    }
+
+    /**
+     * Adds a deprecated name given by a {@code CharSequence}. Some objects have deprecated names for historical reasons.
+     * The deprecated name typically has a replacement, which can be given by the {@code supersededBy} argument.
+     * The later, if non-null, shall be a name specified by a previous call to an {@code addName(…)} method.
+     *
+     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space} and
+     * {@link #setVersion(String) version} information for creating the deprecated {@link NamedIdentifier} object.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  name The {@code IdentifiedObject} deprecated name.
+     * @param  supersededBy The name to use instead of this one, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B addDeprecatedName(final CharSequence name, final CharSequence supersededBy) {
+        ensureNonNull("name", name);
+        final DeprecatedName dn = new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), supersededBy);
+        if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, dn) != null) {
+            aliases.add(dn);
         }
         return self();
     }
@@ -444,8 +541,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(new ImmutableIdentifier((Citation) properties.get(Identifier.AUTHORITY_KEY),
-                (String) properties.get(Identifier.CODESPACE_KEY), identifier));
+        identifiers.add(new ImmutableIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion(), null));
         return self();
     }
 
@@ -464,6 +560,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
+        // Do not use the version information since it applies to the default authority rather than the given one.
         identifiers.add(new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier));
         return self();
     }
@@ -483,6 +580,30 @@ public abstract class Builder<B extends Builder<B>> {
     public B addIdentifier(final Identifier identifier) {
         ensureNonNull("identifier", identifier);
         identifiers.add(identifier);
+        return self();
+    }
+
+    /**
+     * Adds a deprecated identifier given by a {@code String}. Some objects have deprecated identifiers for
+     * historical reasons. The deprecated identifier typically has a replacement, which can be given by the
+     * {@code supersededBy} argument. The later, if non-null, shall be an identifier specified by a previous
+     * call to an {@code addIdentifier(…)} method.
+     *
+     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
+     * and {@link #setVersion(String) version} information for creating the deprecated {@link Identifier} object.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     *
+     * @param  identifier   The {@code IdentifiedObject} deprecated identifier.
+     * @param  supersededBy The identifier to use instead of this one, or {@code null} if none.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B addDeprecatedIdentifier(final String identifier, final String supersededBy) {
+        ensureNonNull("identifier", identifier);
+        identifiers.add(new DeprecatedCode(getAuthority(), getCodeSpace(), identifier, getVersion(), supersededBy));
         return self();
     }
 
@@ -545,13 +666,20 @@ public abstract class Builder<B extends Builder<B>> {
      * @see #properties
      */
     protected void onCreate(final boolean cleanup) {
-        properties.put(IdentifiedObject.ALIAS_KEY,       cleanup ? null : aliases    .toArray(new GenericName[aliases    .size()]));
-        properties.put(IdentifiedObject.IDENTIFIERS_KEY, cleanup ? null : identifiers.toArray(new Identifier [identifiers.size()]));
+        final GenericName[] valueAlias;
+        final Identifier[]  valueIds;
         if (cleanup) {
             properties .put(IdentifiedObject.NAME_KEY, null);
             properties .remove(IdentifiedObject.REMARKS_KEY);
             aliases    .clear();
             identifiers.clear();
+            valueAlias = null;
+            valueIds   = null;
+        } else {
+            valueAlias = aliases    .toArray(new GenericName[aliases    .size()]);
+            valueIds   = identifiers.toArray(new Identifier [identifiers.size()]);
         }
+        properties.put(IdentifiedObject.ALIAS_KEY,       valueAlias);
+        properties.put(IdentifiedObject.IDENTIFIERS_KEY, valueIds);
     }
 }
