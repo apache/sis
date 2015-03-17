@@ -100,6 +100,7 @@ public final class Mercator1SP extends MapProjection {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+
         LATITUDE_OF_ORIGIN = createLatitude(builder
                 .addIdentifier("8801")
                 .addName("Latitude of natural origin")
