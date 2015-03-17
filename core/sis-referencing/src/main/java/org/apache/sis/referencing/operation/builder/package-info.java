@@ -16,7 +16,8 @@
  */
 
 /**
- * Helper classes for creating {@code MathTransform}s from a set of points.
+ * Helper classes for creating {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
+ * Math Transforms} from a set of points.
  * The builder classes require a matched set of known positions, one from a "source" data set and another
  * from a "target" data set. The builder will then provide a transformation positions from the "source" CRS
  * to the "target" CRS.

@@ -82,7 +82,7 @@ public final strictfp class AffineTest extends TestCase {
     public void testWKT() {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
         assertWktEquals(
-                "ParameterGroup[“Affine general parametric transformation”," +
+                "ParameterGroup[“Affine parametric transformation”," +
                 " Id[“EPSG”, 9624, Citation[“OGP”]]]", Affine.parameters(matrix));
         /*
          * Try arbitrary values.
@@ -91,7 +91,7 @@ public final strictfp class AffineTest extends TestCase {
         matrix.setElement(1, 1,  0);  // B1
         matrix.setElement(1, 2, -1);  // B2
         assertWktEquals(
-                "ParameterGroup[“Affine general parametric transformation”,\n" +
+                "ParameterGroup[“Affine parametric transformation”,\n" +
                 "  Parameter[“A1”, 2.0, Id[“EPSG”, 8624]],\n"  +
                 "  Parameter[“B1”, 0.0, Id[“EPSG”, 8640]],\n" +
                 "  Parameter[“B2”, -1.0, Id[“EPSG”, 8641]],\n" +

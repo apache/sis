@@ -436,6 +436,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
 
     /**
      * Name or identifier of the person or organization responsible for namespace.
+     * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
      *
      * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
@@ -450,8 +451,9 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}.
+     * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
+     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace()
+     * code space}, but not necessarily.
      *
      * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
      * {@link Citations#OGP}, since OGP is the organization maintaining the EPSG geodetic database.</div>
@@ -464,10 +466,9 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Identifier of the version of the associated code space or code, as specified by the
-     * code authority. This version is included only when the {@linkplain #getCode() code}
-     * uses versions. When appropriate, the edition is identified by the effective date,
-     * coded using ISO 8601 date format.
+     * Identifier of the version of the associated code space or code, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode() code} uses versions. When appropriate,
+     * the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
      *
