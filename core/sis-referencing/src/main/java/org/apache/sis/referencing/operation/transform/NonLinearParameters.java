@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -23,13 +24,16 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -203,7 +207,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * Formats the <cite>Well Known Text</cite> for the inverse of the transform that would be built
      * from the enclosing {@code NonLinearParameters}.
      */
-    final class InverseWKT extends FormattableObject implements Parameterized {
+    private final class InverseWKT extends FormattableObject implements Parameterized {
         /**
          * Creates a new object to be formatted instead than the enclosing transform.
          */
@@ -237,5 +241,136 @@ public abstract class NonLinearParameters extends FormattableObject implements P
             }
             return "Inverse_MT";
         }
+    }
+
+    /**
+     * Given a transformation chain, replaces the elements around {@code transforms.get(index)} transform by
+     * alternative objects to use when formatting WKT. The replacement is performed in-place in the given list.
+     *
+     * <p>This method shall replace only the previous element and the few next elements that need
+     * to be changed as a result of the previous change. This method is not expected to continue
+     * the iteration after the changes that are of direct concern to this object.</p>
+     *
+     * @param  transforms The full chain of concatenated transforms.
+     * @param  index      The index of this transform in the {@code transforms} chain.
+     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
+     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     */
+    final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
+        /*
+         * We expect affine transforms before and after the unitary projection. Extracts those
+         * affine transforms now. If one or both are missing, we will treat null as an identity
+         * transform. We will not replace the elements in the list before new values for those
+         * affine transforms have been fully calculated.
+         */
+        Matrix before = null;
+        Matrix after  = null;
+        if (index != 0) {
+            final Object candidate = transforms.get(index - 1);
+            if (candidate instanceof MathTransform) {
+                before = MathTransforms.getMatrix((MathTransform) candidate);
+            }
+        }
+        if (index+1 < transforms.size()) {
+            final Object candidate = transforms.get(index + 1);
+            if (candidate instanceof MathTransform) {
+                after = MathTransforms.getMatrix((MathTransform) candidate);
+            }
+        }
+        final boolean hasBefore = (before != null);
+        final boolean hasAfter  = (after  != null);
+        /*
+         * We assume that the "before" affine contains the normalize operation to be applied
+         * before the projection. However it may contains more than just this normalization,
+         * because it may have been concatenated with any user-defined transform (for example
+         * in order to apply a change of axis order). We need to separate the "user-defined"
+         * part from the "normalize" part.
+         */
+        MatrixSIS userDefined = normalize(!inverse);
+        if (!inverse) try {
+            userDefined = userDefined.inverse();
+        } catch (NoninvertibleMatrixException e) {
+            // Should never happen. But if it does, we abandon the attempt to change
+            // the list elements and will format the objects in their "raw" format.
+            unexpectedException(e);
+            return index;
+        }
+        if (hasBefore) {
+            userDefined = userDefined.multiply(before);
+        }
+        /*
+         * At this point "userDefined" is the affine transform to show to user instead of the
+         * "before" affine transform. Replaces "before" by "userDefined" locally (but not yet
+         * in the list), or set it to null (meaning that it will be removed from the list) if
+         * it is identity, which happen quite often. Note that in the former (non-null) case,
+         * the coefficients are often either 0 or 1 since the transform is often for changing
+         * axis order, so it is worth to attempt rounding coefficents.
+         */
+        before = userDefined.isIdentity() ? null : userDefined;
+        /*
+         * Compute the "after" affine transform in a way similar than the "before" affine.
+         * Note that if this operation fails, we will cancel everything we would have done
+         * in this method (i.e. we do not touch the transforms list at all).
+         */
+        userDefined = normalize(inverse);
+        if (!inverse) try {
+            userDefined = userDefined.inverse();
+        } catch (NoninvertibleMatrixException e) {
+            unexpectedException(e);
+            return index;
+        }
+        if (hasAfter) {
+            userDefined = MatrixSIS.castOrCopy(after).multiply(userDefined);
+        }
+        after = userDefined.isIdentity() ? null : userDefined;
+        /*
+         * At this point we have computed all the affine transforms to show to the user.
+         * We can replace the elements in the list. The transform referenced by transforms.get(index)
+         * is usually a UnitaryProjection, to be replaced by a NonLinearParameters instance in order
+         * to format real parameter values (semi-major axis, scale factor, etc.)
+         * instead than a semi-major axis length of 1.
+         */
+        if (before == null) {
+            if (hasBefore) {
+                final Object old = transforms.remove(--index);
+                assert (old instanceof LinearTransform);
+            }
+        } else {
+            if (hasBefore) {
+                final Object old = transforms.set(index-1, before);
+                assert (old instanceof LinearTransform);
+            } else {
+                transforms.add(index++, before);
+            }
+        }
+        transforms.set(index, inverse ? new InverseWKT() : this);
+        if (after == null) {
+            if (hasAfter) {
+                final Object old = transforms.remove(index + 1);
+                assert (old instanceof LinearTransform);
+            }
+        } else {
+            index++;
+            if (hasAfter) {
+                final Object old = transforms.set(index, after);
+                assert (old instanceof LinearTransform);
+            } else {
+                transforms.add(index, after);
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Logs a warning about a non-invertible transform. This method may be invoked during WKT
+     * formatting. This error should never occur, but it still possible to recover from this
+     * error and let WKT formatting to continue, which can be useful for debugging.
+     *
+     * <p>We pretend that the error come from {@link ConcatenatedTransform#formatTo(Formatter)}
+     * because this error should occurs only in the context of WKT formatting of a concatenated
+     * transform.</p>
+     */
+    private static void unexpectedException(final NoninvertibleMatrixException e) {
+        Logging.unexpectedException(ConcatenatedTransform.class, "formatTo", e);
     }
 }
