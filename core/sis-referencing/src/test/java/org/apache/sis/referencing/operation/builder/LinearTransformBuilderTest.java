@@ -183,7 +183,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         final Matrix m = builder.create().getMatrix();
         assertEquals("m₀₀", scale,  m.getElement(0, 0), scaleTolerance);
         assertEquals("m₀₁", offset, m.getElement(0, 1), translationTolerance);
-        assertEquals("correlation", 1, Math.abs(builder.correlation()[0]), scaleTolerance);
+        assertEquals("correlation", 1, StrictMath.abs(builder.correlation()[0]), scaleTolerance);
     }
 
     /**
@@ -201,9 +201,9 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
          * Create an AffineTransform to use as the reference implementation.
          */
         final AffineTransform ref = AffineTransform.getRotateInstance(
-                rd.nextDouble() * (2 * Math.PI),    // Rotation angle
-                rd.nextDouble() * 30 - 12,          // Center X
-                rd.nextDouble() * 10 - 8);          // Center Y
+                rd.nextDouble() * (2 * StrictMath.PI),  // Rotation angle
+                rd.nextDouble() * 30 - 12,              // Center X
+                rd.nextDouble() * 10 - 8);              // Center Y
         final DirectPosition2D[] sources = new DirectPosition2D[numPts];
         final DirectPosition2D[] targets = new DirectPosition2D[numPts];
         for (int i=0; i<numPts; i++) {

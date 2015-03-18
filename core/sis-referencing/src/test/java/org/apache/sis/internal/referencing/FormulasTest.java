@@ -47,7 +47,7 @@ public final strictfp class FormulasTest extends TestCase {
     @Test
     public void testPow3() {
         for (int n=0; n<=8; n++) {
-            assertEquals((int) Math.round(Math.pow(3, n)), Formulas.pow3(n));
+            assertEquals((int) StrictMath.round(StrictMath.pow(3, n)), Formulas.pow3(n));
         }
     }
 
