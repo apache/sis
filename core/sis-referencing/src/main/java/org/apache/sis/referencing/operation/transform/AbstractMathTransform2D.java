@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.List;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
@@ -405,15 +404,6 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
         @Override
         public Matrix derivative(final Point2D point) throws TransformException {
             return AbstractMathTransform2D.derivative(this, point);
-        }
-
-        /**
-         * Same work than {@link AbstractMathTransform2D#beforeFormat(List, int, boolean)}
-         * but with the knowledge that this transform is an inverse transform.
-         */
-        @Override
-        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
-            return AbstractMathTransform2D.this.beforeFormat(transforms, index, !inverse);
         }
     }
 }
