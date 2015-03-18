@@ -79,7 +79,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultMathTransformFactory
@@ -163,7 +163,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return null;
+        final NonLinearParameters parameters = getNonLinearParameters();
+        return (parameters != null) ? parameters.getParameterDescriptors() : null;
     }
 
     /**
@@ -183,6 +184,28 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     @Override
     public ParameterValueGroup getParameterValues() {
+        /*
+         * Do NOT try to infer the parameters getNonLinearParameters(). This is usually not appropriate
+         * because if NonLinearParameters declares "normalize" and "denormalize" affine transforms,
+         * they need to be taken in account in a way that only the subclass know.
+         */
+        return null;
+    }
+
+    /**
+     * Returns the parameters of this transform as a tuple of
+     * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms,
+     * or {@code null} if unspecified.
+     * The default implementation returns {@code null} in all cases.
+     *
+     * <p>This method is used mostly for Apache SIS implementation of map projections.</p>
+     *
+     * @return The tuple of (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>)
+     *         transforms, or {@code null} if unspecified.
+     *
+     * @since 0.6
+     */
+    protected NonLinearParameters getNonLinearParameters() {
         return null;
     }
 
@@ -884,6 +907,30 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
+     * Given a transformation chain, replaces the elements around {@code transforms.get(index)} transform by
+     * alternative objects to use when formatting WKT. The replacement is performed in-place in the given list.
+     *
+     * <p>This method shall replace only the previous element and the few next elements that need
+     * to be changed as a result of the previous change. This method is not expected to continue
+     * the iteration after the changes that are of direct concern to this object.</p>
+     *
+     * <p>This method is invoked only by {@link ConcatenatedTransform#getPseudoSteps()} in order to
+     * get the {@link ParameterValueGroup} of a map projection, or to format a {@code PROJCS} WKT.</p>
+     *
+     * @param  transforms The full chain of concatenated transforms.
+     * @param  index      The index of this transform in the {@code transforms} chain.
+     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
+     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     *
+     * @see ConcatenatedTransform#getPseudoSteps()
+     */
+    int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+        assert unwrap(transforms.get(index), inverse) == this;
+        final NonLinearParameters parameters = getNonLinearParameters();
+        return (parameters != null) ? parameters.beforeFormat(transforms, index, inverse) : index;
+    }
+
+    /**
      * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
      * The parameter group name is used as the math transform name.
@@ -908,22 +955,11 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Strictly reserved to {@link AbstractMathTransform2D}, which will
-     * override this method. The default implementation must do nothing.
-     *
-     * <p>This method is invoked only by {@link ConcatenatedTransform#getPseudoSteps()} in order to
-     * get the {@link ParameterValueGroup} of a map projection, or to format a {@code PROJCS} WKT.</p>
-     *
-     * @param  transforms The full chain of concatenated transforms.
-     * @param  index      The index of this transform in the {@code transforms} chain.
-     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
-     *
-     * @see AbstractMathTransform2D#beforeFormat(List, int, boolean)
-     * @see ConcatenatedTransform#getPseudoSteps()
+     * Unwraps the given object if it is expected to be an inverse transform.
+     * This is used for assertions only.
      */
-    int beforeFormat(List<Object> transforms, int index, boolean inverse) {
-        return index;
+    private static Object unwrap(final Object object, final boolean inverse) {
+        return inverse ? ((Inverse) object).inverse() : object;
     }
 
     /**
@@ -938,7 +974,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.5
-     * @version 0.5
+     * @version 0.6
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {
@@ -1047,6 +1083,15 @@ public abstract class AbstractMathTransform extends FormattableObject
             } else {
                 return false;
             }
+        }
+
+        /**
+         * Same work than {@link AbstractMathTransform#beforeFormat(List, int, boolean)}
+         * but with the knowledge that this transform is an inverse transform.
+         */
+        @Override
+        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+            return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
         }
 
         /**

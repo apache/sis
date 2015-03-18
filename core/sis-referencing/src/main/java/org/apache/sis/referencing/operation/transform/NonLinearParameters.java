@@ -251,10 +251,16 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * to be changed as a result of the previous change. This method is not expected to continue
      * the iteration after the changes that are of direct concern to this object.</p>
      *
+     * <p>This method is invoked (indirectly) only by {@link ConcatenatedTransform#getPseudoSteps()} in order
+     * to get the {@link ParameterValueGroup} of a map projection, or to format a {@code ProjectedCRS} WKT.</p>
+     *
      * @param  transforms The full chain of concatenated transforms.
      * @param  index      The index of this transform in the {@code transforms} chain.
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
      * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     *
+     * @see ConcatenatedTransform#getPseudoSteps()
+     * @see AbstractMathTransform#beforeFormat(List, int, boolean)
      */
     final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
         /*
