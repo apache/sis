@@ -48,14 +48,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection unitary projection}.
  * See the {@linkplain org.apache.sis.referencing.operation.projection projection package} for details.</p>
  *
- * <div class="note"><b>Note:</b>
- * Serialization of this class is appropriate for short-term storage or RMI use, but may not be compatible
- * with future versions. For long term storage, WKT (Well Know Text) or XML are more appropriate.</div>
+ * {@section Serialization}
+ * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
+ * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see AbstractMathTransform#getNonLinearParameters()
  */
 public abstract class NonLinearParameters extends FormattableObject implements Parameterized, Serializable {
     /**
@@ -74,11 +76,13 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     /**
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
      * the kernel operation. On {@code NonLinearParameters} construction, those affines are initially identity
-     * transforms. Subclasses should set the coefficients according their parameter values.
+     * transforms, to be modified in-place by callers of {@link #normalize(boolean)}.
+     * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
+     * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
      *
      * @see #normalize(boolean)
      */
-    private MatrixSIS normalize, denormalize;
+    private Matrix normalize, denormalize;
 
     /**
      * Creates a new {@code NonLinearParameters} for the given coordinate operation method.
@@ -98,6 +102,8 @@ public abstract class NonLinearParameters extends FormattableObject implements P
 
     /**
      * Creates a matrix for a linear part of the tupple.
+     * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
+     * to allow {@link #normalize(boolean)} to return the reference to the (de)normalize matrices.
      */
     private static MatrixSIS linear(final String name, final Integer size) {
         if (size == null) {
@@ -111,12 +117,12 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * identity transforms. Subclasses should invoke this method at construction time (or at some time close
      * to construction) in order to set the affine coefficients.
      *
-     * @param norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
-     *        or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
+     * @param  norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
+     *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
      * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
      */
     public final MatrixSIS normalize(final boolean norm) {
-        return norm ? normalize : denormalize;
+        return MatrixSIS.castOrCopy(norm ? normalize : denormalize);
     }
 
     /**
@@ -126,13 +132,18 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * @param  kernel The (usually non-linear) kernel.
      * @return The concatenation of (<cite>normalize</cite> – the given kernel – <cite>denormalize</cite>) transforms.
      */
-    final MathTransform createConcatenatedTransform(final MathTransformFactory factory, final MathTransform kernel)
+    final MathTransform createConcatenatedTransform(final MathTransformFactory factory, MathTransform kernel)
             throws FactoryException
     {
-        return factory.createConcatenatedTransform(
-               factory.createConcatenatedTransform(
-               factory.createAffineTransform(normalize), kernel),
-               factory.createAffineTransform(denormalize));
+        final MathTransform n = factory.createAffineTransform(normalize);
+        final MathTransform d = factory.createAffineTransform(denormalize);
+        Matrix m;
+        if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
+        if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
+        if (factory instanceof DefaultMathTransformFactory) {
+            kernel = ((DefaultMathTransformFactory) factory).unique(kernel);
+        }
+        return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 
     /**
@@ -292,9 +303,9 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          * in order to apply a change of axis order). We need to separate the "user-defined"
          * part from the "normalize" part.
          */
-        MatrixSIS userDefined = normalize(!inverse);
+        Matrix userDefined = inverse ? denormalize : normalize;
         if (!inverse) try {
-            userDefined = userDefined.inverse();
+            userDefined = MatrixSIS.castOrCopy(userDefined).inverse();
         } catch (NoninvertibleMatrixException e) {
             // Should never happen. But if it does, we abandon the attempt to change
             // the list elements and will format the objects in their "raw" format.
@@ -302,7 +313,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
             return index;
         }
         if (hasBefore) {
-            userDefined = userDefined.multiply(before);
+            userDefined = MatrixSIS.castOrCopy(userDefined).multiply(before);
         }
         /*
          * At this point "userDefined" is the affine transform to show to user instead of the
@@ -318,9 +329,9 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          * Note that if this operation fails, we will cancel everything we would have done
          * in this method (i.e. we do not touch the transforms list at all).
          */
-        userDefined = normalize(inverse);
+        userDefined = inverse ? normalize : denormalize;
         if (!inverse) try {
-            userDefined = userDefined.inverse();
+            userDefined = MatrixSIS.castOrCopy(userDefined).inverse();
         } catch (NoninvertibleMatrixException e) {
             unexpectedException(e);
             return index;

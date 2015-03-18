@@ -19,8 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -28,9 +26,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -48,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see java.awt.geom.AffineTransform
  */
-class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, ExtendedPrecisionMatrix,
+class ProjectiveTransform extends AbstractLinearTransform implements LinearTransform, ExtendedPrecisionMatrix,
         Serializable // Not Cloneable, despite the clone() method.
 {
     /**
@@ -137,35 +133,6 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     }
 
     /**
-     * Returns a copy of the matrix given to the constructor.
-     */
-    @Override
-    public final Matrix getMatrix() {
-        return this;
-    }
-
-    /**
-     * Returns the parameter descriptors for this math transform.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(getSourceDimensions(), getTargetDimensions(), Matrices.isAffine(this)).getParameters();
-    }
-
-    /**
-     * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
-     * matrix size. Only matrix elements different from their default value will be included in this group.
-     *
-     * @return A copy of the parameter values for this math transform.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(this);
-    }
-
-    /**
      * Returns a copy of matrix elements, including error terms if any.
      */
     @Override
@@ -184,21 +151,11 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     }
 
     /**
-     * Unsupported operation, since this matrix is unmodifiable.
+     * Returns {@code true} if this transform is affine.
      */
     @Override
-    public final void setElement(final int row, final int column, final double value) {
-        throw new UnsupportedOperationException(Matrices.isAffine(this)
-                ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
-                : Errors.format(Errors.Keys.UnmodifiableObject_1, ProjectiveTransform.class));
-    }
-
-    /**
-     * Returns a copy of the matrix that user can modify.
-     */
-    @Override
-    public final Matrix clone() {
-        return Matrices.copy(this);
+    public boolean isAffine() {
+        return Matrices.isAffine(this);
     }
 
     /**

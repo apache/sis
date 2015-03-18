@@ -22,9 +22,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ComparisonMode;
@@ -44,10 +41,10 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
-final class CopyTransform extends AbstractMathTransform implements LinearTransform, Serializable {
+final class CopyTransform extends AbstractLinearTransform implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -78,7 +75,7 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
      * @param indices The indices of ordinates to copy in the source array.
      *        The length of this array is the target dimension.
      */
-    CopyTransform(final int srcDim, final int... indices) {
+    CopyTransform(final int srcDim, final int[] indices) {
         this.srcDim  = srcDim;
         this.indices = indices;
     }
@@ -136,6 +133,14 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
     @Override
     public int getTargetDimensions() {
         return indices.length;
+    }
+
+    /**
+     * Returns {@code true} since this transform is affine.
+     */
+    @Override
+    public boolean isAffine() {
+        return true;
     }
 
     /**
@@ -305,34 +310,11 @@ final class CopyTransform extends AbstractMathTransform implements LinearTransfo
     }
 
     /**
-     * Returns the parameter descriptors for this math transform.
+     * Returns the matrix element at the given row and column.
      */
     @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(srcDim, getTargetDimensions(), true).getParameters();
-    }
-
-    /**
-     * Returns the matrix elements as a group of parameters values.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(getMatrix());
-    }
-
-    /**
-     * Returns the matrix.
-     */
-    @Override
-    public Matrix getMatrix() {
-        final int dstDim = indices.length;
-        final MatrixSIS matrix = Matrices.createZero(dstDim + 1, srcDim + 1);
-        for (int j=0; j<dstDim; j++) {
-            matrix.setElement(j, indices[j], 1);
-        }
-        matrix.setElement(dstDim, srcDim, 1);
-        assert equals(create(matrix)) : matrix;
-        return matrix;
+    public double getElement(final int row, final int column) {
+        return (((row == indices.length) ? srcDim : indices[row]) == column) ? 1 : 0;
     }
 
     /**

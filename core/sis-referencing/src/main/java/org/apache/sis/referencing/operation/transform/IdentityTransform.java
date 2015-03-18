@@ -18,14 +18,11 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
@@ -38,10 +35,10 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
-final class IdentityTransform extends AbstractMathTransform implements LinearTransform, Serializable {
+final class IdentityTransform extends AbstractLinearTransform implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -105,6 +102,14 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
     }
 
     /**
+     * Returns {@code true} since this transform is affine.
+     */
+    @Override
+    public boolean isAffine() {
+        return true;
+    }
+
+    /**
      * Returns {@code true} since this transform does not move any points.
      */
     @Override
@@ -129,34 +134,16 @@ final class IdentityTransform extends AbstractMathTransform implements LinearTra
     }
 
     /**
-     * Returns the parameter descriptors for this math transform.
+     * Returns the matrix element at the given row and column.
      */
     @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(dimension, dimension, true).getParameters();
+    public double getElement(final int row, final int column) {
+        return (row == column) ? 1 : 0;
     }
 
     /**
-     * Returns the matrix elements as a group of parameters values.
-     *
-     * @return A copy of the parameter values for this math transform.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(getMatrix());
-    }
-
-    /**
-     * Returns a copy of the identity matrix.
-     */
-    @Override
-    public Matrix getMatrix() {
-        return Matrices.createIdentity(dimension + 1);
-    }
-
-    /**
-     * Gets the derivative of this transform at a point. For an identity transform,
-     * the derivative is the same everywhere.
+     * Gets the derivative of this transform at a point.
+     * For an identity transform, the derivative is the same everywhere.
      */
     @Override
     public Matrix derivative(final DirectPosition point) {

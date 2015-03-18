@@ -23,13 +23,15 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 
+import static org.junit.Assert.*;
+
 
 /**
  * Tests the {@link CopyTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -52,14 +54,23 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     }
 
     /**
+     * Initializes the {@link #transform} field to a {@link CopyTransform} instance created
+     * from the given argument. Then verifies that the matrix is consistent with the transform.
+     */
+    private void create(final int srcDim, final int... indices) {
+        transform = new CopyTransform(srcDim, indices);
+        assertEquals(transform, CopyTransform.create(((LinearTransform) transform).getMatrix()));
+        validate();
+    }
+
+    /**
      * Tests an identity transform.
      *
      * @throws TransformException should never happen.
      */
     @Test
     public void testIdentity() throws TransformException {
-        transform = new CopyTransform(3, 0, 1, 2);
-        validate();
+        create(3, 0, 1, 2);
         verifyParameters(Affine.getProvider(3, 3, true).getParameters(), null);
         verifyIsIdentity(true);
 
@@ -78,8 +89,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void test3D() throws TransformException {
-        transform = new CopyTransform(3, 2, 1, 0);
-        validate();
+        create(3, 2, 1, 0);
         verifyIsIdentity(false);
 
         final double[] source = generateRandomCoordinates();
@@ -102,9 +112,8 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void test3Dto2D() throws TransformException {
-        transform = new CopyTransform(3, 0, 1);
         isInverseTransformSupported = false;
-        validate();
+        create(3, 0, 1);
         verifyIsIdentity(false);
 
         final double[] source = generateRandomCoordinates();
