@@ -735,7 +735,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  */
                 throw new FactoryException(exception);
             }
-            transform = pool.unique(transform);
+            transform = unique(transform);
             method = DefaultOperationMethod.redimension(method,
                     transform.getSourceDimensions(), transform.getTargetDimensions());
             return transform;
@@ -761,7 +761,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
         lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider
-        return pool.unique(MathTransforms.linear(matrix));
+        return unique(MathTransforms.linear(matrix));
     }
 
     /**
@@ -784,14 +784,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throws FactoryException
     {
         lastMethod.remove();
-        MathTransform tr;
+        final MathTransform tr;
         try {
             tr = MathTransforms.concatenate(transform1, transform2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
-        tr = pool.unique(tr);
-        return tr;
+        return unique(tr);
     }
 
     /**
@@ -824,14 +823,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throws FactoryException
     {
         lastMethod.remove();
-        MathTransform tr;
+        final MathTransform tr;
         try {
             tr = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
-        tr = pool.unique(tr);
-        return tr;
+        return unique(tr);
     }
 
     /**
@@ -861,6 +859,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
         throw new FactoryException("Not yet implemented.");
+    }
+
+    /**
+     * Replaces the given transform by a unique instance, if one already exists.
+     */
+    final MathTransform unique(final MathTransform tr) {
+        return pool.unique(tr);
     }
 
     /**
