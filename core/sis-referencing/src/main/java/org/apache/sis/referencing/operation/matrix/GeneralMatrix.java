@@ -239,6 +239,38 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
+     * Stores the value at the specified row and column in the given {@code dd} object.
+     * This method does not need to verify argument validity.
+     */
+    @Override
+    final void get(final int row, final int column, final DoubleDouble dd) {
+        int i = row * numCol + column;
+        dd.value = elements[i];
+        i += numRow * numCol;
+        if (i < elements.length) {
+            dd.error = elements[i];
+            assert dd.equals(getNumber(row, column));
+        } else {
+            dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+        }
+    }
+
+    /**
+     * Stores the value of the given {@code dd} object at the specified row and column.
+     * This method does not need to verify argument validity.
+     */
+    @Override
+    final void set(final int row, final int column, final DoubleDouble dd) {
+        int i = row * numCol + column;
+        elements[i] = dd.value;
+        i += numRow * numCol;
+        if (i < elements.length) {
+            elements[i] = dd.error;
+            assert dd.equals(getNumber(row, column));
+        }
+    }
+
+    /**
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}
      * or a {@link DoubleDouble} depending on available precision.
      *
@@ -520,37 +552,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                     ArraysExt.swap(elements, lo + errors, up + errors);
                 }
             }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void normalizeColumns() {
-        final int numRow = this.numRow; // Protection against accidental changes.
-        final int numCol = this.numCol;
-        final int errors = numRow * numCol; // Where error values start.
-        final double[] elt = getExtendedElements(this, numRow, numCol, false);
-        final DoubleDouble sum = new DoubleDouble();
-        final DoubleDouble dot = new DoubleDouble();
-        for (int i=0; i<numCol; i++) {
-            sum.clear();
-            for (int j=0; j<numRow; j++) {
-                dot.setFrom(elt, j*numCol + i, errors);
-                dot.multiply(dot);
-                sum.add(dot);
-            }
-            sum.sqrt();
-            for (int j=0; j<numRow; j++) {
-                final int k = j*numCol + i;
-                dot.setFrom(sum);
-                dot.inverseDivide(elt, k, errors);
-                dot.storeTo(elt, k, errors);
-            }
-        }
-        if (elt != elements) {
-            System.arraycopy(elt, 0, elements, 0, elements.length);
         }
     }
 

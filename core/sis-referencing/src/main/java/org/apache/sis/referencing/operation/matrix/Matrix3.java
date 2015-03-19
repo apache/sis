@@ -16,10 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -34,7 +31,7 @@ import org.apache.sis.math.MathFunctions;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see Matrix1
@@ -292,49 +289,5 @@ public final class Matrix3 extends MatrixSIS {
         swap = m01; m01 = m10; m10 = swap;
         swap = m02; m02 = m20; m20 = swap;
         swap = m12; m12 = m21; m21 = swap;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void normalizeColumns() {
-        double m;
-        final double[] v = new double[3];
-        v[0]=m00; v[1]=m10; v[2]=m20; m = MathFunctions.magnitude(v); m00 /= m; m10 /= m; m20 /= m;
-        v[0]=m01; v[1]=m11; v[2]=m21; m = MathFunctions.magnitude(v); m01 /= m; m11 /= m; m21 /= m;
-        v[0]=m02; v[1]=m12; v[2]=m22; m = MathFunctions.magnitude(v); m02 /= m; m12 /= m; m22 /= m;
-    }
-
-    /**
-     * Returns {@code true} if the specified object is of type {@code Matrix3} and
-     * all of the data members are equal to the corresponding data members in this matrix.
-     *
-     * @param object The object to compare with this matrix for equality.
-     * @return {@code true} if the given object is equal to this matrix.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object instanceof Matrix3) {
-            final Matrix3 that = (Matrix3) object;
-            return Numerics.equals(this.m00, that.m00) &&
-                   Numerics.equals(this.m01, that.m01) &&
-                   Numerics.equals(this.m02, that.m02) &&
-                   Numerics.equals(this.m10, that.m10) &&
-                   Numerics.equals(this.m11, that.m11) &&
-                   Numerics.equals(this.m12, that.m12) &&
-                   Numerics.equals(this.m20, that.m20) &&
-                   Numerics.equals(this.m21, that.m21) &&
-                   Numerics.equals(this.m22, that.m22);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value based on the data values in this object.
-     */
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(getElements()) ^ (int) serialVersionUID;
     }
 }

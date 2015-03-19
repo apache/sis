@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
@@ -941,6 +941,34 @@ public final class DoubleDouble extends Number {
         divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
         setToQuickSum(r, value);
     }
+
+    /**
+     * Returns a hash code value for this number.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Numerics.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+    }
+
+    /**
+     * Compares this number with the given object for equality.
+     *
+     * @param  obj The other object to compare with this number.
+     * @return {@code true} if both object are equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DoubleDouble) {
+            final DoubleDouble other = (DoubleDouble) obj;
+            return Numerics.equals(value, other.value) &&
+                   Numerics.equals(error, other.error);
+        }
+        return false;
+    }
+
+
 
     /**
      * Returns a string representation of this number for debugging purpose.
