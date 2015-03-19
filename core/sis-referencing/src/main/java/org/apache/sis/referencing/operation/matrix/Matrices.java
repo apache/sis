@@ -64,7 +64,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.parameter.TensorParameters
@@ -693,6 +693,54 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns a new matrix which is the result of multiplying the first matrix with the second one.
+     * In other words, returns {@code m1} × {@code m2}.
+     *
+     * @param  m1 The first matrix to multiply.
+     * @param  m2 The second matrix to multiply.
+     * @return The result of {@code m1} × {@code m2}.
+     * @throws MismatchedMatrixSizeException if the number of columns in {@code m1} is not equals to the
+     *         number of rows in {@code m2}.
+     *
+     * @see MatrixSIS#multiply(Matrix)
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS multiply(final Matrix m1, final Matrix m2) throws MismatchedMatrixSizeException {
+        if (m1 instanceof MatrixSIS) {
+            return ((MatrixSIS) m1).multiply(m2);  // Maybe the subclass override that method.
+        }
+        final int nc = m2.getNumCol();
+        MatrixSIS.ensureNumRowMatch(m1.getNumCol(), m2.getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(m1.getNumRow(), nc);
+        result.setToProduct(m1, m2);
+        return result;
+    }
+
+    /**
+     * Returns the inverse of the given matrix.
+     *
+     * @param  matrix The matrix to inverse, or {@code null}.
+     * @return The inverse of this matrix, or {@code null} if the given matrix was null.
+     * @throws NoninvertibleMatrixException if the given matrix is not invertible.
+     *
+     * @see MatrixSIS#inverse()
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS inverse(final Matrix matrix) throws NoninvertibleMatrixException {
+        if (matrix == null) {
+            return null;
+        } else if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).inverse();  // Maybe the subclass override that method.
+        } else if (matrix.getNumRow() != matrix.getNumCol()) {
+            return new NonSquareMatrix(matrix).inverse();
+        } else {
+            return Solver.inverse(matrix, true);
+        }
+    }
+
+    /**
      * Returns {@code true} if the given matrix represents an affine transform.
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
@@ -706,21 +754,9 @@ public final class Matrices extends Static {
     public static boolean isAffine(final Matrix matrix) {
         if (matrix instanceof MatrixSIS) {
             return ((MatrixSIS) matrix).isAffine();
+        } else {
+            return MatrixSIS.isAffine(matrix);
         }
-        // Following is executed only if the given matrix is not a SIS implementation.
-        int j = matrix.getNumRow();
-        int i = matrix.getNumCol();
-        if (i != j--) {
-            return false; // Matrix is not square.
-        }
-        double e = 1;
-        while (--i >= 0) {
-            if (matrix.getElement(j, i) != e) {
-                return false;
-            }
-            e = 0;
-        }
-        return true;
     }
 
     /**

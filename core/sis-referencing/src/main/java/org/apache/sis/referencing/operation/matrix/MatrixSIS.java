@@ -93,8 +93,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param numCol   The number of columns to report in case of errors. This is an arbitrary
      *                 value and have no incidence on the verification performed by this method.
      */
-    static void ensureNumRowMatch(final int expected, final Matrix matrix, final int numCol) {
-        final int actual = matrix.getNumRow();
+    static void ensureNumRowMatch(final int expected, final int actual, final int numCol) {
         if (actual != expected) {
             throw new MismatchedMatrixSizeException(Errors.format(
                     Errors.Keys.MismatchedMatrixSize_4, expected, "⒩", actual, numCol));
@@ -190,7 +189,28 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see Matrices#isAffine(Matrix)
      * @see org.apache.sis.referencing.operation.transform.LinearTransform#isAffine()
      */
-    public abstract boolean isAffine();
+    public boolean isAffine() {
+        return isAffine(this);
+    }
+
+    /**
+     * Fallback for matrix of unknown implementation.
+     */
+    static boolean isAffine(final Matrix matrix) {
+        int j = matrix.getNumRow();
+        int i = matrix.getNumCol();
+        if (i != j--) {
+            return false; // Matrix is not square.
+        }
+        double e = 1;
+        while (--i >= 0) {
+            if (matrix.getElement(j, i) != e) {
+                return false;
+            }
+            e = 0;
+        }
+        return true;
+    }
 
     /**
      * Returns {@code true} if this matrix is an identity matrix.
@@ -242,11 +262,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *         number of columns in this matrix.
      */
     public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
-        final int numRow = getNumRow();
-        final int numCol = getNumCol();
         final int nc = matrix.getNumCol();
-        ensureNumRowMatch(numCol, matrix, nc);
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(numRow, nc);
+        ensureNumRowMatch(getNumCol(), matrix.getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc);
         result.setToProduct(this, matrix);
         return result;
     }

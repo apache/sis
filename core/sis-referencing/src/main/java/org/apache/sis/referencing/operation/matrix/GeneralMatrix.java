@@ -321,6 +321,13 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             } else {
                 elements = Arrays.copyOf(elements, length);
             }
+        } else if (matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            if (elements.length == length) {
+                return elements;
+            } else {
+                elements = Arrays.copyOf(elements, length);
+            }
         } else {
             elements = new double[length];
             getElements(matrix, numRow, numCol, elements);
@@ -551,7 +558,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * Sets this matrix to the product of the given matrices: {@code this = A × B}.
      * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
-    final void setToProduct(final MatrixSIS A, final Matrix B) {
+    final void setToProduct(final Matrix A, final Matrix B) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         final int nc = A.getNumCol();
