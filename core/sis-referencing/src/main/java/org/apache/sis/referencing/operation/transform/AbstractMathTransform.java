@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -1031,7 +1031,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (point != null) {
                 point = this.transform(point, null);
             }
-            return MatrixSIS.castOrCopy(AbstractMathTransform.this.derivative(point)).inverse();
+            return Matrices.inverse(AbstractMathTransform.this.derivative(point));
         }
 
         /**

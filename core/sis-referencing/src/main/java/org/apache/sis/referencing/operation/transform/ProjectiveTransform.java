@@ -427,9 +427,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
              *           inverse = this;
              *       } else { ... }
              */
-            MatrixSIS matrix = Matrices.copy(this);
-            matrix = matrix.inverse();
-            ProjectiveTransform inv = createInverse(matrix);
+            ProjectiveTransform inv = createInverse(Matrices.inverse(this));
             inv.inverse = this;
             inverse = inv;
         }

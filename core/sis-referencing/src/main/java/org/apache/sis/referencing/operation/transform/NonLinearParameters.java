@@ -304,7 +304,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          */
         Matrix userDefined = inverse ? denormalize : normalize;
         if (!inverse) try {
-            userDefined = MatrixSIS.castOrCopy(userDefined).inverse();
+            userDefined = Matrices.inverse(userDefined);
         } catch (NoninvertibleMatrixException e) {
             // Should never happen. But if it does, we abandon the attempt to change
             // the list elements and will format the objects in their "raw" format.
@@ -312,7 +312,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
             return index;
         }
         if (hasBefore) {
-            userDefined = MatrixSIS.castOrCopy(userDefined).multiply(before);
+            userDefined = Matrices.multiply(userDefined, before);
         }
         /*
          * At this point "userDefined" is the affine transform to show to user instead of the
@@ -330,13 +330,13 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          */
         userDefined = inverse ? normalize : denormalize;
         if (!inverse) try {
-            userDefined = MatrixSIS.castOrCopy(userDefined).inverse();
+            userDefined = Matrices.inverse(userDefined);
         } catch (NoninvertibleMatrixException e) {
             unexpectedException(e);
             return index;
         }
         if (hasAfter) {
-            userDefined = MatrixSIS.castOrCopy(after).multiply(userDefined);
+            userDefined = Matrices.multiply(after, userDefined);
         }
         after = userDefined.isIdentity() ? null : userDefined;
         /*

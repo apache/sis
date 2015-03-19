@@ -30,7 +30,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
@@ -370,7 +370,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *       then the matrix will be built from those parameters.</li>
      *   <li>Otherwise if the other datum contains {@code BursaWolfParameters} having this datum
      *       as their target (ignoring metadata), then the matrix will be built from those parameters
-     *       and {@linkplain MatrixSIS#inverse() inverted}.</li>
+     *       and {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverted}.</li>
      * </ol>
      *
      * <p><b>Multi-occurrences resolution</b><br>
@@ -404,7 +404,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (targetDatum instanceof DefaultGeodeticDatum) {
             candidate = ((DefaultGeodeticDatum) targetDatum).select(this, selector);
             if (candidate != null) try {
-                return MatrixSIS.castOrCopy(createTransformation(candidate, areaOfInterest)).inverse();
+                return Matrices.inverse(createTransformation(candidate, areaOfInterest));
             } catch (NoninvertibleMatrixException e) {
                 /*
                  * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)

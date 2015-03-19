@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
@@ -240,7 +239,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (matrix1 != null) {
             final Matrix matrix2 = MathTransforms.getMatrix(tr2);
             if (matrix2 != null) {
-                final Matrix matrix = MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+                final Matrix matrix = Matrices.multiply(matrix2, matrix1);
                 if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
                     return MathTransforms.identity(matrix.getNumRow() - 1);
                 }
@@ -584,7 +583,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (derivate) {
             final Matrix matrix1 = MathTransforms.derivativeAndTransform(transform1, srcPts, srcOff, buffer, offset);
             final Matrix matrix2 = MathTransforms.derivativeAndTransform(transform2, buffer, offset, dstPts, dstOff);
-            return MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+            return Matrices.multiply(matrix2, matrix1);
         } else {
             transform1.transform(srcPts, srcOff, buffer, offset, 1);
             transform2.transform(buffer, offset, dstPts, dstOff, 1);
@@ -849,7 +848,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     public Matrix derivative(final DirectPosition point) throws TransformException {
         final Matrix matrix1 = transform1.derivative(point);
         final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
-        return MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+        return Matrices.multiply(matrix2, matrix1);
     }
 
     /**
