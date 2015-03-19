@@ -67,7 +67,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
 
     /**
      * The descriptor that represents this tuple as a whole. The parameter values may take effect in either the
-     * {@linkplain #normalize(boolean) normalize/denormalize} transforms or in the kernel.
+     * {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
      * @see #getParameterDescriptors()
      */
@@ -76,11 +76,11 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     /**
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
      * the kernel operation. On {@code NonLinearParameters} construction, those affines are initially identity
-     * transforms, to be modified in-place by callers of {@link #normalize(boolean)}.
+     * transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
      * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
      * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
      *
-     * @see #normalize(boolean)
+     * @see #normalization(boolean)
      */
     private Matrix normalize, denormalize;
 
@@ -88,7 +88,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * Creates a new {@code NonLinearParameters} for the given coordinate operation method.
      * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
      * shall describe the parameters of this tuple as a whole, including the affine transforms applied before and after
-     * the non-linear kernel. Subclasses shall initialize those {@linkplain #normalize(boolean) normalize/denormalize}
+     * the non-linear kernel. Subclasses shall initialize those {@linkplain #normalization(boolean) normalize/denormalize}
      * affine transforms when they have enough information for doing so.
      *
      * @param method The operation method for which to describe the non-linear parameters.
@@ -103,7 +103,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     /**
      * Creates a matrix for a linear part of the tupple.
      * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
-     * to allow {@link #normalize(boolean)} to return the reference to the (de)normalize matrices.
+     * to allow {@link #normalization(boolean)} to return the reference to the (de)normalize matrices.
      */
     private static MatrixSIS linear(final String name, final Integer size) {
         if (size == null) {
@@ -121,7 +121,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
      * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
      */
-    public final MatrixSIS normalize(final boolean norm) {
+    public final MatrixSIS normalization(final boolean norm) {
         return MatrixSIS.castOrCopy(norm ? normalize : denormalize);
     }
 
@@ -148,7 +148,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
 
     /**
      * Returns the descriptor that represents this tuple as a whole. The parameter values may take effect
-     * in either the {@linkplain #normalize(boolean) normalize/denormalize} transforms or in the kernel.
+     * in either the {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
      * <div class="note"><b>Note:</b>
      * The definition of "kernel" is left to implementors. In the particular case of Apache SIS implementation of map
