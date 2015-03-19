@@ -945,7 +945,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         final ParameterValueGroup parameters = getParameterValues();
         if (parameters != null) {
             WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
@@ -1108,7 +1108,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          *         {@code "Inverse_MT"} in the default implementation.
          */
         @Override
-        public String formatTo(final Formatter formatter) {
+        protected String formatTo(final Formatter formatter) {
             final ParameterValueGroup parameters = getParameterValues();
             if (parameters != null) {
                 WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);

@@ -619,7 +619,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @return The WKT element name, which is {@code "PassThrough_MT"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         formatter.append(firstAffectedOrdinate);
         if (numTrailingOrdinates != 0) {
             formatter.append(numTrailingOrdinates);
