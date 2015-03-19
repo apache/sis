@@ -904,7 +904,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @return The WKT element name, which is {@code "Concat_MT"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         final List<? super MathTransform> transforms;
         if (formatter.getConvention() == Convention.INTERNAL) {
             transforms = getSteps();
