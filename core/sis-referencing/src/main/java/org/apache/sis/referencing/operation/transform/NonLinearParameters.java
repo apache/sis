@@ -44,9 +44,27 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms.
  * The normalize and denormalize parts must be affine transforms.
  *
- * <p>This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
+ * {@section Usage in map projections}
+ * This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection unitary projection}.
- * See the {@linkplain org.apache.sis.referencing.operation.projection projection package} for details.</p>
+ * This object is typically created and used as below:
+ *
+ * <ol>
+ *   <li>A {@link MathTransformProvider#createMathTransform(ParameterValueGroup)} method
+ *     instantiates a class from the {@link org.apache.sis.referencing.operation.projection} package.
+ *     Note that different {@code MathTransformProvider}s may instantiate the same map projection class.
+ *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
+ *     instantiate the same {@link org.apache.sis.referencing.operation.Mercator} class, but with different descriptors.</li>
+ *
+ *   <li>The map projection constructor fetches all parameters that he needs from the user-supplied
+ *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
+ *     it actually used in a new {@code NonLinearParameters} instance.</li>
+ *
+ *   <li>The constructor should invoke {@link #normalizeGeographic(double)}
+ *     and {@link #denormalizeCartesian(double, double, double, double)}.
+ *     The constructor is free to apply additional operations on the two affine transforms
+ *     ({@linkplain #normalization(boolean) normalize / denormalize}) after the above-cited methods have been invoked.</li>
+ * </ol>
  *
  * {@section Serialization}
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.

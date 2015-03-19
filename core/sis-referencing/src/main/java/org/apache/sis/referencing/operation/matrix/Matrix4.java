@@ -16,10 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -35,7 +32,7 @@ import org.apache.sis.math.MathFunctions;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see Matrix1
@@ -330,57 +327,5 @@ public final class Matrix4 extends MatrixSIS {
         swap = m12; m12 = m21; m21 = swap;
         swap = m13; m13 = m31; m31 = swap;
         swap = m23; m23 = m32; m32 = swap;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void normalizeColumns() {
-        double m;
-        final double[] v = new double[4];
-        v[0]=m00; v[1]=m10; v[2]=m20; v[3]=m30; m = MathFunctions.magnitude(v); m00 /= m; m10 /= m; m20 /= m; m30 /= m;
-        v[0]=m01; v[1]=m11; v[2]=m21; v[3]=m31; m = MathFunctions.magnitude(v); m01 /= m; m11 /= m; m21 /= m; m31 /= m;
-        v[0]=m02; v[1]=m12; v[2]=m22; v[3]=m32; m = MathFunctions.magnitude(v); m02 /= m; m12 /= m; m22 /= m; m32 /= m;
-        v[0]=m03; v[1]=m13; v[2]=m23; v[3]=m33; m = MathFunctions.magnitude(v); m03 /= m; m13 /= m; m23 /= m; m33 /= m;
-    }
-
-    /**
-     * Returns {@code true} if the specified object is of type {@code Matrix4} and
-     * all of the data members are equal to the corresponding data members in this matrix.
-     *
-     * @param object The object to compare with this matrix for equality.
-     * @return {@code true} if the given object is equal to this matrix.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object instanceof Matrix4) {
-            final Matrix4 that = (Matrix4) object;
-            return Numerics.equals(this.m00, that.m00) &&
-                   Numerics.equals(this.m01, that.m01) &&
-                   Numerics.equals(this.m02, that.m02) &&
-                   Numerics.equals(this.m03, that.m03) &&
-                   Numerics.equals(this.m10, that.m10) &&
-                   Numerics.equals(this.m11, that.m11) &&
-                   Numerics.equals(this.m12, that.m12) &&
-                   Numerics.equals(this.m13, that.m13) &&
-                   Numerics.equals(this.m20, that.m20) &&
-                   Numerics.equals(this.m21, that.m21) &&
-                   Numerics.equals(this.m22, that.m22) &&
-                   Numerics.equals(this.m23, that.m23) &&
-                   Numerics.equals(this.m30, that.m30) &&
-                   Numerics.equals(this.m31, that.m31) &&
-                   Numerics.equals(this.m32, that.m32) &&
-                   Numerics.equals(this.m33, that.m33);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value based on the data values in this object.
-     */
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(getElements()) ^ (int) serialVersionUID;
     }
 }

@@ -16,8 +16,12 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Arrays;
 import java.io.Serializable;
+import java.awt.geom.AffineTransform;   // For javadoc
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -39,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see Matrices
@@ -123,6 +127,23 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             return (MatrixSIS) matrix;
         }
         return Matrices.copy(matrix);
+    }
+
+    /**
+     * Stores the value at the specified row and column in the given {@code dd} object.
+     * This method does not need to verify argument validity.
+     */
+    void get(final int row, final int column, final DoubleDouble dd) {
+        dd.value = getElement(row, column);
+        dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+    }
+
+    /**
+     * Stores the value of the given {@code dd} object at the specified row and column.
+     * This method does not need to verify argument validity.
+     */
+    void set(final int row, final int column, final DoubleDouble dd) {
+        setElement(row, column, dd.value);
     }
 
     /**
@@ -245,7 +266,71 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * ordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      */
-    public abstract void normalizeColumns();
+    public void normalizeColumns() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble dot = new DoubleDouble();
+        final DoubleDouble tmp = new DoubleDouble();
+        for (int i=0; i<numCol; i++) {
+            sum.clear();
+            for (int j=0; j<numRow; j++) {
+                get(j, i, dot);
+                dot.multiply(dot);
+                sum.add(dot);
+            }
+            sum.sqrt();
+            for (int j=0; j<numRow; j++) {
+                get(j, i, tmp);
+                dot.setFrom(sum);
+                dot.inverseDivide(tmp);
+                set(j, i, dot);
+            }
+        }
+    }
+
+    /**
+     * Assuming that this matrix represents an affine transform, applies a scale and a translation
+     * on the given dimension.
+     *
+     * <p>If:</p>
+     * <ul>
+     *   <li>{@code original} is this matrix before this method call</li>
+     *   <li>{@code modified} is this matrix after this method call</li>
+     * </ul>
+     *
+     * Then transforming a coordinate by {@code modified} is equivalent to first replacing the ordinate
+     * value at dimension {@code srcDim} by ({@code scale} × <var>ordinate</var> + {@code offset}),
+     * then apply the {@code original} transform.
+     *
+     * @param srcDim The dimension of the ordinate to rescale in the source coordinates.
+     * @param scale  The amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
+     * @param offset The amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
+     *
+     * @see AffineTransform#concatenate(AffineTransform)
+     *
+     * @since 0.6
+     */
+    public void concatenateAffine(final int srcDim, final Number scale, final Number offset) {
+        final int lastCol = getNumCol() - 1;
+        ArgumentChecks.ensureValidIndex(lastCol, srcDim);
+        final DoubleDouble s = new DoubleDouble();
+        final DoubleDouble t = new DoubleDouble();
+        for (int j = getNumRow() - 1; --j >= 0;) {
+            if (offset != null) {
+                get(j, srcDim,  s); // Scale factor
+                get(j, lastCol, t); // Translation factor
+                s.multiply(offset);
+                t.add(s);
+                set(j, lastCol, t);
+            }
+            if (scale != null) {
+                get(j, srcDim, s);  // Scale factor
+                s.multiply(scale);
+                set(j, srcDim, s);
+            }
+        }
+    }
 
     /**
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
@@ -294,6 +379,43 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
         return Solver.inverse(this, true);
+    }
+
+    /**
+     * Returns a hash code value based on the data values in this matrix.
+     *
+     * @return A hash code value for this matrix.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(getElements()) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns {@code true} if the specified object is of the same class than this matrix and
+     * all of the data members are equal to the corresponding data members in this matrix.
+     *
+     * @param object The object to compare with this matrix for equality.
+     * @return {@code true} if the given object is equal to this matrix.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final int numRow = getNumRow();
+            final int numCol = getNumCol();
+            final MatrixSIS that = (MatrixSIS) object;
+            if (that.getNumRow() == numRow && that.getNumCol() == numCol) {
+                for (int j=numRow; --j >= 0;) {
+                    for (int i=numCol; --i >= 0;) {
+                        if (!Numerics.equals(that.getElement(j, i), getElement(j, i))) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
