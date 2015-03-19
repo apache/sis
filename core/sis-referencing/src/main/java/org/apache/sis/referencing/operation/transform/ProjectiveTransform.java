@@ -22,7 +22,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -148,14 +147,6 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
         ArgumentChecks.ensureBetween("row",    0, numRow - 1, row);
         ArgumentChecks.ensureBetween("column", 0, numCol - 1, column);
         return elt[row * numCol + column];
-    }
-
-    /**
-     * Returns {@code true} if this transform is affine.
-     */
-    @Override
-    public boolean isAffine() {
-        return Matrices.isAffine(this);
     }
 
     /**
@@ -464,25 +455,13 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * Compares this math transform with an object which is known to be an instance of the same class.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
-            return true;
-        }
-        if (mode != ComparisonMode.STRICT) {
-            if (object instanceof LinearTransform) {
-                return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
-            }
-        } else if (super.equals(object, mode)) {
-            final ProjectiveTransform that = (ProjectiveTransform) object;
-            return this.numRow == that.numRow &&
-                   this.numCol == that.numCol &&
-                   Arrays.equals(this.elt, that.elt);
-        }
-        return false;
+    protected boolean equalsSameClass(final Object object) {
+        final ProjectiveTransform that = (ProjectiveTransform) object;
+        return this.numRow == that.numRow &&
+               this.numCol == that.numCol &&
+               Arrays.equals(this.elt, that.elt);
     }
 }

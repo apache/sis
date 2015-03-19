@@ -936,7 +936,10 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The parameter group name is used as the math transform name.
      *
      * <div class="note"><b>Compatibility note:</b>
-     * {@code Param_MT} is defined in the WKT 1 specification only.</div>
+     * {@code Param_MT} is defined in the WKT 1 specification only.
+     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+     * then this method silently uses the WKT 1 convention without raising an error
+     * (unless this {@code MathTransform} can not be formatted as valid WKT 1 neither).</div>
      *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
@@ -947,9 +950,6 @@ public abstract class AbstractMathTransform extends FormattableObject
         if (parameters != null) {
             WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
             WKTUtilities.append(parameters, formatter);
-        }
-        if (formatter.getConvention().majorVersion() != 1) {
-            formatter.setInvalidWKT(MathTransform.class, null);
         }
         return "Param_MT";
     }
