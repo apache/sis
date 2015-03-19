@@ -198,8 +198,13 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     }
 
     /**
-     * Process to the <cite>Well Known Text</cite> (WKT) formatting of the forward transform.
+     * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using those parameters.
      * The content is inferred from the parameter values returned by the {@link #getParameterValues()} method.
+     *
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Param_MT} is defined in the WKT 1 specification only.
+     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+     * then this method silently uses the WKT 1 convention without raising an error.</div>
      *
      * @return {@code "Param_MT"}.
      */
@@ -208,9 +213,6 @@ public abstract class NonLinearParameters extends FormattableObject implements P
         final ParameterValueGroup parameters = getParameterValues();
         WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
         WKTUtilities.append(parameters, formatter);
-        if (formatter.getConvention().majorVersion() != 1) {
-            formatter.setInvalidWKT(MathTransform.class, null);
-        }
         return "Param_MT";
     }
 
@@ -247,9 +249,6 @@ public abstract class NonLinearParameters extends FormattableObject implements P
         @Override
         protected String formatTo(final Formatter formatter) {
             formatter.append(NonLinearParameters.this);
-            if (formatter.getConvention().majorVersion() != 1) {
-                formatter.setInvalidWKT(MathTransform.class, null);
-            }
             return "Inverse_MT";
         }
     }

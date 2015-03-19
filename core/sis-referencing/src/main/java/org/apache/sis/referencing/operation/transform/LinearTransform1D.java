@@ -47,7 +47,7 @@ import static java.lang.Double.doubleToRawLongBits;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see LogarithmicTransform1D
@@ -162,6 +162,14 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             }
         }
         return inverse;
+    }
+
+    /**
+     * Returns {@code true} since this transform is affine.
+     */
+    @Override
+    public boolean isAffine() {
+        return true;
     }
 
     /**
@@ -327,5 +335,14 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
              */
         }
         return false;
+    }
+
+    /**
+     * Returns a string representation of this transform as a matrix, for consistency with other
+     * {@link LinearTransform} implementations in Apache SIS.
+     */
+    @Override
+    public String toString() {
+        return Matrices.toString(getMatrix());
     }
 }

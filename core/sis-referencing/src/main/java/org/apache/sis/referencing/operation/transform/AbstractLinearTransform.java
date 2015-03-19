@@ -21,6 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -30,8 +31,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>Subclasses need to implement the following methods:</p>
  * <ul>
- *   <li>{@link #isAffine()}</li>
  *   <li>{@link #getElement(int, int)}</li>
+ *   <li>{@link #equalsSameClass(Object)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -53,7 +54,10 @@ abstract class AbstractLinearTransform extends AbstractMathTransform
      *
      * @return {@code true} if this transform is affine, or {@code false} otherwise.
      */
-    public abstract boolean isAffine();
+    @Override
+    public boolean isAffine() {
+        return Matrices.isAffine(this);
+    }
 
     /**
      * Returns a copy of the matrix that user can modify.
@@ -116,5 +120,57 @@ abstract class AbstractLinearTransform extends AbstractMathTransform
         throw new UnsupportedOperationException(isAffine()
                 ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
                 : Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractLinearTransform.class));
+    }
+
+    /**
+     * Compares this math transform with an object which is known to be of the same class.
+     * Implementors can safely cast the {@code object} argument to their subclass.
+     *
+     * @param  object The object to compare with this transform.
+     * @return {@code true} if the given object is considered equals to this math transform.
+     */
+    protected abstract boolean equalsSameClass(final Object object);
+
+    /**
+     * Compares the specified object with this linear transform for equality.
+     * This implementation returns {@code true} if the following conditions are meet:
+     * <ul>
+     *   <li>In {@code STRICT} mode, the objects are of the same class and {@link #equalsSameClass(Object)}
+     *       returns {@code true}.</li>
+     *   <li>In other modes, the matrix are equals or approximatively equals (depending on the mode).</li>
+     * </ul>
+     *
+     * @param  object The object to compare with this transform.
+     * @param  mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
+     * @return {@code true} if the given object is considered equals to this math transform.
+     */
+    @Override
+    public final boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) { // Slight optimization
+            return true;
+        }
+        if (object != null) {
+            if (getClass() == object.getClass()) {
+                if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
+                    return equalsSameClass(object);
+                }
+            }
+            if (mode != ComparisonMode.STRICT) {
+                if (object instanceof LinearTransform) {
+                    return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
+                } else if (object instanceof Matrix) {
+                    return Matrices.equals(this, (Matrix) object, mode);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a string representation of the matrix.
+     */
+    @Override
+    public String toString() {
+        return Matrices.toString(this);
     }
 }

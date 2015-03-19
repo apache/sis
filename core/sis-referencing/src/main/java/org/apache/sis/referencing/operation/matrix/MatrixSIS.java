@@ -188,6 +188,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @return {@code true} if this matrix represents an affine transform.
      *
      * @see Matrices#isAffine(Matrix)
+     * @see org.apache.sis.referencing.operation.transform.LinearTransform#isAffine()
      */
     public abstract boolean isAffine();
 

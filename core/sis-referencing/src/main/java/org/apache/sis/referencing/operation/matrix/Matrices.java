@@ -211,6 +211,7 @@ public final class Matrices extends Static {
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
      *        If {@code false}, then source and destination envelopes will be ignored and may be null.
      */
+    @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                              final Envelope dstEnvelope, final AxisDirection[] dstAxes,
                                              final boolean useEnvelopes)

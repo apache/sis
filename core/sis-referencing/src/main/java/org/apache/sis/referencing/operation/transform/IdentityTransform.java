@@ -21,7 +21,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -237,20 +236,10 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this math transform with an object which is known to be an instance of the same class.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
-            return true;
-        }
-        if (mode != ComparisonMode.STRICT) {
-            if (object instanceof LinearTransform) {
-                return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
-            }
-        } else if (super.equals(object, mode)) {
-            return ((IdentityTransform) object).dimension == dimension;
-        }
-        return false;
+    protected boolean equalsSameClass(final Object object) {
+        return ((IdentityTransform) object).dimension == dimension;
     }
 }

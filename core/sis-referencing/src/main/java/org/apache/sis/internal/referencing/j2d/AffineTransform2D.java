@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.provider.Affine;
@@ -47,7 +48,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see ProjectiveTransform
@@ -185,6 +186,14 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
         if (matrix != null) {
             super.checkPermission();
         }
+    }
+
+    /**
+     * Returns {@code true} since this transform is affine.
+     */
+    @Override
+    public final boolean isAffine() {
+        return true;
     }
 
     /**
@@ -438,10 +447,11 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
     }
 
     /**
-     * Returns the WKT representation of this transform.
+     * Returns a string representation of this transform as a matrix, for consistency with other
+     * {@link LinearTransform} implementations in Apache SIS.
      */
     @Override
     public String toString() {
-        return toWKT();
+        return Matrices.toString(getMatrix());
     }
 }

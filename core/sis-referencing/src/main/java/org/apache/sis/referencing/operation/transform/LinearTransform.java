@@ -61,7 +61,7 @@ import org.opengis.referencing.operation.MathTransform;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
@@ -70,6 +70,18 @@ import org.opengis.referencing.operation.MathTransform;
  * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  */
 public interface LinearTransform extends MathTransform {
+    /**
+     * Returns {@code true} if this transform is affine.
+     * An affine transform preserves parallelism.
+     *
+     * @return {@code true} if this transform is affine.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine()
+     *
+     * @since 0.6
+     */
+    boolean isAffine();
+
     /**
      * Returns the coefficients of this linear transform as a matrix.
      * Converting a coordinate with this {@code MathTransform} is equivalent to multiplying the

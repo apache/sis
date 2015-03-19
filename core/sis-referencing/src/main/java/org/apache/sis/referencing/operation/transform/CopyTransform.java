@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.util.ComparisonMode;
 
 
 
@@ -311,6 +310,8 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
 
     /**
      * Returns the matrix element at the given row and column.
+     *
+     * @throws IndexOutOfBoundsException if {@code row} is out of bounds.
      */
     @Override
     public double getElement(final int row, final int column) {
@@ -399,21 +400,11 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
     }
 
     /**
-     * {@inheritDoc}
+     * Compares this math transform with an object which is known to be an instance of the same class.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
-            return true;
-        }
-        if (mode != ComparisonMode.STRICT) {
-            if (object instanceof LinearTransform) {
-                return Matrices.equals(getMatrix(), ((LinearTransform) object).getMatrix(), mode);
-            }
-        } else if (super.equals(object, mode)) {
-            final CopyTransform that = (CopyTransform) object;
-            return srcDim == that.srcDim && Arrays.equals(indices, that.indices);
-        }
-        return false;
+    protected boolean equalsSameClass(final Object object) {
+        final CopyTransform that = (CopyTransform) object;
+        return srcDim == that.srcDim && Arrays.equals(indices, that.indices);
     }
 }
