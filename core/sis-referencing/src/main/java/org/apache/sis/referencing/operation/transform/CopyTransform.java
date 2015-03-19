@@ -135,11 +135,11 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
     }
 
     /**
-     * Returns {@code true} since this transform is affine.
+     * Returns {@code true} if this transform is affine.
      */
     @Override
     public boolean isAffine() {
-        return true;
+        return srcDim == indices.length;
     }
 
     /**
