@@ -20,7 +20,7 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.citation OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
+ * <div class="section">Overview</div>
  * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
  * <table class="sis">
@@ -62,14 +62,14 @@
  * {@code  └─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries           Series}<br>
  * </td></tr></table>
  *
- * {@section Unified identifiers view}
+ * <div class="section">Unified identifiers view</div>
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} and
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} codes,
  * except at XML marshalling time (for ISO 19139 compliance).
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
- * {@section Null values, nil objects and collections}
+ * <div class="section">Null values, nil objects and collections</div>
  * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by

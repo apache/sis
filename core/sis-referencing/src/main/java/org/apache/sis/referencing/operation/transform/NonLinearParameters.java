@@ -44,12 +44,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms.
  * The normalize and denormalize parts must be affine transforms.
  *
- * {@section Usage in map projections}
+ * <div class="section">Usage in map projections</div>
  * This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection unitary projection}.
  * This object is typically created and used as below:
  *
- * <ol>
+ * <ol class="verbose">
  *   <li>A {@link MathTransformProvider#createMathTransform(ParameterValueGroup)} method instantiates a
  *     class from the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *     Note that different {@code MathTransformProvider}s may instantiate the same map projection class.
@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     ({@linkplain #normalization(boolean) normalize / denormalize}) after the above-cited methods have been invoked.</li>
  * </ol>
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *

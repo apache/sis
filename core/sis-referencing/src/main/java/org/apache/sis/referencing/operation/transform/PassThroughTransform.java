@@ -48,11 +48,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * }
  * </div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * {@code PassThroughTransform} is immutable and thread-safe if its {@linkplain #subTransform} is also
  * immutable and thread-safe.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *

@@ -289,13 +289,13 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points before the date line, since the wrap around operation can not be represented by an affine transform.
      *
-     * {@section Example}
+     * <div class="section">Example</div>
      * Given a source envelope of size 100 × 200 (the units do not matter for this method) and a destination
      * envelope of size 300 × 500, and given {@linkplain Envelope#getLowerCorner() lower corner} translation
      * from (-20, -40) to (-10, -25), then the following method call:
@@ -374,7 +374,7 @@ public final class Matrices extends Static {
      * (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
      * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
-     * {@section Example}
+     * <div class="section">Example</div>
      * The following method call:
      *
      * {@preformat java
@@ -423,15 +423,15 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
      * operation can not be represented by an affine transform.
      *
-     * {@section Example}
-     * Combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
+     * <div class="note"><b>Example:</b>
+     * combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -451,6 +451,7 @@ public final class Matrices extends Static {
      *   │   1 │   │ 0    0      1 │   │   1 │
      *   └     ┘   └               ┘   └     ┘
      * }
+     * </div>
      *
      * @param  srcEnvelope The source envelope.
      * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
@@ -507,8 +508,8 @@ public final class Matrices extends Static {
      *   <li>For any row <var>j</var> other than the last row, the column {@code selectedDimensions[j]}.</li>
      * </ul>
      *
-     * {@section Example}
-     * Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
+     * <div class="note"><b>Example:</b>
+     * given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
      * (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
      * and discard the <var>z</var> values, then the indices of source ordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
@@ -529,6 +530,7 @@ public final class Matrices extends Static {
      *   └   ┘   └           ┘   │ 1 │
      *                           └   ┘
      * }
+     * </div>
      *
      * @param  sourceDimensions The number of dimensions in source coordinates.
      * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
@@ -580,8 +582,8 @@ public final class Matrices extends Static {
      *       is copied in the last column of the sub-matrix.</li>
      * </ul>
      *
-     * {@section Example}
-     * Given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
+     * <div class="note"><b>Example:</b>
+     * given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
      *
      * {@preformat math
      *   ┌    ┐   ┌             ┐   ┌   ┐
@@ -603,6 +605,7 @@ public final class Matrices extends Static {
      *   │ 1  │   │ 0  0  0       0    1 │   │ 1 │
      *   └    ┘   └                      ┘   └   ┘
      * }
+     * </div>
      *
      * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
      * @param  subMatrix The matrix to use for affected ordinates.

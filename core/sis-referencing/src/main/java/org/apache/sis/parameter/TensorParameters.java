@@ -77,7 +77,7 @@ import java.util.Objects;
  * For a more efficient matrix storage,
  * see the {@linkplain org.apache.sis.referencing.operation.matrix matrix package}.</p>
  *
- * {@section Formatting}
+ * <div class="section">Formatting</div>
  * In the particular case of a tensor of {@linkplain #rank() rank} 2 (i.e. a matrix),
  * the parameters are typically formatted as below. Note that in the EPSG convention,
  * the matrix is implicitly {@linkplain Matrices#isAffine affine} and of dimension 3×3.
@@ -121,7 +121,7 @@ import java.util.Objects;
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
  *
- * {@section Usage examples}
+ * <div class="section">Usage examples</div>
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
  * one can use the following code:
  *
@@ -183,7 +183,7 @@ public class TensorParameters<E> implements Serializable {
      * }</td></tr>
      * </table>
      *
-     * {@section Relationship with EPSG}
+     * <div class="section">Relationship with EPSG</div>
      * The above-cited group of parameters are close, but not identical, to the definitions provided
      * by the <cite>"Affine parametric transformation"</cite> (EPSG:9624) operation method.
      * The differences are:

@@ -306,7 +306,7 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}
      * for the public documentation of this method.
      *
-     * {@section When to use}
+     * <div class="section">When to use</div>
      * Use this method when assigning values to be returned by methods like {@link Identifier#getCodeSpace()},
      * since those values are likely to be compared without special care about ignorable identifier characters.
      * But if the intend is to format a more complex string like WKT or {@code toString()}, then we suggest to

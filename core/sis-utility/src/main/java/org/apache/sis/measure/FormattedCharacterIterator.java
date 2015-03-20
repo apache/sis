@@ -35,7 +35,7 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * The attributed character iterator to be returned by {@link Format}
  * implementations in the {@code org.apache.sis.measure} package.
  *
- * {@section Implementation assumption}
+ * <div class="section">Implementation assumption</div>
  * Every {@code getRunStart(…)} and {@code getRunLimit(…)} methods defined in this class check
  * only for attribute existence, ignoring the actual attribute value. This is a departure from
  * the {@link java.text.AttributedCharacterIterator} contract, but should be invisible to the

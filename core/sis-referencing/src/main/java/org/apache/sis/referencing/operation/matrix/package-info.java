@@ -45,7 +45,7 @@
  * <img src="doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
  * </p></center>
  *
- * {@section Extended floating point precision}
+ * <div class="section">Extended floating point precision</div>
  * This package uses extended floating point precision for most arithmetic operations like matrix multiplications and
  * inversions. SIS needs extended precision because <cite>affine transforms</cite> concatenations like conversion from
  * degrees to radians, followed by some operations, followed by conversion back from radians to degrees, are very frequent.
@@ -59,7 +59,7 @@
  * <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">double-double
  * arithmetic</a>. However this may change in any future SIS version.</p>
  *
- * {@section Related projects}
+ * <div class="section">Related projects</div>
  * This package is <strong>not</strong> designed for large matrices, and is rooted in
  * {@code org.apache.sis.referencing} for making clearer that this is not a general-purpose library.
  * For computational intensive calculations, better guarantees on numerical stability, sparse matrices support

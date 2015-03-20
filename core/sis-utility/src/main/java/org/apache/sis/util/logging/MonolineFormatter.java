@@ -68,7 +68,7 @@ import org.apache.sis.util.Debug;
  *       without package (e.g. {@code "NetcdfStore"}).</li>
  * </ul>
  *
- * {@section Configuration from <code>logging.properties</code>}
+ * <div class="section">Configuration from {@code logging.properties}</div>
  * The format can also be set from the {@code jre/lib/logging.properties} file.
  * For example, user can cut and paste the following properties into {@code logging.properties}:
  *
@@ -100,7 +100,7 @@ import org.apache.sis.util.Debug;
  *     java.util.logging.ConsoleHandler.level = FINE
  * }
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code MonolineFormatter} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
@@ -263,7 +263,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * Constructs a default {@code MonolineFormatter}.
      *
-     * {@section Auto-configuration from the handler}
+     * <div class="section">Auto-configuration from the handler</div>
      * Formatters are often associated to a particular handler. If this handler is known, giving it at
      * construction time can help this formatter to configure itself. This handler is only a hint - it
      * will not be modified, and no reference to that handler will be kept by this constructor.
@@ -939,7 +939,7 @@ loop:   for (int i=0; ; i++) {
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
      * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
-     * {@section Specifying a log level}
+     * <div class="section">Specifying a log level</div>
      * This method can opportunistically set the handler level. If the given level is non-null,
      * then the {@link ConsoleHandler} using the {@code MonolineFormatter} will be set to that level.
      * This is mostly a convenience for temporary increase of logging verbosity for debugging purpose.

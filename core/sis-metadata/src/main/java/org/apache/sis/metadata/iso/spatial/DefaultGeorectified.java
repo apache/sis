@@ -37,12 +37,12 @@ import org.apache.sis.xml.Namespaces;
  * Any cell in the grid can be geolocated given its grid coordinate and the grid origin, cell spacing,
  * and orientation indication of whether or not geographic.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * Providing the {@linkplain #getCheckPointDescription() check point description} implies that
  * {@linkplain #isCheckPointAvailable() check point availability} is {@code true}. The setter
  * methods will ensure that this condition is not violated.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -198,7 +198,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Sets an indication of whether or not geographic position points are available to test the
      * accuracy of the georeferenced grid data.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the given {@code newValue} is {@code false}, then this method automatically hides
      * the {@linkplain #setCheckPointDescription check point description} property. The description can
      * be shown again by reverting {@code checkPointAvailability} to {@code true}.
@@ -235,7 +235,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Sets the description of geographic position points used to test the accuracy of the
      * georeferenced grid data.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the given {@code newValue} is non-null, then this method automatically sets
      * the {@linkplain #setCheckPointAvailable check point availability} property to {@code true}.
      *

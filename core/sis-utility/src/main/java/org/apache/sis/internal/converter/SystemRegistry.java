@@ -45,7 +45,7 @@ import org.apache.sis.internal.system.Modules;
  * of the above-cited heuristic rules. This differs from the {@link ConverterRegistry} behavior,
  * where only registered converters are used.
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * implementors). Operation <em>users</em> do not need this builder since they can invoke
  * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementor.
  *
- * {@section Identification properties}
+ * <div class="section">Identification properties</div>
  * The following properties are cleared after a call to any {@code createXXX(…)} method,
  * since those properties are specific to the each parameter. Other properties like codespace,
  * version and cardinality are left unchanged because they may be shared by many parameters.
@@ -58,7 +58,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  *
- * {@section Usage example}
+ * <div class="section">Usage example</div>
  * Parameter descriptors are typically grouped in a {@link ParameterDescriptorGroup}.
  * All parameters usually have the same namespace, which can be declared only once.
  * The following example creates parameters for <cite>"Mercator (variant A)"</cite>

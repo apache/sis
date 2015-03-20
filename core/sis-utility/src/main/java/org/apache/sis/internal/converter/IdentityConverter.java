@@ -25,7 +25,7 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * An object converter which returns the source unchanged.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
  *
  * @param <S> The base type of source objects.

@@ -57,12 +57,12 @@ import java.util.Objects;
  *
  * However most subclasses restrict the allowed number of dimensions.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  * An exception to this rule may occur when it is not possible to identify the exact CRS type.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateReferenceSystem} instances

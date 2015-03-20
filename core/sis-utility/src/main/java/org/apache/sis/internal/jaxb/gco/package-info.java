@@ -47,7 +47,7 @@
  * specifications; they are used only for consistency with current practice in
  * {@link org.apache.sis.internal.jaxb.metadata} and similar packages.
  *
- * {@section Object identification and reference}
+ * <div class="section">Object identification and reference</div>
  * <ul class="verbose">
  *   <li><code>org.apache.sis.<b>metadata.iso</b></code> public packages:
  *   <ul>

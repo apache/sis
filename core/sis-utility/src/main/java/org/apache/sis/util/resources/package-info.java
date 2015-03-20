@@ -47,7 +47,7 @@
  * necessary. This avoid the unfortunate confusion documented in the warning section of
  * {@link java.text.MessageFormat} javadoc.
  *
- * {@section Usage}
+ * <div class="section">Usage</div>
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a
  * {@code getResources(Locale)} static method. It can be used for fetching localized strings
  * as below:

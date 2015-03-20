@@ -34,7 +34,7 @@
  *       the (<var>longitude</var>, <var>latitude</var>) axes order.</li>
  * </ul>
  *
- * {@section Referencing WKT}
+ * <div class="section">Referencing WKT</div>
  * Referencing WKT is defined using Extended Backus Naur Form (EBNF) in two versions:
  * <ul>
  *   <li>ISO 19162 defines the current format, also known as “WKT 2”.</li>
@@ -50,7 +50,7 @@
  * the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by the
  * {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
- * {@section Geometry WKT}
+ * <div class="section">Geometry WKT</div>
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
  * A description for this WKT format can be found on <a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.

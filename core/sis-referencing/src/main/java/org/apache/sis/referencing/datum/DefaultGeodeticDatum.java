@@ -53,7 +53,7 @@ import java.util.Objects;
  * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
  * coordinate system centered in the ellipsoid (or sphere).
  *
- * {@section Bursa-Wolf parameters}
+ * <div class="section">Bursa-Wolf parameters</div>
  * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
  * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
@@ -87,7 +87,7 @@ import java.util.Objects;
  *   </li>
  * </ol>
  *
- * {@section Creating new geodetic datum instances}
+ * <div class="section">Creating new geodetic datum instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a geodetic datum.
@@ -110,7 +110,7 @@ import java.util.Objects;
  *     GeodeticDatum datum = CommonCRS.WGS84.datum();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static

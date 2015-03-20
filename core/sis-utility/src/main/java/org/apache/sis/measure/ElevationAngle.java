@@ -29,7 +29,7 @@ import org.opengis.referencing.cs.AxisDirection; // For javadoc
  * Both <cite>altitude</cite> and <cite>elevation</cite> words are also used to describe the
  * height in meters above sea level.</div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -55,7 +55,7 @@ public enum ComparisonMode {
      * consistent with {@link Object#hashCode()} and be symmetric ({@code A.equals(B)} implies
      * {@code B.equals(A)}).
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the SIS implementation, this comparison mode usually have the following
      * characteristics (not always, this is only typical):
      *
@@ -77,7 +77,7 @@ public enum ComparisonMode {
      * consistency, neither comparison symmetry (i.e. {@code A.equals(B)} and {@code B.equals(A)} may
      * return different results if the {@code equals} methods are implemented differently).</p>
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the SIS implementation, this comparison mode usually have the following
      * characteristics (not always, this is only typical):
      *
@@ -93,7 +93,7 @@ public enum ComparisonMode {
      * are only informative can be ignored. This comparison mode is typically less strict than
      * {@link #BY_CONTRACT}.
      *
-     * {@section Examples}
+     * <div class="section">Examples</div>
      * If the objects being compared are
      * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances, then only the
      * properties relevant to the coordinate localization shall be compared. Metadata like the
@@ -127,7 +127,7 @@ public enum ComparisonMode {
      * Only the attributes relevant to the object functionality are compared, with some tolerance
      * threshold on numerical values.
      *
-     * {@section Application to coordinate transforms}
+     * <div class="section">Application to coordinate transforms</div>
      * If two {@link org.opengis.referencing.operation.MathTransform} objects are considered equal
      * according this mode, then for any given identical source position, the two compared transforms
      * shall compute at least approximatively the same target position. A small difference is

@@ -47,7 +47,7 @@ import java.util.Objects;
  * only for small maps (less than 10 elements). Given that objects typically have only one or
  * two identifiers, this is considered acceptable.</p>
  *
- * {@section Handling of duplicated authorities}
+ * <div class="section">Handling of duplicated authorities</div>
  * The collection shall not contain more than one identifier for the same
  * {@linkplain Identifier#getAuthority() authority}. However duplications may happen if the user
  * has direct access to the list, for example through {@link Citation#getIdentifiers()}. If such
@@ -64,7 +64,7 @@ import java.util.Objects;
  *       to getter methods.</li>
  * </ul>
  *
- * {@section Handling of null identifiers}
+ * <div class="section">Handling of null identifiers</div>
  * The collection of identifiers shall not contains any null element. This is normally ensured by
  * the {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations.
  * This class performs opportunist null checks as an additional safety. However because we perform
@@ -75,7 +75,7 @@ import java.util.Objects;
  *       method returns 0.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -75,7 +75,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and all {@link CoordinateReferenceSystem} instances given to the constructor are also immutable.
  * Unless otherwise noted in the javadoc, this condition holds if all components were created using only
@@ -404,7 +404,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code CompoundCRS[…]} element.
      *
-     * {@section WKT validity}
+     * <div class="section">WKT validity</div>
      * The WKT version 2 format restricts compound CRS to the following components in that order:
      *
      * <ul>

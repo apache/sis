@@ -30,11 +30,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Quality information for the data specified by a data quality scope.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * According ISO 19115, at least one of {@linkplain #getLineage() lineage} and
  * {@linkplain #getReports() reports} shall be provided.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

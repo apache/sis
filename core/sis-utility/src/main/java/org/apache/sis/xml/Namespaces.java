@@ -50,7 +50,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>
  * </table>
  *
- * {@section Profiles}
+ * <div class="section">Profiles</div>
  * Some countries or organizations define profiles of international standards, which may contain
  * country-specific extensions. The namespace of such extensions are usually defined in a separated
  * class dedicated to the profile. Some of them are listed below:

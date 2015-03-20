@@ -65,7 +65,7 @@ import org.apache.sis.util.logging.Logging;
  * </tr>
  * </table>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
  * are not necessarily the metadata instances. For example an other common approach is to
@@ -96,7 +96,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * Implementation of this method shall not depend on the object state,
      * since this method may be indirectly invoked by copy constructors.
      *
@@ -132,7 +132,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * The default implementation uses Java reflection indirectly, by iterating over all entries
      * returned by {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
@@ -186,19 +186,19 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * object, so changes in the underlying metadata object are immediately reflected in the map
      * and conversely.
      *
-     * {@section Supported operations}
+     * <div class="section">Supported operations</div>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      *
-     * {@section Keys and values}
+     * <div class="section">Keys and values</div>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * {@section Multi-values entries}
+     * <div class="section">Multi-values entries</div>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -207,7 +207,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
@@ -259,7 +259,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
-     * {@section Write operations}
+     * <div class="section">Write operations</div>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -275,7 +275,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java

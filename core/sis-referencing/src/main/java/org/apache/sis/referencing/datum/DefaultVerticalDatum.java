@@ -44,7 +44,7 @@ import java.util.Objects;
  * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis coordinate system axis} with which
  * it is combined to create a {@linkplain org.opengis.referencing.crs.VerticalCRS vertical CRS}.
  *
- * {@section Creating new vertical datum instances}
+ * <div class="section">Creating new vertical datum instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a vertical datum.
@@ -67,7 +67,7 @@ import java.util.Objects;
  *     VerticalDatum datum = CommonCRS.Vertical.GEOID.datum();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

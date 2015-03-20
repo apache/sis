@@ -22,7 +22,7 @@ package org.apache.sis.util.iso;
  * any global namespace in public API since ISO 19103 does not define them and users should not
  * need to handle them explicitely.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

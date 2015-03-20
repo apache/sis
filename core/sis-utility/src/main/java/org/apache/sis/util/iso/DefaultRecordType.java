@@ -57,7 +57,7 @@ import java.util.Objects;
  * The set of members in a {@code RecordType} can be though as equivalent to the set of fields in a class.
  * </div>
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * The easiest way to create {@code DefaultRecordType} instances is to use the
  * {@link DefaultRecordSchema#createRecordType(CharSequence, Map)} method.
  * Example:
@@ -76,13 +76,13 @@ import java.util.Objects;
  * }
  * </div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
  * and all ({@link MemberName}, {@link Type}) entries in the map given to the constructor are also immutable.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code RecordType} state.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * This class is serializable if all elements given to the constructor are also serializable.
  * Note in particular that {@link DefaultRecordSchema} is currently <strong>not</strong> serializable,
  * so users wanting serialization may need to provide their own schema.

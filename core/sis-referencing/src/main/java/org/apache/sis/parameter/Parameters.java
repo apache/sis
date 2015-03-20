@@ -42,7 +42,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForNa
  * See {@link DefaultParameterValueGroup} javadoc for a description of the standard way to get and set a particular
  * parameter in a group. The remaining of this javadoc is specific to Apache SIS.
  *
- * {@section Convenience static methods}
+ * <div class="section">Convenience static methods</div>
  * This class provides the following convenience static methods:
  * <ul>
  *   <li>{@link #cast(ParameterValue, Class) cast(…, Class)} for type safety with parameterized types.</li>
@@ -52,7 +52,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForNa
  * </ul>
  *
  *
- * {@section Fetching parameter values despite different names, types or units}
+ * <div class="section">Fetching parameter values despite different names, types or units</div>
  * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
  * This {@code Parameters} class provides an alternative way, using a {@link ParameterDescriptor} argument
  * instead than a {@code String}. The methods in this class use the additional information provided by the
@@ -92,7 +92,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForNa
  * </table>
  *
  *
- * {@section Note for subclass implementors}
+ * <div class="section">Note for subclass implementors</div>
  * All methods in this class get their information from the {@link ParameterValueGroup} methods.
  * In addition, each method in this class is isolated from all others: overriding one method has
  * no impact on other methods.

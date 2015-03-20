@@ -42,7 +42,7 @@ import org.apache.sis.internal.util.X364;
  * In addition this class removes trailing {@linkplain Character#isWhitespace(int) whitespaces}
  * before end of lines.
  *
- * {@section How line lengths are calculated}
+ * <div class="section">How line lengths are calculated</div>
  * Line length are measured in unit of Unicode <cite>code points</cite>. This is usually the same
  * than the number of {@code char} primitive values, but not always. Combining characters are not
  * yet recognized by this class, but future versions may improve on that.

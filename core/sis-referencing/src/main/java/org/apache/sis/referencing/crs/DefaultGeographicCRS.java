@@ -49,7 +49,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.
  * </p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
@@ -220,7 +220,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.
      *
-     * {@section Special case}
+     * <div class="section">Special case</div>
      * If the first axis is the longitude in the [-180 … +180]° range and the identifier is EPSG:4267,
      * EPSG:4269 or EPSG:4326, then this method magically add the CRS:27, CRS:83 or CRS:84 identifier.
      * Without this special case, the normal behavior would be no identifier. The expected behavior is

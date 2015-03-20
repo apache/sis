@@ -23,7 +23,7 @@ import org.apache.sis.util.Static;
  * Hard coded values (typically identifiers).
  * The set of constants defined in this class may change in any SIS version - do not rely on them.
  *
- * {@section When to use}
+ * <div class="section">When to use</div>
  * Those constants should be used mostly for names, aliases or identifiers. They should generally
  * not be used for abbreviations for instance, even if the abbreviation result in the same string.
  *

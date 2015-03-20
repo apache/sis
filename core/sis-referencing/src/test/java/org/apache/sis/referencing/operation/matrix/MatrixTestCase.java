@@ -74,7 +74,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
      * and the {@code StrictMath.ulp(100.0)} value is approximatively 1.4E-14.
      *
-     * {@section How this value is determined}
+     * <div class="section">How this value is determined</div>
      * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.
      * However when using non-determinist sequence of random values ({@link #DETERMINIST} sets to {@code false}),
      * we do have from time-to-time a difference around 1E-9.

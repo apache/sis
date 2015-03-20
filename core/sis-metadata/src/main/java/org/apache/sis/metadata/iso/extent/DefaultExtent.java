@@ -48,7 +48,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *   <li>{@link Extents#getGeographicBoundingBox(Extent)} for extracting a global geographic bounding box.</li>
  * </ul>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

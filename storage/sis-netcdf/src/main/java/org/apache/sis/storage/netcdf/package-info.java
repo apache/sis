@@ -28,7 +28,7 @@
  * The NetCDF attributes recognized by this package are listed in the
  * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
  *
- * {@section Note on the definition of terms}
+ * <div class="section">Note on the definition of terms</div>
  * The UCAR library sometime uses the same words than the ISO/OGC standards for different things.
  * In particular the words "<cite>domain</cite>" and "<cite>range</cite>" can be applied to arbitrary functions,
  * and the UCAR library chooses to apply it to the function that converts grid indices to geodetic coordinates.

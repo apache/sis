@@ -38,7 +38,7 @@ import java.util.Objects;
  *   <li>Similar static convenience method in {@link Names}.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link NameSpace}, {@link CharSequence} and
  * {@link TypeName} arguments given to the constructor are also immutable. Subclasses shall make sure that any
  * overridden methods remain safe to call from multiple threads and do not change any public {@code MemberName}

@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
  * Each dimension is stored in a separated array. For example this class can view three
  * arrays (x[], y[], and z[]) as a sequence of three-dimensional {@code DirectPosition}.
  *
- * {@section Limitation}
+ * <div class="section">Limitation</div>
  * This class is also its own iterator. All calls to {@link #iterator()} return the same iterator,
  * and all calls to {@link #next()} return the same {@code DirectPosition} instance. Consequently
  * this class is not suitable for normal use where many objects may iterate over the sequence in

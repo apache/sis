@@ -84,7 +84,7 @@ import java.util.Objects;
  *       The description applies only to the next identifier to create.</li>
  * </ul>
  *
- * {@section Namespaces and scopes}
+ * <div class="section">Namespaces and scopes</div>
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
  *
  * <ul class="verbose">
@@ -122,7 +122,7 @@ import java.util.Objects;
  * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
  *
  *
- * {@section Builder property lifetimes}
+ * <div class="section">Builder property lifetimes</div>
  * Some complex objects require the creation of many components. For example constructing a
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
@@ -148,11 +148,11 @@ import java.util.Objects;
  *   </li>
  * </ul>
  *
- * {@section Usage examples}
+ * <div class="section">Usage examples</div>
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
- * {@section Note for subclass implementors}
+ * <div class="section">Note for subclass implementors</div>
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -389,7 +389,7 @@ public abstract class Builder<B extends Builder<B>> {
      * and {@link #setVersion(String) version} information for creating the {@link Identifier} or {@link GenericName}
      * object.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name}, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -453,7 +453,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * identifier already contains those information.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -479,7 +479,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * generic name already contains those information.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.

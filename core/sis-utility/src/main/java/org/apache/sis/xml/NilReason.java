@@ -49,7 +49,7 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  * {@code NilReason} is used in a number of XML elements where it is necessary to permit
  * one of the above values as an alternative to the primary element.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -117,7 +117,7 @@ public final class NilReason implements Serializable {
      * The string representation of this constant is {@code "other"}.
      * The explanation property is an empty string, and the URI is {@code null}.
      *
-     * {@section Providing an explanation}
+     * <div class="section">Providing an explanation</div>
      * Users are encouraged to use the {@link #valueOf(String)} method instead than this constant,
      * in order to provide a brief explanation. The string representation for {@code valueOf(…)}
      * is <code>"other:<var>explanation</var>"</code> where <var>explanation</var> is a string of

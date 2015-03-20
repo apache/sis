@@ -40,7 +40,7 @@ import java.util.Objects;
  * context only. For an image datum, the anchor point is usually either the centre of the image
  * or the corner of the image.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

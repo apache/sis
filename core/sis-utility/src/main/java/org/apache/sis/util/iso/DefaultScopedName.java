@@ -42,7 +42,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and all {@link CharSequence}
  * elements in the arguments given to the constructor are also immutable. Subclasses shall make sure that any
  * overridden methods remain safe to call from multiple threads and do not change any public {@code LocalName}

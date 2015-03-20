@@ -95,7 +95,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * {@linkplain #LONGITUDE longitude} and {@linkplain #LATITUDE latitude} resolutions are
  * often more accurate in that group.
  *
- * {@section Known limitations}
+ * <div class="section">Known limitations</div>
  * <ul>
  *   <li>{@code "degrees_west"} and {@code "degrees_south"} units not correctly handled.</li>
  *   <li>Units of measurement not yet declared in the {@link Band} elements.</li>
