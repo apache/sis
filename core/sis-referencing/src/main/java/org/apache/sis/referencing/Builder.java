@@ -104,8 +104,8 @@ import java.util.Objects;
  * </ul>
  *
  * <div class="note"><b>Example:</b>
- * The EPSG database defines a projection named "<cite>Mercator (variant A)</cite>" (EPSG:9804).
- * This projection was named "<cite>Mercator (1SP)</cite>" in older EPSG database versions.
+ * The EPSG database defines a projection named <cite>"Mercator (variant A)"</cite> (EPSG:9804).
+ * This projection was named <cite>"Mercator (1SP)"</cite> in older EPSG database versions.
  * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
  * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
  *
@@ -414,7 +414,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain AbstractIdentifiedObject#getAlias() aliases} defined after the primary name.
      *
      * <div class="note"><b>Example:</b>
-     * The "<cite>Longitude of natural origin</cite>" parameter defined by EPSG is named differently
+     * The <cite>"Longitude of natural origin"</cite> parameter defined by EPSG is named differently
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
      * {@preformat java

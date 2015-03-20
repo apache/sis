@@ -67,8 +67,8 @@ import java.util.Objects;
  * <div class="section">Axis names</div>
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
- * This constraint works in two directions. For example the names "<cite>geodetic latitude</cite>" and
- * "<cite>geodetic longitude</cite>" shall be used to designate the coordinate axis names associated
+ * This constraint works in two directions. For example the names <cite>"geodetic latitude"</cite> and
+ * <cite>"geodetic longitude"</cite> shall be used to designate the coordinate axis names associated
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
@@ -542,9 +542,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * The above special cases are needed in order to workaround a conflict in specifications:
      * ISO 19111 states explicitly that the latitude and longitude axis names shall be
-     * "<cite>Geodetic latitude</cite>" and "<cite>Geodetic longitude</cite>", while the legacy
+     * <cite>"Geodetic latitude"</cite> and <cite>"Geodetic longitude"</cite>, while the legacy
      * OGC 01-009 (where version 1 of the WKT format is defined) said that the default values shall be
-     * "<cite>Lat</cite>" and "<cite>Lon</cite>".
+     * <cite>"Lat"</cite> and <cite>"Lon"</cite>.
      *
      * <div class="section">Future evolutions</div>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability

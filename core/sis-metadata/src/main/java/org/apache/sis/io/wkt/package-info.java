@@ -23,7 +23,7 @@
  *
  * <ul>
  *   <li>Format projection and parameters using the names of a chosen authority. For example the
- *       "<cite>Mercator (variant A)</cite>" projection is named {@code "Mercator_1SP"} by OGC 01-009
+ *       <cite>"Mercator (variant A)"</cite> projection is named {@code "Mercator_1SP"} by OGC 01-009
  *       and {@code "CT_Mercator"} by GeoTIFF.</li>
  *   <li>Format the elements with curly brackets instead than square ones.
  *       For example both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>

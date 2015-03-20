@@ -29,7 +29,7 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for "<cite>Longitude rotation</cite>" (EPSG:9601).
+ * The provider for <cite>"Longitude rotation"</cite> (EPSG:9601).
  * The "Longitude rotation" is created as an affine transform containing only a translation term in degrees.
  * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform} can
  * be efficiently concatenated with other affine transform instances.
@@ -61,7 +61,7 @@ public final class LongitudeRotation extends AbstractProvider {
     static final String NAME = "Longitude offset";
 
     /**
-     * The operation parameter descriptor for the "<cite>longitude offset</cite>" parameter value.
+     * The operation parameter descriptor for the <cite>"longitude offset"</cite> parameter value.
      */
     private static final ParameterDescriptor<Double> OFFSET;
 

@@ -100,7 +100,7 @@ import org.apache.sis.util.resources.Vocabulary;
 public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Frequently-used constant for a column of object names.
-     * The column {@linkplain #getHeader() header} is "<cite>Name</cite>" (eventually localized) and
+     * The column {@linkplain #getHeader() header} is <cite>"Name"</cite> (eventually localized) and
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
@@ -109,7 +109,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object identifiers.
-     * The column {@linkplain #getHeader() header} is "<cite>Identifier</cite>" (eventually localized)
+     * The column {@linkplain #getHeader() header} is <cite>"Identifier"</cite> (eventually localized)
      * and the column elements are instances of {@link String}.
      */
     public static final TableColumn<String> IDENTIFIER = new Constant<>("IDENTIFIER",
@@ -117,7 +117,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of index values.
-     * The column {@linkplain #getHeader() header} is "<cite>Index</cite>" (eventually localized)
+     * The column {@linkplain #getHeader() header} is <cite>"Index"</cite> (eventually localized)
      * and the column elements are instances of {@link Integer}.
      */
     public static final TableColumn<Integer> INDEX = new Constant<>("INDEX",
@@ -125,7 +125,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object types.
-     * The column {@linkplain #getHeader() header} is "<cite>Type</cite>" (eventually localized).
+     * The column {@linkplain #getHeader() header} is <cite>"Type"</cite> (eventually localized).
      */
     @SuppressWarnings("unchecked")
     public static final TableColumn<Class<?>> TYPE = new Constant<>("TYPE",
@@ -133,7 +133,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object values.
-     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized) and
+     * The column {@linkplain #getHeader() header} is <cite>"Value"</cite> (eventually localized) and
      * the column elements can be instance of any kind of objects.
      *
      * @see #VALUE_AS_TEXT
@@ -144,7 +144,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object textual values.
-     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized) and
+     * The column {@linkplain #getHeader() header} is <cite>"Value"</cite> (eventually localized) and
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
@@ -153,7 +153,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object numerical values.
-     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized).
+     * The column {@linkplain #getHeader() header} is <cite>"Value"</cite> (eventually localized).
      */
     public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<>("VALUE_AS_NUMBER",
             Number.class, Vocabulary.Keys.Value);

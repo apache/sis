@@ -69,9 +69,9 @@ import java.util.Objects;
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. "<cite>World Geodetic System 1984</cite>"),
- * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. "<cite>WGS 84 / World Mercator</cite>") or
- * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. "<cite>Mercator (variant A)</cite>").
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <cite>"World Geodetic System 1984"</cite>),
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <cite>"WGS 84 / World Mercator"</cite>) or
+ * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
  * However it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently

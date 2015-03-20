@@ -902,7 +902,7 @@ public final class Matrices extends Static {
      *
      * <p>The current implementation formats ±0 and ±1 without trailing {@code ".0"}, and all other values with
      * a per-column uniform number of fraction digits. The ±0 and ±1 values are treated especially because they
-     * usually imply a "<cite>no scale</cite>", "<cite>no translation</cite>" or "<cite>orthogonal axes</cite>"
+     * usually imply a <cite>"no scale"</cite>, <cite>"no translation"</cite> or <cite>"orthogonal axes"</cite>
      * meaning. A matrix in SIS is often populated mostly by ±0 and ±1 values, with a few "interesting" values.
      * The simpler ±0 and ±1 formatting makes easier to spot the "interesting" values.</p>
      *

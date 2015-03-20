@@ -26,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Annotates classes or methods that are provided mostly for debugging purpose. This annotation
  * is defined in order to make easier to find which debugging tools are available in case of
- * problem. See the "<cite>Use</cite>" javadoc link for a list of annotated classes and methods.
+ * problem. See the <cite>"Use"</cite> javadoc link for a list of annotated classes and methods.
  *
  * <div class="section">{@code Object.toString()} policy</div>
  * Subclasses override the {@link Object#toString()} method for various purposes, sometime providing

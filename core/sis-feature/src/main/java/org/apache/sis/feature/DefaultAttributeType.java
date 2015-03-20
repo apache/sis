@@ -175,7 +175,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * @param characterizedBy Other attribute types that describes this attribute type (can be {@code null} for none).
      *                        For example if this new {@code DefaultAttributeType} describes a measurement,
      *                        then {@code characterizedBy} could holds the measurement accuracy.
-     *                        See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
+     *                        See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      */
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
             final int minimumOccurs, final int maximumOccurs, final V defaultValue,
@@ -285,7 +285,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
 
     /**
      * Other attribute types that describes this attribute type.
-     * See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
+     * See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      *
      * <div class="note"><b>Example:</b>
      * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the

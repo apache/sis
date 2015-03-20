@@ -172,7 +172,7 @@ public enum AxesConvention {
      *
      * <div class="section">Usage</div>
      * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
-     * (<var>x</var>,<var>y</var>) axis order. We do not provide a "<cite>longitude or <var>x</var> axis first</cite>"
+     * (<var>x</var>,<var>y</var>) axis order. We do not provide a <cite>"longitude or <var>x</var> axis first"</cite>
      * enumeration value because such criterion is hard to apply to inter-cardinal directions and has no meaning for
      * map projections over a pole, while the right-handed rule can apply everywhere.
      *
