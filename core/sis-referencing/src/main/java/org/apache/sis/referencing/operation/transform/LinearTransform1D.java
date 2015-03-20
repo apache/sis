@@ -123,7 +123,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * depends on the matrix size. Only matrix elements different from their default value
      * will be included in this group.
      *
-     * @return A copy of the parameter values for this math transform.
+     * @return The parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {

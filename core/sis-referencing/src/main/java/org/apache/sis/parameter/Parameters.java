@@ -598,8 +598,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     }
 
     /**
-     * Returns a deep copy of this group of parameter values.
-     * Included parameter values and subgroups are cloned recursively.
+     * Returns a copy of this group of parameter values.
+     * The default implementation performs a <em>shallow</em> copy,
+     * but subclasses are encouraged to perform a <em>deep</em> copy.
      *
      * @return A copy of this group of parameter values.
      *

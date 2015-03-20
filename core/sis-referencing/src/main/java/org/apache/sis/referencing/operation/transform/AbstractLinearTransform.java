@@ -105,7 +105,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform
      * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
      * matrix size. Only matrix elements different from their default value will be included in this group.
      *
-     * @return A copy of the parameter values for this math transform.
+     * @return The parameter values for this math transform.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
