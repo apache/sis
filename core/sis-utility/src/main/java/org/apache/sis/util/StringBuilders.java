@@ -164,7 +164,7 @@ public final class StringBuilders extends Static {
      *
      * <p>More specifically if the given buffer ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are removed. Otherwise this
-     * method does nothing. This is a "<cite>all or nothing</cite>" method: either the fractional
+     * method does nothing. This is a <cite>"all or nothing"</cite> method: either the fractional
      * part is completely removed, or either it is left unchanged.</p>
      *
      * <div class="section">Use case</div>

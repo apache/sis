@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for "<cite>Mercator (variant A)</cite>" projection
+ * The provider for <cite>"Mercator (variant A)"</cite> projection
  * (EPSG:9804, EPSG:1026, <span class="deprecated">EPSG:9841</span>).
  * EPSG defines two codes for this projection, 1026 being the spherical case and 9804 the ellipsoidal case.
  *

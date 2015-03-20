@@ -34,7 +34,7 @@ public abstract class GridGeometry {
 
     /**
      * Returns the number of dimensions in the grid.
-     * This is the number of dimensions of source coordinates in the "<cite>grid to CRS</cite>" transform.
+     * This is the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> transform.
      *
      * @return Number of grid dimensions.
      */
@@ -42,7 +42,7 @@ public abstract class GridGeometry {
 
     /**
      * Returns the number of dimensions in the coordinate reference system.
-     * This is the number of dimensions of target coordinates in the "<cite>grid to CRS</cite>" transform.
+     * This is the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> transform.
      * It should also be equal to the size of the list returned by {@link #getAxes()}.
      *
      * @return Number of CRS dimensions.

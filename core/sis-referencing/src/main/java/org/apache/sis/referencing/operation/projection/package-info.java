@@ -123,16 +123,16 @@
  *   <li>{@link org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#normalize(boolean) denormalize} affine transform</li>
  * </ul>
  *
- * The first step ("<cite>normalize</cite>") converts longitude and latitude values from degrees to radians and removes the
+ * The first step (<cite>"normalize"</cite>) converts longitude and latitude values from degrees to radians and removes the
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#centralMeridian central meridian}
- * from the longitude. The last step ("<cite>denormalize</cite>") multiplies the result of the middle
+ * from the longitude. The last step (<cite>"denormalize"</cite>) multiplies the result of the middle
  * step by the global scale factor (which is typically, but not always, the product of the
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale factor} with the
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor semi-major} axis length),
  * then adds the
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseEasting false easting} and
  * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseNorthing false northing}.
- * This means that the middle step ("<cite>unitary projection</cite>") is performed on an ellipse
+ * This means that the middle step (<cite>"unitary projection"</cite>) is performed on an ellipse
  * (or sphere) having a semi-major axis of 1.
  *
  * <p>In other words, the

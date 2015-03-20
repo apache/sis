@@ -151,7 +151,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *   );
      * }
      *
-     * After the above code completed, the {@linkplain #getValueType() value type} of "<cite>association to B</cite>"
+     * After the above code completed, the {@linkplain #getValueType() value type} of <cite>"association to B"</cite>
      * has been automatically set to the {@code typeB} instance.
      * </div>
      *

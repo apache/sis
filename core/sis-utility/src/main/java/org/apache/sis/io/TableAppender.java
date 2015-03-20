@@ -641,7 +641,7 @@ public class TableAppender extends Appender implements Flushable {
      *       indirectly a wrapper around a {@code CharSequence}, returns its {@code toString()}
      *       representation. The string will contain this table content only if {@link #flush()}
      *       has been invoked prior this {@code toString()} method.</li>
-     *   <li>Otherwise returns the localized "<cite>Unavailable content</cite>" string.</li>
+     *   <li>Otherwise returns the localized <cite>"Unavailable content"</cite> string.</li>
      * </ul>
      */
     @Override

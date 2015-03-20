@@ -218,9 +218,9 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * </ul>
      *
      * <div class="note"><b>Example:</b>
-     * The {@code "?……[…] "} pattern means "<cite>If the next value is non-null, then insert the
+     * The {@code "?……[…] "} pattern means <cite>"If the next value is non-null, then insert the
      * {@code "……"} string, repeat the {@code '…'} character as many time as needed (may be zero),
-     * then insert a space</cite>".
+     * then insert a space"</cite>.
      * </div>
      *
      * @param  pattern The pattern of the new column separator.

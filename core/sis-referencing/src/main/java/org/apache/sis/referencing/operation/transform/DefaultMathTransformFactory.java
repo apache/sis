@@ -90,8 +90,8 @@ import org.apache.sis.util.resources.Messages;
  *
  * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
  * For example the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
- * by OGC, while EPSG uses various names like "<cite>False easting</cite>" or "<cite>Easting at
- * false origin</cite>".</p>
+ * by OGC, while EPSG uses various names like <cite>"False easting"</cite> or <cite>"Easting at
+ * false origin"</cite>.</p>
  *
  * <div class="section">Dynamic parameters</div>
  * A few non-standard parameters are defined for compatibility reasons,

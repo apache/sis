@@ -61,10 +61,10 @@ public final class CoordinateSystems extends Static {
      * Names are case-insensitive. They may be:
      *
      * <ul>
-     *   <li>Cardinal directions like "<cite>north</cite>" and "<cite>east</cite>".</li>
-     *   <li>Inter-cardinal directions "<cite>north-east</cite>" and "<cite>south-south-east</cite>",
+     *   <li>Cardinal directions like <cite>"north"</cite> and <cite>"east"</cite>.</li>
+     *   <li>Inter-cardinal directions <cite>"north-east"</cite> and <cite>"south-south-east"</cite>,
      *       using either {@code '-'}, {@code '_'} or spaces as separator between the cardinal points.</li>
-     *   <li>Directions from a pole like "<cite>South along 180 deg</cite>" and "<cite>South along 90° East</cite>",
+     *   <li>Directions from a pole like <cite>"South along 180 deg"</cite> and <cite>"South along 90° East"</cite>,
      *       using either the {@code "deg"} or {@code "°"} symbol.</li>
      * </ul>
      *
@@ -108,7 +108,7 @@ public final class CoordinateSystems extends Static {
      * <ul>
      *   <li>The angle from {@link AxisDirection#EAST EAST} to {@link AxisDirection#NORTH NORTH} is 90°</li>
      *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
-     *   <li>The angle from "<cite>North along 90° East</cite>" to "<cite>North along 0°</cite>" is 90°.</li>
+     *   <li>The angle from <cite>"North along 90° East"</cite> to <cite>"North along 0°"</cite> is 90°.</li>
      * </ul>
      *
      * <div class="section">Horizontal and vertical directions</div>

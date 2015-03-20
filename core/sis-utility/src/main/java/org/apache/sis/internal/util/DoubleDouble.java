@@ -178,7 +178,7 @@ public final class DoubleDouble extends Number {
 
     /**
      * The error that shall be added to the main {@link #value} in order to get the
-     * "<cite>real</cite>" (actually "<cite>the most accurate that we can</cite>") value.
+     * <cite>"real"</cite> (actually <cite>"the most accurate that we can"</cite>) value.
      */
     public double error;
 
