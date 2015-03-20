@@ -43,18 +43,18 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * version and cardinality are left unchanged because they may be shared by many parameters.
  *
  * <ul>
- *   <li><p><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
+ *   <li><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
  *   each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
  *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
- *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
+ *   by the {@code addName(…)} methods. Each call after the first one adds an alias.</li>
  *
- *   <li><p><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b>
+ *   <li><b>{@linkplain DefaultParameterDescriptor#getIdentifiers() Identifiers}:</b>
  *   parameters can also have an arbitrary amount of identifiers, which are specified by any of the
  *   {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier can be
- *   added by invoking the method many time.</p></li>
+ *   added by invoking the method many time.</li>
  *
- *   <li><p><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b>
- *   parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</p></li>
+ *   <li><b>{@linkplain DefaultParameterDescriptor#getRemarks() Remarks}:</b>
+ *   parameters can have at most one remark, which is specified by the {@code setRemarks(…)} method.</li>
  * </ul>
  *
  *

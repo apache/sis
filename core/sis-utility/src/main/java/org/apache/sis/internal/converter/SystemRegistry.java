@@ -31,14 +31,14 @@ import org.apache.sis.internal.system.Modules;
  * This class serves two purposes:
  *
  * <ul>
- *   <li><p>Fetch the list of converters from the content of all
+ *   <li>Fetch the list of converters from the content of all
  *       {@code META-INF/services/org.apache.sis.util.converter.ObjectConverter} files found on the classpath.
- *       The intend is to allow other modules to register their own converters.</p></li>
+ *       The intend is to allow other modules to register their own converters.</li>
  *
- *   <li><p>Apply heuristic rules in addition to the explicitly registered converters.
+ *   <li>Apply heuristic rules in addition to the explicitly registered converters.
  *       Those heuristic rules are provided in a separated class in order to keep the
  *       {@link ConverterRegistry} class a little bit more "pure", and concentrate
- *       most arbitrary decisions in this single class.</p></li>
+ *       most arbitrary decisions in this single class.</li>
  * </ul>
  *
  * When using {@code SystemRegistry}, new converters may "automagically" appear as a consequence
