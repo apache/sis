@@ -29,16 +29,16 @@
  * <p>This package includes:</p>
  *
  * <ul>
- *   <li><p>JAXB adapters for primitive types.
+ *   <li>JAXB adapters for primitive types.
  *   JAXB can write directly Java primitive type at marshalling time "as is". However ISO-19139
  *   requires those values to be surrounded by elements representing the data type. The role of
- *   these adapters is to add these elements around the value.</p></li>
+ *   these adapters is to add these elements around the value.</li>
  *
- *   <li><p>JAXB adapters for <cite>unit of measure</cite> as specified in the ISO-19103
+ *   <li>JAXB adapters for <cite>unit of measure</cite> as specified in the ISO-19103
  *   specifications. For example, a measure marshalled with JAXB will be formatted like
- *   {@code <gco:Measure uom="m">220.0</gco:Measure>}.</p></li>
+ *   {@code <gco:Measure uom="m">220.0</gco:Measure>}.</li>
  *
- *   <li><p>JAXB adapters for date and time.</p></li>
+ *   <li>JAXB adapters for date and time.</li>
  * </ul>
  *
  * Classes prefixed by two letters, like {@code "GO_Decimal"}, are also wrappers around the actual

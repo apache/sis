@@ -374,21 +374,21 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The need to change an {@code OperationMethod} dimensionality may occur in two contexts:
      *
      * <ul>
-     *   <li><p>When the original method can work with any number of dimensions. Those methods do not know
+     *   <li>When the original method can work with any number of dimensions. Those methods do not know
      *     in advance the number of dimensions, which is fixed only after the actual {@link MathTransform}
      *     instance has been created.
-     *     Example: <cite>Affine</cite> conversion.</p></li>
-     *   <li><p>When a three-dimensional method can also be used in the two-dimensional case, typically by
+     *     Example: <cite>Affine</cite> conversion.</li>
+     *   <li>When a three-dimensional method can also be used in the two-dimensional case, typically by
      *     assuming that the ellipsoidal height is zero everywhere.
-     *     Example: <cite>Molodensky</cite> transform.</p></li>
+     *     Example: <cite>Molodensky</cite> transform.</li>
      * </ul>
      *
      * This {@code redimension(…)} implementation performs the following choice:
      *
      * <ul>
-     *   <li><p>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
+     *   <li>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
      *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
-     *     For example the <cite>Molodensky</cite> method needs to override.</p></li>
+     *     For example the <cite>Molodensky</cite> method needs to override.</li>
      *   <li>Otherwise for each dimension (<var>source</var> and <var>target</var>):
      *     <ul>
      *       <li>If the corresponding dimension of the given method is {@code null}, then

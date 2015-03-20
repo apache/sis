@@ -176,8 +176,8 @@ div.block ol {
   margin-bottom: 9px;
 }
 
-div.block li > ul,
-div.block li > ol {
+div.block ul > li,
+div.block ol > li {
   margin-top:    0;
   margin-bottom: 6px;
 }
