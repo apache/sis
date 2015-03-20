@@ -155,7 +155,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value SIZE}.
+     * @return Always {@value #SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -165,7 +165,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return Always {@value SIZE}.
+     * @return Always {@value #SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -231,6 +231,8 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is 9.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public final double[] getElements() {
@@ -264,6 +266,8 @@ public final class Matrix3 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public final boolean isAffine() {
@@ -272,6 +276,8 @@ public final class Matrix3 extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public final boolean isIdentity() {

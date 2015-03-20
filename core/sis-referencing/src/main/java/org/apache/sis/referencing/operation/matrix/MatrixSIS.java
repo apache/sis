@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
  *       {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
  *   <li>some operations more specific to referencing by coordinates:
- *       {@link #isAffine()}, {@link #normalizeColumns()}.</li>
+ *       {@link #isAffine()}, {@link #normalizeColumns()}, {@link #concatenate(int, Number, Number)}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -292,16 +292,35 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Assuming that this matrix represents an affine transform, applies a scale and a translation
      * on the given dimension.
-     *
-     * <p>If:</p>
+     * If:
      * <ul>
      *   <li>{@code original} is this matrix before this method call</li>
      *   <li>{@code modified} is this matrix after this method call</li>
      * </ul>
      *
-     * Then transforming a coordinate by {@code modified} is equivalent to first replacing the ordinate
+     * then transforming a coordinate by {@code modified} is equivalent to first replacing the ordinate
      * value at dimension {@code srcDim} by ({@code scale} × <var>ordinate</var> + {@code offset}),
      * then apply the {@code original} transform.
+     *
+     * {@section Comparison with Java2D}
+     * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
+     * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
+     *
+     * <table class="sis">
+     *   <caption>Equivalence between this method and {@code AffineTransform} ({@code at}) methods</caption>
+     *   <tr>
+     *     <th>{@code concatenate(0, scale, offset)}</th>
+     *     <th>{@code concatenate(1, scale, offset)}</th>
+     *   </tr>
+     *   <tr>
+     *     <td><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0)</code></td>
+     *     <td><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset)</code></td>
+     *   </tr>
+     *   <tr>
+     *     <td><code>at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1)</code></td>
+     *     <td><code>at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale)</code></td>
+     *   </tr>
+     * </table>
      *
      * @param srcDim The dimension of the ordinate to rescale in the source coordinates.
      * @param scale  The amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
@@ -311,21 +330,21 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @since 0.6
      */
-    public void concatenateAffine(final int srcDim, final Number scale, final Number offset) {
+    public void concatenate(final int srcDim, final Number scale, final Number offset) {
         final int lastCol = getNumCol() - 1;
         ArgumentChecks.ensureValidIndex(lastCol, srcDim);
         final DoubleDouble s = new DoubleDouble();
         final DoubleDouble t = new DoubleDouble();
-        for (int j = getNumRow() - 1; --j >= 0;) {
+        for (int j = getNumRow(); --j >= 0;) {
             if (offset != null) {
-                get(j, srcDim,  s); // Scale factor
-                get(j, lastCol, t); // Translation factor
+                get(j, srcDim,  s);     // Scale factor
+                get(j, lastCol, t);     // Translation factor
                 s.multiply(offset);
                 t.add(s);
                 set(j, lastCol, t);
             }
             if (scale != null) {
-                get(j, srcDim, s);  // Scale factor
+                get(j, srcDim, s);      // Scale factor
                 s.multiply(scale);
                 set(j, srcDim, s);
             }
