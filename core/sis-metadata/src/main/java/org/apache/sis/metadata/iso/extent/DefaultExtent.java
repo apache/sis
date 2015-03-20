@@ -260,11 +260,11 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * and creates a {@link GeographicBoundingBox}, {@link VerticalExtent} or {@link TemporalExtent}
      * elements as needed.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
      * @param  envelope The envelope to use for inferring the additional extents.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException If a coordinate transformation was required and failed.
+     * @throws TransformException if a coordinate transformation was required and failed.
      *
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
      * @see DefaultVerticalExtent#setBounds(Envelope)

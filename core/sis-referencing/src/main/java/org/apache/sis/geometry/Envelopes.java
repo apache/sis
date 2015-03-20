@@ -200,10 +200,10 @@ public final class Envelopes extends Static {
      * The transformation is only approximative: the returned envelope may be bigger than necessary,
      * or smaller than required if the bounding box contains a pole.
      *
-     * <p><b>Limitation</b><br>
+     * <div class="section">Limitation</div>
      * This method can not handle the case where the envelope contains the North or South pole,
      * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
-     * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.</p>
+     * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.
      *
      * @param  transform The transform to use.
      * @param  envelope Envelope to transform, or {@code null}. This envelope will not be modified.
