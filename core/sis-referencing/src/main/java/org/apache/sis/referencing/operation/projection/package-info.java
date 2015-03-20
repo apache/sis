@@ -41,20 +41,20 @@
  *
  *
  * {@section Definition of terms}
- * <ul>
- *   <li><p><b>Coordinate operation</b><br>
+ * <ul class="verbose">
+ *   <li><b>Coordinate operation</b><br>
  *       In the particular case of this package, the conversion of geographic coordinates in any
  *       axis order, geodesic orientation and angular units to projected coordinates in any axis
- *       order, horizontal orientation and linear units.<p></li>
- *   <li><p><b>Map projection</b> (a.k.a. cartographic projection)<br>
+ *       order, horizontal orientation and linear units.</li>
+ *   <li><b>Map projection</b> (a.k.a. cartographic projection)<br>
  *       The conversion of geographic coordinates from (<var>longitude</var>, <var>latitude</var>)
- *       in decimal degrees to projected coordinates (<var>x</var>, <var>y</var>) in metres.<p></li>
- *   <li><p><b>Unitary projection</b><br>
+ *       in decimal degrees to projected coordinates (<var>x</var>, <var>y</var>) in metres.</li>
+ *   <li><b>Unitary projection</b><br>
  *       The conversion of geographic coordinates from (<var>longitude</var>, <var>latitude</var>)
  *       in radians to projected coordinates (<var>x</var>, <var>y</var>) on a sphere or ellipse
  *       having a semi-major axis length of 1. This definition may be slightly relaxed if some
  *       projection-specifics coefficients are concatenated with the conversions that take place
- *       between the above map projection and this unitary projection.<p></li>
+ *       between the above map projection and this unitary projection.</li>
  * </ul>
  *
  *

@@ -766,35 +766,35 @@ public class MetadataStandard implements Serializable {
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
      * <p>The returned {@code TreeTable} instance contains the following columns:</p>
-     * <ul>
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     * <ul class="verbose">
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
-     *       there is a node having the {@code "title"} identifier.</p></li>
+     *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.</p>
+     *       for the first element and an other node with index 1 for the second element.
      *
      *       <div class="note"><b>Note:</b>
      *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
      *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
      *       the same keys may appear in the children of any other nodes.</div></li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
-     *       may be localizable.</p></li>
+     *       may be localizable.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
-     *       The base type of the value (usually an interface).</p></li>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
-     *       metadata class have a setter method for the property represented by the node.</p></li>
+     *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
      * {@section Write operations}

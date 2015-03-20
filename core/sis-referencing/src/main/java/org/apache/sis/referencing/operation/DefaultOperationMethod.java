@@ -373,7 +373,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
      * The need to change an {@code OperationMethod} dimensionality may occur in two contexts:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>When the original method can work with any number of dimensions. Those methods do not know
      *     in advance the number of dimensions, which is fixed only after the actual {@link MathTransform}
      *     instance has been created.
@@ -385,7 +385,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * This {@code redimension(…)} implementation performs the following choice:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
      *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
      *     For example the <cite>Molodensky</cite> method needs to override.</li>
@@ -470,20 +470,20 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
      * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
      *
-     * <ul>
-     *   <li><p>{@link org.opengis.referencing.operation.Transformation}
+     * <ul class="verbose">
+     *   <li>{@link org.opengis.referencing.operation.Transformation}
      *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
      *     which the operation parameters were determined. Those errors do not depend on the floating point precision
-     *     or the accuracy of the implementation algorithm.</p></li>
-     *   <li><p>{@link org.opengis.referencing.operation.Conversion}
+     *     or the accuracy of the implementation algorithm.</li>
+     *   <li class="verbose">{@link org.opengis.referencing.operation.Conversion}
      *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
-     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</p></li>
-     *   <li><p>{@link org.opengis.referencing.operation.Projection}
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
+     *   <li>{@link org.opengis.referencing.operation.Projection}
      *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
      *     to plane (map) coordinates. This type can optionally be refined with one of the
      *     {@link org.opengis.referencing.operation.CylindricalProjection},
      *     {@link org.opengis.referencing.operation.ConicProjection} or
-     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</p></li>
+     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
      * </ul>
      *
      * In case of doubt, {@code getOperationType()} can conservatively return the base type.

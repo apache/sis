@@ -50,8 +50,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * This object is typically created and used as below:
  *
  * <ol>
- *   <li>A {@link MathTransformProvider#createMathTransform(ParameterValueGroup)} method
- *     instantiates a class from the {@link org.apache.sis.referencing.operation.projection} package.
+ *   <li>A {@link MathTransformProvider#createMathTransform(ParameterValueGroup)} method instantiates a
+ *     class from the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *     Note that different {@code MathTransformProvider}s may instantiate the same map projection class.
  *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
  *     instantiate the same {@link org.apache.sis.referencing.operation.Mercator} class, but with different descriptors.</li>

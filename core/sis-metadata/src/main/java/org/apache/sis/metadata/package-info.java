@@ -45,7 +45,7 @@
  * or {@code Default}.</p>
  *
  * <p><b>Notes:</b></p>
- * <ul>
+ * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,
  *       sometime we wish to instantiate an "abstract" class despite the lack of knowledge about the exact sub-type.</li>
@@ -70,19 +70,19 @@
  * and fallback on the reflection technic when the type is known only at runtime.</p>
  *
  * <p>Using Java reflection, a metadata can be viewed in many different ways:</p>
- * <ul>
- *   <li><p><b>As a {@link java.util.Map}</b><br>
+ * <ul class="verbose">
+ *   <li><b>As a {@link java.util.Map}</b><br>
  *       The {@link org.apache.sis.metadata.MetadataStandard} class provides various methods returning a view
  *       of an arbitrary metadata implementation as a {@code Map}, where the key are the property names and the
  *       values are the return values, types or descriptions of getter methods. The map is writable if the
  *       underlying metadata implementation has setter methods, otherwise attempts to set a value throw an
- *       {@code UnmodifiableMetadataException}.</p></li>
+ *       {@code UnmodifiableMetadataException}.</li>
  *
- *   <li><p><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
+ *   <li><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
  *       The metadata are organized as a tree. For example the {@code Citation} metadata contains one or many
  *       {@code ResponsibleParty} elements, each of them containing a {@code Contact} element, which contains
  *       a {@code Telephone} element, <i>etc</i>. For each node, there is many information that can be displayed
- *       in columns:</p>
+ *       in columns:
  *       <ul>
  *         <li>A description of the element.</li>
  *         <li>The type of values ({@code String}, {@code double}, <i>etc</i>).</li>
@@ -91,8 +91,8 @@
  *         <li>The value stored in the element, or the default value.</li>
  *       </ul></li>
  *
- *   <li><p><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
- *       It is possible to establish the following mapping between metadata and a SQL database:</p>
+ *   <li><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
+ *       It is possible to establish the following mapping between metadata and a SQL database:
  *       <ul>
  *         <li>Each metadata interface maps to a table of the same name in the database.</li>
  *         <li>Each property in the above interface maps to a column of the same name in the above table.</li>
