@@ -157,20 +157,20 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
      * </div>
      *
-     * @return The parameter descriptors for this math transform, or {@code null}.
+     * @return The parameter descriptors for this math transform, or {@code null} if unspecified.
      *
      * @see OperationMethod#getParameters()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        final NonLinearParameters parameters = getNonLinearParameters();
-        return (parameters != null) ? parameters.getParameterDescriptors() : null;
+        final ContextualParameters parameters = getContextualParameters();
+        return (parameters != null) ? parameters.getDescriptor() : null;
     }
 
     /**
-     * Returns a copy of the parameter values for this math transform, or {@code null} if unknown.
-     * Since this method returns a copy of the parameter values, any change to a value will have no
-     * effect on this math transform.
+     * Returns the parameter values for this math transform, or {@code null} if unknown.
+     * Callers should not modify the returned parameters, as modifications (if allowed)
+     * will generally not be reflected back in this {@code MathTransform}.
      *
      * <div class="note"><b>Relationship with ISO 19111:</b>
      * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
@@ -178,34 +178,35 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
      * </div>
      *
-     * @return A copy of the parameter values for this math transform, or {@code null}.
+     * @return The parameter values for this math transform, or {@code null} if unspecified.
      *
      * @see SingleOperation#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
         /*
-         * Do NOT try to infer the parameters getNonLinearParameters(). This is usually not appropriate
-         * because if NonLinearParameters declares "normalize" and "denormalize" affine transforms,
+         * Do NOT try to infer the parameters from getContextualParameters(). This is usually not appropriate
+         * because if ContextualParameters declares "normalize" and "denormalize" affine transforms,
          * they need to be taken in account in a way that only the subclass know.
          */
         return null;
     }
 
     /**
-     * Returns the parameters of this transform as a tuple of
-     * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms,
-     * or {@code null} if unspecified.
-     * The default implementation returns {@code null} in all cases.
+     * Returns the parameters of this transform as a sequence of
+     * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite>) transforms
+     * (<i>optional operation</i>).
      *
-     * <p>This method is used mostly for Apache SIS implementation of map projections.</p>
+     * Subclasses can override this method if they choose to split their computation in linear and non-linear parts.
+     * Such separation is optional: it can leads to better performance, but should not change significantly the
+     * result (ignoring differences in rounding errors).
      *
-     * @return The tuple of (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>)
-     *         transforms, or {@code null} if unspecified.
+     * @return The parameters values splitted in a sequence of <cite>normalize</cite> → <cite>non-linear
+     *         kernel</cite> → <cite>denormalize</cite> transforms, or {@code null} if unspecified.
      *
      * @since 0.6
      */
-    protected NonLinearParameters getNonLinearParameters() {
+    protected ContextualParameters getContextualParameters() {
         return null;
     }
 
@@ -926,7 +927,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
         assert unwrap(transforms.get(index), inverse) == this;
-        final NonLinearParameters parameters = getNonLinearParameters();
+        final ContextualParameters parameters = getContextualParameters();
         return (parameters != null) ? parameters.beforeFormat(transforms, index, inverse) : index;
     }
 

@@ -22,8 +22,11 @@ import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -40,8 +43,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * The parameters of a math transform as a tuple of
- * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) transforms.
+ * The parameters of a coordinate operation as a sequence of
+ * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> transforms.
  * The normalize and denormalize parts must be affine transforms.
  *
  * <div class="section">Usage in map projections</div>
@@ -58,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  *   <li>The map projection constructor fetches all parameters that he needs from the user-supplied
  *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
- *     it actually used in a new {@code NonLinearParameters} instance.</li>
+ *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
  *   <li>The constructor should invoke {@link #normalizeGeographic(double)}
  *     and {@link #denormalizeCartesian(double, double, double, double)}.
@@ -75,17 +78,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.6
  * @module
  *
- * @see AbstractMathTransform#getNonLinearParameters()
+ * @see AbstractMathTransform#getContextualParameters()
  */
-public abstract class NonLinearParameters extends FormattableObject implements Parameterized, Serializable {
+public class ContextualParameters extends FormattableObject implements ParameterValueGroup, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 4899134192407586472L;
 
     /**
-     * The descriptor that represents this tuple as a whole. The parameter values may take effect in either the
-     * {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
+     * The parameters that represents the sequence of transforms as a whole. The parameter values may take effect
+     * in either the {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
      * @see #getParameterDescriptors()
      */
@@ -93,25 +96,35 @@ public abstract class NonLinearParameters extends FormattableObject implements P
 
     /**
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
-     * the kernel operation. On {@code NonLinearParameters} construction, those affines are initially identity
+     * the kernel operation. On {@code ContextualParameters} construction, those affines are initially identity
      * transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
      * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
      * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
      *
      * @see #normalization(boolean)
      */
-    private Matrix normalize, denormalize;
+    private Matrix normalize,
 
     /**
-     * Creates a new {@code NonLinearParameters} for the given coordinate operation method.
-     * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
-     * shall describe the parameters of this tuple as a whole, including the affine transforms applied before and after
-     * the non-linear kernel. Subclasses shall initialize those {@linkplain #normalization(boolean) normalize/denormalize}
-     * affine transforms when they have enough information for doing so.
-     *
-     * @param method The operation method for which to describe the non-linear parameters.
+     * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
+ the kernel operation.On {@code ContextualParameters} construction, those affines are initially identity
+ transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
+ After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
+ they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
+     * @see #normalization(boolean)
      */
-    protected NonLinearParameters(final OperationMethod method) {
+    denormalize;
+
+    /**
+     * Creates a new group of parameters for the given non-linear coordinate operation method.
+     * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
+     * shall apply to the <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> sequence
+     * as a whole. Callers shall initialize the {@linkplain #normalization(boolean) normalize/denormalize} affine
+     * transforms when they have enough information for doing so.
+     *
+     * @param method The non-linear operation method for which to define the parameter values.
+     */
+    public ContextualParameters(final OperationMethod method) {
         ensureNonNull("method", method);
         descriptor  = method.getParameters();
         normalize   = linear("sourceDimensions", method.getSourceDimensions());
@@ -119,7 +132,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     }
 
     /**
-     * Creates a matrix for a linear part of the tupple.
+     * Creates a matrix for a linear part of the sequence.
      * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
      * to allow {@link #normalization(boolean)} to return the reference to the (de)normalize matrices.
      */
@@ -132,8 +145,8 @@ public abstract class NonLinearParameters extends FormattableObject implements P
 
     /**
      * The affine transforms to be applied before or after the kernel operation. Those affines are initially
-     * identity transforms. Subclasses should invoke this method at construction time (or at some time close
-     * to construction) in order to set the affine coefficients.
+     * identity transforms. Callers should invoke this method at the non-linear transform construction time
+     * (or at some time close to construction) in order to set the affine coefficients.
      *
      * @param  norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
      *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
@@ -148,7 +161,8 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * <cite>normalize</cite> transform, the given kernel and the <cite>denormalize</cite> transform.
      *
      * @param  kernel The (usually non-linear) kernel.
-     * @return The concatenation of (<cite>normalize</cite> – the given kernel – <cite>denormalize</cite>) transforms.
+     * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
+     *         transforms.
      */
     final MathTransform createConcatenatedTransform(final MathTransformFactory factory, MathTransform kernel)
             throws FactoryException
@@ -165,8 +179,9 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     }
 
     /**
-     * Returns the descriptor that represents this tuple as a whole. The parameter values may take effect
-     * in either the {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
+     * Returns the parameters for the whole <cite>normalize</cite> → <cite>non-linear kernel</cite> →
+     * <cite>denormalize</cite> sequence. The parameter values may take effect in either the
+     * {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
      * <div class="note"><b>Note:</b>
      * The definition of "kernel" is left to implementors. In the particular case of Apache SIS implementation of map
@@ -176,18 +191,81 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      * @return The description of the parameters.
      */
     @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
+    public final ParameterDescriptorGroup getDescriptor() {
         return descriptor;
     }
 
     /**
-     * Returns the parameters that describe this tuple as a whole.
-     * Changes to the returned parameters will not affect this object.
+     * Returns an unmodifiable view of all parameter values in this group.
      *
-     * @return A copy of the parameter values.
+     * @return All parameter values.
      */
     @Override
-    public abstract ParameterValueGroup getParameterValues();
+    public List<GeneralParameterValue> values() {
+        throw new UnsupportedOperationException("Not supported yet."); // TODO
+    }
+
+    /**
+     * Returns the parameter value of the given name.
+     *
+     * @param  name The name of the parameter to search.
+     * @return The parameter value for the given name.
+     * @throws ParameterNotFoundException if there is no parameter of the given name.
+     */
+    @Override
+    public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet."); // TODO
+    }
+
+    /**
+     * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
+     * This limitation may be revisited in future SIS version.
+     *
+     * @param name Ignored.
+     * @return Never returned.
+     */
+    @Override
+    public List<ParameterValueGroup> groups(final String name) {
+        throw parameterNotFound(name);
+    }
+
+    /**
+     * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
+     * This limitation may be revisited in future SIS version.
+     *
+     * @param name Ignored.
+     * @return Never returned.
+     */
+    @Override
+    public ParameterValueGroup addGroup(final String name) {
+        throw parameterNotFound(name);
+    }
+
+    /**
+     * Returns the exception to thrown when the parameter of the given name has not been found.
+     */
+    private ParameterNotFoundException parameterNotFound(final String name) {
+        return new ParameterNotFoundException(Errors.format(
+                Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+    }
+
+    /**
+     * Returns a clone of this parameter value group.
+     *
+     * @return A clone of this parameter value group.
+     */
+    @Override
+    public ContextualParameters clone() {
+        final ContextualParameters clone;
+        try {
+            clone = (ContextualParameters) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+        clone.  normalize =   normalize.clone();
+        clone.denormalize = denormalize.clone();
+        return clone;
+    }
 
     /**
      * Returns a hash code value for this object. This value is
@@ -207,7 +285,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     @Override
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
-            final NonLinearParameters that = (NonLinearParameters) object;
+            final ContextualParameters that = (ContextualParameters) object;
             return Objects.equals(descriptor,  that.descriptor) &&
                    Objects.equals(normalize,   that.normalize)  &&
                    Objects.equals(denormalize, that.denormalize);
@@ -216,8 +294,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
     }
 
     /**
-     * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using those parameters.
-     * The content is inferred from the parameter values returned by the {@link #getParameterValues()} method.
+     * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
      *
      * <div class="note"><b>Compatibility note:</b>
      * {@code Param_MT} is defined in the WKT 1 specification only.
@@ -228,15 +305,14 @@ public abstract class NonLinearParameters extends FormattableObject implements P
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final ParameterValueGroup parameters = getParameterValues();
-        WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
-        WKTUtilities.append(parameters, formatter);
+        WKTUtilities.appendName(descriptor, formatter, null);
+        WKTUtilities.append(this, formatter);
         return "Param_MT";
     }
 
     /**
      * Formats the <cite>Well Known Text</cite> for the inverse of the transform that would be built
-     * from the enclosing {@code NonLinearParameters}.
+     * from the enclosing {@code ContextualParameters}.
      */
     private final class InverseWKT extends FormattableObject implements Parameterized {
         /**
@@ -250,7 +326,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          */
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
-            return NonLinearParameters.this.getParameterDescriptors();
+            return getDescriptor();
         }
 
         /**
@@ -258,7 +334,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          */
         @Override
         public ParameterValueGroup getParameterValues() {
-            return NonLinearParameters.this.getParameterValues();
+            return ContextualParameters.this;
         }
 
         /**
@@ -266,7 +342,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
          */
         @Override
         protected String formatTo(final Formatter formatter) {
-            formatter.append(NonLinearParameters.this);
+            formatter.append(ContextualParameters.this);
             return "Inverse_MT";
         }
     }
@@ -360,7 +436,7 @@ public abstract class NonLinearParameters extends FormattableObject implements P
         /*
          * At this point we have computed all the affine transforms to show to the user.
          * We can replace the elements in the list. The transform referenced by transforms.get(index)
-         * is usually a UnitaryProjection, to be replaced by a NonLinearParameters instance in order
+         * is usually a UnitaryProjection, to be replaced by a ContextualParameters instance in order
          * to format real parameter values (semi-major axis, scale factor, etc.)
          * instead than a semi-major axis length of 1.
          */
