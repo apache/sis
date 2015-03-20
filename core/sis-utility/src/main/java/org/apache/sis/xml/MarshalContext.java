@@ -45,13 +45,13 @@ public abstract class MarshalContext {
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
      * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.</p>
      *
-     * {@section Handling of <code>Locale.ROOT</code>}
+     * <div class="section">Handling of {@code Locale.ROOT}</div>
      * {@link Locale#ROOT} is interpreted as a request for locale-neutral strings.
      * The meaning of "locale-neutral" is implementation specific - this is usually
      * very close to the English locale, but not necessarily. For examples dates are
      * formatted according ISO standard instead than the rules of the English locale.
      *
-     * {@section Handling of <code>null</code> locale}
+     * <div class="section">Handling of {@code null} locale</div>
      * A {@code null} value means that the locale is unspecified. Callers are encouraged
      * to use the root locale as the default value, but some flexibility is allowed.
      *
@@ -64,7 +64,7 @@ public abstract class MarshalContext {
     /**
      * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely specified.
      *
-     * {@section Handling of <code>null</code> timezone}
+     * <div class="section">Handling of <code>null</code> timezone</div>
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
      * to use the UTC timezone as the default value, but some flexibility is allowed.
      *

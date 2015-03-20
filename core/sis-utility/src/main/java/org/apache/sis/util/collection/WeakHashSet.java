@@ -45,7 +45,7 @@ import java.util.Objects;
  * the static {@code hashCode(a)} and {@code equals(a1, a2)} methods defined in the {@link Arrays}
  * class.</p>
  *
- * {@section Optimizing memory use in factory implementations}
+ * <div class="section">Optimizing memory use in factory implementations</div>
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the
  * {@link java.util.Set} interface. This {@code get} method retrieves an entry from this set
  * that is equals to the supplied object. The {@link #unique(Object)} method combines a
@@ -64,7 +64,7 @@ import java.util.Objects;
  *
  * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code WeakHashSet} instance can be safely used by many threads without synchronization on the part of
  * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.

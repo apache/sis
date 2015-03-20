@@ -152,7 +152,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
      *   </tr>
      * </table>
      *
-     * {@section Localization}
+     * <div class="section">Localization</div>
      * All localizable attributes like {@code "definition"} may have a language and country code suffix.
      * For example the {@code "definition_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "definition_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.

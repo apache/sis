@@ -41,7 +41,7 @@ import org.apache.sis.math.FunctionProperty;
  *       inverse of the above converters.</li>
  * </ul>
  *
- * {@section Constraints}
+ * <div class="section">Constraints</div>
  * <ul>
  *   <li>This map does not support {@code null} keys, since {@code null} is used as a
  *       sentinel value when no mapping from {@linkplain #storage} to {@code this} exists.</li>
@@ -50,7 +50,7 @@ import org.apache.sis.math.FunctionProperty;
  *   <li>This class is not thread-safe.</li>
  * </ul>
  *
- * {@section Performance considerations}
+ * <div class="section">Performance considerations</div>
  * This class does not cache any value, since the {@linkplain #storage} map is presumed modifiable.
  * If the storage map is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.

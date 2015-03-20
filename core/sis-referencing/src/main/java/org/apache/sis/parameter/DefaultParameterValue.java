@@ -83,14 +83,14 @@ import java.nio.file.Path;
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  * }
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
  * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
  * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
  * {@link ParameterDescriptor#createValue()} method. The later is recommended since it allows descriptors to return
  * specialized implementations.
  *
- * {@section Implementation note for subclasses}
+ * <div class="section">Implementation note for subclasses</div>
  * All read and write operations (except constructors, {@link #equals(Object)} and {@link #hashCode()})
  * ultimately delegates to the following methods:
  *
@@ -182,7 +182,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If the parameter value has no unit (for example because it is a {@link String} type),
      * then this method returns {@code null}. Note that "no unit" does not mean "dimensionless".
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * All getter methods which need unit information will invoke this {@code getUnit()} method.
      * Subclasses can override this method if they need to compute the unit dynamically.
      *
@@ -202,7 +202,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If no value has been set, then this method returns the
      * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} (which may be null).
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * All getter methods will invoke this {@code getValue()} method.
      * Subclasses can override this method if they need to compute the value dynamically.
      *
@@ -648,7 +648,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>Current implementation does not clone the given value. In particular, references to
      * {@code int[]} and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * This method is invoked by all setter methods in this class, thus providing a single point that
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
@@ -674,13 +674,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Invoked by {@link #setValue(Object, Unit)} after the basic verifications have been done and before
      * the value is stored. Subclasses can override this method for performing additional verifications.
      *
-     * {@section Unit of measurement}
+     * <div class="section">Unit of measurement</div>
      * If the user specified a unit of measurement, then the value given to this method has been converted
      * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
      * standardized values. This converted value may be different than the value to be stored in this
      * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
      *
-     * {@section Standard validations}
+     * <div class="section">Standard validations</div>
      * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},
      * for {@linkplain DefaultParameterDescriptor#getValueDomain() value domain} and for
      * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed

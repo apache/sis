@@ -53,7 +53,7 @@ import java.util.Objects;
  *   <li>{@link #intersect(GeographicBoundingBox)} for the intersection between the two bounding boxes.</li>
  * </ul>
  *
- * {@section Validation and normalization}
+ * <div class="section">Validation and normalization</div>
  * All constructors and setter methods in this class perform the following argument validation or normalization:
  *
  * <ul>
@@ -87,7 +87,7 @@ import java.util.Objects;
  * If more precision is desired, an {@code Envelope} should be considered instead.
  * </div>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -27,7 +27,7 @@ import org.opengis.util.InternationalString;
 /**
  * Locale-dependent resources for error messages.
  *
- * {@section Argument order convention}
+ * <div class="section">Argument order convention</div>
  * This resource bundle applies the same convention than JUnit: for every {@code format(…)} method,
  * the first arguments provide information about the context in which the error occurred (e.g. the
  * name of a method argument or the range of valid values), while the erroneous values that caused

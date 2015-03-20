@@ -27,7 +27,7 @@ import org.apache.sis.util.logging.Logging;
  * used in SIS. Their intend is to bring some order in debugger informations, by grouping the
  * threads created by SIS together under the same parent tree node.
  *
- * {@section Note on dependencies}
+ * <div class="section">Note on dependencies</div>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
  * because initialization of those classes create new threads. However it is okay to have
  * dependencies the other way around.

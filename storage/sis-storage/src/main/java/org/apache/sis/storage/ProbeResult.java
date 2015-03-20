@@ -30,7 +30,7 @@ import java.util.Objects;
  * {@code ProbeResult} may also provide additional information, like file MIME type and the
  * format version.
  *
- * {@section Usage}
+ * <div class="section">Usage</div>
  * When a {@link DataStores#open DataStores.open(…)} method is invoked, SIS will iterate over the list of known
  * providers and invoke the {@link DataStoreProvider#probeContent(StorageConnector)} method for each of them.
  * The {@code ProbeResult} value returned by {@code probeContent(…)} tells to SIS whether a particular
@@ -40,7 +40,7 @@ import java.util.Objects;
  * Other properties like {@link #getVersion()} are sometime available for both supported and unsupported storages.
  * For example a file may be encoded in a known format, but may be using an unsupported version of that format.</p>
  *
- * {@section Special values}
+ * <div class="section">Special values</div>
  * In addition to the supported/unsupported information, {@code ProbeResult} defines two constants having
  * a special meaning: {@link #INSUFFICIENT_BYTES} and {@link #UNDETERMINED}, which indicate that the provider does
  * not have enough information for telling whether the storage can be opened.
@@ -183,7 +183,7 @@ public class ProbeResult implements Serializable {
      * The {@link DataStoreProvider} may (at implementation choice) inspect the storage content for
      * determining a more accurate MIME type.
      *
-     * {@section XML types}
+     * <div class="section">XML types</div>
      * A generic MIME type for XML documents is {@code "application/xml"}.
      * However many other MIME types exist for XML documents compliant to some particular shema.
      * Those types can be determined by inspecting the namespace of XML root element.

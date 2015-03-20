@@ -49,13 +49,13 @@
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#getSuperTypes() super-types}, provided
  * that values of the sub-type property are assignable to the super-type property.
  *
- * {@section Naming}
+ * <div class="section">Naming</div>
  * Each feature type has a {@linkplain org.apache.sis.feature.DefaultFeatureType#getName() name},
  * which should be unique. Those names are the main criterion used for checking if a feature type
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
- * {@section Class hierarchy}
+ * <div class="section">Class hierarchy</div>
  * The class hierarchy for feature <cite>types</cite> is derived from ISO 19109 specification.
  * The class hierarchy for feature <cite>instances</cite> is closely related:
  *

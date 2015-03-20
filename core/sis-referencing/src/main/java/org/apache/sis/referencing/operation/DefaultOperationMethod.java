@@ -79,7 +79,7 @@ import java.util.Objects;
  *     constructor can not infer them.</li>
  * </ul></div>
  *
- * {@section Relationship with other classes or interfaces}
+ * <div class="section">Relationship with other classes or interfaces</div>
  * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
  * When values have been assigned to parameters, the result is a {@link SingleOperation}.
  * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
@@ -92,7 +92,7 @@ import java.util.Objects;
  * {@code DefaultOperationMethod} subclasses should implement the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thread-safe if all properties given to the constructor are also immutable and thread-safe.
  * It is strongly recommended for all subclasses to be thread-safe, especially the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} implementations to be used with

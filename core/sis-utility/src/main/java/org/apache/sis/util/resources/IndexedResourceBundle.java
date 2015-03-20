@@ -62,7 +62,7 @@ import org.apache.sis.util.logging.Logging;
  *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code IndexedResourceBundle} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call from
  * multiple threads.

@@ -36,7 +36,7 @@ import org.opengis.referencing.operation.MathTransform;
  *       the number of {@linkplain #getTargetDimensions() target dimensions} plus 1.</li>
  * </ul>
  *
- * {@section Affine transform}
+ * <div class="section">Affine transform</div>
  * In most cases the transform in affine. For such transforms, the last matrix row contains only zero values
  * except in the last column, which contains 1. For example a conversion from projected coordinates (metres)
  * to display coordinates (pixel) can be done as below:
@@ -45,7 +45,7 @@ import org.opengis.referencing.operation.MathTransform;
  * <img src="../matrix/doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
  * </p></center>
  *
- * {@section Projective transform}
+ * <div class="section">Projective transform</div>
  * If the last matrix row does not met the above constraints, then the transform is not affine.
  * A <cite>projective</cite> transform can be used as a generalization of affine transforms.
  * In such case the computation performed by SIS is similar to {@code PerspectiveTransform}
@@ -55,7 +55,7 @@ import org.opengis.referencing.operation.MathTransform;
  *
  * <center><p>{@include formulas.html#ProjectiveTransform}</p></center>
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * The easiest way to instantiate a {@code LinearTransform} is to use the {@link MathTransforms#linear(Matrix)}
  * convenience method.
  *

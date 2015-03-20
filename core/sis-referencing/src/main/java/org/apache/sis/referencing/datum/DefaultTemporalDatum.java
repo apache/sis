@@ -42,7 +42,7 @@ import java.util.Objects;
 /**
  * Defines the origin of a temporal coordinate reference system.
  *
- * {@section Creating new temporal datum instances}
+ * <div class="section">Creating new temporal datum instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a temporal datum.
@@ -65,7 +65,7 @@ import java.util.Objects;
  *     TemporalDatum datum = CommonCRS.Temporal.JULIAN.datum();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

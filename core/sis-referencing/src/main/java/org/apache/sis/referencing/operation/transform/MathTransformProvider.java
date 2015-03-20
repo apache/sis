@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.MathTransform;
  * Alternative, one can also use a {@linkplain DefaultMathTransformFactory math transform factory}</p>
  *
  *
- * {@section How to add custom coordinate operations to Apache SIS}
+ * <div class="section">How to add custom coordinate operations to Apache SIS</div>
  * {@link DefaultMathTransformFactory} can discover automatically new coordinate operations
  * (including map projections) by scanning the classpath. To define a custom coordinate operation,
  * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this

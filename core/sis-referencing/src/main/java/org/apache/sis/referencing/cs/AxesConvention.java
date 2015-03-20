@@ -74,7 +74,7 @@ import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
  *   </tr>
  * </table>
  *
- * {@section Discussion on axis order}
+ * <div class="section">Discussion on axis order</div>
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
  * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
@@ -92,7 +92,7 @@ import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
  * with older OGC specifications or other softwares, CRS forced to "longitude first" axis order can be created using the
  * {@link #CONVENTIONALLY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
  *
- * {@section Range of longitude values}
+ * <div class="section">Range of longitude values</div>
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
  * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
  * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
@@ -170,7 +170,7 @@ public enum AxesConvention {
      *
      * Then, axes are ordered for {@link #RIGHT_HANDED} coordinate system.
      *
-     * {@section Usage}
+     * <div class="section">Usage</div>
      * This enum is often used for deriving a coordinate system with the (<var>longitude</var>, <var>latitude</var>) or
      * (<var>x</var>,<var>y</var>) axis order. We do not provide a "<cite>longitude or <var>x</var> axis first</cite>"
      * enumeration value because such criterion is hard to apply to inter-cardinal directions and has no meaning for
@@ -232,7 +232,7 @@ public enum AxesConvention {
      * a non-affine conversion. Some geometries may need to be separated in two parts, and others may
      * need to be merged.</p>
      *
-     * {@section Usage}
+     * <div class="section">Usage</div>
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
      * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
      * time axis has a wrapround range meaning.

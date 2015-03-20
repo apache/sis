@@ -61,7 +61,7 @@ import java.util.Objects;
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
  * where {@code Identifier} instances are required, like GML marshalling time.
  *
- * {@section Name ↔ Identifier mapping}
+ * <div class="section">Name ↔ Identifier mapping</div>
  * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
@@ -80,7 +80,7 @@ import java.util.Objects;
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
  * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()

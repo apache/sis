@@ -47,7 +47,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *       feature instances by other feature instances.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments (e.g. {@code valueType}) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.

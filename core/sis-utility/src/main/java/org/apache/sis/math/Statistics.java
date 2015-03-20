@@ -59,7 +59,7 @@ import java.util.function.DoubleConsumer;
  * The statistics are updated every time an {@link #accept(double)} method is invoked with a non-NaN
  * value.</p>
  *
- * {@section Examples}
+ * <div class="section">Examples</div>
  * The following examples assume that a <var>y</var>=<var>f</var>(<var>x</var>) function
  * is defined. A simple usage is:
  *

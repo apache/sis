@@ -104,7 +104,7 @@ import java.util.function.Supplier;
  * }
  *
  *
- * {@section Eviction of eldest values}
+ * <div class="section">Eviction of eldest values</div>
  *
  * <ul>
  *   <li>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
@@ -123,7 +123,7 @@ import java.util.function.Supplier;
  * overridden, then the total cost is the maximal amount of values to keep by strong references.
  *
  *
- * {@section Circular dependencies}
+ * <div class="section">Circular dependencies</div>
  *
  * This implementation assumes that there is no circular dependencies (or cyclic graph) between
  * the values in the cache. For example if creating <var>A</var> implies creating <var>B</var>,

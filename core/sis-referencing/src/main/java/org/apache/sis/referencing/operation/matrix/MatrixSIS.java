@@ -302,7 +302,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * value at dimension {@code srcDim} by ({@code scale} × <var>ordinate</var> + {@code offset}),
      * then apply the {@code original} transform.
      *
-     * {@section Comparison with Java2D}
+     * <div class="section">Comparison with Java2D</div>
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
      * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
      *
@@ -310,15 +310,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *   <caption>Equivalence between this method and {@code AffineTransform} ({@code at}) methods</caption>
      *   <tr>
      *     <th>{@code concatenate(0, scale, offset)}</th>
-     *     <th>{@code concatenate(1, scale, offset)}</th>
+     *     <th class="sep">{@code concatenate(1, scale, offset)}</th>
      *   </tr>
      *   <tr>
      *     <td><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0)</code></td>
-     *     <td><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset)</code></td>
+     *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset)</code></td>
      *   </tr>
      *   <tr>
      *     <td><code>at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1)</code></td>
-     *     <td><code>at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale)</code></td>
+     *     <td class="sep"><code>at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale)</code></td>
      *   </tr>
      * </table>
      *
@@ -355,7 +355,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
      * In other words, returns {@code this} × {@code matrix}.
      *
-     * {@section Relationship with coordinate operations}
+     * <div class="section">Relationship with coordinate operations</div>
      * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
      * <code>{@linkplain java.awt.geom.AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
      * first transforms by the supplied transform and then transform the result by the original transform.

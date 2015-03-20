@@ -46,13 +46,13 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Standardized resource reference.
  *
- * {@section Unified identifiers view}
+ * <div class="section">Unified identifiers view</div>
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
  * {@linkplain #getISSN() ISSN} codes. However the SIS library handles those codes like any
  * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
  * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19139 compliance).
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -397,7 +397,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * <div class="note"><b>Example:</b> Universal Product Code (UPC), National Stock Number (NSN).</div>
      *
-     * {@section Unified identifiers view}
+     * <div class="section">Unified identifiers view</div>
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
      * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * as well as the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes, thus

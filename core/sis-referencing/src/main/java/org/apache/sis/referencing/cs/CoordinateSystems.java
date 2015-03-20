@@ -101,7 +101,7 @@ public final class CoordinateSystems extends Static {
      * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction.
      * This method returns a value between -180° and +180°, or {@code null} if no angle can be computed.
      *
-     * {@section Horizontal directions}
+     * <div class="section">Horizontal directions</div>
      * For any pair of compass directions which are not opposite directions, a positive angle denotes
      * a right-handed system while a negative angle denotes a left-handed system. Examples:
      *
@@ -111,7 +111,7 @@ public final class CoordinateSystems extends Static {
      *   <li>The angle from "<cite>North along 90° East</cite>" to "<cite>North along 0°</cite>" is 90°.</li>
      * </ul>
      *
-     * {@section Horizontal and vertical directions}
+     * <div class="section">Horizontal and vertical directions</div>
      * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
      * vertical direction as 90°, and the angle of any compass direction to the {@link AxisDirection#DOWN DOWN}
      * vertical direction as -90°. The sign of those angles gives no indication about whether the coordinate system
@@ -120,7 +120,7 @@ public final class CoordinateSystems extends Static {
      * <p>All angles are approximative since this method does not take the Earth ellipsoidal or geoidal shape in
      * account.</p>
      *
-     * {@section Invariants}
+     * <div class="section">Invariants</div>
      * For any non-null return value:
      * <ul>
      *   <li>{@code angle(A, A) = 0°}</li>

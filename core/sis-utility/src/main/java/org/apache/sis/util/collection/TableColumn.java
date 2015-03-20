@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *     }
  * }
  *
- * {@section Identity comparisons and serialization}
+ * <div class="section">Identity comparisons and serialization</div>
  * This base class relies on <cite>identity comparisons</cite> instead than defining the
  * {@code equals(Object)} method, because the {@linkplain #getElementType() element type}
  * is not a sufficient criterion for differentiating the columns (many columns have values

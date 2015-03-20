@@ -49,11 +49,11 @@ import java.util.Objects;
  *   <li>a {@linkplain #getScope() scope}, which describes the domain of usage or limitation of usage.
  * </ul>
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code ReferenceSystem} instances created using

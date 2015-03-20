@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #setColumnSeparatorPattern(String)}</li>
  * </ul>
  *
- * {@section Note for subclass implementions}
+ * <div class="section">Note for subclass implementions</div>
  * This base class takes care of splitting a column separator pattern into its components
  * ({@link #beforeFill}, {@link #fillCharacter} and {@link #columnSeparator})
  * for easier usage in {@code format(…)} method implementations.
@@ -207,7 +207,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *   <tr><td>{@code '\\'}</td> <td>Escape any of the characters listed in this table.</td></tr>
      * </table>
      *
-     * {@section Restrictions}
+     * <div class="section">Restrictions</div>
      * <ul>
      *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
      *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>

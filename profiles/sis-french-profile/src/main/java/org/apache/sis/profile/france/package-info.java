@@ -18,7 +18,7 @@
 /**
  * French extensions defined by the <cite>Association Française de Normalisation</cite> (AFNOR).
  *
- * {@section Historical note}
+ * <div class="section">Historical note</div>
  * The French profile also added two properties to the ISO 19115:2003 standard.
  * Equivalent properties have been added to the 2013 revision of ISO 19115,
  * so the French profile should not be needed anymore except for compatibility with oldest specifications.

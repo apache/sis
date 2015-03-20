@@ -50,7 +50,7 @@ import java.util.Objects;
  *       with {@code ParameterValue} playing a role similar to {@code Map.Entry}.</li>
  * </ul>
  *
- * {@section Instantiation and validity constraints}
+ * <div class="section">Instantiation and validity constraints</div>
  * {@code ParameterValueGroup} instances are typically created by calls to
  * <code>descriptor.{@linkplain DefaultParameterDescriptorGroup#createValue() createValue()}</code> on a descriptor
  * supplied by a coordinate operation or process provider. New instances are initialized with a {@linkplain #values()
@@ -59,7 +59,7 @@ import java.util.Objects;
  * and maximum occurrences of that parameter allowed by the descriptor). If a cardinality constraint is violated, then
  * an {@link InvalidParameterCardinalityException} will be thrown.
  *
- * {@section Setting the parameter values}
+ * <div class="section">Setting the parameter values</div>
  * After a new {@code ParameterValueGroup} instance has been created, the parameter values can be set by chaining
  * calls to {@link #parameter(String)} with one of the {@code setValue(…)} methods defined in the returned object
  * (see the {@linkplain DefaultParameterValue table of setter methods}). The {@code parameter(String)} method can
@@ -144,7 +144,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * Returns the values in this group. The returned list is <cite>live</cite>:
      * changes in this list are reflected on this {@code ParameterValueGroup}, and conversely.
      *
-     * {@section Restrictions}
+     * <div class="section">Restrictions</div>
      * All write operations must comply to the following conditions:
      *
      * <ul>
@@ -189,7 +189,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * returning a list of parameter values because the ISO 19111 standard fixes the {@code ParameterValue}
      * {@linkplain DefaultParameterDescriptor#getMaximumOccurs() maximum occurrence} to 1.</div>
      *
-     * {@section Parameters subgroups}
+     * <div class="section">Parameters subgroups</div>
      * This method does not search recursively in subgroups. This is because more than one subgroup
      * may exist for the same {@linkplain ParameterDescriptorGroup descriptor}. The user have to
      * {@linkplain #groups(String) query all subgroups} and select explicitly the appropriate one.

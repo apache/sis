@@ -38,7 +38,7 @@
  * in their own {@linkplain org.apache.sis.referencing.operation.projection projection} package.</p>
  *
  *
- * {@section Creating math transforms}
+ * <div class="section">Creating math transforms</div>
  * {@code MathTransform} instances can be created either directly or indirectly.
  * The recommended way is the indirect one: first
  * {@linkplain org.apache.sis.referencing.CRS#findOperation find the coordinate operation}
@@ -49,7 +49,7 @@
  * transform factory}.
  *
  *
- * {@section Non-spatial coordinates}
+ * <div class="section">Non-spatial coordinates</div>
  * {@code MathTransform} usually performs conversions or transformations from points given in a
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the

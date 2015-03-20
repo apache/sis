@@ -65,13 +65,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * However more performance may be gained by overriding the other {@code transform(…)} methods as well.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
  * It is highly recommended that third-party implementations be immutable and thread-safe too.
  * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
  * be shared by many objects and passed between threads without synchronization.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * {@code MathTransform} may or may not be serializable, at implementation choices.
  * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
  * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
@@ -320,7 +320,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * The source and destination may overlap. Consequently, implementors must read all source
      * ordinate values before to start writing the transformed ordinates in the destination array.
      *
@@ -966,7 +966,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Base class for implementations of inverse math transforms.
      * This inner class is the inverse of the enclosing {@link AbstractMathTransform}.
      *
-     * {@section Serialization}
+     * <div class="section">Serialization</div>
      * Instances of this class are serializable only if the enclosing math transform is also serializable.
      * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
      * Serialization, if allowed, should be used only for short term storage or RMI between applications

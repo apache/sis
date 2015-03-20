@@ -44,7 +44,7 @@ import java.util.Objects;
  * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
  * instantiation are unspecified. Some may be null, or some may be zero.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code DefaultRecord} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>

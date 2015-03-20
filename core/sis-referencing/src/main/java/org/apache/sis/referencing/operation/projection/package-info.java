@@ -40,7 +40,7 @@
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
- * {@section Definition of terms}
+ * <div class="section">Definition of terms</div>
  * <ul class="verbose">
  *   <li><b>Coordinate operation</b><br>
  *       In the particular case of this package, the conversion of geographic coordinates in any
@@ -58,7 +58,7 @@
  * </ul>
  *
  *
- * {@section Axis units and orientation}
+ * <div class="section">Axis units and orientation</div>
  * Many {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference systems}
  * use axis in (<var>latitude</var>, <var>longitude</var>) order, but not all. Axis order, orientation and units
  * are CRS-dependent. For example some CRS use longitude values increasing toward
@@ -114,7 +114,7 @@
  * which axis flips are applied.
  *
  *
- * {@section Projection on unit ellipse}
+ * <div class="section">Projection on unit ellipse</div>
  * A map projection in this package is actually the concatenation of the following transforms, in that order:
  *
  * <ul>

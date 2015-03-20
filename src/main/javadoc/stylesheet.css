@@ -152,18 +152,18 @@ div.warning:before {
 
 
 /*
- * Formatting in the {@section} custom javadoc tag.
+ * Formatting of section headers
  */
-div.block h5 {
-  font-size:    16px;
-  margin-top:   30px;
-  margin-bottom: 6px;
+div.section {
+  font-size:    15px;
+  font-weight:  bold;
+  margin-top:   21px;
+  margin-bottom: 3px;
 }
 
-div.block h6 {
-  font-size:    16px;
-  margin-top:   30px;
-  margin-bottom: 6px;
+div.description div.section {
+  font-size:  18px;
+  margin-top: 30px;
 }
 
 /*

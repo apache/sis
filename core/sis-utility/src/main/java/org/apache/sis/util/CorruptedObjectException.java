@@ -50,7 +50,7 @@ package org.apache.sis.util;
  *   inconsistency, it may throw this {@code CorruptedObjectException}.</li>
  * </ul>
  *
- * {@section Exception cause}
+ * <div class="section">Exception cause</div>
  * Since this exception may be thrown an undetermined amount of time after the data corruption, the root cause is
  * often unknown at this point. Sometime a more descriptive exception has been thrown earlier, but may have been
  * ignored by the user.

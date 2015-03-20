@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * is defined in order to make easier to find which debugging tools are available in case of
  * problem. See the "<cite>Use</cite>" javadoc link for a list of annotated classes and methods.
  *
- * {@section <code>Object.toString()</code> policy}
+ * <div class="section">{@code Object.toString()} policy</div>
  * Subclasses override the {@link Object#toString()} method for various purposes, sometime providing
  * content targeted to the end user (e.g. {@link java.lang.CharSequence}) and sometime providing
  * debugging information for developers only. In the Apache SIS library, {@code toString()}

@@ -32,7 +32,7 @@ import java.lang.ref.Reference;
  * <p>This class is not needed for the normal working of {@link Cache}. it is used only if
  * the user wants to see the cache entries through the standard Java collection API.</p>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * This class is thread-safe if and only if the {@code Set} given to the constructor is thread-safe.
  *
  * @param <K> The type of key objects.

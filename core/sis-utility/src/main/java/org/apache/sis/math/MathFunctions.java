@@ -160,7 +160,7 @@ public final class MathFunctions extends Static {
      *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
      * }
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the special case where only one element is different than zero, this method
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
      * without computing {@code sqrt(v²)}, in order to avoid rounding error. This special case
@@ -228,7 +228,7 @@ public final class MathFunctions extends Static {
      *   <li>If the argument is zero, then the result is -1075.</li>
      * </ul>
      *
-     * {@section Identities}
+     * <div class="section">Identities</div>
      * For any <var>p</var> values in the [-1075 … 1024] range and <var>value</var> = 2<sup>p</sup>:
      * <ul>
      *   <li><code>getExponent(Math.scalb(1.0, p)) == p</code></li>

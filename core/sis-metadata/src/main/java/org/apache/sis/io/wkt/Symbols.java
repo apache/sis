@@ -222,7 +222,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the locale for formatting dates and numbers.
      * The default value is {@link Locale#ROOT}.
      *
-     * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
+     * <div class="section">Relationship between {@code Symbols} locale and {@code WKTFormat} locale</div>
      * The {@code WKTFormat.getLocale(Locale.DISPLAY)} property specifies the language to use when
      * formatting {@link org.opengis.util.InternationalString} instances and can be set to any value.
      * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
@@ -491,7 +491,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Creates a new number format to use for parsing and formatting. Each {@link WKTFormat} will
      * create its own instance, since {@link NumberFormat}s are not guaranteed to be thread-safe.
      *
-     * {@section Scientific notation}
+     * <div class="section">Scientific notation</div>
      * The {@link NumberFormat} created here does not use scientific notation. This is okay for many
      * WKT formatting purpose since Earth ellipsoid axis lengths in metres are large enough for trigging
      * scientific notation, while we want to express them as normal numbers with centimetre precision.
@@ -540,7 +540,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Invoking this method is equivalent to invoking
      * <code>{@linkplain #containsElement(CharSequence, String) containsElement}(wkt, "AXIS")</code>.
      *
-     * {@section Use case}
+     * <div class="section">Use case</div>
      * The check for axis elements is of particular interest because the axis order is a frequent cause
      * of confusion when processing geographic data. Some applications just ignore any declared axis order
      * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.

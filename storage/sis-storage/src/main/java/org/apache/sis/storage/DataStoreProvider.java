@@ -29,7 +29,7 @@ package org.apache.sis.storage;
  *       to open a given {@link StorageConnector}.</li>
  * </ul>
  *
- * {@section Packaging data stores}
+ * <div class="section">Packaging data stores</div>
  * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
  *
  * {@preformat text
@@ -40,7 +40,7 @@ package org.apache.sis.storage;
  * where each line is the fully qualified name of the implementation class.
  * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * All {@code DataStoreProvider} implementations shall be thread-safe.
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
@@ -76,7 +76,7 @@ public abstract class DataStoreProvider {
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
      *
-     * {@section Implementation example}
+     * <div class="note"><b>Implementation example</b><br>
      * Implementations will typically check the first bytes of the stream for a "magic number" associated
      * with the format, as in the following example:
      *
@@ -102,6 +102,7 @@ public abstract class DataStoreProvider {
      *         return ProbeResult.SUPPORTED;
      *     }
      * }
+     * </div>
      *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
@@ -114,7 +115,7 @@ public abstract class DataStoreProvider {
     /**
      * Returns a data store implementation associated with this provider.
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *

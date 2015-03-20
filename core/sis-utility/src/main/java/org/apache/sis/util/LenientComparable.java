@@ -23,7 +23,7 @@ package org.apache.sis.util;
  * compared ignoring some properties (remarks, <i>etc.</i>) that are not relevant to the
  * coordinates calculation.
  *
- * {@section Conditions for equality}
+ * <div class="section">Conditions for equality</div>
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata} subclasses
  *     <ol>
@@ -124,7 +124,7 @@ public interface LenientComparable {
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
      *
-     * {@section Conformance to the <code>equals(Object)</code> method contract}
+     * <div class="section">Conformance to the {@code equals(Object)} method contract</div>
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
      * For all other modes <var>m</var>, the comparison is not guaranteed to be <cite>symmetric</cite> neither
      * <cite>transitive</cite>:

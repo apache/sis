@@ -37,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>The remaining of this class javadoc contains example codes placed in public domain.
  * Developers can copy and adapt those examples as they see fit.</p>
  *
- * {@section Example 1: Reduce the depth of a tree}
+ * <div class="section">Example 1: Reduce the depth of a tree</div>
  * For every branch containing exactly one child, the following method concatenates in-place
  * that branch and its child together. This method can be used for simplifying depth trees into
  * something less verbose. For example given the tree on the left side, this method transforms
