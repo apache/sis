@@ -60,13 +60,13 @@ import java.util.Objects;
  * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
  *
  * <p>The Bursa-Wolf parameters serve two purposes:</p>
- * <ol>
- *   <li><p><b>Fallback for datum shifts</b><br>
+ * <ol class="verbose">
+ *   <li><b>Fallback for datum shifts</b><br>
  *     There is different methods for transforming coordinates from one geodetic datum to an other datum,
  *     and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
  *     for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
  *     know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
- *     sometime together with the geographic extent of the coordinates to transform.</p>
+ *     sometime together with the geographic extent of the coordinates to transform.
  *
  *     <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
  *     {@link org.opengis.referencing.operation.CoordinateOperation} or a
@@ -77,13 +77,13 @@ import java.util.Objects;
  *     then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
  *   </li>
  *
- *   <li><p><b>WKT version 1 formatting</b><br>
+ *   <li><b>WKT version 1 formatting</b><br>
  *     The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
  *     <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
  *     with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
  *     for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
  *     Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
- *     do not exist in the EPSG database.</p>
+ *     do not exist in the EPSG database.
  *   </li>
  * </ol>
  *

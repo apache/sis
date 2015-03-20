@@ -350,7 +350,7 @@ public final class NilReason implements Serializable {
      * Returns an object of the given type which is nil for the reason represented by this instance.
      * The {@code type} argument can be one of the following cases:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>An <strong>interface</strong>: in such case, this method returns an object which implement the given
      *       interface together with the {@link NilObject} and {@link LenientComparable} interfaces:
      *       <ul>

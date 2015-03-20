@@ -174,21 +174,47 @@ div.block ul,
 div.block ol {
   margin-top:    9px;
   margin-bottom: 9px;
+  text-align:   left;
 }
 
 div.block ul > li,
 div.block ol > li {
   margin-top:    0;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 
-ul.verbose li {
-  margin-top:    6px;
-  margin-bottom: 6px;
+div.block ul.verbose > li,
+div.block ol.verbose > li {
+  margin-top:    9px;
+  margin-bottom: 9px;
+  text-align: justify;
 }
 
+/*
+ * Reduce the space for sublists.
+ */
+div.block ul > li > ul,
+div.block ol > li > ul {
+  margin-top:    3px;
+  margin-bottom: 6px;
+  text-align:   left;
+}
+
+div.block ul > li > ul > li,
+div.block ol > li > ul > li {
+  margin-top:    0;
+  margin-bottom: 0;
+}
+
+/*
+ * Miscellaneous.
+ */
 span.deprecated {
   text-decoration: line-through;
+}
+
+div.block {
+  text-align: justify;
 }
 
 

@@ -47,7 +47,7 @@ import java.util.Objects;
  *
  * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
  *
- * <ul>
+ * <ul class="verbose">
  *   <li><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
  *       each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
  *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</li>
@@ -69,7 +69,7 @@ import java.util.Objects;
  * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
  * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
  *
- * <ul>
+ * <ul class="verbose">
  *   <li><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
  *       each {@code Identifier} name or code can be local to a code space defined by an authority.
  *       Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
@@ -86,7 +86,8 @@ import java.util.Objects;
  *
  * {@section Namespaces and scopes}
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
- * <ul>
+ *
+ * <ul class="verbose">
  *   <li>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
  *       with the above-cited authority, code space, version and description information.
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} or identifier,

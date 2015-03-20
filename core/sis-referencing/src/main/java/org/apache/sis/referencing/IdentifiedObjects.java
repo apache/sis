@@ -117,7 +117,7 @@ public final class IdentifiedObjects extends Static {
      * This method checks first the {@linkplain AbstractIdentifiedObject#getName() primary name},
      * then all {@linkplain AbstractIdentifiedObject#getAlias() aliases} in their iteration order.
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>If the name or alias implements the {@link Identifier} interface,
      *       then this method compares the {@linkplain Identifier#getAuthority()
      *       identifier authority} against the specified citation using the

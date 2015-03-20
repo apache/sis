@@ -20,28 +20,28 @@
  * The phenomenon to represent (or a fundamental unit of information) is called <cite>a feature</cite>.
  * The term “feature” may be used in different contexts:
  *
- * <ul>
- *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types}</b><br>
+ * <ul class="verbose">
+ *   <li><b>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types}</b><br>
  *       Define the <em>structure</em> of real-world representations. A feature type lists the
  *       {@linkplain org.apache.sis.feature.DefaultAttributeType attributes},
  *       {@linkplain org.apache.sis.feature.DefaultOperation operations} or
  *       {@linkplain org.apache.sis.feature.DefaultAssociationRole associations to other features}
  *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#getProperties(boolean) properties}”
- *       or “characteristics”) that a feature can have.</p>
+ *       or “characteristics”) that a feature can have.
  *
  *       <div class="note"><b>Analogy:</b> a {@code FeatureType} in a Spatial Information System is equivalent to a
  *       {@link java.lang.Class} in the Java language. By extension, {@code AttributeType} and {@code Operation} are
  *       equivalent to {@link java.lang.reflect.Field} and {@link java.lang.reflect.Method} respectively.</div></li>
  *
- *   <li><p><b>{@linkplain org.apache.sis.feature.AbstractFeature Feature instances}</b> (often called only Features)<br>
- *       Hold the <em>content</em> (or values) that describe one specific real-world object.</p>
+ *   <li><b>{@linkplain org.apache.sis.feature.AbstractFeature Feature instances}</b> (often called only Features)<br>
+ *       Hold the <em>content</em> (or values) that describe one specific real-world object.
  *
  *       <div class="note"><b>Example:</b> the “Eiffel tower” is a <em>feature instance</em> belonging
  *       to the “Tower” <em>feature type</em>.</div></li>
  *
- *   <li><p><b>{@linkplain org.apache.sis.feature.DefaultFeatureType#isSimple() Simple features}</b><br>
+ *   <li><b>{@linkplain org.apache.sis.feature.DefaultFeatureType#isSimple() Simple features}</b><br>
  *       Are instances of a feature type with no association to other features, and where all attributes
- *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</p></li>
+ *       are constrained to the [1 … 1] cardinality. Such simple features are very common.</li>
  * </ul>
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.

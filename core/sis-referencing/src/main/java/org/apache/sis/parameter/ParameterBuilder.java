@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * since those properties are specific to the each parameter. Other properties like codespace,
  * version and cardinality are left unchanged because they may be shared by many parameters.
  *
- * <ul>
+ * <ul class="verbose">
  *   <li><b>{@linkplain DefaultParameterDescriptor#getName() Names}:</b>
  *   each parameter must have a name, which can be specified by any of the {@link #addName(CharSequence)
  *   addName(…)} methods. Parameters can optionally have an arbitrary amount of aliases, which are also specified
