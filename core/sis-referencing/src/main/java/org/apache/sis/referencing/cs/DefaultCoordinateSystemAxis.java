@@ -173,7 +173,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * The abbreviation used for this coordinate system axes.
-     * Examples are "<var>X</var>" and "<var>Y</var>".
+     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
      */
     @XmlElement(name = "axisAbbrev", required = true)
     private final String abbreviation;
@@ -412,7 +412,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Returns the abbreviation used for this coordinate system axes.
-     * Examples are "<var>X</var>" and "<var>Y</var>".
+     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
      *
      * @return The coordinate system axis abbreviation.
      */
