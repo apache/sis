@@ -475,7 +475,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * specification do not mandates a particular CRS, so we avoid transformations that are not
      * strictly necessary.</p>
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this geographic bounding box.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.

@@ -195,12 +195,12 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * Sets the temporal extent to the specified values. This convenience method creates a temporal
      * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
      *
-     * <p><b>Note:</b> This method is available only if the {@code sis-temporal} module is available on the classpath,
+     * <p><b>Note:</b> this method is available only if the {@code sis-temporal} module is available on the classpath,
      * or any other module providing an implementation of the {@link org.opengis.temporal.TemporalFactory} interface.</p>
      *
      * @param  startTime The start date and time for the content of the dataset, or {@code null} if none.
      * @param  endTime   The end date and time for the content of the dataset, or {@code null} if none.
-     * @throws UnsupportedOperationException If no implementation of {@code TemporalFactory} has been found
+     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
      *         on the classpath.
      */
     public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
@@ -222,7 +222,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * The given envelope must have a {@linkplain Envelope#getCoordinateReferenceSystem() CRS},
      * and at least one dimension of that CRS shall be assignable to a property of this extent.
      *
-     * <p><b>Note:</b> This method is available only if the {@code sis-referencing} module is
+     * <p><b>Note:</b> this method is available only if the {@code sis-referencing} module is
      * available on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this temporal extent.

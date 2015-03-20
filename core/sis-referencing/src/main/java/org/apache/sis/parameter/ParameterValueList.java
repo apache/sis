@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * This class performs checks on the parameter values to be added or removed.
  * This implementation supports {@code set(…)}, {@code add(…)} and {@code remove(…)} operations.
  *
- * <p><b>Implementation note:</b> This class reproduces some {@link java.util.ArrayList} functionalities.
+ * <p><b>Implementation note:</b> this class reproduces some {@link java.util.ArrayList} functionalities.
  * However we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
  * implementations provided by {@code AbstractList} — the optimizations performed by {@code ArrayList}
  * are not suitable here.</p>

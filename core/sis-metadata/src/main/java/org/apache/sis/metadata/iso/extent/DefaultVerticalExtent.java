@@ -220,7 +220,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
      * envelope CRS} must have a vertical component.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this vertical extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.

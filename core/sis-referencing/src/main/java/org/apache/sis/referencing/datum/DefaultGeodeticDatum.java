@@ -362,8 +362,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * {@linkplain #getPrimeMeridian() prime meridian}, then it is caller's responsibility
      * to apply longitude rotation before to use the matrix returned by this method.</p>
      *
-     * <p><b>Search order</b><br>
-     * This method performs the search in the following order:</p>
+     * <div class="section">Search order</div>
+     * This method performs the search in the following order:
      * <ol>
      *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
      *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
@@ -373,16 +373,16 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *       and {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverted}.</li>
      * </ol>
      *
-     * <p><b>Multi-occurrences resolution</b><br>
+     * <div class="section">Multi-occurrences resolution</div>
      * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
      * the largest intersection between its {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
      * and the given extent will be selected. If more than one instance have the same intersection, then the first
-     * occurrence is selected.</p>
+     * occurrence is selected.
      *
-     * <p><b>Time-dependent parameters</b><br>
+     * <div class="section">Time-dependent parameters</div>
      * If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
-     * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.</p>
+     * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.
      *
      * @param  targetDatum The target datum.
      * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.

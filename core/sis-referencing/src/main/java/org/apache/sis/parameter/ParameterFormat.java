@@ -220,7 +220,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * }
          * </div>
          *
-         * <p><b>Tip:</b> The table formatted by default may be quite large. It is recommended to invoke
+         * <p><b>Tip:</b> the table formatted by default may be quite large. It is recommended to invoke
          * {@link ParameterFormat#setPreferredCodespaces(String[])} before to format in order to reduce the
          * amount of columns to display.</p>
          */
