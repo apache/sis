@@ -43,9 +43,19 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * The parameters of a coordinate operation as a sequence of
- * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> transforms.
- * The normalize and denormalize parts must be affine transforms.
+ * The parameters that describe a sequence of
+ * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> transforms as a whole.
+ * The normalize and denormalize steps must be affine transforms, while the non-linear kernel is arbitrary.
+ *
+ * <div class="note"><b>Note:</b> actually there is nothing in this class which force the kernel to be non-linear.
+ * But this class is useless if the kernel is linear, because 3 linear steps can be efficiently
+ * {@linkplain java.awt.geom.AffineTransform#concatenate concatenated} in a single affine transform.</div>
+ *
+ * <p>Contextual parameters can be {@linkplain AbstractMathTransform#getContextualParameters() associated}
+ * to the <cite>non-linear kernel</cite> step of the above-cited sequence.
+ * Since the {@link AbstractMathTransform#getParameterValues()} method of the non-linear kernel returns only
+ * normalized parameters (e.g. a map projection on an ellipsoid having a <cite>semi-major</cite> axis length of 1),
+ * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
  * <div class="section">Usage in map projections</div>
  * This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
@@ -59,12 +69,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
  *     instantiate the same {@link org.apache.sis.referencing.operation.Mercator} class, but with different descriptors.</li>
  *
- *   <li>The map projection constructor fetches all parameters that he needs from the user-supplied
+ *   <li>The map projection constructor fetches all parameters that it needs from the user-supplied
  *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
  *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
- *   <li>The constructor should invoke {@link #normalizeGeographic(double)}
- *     and {@link #denormalizeCartesian(double, double, double, double)}.
+ *   <li>The map projection constructor may keep only the non-linear parameters for itself, and gives the linear parameters
+ *     to the {@link #normalizeGeographic(double)} and {@link #denormalizeCartesian(double, double, double, double)} methods.
  *     The constructor is free to apply additional operations on the two affine transforms
  *     ({@linkplain #normalization(boolean) normalize / denormalize}) after the above-cited methods have been invoked.</li>
  * </ol>
@@ -132,7 +142,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Creates a matrix for a linear part of the sequence.
+     * Creates a matrix for a linear step of the sequence.
      * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
      * to allow {@link #normalization(boolean)} to return the reference to the (de)normalize matrices.
      */
@@ -394,7 +404,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
          * before the projection. However it may contains more than just this normalization,
          * because it may have been concatenated with any user-defined transform (for example
          * in order to apply a change of axis order). We need to separate the "user-defined"
-         * part from the "normalize" part.
+         * step from the "normalize" step.
          */
         Matrix userDefined = inverse ? denormalize : normalize;
         if (!inverse) try {
