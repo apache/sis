@@ -169,40 +169,47 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Returns the parameter values for this math transform, or {@code null} if unknown.
-     * Callers should not modify the returned parameters, as modifications (if allowed)
-     * will generally not be reflected back in this {@code MathTransform}.
+     * This is not necessarily the parameters that the user specified at construction time,
+     * since implementations may have applied normalizations.
      *
-     * <div class="note"><b>Relationship with ISO 19111:</b>
-     * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
-     * {@link MathTransform} implementations return parameters in standard units (usually
-     * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
-     * </div>
+     * <div class="section">Normalized and contextual parameters</div>
+     * Most Apache SIS implementations of map projections perform their calculations on an ellipsoid
+     * having a semi-major axis length of 1. In such cases, the group returned by this method contains
+     * a {@code "semi_major"} parameter with a value of 1. If the real axis length is desired, we need
+     * to take in account the context of this math transform, i.e. the scales and offsets applied before
+     * and after this transform. This information is provided by {@link #getContextualParameters()}.
      *
      * @return The parameter values for this math transform, or {@code null} if unspecified.
+     *         Note that those parameters may be normalized (e.g. represent a transformation
+     *         of an ellipsoid of semi-major axis length of 1).
      *
+     * @see #getContextualParameters()
      * @see SingleOperation#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
         /*
          * Do NOT try to infer the parameters from getContextualParameters(). This is usually not appropriate
-         * because if ContextualParameters declares "normalize" and "denormalize" affine transforms,
-         * they need to be taken in account in a way that only the subclass know.
+         * because if ContextualParameters declares "normalize" and "denormalize" affine transforms, then those
+         * transforms need to be taken in account in a way that only the subclass know.
          */
         return null;
     }
 
     /**
-     * Returns the parameters of this transform as a sequence of
-     * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite>) transforms
-     * (<i>optional operation</i>).
+     * Returns the parameters for a sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * transforms (<i>optional operation</i>).
      *
      * Subclasses can override this method if they choose to split their computation in linear and non-linear parts.
-     * Such separation is optional: it can leads to better performance, but should not change significantly the
-     * result (ignoring differences in rounding errors).
+     * Such split is optional: it can leads to better performance (because SIS can concatenate efficiently consecutive
+     * linear transforms), but should not change significantly the result (ignoring differences in rounding errors).
+     * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
+     * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return The parameters values splitted in a sequence of <cite>normalize</cite> → <cite>non-linear
-     *         kernel</cite> → <cite>denormalize</cite> transforms, or {@code null} if unspecified.
+     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     *         transforms, or {@code null} if unspecified.
+     *         Callers should not modify the returned parameters, since modifications (if allowed)
+     *         will generally not be reflected back in this {@code MathTransform}.
      *
      * @since 0.6
      */
