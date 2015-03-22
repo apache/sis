@@ -580,6 +580,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NegativeArrayLength_1 = 68;
 
         /**
+         * No convergence.
+         */
+        public static final short NoConvergence = 181;
+
+        /**
          * No convergence for points {0} and {1}.
          */
         public static final short NoConvergenceForPoints_2 = 69;
