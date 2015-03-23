@@ -150,7 +150,6 @@ public class AbstractElement extends ISOMetadata implements Element {
 
         /**
          * Returns the type of elements in this list.
-         * @return
          */
         @Override
         public Class<Date> getElementType() {
