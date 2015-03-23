@@ -119,7 +119,6 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
 
     /**
      * Tests the {@link UnitaryProjection#t(double, double)} function.
-     * This is also a test of the forward Mercator projection in the ellipsoidal case.
      *
      * {@preformat text
      *   Forward:  y = -log(tsfn(φ))
@@ -152,6 +151,10 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
         assertTrue  ("Out of bounds",           t(PI*3/2)             < -1E+16);
         assertEquals("Function periodicity", 1, t(2*PI),              TOLERANCE);
         assertEquals("Function periodicity", 0, t(PI*5/2),            TOLERANCE);
+        /*
+         * Use in a way close to (but not identical)
+         * to the way the Mercator projection need it.
+         */
         assertEquals("Forward 0°N",  0,                 -log(t(0)),     TOLERANCE);
         assertEquals("Forward 90°N", POSITIVE_INFINITY, -log(t(+PI/2)), TOLERANCE);
         assertTrue  ("Forward 90°S", -LN_INFINITY >     -log(t(-PI/2)));

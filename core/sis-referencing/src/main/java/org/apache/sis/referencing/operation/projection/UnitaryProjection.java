@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.io.Serializable;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -28,10 +30,15 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -40,13 +47,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * computations are performed for a sphere having a semi-major axis of 1. More specifically:
  *
  * <ul class="verbose">
- *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform} method
+ *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform(…)} method
  *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
  *   Longitudes have the <cite>central meridian</cite> removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
  *   {@linkplain ContextualParameters#normalization(boolean) normalize} affine transform.</li>
  *
- *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform} method returns
+ *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>easting</var>, <var>northing</var>) values on a sphere or ellipse having a semi-major axis length of 1.
  *   The multiplication by the scale factor and the false easting/northing offsets are applied by the
  *   {@linkplain ContextualParameters#normalization(boolean) denormalize} affine transform.</li>
@@ -59,7 +66,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * (typically some combinations of inverse projection followed by a direct projection).
  *
  * <p>All angles (either fields, method parameters or return values) in this class and subclasses are
- * in radians. This is the opposite of {@link Parameters} where all angles are in decimal degrees.</p>
+ * in radians. This is the opposite of {@link Parameters} where all angles are in CRS-dependent units,
+ * typically decimal degrees.</p>
  *
  * <div class="section">Serialization</div>
  * Serialization of this class is appropriate for short-term storage or RMI use, but may not be compatible
@@ -127,8 +135,8 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     protected final double excentricity;
 
     /**
-     * The square of excentricity: e² = (a²-b²)/a² where
-     * <var>e</var> is the {@linkplain #excentricity excentricity},
+     * The square of excentricity: ℯ² = (a²-b²)/a² where
+     * <var>ℯ</var> is the {@linkplain #excentricity excentricity},
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      */
@@ -156,19 +164,56 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     }
 
     /**
+     * Returns the parameters used for creating the complete map projection. Those parameters describe a sequence
+     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms. They are used for formatting
+     * <cite>Well Known Text</cite> (WKT) and error messages. Subclasses shall not use the values defined in the
+     * returned object for computation purpose, except at construction time.
+     *
+     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     *         transforms, or {@code null} if unspecified.
+     */
+    @Override
+    protected final ContextualParameters getContextualParameters() {
+        return parameters;
+    }
+
+    /**
+     * Returns a copy of the parameter values for this projection.
+     * This base class supplies a value for the following parameters:
+     *
+     * <ul>
+     *   <li>Semi-major axis length, which is set to 1.</li>
+     *   <li>Semi-minor axis length, which is set to
+     *       <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code>.</li>
+     * </ul>
+     *
+     * Subclasses must complete.
+     *
+     * @return A copy of the parameter values for this unitary projection.
+     */
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        final ParameterDescriptorGroup descriptor = super.getParameterDescriptors();
+        final ParameterValueGroup values = descriptor.createValue();
+        values.parameter(Constants.SEMI_MAJOR).setValue(1.0);
+        values.parameter(Constants.SEMI_MINOR).setValue(sqrt(1 - excentricitySquared));
+        return values;
+    }
+
+    /**
      * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
      * transform derivative if requested.
      *
      * <div class="section">Normalization</div>
-     * <p>The input ordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
+     * The input ordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians.
      * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
      * coordinate by the global <cite>scale factor</cite>
      * and apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset.
      * This means that projections that implement this method are performed on a sphere or ellipse
-     * having a semi-major axis length of 1.</p>
+     * having a semi-major axis length of 1.
      *
      * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">PROJ.4</a>, the same standardization,
      * described above, is handled by {@code pj_fwd.c}.</div>
@@ -201,11 +246,11 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
      * <div class="section">Normalization</div>
-     * <p>Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
+     * Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
      * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude
      * in the output coordinate. This means that projections that implement this method are performed on a sphere
-     * or ellipse having a semi-major axis of 1.</p>
+     * or ellipse having a semi-major axis of 1.
      *
      * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">PROJ.4</a>, the same standardization,
      * described above, is handled by {@code pj_inv.c}.</div>
@@ -275,6 +320,79 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
                 return Matrices.inverse(UnitaryProjection.this.transform(dstPts, dstOff, null, 0, true));
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if this class is a {@code Spherical} nested class.
+     * This information is used sometime for selecting formulas, and for testing purpose.
+     *
+     * This method is not public because the usage of those nested classes is specific to Apache SIS implementation.
+     */
+    boolean isSpherical() {
+        return false;
+    }
+
+    /**
+     * Computes a hash code value for this unitary projection.
+     * The default implementation computes a value from the parameters given at construction time.
+     *
+     * @return The hash code value.
+     */
+    @Override
+    protected int computeHashCode() {
+        return parameters.hashCode() + 31 * super.computeHashCode();
+    }
+
+    /**
+     * Compares the given object with this transform for equivalence. The default implementation checks if
+     * {@code object} is an instance of the same class than {@code this}, then compares the excentricity.
+     *
+     * <p>If this method returns {@code true}, then for any given identical source position, the two compared
+     * unitary projections shall compute the same target position. Many of the {@linkplain Parameters projection
+     * parameters} used for creating the unitary projections are irrelevant and don not need to be known.
+     * Those projection parameters will be compared only if the comparison mode is {@link ComparisonMode#STRICT}
+     * or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}.</p>
+     *
+     * <div class="note"><b>Example:</b>
+     * a {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <cite>standard parallel</cite>
+     * value of 60°. The same projection can also be created in the 1SP case with a <cite>scale factor</cite> of 0.5.
+     * Nevertheless those two unitary projections applied on a sphere gives identical results. Considering them as
+     * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
+     * </div>
+     *
+     * @param object The object to compare with this unitary projection for equivalence.
+     * @param mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
+     * @return {@code true} if the given object is equivalent to this unitary projection.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (super.equals(object, mode)) {
+            final double e1, e2;
+            final UnitaryProjection that = (UnitaryProjection) object;
+            if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
+                if (!Objects.equals(parameters, that.parameters)) {
+                    return false;
+                }
+                e1 = this.excentricitySquared;
+                e2 = that.excentricitySquared;
+            } else {
+                e1 = this.excentricity;
+                e2 = that.excentricity;
+            }
+            /*
+             * There is no need to compare both 'excentricity' and 'excentricitySquared' since
+             * the former is computed from the later. In strict comparison mode, we are better
+             * to compare the 'excentricitySquared' since it is the original value from which
+             * the other value is derived. However in approximative comparison mode, we need
+             * to use the 'excentricity', otherwise we would need to take the square of the
+             * tolerance factor before comparing 'excentricitySquared'.
+             */
+            return Numerics.epsilonEqual(e1, e2, mode);
+        }
+        return false;
     }
 
 
