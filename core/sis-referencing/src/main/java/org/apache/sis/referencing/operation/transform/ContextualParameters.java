@@ -117,10 +117,10 @@ public class ContextualParameters extends FormattableObject implements Parameter
 
     /**
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
- the kernel operation.On {@code ContextualParameters} construction, those affines are initially identity
- transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
- After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
- they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
+     * the kernel operation.On {@code ContextualParameters} construction, those affines are initially identity
+     * transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
+     * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
+     * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
      * @see #normalization(boolean)
      */
     denormalize;
