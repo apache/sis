@@ -410,7 +410,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          * Copy right hand side with pivoting. Write the result directly in the elements array
          * of the result matrix. This block does not perform floating-point arithmetic operations.
          */
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize, false);
         final double[] elements = result.elements;
         final int errorOffset = size * innerSize;
         for (int k=0,j=0; j<size; j++) {

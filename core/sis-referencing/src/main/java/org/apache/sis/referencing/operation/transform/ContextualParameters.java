@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -150,7 +151,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
         if (size == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
         }
-        return Matrices.createIdentity(size);
+        return Matrices.create(size, size, ExtendedPrecisionMatrix.IDENTITY);
     }
 
     /**

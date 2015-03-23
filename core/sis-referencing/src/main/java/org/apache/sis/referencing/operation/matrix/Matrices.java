@@ -192,7 +192,10 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS create(final int numRow, final int numCol, final Number[] elements) {
         ArgumentChecks.ensureNonNull("elements", elements);
-        final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol);
+        if (elements == ExtendedPrecisionMatrix.IDENTITY) { // Intentionally undocumented features.
+            return GeneralMatrix.createExtendedPrecision(numRow, numCol, true);
+        }
+        final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol, false);
         if (matrix.setElements(elements)) {
             /*
              * At least one org.apache.sis.internal.util.DoubleDouble instance has been found,
@@ -715,7 +718,7 @@ public final class Matrices extends Static {
         }
         final int nc = m2.getNumCol();
         MatrixSIS.ensureNumRowMatch(m1.getNumCol(), m2.getNumRow(), nc);
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(m1.getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(m1.getNumRow(), nc, false);
         result.setToProduct(m1, m2);
         return result;
     }

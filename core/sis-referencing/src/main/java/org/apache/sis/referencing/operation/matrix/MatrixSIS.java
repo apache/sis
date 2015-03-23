@@ -368,7 +368,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(getNumCol(), matrix.getNumRow(), nc);
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc, false);
         result.setToProduct(this, matrix);
         return result;
     }
