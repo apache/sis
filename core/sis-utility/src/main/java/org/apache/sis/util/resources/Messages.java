@@ -98,7 +98,7 @@ public final class Messages extends IndexedResourceBundle {
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
 
         /**
-         * This parameter from the “{0}” projection is not formally a parameter of “{1}” projection.
+         * This parameter borrowed from the “{0}” projection is not formally a “{1}” parameter.
          */
         public static final short NotFormallyAnEpsgParameter_2 = 10;
 

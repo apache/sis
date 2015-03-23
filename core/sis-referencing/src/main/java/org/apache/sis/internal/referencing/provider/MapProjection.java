@@ -140,7 +140,7 @@ public abstract class MapProjection extends AbstractProvider {
      */
     static GenericName sameNameAs(final Citation authority, final GeneralParameterDescriptor parameters) {
         for (final GenericName candidate : parameters.getAlias()) {
-            if (((Identifier) candidate).getAuthority() == authority) {
+            if (candidate instanceof Identifier && ((Identifier) candidate).getAuthority() == authority) {
                 return candidate;
             }
         }

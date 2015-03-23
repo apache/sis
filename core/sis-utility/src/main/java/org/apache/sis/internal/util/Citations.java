@@ -22,6 +22,7 @@ import java.util.Locale;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.CharSequences.equalsFiltered;
@@ -320,6 +321,9 @@ public final class Citations extends Static {
      * @since 0.6
      */
     public static String getUnicodeIdentifier(final Citation citation) {
+        if (citation instanceof IdentifierSpace<?>) {
+            return ((IdentifierSpace<?>) citation).getName();
+        }
         final String identifier = getIdentifier(citation, true);
         if (identifier != null) {
             /*

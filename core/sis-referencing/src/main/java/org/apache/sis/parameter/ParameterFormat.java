@@ -102,7 +102,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class ParameterFormat extends TabularFormat<Object> {
@@ -446,12 +446,13 @@ public class ParameterFormat extends TabularFormat<Object> {
     private void format(final String name, final ParameterDescriptorGroup group,
             final ParameterValueGroup values, final Appendable out) throws IOException
     {
-        final boolean    isBrief        = (contentLevel == ContentLevel.BRIEF);
-        final boolean    showObligation = !isBrief || (values == null);
-        final boolean    hasColors      = (colors != null);
-        final String     lineSeparator  = this.lineSeparator;
-        final ParameterTableRow header  = new ParameterTableRow(group, displayLocale, preferredCodespaces, isBrief);
-        final String    groupCodespace  = header.getCodeSpace();
+        final boolean             isBrief        = (contentLevel == ContentLevel.BRIEF);
+        final boolean             showObligation = !isBrief || (values == null);
+        final boolean             hasColors      = (colors != null);
+        final String              lineSeparator  = this.lineSeparator;
+        final Map<String,Integer> remarks        = new LinkedHashMap<>();
+        final ParameterTableRow   header         = new ParameterTableRow(group, displayLocale, preferredCodespaces, remarks, isBrief);
+        final String              groupCodespace = header.getCodeSpace();
         /*
          * Prepares the informations to be printed later as table rows. We scan all rows before to print them
          * in order to compute the width of codespaces. During this process, we split the objects to be printed
@@ -498,7 +499,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             }
             ParameterTableRow row = descriptorValues.get(descriptor);
             if (row == null) {
-                row = new ParameterTableRow(descriptor, displayLocale, preferredCodespaces, isBrief);
+                row = new ParameterTableRow(descriptor, displayLocale, preferredCodespaces, remarks, isBrief);
                 descriptorValues.put(descriptor, row);
                 if (row.codespaceWidth > codespaceWidth) {
                     codespaceWidth = row.codespaceWidth;
@@ -725,6 +726,13 @@ public class ParameterFormat extends TabularFormat<Object> {
         }
         table.nextLine(horizontalBorder);
         table.flush();
+        /*
+         * Write remarks, if any.
+         */
+        for (final Map.Entry<String,Integer> remark : remarks.entrySet()) {
+            ParameterTableRow.writeFootnoteNumber(out, remark.getValue());
+            out.append(' ').append(remark.getKey()).append(lineSeparator);
+        }
         /*
          * Now formats all groups deferred to the end of this table, with recursive calls to
          * this method (recursive calls use their own TableWriter instance, so they may result
