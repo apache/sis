@@ -18,7 +18,13 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import javax.measure.unit.SI;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -30,6 +36,8 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.util.resources.Messages;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
@@ -125,4 +133,50 @@ public abstract class MapProjection extends AbstractProvider {
      */
     @Override
     public abstract MathTransform2D createMathTransform(ParameterValueGroup values) throws ParameterNotFoundException;
+
+    /**
+     * Returns the name of the given authority declared in the given parameter descriptor.
+     * This method is used only as a way to avoid creating many instances of the same name.
+     */
+    static GenericName sameNameAs(final Citation authority, final GeneralParameterDescriptor parameters) {
+        for (final GenericName candidate : parameters.getAlias()) {
+            if (((Identifier) candidate).getAuthority() == authority) {
+                return candidate;
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    /**
+     * Copies the names and identifiers from the given parameter into the builder.
+     * This is used for sharing name instances created for an other operation.
+     *
+     * The given {@code esri} and {@code netcdf} parameters will be inserted after the OGC name.
+     */
+    static ParameterBuilder withEsriAndNetcdf(final ParameterDescriptor<?> source, final ParameterBuilder builder,
+            final String esri, final String netcdf)
+    {
+        for (final Identifier identifier : source.getIdentifiers()) {
+            builder.addIdentifier(identifier);
+        }
+        builder.addName(source.getName());
+        for (final GenericName alias : source.getAlias()) {
+            builder.addName(alias);
+            if (((Identifier) alias).getAuthority() == Citations.OGC) {
+                builder.addName(Citations.ESRI,   esri)
+                       .addName(Citations.NETCDF, netcdf);
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * Creates a remarks for parameters that are not formally EPSG parameter.
+     *
+     * @param origin The name of the projection for where the parameter is formally used.
+     * @param usedIn The name of the projection where we also use that parameter.
+     */
+    static InternationalString notFormallyEPSG(final String origin, final String usedIn) {
+        return Messages.formatInternational(Messages.Keys.NotFormallyAnEpsgParameter_2, origin, usedIn);
+    }
 }
