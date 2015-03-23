@@ -120,8 +120,8 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * Tests the {@link UnitaryProjection#t(double, double)} function.
      *
      * {@preformat text
-     *   Forward:  y = -log(tsfn(φ))
-     *   Inverse:  φ = cphi2(exp(-y))
+     *   Forward:  y = -log(t(φ))
+     *   Inverse:  φ = φ(exp(-y))
      * }
      */
     @Test

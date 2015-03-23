@@ -157,16 +157,17 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
 
     /**
      * Creates a new extended precision matrix of the given size.
-     * Matrices elements are initialized to zero (not to the matrix identity).
      *
      * @param numRow Number of rows.
      * @param numCol Number of columns.
+     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
+     *        or {@code false} for leaving it initialized to zero.
      */
-    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol) {
+    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol, final boolean setToIdentity) {
         if (numRow == numCol) {
-            return new GeneralMatrix(numRow, numCol, false, 2);
+            return new GeneralMatrix(numRow, numCol, setToIdentity, 2);
         } else {
-            return new NonSquareMatrix(numRow, numCol, false, 2);
+            return new NonSquareMatrix(numRow, numCol, setToIdentity, 2);
         }
     }
 
