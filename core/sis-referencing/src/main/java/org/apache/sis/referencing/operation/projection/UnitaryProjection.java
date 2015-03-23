@@ -201,6 +201,16 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     }
 
     /**
+     * Returns {@code true} if this projection is done on a sphere rather than an ellipsoid.
+     * Projections on spheres have an {@linkplain #excentricity} equals to zero.
+     *
+     * @return {@code true} if this projection is on a sphere.
+     */
+    public final boolean isSpherical() {
+        return excentricity == 0;
+    }
+
+    /**
      * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
      * transform derivative if requested.
@@ -320,16 +330,6 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
                 return Matrices.inverse(UnitaryProjection.this.transform(dstPts, dstOff, null, 0, true));
             }
         }
-    }
-
-    /**
-     * Returns {@code true} if this class is a {@code Spherical} nested class.
-     * This information is used sometime for selecting formulas, and for testing purpose.
-     *
-     * This method is not public because the usage of those nested classes is specific to Apache SIS implementation.
-     */
-    boolean isSpherical() {
-        return false;
     }
 
     /**

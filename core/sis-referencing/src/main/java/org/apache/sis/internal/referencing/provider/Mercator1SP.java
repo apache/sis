@@ -45,59 +45,39 @@ public final class Mercator1SP extends MapProjection {
     private static final long serialVersionUID = -5886510621481710072L;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#centralMeridian
-     * central meridian} parameter value.
-     *
-     * This parameter is mandatory.
+     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> parameter value.
+     * Valid values range is (-90 … 90)° and default value is 0°.
+     */
+    static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
+
+    /**
+     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#latitudeOfOrigin
-     * latitude of origin} parameter value.
-     *
-     * This parameter is mandatory.
-     * Valid values range is [-90 … 90]° and default value is 0°.
-     */
-    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
-
-    /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor
-     * scale factor} parameter value.
-     *
-     * This parameter is mandatory.
+     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> parameter value.
      * Valid values range is (0 … ∞) and default value is 1.
      */
-    public static final ParameterDescriptor<Double> SCALE_FACTOR;
+    static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseEasting
-     * false easting} parameter value.
-     *
-     * This parameter is mandatory.
+     * The operation parameter descriptor for the <cite>False easting</cite> parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING;
+    static final ParameterDescriptor<Double> FALSE_EASTING;
 
     /**
-     * The operation parameter descriptor for the {@linkplain
-     * org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseNorthing
-     * false northing} parameter value.
-     *
-     * This parameter is mandatory.
+     * The operation parameter descriptor for the <cite>False northing</cite> parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING;
+    static final ParameterDescriptor<Double> FALSE_NORTHING;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
 
@@ -150,8 +130,12 @@ public final class Mercator1SP extends MapProjection {
             .addIdentifier(Citations.GEOTIFF,   "7")
             .addIdentifier(Citations.MAP_INFO, "10")
             .addIdentifier(Citations.MAP_INFO, "26")
-            .createGroupForMapProjection(LATITUDE_OF_ORIGIN, CENTRAL_MERIDIAN,
-                    SCALE_FACTOR, FALSE_EASTING, FALSE_NORTHING);
+            .createGroupForMapProjection(
+                    LATITUDE_OF_ORIGIN,
+                    CENTRAL_MERIDIAN,
+                    SCALE_FACTOR,
+                    FALSE_EASTING,
+                    FALSE_NORTHING);
     }
 
     /**
@@ -178,6 +162,6 @@ public final class Mercator1SP extends MapProjection {
      */
     @Override
     public MathTransform2D createMathTransform(ParameterValueGroup values) {
-        return null; // TODO Mercator.create(getParameters(), values);
+        return null; // TODO Mercator.create(this, values);
     }
 }

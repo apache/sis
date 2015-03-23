@@ -160,6 +160,16 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> MAP_INFO = new Authority<>("MapInfo", "MapInfo");
 
     /**
+     * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
+     * for digital hydrographic data</a> specification.
+     *
+     * @category Code space
+     *
+     * @since 0.6
+     */
+    public static final IdentifierSpace<Integer> S57 = new Authority<>("S-57", "S57");
+
+    /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
@@ -185,7 +195,7 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      */
     private static final Citation[] CITATIONS = {
-        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, MAP_INFO, ISBN, ISSN
+        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, MAP_INFO, S57, ISBN, ISSN
     };
 
     /**
