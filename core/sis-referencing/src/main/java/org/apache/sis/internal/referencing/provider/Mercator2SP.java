@@ -128,9 +128,9 @@ public final class Mercator2SP extends MapProjection {
             .addDeprecatedName(         "Mercator (2SP)", "Mercator (variant B)")   // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_2SP")
             .addName(Citations.ESRI,    "Mercator")
+            .addName(Citations.NETCDF,  "Mercator")
             .addName(sameNameAs(Citations.GEOTIFF, Mercator1SP.PARAMETERS))
             .addName(sameNameAs(Citations.PROJ4,   Mercator1SP.PARAMETERS))
-            .addName(Citations.NETCDF,  "Mercator")
             .addIdentifier(Citations.S57, "8")
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,

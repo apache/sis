@@ -32,10 +32,12 @@ import java.text.FieldPosition;
 import javax.measure.unit.Unit;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.util.Characters;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.metadata.NameToIdentifier;
@@ -51,7 +53,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 final class ParameterTableRow {
@@ -110,13 +112,19 @@ final class ParameterTableRow {
     final List<Object> units;
 
     /**
+     * Reference to a remark, or {@code 0} if none.
+     */
+    private int remarks;
+
+    /**
      * Creates a new row in a table to be formatted by {@link ParameterFormat}.
      *
-     * @param object The object for which to get the (<var>codespace(s)</var>, <var>name(s)</var>).
-     * @param locale The locale for formatting the names.
+     * @param object  The object for which to get the (<var>codespace(s)</var>, <var>name(s)</var>).
+     * @param locale  The locale for formatting the names and the remarks.
+     * @param remarks An initially empty map, to be filled with any remarks we may found.
      */
-    ParameterTableRow(final IdentifiedObject object, final Locale locale,
-            final Set<String> preferredCodespaces, final boolean isBrief)
+    ParameterTableRow(final IdentifiedObject object, final Locale locale, final Set<String> preferredCodespaces,
+            final Map<String,Integer> remarks, final boolean isBrief)
     {
         values = new ArrayList<>(2); // In the vast majority of cases, we will have only one value.
         units  = new ArrayList<>(2);
@@ -176,6 +184,15 @@ final class ParameterTableRow {
                     }
                 }
             }
+        }
+        /*
+         * Take the remarks, if any.
+         */
+        final InternationalString r = object.getRemarks();
+        if (r != null) {
+            final int n = remarks.size() + 1;
+            final Integer p = remarks.putIfAbsent(r.toString(locale), n);
+            this.remarks = (p != null) ? p : n;
         }
     }
 
@@ -296,7 +313,7 @@ final class ParameterTableRow {
      * can be {@code true}.
      *
      * <p><b>This method can be invoked only once per {@code ParameterTableRow} instance</b>,
-     * at its implementation destroys the internal list of identifiers.</p>
+     * as its implementation destroys the internal list of identifiers.</p>
      *
      * @param  out             Where to write.
      * @param  writeCodespaces {@code true} for writing codespaces, or {@code false} for omitting them.
@@ -345,6 +362,14 @@ final class ParameterTableRow {
                 writeColor(out, RESET, colors != null);
                 it.remove();
                 /*
+                 * Write the footnote number if there is a remark associated to this parameter.
+                 * We write the remark only for the first name or identifier.
+                 */
+                if (remarks != 0) {
+                    writeFootnoteNumber(out, remarks);
+                    remarks = 0;
+                }
+                /*
                  * Write all identifiers between parenthesis after the firt name only.
                  * Aliases (to be written in a new iteration) will not have identifier.
                  */
@@ -370,6 +395,18 @@ final class ParameterTableRow {
                     it = identifiers.iterator();
                 }
             }
+        }
+    }
+
+    /**
+     * Writes the footnote number to the given appendable.
+     * The number is written in superscript if possible.
+     */
+    static void writeFootnoteNumber(final Appendable out, final int n) throws IOException {
+        if (n >= 0 && n < 10) {
+            out.append(Characters.toSuperScript((char) ('0' + n)));
+        } else {
+            out.append('(').append(Integer.toString(n)).append(')');
         }
     }
 
