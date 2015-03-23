@@ -26,8 +26,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link UnitaryProjection} class. This class uses {@link Mercator}
- * for testing purpose, because it is the simplest non-trivial projection.
+ * Tests the {@link UnitaryProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -126,11 +125,10 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * }
      */
     @Test
-    @org.junit.Ignore("Pending port of the Mercator projection.")
     public void test_t() {
-        projection = null; // TODO: set spherical case here.
+        projection = new NoOp(false);   // Spherical case
         doTest_t();
-        projection = null; // TODO: set ellipsoidal case here.
+        projection = new NoOp(true);    // Ellipsoidal case
         doTest_t();
     }
 
@@ -170,11 +168,10 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      */
     @Test
     @DependsOnMethod("test_t")
-    @org.junit.Ignore("Pending port of the Mercator projection.")
     public void test_φ() throws ProjectionException {
-        projection = null; // TODO: set spherical case here.
+        projection = new NoOp(false);   // Spherical case
         doTest_φ(TOLERANCE);
-        projection = null; // TODO: set ellipsoidal case here.
+        projection = new NoOp(true);    // Ellipsoidal case
         doTest_φ(UnitaryProjection.ITERATION_TOLERANCE);
     }
 
