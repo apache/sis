@@ -100,7 +100,7 @@ public final class Messages extends IndexedResourceBundle {
         /**
          * This parameter borrowed from the “{0}” projection is not formally a “{1}” parameter.
          */
-        public static final short NotFormallyAnEpsgParameter_2 = 10;
+        public static final short NotFormalProjectionParameter_2 = 10;
 
         /**
          * Property “{0}” is hidden by “{1}”.

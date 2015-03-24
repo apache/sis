@@ -63,6 +63,11 @@ public class MillerCylindrical extends MapProjection {
     private static final long serialVersionUID = -7682370461334391883L;
 
     /**
+     * The name of this operation method.
+     */
+    public static final String NAME = "Miller_Cylindrical";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
@@ -85,12 +90,12 @@ public class MillerCylindrical extends MapProjection {
          * The scale factor is not formally a parameter of the "Miller Cylindrical" projection.
          * But we declare it as an optional parameters because it is sometime used.
          */
-        final InternationalString remarks = notFormallyEPSG("Mercator (variant A)", "Miller Cylindrical");
+        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Miller Cylindrical");
         final ParameterDescriptor<?> scaleFactor = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
                 .setRemarks(remarks).setRequired(false));
 
         PARAMETERS = builder
-            .addName      (                    "Miller_Cylindrical")
+            .addName      (NAME)
             .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
             .addIdentifier(Citations.GEOTIFF,  "20")
             .addName      (Citations.PROJ4,    "mill")

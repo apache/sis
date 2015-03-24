@@ -115,7 +115,7 @@ public final class Mercator2SP extends MapProjection {
          * of the "Mercator (variant B)" projection according EPSG. But we declare them
          * as optional parameters because they are sometime used.
          */
-        final InternationalString remarks = notFormallyEPSG("Mercator (variant A)", "Mercator (variant B)");
+        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Mercator (variant B)");
         LATITUDE_OF_ORIGIN = createLatitude(withEsriAndNetcdf(Mercator1SP.LATITUDE_OF_ORIGIN, builder,
                 "Latitude_Of_Origin", "latitude_of_projection_origin").setRequired(false).setRemarks(remarks), false);
 

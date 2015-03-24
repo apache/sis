@@ -45,6 +45,11 @@ public final class Mercator1SP extends MapProjection {
     private static final long serialVersionUID = -5886510621481710072L;
 
     /**
+     * The name of this projection method.
+     */
+    static final String NAME = "Mercator (variant A)";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
@@ -117,13 +122,13 @@ public final class Mercator1SP extends MapProjection {
                 .addName(Citations.PROJ4,   "y_0"));
 
         PARAMETERS = builder
-            .addIdentifier(             "9804")                                                 // The ellipsoidal case
-            .addIdentifier(             "1026")                                                 // The spherical case
-            .addDeprecatedIdentifier(   "9841", "1026")                                         // The spherical (1SP) case
-            .addName(                   "Mercator (variant A)")                                 // Starting from EPSG version 7.6
-            .addName(                   "Mercator (Spherical)")                                 // Starting from EPSG version 7.6
-            .addDeprecatedName(         "Mercator (1SP)",             "Mercator (variant A)")   // Prior to EPSG version 7.6
-            .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")   // Prior to EPSG version 7.6
+            .addIdentifier(             "9804")                                                   // The ellipsoidal case
+            .addIdentifier(             "1026")                                                   // The spherical case
+            .addDeprecatedIdentifier(   "9841", "1026")                                           // The spherical (1SP) case
+            .addName(NAME            /* "Mercator (variant A)" */)                                // Starting from EPSG version 7.6
+            .addName(                   "Mercator (Spherical)")                                   // Starting from EPSG version 7.6
+            .addDeprecatedName(         "Mercator (1SP)", NAME     /* "Mercator (variant A)" */)  // Prior to EPSG version 7.6
+            .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")     // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_1SP")
             .addName(Citations.GEOTIFF, "CT_Mercator")
             .addName(Citations.PROJ4,   "merc")
