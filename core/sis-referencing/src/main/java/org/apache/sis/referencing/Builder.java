@@ -34,9 +34,6 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.system.DefaultFactories.NAMES;
 
-// Branch-dependent imports
-import java.util.Objects;
-
 
 /**
  * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
@@ -266,13 +263,16 @@ public abstract class Builder<B extends Builder<B>> {
      * @throws IllegalStateException if a new value is specified in a phase where the value can not be changed.
      */
     private boolean setProperty(final String key, final Object value) throws IllegalStateException {
-        if (Objects.equals(properties.get(key), value)) {
-            return false;
+        final Object previous = properties.putIfAbsent(key, value);
+        if (previous != null) {
+            if (previous.equals(value)) {
+                return false;
+            }
+            if (properties.get(IdentifiedObject.NAME_KEY) != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, key));
+            }
+            properties.put(key, value);
         }
-        if (properties.get(IdentifiedObject.NAME_KEY) != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, key));
-        }
-        properties.put(key, value);
         return true;
     }
 
