@@ -221,6 +221,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ElementNotFound_1 = 70;
 
         /**
+         * Elliptical projection not supported.
+         */
+        public static final short EllipticalNotSupported = 182;
+
+        /**
          * Argument ‘{0}’ shall not be empty.
          */
         public static final short EmptyArgument_1 = 20;

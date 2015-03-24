@@ -211,6 +211,18 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     }
 
     /**
+     * Ensures that this projection is done on a sphere rather than an ellipsoid.
+     * This method is invoked by constructors of classes implementing only spherical formulas.
+     *
+     * @throws IllegalArgumentException If the projection is not done on a sphere.
+     */
+    final void ensureSpherical() throws IllegalArgumentException {
+        if (!isSpherical()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EllipticalNotSupported));
+        }
+    }
+
+    /**
      * Converts a single coordinate in {@code srcPts} at the given offset and stores the result
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
      * transform derivative if requested.
@@ -270,7 +282,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * @param dstPts The array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
      *               Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param dstOff The offset of the location of the converted point that is stored in the destination array.
-     * @throws ProjectionException if the point can't be converted.
+     * @throws ProjectionException if the point can not be converted.
      */
     protected abstract void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff)
             throws ProjectionException;
