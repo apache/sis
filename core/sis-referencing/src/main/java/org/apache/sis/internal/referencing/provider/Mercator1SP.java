@@ -128,8 +128,7 @@ public final class Mercator1SP extends MapProjection {
             .addName(Citations.GEOTIFF, "CT_Mercator")
             .addName(Citations.PROJ4,   "merc")
             .addIdentifier(Citations.GEOTIFF,   "7")
-            .addIdentifier(Citations.MAP_INFO, "10")
-            .addIdentifier(Citations.MAP_INFO, "26")
+            .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
             .createGroupForMapProjection(
                     LATITUDE_OF_ORIGIN,
                     CENTRAL_MERIDIAN,

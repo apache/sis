@@ -131,7 +131,8 @@ public final class Mercator2SP extends MapProjection {
             .addName(Citations.NETCDF,  "Mercator")
             .addName(sameNameAs(Citations.GEOTIFF, Mercator1SP.PARAMETERS))
             .addName(sameNameAs(Citations.PROJ4,   Mercator1SP.PARAMETERS))
-            .addIdentifier(Citations.S57, "8")
+            .addIdentifier(Citations.MAP_INFO, "26")    // MapInfo names this projection "Regional Mercator".
+            .addIdentifier(Citations.S57,       "8")
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
                     LATITUDE_OF_ORIGIN,
