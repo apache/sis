@@ -134,6 +134,10 @@ public abstract class MapProjection extends AbstractProvider {
     @Override
     public abstract MathTransform2D createMathTransform(ParameterValueGroup values) throws ParameterNotFoundException;
 
+    /*
+     * Following methods are defined for sharing the same GenericName or Identifier instances when possible.
+     */
+
     /**
      * Returns the name of the given authority declared in the given parameter descriptor.
      * This method is used only as a way to avoid creating many instances of the same name.
@@ -149,8 +153,6 @@ public abstract class MapProjection extends AbstractProvider {
 
     /**
      * Copies the EPSG name and identifier from the given parameter into the builder.
-     * This is used for sharing name instances created for an other operation.
-     *
      * The EPSG objects are presumed the first name and identifier (this is not verified).
      */
     static ParameterBuilder onlyEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
@@ -158,9 +160,18 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
+     * Copies all names except the EPSG one from the given parameter into the builder.
+     * The EPSG name is presumed the first name and identifier (this is not verified).
+     */
+    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
+        for (final GenericName alias : source.getAlias()) {
+            builder.addName(alias);
+        }
+        return builder;
+    }
+
+    /**
      * Copies the names and identifiers from the given parameter into the builder.
-     * This is used for sharing name instances created for an other operation.
-     *
      * The given {@code esri} and {@code netcdf} parameters will be inserted after the OGC name.
      */
     static ParameterBuilder withEsriAndNetcdf(final ParameterDescriptor<?> source, final ParameterBuilder builder,
