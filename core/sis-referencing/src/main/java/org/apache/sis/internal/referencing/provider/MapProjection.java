@@ -148,6 +148,16 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
+     * Copies the EPSG name and identifier from the given parameter into the builder.
+     * This is used for sharing name instances created for an other operation.
+     *
+     * The EPSG objects are presumed the first name and identifier (this is not verified).
+     */
+    static ParameterBuilder onlyEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
+        return builder.addIdentifier(source.getIdentifiers().iterator().next()).addName(source.getName());
+    }
+
+    /**
      * Copies the names and identifiers from the given parameter into the builder.
      * This is used for sharing name instances created for an other operation.
      *
