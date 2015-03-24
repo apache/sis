@@ -63,7 +63,7 @@ public final class PseudoMercator extends MapProjection {
          * The scale factor is not formally a parameter of the "Popular Visualisation Pseudo Mercator" projection
          * according EPSG. But we declare it as an optional parameters because it is sometime used.
          */
-        final InternationalString remarks = notFormallyEPSG("Mercator (variant A)", "Pseudo Mercator");
+        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Pseudo Mercator");
         final ParameterDescriptor<?> scaleFactor = createScale(withEsriAndNetcdf(Mercator1SP.SCALE_FACTOR, builder,
                 "Scale_Factor", "scale_factor_at_projection_origin").setRemarks(remarks).setRequired(false));
 

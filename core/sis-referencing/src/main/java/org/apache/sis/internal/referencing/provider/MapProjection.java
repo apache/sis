@@ -197,7 +197,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @param origin The name of the projection for where the parameter is formally used.
      * @param usedIn The name of the projection where we also use that parameter.
      */
-    static InternationalString notFormallyEPSG(final String origin, final String usedIn) {
-        return Messages.formatInternational(Messages.Keys.NotFormallyAnEpsgParameter_2, origin, usedIn);
+    static InternationalString notFormalParameter(final String origin, final String usedIn) {
+        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_2, origin, usedIn);
     }
 }
