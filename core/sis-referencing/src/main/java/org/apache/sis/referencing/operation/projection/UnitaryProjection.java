@@ -412,67 +412,91 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
 
     //////////////////////////////////////////////////////////////////////////////////////////
     ////////                                                                          ////////
-    ////////                           FORMULAS FROM SNYDER                           ////////
+    ////////                       FORMULAS FROM EPSG or SNYDER                       ////////
     ////////                                                                          ////////
     //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Computes functions (9-13) and (15-9) from Snyder.
-     * This function is part of the following chapters:
+     * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
+     * That radius of curvature is:
      *
+     * <blockquote>ν = 1 / √(1 - ℯ²∙sin²φ)</blockquote>
+     *
+     * This method returns 1/ν.
+     *
+     * <div class="section">Relationship with Snyder</div>
+     * This is related to functions (14-15) from Snyder (used for computation of scale factors
+     * at the true scale latitude) as below:
+     *
+     * <blockquote>m = cosφ / rν</blockquote>
+     *
+     * Special cases:
      * <ul>
-     *   <li>(9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
-     *   <li>(15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
-     *   <li>Negative of part of (7-7) in the <cite>Mercator projection</cite> chapter.
-     *       In the case of Mercator projection, this is {@code exp(-y)} where <var>y</var>
-     *       is the northing on the unit ellipse.</li>
+     *   <li>If φ is 0°, then <var>m</var> is 1.</li>
+     *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
+     *       (otherwise we get {@link Double#NaN}).</li>
      * </ul>
      *
-     * This function is the converse of {@link #φ(double)}.
+     * @param  sinφ The sine of the φ latitude in radians.
+     * @return Reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
+     */
+    final double rν(final double sinφ) {
+        return sqrt(1 - excentricitySquared * (sinφ*sinφ));
+    }
+
+    /**
+     * Computes part of the Mercator projection for the given latitude. This formulas is also part of
+     * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
+     * Lambert projection with the equator as the single standard parallel.
+     *
+     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm} of the
+     * value returned by this method. This function is <em>almost</em> the converse of {@link #φ(double)}.
      *
      * <div class="section">Properties</div>
-     * This function has a periodicity of 2π. The result is always a positive value when φ is valid
-     * (more on it below). More specifically its behavior at some particular points is:
+     * This function has the following identity (ignoring rounding errors):
+     *
+     * <blockquote>exp_y(φ)  =  1/exp_y(-φ)</blockquote>
+     *
+     * This function has a periodicity of 2π.
+     * The result is always a positive value when φ is valid (more on it below).
+     * More specifically its behavior at some particular points is:
      *
      * <ul>
      *   <li>If φ is NaN or infinite, then the result is NaN.</li>
-     *   <li>If φ is π/2,  then the result is close to 0.</li>
+     *   <li>If φ is -π/2, then the result is close to 0.</li>
      *   <li>If φ is 0,    then the result is close to 1.</li>
-     *   <li>If φ is -π/2, then the result tends toward positive infinity.
+     *   <li>If φ is +π/2, then the result tends toward positive infinity.
      *       The actual result is not infinity however, but some large value like 1E+10.</li>
      *   <li>If φ, after removal of any 2π periodicity, still outside the [-π/2 … π/2] range,
      *       then the result is a negative number. If the caller is going to compute the logarithm
      *       of the returned value as in the Mercator projection, he will get NaN.</li>
      * </ul>
      *
-     * <div class="section">Relationship with other formulas</div>
-     * Function (3-1) from Snyder gives the <cite>conformal latitude</cite> χ as (Adam, 1921, p.18, 84):
+     * <div class="section">Relationship with Snyder</div>
+     * This function is related to the following functions from Snyder:
      *
-     * <blockquote>
-     * χ = 2∙arctan( tan(π/4 + φ/2) ∙ [(1 - ℯ∙sinφ)/(1 + ℯ∙sinφ)]^(ℯ/2) )  -  π/2
-     * </blockquote>
+     * <ul>
+     *   <li>(7-7) in the <cite>Mercator projection</cite> chapter.</li>
+     *   <li>Reciprocal of (9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
+     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.
+     *       Note:   tan(π/4 - φ/2)  =  1/tan(π/4 + φ/2).</li>
+     * </ul>
      *
-     * This method can compute the part inside the {@code arctan(…)} expression as below
-     * (note the negative sign in front of φ):
-     *
-     * <blockquote>
-     * χ = 2∙arctan( t(-φ, sinφ) )  -  π/2
-     * </blockquote>
-     *
-     * @param  φ    The latitude in radians.
-     * @param  sinφ The sine of the φ argument (often already computed by the caller).
-     * @return Function 9-13 or 15-9, or the negative of function 7-7 from Snyder.
+     * @param  φ     The latitude in radians.
+     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
+     * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
-    final double t(final double φ, double sinφ) {
-        sinφ *= excentricity;
-        return tan(PI/4 - 0.5*φ) / pow((1-sinφ) / (1+sinφ), 0.5*excentricity);
+    final double exp_y(final double φ, final double ℯsinφ) {
+        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
     }
 
     /**
      * Iteratively solve equation (7-9) from Snyder (<cite>Mercator projection</cite> chapter).
-     * This is the converse of the above {@link #t(double, double)} function.
-     * The input should be a positive number, otherwise the result will be either outside
-     * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:
+     * This is <em>almost</em> the converse of the above {@link #exp_y(double, double)} function.
+     * In a Mercator inverse projection, the value of {@code t} argument is {@code exp(-y)}.
+     *
+     * <p>The input should be a positive number, otherwise the result will be either outside
+     * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>
      *
      * <ul>
      *   <li>If {@code t} is zero, then the result is close to π/2.</li>
@@ -480,13 +504,13 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      *   <li>If {@code t} is positive infinity, then the result is close to -π/2.</li>
      * </ul>
      *
-     * @param  t The value returned by {@link #t(double, double)}.
+     * @param  t The <em>reciprocal</em> of the value returned by {@link #exp_y(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
     final double φ(final double t) throws ProjectionException {
         final double hℯ = 0.5 * excentricity;
-        double φ = (PI/2) - 2*atan(t);
+        double φ = (PI/2) - 2*atan(t);                  // Snyder (7-11)
         for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
             final double ℯsinφ = excentricity * sin(φ);
             final double Δφ = abs(φ - (φ = PI/2 - 2*atan(t * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));

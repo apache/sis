@@ -50,31 +50,31 @@ public final class Mercator1SP extends MapProjection {
     static final String NAME = "Mercator (variant A)";
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
     static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
     /**
-     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
     static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
 
     /**
-     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
      * Valid values range is (0 … ∞) and default value is 1.
      */
     static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
-     * The operation parameter descriptor for the <cite>False easting</cite> parameter value.
+     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
     static final ParameterDescriptor<Double> FALSE_EASTING;
 
     /**
-     * The operation parameter descriptor for the <cite>False northing</cite> parameter value.
+     * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
     static final ParameterDescriptor<Double> FALSE_NORTHING;

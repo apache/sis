@@ -26,6 +26,7 @@ import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.parameter.Parameters;
 
 import static java.lang.Math.*;
@@ -53,14 +54,6 @@ import static java.lang.Double.*;
  * The projection of 90°N gives {@linkplain Double#POSITIVE_INFINITY positive infinity}.
  * The projection of 90°S gives {@linkplain Double#NEGATIVE_INFINITY negative infinity}.
  * Projection of a latitude outside the [-90-ε … 90+ε]° range produces {@linkplain Double#NaN NaN}.
- *
- * <div class="section">References</div>
- * <ul>
- *   <li>John P. Snyder (Map Projections - A Working Manual,<br>
- *       U.S. Geological Survey Professional Paper 1395, 1987)</li>
- *   <li>"Coordinate Conversions and Transformations including Formulas",<br>
- *       EPSG Guidance Note Number 7, Version 19.</li>
- * </ul>
  *
  * @author  André Gosselin (MPO)
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
@@ -128,9 +121,10 @@ public class Mercator extends UnitaryProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff];
-        final double φ    = srcPts[srcOff + 1];
-        final double sinφ = sin(φ);
+        final double λ     = srcPts[srcOff];
+        final double φ     = srcPts[srcOff + 1];
+        final double sinφ  = sin(φ);
+        final double ℯsinφ = excentricity * sinφ;
         /*
          * Projection of zero is zero. However the formulas below have a slight rounding error
          * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
@@ -142,11 +136,11 @@ public class Mercator extends UnitaryProjection {
         } else {
             // See the javadoc of the Spherical inner class for a note
             // about why we perform explicit checks for the pole cases.
-            final double a = abs(φ);
-            if (a < PI/2) {
-                y = -log(t(φ, sinφ));
+            final double absφ = abs(φ);
+            if (absφ < PI/2) {
+                y = log(exp_y(φ, ℯsinφ));     // Snyder (7-7)
             } else {
-                y = copySign(a <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                y = copySign(absφ <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
             }
         }
         if (dstPts != null) {
@@ -159,9 +153,8 @@ public class Mercator extends UnitaryProjection {
         /*
          * End of map projection. Now compute the derivative, if requested.
          */
-        final double cosφ  = cos(φ);
-        final double ℯsinφ = sinφ * excentricity;
-        final double t     = (1 - sinφ) / cosφ;
+        final double cosφ = cos(φ);
+        final double t = (1 - sinφ) / cosφ;
         return new Matrix2(1, 0, 0, 0.5*(t + 1/t) - excentricitySquared*cosφ / (1 - ℯsinφ*ℯsinφ));
     }
 
@@ -185,15 +178,16 @@ public class Mercator extends UnitaryProjection {
         } else {
             dstOff--;
             while (--numPts >= 0) {
-                double y = dstPts[dstOff += 2]; // Same as srcPts[srcOff + 1].
-                if (y != 0) {
+                final double φ = dstPts[dstOff += 2]; // Same as srcPts[srcOff + 1].
+                final double y;
+                if (φ != 0) {
                     // See the javadoc of the Spherical inner class for a note
                     // about why we perform explicit checks for the pole cases.
-                    final double a = abs(y);
-                    if (a < PI/2) {
-                        y = -log(t(y, sin(y)));
+                    final double absφ = abs(φ);
+                    if (absφ < PI/2) {
+                        y = log(exp_y(φ, excentricity * sin(φ)));
                     } else {
-                        y = copySign(a <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, y);
+                        y = copySign(absφ <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                     }
                     dstPts[dstOff] = y;
                 }
@@ -227,10 +221,6 @@ public class Mercator extends UnitaryProjection {
      * which is the correct answer. In practice the infinite value emerges by itself at only one pole, and the other
      * one produces a high value (approximatively 1E+16). This is because there is no accurate representation of π/2
      * in base 2, and consequently {@code tan(π/2)} does not returns the infinite value.
-     *
-     * <p>The {@code Spherical} formula has the opposite behavior than {@link Mercator} regarding which pole returns
-     * the infinite value. In {@code Spherical}, this is the South pole. In {@code Mercator} (ellipsoidal case), this
-     * is the North pole. Using explicit checks allow us to enforce the same behavior for the two implementations.</p>
      * </div>
      *
      * @author Martin Desruisseaux (MPO, IRD, Geomatys)
@@ -293,7 +283,7 @@ public class Mercator extends UnitaryProjection {
                 // See class javadoc for a note about explicit check for poles.
                 final double a = abs(φ);
                 if (a < PI/2) {
-                    y = log(tan(PI/4 + 0.5*φ));
+                    y = log(tan(PI/4 + 0.5*φ));     // Snyder (7-2)
                 } else {
                     y = copySign(a <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                 }
@@ -335,7 +325,7 @@ public class Mercator extends UnitaryProjection {
                     if (y != 0) {
                         final double a = abs(y);
                         if (a < PI/2) {
-                            y = log(tan(PI/4 + 0.5*y));
+                            y = log(tan(PI/4 + 0.5*y));     // Snyder (7-2)
                         } else {
                             y = copySign(a <= (PI/2 + ANGLE_TOLERANCE) ? POSITIVE_INFINITY : NaN, y);
                         }
@@ -355,7 +345,7 @@ public class Mercator extends UnitaryProjection {
         {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
-            y = PI/2 - 2 * atan(exp(-y));
+            y = PI/2 - 2 * atan(exp(-y));     // Snyder (7-4)
             assert pseudo || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;

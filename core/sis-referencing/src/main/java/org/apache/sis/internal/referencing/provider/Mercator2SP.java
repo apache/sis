@@ -45,13 +45,13 @@ public final class Mercator2SP extends MapProjection {
     private static final long serialVersionUID = 6356028352681135786L;
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> (φ₁) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      *
      * <p>This parameter is taken from {@link Mercator1SP}. It is not formally a parameter from the {@code Mercator2SP}
@@ -60,13 +60,13 @@ public final class Mercator2SP extends MapProjection {
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
     /**
-     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
 
     /**
-     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
      * Valid values range is (0 … ∞) and default value is 1.
      *
      * <p>This parameter is taken from {@link Mercator1SP}. It is not formally a parameter from the {@code Mercator2SP}
@@ -75,13 +75,13 @@ public final class Mercator2SP extends MapProjection {
     public static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
-     * The operation parameter descriptor for the <cite>False easting</cite> parameter value.
+     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
     public static final ParameterDescriptor<Double> FALSE_EASTING;
 
     /**
-     * The operation parameter descriptor for the <cite>False northing</cite> parameter value.
+     * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
     public static final ParameterDescriptor<Double> FALSE_NORTHING;
