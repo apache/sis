@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -75,8 +76,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
  *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
- *   <li>The map projection constructor may keep only the non-linear parameters for itself, and gives the linear parameters
- *     to the {@link #normalizeGeographic(double)} and {@link #denormalizeCartesian(double, double, double, double)} methods.
+ *   <li>The map projection constructor may keep only the non-linear parameters for itself, and gives the linear parameters to the
+ *     {@link #normalizeGeographicInputs(double)} and {@link #denormalizeCartesianOutputs(double, double, double)} methods.
  *     The constructor is free to apply additional operations on the two affine transforms
  *     ({@linkplain #normalization(boolean) normalize / denormalize}) after the above-cited methods have been invoked.</li>
  * </ol>
@@ -115,17 +116,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *
      * @see #normalization(boolean)
      */
-    private Matrix normalize,
-
-    /**
-     * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
-     * the kernel operation.On {@code ContextualParameters} construction, those affines are initially identity
-     * transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
-     * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
-     * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
-     * @see #normalization(boolean)
-     */
-    denormalize;
+    private Matrix normalize, denormalize;
 
     /**
      * Creates a new group of parameters for the given non-linear coordinate operation method.
@@ -153,41 +144,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
         }
         return Matrices.create(size, size, ExtendedPrecisionMatrix.IDENTITY);
-    }
-
-    /**
-     * The affine transforms to be applied before or after the kernel operation. Those affines are initially
-     * identity transforms. Callers should invoke this method at the non-linear transform construction time
-     * (or at some time close to construction) in order to set the affine coefficients.
-     *
-     * @param  norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
-     *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
-     * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
-     */
-    public final MatrixSIS normalization(final boolean norm) {
-        return MatrixSIS.castOrCopy(norm ? normalize : denormalize);
-    }
-
-    /**
-     * Creates a chain of {@linkplain ConcatenatedTransform concatenated transforms} from the
-     * <cite>normalize</cite> transform, the given kernel and the <cite>denormalize</cite> transform.
-     *
-     * @param  kernel The (usually non-linear) kernel.
-     * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
-     *         transforms.
-     */
-    final MathTransform createConcatenatedTransform(final MathTransformFactory factory, MathTransform kernel)
-            throws FactoryException
-    {
-        final MathTransform n = factory.createAffineTransform(normalize);
-        final MathTransform d = factory.createAffineTransform(denormalize);
-        Matrix m;
-        if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
-        if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
-        if (factory instanceof DefaultMathTransformFactory) {
-            kernel = ((DefaultMathTransformFactory) factory).unique(kernel);
-        }
-        return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 
     /**
@@ -227,6 +183,97 @@ public class ContextualParameters extends FormattableObject implements Parameter
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         throw new UnsupportedOperationException("Not supported yet."); // TODO
+    }
+
+    /**
+     * Prepends a normalization step before the non-linear kernel, which will convert ordinate values
+     * in the two first dimensions from degrees to radians. Before this conversion, the normalization
+     * can optionally subtract the given λ0 value (in degrees) from the longitude.
+     *
+     * <p>In other words, invoking this method is equivalent to convert coordinates using the following
+     * affine transform before any other operation:</p>
+     *
+     * <center><p>{@include formulas.html#Normalize}</p></center>
+     *
+     * @param  λ0 Longitude of the central meridian, in degrees.
+     * @return The normalization affine transform as a matrix.
+     *         Callers can change that matrix directly if they want to apply additional normalization operations.
+     */
+    public MatrixSIS normalizeGeographicInputs(final double λ0) {
+        /*
+         * In theory the check for (λ0 != 0) is useless. However Java has a notion of negative zero, and we want
+         * to avoid negative zeros because we do not want them to appear in WKT formatting of matrix elements.
+         */
+        final DoubleDouble toRadians = DoubleDouble.createDegreesToRadians();
+        DoubleDouble offset = null;
+        if (λ0 != 0) {
+            offset = new DoubleDouble(-λ0);
+            offset.multiply(toRadians);
+        }
+        final MatrixSIS normalize = normalization(true);
+        normalize.concatenate(0, toRadians, offset);
+        normalize.concatenate(1, toRadians, null);
+        return normalize;
+    }
+
+    /**
+     * Appends a normalization step after the non-linear kernel, which will scale the projected ordinates
+     * and add the false easting and northing.
+     *
+     * <p>In other words, invoking this method is equivalent to convert coordinates using the following
+     * affine transform after the non-linear kernel:</p>
+     *
+     * <center><p>{@include formulas.html#Deormalize}</p></center>
+     *
+     * @param scale The <cite>semi-major axis length</cite> (<var>a</var>), optionally multiplied by other scale factor (<var>k</var>₀).
+     * @param tx    The false easting (FE).
+     * @param ty    The false northing (FN).
+     * @return The denormalization affine transform as a matrix.
+     *         Callers can change that matrix directly if they want to apply additional denormalization operations.
+     */
+    public MatrixSIS denormalizeCartesianOutputs(double scale, double tx, double ty) {
+        final DoubleDouble s = new DoubleDouble(scale);
+        final MatrixSIS denormalize = normalization(false);
+        denormalize.concatenate(0, s, tx);
+        denormalize.concatenate(1, s, ty);
+        return denormalize;
+    }
+
+    /**
+     * The affine transforms to be applied before or after the kernel operation. Those affines are initially
+     * identity transforms. Callers should invoke this method at the non-linear transform construction time
+     * (or at some time close to construction) in order to set the affine coefficients.
+     *
+     * @param  norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
+     *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
+     * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
+     */
+    public final MatrixSIS normalization(final boolean norm) {
+        return MatrixSIS.castOrCopy(norm ? normalize : denormalize);
+    }
+
+    /**
+     * Creates a chain of {@linkplain ConcatenatedTransform concatenated transforms} from the
+     * <cite>normalize</cite> transform, the given kernel and the <cite>denormalize</cite> transform.
+     *
+     * @param  factory The factory to use for creating math transform instances.
+     * @param  kernel The (usually non-linear) kernel.
+     * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
+     *         transforms.
+     * @throws FactoryException if an error occurred while creating a math transform instance.
+     */
+    public MathTransform createConcatenatedTransform(final MathTransformFactory factory, MathTransform kernel)
+            throws FactoryException
+    {
+        final MathTransform n = factory.createAffineTransform(normalize);
+        final MathTransform d = factory.createAffineTransform(denormalize);
+        Matrix m;
+        if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
+        if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
+        if (factory instanceof DefaultMathTransformFactory) {
+            kernel = ((DefaultMathTransformFactory) factory).unique(kernel);
+        }
+        return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 
     /**
