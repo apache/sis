@@ -16,8 +16,11 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.Double.*;
@@ -33,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
-public final strictfp class UnitaryProjectionTest extends TestCase {
+public final strictfp class UnitaryProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */
@@ -44,32 +47,38 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * case, truncated to nearest integer. This is not a real infinity because there is no exact
      * representation of π/2 in base 2, so tan(π/2) is not positive infinity.
      */
-    static final int LN_INFINITY = 37;
+    private static final int LN_INFINITY = 37;
 
     /**
-     * The projection to test.
+     * Computes {@link UnitaryProjection#expOfNorthing(double, double)} for the given latitude.
+     *
+     * @param  projection The projection on which to invoke {@code expOfNorthing(…)}.
+     * @param  φ The latitude in radians.
+     * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
-    private UnitaryProjection projection;
+    static double expOfNorthing(final UnitaryProjection projection, final double φ) {
+        return projection.expOfNorthing(φ, projection.excentricity * sin(φ));
+    }
 
     /**
-     * Computes {@link UnitaryProjection#exp_y(double, double)} for the given latitude.
+     * Computes {@link UnitaryProjection#expOfNorthing(double, double)} for the given latitude.
      *
      * @param  φ The latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
-    private double exp_y(final double φ) {
-        return projection.exp_y(φ, projection.excentricity * sin(φ));
+    private double expOfNorthing(final double φ) {
+        return expOfNorthing((UnitaryProjection) transform, φ);
     }
 
     /**
      * Computes {@link UnitaryProjection#φ(double)}.
      *
-     * @param  t The reciprocal of the value returned by {@link #exp_y(double)}.
+     * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
-    private double φ(final double t) throws ProjectionException {
-        return projection.φ(t);
+    private double φ(final double expOfSouthing) throws ProjectionException {
+        return ((UnitaryProjection) transform).φ(expOfSouthing);
     }
 
     /**
@@ -117,7 +126,7 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link UnitaryProjection#exp_y(double, double)} function.
+     * Tests the {@link UnitaryProjection#expOfNorthing(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -125,37 +134,38 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * }
      */
     @Test
-    public void testExp_y() {
-        projection = new NoOp(false);   // Spherical case
-        doTestExp_y();
-        projection = new NoOp(true);    // Ellipsoidal case
-        doTestExp_y();
+    public void testExpOfNorthing() {
+        transform = new NoOp(false);   // Spherical case
+        tolerance = TOLERANCE;
+        doTestExpOfNorthing();
+        transform = new NoOp(true);    // Ellipsoidal case
+        doTestExpOfNorthing();
     }
 
     /**
-     * Implementation of {@link #testExp_y()}.
+     * Implementation of {@link #testExpOfNorthing()}.
      * The {@link #projection} field must have been set before this method is called.
      */
-    private void doTestExp_y() {
-        assertEquals("Function contract",  NaN, exp_y(NaN),               TOLERANCE);
-        assertEquals("Function contract",  NaN, exp_y(POSITIVE_INFINITY), TOLERANCE);
-        assertEquals("Function contract",  NaN, exp_y(NEGATIVE_INFINITY), TOLERANCE);
-        assertEquals("Function contract",    1, exp_y(0),                 TOLERANCE);
-        assertEquals("Function contract",    0, exp_y(-PI/2),             TOLERANCE);
-        assertTrue  ("Function contract",       exp_y(+PI/2)              > 1E+16);
-        assertTrue  ("Out of bounds",           exp_y(-PI/2 - 0.1)        < 0);
-        assertTrue  ("Out of bounds",           exp_y(+PI/2 + 0.1)        < 0);
-        assertEquals("Out of bounds",       -1, exp_y(-PI),               TOLERANCE);
-        assertTrue  ("Out of bounds",           exp_y(-PI*3/2)            < -1E+16);
-        assertEquals("Function periodicity", 1, exp_y(-2*PI),             TOLERANCE);
-        assertEquals("Function periodicity", 0, exp_y(-PI*5/2),           TOLERANCE);
+    private void doTestExpOfNorthing() {
+        assertEquals("Function contract",  NaN, expOfNorthing(NaN),               tolerance);
+        assertEquals("Function contract",  NaN, expOfNorthing(POSITIVE_INFINITY), tolerance);
+        assertEquals("Function contract",  NaN, expOfNorthing(NEGATIVE_INFINITY), tolerance);
+        assertEquals("Function contract",    1, expOfNorthing(0),                 tolerance);
+        assertEquals("Function contract",    0, expOfNorthing(-PI/2),             tolerance);
+        assertTrue  ("Function contract",       expOfNorthing(+PI/2)              > 1E+16);
+        assertTrue  ("Out of bounds",           expOfNorthing(-PI/2 - 0.1)        < 0);
+        assertTrue  ("Out of bounds",           expOfNorthing(+PI/2 + 0.1)        < 0);
+        assertEquals("Out of bounds",       -1, expOfNorthing(-PI),               tolerance);
+        assertTrue  ("Out of bounds",           expOfNorthing(-PI*3/2)            < -1E+16);
+        assertEquals("Function periodicity", 1, expOfNorthing(-2*PI),             tolerance);
+        assertEquals("Function periodicity", 0, expOfNorthing(-PI*5/2),           tolerance);
         /*
          * Use in a way close to (but not identical)
          * to the way the Mercator projection need it.
          */
-        assertEquals("Forward 0°N",  0,                 log(exp_y(0)),     TOLERANCE);
-        assertEquals("Forward 90°S", NEGATIVE_INFINITY, log(exp_y(-PI/2)), TOLERANCE);
-        assertTrue  ("Forward 90°N", LN_INFINITY <      log(exp_y(+PI/2)));
+        assertEquals("Forward 0°N",  0,                 log(expOfNorthing(0)),     tolerance);
+        assertEquals("Forward 90°S", NEGATIVE_INFINITY, log(expOfNorthing(-PI/2)), tolerance);
+        assertTrue  ("Forward 90°N", LN_INFINITY <      log(expOfNorthing(+PI/2)));
     }
 
     /**
@@ -167,19 +177,21 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * @throws ProjectionException Should never happen.
      */
     @Test
-    @DependsOnMethod("testExp_y")
+    @DependsOnMethod("testExpOfNorthing")
     public void test_φ() throws ProjectionException {
-        projection = new NoOp(false);   // Spherical case
-        doTest_φ(TOLERANCE);
-        projection = new NoOp(true);    // Ellipsoidal case
-        doTest_φ(UnitaryProjection.ITERATION_TOLERANCE);
+        transform = new NoOp(false);   // Spherical case
+        tolerance = TOLERANCE;
+        doTest_φ();
+        transform = new NoOp(true);    // Ellipsoidal case
+        tolerance = UnitaryProjection.ITERATION_TOLERANCE;
+        doTest_φ();
     }
 
     /**
      * Implementation of {@link #test_φ()}.
      * The {@link #projection} field must have been set before this method is called.
      */
-    private void doTest_φ(final double tolerance) throws ProjectionException {
+    private void doTest_φ() throws ProjectionException {
         assertEquals("Function contract",  NaN,  φ(NaN),               tolerance);
         assertEquals("Function contract",  PI/2, φ(0),                 tolerance);
         assertEquals("Function contract",  PI/2, φ(MIN_VALUE),         tolerance);
@@ -195,7 +207,7 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
          */
         for (int i=-90; i<=270; i+=5) {
             final double φ   = toRadians(i);
-            final double t    = 1 / exp_y(φ);
+            final double t    = 1 / expOfNorthing(φ);
             final double back = toDegrees(φ(t));
             if (i <= 90) {
                 assertTrue("φ(t) in valid range should be positive.", t >= 0);
@@ -204,5 +216,48 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
             }
             assertEquals("Inverse function doesn't match.", i, back, tolerance);
         }
+    }
+
+    /**
+     * Tests the {@link UnitaryProjection#dy_dφ(double, double)} method.
+     *
+     * @throws TransformException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testExpOfNorthing")
+    public void test_dN_dφ() throws TransformException {
+        tolerance = 1E-7;
+        doTest_dN_dφ(new NoOp(false));      // Spherical case
+        doTest_dN_dφ(new NoOp(true));       // Ellipsoidal case
+    }
+
+    /**
+     * Implementation of {@link #test_dN_dφ()}.
+     * The {@link #projection} field must have been set before this method is called.
+     */
+    private void doTest_dN_dφ(final NoOp projection) throws TransformException {
+        transform = new AbstractMathTransform1D() {
+            @Override public double transform(final double φ) {
+                return expOfNorthing(projection, φ);
+            }
+            @Override public double derivative(final double φ) {
+                final double sinφ = sin(φ);
+                return projection.dy_dφ(sinφ, cos(φ)) * expOfNorthing(projection, φ);
+            }
+        };
+        verifyInDomain(-89 * (PI/180), 89 * (PI/180));  // Verify from 85°S to 85°N.
+    }
+
+    /**
+     * Convenience method invoking {@link TransformTestCase#verifyInDomain} for an 1D transform.
+     */
+    private void verifyInDomain(final double min, final double max) throws TransformException {
+        derivativeDeltas = new double[] {2E-8};
+        isInverseTransformSupported = false;
+        verifyInDomain(
+                new double[] {min},     // Minimal value to test.
+                new double[] {max},     // Maximal value to test.
+                new int[]    {100},     // Number of points to test.
+                TestUtilities.createRandomNumberGenerator());
     }
 }
