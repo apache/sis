@@ -90,11 +90,6 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     private static final long serialVersionUID = 1969740225939106310L;
 
     /**
-     * Tolerance in the correctness of argument values provided to the mathematical functions defined in this class.
-     */
-    private static final double ARGUMENT_TOLERANCE = 1E-15;
-
-    /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
      * A tolerance of 1E-6 is about 0.2 second of arcs, which is about 6 kilometers
      * (computed from the standard length of nautical mile).
@@ -445,7 +440,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
     }
 
     /**
-     * Computes part of the Mercator projection for the given latitude. This formulas is also part of
+     * Computes part of the Mercator projection for the given latitude. This formula is also part of
      * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
      * Lambert projection with the equator as the single standard parallel.
      *
@@ -455,21 +450,21 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * <div class="section">Properties</div>
      * This function has the following identity (ignoring rounding errors):
      *
-     * <blockquote>exp_y(φ)  =  1/exp_y(-φ)</blockquote>
+     * <blockquote>expOfNorthing(-φ)  =  1 / expOfNorthing(φ)</blockquote>
      *
      * This function has a periodicity of 2π.
      * The result is always a positive value when φ is valid (more on it below).
      * More specifically its behavior at some particular points is:
      *
      * <ul>
-     *   <li>If φ is NaN or infinite, then the result is NaN.</li>
-     *   <li>If φ is -π/2, then the result is close to 0.</li>
-     *   <li>If φ is 0,    then the result is close to 1.</li>
-     *   <li>If φ is +π/2, then the result tends toward positive infinity.
-     *       The actual result is not infinity however, but some large value like 1E+10.</li>
+     *   <li>expOfNorthing(-π/2)   =   0</li>
+     *   <li>expOfNorthing( 0  )   =   1</li>
+     *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
+     *   <li>expOfNorthing( ∞  )   =  NaN</li>
+     *   <li>expOfNorthing(NaN)    =  NaN</li>
      *   <li>If φ, after removal of any 2π periodicity, still outside the [-π/2 … π/2] range,
      *       then the result is a negative number. If the caller is going to compute the logarithm
-     *       of the returned value as in the Mercator projection, he will get NaN.</li>
+     *       of the returned value as in the Mercator projection, (s)he will get NaN.</li>
      * </ul>
      *
      * <div class="section">Relationship with Snyder</div>
@@ -478,63 +473,78 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * <ul>
      *   <li>(7-7) in the <cite>Mercator projection</cite> chapter.</li>
      *   <li>Reciprocal of (9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
-     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.
-     *       Note:   tan(π/4 - φ/2)  =  1/tan(π/4 + φ/2).</li>
+     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
      * </ul>
      *
      * @param  φ     The latitude in radians.
      * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
+     *
+     * @see #φ(double)
+     * @see #dy_dφ(double, double)
      */
-    final double exp_y(final double φ, final double ℯsinφ) {
+    final double expOfNorthing(final double φ, final double ℯsinφ) {
+        /*
+         * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
+         */
         return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
     }
 
     /**
-     * Iteratively solve equation (7-9) from Snyder (<cite>Mercator projection</cite> chapter).
-     * This is <em>almost</em> the converse of the above {@link #exp_y(double, double)} function.
-     * In a Mercator inverse projection, the value of {@code t} argument is {@code exp(-y)}.
+     * Computes the latitude for a value closely related to the <var>y</var> value of a Mercator projection.
+     * This formula is also part of other projections, since Mercator can be considered as a special case of
+     * Lambert Conic Conformal for instance.
+     *
+     * <p>This function is <em>almost</em> the converse of the above {@link #expOfNorthing(double, double)} function.
+     * In a Mercator inverse projection, the value of the {@code expOfSouthing} argument is {@code exp(-y)}.</p>
      *
      * <p>The input should be a positive number, otherwise the result will be either outside
      * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>
      *
      * <ul>
-     *   <li>If {@code t} is zero, then the result is close to π/2.</li>
-     *   <li>If {@code t} is 1, then the result is close to zero.</li>
-     *   <li>If {@code t} is positive infinity, then the result is close to -π/2.</li>
+     *   <li>φ(0)   =   π/2</li>
+     *   <li>φ(1)   =   0</li>
+     *   <li>φ(∞)   =  -π/2.</li>
      * </ul>
      *
-     * @param  t The <em>reciprocal</em> of the value returned by {@link #exp_y(double)}.
+     * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
+     *
+     * @see #expOfNorthing(double, double)
+     * @see #dy_dφ(double, double)
      */
-    final double φ(final double t) throws ProjectionException {
+    final double φ(final double expOfSouthing) throws ProjectionException {
         final double hℯ = 0.5 * excentricity;
-        double φ = (PI/2) - 2*atan(t);                  // Snyder (7-11)
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
+        double φ = (PI/2) - 2*atan(expOfSouthing);          // Snyder (7-11)
+        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {          // Iteratively solve equation (7-9) from Snyder
             final double ℯsinφ = excentricity * sin(φ);
-            final double Δφ = abs(φ - (φ = PI/2 - 2*atan(t * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
+            final double Δφ = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
             if (Δφ <= ITERATION_TOLERANCE) {
                 return φ;
             }
         }
-        if (isNaN(t)) {
+        if (isNaN(expOfSouthing)) {
             return NaN;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
 
     /**
-     * Gets the partial derivative of the {@link #t(double, double)} method divided by {@code t}.
-     * Callers must multiply the return value by {@code t} in order to get the actual value.
+     * Computes the partial derivative of a Mercator projection at the given latitude. This formula is also part of
+     * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
      *
-     * @param  φ    The latitude.
+     * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
+     * the returned value by by {@code expOfNorthing}.</p>
+     *
      * @param  sinφ the sine of latitude.
      * @param  cosφ The cosine of latitude.
-     * @return The {@code t(φ, sinφ)} derivative at the specified latitude.
+     * @return The partial derivative of a Mercator projection at the given latitude.
+     *
+     * @see #expOfNorthing(double, double)
+     * @see #φ(double)
      */
-    final double dt_dφ(final double φ, final double sinφ, final double cosφ) {
-        final double t = (1 - sinφ) / cosφ;
-        return excentricitySquared*cosφ / (1 - excentricitySquared * (sinφ*sinφ)) - 0.5*(t + 1/t);
+    final double dy_dφ(final double sinφ, final double cosφ) {
+        return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
     }
 }

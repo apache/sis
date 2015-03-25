@@ -68,7 +68,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     class from the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *     Note that different {@code MathTransformProvider}s may instantiate the same map projection class.
  *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
- *     instantiate the same {@link org.apache.sis.referencing.operation.Mercator} class, but with different descriptors.</li>
+ *     instantiate the same {@link org.apache.sis.referencing.operation.projection.Mercator} class,
+ *     but with different descriptors.</li>
  *
  *   <li>The map projection constructor fetches all parameters that it needs from the user-supplied
  *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
