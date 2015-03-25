@@ -225,17 +225,17 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
      */
     @Test
     @DependsOnMethod("testExpOfNorthing")
-    public void test_dN_dφ() throws TransformException {
+    public void test_dy_dφ() throws TransformException {
         tolerance = 1E-7;
-        doTest_dN_dφ(new NoOp(false));      // Spherical case
-        doTest_dN_dφ(new NoOp(true));       // Ellipsoidal case
+        doTest_dy_dφ(new NoOp(false));      // Spherical case
+        doTest_dy_dφ(new NoOp(true));       // Ellipsoidal case
     }
 
     /**
-     * Implementation of {@link #test_dN_dφ()}.
+     * Implementation of {@link #test_dy_dφ()}.
      * The {@link #projection} field must have been set before this method is called.
      */
-    private void doTest_dN_dφ(final NoOp projection) throws TransformException {
+    private void doTest_dy_dφ(final NoOp projection) throws TransformException {
         transform = new AbstractMathTransform1D() {
             @Override public double transform(final double φ) {
                 return expOfNorthing(projection, φ);

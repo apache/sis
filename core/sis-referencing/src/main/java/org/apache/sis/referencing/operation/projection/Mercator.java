@@ -25,6 +25,7 @@ import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.parameter.Parameters;
@@ -87,6 +88,37 @@ public class Mercator extends UnitaryProjection {
      */
     protected Mercator(final OperationMethod method, final Parameters values) {
         super(method, values);
+        double φ1 = abs(values.doubleValue(Mercator2SP.STANDARD_PARALLEL));
+        double φ0 =     values.doubleValue(Mercator2SP.LATITUDE_OF_ORIGIN);
+        double λ0 =     values.doubleValue(Mercator2SP.CENTRAL_MERIDIAN);
+        double k0 =     values.doubleValue(Mercator2SP.SCALE_FACTOR);
+        double FE =     values.doubleValue(Mercator2SP.FALSE_EASTING);
+        double FN =     values.doubleValue(Mercator2SP.FALSE_NORTHING);
+
+        φ1 = toRadians(φ1);
+        k0 *= cos(φ1);
+        if (!isSpherical()) {
+            k0 /= rν(sin(φ1));
+        }
+        final MatrixSIS normalize   = parameters.normalizeGeographicInputs(λ0);
+        final MatrixSIS denormalize = parameters.denormalizeCartesianOutputs(
+                values.doubleValue(Mercator2SP.SEMI_MAJOR) * k0, FE, FN);
+        /*
+         * A correction that allows us to employ a latitude of origin that is not correspondent to the equator,
+         * as described in Snyder and al. at page 47. This is the same correction factor than the one applied
+         * for the Mercator (2SP) case, constant "ko" in EPSG:9805.
+         *
+         * The scale correction is multiplied with the global scale, which allows the Apache SIS referencing
+         * module to merge this correction with the scale factor in a single multiplication.
+         */
+        φ0 = toRadians(φ0);
+        double scale = cos(φ0) / rν(sin(φ0));
+        final boolean isMiller = IdentifiedObjects.isHeuristicMatchForName(values.getDescriptor(), MillerCylindrical.NAME);
+        if (isMiller) {
+            scale *= 1.25;
+        }
+        denormalize.concatenate(0, scale, null);
+        denormalize.concatenate(1, scale, null);
     }
 
     /**
