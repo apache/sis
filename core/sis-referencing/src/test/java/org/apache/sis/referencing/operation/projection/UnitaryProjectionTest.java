@@ -52,19 +52,19 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
     private UnitaryProjection projection;
 
     /**
-     * Computes {@link UnitaryProjection#t(double, double)} for the given latitude.
+     * Computes {@link UnitaryProjection#exp_y(double, double)} for the given latitude.
      *
      * @param  φ The latitude in radians.
-     * @return Function 9-13 or 15-9, or the negative of function 7-7 from Snyder.
+     * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
-    private double t(final double φ) {
-        return projection.t(φ, sin(φ));
+    private double exp_y(final double φ) {
+        return projection.exp_y(φ, projection.excentricity * sin(φ));
     }
 
     /**
      * Computes {@link UnitaryProjection#φ(double)}.
      *
-     * @param  t The value returned by {@link #t(double)}.
+     * @param  t The reciprocal of the value returned by {@link #exp_y(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
@@ -117,7 +117,7 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link UnitaryProjection#t(double, double)} function.
+     * Tests the {@link UnitaryProjection#exp_y(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -125,37 +125,37 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * }
      */
     @Test
-    public void test_t() {
+    public void testExp_y() {
         projection = new NoOp(false);   // Spherical case
-        doTest_t();
+        doTestExp_y();
         projection = new NoOp(true);    // Ellipsoidal case
-        doTest_t();
+        doTestExp_y();
     }
 
     /**
-     * Implementation of {@link #test_t()}.
+     * Implementation of {@link #testExp_y()}.
      * The {@link #projection} field must have been set before this method is called.
      */
-    private void doTest_t() {
-        assertEquals("Function contract",  NaN, t(NaN),               TOLERANCE);
-        assertEquals("Function contract",  NaN, t(POSITIVE_INFINITY), TOLERANCE);
-        assertEquals("Function contract",  NaN, t(NEGATIVE_INFINITY), TOLERANCE);
-        assertEquals("Function contract",    1, t(0),                 TOLERANCE);
-        assertEquals("Function contract",    0, t(+PI/2),             TOLERANCE);
-        assertTrue  ("Function contract",       t(-PI/2)              > 1E+16);
-        assertTrue  ("Out of bounds",           t(+PI/2 + 0.1)        < 0);
-        assertTrue  ("Out of bounds",           t(-PI/2 - 0.1)        < 0);
-        assertEquals("Out of bounds",       -1, t(PI),                TOLERANCE);
-        assertTrue  ("Out of bounds",           t(PI*3/2)             < -1E+16);
-        assertEquals("Function periodicity", 1, t(2*PI),              TOLERANCE);
-        assertEquals("Function periodicity", 0, t(PI*5/2),            TOLERANCE);
+    private void doTestExp_y() {
+        assertEquals("Function contract",  NaN, exp_y(NaN),               TOLERANCE);
+        assertEquals("Function contract",  NaN, exp_y(POSITIVE_INFINITY), TOLERANCE);
+        assertEquals("Function contract",  NaN, exp_y(NEGATIVE_INFINITY), TOLERANCE);
+        assertEquals("Function contract",    1, exp_y(0),                 TOLERANCE);
+        assertEquals("Function contract",    0, exp_y(-PI/2),             TOLERANCE);
+        assertTrue  ("Function contract",       exp_y(+PI/2)              > 1E+16);
+        assertTrue  ("Out of bounds",           exp_y(-PI/2 - 0.1)        < 0);
+        assertTrue  ("Out of bounds",           exp_y(+PI/2 + 0.1)        < 0);
+        assertEquals("Out of bounds",       -1, exp_y(-PI),               TOLERANCE);
+        assertTrue  ("Out of bounds",           exp_y(-PI*3/2)            < -1E+16);
+        assertEquals("Function periodicity", 1, exp_y(-2*PI),             TOLERANCE);
+        assertEquals("Function periodicity", 0, exp_y(-PI*5/2),           TOLERANCE);
         /*
          * Use in a way close to (but not identical)
          * to the way the Mercator projection need it.
          */
-        assertEquals("Forward 0°N",  0,                 -log(t(0)),     TOLERANCE);
-        assertEquals("Forward 90°N", POSITIVE_INFINITY, -log(t(+PI/2)), TOLERANCE);
-        assertTrue  ("Forward 90°S", -LN_INFINITY >     -log(t(-PI/2)));
+        assertEquals("Forward 0°N",  0,                 log(exp_y(0)),     TOLERANCE);
+        assertEquals("Forward 90°S", NEGATIVE_INFINITY, log(exp_y(-PI/2)), TOLERANCE);
+        assertTrue  ("Forward 90°N", LN_INFINITY <      log(exp_y(+PI/2)));
     }
 
     /**
@@ -167,7 +167,7 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
      * @throws ProjectionException Should never happen.
      */
     @Test
-    @DependsOnMethod("test_t")
+    @DependsOnMethod("testExp_y")
     public void test_φ() throws ProjectionException {
         projection = new NoOp(false);   // Spherical case
         doTest_φ(TOLERANCE);
@@ -195,12 +195,12 @@ public final strictfp class UnitaryProjectionTest extends TestCase {
          */
         for (int i=-90; i<=270; i+=5) {
             final double φ   = toRadians(i);
-            final double t    = t(φ);
+            final double t    = 1 / exp_y(φ);
             final double back = toDegrees(φ(t));
             if (i <= 90) {
-                assertTrue("tsfn in valid range should be positive.", t >= 0);
+                assertTrue("φ(t) in valid range should be positive.", t >= 0);
             } else {
-                assertTrue("tsfn in invalid range should be negative.", t < 0);
+                assertTrue("φ(t) in invalid range should be negative.", t < 0);
             }
             assertEquals("Inverse function doesn't match.", i, back, tolerance);
         }
