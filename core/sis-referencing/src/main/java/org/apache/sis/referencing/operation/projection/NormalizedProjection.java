@@ -64,7 +64,7 @@ import java.util.Objects;
  * The matrices below show only the basic parameters common to all projections. Some projections will put more elements
  * in those matrices.
  *
- * <center>
+ * <blockquote>
  *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
  *     <tr>
  *       <td>{@include ../transform/formulas.html#Normalize}</td>
@@ -74,7 +74,7 @@ import java.util.Objects;
  *       <td>{@include ../transform/formulas.html#Denormalize}</td>
  *     </tr>
  *   </table>
- * </center>
+ * </blockquote>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend, in order to make clear that those parameters are not used by subclasses.
@@ -432,7 +432,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
      * That radius of curvature is:
      *
-     * <blockquote>ν = 1 / √(1 - ℯ²∙sin²φ)</blockquote>
+     * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
      * This method returns 1/ν.
      *
