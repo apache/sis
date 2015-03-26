@@ -49,15 +49,32 @@ import java.util.Objects;
  * <ul class="verbose">
  *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform(…)} method
  *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
- *   Longitudes have the <cite>central meridian</cite> removed before the transform method is invoked.
+ *   Longitudes have the <cite>central meridian</cite> (λ₀) removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
- *   {@linkplain ContextualParameters#normalization(boolean) normalize} affine transform.</li>
+ *   {@linkplain ContextualParameters#normalizeGeographicInputs normalize} affine transform.</li>
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
- *   (<var>easting</var>, <var>northing</var>) values on a sphere or ellipse having a semi-major axis length of 1.
- *   The multiplication by the scale factor and the false easting/northing offsets are applied by the
- *   {@linkplain ContextualParameters#normalization(boolean) denormalize} affine transform.</li>
+ *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length of 1.
+ *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
+ *   northing (FN) are applied by the {@linkplain ContextualParameters#denormalizeCartesianOutputs denormalize}
+ *   affine transform.</li>
  * </ul>
+ *
+ * The normalize and denormalize steps are represented below by the matrices on the left and right sides respectively.
+ * The matrices below show only the basic parameters common to all projections. Some projections will put more elements
+ * in those matrices.
+ *
+ * <center>
+ *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
+ *     <tr>
+ *       <td>{@include ../transform/formulas.html#Normalize}</td>
+ *       <td>→</td>
+ *       <td>{@code NormalizedProjection}</td>
+ *       <td>→</td>
+ *       <td>{@include ../transform/formulas.html#Denormalize}</td>
+ *     </tr>
+ *   </table>
+ * </center>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend, in order to make clear that those parameters are not used by subclasses.
@@ -121,7 +138,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
      * construction time.
      */
-    protected final ContextualParameters parameters;
+    final ContextualParameters parameters;
 
     /**
      * Ellipsoid excentricity, equal to <code>sqrt({@linkplain #excentricitySquared})</code>.
@@ -232,7 +249,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * This means that projections that implement this method are performed on a sphere or ellipse
      * having a semi-major axis length of 1.
      *
-     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">PROJ.4</a>, the same standardization,
+     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_fwd.c}.</div>
      *
      * <div class="section">Argument checks</div>
@@ -269,7 +286,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in the output coordinate. This means that projections that implement this method are performed on a sphere
      * or ellipse having a semi-major axis of 1.
      *
-     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">PROJ.4</a>, the same standardization,
+     * <div class="note"><b>Note:</b> in <a href="http://trac.osgeo.org/proj/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_inv.c}.</div>
      *
      * @param srcPts The array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
@@ -355,8 +372,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@code object} is an instance of the same class than {@code this}, then compares the excentricity.
      *
      * <p>If this method returns {@code true}, then for any given identical source position, the two compared map
-     * projections shall compute the same target position. Many of the {@linkplain #parameters parameters}
-     * used for creating the map projections are irrelevant and do not need to be known.
+     * projections shall compute the same target position. Many of the {@linkplain #getContextualParameters()
+     * contextual parameters} used for creating the map projections are irrelevant and do not need to be known.
      * Those projection parameters will be compared only if the comparison mode is {@link ComparisonMode#STRICT}
      * or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}.</p>
      *
