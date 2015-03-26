@@ -864,7 +864,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Replaces the given transform by a unique instance, if one already exists.
      */
-    final MathTransform unique(final MathTransform tr) {
+    private MathTransform unique(final MathTransform tr) {
         return pool.unique(tr);
     }
 

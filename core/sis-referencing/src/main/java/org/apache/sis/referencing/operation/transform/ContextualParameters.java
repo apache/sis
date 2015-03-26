@@ -60,24 +60,39 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
  * <div class="section">Usage in map projections</div>
- * This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
+ * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
- * This object is typically created and used as below:
+ * The complete map projection is a chain of 3 transforms a below:
+ *
+ * <center>
+ *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
+ *     <tr>
+ *       <td>{@include formulas.html#Normalize}</td>
+ *       <td>→</td>
+ *       <td>Map projection on a normalized ellipsoid</td>
+ *       <td>→</td>
+ *       <td>{@include formulas.html#Denormalize}</td>
+ *     </tr>
+ *   </table>
+ * </center>
+ *
+ * {@code ContextualParameters} is typically created and used as below:
  *
  * <ol class="verbose">
- *   <li>A {@link MathTransformProvider#createMathTransform(ParameterValueGroup)} method instantiates a
- *     class from the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
+ *   <li>A {@link MathTransformProvider} instantiates a class from the
+ *     {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *     Note that different {@code MathTransformProvider}s may instantiate the same map projection class.
  *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> operation methods
  *     instantiate the same {@link org.apache.sis.referencing.operation.projection.Mercator} class,
  *     but with different descriptors.</li>
  *
  *   <li>The map projection constructor fetches all parameters that it needs from the user-supplied
- *     {@link ParameterValueGroup}, initializes the projection, then saves the parameter values that
+ *     {@link org.apache.sis.parameter.Parameters}, initializes the projection, then saves the parameter values that
  *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
- *   <li>The map projection constructor may keep only the non-linear parameters for itself, and gives the linear parameters to the
- *     {@link #normalizeGeographicInputs(double)} and {@link #denormalizeCartesianOutputs(double, double, double)} methods.
+ *   <li>The map projection constructor may keep only the non-linear parameters for itself,
+ *     and gives the linear parameters to the {@link #normalizeGeographicInputs normalizeGeographicInputs(…)}
+ *     and {@link #denormalizeCartesianOutputs denormalizeCartesianOutputs(…)} methods.
  *     The constructor is free to apply additional operations on the two affine transforms
  *     ({@linkplain #normalization(boolean) normalize / denormalize}) after the above-cited methods have been invoked.</li>
  * </ol>
@@ -92,6 +107,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  *
  * @see AbstractMathTransform#getContextualParameters()
+ * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  */
 public class ContextualParameters extends FormattableObject implements ParameterValueGroup, Cloneable, Serializable {
     /**
@@ -189,7 +205,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
     /**
      * Prepends a normalization step before the non-linear kernel, which will convert ordinate values
      * in the two first dimensions from degrees to radians. Before this conversion, the normalization
-     * can optionally subtract the given λ0 value (in degrees) from the longitude.
+     * can optionally subtract the given λ₀ value (in degrees) from the longitude.
      *
      * <p>In other words, invoking this method is equivalent to convert coordinates using the following
      * affine transform before any other operation:</p>
@@ -218,17 +234,17 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Appends a normalization step after the non-linear kernel, which will scale the projected ordinates
+     * Appends a denormalization step after the non-linear kernel, which will scale the projected ordinates
      * and add the false easting and northing.
      *
      * <p>In other words, invoking this method is equivalent to convert coordinates using the following
      * affine transform after the non-linear kernel:</p>
      *
-     * <center><p>{@include formulas.html#Deormalize}</p></center>
+     * <center><p>{@include formulas.html#Denormalize}</p></center>
      *
-     * @param scale The <cite>semi-major axis length</cite> (<var>a</var>), optionally multiplied by other scale factor (<var>k</var>₀).
-     * @param tx    The false easting (FE).
-     * @param ty    The false northing (FN).
+     * @param  scale The <cite>semi-major axis length</cite> (<var>a</var>), optionally multiplied by other scale factor (<var>k</var>₀).
+     * @param  tx    The false easting (FE).
+     * @param  ty    The false northing (FN).
      * @return The denormalization affine transform as a matrix.
      *         Callers can change that matrix directly if they want to apply additional denormalization operations.
      */
@@ -263,7 +279,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
      */
-    public MathTransform createConcatenatedTransform(final MathTransformFactory factory, MathTransform kernel)
+    public MathTransform createConcatenatedTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
         final MathTransform n = factory.createAffineTransform(normalize);
@@ -271,9 +287,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
         Matrix m;
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
-        if (factory instanceof DefaultMathTransformFactory) {
-            kernel = ((DefaultMathTransformFactory) factory).unique(kernel);
-        }
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 

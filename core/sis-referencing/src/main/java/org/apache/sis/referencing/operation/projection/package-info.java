@@ -118,14 +118,14 @@
  * A map projection in this package is actually the concatenation of the following transforms, in that order:
  *
  * <ul>
- *   <li>{@link org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalize} affine transform</li>
- *   <li>{@link org.apache.sis.referencing.operation.projection.NormalizedProjection} subclass</li>
- *   <li>{@link org.apache.sis.referencing.operation.transform.ContextualParameters#denormalizeCartesianOutputs denormalize} affine transform</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalization} affine transform</li>
+ *   <li>A {@link      org.apache.sis.referencing.operation.projection.NormalizedProjection} subclass</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#denormalizeCartesianOutputs denormalization} affine transform</li>
  * </ul>
  *
- * The first step (<cite>"normalize"</cite>) converts longitude and latitude values from degrees to radians
+ * The first step (<cite>"normalization"</cite>) converts longitude and latitude values from degrees to radians
  * and removes the <cite>central meridian</cite> from the longitude.
- * The last step (<cite>"denormalize"</cite>) multiplies the result of the middle step by the global scale factor
+ * The last step (<cite>"denormalization"</cite>) multiplies the result of the middle step by the global scale factor
  * (typically the product of the <cite>scale factor</cite> with the <cite>semi-major</cite> axis length),
  * then adds the <cite>false easting</cite> and <cite>false northing</cite>.
  * This means that the middle step (<cite>"normalized projection"</cite>) is performed on an ellipse (or sphere)
@@ -139,7 +139,7 @@
  * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientation.
  * However in some cases the actual input and output coordinates may be different than the above by some scale factor,
  * translation or rotation, if the projection implementation choose to combine some linear coefficients with the
- * above-cited normalize and denormalize affine transforms.</p>
+ * above-cited normalization and denormalization affine transforms.</p>
  *
  * <div class="note"><b>Note:</b>
  * In <a href="http://www.remotesensing.org/proj/">Proj.4</a>, the same standardization is handled by {@code pj_fwd.c}

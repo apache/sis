@@ -54,7 +54,7 @@ import static java.lang.Double.*;
  * <div class="section">Behavior at poles</div>
  * The projection of 90°N gives {@linkplain Double#POSITIVE_INFINITY positive infinity}.
  * The projection of 90°S gives {@linkplain Double#NEGATIVE_INFINITY negative infinity}.
- * Projection of a latitude outside the [-90-ε … 90+ε]° range produces {@linkplain Double#NaN NaN}.
+ * Projection of a latitude outside the [-90 … 90]° range produces {@linkplain Double#NaN NaN}.
  *
  * @author  André Gosselin (MPO)
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
@@ -79,8 +79,10 @@ public class Mercator extends NormalizedProjection {
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>Mercator (variant A)</cite>, also known as <cite>Mercator (1SP)</cite>.</li>
-     *   <li><cite>Mercator (variant B)</cite>, also known as <cite>Mercator (2SP)</cite>.</li>
+     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
+     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
+     *   <li><cite>"Miller Cylindrical"</cite>.</li>
      * </ul>
      *
      * @param method Description of the projection parameters.
@@ -122,12 +124,13 @@ public class Mercator extends NormalizedProjection {
     }
 
     /**
-     * Returns the parameter descriptors for this normalized projection. Note that the returned descriptor is about
-     * the normalized projection only, not the full projection. Consequently the default implementation returns the
-     * descriptor of <cite>Mercator (variant A)</cite> in all cases except for the pseudo-Mercator projection,
-     * because the <cite>Mercator (variant B)</cite> case is implemented as the variant A with a different scale factor.
+     * Returns the parameter descriptors for this normalized projection.
+     * The default implementation returns the descriptor of <cite>"Mercator (variant A)"</cite> in all cases
+     * except <cite>"Popular Visualisation Pseudo Mercator"</cite>.
+     * This method does not return the descriptor of other other cases because the <cite>"Mercator (variant B)"</cite>
+     * case (for example) is implemented as <cite>"Mercator (variant A)"</cite> with a different scale factor.
      *
-     * @return The <cite>Mercator (variant A)</cite> or <cite>Popular Visualisation Pseudo Mercator</cite>
+     * @return The <cite>"Mercator (variant A)"</cite> or <cite>"Popular Visualisation Pseudo Mercator"</cite>
      *         parameter descriptor.
      */
     @Override
