@@ -21,7 +21,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Thrown by {@link UnitaryProjection} when a map projection failed.
+ * Thrown by {@link NormalizedProjection} when a map projection failed.
  *
  * @author  André Gosselin (MPO)
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

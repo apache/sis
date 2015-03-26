@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <div class="section">Usage in map projections</div>
  * This object is used mostly for Apache SIS implementation of map projections, where the kernel is a
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection unitary projection}.
+ * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
  * This object is typically created and used as below:
  *
  * <ol class="verbose">
@@ -152,8 +152,9 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
      * <div class="note"><b>Note:</b>
-     * The definition of "kernel" is left to implementors. In the particular case of Apache SIS implementation of map
-     * projections, kernels are subclasses of {@link org.apache.sis.referencing.operation.projection.UnitaryProjection}.
+     * The definition of "kernel" is left to implementors.
+     * In the particular case of Apache SIS implementation of map projections,
+     * kernels are subclasses of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
      * </div>
      *
      * @return The description of the parameters.
@@ -427,7 +428,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      */
     final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
         /*
-         * We expect affine transforms before and after the unitary projection. Extracts those
+         * We expect affine transforms before and after the normalized projection. Extracts those
          * affine transforms now. If one or both are missing, we will treat null as an identity
          * transform. We will not replace the elements in the list before new values for those
          * affine transforms have been fully calculated.
@@ -495,7 +496,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
         /*
          * At this point we have computed all the affine transforms to show to the user.
          * We can replace the elements in the list. The transform referenced by transforms.get(index)
-         * is usually a UnitaryProjection, to be replaced by a ContextualParameters instance in order
+         * is usually a NormalizedProjection, to be replaced by a ContextualParameters instance in order
          * to format real parameter values (semi-major axis, scale factor, etc.)
          * instead than a semi-major axis length of 1.
          */

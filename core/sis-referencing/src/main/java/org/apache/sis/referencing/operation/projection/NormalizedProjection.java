@@ -59,9 +59,9 @@ import java.util.Objects;
  *   {@linkplain ContextualParameters#normalization(boolean) denormalize} affine transform.</li>
  * </ul>
  *
- * {@code UnitaryProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
+ * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend, in order to make clear that those parameters are not used by subclasses.
- * The ability to recognize two {@code UnitaryProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
+ * The ability to recognize two {@code NormalizedProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
  * without consideration for the scale factor (among other) allow more efficient concatenation in some cases
  * (typically some combinations of inverse projection followed by a direct projection).
  *
@@ -83,7 +83,7 @@ import java.util.Objects;
  *
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  */
-public abstract class UnitaryProjection extends AbstractMathTransform2D implements Serializable {
+public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -148,7 +148,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * @param method Description of the map projection parameters.
      * @param parameters The parameters of the projection to be created.
      */
-    protected UnitaryProjection(final OperationMethod method, final Parameters parameters) {
+    protected NormalizedProjection(final OperationMethod method, final Parameters parameters) {
         this.parameters = new ContextualParameters(method);
         ensureNonNull("parameters", parameters);
         final double a = parameters.doubleValue(MapProjection.SEMI_MAJOR);
@@ -184,7 +184,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      *
      * Subclasses must complete.
      *
-     * @return A copy of the parameter values for this unitary projection.
+     * @return A copy of the parameter values for this normalized projection.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
@@ -312,7 +312,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
          * Default constructor.
          */
         public Inverse() {
-            UnitaryProjection.this.super();
+            NormalizedProjection.this.super();
         }
 
         /**
@@ -334,13 +334,13 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
                     dstOff = 0;
                 }
                 inverseTransform(srcPts, srcOff, dstPts, dstOff);
-                return Matrices.inverse(UnitaryProjection.this.transform(dstPts, dstOff, null, 0, true));
+                return Matrices.inverse(NormalizedProjection.this.transform(dstPts, dstOff, null, 0, true));
             }
         }
     }
 
     /**
-     * Computes a hash code value for this unitary projection.
+     * Computes a hash code value for this map projection.
      * The default implementation computes a value from the parameters given at construction time.
      *
      * @return The hash code value.
@@ -354,22 +354,22 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
      * Compares the given object with this transform for equivalence. The default implementation checks if
      * {@code object} is an instance of the same class than {@code this}, then compares the excentricity.
      *
-     * <p>If this method returns {@code true}, then for any given identical source position, the two compared
-     * unitary projections shall compute the same target position. Many of the {@linkplain Parameters projection
-     * parameters} used for creating the unitary projections are irrelevant and don not need to be known.
+     * <p>If this method returns {@code true}, then for any given identical source position, the two compared map
+     * projections shall compute the same target position. Many of the {@linkplain #parameters parameters}
+     * used for creating the map projections are irrelevant and do not need to be known.
      * Those projection parameters will be compared only if the comparison mode is {@link ComparisonMode#STRICT}
      * or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}.</p>
      *
      * <div class="note"><b>Example:</b>
      * a {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <cite>standard parallel</cite>
      * value of 60°. The same projection can also be created in the 1SP case with a <cite>scale factor</cite> of 0.5.
-     * Nevertheless those two unitary projections applied on a sphere gives identical results. Considering them as
+     * Nevertheless those two map projections applied on a sphere gives identical results. Considering them as
      * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
      * </div>
      *
-     * @param object The object to compare with this unitary projection for equivalence.
+     * @param object The object to compare with this map projection for equivalence.
      * @param mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.
-     * @return {@code true} if the given object is equivalent to this unitary projection.
+     * @return {@code true} if the given object is equivalent to this map projection.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -378,7 +378,7 @@ public abstract class UnitaryProjection extends AbstractMathTransform2D implemen
         }
         if (super.equals(object, mode)) {
             final double e1, e2;
-            final UnitaryProjection that = (UnitaryProjection) object;
+            final NormalizedProjection that = (NormalizedProjection) object;
             if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
                 if (!Objects.equals(parameters, that.parameters)) {
                     return false;

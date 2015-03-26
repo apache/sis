@@ -27,7 +27,7 @@ import org.apache.sis.util.Workaround;
 
 
 /**
- * A simple implementation of {@link UnitaryProjection} as a "no-operation".
+ * A simple implementation of {@link NormalizedProjection} as a "no-operation".
  * This is used for testing methods other than {@code transform(…)} and {@code inverseTransform(…)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -36,7 +36,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends UnitaryProjection {
+final strictfp class NoOp extends NormalizedProjection {
     /**
      * Creates a new "no-operation".
      *

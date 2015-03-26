@@ -70,13 +70,11 @@ package org.apache.sis.util;
  *           {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues() parameter values}.</li>
  *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – Synonymous to the {@code STRICT} mode,
  *            because there is no GeoAPI interfaces for the various kind of math transforms.</li>
- *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same
- *           class, but the parameter values can be different if they are different way to formulate
- *           the same transform. For example a {@code "Mercator (2SP)"} projection with a
- *           {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#standardParallels
- *           standard parallel} value of 60° produces the same results than a {@code "Mercator (1SP)"} projection with a
- *           {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor
- *           scale factor} value of 0.5</li>
+ *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same class,
+ *           but the parameter values can be different if they are different way to formulate the same transform.
+ *           For example a <cite>"Mercator (2SP)"</cite> projection on a sphere with a <cite>standard parallel</cite>
+ *           value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection on the same sphere
+ *           with a <cite>scale factor</cite> value of 0.5.</li>
  *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>

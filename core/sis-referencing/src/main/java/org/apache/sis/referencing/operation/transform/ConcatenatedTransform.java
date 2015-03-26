@@ -68,8 +68,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * than 1 ULP (about 2.22E-16), it applies only the the zero terms in the matrix. The terms on the
      * diagonal are still expected to be exactly 1.
      *
-     * @todo Try to remove completely this tolerance threshold after we applied double-double arithmetic
-     *       to all matrices.
+     * @deprecated Try to remove completely this tolerance threshold after we applied double-double arithmetic
+     *             to all matrices.
      */
     private static final double IDENTITY_TOLERANCE = 1E-16;
 
@@ -420,7 +420,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Returns all concatenated transforms, modified with the pre- and post-processing required for WKT formating.
      * More specifically, if there is any Apache SIS implementation of Map Projection in the chain, then the
-     * (<var>normalize</var>, <var>unitary projection</var>, <var>denormalize</var>) tuples are replaced by single
+     * (<var>normalize</var>, <var>normalized projection</var>, <var>denormalize</var>) tuples are replaced by single
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
      */
     private List<Object> getPseudoSteps() {
