@@ -59,24 +59,18 @@ public abstract class MapProjection extends AbstractProvider {
     private static final long serialVersionUID = 6280666068007678702L;
 
     /**
-     * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor semi-major}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
+     * All names known to Apache SIS for the <cite>semi-major</cite> parameter.
+     * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajor"} and {@code "a"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
     /**
-     * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor semi-minor}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
+     * All names known to Apache SIS for the <cite>semi-minor</cite> parameter.
+     * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
     static {

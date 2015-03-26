@@ -29,14 +29,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link UnitaryProjection} class.
+ * Tests the {@link NormalizedProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public final strictfp class UnitaryProjectionTest extends TransformTestCase {
+public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */
@@ -50,35 +50,35 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
     private static final int LN_INFINITY = 37;
 
     /**
-     * Computes {@link UnitaryProjection#expOfNorthing(double, double)} for the given latitude.
+     * Computes {@link NormalizedProjection#expOfNorthing(double, double)} for the given latitude.
      *
      * @param  projection The projection on which to invoke {@code expOfNorthing(…)}.
      * @param  φ The latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
-    static double expOfNorthing(final UnitaryProjection projection, final double φ) {
+    static double expOfNorthing(final NormalizedProjection projection, final double φ) {
         return projection.expOfNorthing(φ, projection.excentricity * sin(φ));
     }
 
     /**
-     * Computes {@link UnitaryProjection#expOfNorthing(double, double)} for the given latitude.
+     * Computes {@link NormalizedProjection#expOfNorthing(double, double)} for the given latitude.
      *
      * @param  φ The latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
     private double expOfNorthing(final double φ) {
-        return expOfNorthing((UnitaryProjection) transform, φ);
+        return expOfNorthing((NormalizedProjection) transform, φ);
     }
 
     /**
-     * Computes {@link UnitaryProjection#φ(double)}.
+     * Computes {@link NormalizedProjection#φ(double)}.
      *
      * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
     private double φ(final double expOfSouthing) throws ProjectionException {
-        return ((UnitaryProjection) transform).φ(expOfSouthing);
+        return ((NormalizedProjection) transform).φ(expOfSouthing);
     }
 
     /**
@@ -87,11 +87,11 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
      */
     @Test
     public void testDocumentation() {
-        double minutes = toDegrees(UnitaryProjection.ANGLE_TOLERANCE) * 60;
+        double minutes = toDegrees(NormalizedProjection.ANGLE_TOLERANCE) * 60;
         assertEquals("Documentation said 0.2″ precision.", 0.2, minutes*60, 0.1);
         assertEquals("Documentation said 6 km precision.", 6, minutes*1852, 0.5);
 
-        minutes = toDegrees(UnitaryProjection.ITERATION_TOLERANCE) * 60;
+        minutes = toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60;
         assertEquals("Documentation said 1 mm precision.", 0.001, minutes*1852, 0.0005);
     }
 
@@ -126,7 +126,7 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link UnitaryProjection#expOfNorthing(double, double)} function.
+     * Tests the {@link NormalizedProjection#expOfNorthing(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -169,10 +169,10 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link UnitaryProjection#φ(double)} function. We expect it to be the converse of the
-     * {@link UnitaryProjection#t(double, double)} function. In theory only the range [-90° … +90°]
-     * needs to be tested. However the function still consistent in the range [-90° … +270°]
-     * so we test that range for tracking this fact.
+     * Tests the {@link NormalizedProjection#φ(double)} function. We expect it to be the converse of the
+     * {@link NormalizedProjection#t(double, double)} function. In theory only the [-90° … +90°] range needs
+     * to be tested. However the function still consistent in the [-90° … +270°] range so we test that range
+     * for tracking this fact.
      *
      * @throws ProjectionException Should never happen.
      */
@@ -183,7 +183,7 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
         tolerance = TOLERANCE;
         doTest_φ();
         transform = new NoOp(true);    // Ellipsoidal case
-        tolerance = UnitaryProjection.ITERATION_TOLERANCE;
+        tolerance = NormalizedProjection.ITERATION_TOLERANCE;
         doTest_φ();
     }
 
@@ -219,7 +219,7 @@ public final strictfp class UnitaryProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link UnitaryProjection#dy_dφ(double, double)} method.
+     * Tests the {@link NormalizedProjection#dy_dφ(double, double)} method.
      *
      * @throws TransformException Should never happen.
      */

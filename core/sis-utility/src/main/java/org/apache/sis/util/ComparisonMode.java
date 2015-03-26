@@ -113,11 +113,9 @@ public enum ComparisonMode {
      * those objects as equivalent despite difference in the set of parameters, as long as coordinate
      * transformations still produce the same results.</p>
      *
-     * <div class="note"><b>Example:</b> A {@code "Mercator (2SP)"} projection with a
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#standardParallels
-     * standard parallel} value of 60° produces the same results than a {@code "Mercator (1SP)"} projection with a
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale
-     * factor} value of 0.5.</div>
+     * <div class="note"><b>Example:</b> A <cite>"Mercator (2SP)"</cite> projection with a <cite>standard parallel</cite>
+     * value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection with a <cite>scale factor</cite>
+     * value of 0.5.</div>
      *
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */

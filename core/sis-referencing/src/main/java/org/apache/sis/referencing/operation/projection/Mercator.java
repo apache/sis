@@ -68,7 +68,7 @@ import static java.lang.Double.*;
  * @see TransverseMercator
  * @see ObliqueMercator
  */
-public class Mercator extends UnitaryProjection {
+public class Mercator extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
@@ -122,10 +122,10 @@ public class Mercator extends UnitaryProjection {
     }
 
     /**
-     * Returns the parameter descriptors for this unitary projection. Note that the returned descriptor is about
-     * the unitary projection, not the full one. Consequently the default implementation returns the descriptor
-     * of <cite>Mercator (variant A)</cite> in all cases except for the pseudo-Mercator projection, because the
-     * <cite>Mercator (variant B)</cite> case is implemented as the variant A with a different scale factor.
+     * Returns the parameter descriptors for this normalized projection. Note that the returned descriptor is about
+     * the normalized projection only, not the full projection. Consequently the default implementation returns the
+     * descriptor of <cite>Mercator (variant A)</cite> in all cases except for the pseudo-Mercator projection,
+     * because the <cite>Mercator (variant B)</cite> case is implemented as the variant A with a different scale factor.
      *
      * @return The <cite>Mercator (variant A)</cite> or <cite>Popular Visualisation Pseudo Mercator</cite>
      *         parameter descriptor.
@@ -136,7 +136,7 @@ public class Mercator extends UnitaryProjection {
     }
 
     // No need to override getParameterValues() because no additional
-    // parameter are significant to a unitary Mercator projection.
+    // parameter are significant to a normalized Mercator projection.
 
 
     /**
@@ -185,7 +185,7 @@ public class Mercator extends UnitaryProjection {
      * <div class="note"><b>Note:</b>
      * We override the super-class method only as an optimization in the special case where the target coordinates
      * are written at the same locations than the source coordinates. In such case, we can take advantage of the
-     * fact that the λ values are not modified by the unitary Mercator projection.</div>
+     * fact that the λ values are not modified by the normalized Mercator projection.</div>
      *
      * @throws TransformException if a point can not be transformed.
      */
@@ -330,7 +330,7 @@ public class Mercator extends UnitaryProjection {
          * {@inheritDoc}
          *
          * <div class="note"><b>Note:</b>
-         * This method must be overridden because the {@link Mercator} class overrides the {@link UnitaryProjection}
+         * This method must be overridden because the {@link Mercator} class overrides the {@link NormalizedProjection}
          * default implementation.</div>
          */
         @Override

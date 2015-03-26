@@ -88,7 +88,7 @@ import org.junit.BeforeClass;
     // Test map projections.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.projection.UnitaryProjectionTest.class,
+    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
 
     // Registration of map projections and other math transforms.
     org.apache.sis.internal.referencing.provider.AffineTest.class,
