@@ -699,6 +699,23 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns an unmodifiable view of the given matrix. The returned matrix is immutable
+     * only if the given {@code matrix} is not modified anymore after this method call.
+     *
+     * @param matrix The matrix for which to get an unmodifiable view, or {@code null}.
+     * @return A unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS unmodifiable(final Matrix matrix) {
+        if (matrix == null || matrix instanceof UnmodifiableMatrix) {
+            return (UnmodifiableMatrix) matrix;
+        } else {
+            return new UnmodifiableMatrix(matrix);
+        }
+    }
+
+    /**
      * Returns a new matrix which is the result of multiplying the first matrix with the second one.
      * In other words, returns {@code m1} × {@code m2}.
      *

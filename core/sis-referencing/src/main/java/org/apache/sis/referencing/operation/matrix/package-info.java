@@ -41,9 +41,9 @@
  * <p><b>Example:</b> in the two dimensional case, an affine transform from a map projection (units in metres)
  * to the screen (units in pixels) can be performed by the following matrix multiplication:</p>
  *
- * <center><p>
+ * <center>
  * <img src="doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
- * </p></center>
+ * </center>
  *
  * <div class="section">Extended floating point precision</div>
  * This package uses extended floating point precision for most arithmetic operations like matrix multiplications and

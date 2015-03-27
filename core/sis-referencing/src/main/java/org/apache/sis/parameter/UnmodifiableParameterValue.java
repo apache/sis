@@ -32,8 +32,10 @@ import org.apache.sis.util.resources.Errors;
  *   <li>immutable or {@linkplain Cloneable cloneable} parameter {@linkplain #getValue() value}.</li>
  * </ul>
  *
- * If the parameter value implements the {@code Cloneable} interface and has a public {@code clone()} method,
+ * If the parameter value implements the {@link Cloneable} interface and has a public {@code clone()} method,
  * then that value will be cloned every time the {@link #getValue()} method is invoked.
+ * The value is not cloned by this method however; it is caller's responsibility to not modify the value of
+ * the given {@code parameter} instance after this method call.
  *
  * <div class="section">Instances sharing</div>
  * If the {@link #create(ParameterValue)} method is invoked more than once with equal descriptor, value and unit,

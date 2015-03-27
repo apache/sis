@@ -141,6 +141,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Stores the value of the given {@code dd} object at the specified row and column.
      * This method does not need to verify argument validity.
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     void set(final int row, final int column, final DoubleDouble dd) {
         setElement(row, column, dd.value);
@@ -174,7 +176,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @return A copy of all current matrix elements in a row-major array.
      */
-    public abstract double[] getElements();
+    public double[] getElements() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = new double[numRow * numCol];
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                elements[k++] = getElement(j, i);
+            }
+        }
+        return elements;
+    }
 
     /**
      * Stores all matrix elements in the given flat array. This method does not verify the array length.
@@ -194,7 +206,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
      * @param elements The new matrix elements in a row-major array.
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see Matrices#create(int, int, double[])
      */
@@ -251,6 +264,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Sets the value of this matrix to its transpose.
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     public abstract void transpose();
 
@@ -265,6 +280,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * In such matrix, each column is a vector representing the displacement in target space when an
      * ordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     public void normalizeColumns() {
         final int numRow = getNumRow();
@@ -325,6 +342,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param srcDim The dimension of the ordinate to rescale in the source coordinates.
      * @param scale  The amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
      * @param offset The amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see AffineTransform#concatenate(AffineTransform)
      *

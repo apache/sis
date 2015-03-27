@@ -64,17 +64,17 @@ import java.util.Objects;
  * The matrices below show only the basic parameters common to all projections. Some projections will put more elements
  * in those matrices.
  *
- * <blockquote>
+ * <center>
  *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
  *     <tr>
- *       <td>{@include ../transform/formulas.html#Normalize}</td>
+ *       <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
  *       <td>→</td>
  *       <td>{@code NormalizedProjection}</td>
  *       <td>→</td>
- *       <td>{@include ../transform/formulas.html#Denormalize}</td>
+ *       <td>{@include ../transform/formulas.html#DenormalizeCartesian}</td>
  *     </tr>
  *   </table>
- * </blockquote>
+ * </center>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend, in order to make clear that those parameters are not used by subclasses.
