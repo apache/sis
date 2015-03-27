@@ -206,6 +206,11 @@ div.block ol > li > ul > li {
   margin-bottom: 0;
 }
 
+div.block center {
+  margin-top:    18px;
+  margin-bottom: 18px;
+}
+
 /*
  * Miscellaneous.
  */

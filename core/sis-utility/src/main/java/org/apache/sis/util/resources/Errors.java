@@ -910,17 +910,17 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnmodifiableCellValue_2 = 120;
 
         /**
-         * This geometry is unmodifiable.
+         * This geometry is not modifiable.
          */
         public static final short UnmodifiableGeometry = 121;
 
         /**
-         * This metadata is unmodifiable.
+         * This metadata is not modifiable.
          */
         public static final short UnmodifiableMetadata = 122;
 
         /**
-         * Object ‘{0}’ is unmodifiable.
+         * This instance of ‘{0}’ is not modifiable.
          */
         public static final short UnmodifiableObject_1 = 123;
 

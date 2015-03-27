@@ -238,6 +238,16 @@ public final class DoubleDouble extends Number {
 
     /**
      * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from radians to angular degrees.
+     *
+     * @return An instance initialized to the 57.2957795130823208767981548141052 value.
+     */
+    public static DoubleDouble createRadiansToDegrees() {
+        return new DoubleDouble(57.2957795130823208767981548141052, -1.9878495670576283E-15);
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
      * from angular degrees to radians.
      *
      * @return An instance initialized to the 0.01745329251994329576923690768488613 value.
