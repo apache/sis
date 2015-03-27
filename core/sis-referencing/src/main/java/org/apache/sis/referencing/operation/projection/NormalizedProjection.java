@@ -54,7 +54,7 @@ import java.util.Objects;
  *   {@linkplain ContextualParameters#normalizeGeographicInputs normalize} affine transform.</li>
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
- *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length of 1.
+ *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
  *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#denormalizeCartesianOutputs denormalize}
  *   affine transform.</li>

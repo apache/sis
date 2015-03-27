@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
@@ -32,7 +34,9 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
@@ -119,7 +123,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * The parameters that represents the sequence of transforms as a whole. The parameter values may take effect
      * in either the {@linkplain #normalization(boolean) normalize/denormalize} transforms or in the kernel.
      *
-     * @see #getParameterDescriptors()
+     * @see #getDescriptor()
      */
     private final ParameterDescriptorGroup descriptor;
 
@@ -127,12 +131,18 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
      * the kernel operation. On {@code ContextualParameters} construction, those affines are initially identity
      * transforms, to be modified in-place by callers of {@link #normalization(boolean)}.
-     * After {@link #createConcatenatedTransform(MathTransformFactory, MathTransform)} has been invoked,
+     * After {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked,
      * they are typically (but not necessarily) replaced by the {@link LinearTransform} instance itself.
      *
      * @see #normalization(boolean)
      */
     private Matrix normalize, denormalize;
+
+    /**
+     * The list of parameter values. This list is modifiable after construction, but is replaced by an
+     * unmodifiable list after {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked.
+     */
+    private List<GeneralParameterValue> values;
 
     /**
      * Creates a new group of parameters for the given non-linear coordinate operation method.
@@ -148,6 +158,15 @@ public class ContextualParameters extends FormattableObject implements Parameter
         descriptor  = method.getParameters();
         normalize   = linear("sourceDimensions", method.getSourceDimensions());
         denormalize = linear("targetDimensions", method.getTargetDimensions());
+        values      = new ArrayList<>(descriptor.descriptors().size());  // See isModifiable() below.
+    }
+
+    /**
+     * Returns {@code true} if this parameter group is modifiable, or {@code false} if it has been made
+     * unmodifiable by a call to {@link #completeTransform(MathTransformFactory, MathTransform)}.
+     */
+    private boolean isModifiable() {
+        return values.getClass() == ArrayList.class;
     }
 
     /**
@@ -181,13 +200,20 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Returns an unmodifiable view of all parameter values in this group.
+     * Returns an unmodifiable list containing all parameters in this group.
+     * Callers should not attempt to modify the parameter values.
      *
      * @return All parameter values.
      */
     @Override
     public List<GeneralParameterValue> values() {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+        if (isModifiable()) {
+            return Collections.unmodifiableList(values);
+        } else {
+            // Already unmodifiable, no need to protect against changes.
+            assert (values instanceof UnmodifiableArrayList<?>);
+            return values;
+        }
     }
 
     /**
@@ -203,6 +229,17 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
+     * Ensures that this instance if modifiable.
+     *
+     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
+     */
+    private void ensureModifiable() throws IllegalStateException {
+        if (!isModifiable()) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+        }
+    }
+
+    /**
      * Prepends a normalization step before the non-linear kernel, which will convert ordinate values
      * in the two first dimensions from degrees to radians. Before this conversion, the normalization
      * can optionally subtract the given λ₀ value (in degrees) from the longitude.
@@ -215,8 +252,10 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * @param  λ0 Longitude of the central meridian, in degrees.
      * @return The normalization affine transform as a matrix.
      *         Callers can change that matrix directly if they want to apply additional normalization operations.
+     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
     public MatrixSIS normalizeGeographicInputs(final double λ0) {
+        ensureModifiable();
         /*
          * In theory the check for (λ0 != 0) is useless. However Java has a notion of negative zero, and we want
          * to avoid negative zeros because we do not want them to appear in WKT formatting of matrix elements.
@@ -227,7 +266,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
             offset = new DoubleDouble(-λ0);
             offset.multiply(toRadians);
         }
-        final MatrixSIS normalize = normalization(true);
+        final MatrixSIS normalize = (MatrixSIS) this.normalize;  // Must be the same instance, not a copy.
         normalize.concatenate(0, toRadians, offset);
         normalize.concatenate(1, toRadians, null);
         return normalize;
@@ -247,10 +286,12 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * @param  ty    The false northing (FN).
      * @return The denormalization affine transform as a matrix.
      *         Callers can change that matrix directly if they want to apply additional denormalization operations.
+     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
     public MatrixSIS denormalizeCartesianOutputs(double scale, double tx, double ty) {
+        ensureModifiable();
         final DoubleDouble s = new DoubleDouble(scale);
-        final MatrixSIS denormalize = normalization(false);
+        final MatrixSIS denormalize = (MatrixSIS) this.denormalize;  // Must be the same instance, not a copy.
         denormalize.concatenate(0, s, tx);
         denormalize.concatenate(1, s, ty);
         return denormalize;
@@ -266,12 +307,19 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * @return The requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
      */
     public final MatrixSIS normalization(final boolean norm) {
-        return MatrixSIS.castOrCopy(norm ? normalize : denormalize);
+        final Matrix m = norm ? normalize : denormalize;
+        if (isModifiable()) {
+            return (MatrixSIS) m;       // Must be the same instance, not a copy.
+        } else {
+            return Matrices.copy(m);    // Should be protected against changes.
+        }
     }
 
     /**
-     * Creates a chain of {@linkplain ConcatenatedTransform concatenated transforms} from the
-     * <cite>normalize</cite> transform, the given kernel and the <cite>denormalize</cite> transform.
+     * Marks this {@code ContextualParameter} as unmodifiable and creates the
+     * <cite>normalize</cite> → {@code kernel} → <cite>denormalize</cite> transforms chain.
+     * This method shall be invoked only after the {@linkplain #normalization(boolean) (de)normalization}
+     * matrices have been set to their final values.
      *
      * @param  factory The factory to use for creating math transform instances.
      * @param  kernel The (usually non-linear) kernel.
@@ -279,9 +327,20 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
      */
-    public MathTransform createConcatenatedTransform(final MathTransformFactory factory, final MathTransform kernel)
+    public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
+        if (isModifiable()) {
+            final GeneralParameterValue[] p = values.toArray(new GeneralParameterValue[values.size()]);
+            for (int i=0; i<p.length; i++) {
+                p[i] = DefaultParameterValue.unmodifiable((ParameterValue<?>) p[i]);
+            }
+            values = UnmodifiableArrayList.wrap(p);
+        }
+        /*
+         * Creates the ConcatenatedTransform, letting the factory returns the cached instance
+         * if the caller already invoked this method previously (which usually do not happen).
+         */
         final MathTransform n = factory.createAffineTransform(normalize);
         final MathTransform d = factory.createAffineTransform(denormalize);
         Matrix m;

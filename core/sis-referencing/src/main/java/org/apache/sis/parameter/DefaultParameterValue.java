@@ -103,11 +103,11 @@ import java.nio.file.Path;
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
- * @param <T> The value type.
+ * @param <T> The type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see DefaultParameterDescriptor
@@ -134,7 +134,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private T value;
 
     /**
-     * The unit of measure for the value, or {@code null} if it doesn't apply.
+     * The unit of measure for the value, or {@code null} if it does not apply.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
      * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(Object, Unit)}.
      */
@@ -159,6 +159,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * object is not cloned.
      *
      * @param parameter The parameter to copy values from.
+     *
+     * @see #clone()
+     * @see #unmodifiable(ParameterValue)
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
         ensureNonNull("parameter", parameter);
@@ -758,6 +761,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Returns a clone of this parameter value.
+     *
+     * @see #DefaultParameterValue(ParameterValue)
+     * @see #unmodifiable(ParameterValue)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -767,6 +773,39 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } catch (CloneNotSupportedException exception) {
             throw new AssertionError(exception); // Should not happen, since we are cloneable
         }
+    }
+
+    /**
+     * Returns an unmodifiable implementation of the given parameter value.
+     * This method shall be used only with:
+     *
+     * <ul>
+     *   <li>immutable {@linkplain #getDescriptor() descriptor},</li>
+     *   <li>immutable or null {@linkplain #getUnit() unit}, and</li>
+     *   <li>immutable or {@linkplain Cloneable cloneable} parameter {@linkplain #getValue() value}.</li>
+     * </ul>
+     *
+     * If the parameter value implements the {@code Cloneable} interface and has a public {@code clone()} method,
+     * then that value will be cloned every time the {@link #getValue()} method is invoked.
+     *
+     * <div class="section">Instances sharing</div>
+     * If this method is invoked more than once with equal {@linkplain #getDescriptor() descriptor},
+     * {@linkplain #getValue() value} and {@linkplain #getUnit() unit}, then this method will return
+     * the same {@code DefaultParameterValue} instance on a <cite>best effort</cite> basis.
+     *
+     * <div class="note"><b>Rational:</b>
+     * the same parameter value is often used in many different coordinate operations. For example all <cite>Universal
+     * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
+     * </div>
+     *
+     * @param  <T> The type of the value stored in the given parameter.
+     * @param  parameter The parameter to make unmodifiable, or {@code null}.
+     * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     *
+     * @since 0.6
+     */
+    public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
+        return UnmodifiableParameterValue.create(parameter);
     }
 
     /**
