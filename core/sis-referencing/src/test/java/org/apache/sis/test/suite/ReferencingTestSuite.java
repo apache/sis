@@ -85,6 +85,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
+    org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
 
     // Test map projections.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,

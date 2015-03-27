@@ -27,8 +27,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -52,23 +50,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * The factory being tested.
      */
-    private static DefaultMathTransformFactory factory;
-
-    /**
-     * Creates the factory to be tested.
-     */
-    @BeforeClass
-    public static void createFactory() {
-        factory = new DefaultMathTransformFactory();
-    }
-
-    /**
-     * Releases the factory used for the tests.
-     */
-    @AfterClass
-    public static void releaseFactory() {
-        factory = null;
-    }
+    static final DefaultMathTransformFactory FACTORY = new DefaultMathTransformFactory();
 
     /**
      * Tests the {@link DefaultMathTransformFactory#getOperationMethod(String)} method.
@@ -78,11 +60,11 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     public void testGetOperationMethod() throws NoSuchIdentifierException {
         // A conversion which is not a projection.
-        OperationMethod method = factory.getOperationMethod(Constants.AFFINE);
+        OperationMethod method = FACTORY.getOperationMethod(Constants.AFFINE);
         assertInstanceOf("Affine", Affine.class, method);
 
         // Same than above, using EPSG code.
-        assertSame("EPSG:9624", method, factory.getOperationMethod("EPSG:9624"));
+        assertSame("EPSG:9624", method, FACTORY.getOperationMethod("EPSG:9624"));
     }
 
     /**
@@ -92,7 +74,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @DependsOnMethod("testGetOperationMethod")
     public void testNonExistentCode() {
         try {
-            factory.getOperationMethod("EPXX:9624");
+            FACTORY.getOperationMethod("EPXX:9624");
             fail("Expected NoSuchIdentifierException");
         } catch (NoSuchIdentifierException e) {
             final String message = e.getLocalizedMessage();
@@ -108,16 +90,16 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testGetOperationMethod")
     public void testGetAvailableMethods() throws NoSuchIdentifierException {
-        final Set<OperationMethod> transforms  = factory.getAvailableMethods(SingleOperation.class);
-        final Set<OperationMethod> conversions = factory.getAvailableMethods(Conversion.class);
-        final Set<OperationMethod> projections = factory.getAvailableMethods(Projection.class);
+        final Set<OperationMethod> transforms  = FACTORY.getAvailableMethods(SingleOperation.class);
+        final Set<OperationMethod> conversions = FACTORY.getAvailableMethods(Conversion.class);
+        final Set<OperationMethod> projections = FACTORY.getAvailableMethods(Projection.class);
         /*
          * Following tests should not cause loading of more classes than needed.
          */
         assertFalse(transforms .isEmpty());
         assertFalse(conversions.isEmpty());
         assertTrue (projections.isEmpty());
-        assertTrue (conversions.contains(factory.getOperationMethod(Constants.AFFINE)));
+        assertTrue (conversions.contains(FACTORY.getOperationMethod(Constants.AFFINE)));
         /*
          * Following tests will force instantiation of all remaining OperationMethod.
          */

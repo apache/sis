@@ -57,8 +57,12 @@ import java.util.Objects;
  *       {@link #isAffine   isAffine},
  *       {@link #isIdentity isIdentity},
  *       {@link #equals(Matrix, Matrix, double, boolean) equals},
- *       {@link #equals(Matrix, Matrix, ComparisonMode)  equals},
  *       {@link #toString(Matrix) toString}.
+ *   </li>
+ *   <li>Miscellaneous:
+ *       {@link #multiply     multiply},
+ *       {@link #inverse      inverse},
+ *       {@link #unmodifiable unmodifiable},
  *   </li>
  * </ul>
  *

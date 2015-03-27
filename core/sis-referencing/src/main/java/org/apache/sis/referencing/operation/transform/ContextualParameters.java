@@ -17,9 +17,8 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
@@ -69,7 +68,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
  * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection} is a chain
- * of 3 transforms a below:
+ * of 3 transforms as shown below. Note that this chain does not include the step for
+ * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes swapping the axis order}.
+ * Axes swapping and conversions from units other than degrees is performed outside {@code ContextualParameters}.
  *
  * <center>
  *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
@@ -107,7 +108,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>After all parameter values have been set and the normalize / denormalize matrices defined,
  *     the {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)} method
  *     will mark this {@code ContextualParameters} object as unmodifiable and create the complete chain
- *     of transforms, from (λ,φ) in angular degrees to (x,y) in metres.</li>
+ *     of transforms, from (λ,φ) in angular degrees to (x,y) in metres. Note that conversions to other
+ *     units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes
+ *     in axis order} are not the purpose of this transforms chain; they are separated steps.
+ *   </li>
  * </ol>
  *
  * <div class="section">Serialization</div>
@@ -148,10 +152,19 @@ public class ContextualParameters extends FormattableObject implements Parameter
     private Matrix normalize, denormalize;
 
     /**
-     * The list of parameter values. This list is modifiable after construction, but is replaced by an
-     * unmodifiable list after {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked.
+     * The parameter values. Null elements in this array are empty slots available for adding new parameter values.
+     * The array length is the maximum number of parameters allowed, which is determined by the {@link #descriptor}.
+     *
+     * <p>This array is modifiable after construction, but is considered unmodifiable after
+     * {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked.</p>
      */
-    private List<GeneralParameterValue> values;
+    private ParameterValue<?>[] values;
+
+    /**
+     * {@code false} if this parameter group is modifiable, or {@code true} if it has been made unmodifiable
+     * (frozen) by a call to {@link #completeTransform(MathTransformFactory, MathTransform)}.
+     */
+    private boolean isFrozen;
 
     /**
      * Creates a new group of parameters for the given non-linear coordinate operation method.
@@ -161,12 +174,14 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *
      * <ul>
      *   <li>Set the relevant parameter values by calls to
-     *     <code>{@linkplain #parameter(ParameterDescriptor) parameter}(…).setValue(…)</code>.</li>
+     *     <code>{@linkplain #parameter(ParameterDescriptor) parameter(…)}.setValue(…)</code>.</li>
      *   <li>Modify the element values in {@linkplain #getMatrix(boolean) normalization / denormalization}
      *     affine transforms, optionally by calls to the convenience methods in this class.</li>
      *   <li>Get the complete transforms chain with a call
      *     {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)}</li>
      * </ul>
+     *
+     * See class javadoc for more information.
      *
      * @param method The non-linear operation method for which to define the parameter values.
      */
@@ -175,15 +190,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
         descriptor  = method.getParameters();
         normalize   = linear("sourceDimensions", method.getSourceDimensions());
         denormalize = linear("targetDimensions", method.getTargetDimensions());
-        values      = new ArrayList<>(descriptor.descriptors().size());  // See isModifiable() below.
-    }
-
-    /**
-     * Returns {@code true} if this parameter group is modifiable, or {@code false} if it has been made
-     * unmodifiable by a call to {@link #completeTransform(MathTransformFactory, MathTransform)}.
-     */
-    private boolean isModifiable() {
-        return values.getClass() == ArrayList.class;        // '==' is faster than 'instanceof'.
+        values      = new ParameterValue<?>[descriptor.descriptors().size()];
     }
 
     /**
@@ -195,7 +202,8 @@ public class ContextualParameters extends FormattableObject implements Parameter
         if (size == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
         }
-        return Matrices.create(size, size, ExtendedPrecisionMatrix.IDENTITY);
+        final int n = size + 1;
+        return Matrices.create(n, n, ExtendedPrecisionMatrix.IDENTITY);
     }
 
     /**
@@ -221,12 +229,12 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Returns the affine transforms to be applied before or after the kernel operation.
+     * Returns the affine transforms to be applied before or after the non-linear kernel operation.
      *
      * <p>Immediately after {@linkplain #ContextualParameters(OperationMethod) construction}, those matrices
      * are modifiable identity matrices. Callers can modify the matrix element values, typically by calls to
-     * the {@link MatrixSIS#concatenate(int, Number, Number)} method. Alternatively, the following methods
-     * can be invoked for applying some frequently used configurations:
+     * the {@link MatrixSIS#concatenate(int, Number, Number) MatrixSIS.concatenate(…)} method. Alternatively,
+     * the following methods can be invoked for applying some frequently used configurations:
      *
      * <ul>
      *   <li>{@link #normalizeGeographicInputs(double)}</li>
@@ -243,7 +251,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      */
     public final MatrixSIS getMatrix(final boolean norm) {
         final Matrix m = norm ? normalize : denormalize;
-        if (isModifiable()) {
+        if (!isFrozen) {
             return (MatrixSIS) m;       // Must be the same instance, not a copy.
         } else {
             return Matrices.unmodifiable(m);
@@ -256,7 +264,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
     private void ensureModifiable() throws IllegalStateException {
-        if (!isModifiable()) {
+        if (isFrozen) {
             throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
         }
     }
@@ -266,8 +274,8 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * The normalization can optionally subtract the given λ₀ value (in degrees) from the longitude.
      *
      * <p>Invoking this method is equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating}
-     * the normalization matrix by the following matrix. This will have the effect of applying the conversion described
-     * above before any other operation:</p>
+     * the normalization matrix with the following matrix. This will have the effect of applying the conversion
+     * described above before any other operation:</p>
      *
      * <center>{@include formulas.html#NormalizeGeographic}</center>
      *
@@ -299,8 +307,9 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * in the two first dimensions from radians to degrees. After this conversion, the denormalization
      * can optionally add the given λ₀ value (in degrees) to the longitude.
      *
-     * <p>Invoking this method is equivalent to convert coordinates using the following
-     * affine transform after the non-linear kernel:</p>
+     * <p>Invoking this method is equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating}
+     * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
+     * described above after the non-linear kernel operation:</p>
      *
      * <center>{@include formulas.html#DeormalizeGeographic}</center>
      *
@@ -323,8 +332,9 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * in the two first dimensions.
      * In map projection, the translation terms are <cite>false easting</cite> (FE) and <cite>false northing</cite> (FN).
      *
-     * <p>Invoking this method is equivalent to convert coordinates using the following
-     * affine transform after the non-linear kernel:</p>
+     * <p>Invoking this method is equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating}
+     * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
+     * described above after the non-linear kernel operation:</p>
      *
      * <center>{@include formulas.html#DenormalizeCartesian}</center>
      *
@@ -350,6 +360,12 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * This method shall be invoked only after the {@linkplain #getMatrix(boolean) (de)normalization}
      * matrices have been set to their final values.
      *
+     * <p>The transforms chain created by this method does not include any step for
+     * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changing axis order}
+     * or for converting to units other than degrees or metres. Such steps, if desired, should be defined
+     * outside {@code ContextualParameters}. Efficient concatenation of those steps will happen "under
+     * the hood".</p>
+     *
      * @param  factory The factory to use for creating math transform instances.
      * @param  kernel The (usually non-linear) kernel.
      * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
@@ -359,12 +375,16 @@ public class ContextualParameters extends FormattableObject implements Parameter
     public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
-        if (isModifiable()) {
-            final GeneralParameterValue[] p = values.toArray(new GeneralParameterValue[values.size()]);
-            for (int i=0; i<p.length; i++) {
-                p[i] = DefaultParameterValue.unmodifiable((ParameterValue<?>) p[i]);
+        if (!isFrozen) {
+            isFrozen = true;
+            for (int i=0; i < values.length; i++) {
+                final ParameterValue<?> p = values[i];
+                if (p == null) {
+                    values = Arrays.copyOf(values, i);  // Trim extra values.
+                    break;
+                }
+                values[i] = DefaultParameterValue.unmodifiable(p);
             }
-            values = UnmodifiableArrayList.wrap(p);
         }
         /*
          * Creates the ConcatenatedTransform, letting the factory returns the cached instance
@@ -380,6 +400,8 @@ public class ContextualParameters extends FormattableObject implements Parameter
 
     /**
      * Returns the parameter value of the given name.
+     * This method can be invoked either before or after the call to {@link #completeTransform completeTransform(…)},
+     * but the returned parameter will be modifiable only before that call.
      *
      * @param  name The name of the parameter to search.
      * @return The parameter value for the given name.
@@ -387,16 +409,37 @@ public class ContextualParameters extends FormattableObject implements Parameter
      */
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
-        final GeneralParameterDescriptor p = descriptor.descriptor(name);
-        if (p instanceof ParameterDescriptor<?>) {
-            return parameter((ParameterDescriptor<?>) p);
-        } else {
+        final GeneralParameterDescriptor desc = descriptor.descriptor(name);
+        if (!(desc instanceof ParameterDescriptor<?>)) {
             throw parameterNotFound(name);
         }
-    }
-
-    public ParameterValue<?> parameter(final ParameterDescriptor<?> param) throws ParameterNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+        /*
+         * Search for existing parameter instance. This implementation does not scale,
+         * but should be okay since the amount of parameters is typically very small
+         * (rarely more than 6 parameters in map projections).
+         */
+        for (int i=0; i < values.length; i++) {
+            ParameterValue<?> p = values[i];
+            if (p == null) {
+                /*
+                 * No existing parameter instance. Create a new one if this ContextualParameter
+                 * is still modifiable.
+                 */
+                ensureModifiable();
+                p = ((ParameterDescriptor<?>) desc).createValue();
+                values[i] = p;
+            } else if (p.getDescriptor() != desc) {  // Identity comparison should be okay here.
+                continue;
+            }
+            return p;   // Found or created a parameter.
+        }
+        ensureModifiable();
+        /*
+         * Should never reach this point. If it happen anyway, this means that the descriptor now accepts
+         * more parameters than what it declared at ContextualParameteres construction time, or that some
+         * ParameterDescriptor instances changed.
+         */
+        throw new IllegalStateException(Errors.format(Errors.Keys.UnexpectedChange_1, descriptor.getName()));
     }
 
     /**
@@ -406,19 +449,17 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * @return All parameter values.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public List<GeneralParameterValue> values() {
-        if (isModifiable()) {
-            return Collections.unmodifiableList(values);
-        } else {
-            // Already unmodifiable, no need to protect against changes.
-            assert (values instanceof UnmodifiableArrayList<?>);
-            return values;
+        int upper = values.length;
+        while (upper != 0 && values[upper - 1] == null) {
+            upper--;
         }
+        return UnmodifiableArrayList.wrap(values, 0, upper);
     }
 
     /**
      * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
-     * This limitation may be revisited in future SIS version.
      *
      * @param name Ignored.
      * @return Never returned.
@@ -430,7 +471,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
 
     /**
      * Unsupported operation, since {@code ContextualParameters} groups do not contain sub-groups.
-     * This limitation may be revisited in future SIS version.
      *
      * @param name Ignored.
      * @return Never returned.
@@ -449,19 +489,35 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Returns a clone of this parameter value group.
+     * Returns a modifiable clone of this parameter value group.
      *
      * @return A clone of this parameter value group.
      */
     @Override
     public ContextualParameters clone() {
+        /*
+         * Creates a new parameter array with enough room for adding new parameters.
+         * Then replace each element by a modifiable clone.
+         */
+        final ParameterValue<?>[] param = Arrays.copyOf(values, descriptor.descriptors().size());
+        for (int i=0; i<param.length; i++) {
+            final ParameterValue<?> p = param[i];
+            if (p == null) {
+                break;
+            }
+            param[i] = param[i].clone();
+        }
+        /*
+         * Now proceed to the clone of this ContextualParameters instance.
+         */
         final ContextualParameters clone;
         try {
             clone = (ContextualParameters) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);
+            throw new AssertionError(e);    // Should never happen since we are cloneable.
         }
-        clone.  normalize =   normalize.clone();
+        clone.values      = param;
+        clone.normalize   = normalize.clone();
         clone.denormalize = denormalize.clone();
         return clone;
     }
