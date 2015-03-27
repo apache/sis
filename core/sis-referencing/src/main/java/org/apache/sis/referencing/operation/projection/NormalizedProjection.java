@@ -60,13 +60,19 @@ import java.util.Objects;
  *   affine transform.</li>
  * </ul>
  *
- * The normalize and denormalize steps are represented below by the matrices on the left and right sides respectively.
- * The matrices below show only the basic parameters common to all projections. Some projections will put more elements
- * in those matrices.
+ * The normalize and denormalize steps are represented below by the matrices immediately on the left and right
+ * sides of {@code NormalizedProjection} respectively. The first matrix on the left side is for
+ * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes swapping axes}
+ * from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order,
+ * and is shown here for completeness.
+ * The matrices below show only the basic parameters common to most projections.
+ * Some projections will put more elements in those matrices.
  *
  * <center>
  *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
  *     <tr>
+ *       <td>{@include ../transform/formulas.html#SwapAxes}</td>
+ *       <td>→</td>
  *       <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
  *       <td>→</td>
  *       <td>{@code NormalizedProjection}</td>
@@ -176,10 +182,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns the parameters used for creating the complete map projection. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms. They are used for formatting
-     * <cite>Well Known Text</cite> (WKT) and error messages. Subclasses shall not use the values defined in the
-     * returned object for computation purpose, except at construction time.
+     * Returns the parameters used for creating the complete map projection. Those parameters describe a sequence of
+     * <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong> including
+     * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
+     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * Subclasses shall not use the values defined in the returned object for computation purpose,
+     * except at construction time.
      *
      * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
      *         transforms, or {@code null} if unspecified.

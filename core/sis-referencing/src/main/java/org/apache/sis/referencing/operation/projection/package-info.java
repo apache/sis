@@ -115,7 +115,9 @@
  *
  *
  * <div class="section">Projection on unit ellipse</div>
- * A map projection in this package is actually the concatenation of the following transforms, in that order:
+ * A map projection in this package is actually the concatenation of the following transforms, in that order
+ * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis order changes}
+ * and conversions from/to units other then degrees and metres, which are not the purpose of this package):
  *
  * <ul>
  *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalization} affine transform</li>

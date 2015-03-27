@@ -32,13 +32,24 @@ import org.apache.sis.util.resources.Errors;
  * A {@link Matrix} able to perform some operations of interest to Spatial Information Systems (SIS).
  * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code sis-referencing}.
  * It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
- * This class focuses only on:
+ * This class focuses on:
  *
  * <ul>
- *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
- *       {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
- *   <li>some operations more specific to referencing by coordinates:
- *       {@link #isAffine()}, {@link #normalizeColumns()}, {@link #concatenate(int, Number, Number)}.</li>
+ *   <li>Only the basic matrix operations needed for <cite>referencing by coordinates</cite>:
+ *     <ul>
+ *       <li>{@link #isIdentity()}</li>
+ *       <li>{@link #multiply(Matrix)}</li>
+ *       <li>{@link #inverse()}</li>
+ *       <li>{@link #transpose()}</li>
+ *     </ul>
+ *   </li><li>Other operations which are not general-purpose matrix operations,
+ *     but are needed in the context of referencing by coordinates:
+ *     <ul>
+ *       <li>{@link #isAffine()}</li>
+ *       <li>{@link #normalizeColumns()}</li>
+ *       <li>{@link #concatenate(int, Number, Number)}</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
