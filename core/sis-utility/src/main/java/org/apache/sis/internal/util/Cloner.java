@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @Workaround(library="JDK", version="1.7")
@@ -113,7 +113,7 @@ public class Cloner {
             }
         } catch (NoSuchMethodException e) {
             if (isCloneRequired(object)) {
-                throw fail(e);
+                throw fail(e, valueType);
             }
             method = null;
             type = valueType;
@@ -121,36 +121,80 @@ public class Cloner {
             if (security != null) {
                 e.addSuppressed(security);
             }
-            throw fail(e);
+            throw fail(e, valueType);
         } catch (InvocationTargetException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof CloneNotSupportedException) {
-                throw (CloneNotSupportedException) cause;
-            }
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            }
-            if (cause instanceof Error) {
-                throw (Error) cause;
-            }
-            throw fail(e);
+            rethrow(e.getCause());
+            throw fail(e, valueType);
         } catch (SecurityException e) {
-            throw fail(e);
+            throw fail(e, valueType);
         }
         return object;
     }
 
     /**
+     * Throws the given exception if it is an instance of {@code CloneNotSupportedException}
+     * or an unchecked exception, or do nothing otherwise. If this method returns normally,
+     * then it is caller's responsibility to throw an other exception.
+     *
+     * @param cause The value of {@link InvocationTargetException#getCause()}.
+     */
+    private static void rethrow(final Throwable cause) throws CloneNotSupportedException {
+        if (cause instanceof CloneNotSupportedException) {
+            throw (CloneNotSupportedException) cause;
+        }
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        }
+        if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        // If we reach this point, caller should invoke "throw fail(e, type)".
+    }
+
+    /**
      * Returns an exception telling that the object can not be cloned because of the given error.
-     * The {@link #clone(Object)} method must have been attempted before to invoke this method.
      *
      * @param  cause The cause for the failure to clone an object.
+     * @param  type  The type of object that we failed to clone.
      * @return An exception with an error message and the given cause.
      */
-    private CloneNotSupportedException fail(final Throwable cause) {
-        CloneNotSupportedException e = new CloneNotSupportedException(
-                Errors.format(Errors.Keys.CloneNotSupported_1, type));
-        e.initCause(cause);
-        return e;
+    private static CloneNotSupportedException fail(final Throwable cause, final Class<?> type) {
+        return (CloneNotSupportedException) new CloneNotSupportedException(
+                Errors.format(Errors.Keys.CloneNotSupported_1, type)).initCause(cause);
+    }
+
+    /**
+     * Clones the given object if its {@code clone()} method is public, or returns the same object otherwise.
+     * This method may be convenient when there is only one object to clone, otherwise instantiating a new
+     * {@code Cloner} object is more efficient.
+     *
+     * @param  object The object to clone, or {@code null}.
+     * @return The given object (which may be {@code null}) or a clone of the given object.
+     * @throws CloneNotSupportedException if the call to {@link Object#clone()} failed.
+     *
+     * @since 0.6
+     */
+    public static Object cloneIfPublic(final Object object) throws CloneNotSupportedException {
+        if (object != null) {
+            final Class<?> type = object.getClass();
+            try {
+                final Method m = type.getMethod("clone", (Class[]) null);
+                if (Modifier.isPublic(m.getModifiers())) {
+                    return m.invoke(object, (Object[]) null);
+                }
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                /*
+                 * Should never happen because all objects have a clone() method
+                 * and we verified that the method is public.
+                 */
+                throw new AssertionError(e);
+            } catch (InvocationTargetException e) {
+                rethrow(e.getCause());
+                throw fail(e, type);
+            } catch (SecurityException e) {
+                throw fail(e, type);
+            }
+        }
+        return object;
     }
 }

@@ -245,7 +245,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     @Override
     public DefaultTreeTable clone() throws CloneNotSupportedException {
         final DefaultTreeTable clone = (DefaultTreeTable) super.clone();
-        clone.root = (TreeTable.Node) new Cloner().clone(clone.root);
+        clone.root = (TreeTable.Node) Cloner.cloneIfPublic(clone.root);
         return clone;
     }
 
