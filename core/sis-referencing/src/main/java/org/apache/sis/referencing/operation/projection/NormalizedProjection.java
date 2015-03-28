@@ -18,11 +18,15 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.util.FactoryException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
@@ -51,21 +55,17 @@ import java.util.Objects;
  *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
  *   Longitudes have the <cite>central meridian</cite> (λ₀) removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
- *   {@linkplain ContextualParameters#normalizeGeographicInputs normalize} affine transform.</li>
+ *   {@linkplain ContextualParameters#normalizeGeographicInputs normalization} affine transform.</li>
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
  *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
- *   northing (FN) are applied by the {@linkplain ContextualParameters#denormalizeCartesianOutputs denormalize}
+ *   northing (FN) are applied by the {@linkplain ContextualParameters#scaleAndTranslate2D denormalization}
  *   affine transform.</li>
  * </ul>
  *
- * The normalize and denormalize steps are represented below by the matrices immediately on the left and right
- * sides of {@code NormalizedProjection} respectively. The first matrix on the left side is for
- * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes swapping axes}
- * from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order,
- * and is shown here for completeness.
- * The matrices below show only the basic parameters common to most projections.
+ * The normalization and denormalization steps are represented below by the matrices immediately on the left and right
+ * sides of {@code NormalizedProjection} respectively. Those matrices show only the basic parameters common to most projections.
  * Some projections will put more elements in those matrices.
  *
  * <center>
@@ -81,6 +81,14 @@ import java.util.Objects;
  *     </tr>
  *   </table>
  * </center>
+ *
+ * <div class="note"><b>Note:</b>
+ * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
+ * swapping axes} from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order.
+ * This matrix is shown here for completeness, but is not managed by this projection package. Axes swapping is managed
+ * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(
+ * org.opengis.referencing.cs.CoordinateSystem, org.opengis.referencing.operation.MathTransform,
+ * org.opengis.referencing.cs.CoordinateSystem) higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend, in order to make clear that those parameters are not used by subclasses.
@@ -143,8 +151,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
      * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
      * construction time.
+     *
+     * @see #getContextualParameters()
      */
-    final ContextualParameters parameters;
+    final ContextualParameters context;
 
     /**
      * Ellipsoid excentricity, equal to <code>sqrt({@linkplain #excentricitySquared})</code>.
@@ -167,18 +177,103 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Constructs a new map projection from the supplied parameters.
+     * This constructor applies the following operations on the {@link ContextualParameter}:
      *
-     * @param method Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
+     * <ul>
+     *   <li>On the <b>normalization</b> matrix (to be applied before {@code this} transform):
+     *     <ul>
+     *       <li>Nothing. Callers shall invoke {@link ContextualParameters#normalizeGeographicInputs(double)} themselves.</li>
+     *     </ul>
+     *   </li>
+     *   <li>On the <b>denormalization</b> matrix (to be applied after {@code this} transform):
+     *     <ul>
+     *       <li>{@linkplain ContextualParameters#scaleAndTranslate2D(boolean, double, double, double) Scale}
+     *           by the <cite>semi-major</cite> axis length.</li>
+     *       <li>Translate by the false easting and false northing (after the scale).</li>
+     *     </ul>
+     *   </li>
+     *   <li>On the <b>contextual parameters</b> (not the parameters of {@code this} transform):
+     *     <ul>
+     *       <li>Store the values for <cite>semi-major</cite> axis length, <cite>semi-minor</cite> axis length,
+     *           <cite>false easting</cite> and <cite>false northing</cite>.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param method        Description of the map projection parameters.
+     * @param parameters    The parameters of the projection to be created.
+     * @param falseEasting  The descriptor for fetching the <cite>false easting</cite> parameter.
+     * @param falseNorthing The descriptor for fetching the <cite>false northing</cite> parameter.
      */
-    protected NormalizedProjection(final OperationMethod method, final Parameters parameters) {
-        this.parameters = new ContextualParameters(method);
+    protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
+            final ParameterDescriptor<Double> falseEasting,
+            final ParameterDescriptor<Double> falseNorthing)
+    {
         ensureNonNull("parameters", parameters);
-        final double a = parameters.doubleValue(MapProjection.SEMI_MAJOR);
-        final double b = parameters.doubleValue(MapProjection.SEMI_MINOR);
+        context = new ContextualParameters(method);
+        final double a  = getAndStore(parameters, MapProjection.SEMI_MAJOR);
+        final double b  = getAndStore(parameters, MapProjection.SEMI_MINOR);
+        final double fe = getAndStore(parameters, falseEasting);
+        final double fn = getAndStore(parameters, falseNorthing);
+        context.scaleAndTranslate2D(false, a, fe, fn);
         excentricitySquared = 1.0 - (b*b) / (a*a);
         excentricity = sqrt(excentricitySquared);
         inverse = new Inverse();
+    }
+
+    /**
+     * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
+     * we determined that the default implementation can be replaced by an other one, for example using spherical
+     * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
+     * instance without recomputing them.
+     */
+    NormalizedProjection(final NormalizedProjection other) {
+        context             = other.context;
+        excentricity        = other.excentricity;
+        excentricitySquared = other.excentricitySquared;
+        inverse             = new Inverse();
+    }
+
+    /**
+     * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
+     * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
+     * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
+     *
+     * <p>This method shall be invoked at construction time only.</p>
+     */
+    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
+        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
+        final Double defaultValue = descriptor.getDefaultValue();
+        if (defaultValue == null || value != defaultValue) {
+            context.parameter(descriptor.getName().getCode()).setValue(value);
+        }
+        return value;
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
+     * changes in axis order} are <strong>not</strong> managed by the returned transform.
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
+     */
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        return context.completeTransform(factory, kernel());
+    }
+
+    /**
+     * Returns the transform that {@link #createMapProjection(MathTransformFactory)} should use as the kernel.
+     * The default implementation returns {@code this}. Subclasses may override for returning an alternative
+     * implementation under some conditions.
+     */
+    MathTransform2D kernel() {
+        return this;
     }
 
     /**
@@ -194,7 +289,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     @Override
     protected final ContextualParameters getContextualParameters() {
-        return parameters;
+        return context;
     }
 
     /**
@@ -372,7 +467,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     @Override
     protected int computeHashCode() {
-        return parameters.hashCode() + 31 * super.computeHashCode();
+        return context.hashCode() + 31 * super.computeHashCode();
     }
 
     /**
@@ -405,7 +500,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             final double e1, e2;
             final NormalizedProjection that = (NormalizedProjection) object;
             if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
-                if (!Objects.equals(parameters, that.parameters)) {
+                if (!Objects.equals(context, that.context)) {
                     return false;
                 }
                 e1 = this.excentricitySquared;

@@ -42,6 +42,11 @@ public final class PseudoMercator extends MapProjection {
     private static final long serialVersionUID = -8126827491349984471L;
 
     /**
+     * The name of this operation method.
+     */
+    public static final String NAME = "Popular Visualisation Pseudo Mercator";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
@@ -69,7 +74,7 @@ public final class PseudoMercator extends MapProjection {
 
         PARAMETERS = builder
             .addIdentifier("1024")
-            .addName("Popular Visualisation Pseudo Mercator")
+            .addName(NAME)
             .createGroupForMapProjection(
                     latitudeOfOrigin,
                     centralMeridian,

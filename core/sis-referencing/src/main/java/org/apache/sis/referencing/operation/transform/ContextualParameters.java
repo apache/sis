@@ -67,10 +67,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <div class="section">Usage in map projections</div>
  * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
- * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection} is a chain
- * of 3 transforms as shown below. Note that this chain does not include the step for
- * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes swapping the axis order}.
- * Axes swapping and conversions from units other than degrees is performed outside {@code ContextualParameters}.
+ * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection}
+ * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes of axis order})
+ * is a chain of 3 transforms as shown below:
  *
  * <center>
  *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
@@ -100,17 +99,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  *   <li>The map projection constructor may keep only the non-linear parameters for itself,
  *     and gives the linear parameters to the {@link #normalizeGeographicInputs normalizeGeographicInputs(…)}
- *     and {@link #denormalizeCartesianOutputs denormalizeCartesianOutputs(…)} methods, which will create the
- *     matrices show above. The projection constructor is free to apply additional operations on the two affine
- *     transforms ({@linkplain #getMatrix(boolean) normalize / denormalize}) before or after the above-cited
+ *     and {@link #scaleAndTranslate2D scaleAndTranslate2D(…)} methods, which will create the matrices show above.
+ *     The projection constructor is free to apply additional operations on the two affine transforms
+ *     ({@linkplain #getMatrix(boolean) normalize / denormalize}) before or after the above-cited
  *     methods have been invoked.</li>
  *
  *   <li>After all parameter values have been set and the normalize / denormalize matrices defined,
  *     the {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)} method
- *     will mark this {@code ContextualParameters} object as unmodifiable and create the complete chain
- *     of transforms, from (λ,φ) in angular degrees to (x,y) in metres. Note that conversions to other
- *     units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes
- *     in axis order} are not the purpose of this transforms chain; they are separated steps.
+ *     will mark this {@code ContextualParameters} object as unmodifiable and create the chain of transforms
+ *     from (λ,φ) in angular degrees to (x,y) in metres. Note that conversions to other units and
+ *     {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes in axis order}
+ *     are not the purpose of this transforms chain – they are separated steps.
  *   </li>
  * </ol>
  *
@@ -229,6 +228,17 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
+     * Ensures that this instance is modifiable.
+     *
+     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
+     */
+    private void ensureModifiable() throws IllegalStateException {
+        if (isFrozen) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+        }
+    }
+
+    /**
      * Returns the affine transforms to be applied before or after the non-linear kernel operation.
      *
      * <p>Immediately after {@linkplain #ContextualParameters(OperationMethod) construction}, those matrices
@@ -239,15 +249,15 @@ public class ContextualParameters extends FormattableObject implements Parameter
      * <ul>
      *   <li>{@link #normalizeGeographicInputs(double)}</li>
      *   <li>{@link #denormalizeGeographicOutputs(double)}</li>
-     *   <li>{@link #denormalizeCartesianOutputs(double, double, double)}</li>
+     *   <li>{@link #scaleAndTranslate2D(boolean, double, double, double)}</li>
      * </ul>
      *
      * After the {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)} method has been
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
      *
-     * @param  norm {@code true} for fetching the <cite>normalize</cite> transform to apply before the kernel,
-     *         or {@code false} for the <cite>denormalize</cite> transform to apply after the kernel.
-     * @return The matrix for the requested normalize ({@code true}) or denormalize ({@code false}) affine transform.
+     * @param  norm {@code true} for fetching the <cite>normalization</cite> transform to apply before the kernel,
+     *         or {@code false} for the <cite>denormalization</cite> transform to apply after the kernel.
+     * @return The matrix for the requested normalization ({@code true}) or denormalization ({@code false}) affine transform.
      */
     public final MatrixSIS getMatrix(final boolean norm) {
         final Matrix m = norm ? normalize : denormalize;
@@ -259,14 +269,40 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Ensures that this instance is modifiable.
+     * Concatenates a uniform two-dimensional scale and a translation to the (de)normalization matrix.
+     * The scale and translations are applied only on the two first dimensions.
      *
+     * <div class="section">Application to map projections</div>
+     * In map projections, the scale is the <cite>semi-major</cite> axis length (<var>a</var>) – potentially multiplied
+     * by an other scale factor <var>k</var>₀ – and the translation terms are the <cite>false easting</cite> (FE) and
+     * <cite>false northing</cite> (FN). The following method invocation:
+     *
+     * {@preformat java
+     *   scaleAndTranslate2D(false, a*k0, FE, FN);
+     * }
+     *
+     * is then equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating} the denormalization
+     * matrix with the following matrix. This will have the effect of applying the conversion described above after
+     * the non-linear kernel operation.
+     *
+     * <center>{@include formulas.html#DenormalizeCartesian}</center>
+     *
+     * @param  norm  {@code true} to apply the scale and translations on the <cite>normalize</cite> transform,
+     *               or {@code false} to apply them on the <cite>denormalize</cite> transform.
+     * @param  scale The scale to apply on the 2 first axes.
+     * @param  tx    The translation to apply on the <var>x</var> axis after the scale.
+     * @param  ty    The translation to apply on the <var>y</var> axis after the scale.
+     * @return The (de)normalization affine transform as a matrix.
+     *         Callers can change that matrix directly if they want to apply additional (de)normalization operations.
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
-    private void ensureModifiable() throws IllegalStateException {
-        if (isFrozen) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
-        }
+    public MatrixSIS scaleAndTranslate2D(final boolean norm, double scale, double tx, double ty) {
+        ensureModifiable();
+        final MatrixSIS m = (MatrixSIS) (norm ? normalize : denormalize);  // Must be the same instance, not a copy.
+        final DoubleDouble s = (scale != 1) ? new DoubleDouble(scale) : null;
+        m.concatenate(0, s, (tx != 0) ? tx : null);
+        m.concatenate(1, s, (ty != 0) ? ty : null);
+        return m;
     }
 
     /**
@@ -328,33 +364,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Appends a denormalization step after the non-linear kernel, which will scale and translate the output ordinates
-     * in the two first dimensions.
-     * In map projection, the translation terms are <cite>false easting</cite> (FE) and <cite>false northing</cite> (FN).
-     *
-     * <p>Invoking this method is equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating}
-     * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
-     * described above after the non-linear kernel operation:</p>
-     *
-     * <center>{@include formulas.html#DenormalizeCartesian}</center>
-     *
-     * @param  scale The semi-major axis length (<var>a</var>), optionally multiplied by other scale factor (<var>k</var>₀).
-     * @param  tx    The false easting (FE).
-     * @param  ty    The false northing (FN).
-     * @return The denormalization affine transform as a matrix.
-     *         Callers can change that matrix directly if they want to apply additional denormalization operations.
-     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
-     */
-    public MatrixSIS denormalizeCartesianOutputs(double scale, double tx, double ty) {
-        ensureModifiable();
-        final DoubleDouble s = new DoubleDouble(scale);
-        final MatrixSIS denormalize = (MatrixSIS) this.denormalize;  // Must be the same instance, not a copy.
-        denormalize.concatenate(0, s, tx);
-        denormalize.concatenate(1, s, ty);
-        return denormalize;
-    }
-
-    /**
      * Marks this {@code ContextualParameter} as unmodifiable and creates the
      * <cite>normalize</cite> → {@code kernel} → <cite>denormalize</cite> transforms chain.
      * This method shall be invoked only after the {@linkplain #getMatrix(boolean) (de)normalization}
@@ -368,9 +377,12 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *
      * @param  factory The factory to use for creating math transform instances.
      * @param  kernel The (usually non-linear) kernel.
+     *         This is often a {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
      * @return The concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
+     *
+     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
     public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
@@ -400,8 +412,14 @@ public class ContextualParameters extends FormattableObject implements Parameter
 
     /**
      * Returns the parameter value of the given name.
-     * This method can be invoked either before or after the call to {@link #completeTransform completeTransform(…)},
-     * but the returned parameter will be modifiable only before that call.
+     * Before the call to {@link #completeTransform completeTransform(…)},
+     * this method can be used for setting parameter values like below:
+     *
+     * {@preformat java
+     *   parameter("Scale factor").setValue(0.9996);   // Scale factor of Universal Transverse Mercator (UTM) projections.
+     * }
+     *
+     * After the call to {@code completeTransform(…)}, the returned parameters are read-only.
      *
      * @param  name The name of the parameter to search.
      * @return The parameter value for the given name.

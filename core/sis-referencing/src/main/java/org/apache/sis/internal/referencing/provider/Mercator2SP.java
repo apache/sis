@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -56,6 +55,9 @@ public final class Mercator2SP extends MapProjection {
      *
      * <p>This parameter is taken from {@link Mercator1SP}. It is not formally a parameter from the {@code Mercator2SP}
      * projection. Nevertheless we take is as an optional parameter because it is sometime used in Well Known Text.</p>
+     *
+     * <p>In theory, this parameter should not be used and its value should be 0 in all cases.
+     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.</p>
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
@@ -115,12 +117,13 @@ public final class Mercator2SP extends MapProjection {
          * of the "Mercator (variant B)" projection according EPSG. But we declare them
          * as optional parameters because they are sometime used.
          */
-        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Mercator (variant B)");
-        LATITUDE_OF_ORIGIN = createLatitude(withEsriAndNetcdf(Mercator1SP.LATITUDE_OF_ORIGIN, builder,
-                "Latitude_Of_Origin", "latitude_of_projection_origin").setRequired(false).setRemarks(remarks), false);
+        LATITUDE_OF_ORIGIN = createConstant(withEsriAndNetcdf(Mercator1SP.LATITUDE_OF_ORIGIN, builder,
+                "Latitude_Of_Origin", "latitude_of_projection_origin").setRequired(false)
+                .setRemarks(Mercator1SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
         SCALE_FACTOR = createScale(withEsriAndNetcdf(Mercator1SP.SCALE_FACTOR, builder,
-                "Scale_Factor", "scale_factor_at_projection_origin").setRemarks(remarks));
+                "Scale_Factor", "scale_factor_at_projection_origin")
+                .setRemarks(notFormalParameter(Mercator1SP.NAME, "Mercator (variant B)")));
 
         PARAMETERS = builder
             .addIdentifier(             "9805")
