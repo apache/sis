@@ -71,6 +71,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConformanceMeansDatumShift = 8;
 
         /**
+         * This parameter is shown for completeness, but should never have a value different than {0}
+         * for this projection.
+         */
+        public static final short ConstantProjParameterValue_1 = 11;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */

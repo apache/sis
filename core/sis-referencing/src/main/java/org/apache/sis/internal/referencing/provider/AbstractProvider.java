@@ -114,6 +114,13 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
     }
 
     /**
+     * Creates a descriptor for a constant value in degrees.
+     */
+    static ParameterDescriptor<Double> createConstant(final ParameterBuilder builder, final Double constant) {
+        return builder.createBounded(MeasurementRange.create(constant, true, constant, true, NonSI.DEGREE_ANGLE), constant);
+    }
+
+    /**
      * Creates a descriptor for a latitude parameter in degrees.
      */
     static ParameterDescriptor<Double> createLatitude(final ParameterBuilder builder, final boolean includePoles) {

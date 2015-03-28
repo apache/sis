@@ -122,7 +122,7 @@
  * <ul>
  *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalization} affine transform</li>
  *   <li>A {@link      org.apache.sis.referencing.operation.projection.NormalizedProjection} subclass</li>
- *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#denormalizeCartesianOutputs denormalization} affine transform</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#scaleAndTranslate2D denormalization} affine transform</li>
  * </ul>
  *
  * The first step (<cite>"normalization"</cite>) converts longitude and latitude values from degrees to radians

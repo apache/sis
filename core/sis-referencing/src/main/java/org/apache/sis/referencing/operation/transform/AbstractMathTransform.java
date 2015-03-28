@@ -211,8 +211,6 @@ public abstract class AbstractMathTransform extends FormattableObject
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
      *
-     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#getContextualParameters()
-     *
      * @since 0.6
      */
     protected ContextualParameters getContextualParameters() {

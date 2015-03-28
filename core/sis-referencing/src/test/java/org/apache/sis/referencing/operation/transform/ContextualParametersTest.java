@@ -20,15 +20,19 @@ import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.lang.StrictMath.PI;
+import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -42,6 +46,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final strictfp class ContextualParametersTest extends TestCase {
+    /**
+     * For floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
     /**
      * Creates an instance to use for testing purpose.
      */
@@ -113,5 +122,36 @@ public final strictfp class ContextualParametersTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("ContextualParameters"));
         }
+    }
+
+    /**
+     * Tests {@link ContextualParameters#completeTransform(MathTransformFactory, MathTransform)}
+     * with non-identity normalization transforms.
+     *
+     * @throws FactoryException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSameTransform")
+    public void testCompleteTransform() throws FactoryException {
+        final ContextualParameters p = create(2, 2);
+        final Matrix normalize   = p.normalizeGeographicInputs(12);
+        final Matrix denormalize = p.denormalizeGeographicOutputs(18);
+        final Matrix product     = MathTransforms.getMatrix(p.completeTransform(
+                DefaultMathTransformFactoryTest.FACTORY, MathTransforms.identity(2)));
+
+        assertMatrixEquals("normalize", new Matrix3(
+                PI/180,  0,       toRadians(-12),
+                0,       PI/180,  0,
+                0,       0,       1), normalize, 1E-16);
+
+        assertMatrixEquals("denormalize", new Matrix3(
+                180/PI,  0,       18,
+                0,       180/PI,  0,
+                0,       0,       1), denormalize, 1E-16);
+
+        assertMatrixEquals("product", new Matrix3(
+                1, 0, 6,
+                0, 1, 0,
+                0, 0, 1), product, STRICT);
     }
 }

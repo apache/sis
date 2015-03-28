@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -52,6 +53,9 @@ public final class Mercator1SP extends MapProjection {
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
+     *
+     * <p>In theory, this parameter should not be used and its value should be 0 in all cases.
+     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.</p>
      */
     static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
@@ -86,12 +90,13 @@ public final class Mercator1SP extends MapProjection {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_ORIGIN = createLatitude(builder
+        LATITUDE_OF_ORIGIN = createConstant(builder
                 .addIdentifier("8801")
                 .addName("Latitude of natural origin")
                 .addName(Citations.OGC,     "latitude_of_origin")
                 .addName(Citations.GEOTIFF, "NatOriginLat")
-                .addName(Citations.PROJ4,   "lat_0"), false);
+                .addName(Citations.PROJ4,   "lat_0")
+                .setRemarks(Messages.format(Messages.Keys.ConstantProjParameterValue_1, 0)), 0.0);
 
         CENTRAL_MERIDIAN = createLongitude(builder
                 .addIdentifier("8802")

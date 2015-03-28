@@ -47,7 +47,7 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
      * case, truncated to nearest integer. This is not a real infinity because there is no exact
      * representation of π/2 in base 2, so tan(π/2) is not positive infinity.
      */
-    private static final int LN_INFINITY = 37;
+    static final int LN_INFINITY = 37;
 
     /**
      * Computes {@link NormalizedProjection#expOfNorthing(double, double)} for the given latitude.
