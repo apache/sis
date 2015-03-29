@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 
@@ -122,30 +123,29 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
-     * A tolerance of 1E-6 is about 0.2 second of arcs, which is about 6 kilometers
-     * (computed from the standard length of nautical mile).
+     * The current value take the system-wide angular tolerance value (equivalent to
+     * about 1 cm on Earth) converted to radians.
      *
      * <p>Some formulas use this tolerance value for testing sines or cosines of an angle.
      * In the sine case, this is justified because sin(θ) ≅ θ when θ is small.
      * Similar reasoning applies to cosine with cos(θ) ≅ θ + π/2 when θ is small.</p>
      */
-    static final double ANGLE_TOLERANCE = 1E-6;
+    static final double ANGULAR_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180);
 
     /**
-     * Difference allowed in iterative computations. A value of 1E-10 causes the {@link #φ(double)} function
-     * to compute the latitude at a precision of 1E-10 radians, which is slightly smaller than one millimetre.
+     * Desired accuracy for the result of iterative computations, in radians.
+     * This constant defines the desired accuracy of methods like {@link #φ(double)}.
+     *
+     * <p>The current value is 0.25 time the accuracy derived from {@link Formulas#LINEAR_TOLERANCE}.
+     * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
+     * 4E-10 radians). The 0.25 factor is a safety margin for meeting the 1 cm accuracy.</p>
      */
-    static final double ITERATION_TOLERANCE = 1E-10;
+    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25;
 
     /**
      * Maximum number of iterations for iterative computations.
      */
     static final int MAXIMUM_ITERATIONS = 15;
-
-    /**
-     * Maximum difference allowed when comparing real numbers (other cases).
-     */
-    static final double EPSILON = 1E-7;
 
     /**
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
@@ -243,11 +243,26 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        final Double defaultValue = descriptor.getDefaultValue();
-        if (defaultValue == null || value != defaultValue) {
+        Comparable<Double> check = descriptor.getMinimumValue();
+        if (check instanceof Number && !(value >= ((Number) check).doubleValue())) {
+            throw outOfBounds(descriptor, value);
+        }
+        check = descriptor.getMaximumValue();
+        if (check instanceof Number && !(value <= ((Number) check).doubleValue())) {
+            throw outOfBounds(descriptor, value);
+        }
+        check = descriptor.getDefaultValue();
+        if (check == null || !check.equals(value)) {
             context.parameter(descriptor.getName().getCode()).setValue(value);
         }
         return value;
+    }
+
+    /**
+     * Creates the exception for a parameter value out of bounds.
+     */
+    private static IllegalArgumentException outOfBounds(final ParameterDescriptor<Double> descriptor, double value) {
+        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2, descriptor.getName(), value));
     }
 
     /**
@@ -567,25 +582,35 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm} of the
      * value returned by this method. This function is <em>almost</em> the converse of {@link #φ(double)}.
      *
+     *
      * <div class="section">Properties</div>
-     * This function has the following identity (ignoring rounding errors):
+     * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
+     * The result is always a positive number when the φ argument is inside the above-cited range.
+     * If, after removal of any 2π periodicity, φ is still outside the [-π/2 … π/2] range, then the
+     * result is a negative number. In a Mercator projection, such negative number will result in NaN.
      *
-     * <blockquote>expOfNorthing(-φ)  =  1 / expOfNorthing(φ)</blockquote>
-     *
-     * This function has a periodicity of 2π.
-     * The result is always a positive value when φ is valid (more on it below).
-     * More specifically its behavior at some particular points is:
-     *
+     * <p>Some values are:</p>
      * <ul>
+     *   <li>expOfNorthing(NaN)    =  NaN</li>
+     *   <li>expOfNorthing(±∞)     =  NaN</li>
      *   <li>expOfNorthing(-π/2)   =   0</li>
      *   <li>expOfNorthing( 0  )   =   1</li>
      *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
-     *   <li>expOfNorthing( ∞  )   =  NaN</li>
-     *   <li>expOfNorthing(NaN)    =  NaN</li>
-     *   <li>If φ, after removal of any 2π periodicity, still outside the [-π/2 … π/2] range,
-     *       then the result is a negative number. If the caller is going to compute the logarithm
-     *       of the returned value as in the Mercator projection, (s)he will get NaN.</li>
+     *   <li>expOfNorthing(-φ)     =  1 / expOfNorthing(φ)</li>
      * </ul>
+     *
+     *
+     * <div class="section">The π/2 special case</div>
+     * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
+     * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
+     * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
+     * does nothing special about it.
+     *
+     * <p>Note that the result for the φ value after {@code Math.PI/2} (as given by {@link Math#nextUp(double)})
+     * is still positive, maybe because {@literal PI/2 < π/2 < nextUp(PI/2)}. Only the {@code nextUp(nextUp(PI/2))}
+     * value become negative. Callers may need to take this behavior in account: special check for {@code Math.PI/2}
+     * is not sufficient, the check needs to include at least the {@code nextUp(Math.PI/2)} case.</p>
+     *
      *
      * <div class="section">Relationship with Snyder</div>
      * This function is related to the following functions from Snyder:

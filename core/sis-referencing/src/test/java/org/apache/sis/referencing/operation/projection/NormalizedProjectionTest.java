@@ -19,12 +19,15 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.Double.*;
 import static java.lang.StrictMath.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 import static org.junit.Assert.*;
 
 
@@ -36,6 +39,9 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
+@DependsOn({
+    org.apache.sis.internal.referencing.provider.MapProjectionTest.class
+})
 public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
@@ -87,12 +93,11 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
      */
     @Test
     public void testDocumentation() {
-        double minutes = toDegrees(NormalizedProjection.ANGLE_TOLERANCE) * 60;
-        assertEquals("Documentation said 0.2″ precision.", 0.2, minutes*60, 0.1);
-        assertEquals("Documentation said 6 km precision.", 6, minutes*1852, 0.5);
+        double minutes = toDegrees(NormalizedProjection.ANGULAR_TOLERANCE) * 60;
+        assertEquals("Documentation said 1 cm precision.", 0.01, minutes*NAUTICAL_MILE, 0.005);
 
         minutes = toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60;
-        assertEquals("Documentation said 1 mm precision.", 0.001, minutes*1852, 0.0005);
+        assertEquals("Documentation said 2.5 mm precision.", 0.0025, minutes*NAUTICAL_MILE, 0.0005);
     }
 
     /**
@@ -123,6 +128,14 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
         assertEquals("Forward (90+ε)°N", NaN, log(tan(nextUp(PI/2))),      TOLERANCE);
         assertEquals("Inverse +∞",       0, atan(exp(NEGATIVE_INFINITY)),  TOLERANCE);
         assertEquals("Inverse +∞ appr.", 0, atan(exp(-(LN_INFINITY + 1))), TOLERANCE);
+        /*
+         * Some checks performed in our projection implementations assume that
+         * conversion of 90° to radians give exactly Math.PI/2.
+         */
+        final DoubleDouble dd = DoubleDouble.createDegreesToRadians();
+        dd.multiply(90);
+        assertEquals(PI/2, dd.value, 0.0);
+        assertEquals(PI/2, toRadians(90), 0.0);
     }
 
     /**
@@ -147,25 +160,45 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
      * The {@link #projection} field must have been set before this method is called.
      */
     private void doTestExpOfNorthing() {
-        assertEquals("Function contract",  NaN, expOfNorthing(NaN),               tolerance);
-        assertEquals("Function contract",  NaN, expOfNorthing(POSITIVE_INFINITY), tolerance);
-        assertEquals("Function contract",  NaN, expOfNorthing(NEGATIVE_INFINITY), tolerance);
-        assertEquals("Function contract",    1, expOfNorthing(0),                 tolerance);
-        assertEquals("Function contract",    0, expOfNorthing(-PI/2),             tolerance);
-        assertTrue  ("Function contract",       expOfNorthing(+PI/2)              > 1E+16);
-        assertTrue  ("Out of bounds",           expOfNorthing(-PI/2 - 0.1)        < 0);
-        assertTrue  ("Out of bounds",           expOfNorthing(+PI/2 + 0.1)        < 0);
-        assertEquals("Out of bounds",       -1, expOfNorthing(-PI),               tolerance);
-        assertTrue  ("Out of bounds",           expOfNorthing(-PI*3/2)            < -1E+16);
-        assertEquals("Function periodicity", 1, expOfNorthing(-2*PI),             tolerance);
-        assertEquals("Function periodicity", 0, expOfNorthing(-PI*5/2),           tolerance);
+        assertEquals("f(NaN) = NaN",       NaN, expOfNorthing(NaN),               tolerance);
+        assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(NEGATIVE_INFINITY), tolerance);
+        assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(POSITIVE_INFINITY), tolerance);
+        assertEquals("f(  0°) = 1",          1, expOfNorthing(0),                 tolerance);
+        assertEquals("f(-90°) = 0",          0, expOfNorthing(-PI/2),             tolerance);
+        assertTrue  ("f(< -90°) < 0",           expOfNorthing(-PI/2 - 0.1)        < 0);
+        assertTrue  ("f(< -90°) < 0",           expOfNorthing(nextDown(-PI/2))    < 0);
+        /*
+         * Values around π/2 are a special case. Theoretically the result should be positive infinity.
+         * But since we do not have an exact representatation of π/2, we instead get a high number.
+         * Furthermore the value does not become negative immediately after π/2; we have to skip an
+         * other IEEE 754 double value. This is because the real π/2 value is actually between PI/2
+         * and nextUp(PI/2):
+         *
+         *      PI/2          =   1.570796326794896558…
+         *      π/2           =   1.570796326794896619…
+         *      nextUp(PI/2)  =   1.570796326794896780…
+         */
+        assertTrue("f(+90°) → ∞",   expOfNorthing(+PI/2) > exp(LN_INFINITY));
+        assertTrue("f(> +90°) < 0", expOfNorthing(+PI/2 + 0.1) < 0);
+        assertTrue("f(> +90°) < 0", expOfNorthing(nextUp(nextUp(+PI/2))) < 0);
+        /*
+         * Test function periodicity. This is not a strong requirement for the expOfNorthing(…) function,
+         * but we nevertheless try to ensure that the method behaves correctly with unexpected values.
+         */
+        assertEquals("f(+360°)",  1, expOfNorthing(+2*PI),   tolerance);
+        assertEquals("f(+270°)",  0, expOfNorthing(+PI*3/2), tolerance);
+        assertEquals("f(+180°)", -1, expOfNorthing(+PI),     tolerance);
+        assertEquals("f(-180°)", -1, expOfNorthing(-PI),     tolerance);
+        assertTrue  ("f(-270°) → ∞", expOfNorthing(-PI*3/2)  < exp(-LN_INFINITY));
+        assertEquals("f(-360°)",  1, expOfNorthing(-2*PI),   tolerance);
+        assertEquals("f(-450°)",  0, expOfNorthing(-PI*5/2), tolerance);
         /*
          * Use in a way close to (but not identical)
          * to the way the Mercator projection need it.
          */
-        assertEquals("Forward 0°N",  0,                 log(expOfNorthing(0)),     tolerance);
-        assertEquals("Forward 90°S", NEGATIVE_INFINITY, log(expOfNorthing(-PI/2)), tolerance);
-        assertTrue  ("Forward 90°N", LN_INFINITY <      log(expOfNorthing(+PI/2)));
+        assertEquals("Mercator(0°)",   0,                 log(expOfNorthing(0)),     tolerance);
+        assertEquals("Mercator(90°S)", NEGATIVE_INFINITY, log(expOfNorthing(-PI/2)), tolerance);
+        assertTrue  ("Mercator(90°N)", LN_INFINITY <      log(expOfNorthing(+PI/2)));
     }
 
     /**
@@ -192,16 +225,16 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
      * The {@link #projection} field must have been set before this method is called.
      */
     private void doTest_φ() throws ProjectionException {
-        assertEquals("Function contract",  NaN,  φ(NaN),               tolerance);
-        assertEquals("Function contract",  PI/2, φ(0),                 tolerance);
-        assertEquals("Function contract",  PI/2, φ(MIN_VALUE),         tolerance);
-        assertEquals("Function contract",  0,    φ(1),                 tolerance);
-        assertEquals("Function contract", -PI/2, φ(MAX_VALUE),         tolerance);
-        assertEquals("Function contract", -PI/2, φ(POSITIVE_INFINITY), tolerance);
-        assertEquals("Out of bounds",   PI+PI/2, φ(NEGATIVE_INFINITY), tolerance);
-        assertEquals("Out of bounds",   PI+PI/2, φ(-MAX_VALUE),        tolerance);
-        assertEquals("Out of bounds",   PI,      φ(-1),                tolerance);
-        assertEquals("Almost f. contract", PI/2, φ(-MIN_VALUE),        tolerance);
+        assertEquals("φ(NaN) = NaN",    NaN,   φ(NaN),               tolerance);
+        assertEquals("φ( ∞)  = -90°", -PI/2,   φ(POSITIVE_INFINITY), tolerance);
+        assertEquals("φ( ∞)  = -90°", -PI/2,   φ(MAX_VALUE),         tolerance);
+        assertEquals("φ( 1)  =   0°",    0,    φ(1),                 tolerance);
+        assertEquals("φ( ε)  →  90°",  PI/2,   φ(MIN_VALUE),         tolerance);
+        assertEquals("φ( 0)  =  90°",  PI/2,   φ(0),                 tolerance);
+        assertEquals("φ(-ε)  →  90°",  PI/2,   φ(-MIN_VALUE),        tolerance);
+        assertEquals("φ(-1)  = 180°",  PI,     φ(-1),                tolerance);
+        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(-MAX_VALUE),        tolerance);
+        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(NEGATIVE_INFINITY), tolerance);
         /*
          * Using t(φ) as a reference.
          */

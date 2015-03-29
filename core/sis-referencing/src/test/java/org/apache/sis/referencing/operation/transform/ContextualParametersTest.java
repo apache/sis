@@ -147,7 +147,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
         assertMatrixEquals("denormalize", new Matrix3(
                 180/PI,  0,       18,
                 0,       180/PI,  0,
-                0,       0,       1), denormalize, 1E-16);
+                0,       0,       1), denormalize, STRICT);
 
         assertMatrixEquals("product", new Matrix3(
                 1, 0, 6,
