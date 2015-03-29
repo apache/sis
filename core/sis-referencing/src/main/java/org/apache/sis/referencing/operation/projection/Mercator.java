@@ -25,6 +25,7 @@ import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -112,7 +113,7 @@ public class Mercator extends NormalizedProjection {
          * where the parameter is included in the EPSG dataset for completeness in CRS labelling but is not allowed
          * to be assigned any value other than zero.
          */
-        if (φ0 != 0) {
+        if (!(abs(φ0) <= Formulas.ANGULAR_TOLERANCE)) {   // Use '!' for catching NaN.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
                     Mercator2SP.LATITUDE_OF_ORIGIN.getName(), φ0));
         }
@@ -219,21 +220,19 @@ public class Mercator extends NormalizedProjection {
          * Projection of zero is zero. However the formulas below have a slight rounding error
          * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
          * avoiding rounding error, this also preserve the sign (positive vs negative zero).
-         *
-         * We also check for poles, but using (sinφ == 1) as a criterion instead than (φ == PI/2).
-         * There is almost 100 millions floating point values around PI/2 for which sin(φ) == 1.
-         * The sine become 0.9999999999999999 only after we move at least 6E-7° away from the pole,
-         * which is less than 10 centimetres.
          */
         final double y;
-        if (sinφ == 0) {
+        if (φ == 0) {
             y = φ;
-        } else if (sinφ == 1 && φ >= PI/2) {    // Really exact comparison, no epsilon here.
-            y = POSITIVE_INFINITY;              // See javadoc of Spherical inner class for rational.
-        } else if (sinφ == -1 && φ <= -PI/2) {
-            y = NEGATIVE_INFINITY;
         } else {
-            y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
+            // See the javadoc of the Spherical inner class for a note
+            // about why we perform explicit checks for the pole cases.
+            final double a = abs(φ);
+            if (a < PI/2) {
+                y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
+            } else {
+                y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+            }
         }
         if (dstPts != null) {
             dstPts[dstOff]   = λ;
@@ -253,7 +252,7 @@ public class Mercator extends NormalizedProjection {
      * are written at the same locations than the source coordinates. In such case, we can take advantage of the
      * fact that the λ values are not modified by the normalized Mercator projection.</div>
      *
-     * @throws TransformException if a point can not be transformed.
+     * @throws TransformException if a point can not be converted.
      */
     @Override
     public void transform(final double[] srcPts, int srcOff,
@@ -266,15 +265,15 @@ public class Mercator extends NormalizedProjection {
             dstOff--;
             while (--numPts >= 0) {
                 final double φ = dstPts[dstOff += 2]; // Same as srcPts[srcOff + 1].
-                final double y;
                 if (φ != 0) {
-                    final double sinφ = sin(φ);
-                    if (sinφ == 1 && φ >= PI/2) {            // Really exact comparison, no epsilon here.
-                        y = POSITIVE_INFINITY;               // See javadoc of Spherical inner class for rational.
-                    } else if (sinφ == -1 && φ <= -PI/2) {
-                        y = NEGATIVE_INFINITY;
+                    // See the javadoc of the Spherical inner class for a note
+                    // about why we perform explicit checks for the pole cases.
+                    final double a = abs(φ);
+                    final double y;
+                    if (a < PI/2) {
+                        y = log(expOfNorthing(φ, excentricity * sin(φ)));
                     } else {
-                        y = log(expOfNorthing(φ, excentricity * sinφ));
+                        y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                     }
                     dstPts[dstOff] = y;
                 }
@@ -308,14 +307,13 @@ public class Mercator extends NormalizedProjection {
      * which is the correct answer. In practice the infinite value emerges by itself at only one pole, and the other
      * one produces a high value (approximatively 1E+16). This is because there is no accurate representation of π/2,
      * and consequently {@code tan(π/2)} does not return the infinite value. We workaround this issue with an explicit
-     * check for φ = π/2 only. Note that:
+     * check for abs(φ) ≊ π/2. Note that:
      *
      * <ul>
-     *   <li>We check for strict equality, not a comparison with a tolerance threshold, because the arithmetic is not
-     *       broken for values close to pole. We check π/2 because this is the result of converting 90°N to radians,
-     *       and we presume that the user really wanted to said 90°N. But for all other values we can let the math do
-     *       their "natural" work.</li>
-     *   <li>There is no need to check for φ = -π/2 as our arithmetic already produces negative infinity.</li>
+     *   <li>The arithmetic is not broken for values close to pole. We check π/2 because this is the result of
+     *       converting 90°N to radians, and we presume that the user really wanted to said 90°N. But for most
+     *       other values we could let the math do their "natural" work.</li>
+     *   <li>For φ = -π/2 our arithmetic already produces negative infinity.</li>
      * </ul>
      * </div>
      *
@@ -359,10 +357,14 @@ public class Mercator extends NormalizedProjection {
             final double y;
             if (φ == 0) {
                 y = φ;
-            } else if (φ == PI/2) {             // Really exact comparison, no epsilon here.
-                y = POSITIVE_INFINITY;          // See class javadoc for rational.
             } else {
-                y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                // See class javadoc for a note about explicit check for poles.
+                final double a = abs(φ);
+                if (a < PI/2) {
+                    y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                } else {
+                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                }
             }
             Matrix derivative = null;
             if (derivate) {
@@ -398,12 +400,14 @@ public class Mercator extends NormalizedProjection {
                 dstOff--;
                 while (--numPts >= 0) {
                     final double φ = dstPts[dstOff += 2];   // Same as srcPts[srcOff + 1].
-                    final double y;
                     if (φ != 0) {
-                        if (φ == PI/2) {                    // Really exact comparison, no epsilon here.
-                            y = POSITIVE_INFINITY;          // See class javadoc for rational.
-                        } else {
+                        // See class javadoc for a note about explicit check for poles.
+                        final double a = abs(φ);
+                        final double y;
+                        if (a < PI/2) {
                             y = log(tan(PI/4 + 0.5*φ));     // Part of Snyder (7-2)
+                        } else {
+                            y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                         }
                         dstPts[dstOff] = y;
                     }

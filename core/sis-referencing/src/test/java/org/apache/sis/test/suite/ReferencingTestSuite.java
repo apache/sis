@@ -87,20 +87,20 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
 
-    // Test map projections.
+    // Registration of map projections and other math transforms.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
-    org.apache.sis.referencing.operation.projection.MercatorTest.class,
-
-    // Registration of map projections and other math transforms.
+    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
+    org.apache.sis.internal.referencing.OperationMethodsTest.class,
     org.apache.sis.internal.referencing.provider.AffineTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
-    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
-    org.apache.sis.internal.referencing.OperationMethodsTest.class,
+
+    // Test map projections.
+    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
+    org.apache.sis.referencing.operation.projection.MercatorTest.class,
 
     // Coordinate Reference System components.
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,

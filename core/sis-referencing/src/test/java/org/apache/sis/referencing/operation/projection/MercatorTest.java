@@ -16,10 +16,13 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -43,22 +46,20 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 public final strictfp class MercatorTest extends MathTransformTestCase {
     /**
      * Returns a new instance of {@link Mercator} for an ellipsoid.
+     *
+     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
-    private void initialize() {
+    private void initialize(final boolean ellipse) {
         final Mercator2SP method = new Mercator2SP();
         final Parameters parameters = Parameters.castOrWrap(method.getParameters().createValue());
-        parameters.parameter(Constants.SEMI_MAJOR).setValue(6378137);
-        parameters.parameter(Constants.SEMI_MINOR).setValue(6356752);
+        final Ellipsoid ellipsoid = (ellipse ? CommonCRS.WGS84 : CommonCRS.SPHERE).ellipsoid();
+        parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
+        parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
         transform = new Mercator(method, parameters);
         tolerance = 1E-12;
-    }
-
-    /**
-     * Replaces the ellipsoidal formulas by the spherical ones.
-     */
-    private void switchToSpherical() {
-        assertEquals(Mercator.class, transform.getClass());
-        transform = new Mercator.Spherical((Mercator) transform);
+        if (!ellipse) {
+            transform = new Mercator.Spherical((Mercator) transform);
+        }
     }
 
     /**
@@ -101,22 +102,30 @@ public final strictfp class MercatorTest extends MathTransformTestCase {
     }
 
     /**
-     * Tests the projection at a few extreme points.
+     * Verifies the consistency of spherical formulas with the elliptical formulas.
      *
      * @throws ProjectionException Should never happen.
      */
     @Test
-    public void testExtremes() throws ProjectionException {
-        initialize();
-        doTestExtremes();
-//      switchToSpherical();
-//      doTestExtremes();
+    @DependsOnMethod("testSpecialLatitudes")
+    public void testSphericalCase() throws ProjectionException {
+        initialize(false); // Spherical case
+        testSpecialLatitudes();
+
+        // Make sure that 'testSpecialLatitudes' did not overwrite the 'transform' field.
+        assertTrue(transform instanceof Mercator.Spherical);
     }
 
     /**
-     * Implementation of {@link #testExtremes()}, to be executed twice.
+     * Tests the projection at some special latitudes (0, ±π/2, NaN).
+     *
+     * @throws ProjectionException Should never happen.
      */
-    private void doTestExtremes() throws ProjectionException {
+    @Test
+    public void testSpecialLatitudes() throws ProjectionException {
+        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
+            initialize(true);       // Elliptical case
+        }
         validate();
 
         assertEquals ("Not a number",     NaN,                    transform(NaN),           tolerance);

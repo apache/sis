@@ -37,8 +37,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
 public final class Formulas extends Static {
     /**
      * Default tolerance threshold for comparing ordinate values in a projected CRS,
-     * assuming that the unit of measurement is metre. This is not a tolerance for
-     * testing map projection accuracy.
+     * assuming that the unit of measurement is metre. This constant determines also
+     * (indirectly) the minimum accuracy of iterative methods in map projections.
      *
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
@@ -49,6 +49,8 @@ public final class Formulas extends Static {
      * Default tolerance threshold for comparing ordinate values in a geographic CRS,
      * assuming that the unit of measurement is decimal degrees and using the standard
      * nautical mile length.
+     *
+     * <p>For a {@link #LINEAR_TOLERANCE} of 1 centimetre, this is slightly less than 1E-7°.</p>
      *
      * @see #LINEAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
