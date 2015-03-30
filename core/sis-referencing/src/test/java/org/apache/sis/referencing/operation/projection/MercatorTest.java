@@ -16,12 +16,13 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.util.Constants;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.internal.referencing.provider.PseudoMercator;
+import org.apache.sis.internal.referencing.provider.MillerCylindrical;
+import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -43,7 +44,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class MercatorTest extends MathTransformTestCase {
+public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Returns a new instance of {@link Mercator} for an ellipsoid.
      *
@@ -51,15 +52,12 @@ public final strictfp class MercatorTest extends MathTransformTestCase {
      */
     private void initialize(final boolean ellipse) {
         final Mercator2SP method = new Mercator2SP();
-        final Parameters parameters = Parameters.castOrWrap(method.getParameters().createValue());
-        final Ellipsoid ellipsoid = (ellipse ? CommonCRS.WGS84 : CommonCRS.SPHERE).ellipsoid();
-        parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
-        parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
-        transform = new Mercator(method, parameters);
-        tolerance = 1E-12;
+        transform = new Mercator(method, parameters(method, ellipse));
         if (!ellipse) {
             transform = new Mercator.Spherical((Mercator) transform);
         }
+        tolerance = 1E-12;
+        validate();
     }
 
     /**
@@ -113,7 +111,7 @@ public final strictfp class MercatorTest extends MathTransformTestCase {
         testSpecialLatitudes();
 
         // Make sure that 'testSpecialLatitudes' did not overwrite the 'transform' field.
-        assertTrue(transform instanceof Mercator.Spherical);
+        assertEquals("transform.class", Mercator.Spherical.class, transform.getClass());
     }
 
     /**
@@ -126,8 +124,6 @@ public final strictfp class MercatorTest extends MathTransformTestCase {
         if (transform == null) {    // May have been initialized by 'testSphericalCase'.
             initialize(true);       // Elliptical case
         }
-        validate();
-
         assertEquals ("Not a number",     NaN,                    transform(NaN),           tolerance);
         assertEquals ("Out of range",     NaN,                    transform(+2),            tolerance);
         assertEquals ("Out of range",     NaN,                    transform(-2),            tolerance);
@@ -145,5 +141,20 @@ public final strictfp class MercatorTest extends MathTransformTestCase {
         assertEquals ("Inverse +∞ appr.", +PI/2, inverseTransform(LN_INFINITY + 1),    tolerance);
         assertEquals ("Inverse -∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
         assertEquals ("Inverse -∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
+    }
+
+    /**
+     * Tests the <cite>"Mercator (variant B)"</cite> case.
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator2SP()
+     */
+    @Test
+    @DependsOnMethod("testSpecialLatitudes")
+    public void testMercator2SP() throws FactoryException, TransformException {
+        createGeoApiTest(new Mercator2SP()).testMercator2SP();
     }
 }

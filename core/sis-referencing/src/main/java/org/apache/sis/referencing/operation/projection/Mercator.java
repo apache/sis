@@ -155,7 +155,7 @@ public class Mercator extends NormalizedProjection {
         final MatrixSIS   normalize = context.normalizeGeographicInputs(0);
         final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
         final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-        offset.multiply(λ0);
+        offset.multiply(-λ0);
         denormalize.concatenate(0, null, offset);
         if (type == MILLER) {
             normalize.concatenate(1, new DoubleDouble(0.8), null);
