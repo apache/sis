@@ -17,8 +17,10 @@
 package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CouplingType;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
@@ -27,7 +29,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singleton;
-import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
 
 
 /**
@@ -52,9 +53,10 @@ public final strictfp class DefaultServiceIdentificationTest extends XMLTestCase
      * Creates the service identification to use for testing purpose.
      */
     private static DefaultServiceIdentification create() {
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final DefaultCoupledResource resource = DefaultCoupledResourceTest.create();
         final DefaultServiceIdentification id = new DefaultServiceIdentification(
-                SIS_NAMES.createGenericName(null, "Web Map Server"),    // serviceType
+                factory.createGenericName(null, "Web Map Server"),      // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
                 "A dummy service for testing purpose.");                // abstract
         id.setServiceTypeVersions(singleton("1.0"));

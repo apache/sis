@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -65,6 +66,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetPro
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
@@ -321,11 +323,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         final GenericName[] names;
         try {
             /*
-             * Note: DefaultFactories.SIS_NAMES is guarantee to be a DefaultNameFactory class, not a sub-class.
-             * However for the purpose of this method, any sub-class would be okay. We should revisit this code
-             * with this flexibility in mind when we will use dependency injection.
+             * Note: DefaultFactories.forBuildin(Class) filters the implementations in order to guarantee an
+             * Apache SIS implementation. We need to revisit this mechanism for a real "dependency injection"
+             * mechanism in the future.
              */
-            names = DefaultFactories.SIS_NAMES.toGenericNames(value);
+            final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+            names = factory.toGenericNames(value);
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }

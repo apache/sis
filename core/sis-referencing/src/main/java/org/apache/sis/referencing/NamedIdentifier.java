@@ -255,7 +255,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @category Generic name
      */
     private GenericName createName(final Citation authority, final CharSequence code) {
-        final NameFactory factory = DefaultFactories.NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final String identifier = getUnicodeIdentifier(authority);      // Whitespaces trimed by Citations.
         NameSpace scope = null;
         if (identifier != null) {

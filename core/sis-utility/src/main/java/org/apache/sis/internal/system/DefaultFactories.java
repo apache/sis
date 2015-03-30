@@ -19,8 +19,6 @@ package org.apache.sis.internal.system;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
-import org.opengis.util.NameFactory;
-import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
@@ -29,33 +27,15 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class DefaultFactories extends SystemListener {
-    /**
-     * A name factory which is guaranteed to be an instance of SIS {@link DefaultNameFactory}.
-     * We use this factory when we need to ensure that the created names are instances of the
-     * SIS {@link org.apache.sis.util.iso.AbstractName} implementation.
-     *
-     * <p>Note that this need to be the exact SIS class, not a user-provided subclass,
-     * otherwise we could not guarantee the above-cited requirement.</p>
-     */
-    public static final DefaultNameFactory SIS_NAMES = new DefaultNameFactory();
-
-    /**
-     * The factory to use for creating names, not necessarily SIS instances.
-     * This is fixed to {@link #SIS_NAMES} for now, but will probably be fetched in a more
-     * dynamic way later.
-     */
-    public static final NameFactory NAMES = SIS_NAMES;
-
     /**
      * Cache of factories which are found by {@code META-INF/services}.
      */
     private static final Map<Class<?>, Object> FACTORIES = new IdentityHashMap<>(4);
     static {
-        FACTORIES.put(NameFactory.class, NAMES);
         SystemListener.add(new DefaultFactories());
     }
 
@@ -73,13 +53,13 @@ public final class DefaultFactories extends SystemListener {
     protected void classpathChanged() {
         synchronized (DefaultFactories.class) {
             FACTORIES.clear();
-            FACTORIES.put(NameFactory.class, NAMES);
         }
     }
 
     /**
      * Return the default factory implementing the given interface.
-     * This method will give preference to Apache SIS factories if any.
+     * This method returns only Apache SIS implementation of factories, and ignore all other.
+     * This is a temporary mechanism while we are waiting for a real dependency injection mechanism.
      *
      * @param  <T>  The interface type.
      * @param  type The interface type.
@@ -91,20 +71,55 @@ public final class DefaultFactories extends SystemListener {
             for (final T candidate : ServiceLoader.load(type)) {
                 final Class<?> ct = candidate.getClass();
                 if (ct.getName().startsWith("org.apache.sis.")) {
+                    if (factory != null) {
+                        throw new IllegalStateException("Found two implementations of " + type);
+                    }
                     factory = candidate;
                     break;
-                }
-                /*
-                 * Select the first provider found in the iteration. If more than one provider is found,
-                 * select the most specialized type. This is okay only for relatively simple configurations,
-                 * while we are waiting for a real dependency injection mechanism.
-                 */
-                if (factory == null || factory.getClass().isAssignableFrom(ct)) {
-                    factory = candidate;
                 }
             }
             FACTORIES.put(type, factory);
         }
         return factory;
+    }
+
+    /**
+     * Returns a factory which is guaranteed to be present. If the factory is not found,
+     * this will be considered a configuration error (corrupted JAR files of incorrect classpath).
+     *
+     * @param  <T>  The interface type.
+     * @param  type The interface type.
+     * @return A factory implementing the given interface.
+     *
+     * @since 0.6
+     */
+    public static <T> T forBuildin(final Class<T> type) {
+        final T factory = forClass(type);
+        if (factory == null) {
+            throw new AssertionError("Missing “META-INF/services/" + type.getName() + "” file. "
+                    + "The JAR file may be corrupted or the classpath incorrect.");
+        }
+        return factory;
+    }
+
+    /**
+     * Returns a factory of the given type, making sure that it is an implementation of the given class.
+     * Use this method only when we know that Apache SIS registers only one implementation of a given service.
+     *
+     * @param  <T>  The interface type.
+     * @param  <I>  The requested implementation class.
+     * @param  type The interface type.
+     * @param  impl The requested implementation class.
+     * @return A factory implementing the given interface.
+     *
+     * @since 0.6
+     */
+    public static <T, I extends T> I forBuildin(final Class<T> type, final Class<I> impl) {
+        final T factory = forBuildin(type);
+        if (!impl.isInstance(factory)) {
+            throw new AssertionError("The “META-INF/services/" + type.getName() + "” file should contains only “"
+                + impl.getName() + "” in the Apache SIS namespace, but we found “" + factory.getClass().getName() + "”.");
+        }
+        return impl.cast(factory);
     }
 }
