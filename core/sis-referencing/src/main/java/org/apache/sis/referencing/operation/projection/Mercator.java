@@ -102,7 +102,7 @@ public class Mercator extends NormalizedProjection {
      * @param method     Description of the projection parameters.
      * @param parameters The parameter values of the projection to create.
      */
-    protected Mercator(final OperationMethod method, final Parameters parameters) {
+    public Mercator(final OperationMethod method, final Parameters parameters) {
         super(method, parameters, Mercator2SP.FALSE_EASTING, Mercator2SP.FALSE_NORTHING);
         double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
         double φ0 = parameters.doubleValue(           Mercator2SP.LATITUDE_OF_ORIGIN);  // Do not store this parameter

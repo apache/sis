@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -180,12 +181,15 @@ public final class Affine extends AbstractProvider {
     /**
      * Creates a projective transform from the specified group of parameter values.
      *
+     * @param  factory Ignored (can be null).
      * @param  values The group of parameter values.
      * @return The created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(final ParameterValueGroup values) throws ParameterNotFoundException {
+    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
+            throws ParameterNotFoundException
+    {
         /*
          * The TensorParameters constant used below (WKT1 or EPSG) does not matter,
          * since both of them understand the names of the other TensorParameters.
