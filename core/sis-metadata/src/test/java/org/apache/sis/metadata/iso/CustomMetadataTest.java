@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.nio.charset.Charset;
 import javax.xml.bind.JAXBException;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
@@ -100,17 +101,18 @@ public final strictfp class CustomMetadataTest extends XMLTestCase {
      */
     @Test
     public void testSubtypeAttributes() throws JAXBException {
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final DataIdentification identification = new DataIdentification() {
             @Override public InternationalString getAbstract() {
                 Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Description");
-                return DefaultFactories.SIS_NAMES.createInternationalString(names);
+                return factory.createInternationalString(names);
             }
 
             @Override public InternationalString getEnvironmentDescription() {
                 Map<Locale, String> names = new HashMap<>();
                 names.put(Locale.ENGLISH, "Environment");
-                return DefaultFactories.SIS_NAMES.createInternationalString(names);
+                return factory.createInternationalString(names);
             }
 
             @Override public InternationalString                   getSupplementalInformation()    {return null;}

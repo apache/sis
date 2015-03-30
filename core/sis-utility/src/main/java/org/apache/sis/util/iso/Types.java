@@ -784,7 +784,7 @@ public final class Types extends Static {
             return null;
         }
         if (!(factory instanceof DefaultNameFactory)) {
-            factory = DefaultFactories.SIS_NAMES;
+            factory = DefaultFactories.forBuildin(NameFactory.class);
         }
        return ((DefaultNameFactory) factory).toGenericNames(value);
     }

@@ -127,7 +127,7 @@ public class DefaultRecordSchema implements RecordSchema {
     public DefaultRecordSchema(NameFactory nameFactory, final NameSpace parent, final CharSequence schemaName) {
         ArgumentChecks.ensureNonNull("schemaName", schemaName);
         if (nameFactory == null) {
-            nameFactory = DefaultFactories.NAMES;
+            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         }
         this.nameFactory    = nameFactory;
         this.typeFactory    = (nameFactory instanceof DefaultNameFactory) ? null : new TypeNames(nameFactory);

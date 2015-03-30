@@ -174,7 +174,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
             throw new IllegalArgumentException(Errors.getResources(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
-            name = createName(DefaultFactories.NAMES, (String) value);
+            name = createName(DefaultFactories.forBuildin(NameFactory.class), (String) value);
         } else if (value instanceof GenericName) {
             name = (GenericName) value;
         } else {

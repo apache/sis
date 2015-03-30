@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -140,10 +141,11 @@ public abstract class AbstractName implements GenericName, Serializable {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
         }
         /*
-         * Following cast should be safe because the SIS_NAMES factory is fixed to a
-         * DefaultNameFactory instance, which is known to create AbstractName instances.
+         * Following cast should be safe because DefaultFactories.forBuildin(Class) filters the factories in
+         * order to return the Apache SIS implementation, which is known to create AbstractName instances.
          */
-        return (AbstractName) DefaultFactories.SIS_NAMES.createGenericName(object.scope(), names);
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return (AbstractName) factory.createGenericName(object.scope(), names);
     }
 
     /**

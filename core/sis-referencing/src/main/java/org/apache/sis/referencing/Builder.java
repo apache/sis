@@ -24,15 +24,16 @@ import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.system.DefaultFactories.NAMES;
 
 
 /**
@@ -213,6 +214,13 @@ public abstract class Builder<B extends Builder<B>> {
     private NameSpace namespace;
 
     /**
+     * The name factory, fetched when first needed.
+     *
+     * @see #factory()
+     */
+    private transient NameFactory nameFactory;
+
+    /**
      * Creates a new builder.
      */
     protected Builder() {
@@ -277,13 +285,24 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
+     * Returns the name factory to use for creating namespaces and local names.
+     */
+    private NameFactory factory() {
+        if (nameFactory == null) {
+            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        }
+        return nameFactory;
+    }
+
+    /**
      * Returns the namespace, creating it when first needed.
      */
     private NameSpace namespace() {
         if (namespace == null) {
             final String codespace = getCodeSpace();
             if (codespace != null) {
-                namespace = NAMES.createNameSpace(NAMES.createLocalName(null, codespace), null);
+                final NameFactory factory = factory();
+                namespace = factory.createNameSpace(factory.createLocalName(null, codespace), null);
             }
         }
         return namespace;
@@ -404,7 +423,7 @@ public abstract class Builder<B extends Builder<B>> {
         ensureNonNull("name", name);
         if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
             // A primary name is already present. Add the given name as an alias instead.
-            aliases.add(name instanceof GenericName ? (GenericName) name : NAMES.createLocalName(namespace(), name));
+            aliases.add(name instanceof GenericName ? (GenericName) name : factory().createLocalName(namespace(), name));
         }
         return self();
     }
