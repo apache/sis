@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+import java.text.ParseException;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -47,6 +48,7 @@ import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.Pending;     // Temporary import.
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
@@ -858,7 +860,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
-        throw new FactoryException("Not yet implemented.");
+        final Pending pending = Pending.getInstance();
+        try {
+            return pending.createFromWKT(this, text);
+        } catch (ParseException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;
+            }
+            throw new FactoryException(exception);
+        }
     }
 
     /**

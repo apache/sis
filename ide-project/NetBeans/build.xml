@@ -55,10 +55,25 @@
       </fileset>
     </copy>
 
+
+
+    <!-- ==== Standard JAVA service providers ====================================================================== -->
+
     <!-- FileTypeDetector implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/java.nio.file.spi.FileTypeDetector" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/java.nio.file.spi.FileTypeDetector"/>
+      </fileset>
+    </concat>
+
+
+
+    <!-- ==== GeoAPI service providers ============================================================================= -->
+
+    <!-- NameFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.util.NameFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.util.NameFactory"/>
       </fileset>
     </concat>
 
@@ -75,6 +90,10 @@
         <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
       </fileset>
     </concat>
+
+
+
+    <!-- ==== Apache SIS service providers ========================================================================= -->
 
     <!-- ObjectConverter implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.util.ObjectConverter" encoding="UTF-8" fixlastline="yes">
