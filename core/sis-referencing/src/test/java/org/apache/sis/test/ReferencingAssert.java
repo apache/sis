@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -37,6 +38,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
 import static java.lang.StrictMath.*;
@@ -388,6 +390,36 @@ public strictfp class ReferencingAssert extends MetadataAssert {
             }
             assertEquals(0, n); // Opportunist check of this assert method.
             assertFalse("e1.contains(" + pos + ')', e1.contains(pos));
+        }
+    }
+
+    /**
+     * Tests if the given transform is the identity transform.
+     * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
+     *
+     * @param transform The transform to test.
+     *
+     * @since 0.6
+     */
+    public static void assertIsIdentity(final MathTransform transform) {
+        assertTrue("isIdentity()", transform.isIdentity());
+        if (transform instanceof LinearTransform) {
+            assertTrue("getMatrix().isIdentity()", ((LinearTransform) transform).getMatrix().isIdentity());
+        }
+    }
+
+    /**
+     * Tests if the given transform is <strong>not</strong> the identity transform.
+     * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
+     *
+     * @param transform The transform to test.
+     *
+     * @since 0.6
+     */
+    public static void assertIsNotIdentity(final MathTransform transform) {
+        assertFalse("isIdentity()", transform.isIdentity());
+        if (transform instanceof LinearTransform) {
+            assertFalse("getMatrix().isIdentity()", ((LinearTransform) transform).getMatrix().isIdentity());
         }
     }
 }
