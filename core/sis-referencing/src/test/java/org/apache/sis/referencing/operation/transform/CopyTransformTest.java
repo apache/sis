@@ -23,7 +23,7 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -71,8 +71,8 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     @Test
     public void testIdentity() throws TransformException {
         create(3, 0, 1, 2);
-        verifyParameters(Affine.getProvider(3, 3, true).getParameters(), null);
-        verifyIsIdentity(true);
+        assertIsIdentity(transform);
+        assertParameterEquals(Affine.getProvider(3, 3, true).getParameters(), null);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = source.clone();
@@ -90,7 +90,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     @Test
     public void test3D() throws TransformException {
         create(3, 2, 1, 0);
-        verifyIsIdentity(false);
+        assertIsNotIdentity(transform);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length];
@@ -114,7 +114,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     public void test3Dto2D() throws TransformException {
         isInverseTransformSupported = false;
         create(3, 0, 1);
-        verifyIsIdentity(false);
+        assertIsNotIdentity(transform);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length * 2/3];

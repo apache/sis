@@ -23,7 +23,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**
- * Hook for pending services not yet ported to Apache SIS.
+ * @deprecated Hook for pending services not yet ported to Apache SIS.
  * This class will be removed after the missing services have been ported.
  *
  * @author  Martin Desruisseaux (Geomatys)
