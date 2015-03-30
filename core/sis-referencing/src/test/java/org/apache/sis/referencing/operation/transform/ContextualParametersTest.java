@@ -113,7 +113,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
     public void testSameTransform() throws FactoryException {
         final ContextualParameters p = create(1, 1);
         final MathTransform kernel = MathTransforms.linear(3, 4);
-        assertEquals(kernel, p.completeTransform(DefaultMathTransformFactoryTest.FACTORY, kernel));
+        assertEquals(kernel, p.completeTransform(DefaultMathTransformFactoryTest.factory(), kernel));
         try {
             p.parameter("Mandatory 1");
             fail("Shall not be allowed to modify an immutable instance.");
@@ -137,7 +137,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
         final Matrix normalize   = p.normalizeGeographicInputs(12);
         final Matrix denormalize = p.denormalizeGeographicOutputs(18);
         final Matrix product     = MathTransforms.getMatrix(p.completeTransform(
-                DefaultMathTransformFactoryTest.FACTORY, MathTransforms.identity(2)));
+                DefaultMathTransformFactoryTest.factory(), MathTransforms.identity(2)));
 
         assertMatrixEquals("normalize", new Matrix3(
                 PI/180,  0,       toRadians(-12),

@@ -22,7 +22,9 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -48,9 +50,17 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     /**
-     * The factory being tested.
+     * Returns the factory to use for the tests.
+     *
+     * @return The factory to use for the tests.
      */
-    static final DefaultMathTransformFactory FACTORY = new DefaultMathTransformFactory();
+    static DefaultMathTransformFactory factory() {
+        final MathTransformFactory factory = DefaultFactories.forClass(MathTransformFactory.class);
+        assertNotNull("No Apache SIS implementation of MathTransformFactory found in “META-INF/services”.", factory);
+        assertEquals("Expected the default implementation of MathTransformFactory to be first in “META-INF/services”.",
+                DefaultMathTransformFactory.class, factory.getClass());
+        return (DefaultMathTransformFactory) factory;
+    }
 
     /**
      * Tests the {@link DefaultMathTransformFactory#getOperationMethod(String)} method.
@@ -59,12 +69,14 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
      */
     @Test
     public void testGetOperationMethod() throws NoSuchIdentifierException {
+        final DefaultMathTransformFactory factory = factory();
+
         // A conversion which is not a projection.
-        OperationMethod method = FACTORY.getOperationMethod(Constants.AFFINE);
+        OperationMethod method = factory.getOperationMethod(Constants.AFFINE);
         assertInstanceOf("Affine", Affine.class, method);
 
         // Same than above, using EPSG code.
-        assertSame("EPSG:9624", method, FACTORY.getOperationMethod("EPSG:9624"));
+        assertSame("EPSG:9624", method, factory.getOperationMethod("EPSG:9624"));
     }
 
     /**
@@ -73,8 +85,9 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testGetOperationMethod")
     public void testNonExistentCode() {
+        final DefaultMathTransformFactory factory = factory();
         try {
-            FACTORY.getOperationMethod("EPXX:9624");
+            factory.getOperationMethod("EPXX:9624");
             fail("Expected NoSuchIdentifierException");
         } catch (NoSuchIdentifierException e) {
             final String message = e.getLocalizedMessage();
@@ -90,16 +103,17 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testGetOperationMethod")
     public void testGetAvailableMethods() throws NoSuchIdentifierException {
-        final Set<OperationMethod> transforms  = FACTORY.getAvailableMethods(SingleOperation.class);
-        final Set<OperationMethod> conversions = FACTORY.getAvailableMethods(Conversion.class);
-        final Set<OperationMethod> projections = FACTORY.getAvailableMethods(Projection.class);
+        final DefaultMathTransformFactory factory = factory();
+        final Set<OperationMethod> transforms  = factory.getAvailableMethods(SingleOperation.class);
+        final Set<OperationMethod> conversions = factory.getAvailableMethods(Conversion.class);
+        final Set<OperationMethod> projections = factory.getAvailableMethods(Projection.class);
         /*
          * Following tests should not cause loading of more classes than needed.
          */
         assertFalse(transforms .isEmpty());
         assertFalse(conversions.isEmpty());
         assertFalse(projections.isEmpty());
-        assertTrue (conversions.contains(FACTORY.getOperationMethod(Constants.AFFINE)));
+        assertTrue (conversions.contains(factory.getOperationMethod(Constants.AFFINE)));
         /*
          * Following tests will force instantiation of all remaining OperationMethod.
          */
