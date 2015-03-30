@@ -62,6 +62,13 @@
       </fileset>
     </concat>
 
+    <!-- MathTransformFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.MathTransformFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.MathTransformFactory"/>
+      </fileset>
+    </concat>
+
     <!-- OperationMethod implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.OperationMethod" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">

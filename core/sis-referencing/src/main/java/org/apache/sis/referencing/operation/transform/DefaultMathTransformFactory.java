@@ -760,7 +760,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
-        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider
+        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider.
         return unique(MathTransforms.linear(matrix));
     }
 
