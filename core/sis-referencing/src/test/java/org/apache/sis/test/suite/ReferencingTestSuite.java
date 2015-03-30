@@ -98,7 +98,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
 
-    // Test map projections.
+    // Test map projections. Those tests need the providers tested above.
     org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
     org.apache.sis.referencing.operation.projection.MercatorTest.class,
 

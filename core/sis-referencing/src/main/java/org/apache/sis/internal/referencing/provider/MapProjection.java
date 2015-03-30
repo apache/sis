@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import javax.measure.unit.SI;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -29,14 +30,17 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Messages;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
@@ -121,16 +125,38 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection from the specified group of parameter values.
      *
-     * @param  values The group of parameter values.
+     * @param  factory The factory to use for creating and concatenating the (de)normalization transforms.
+     * @param  parameters The group of parameter values.
+     * @return The map projection created from the given parameter values.
+     * @throws ParameterNotFoundException if a required parameter was not found.
+     * @throws FactoryException if the map projection can not be created.
+     */
+    @Override
+    public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
+            throws ParameterNotFoundException, FactoryException
+    {
+        return createProjection(Parameters.castOrWrap(parameters)).createMapProjection(factory);
+    }
+
+    /**
+     * Creates a map projection on an ellipsoid having a semi-major axis length of 1.
+     *
+     * @param  parameters The group of parameter values.
      * @return The map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
-    @Override
-    public abstract MathTransform2D createMathTransform(ParameterValueGroup values) throws ParameterNotFoundException;
+    protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;
 
-    /*
-     * Following methods are defined for sharing the same GenericName or Identifier instances when possible.
-     */
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                          ////////
+    ////////                       HELPER METHODS FOR SUBCLASSES                      ////////
+    ////////                                                                          ////////
+    ////////    Following methods are defined for sharing the same GenericName or     ////////
+    ////////    Identifier instances when possible.                                   ////////
+    //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns the name of the given authority declared in the given parameter descriptor.

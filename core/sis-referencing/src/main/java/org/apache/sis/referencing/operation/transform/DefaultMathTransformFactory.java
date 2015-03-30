@@ -726,7 +726,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     Parameters.copy(parameters, copy);
                     parameters = copy;
                 }
-                transform  = ((MathTransformProvider) method).createMathTransform(parameters);
+                transform  = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 /*
                  * Catch only exceptions which may be the result of improper parameter

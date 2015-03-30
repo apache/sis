@@ -18,13 +18,14 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.operation.projection.Mercator;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
@@ -56,7 +57,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/miller_cylindrical.html">Miller Cylindrical on RemoteSensing.org</a>
  */
-public class MillerCylindrical extends MapProjection {
+public final class MillerCylindrical extends MapProjection {
     /**
      * For cross-version compatibility.
      */
@@ -131,7 +132,7 @@ public class MillerCylindrical extends MapProjection {
      * @return The map projection created from the given parameter values.
      */
     @Override
-    public MathTransform2D createMathTransform(ParameterValueGroup values) {
-        return null; // TODO Mercator.create(this, values);
+    protected NormalizedProjection createProjection(final Parameters parameters) {
+        return new Mercator(this, parameters);
     }
 }
