@@ -19,6 +19,7 @@ package org.apache.sis.internal.system;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
+import java.util.ServiceConfigurationError;
 
 
 /**
@@ -72,7 +73,7 @@ public final class DefaultFactories extends SystemListener {
                 final Class<?> ct = candidate.getClass();
                 if (ct.getName().startsWith("org.apache.sis.")) {
                     if (factory != null) {
-                        throw new IllegalStateException("Found two implementations of " + type);
+                        throw new ServiceConfigurationError("Found two implementations of " + type);
                     }
                     factory = candidate;
                     break;
@@ -96,7 +97,7 @@ public final class DefaultFactories extends SystemListener {
     public static <T> T forBuildin(final Class<T> type) {
         final T factory = forClass(type);
         if (factory == null) {
-            throw new AssertionError("Missing “META-INF/services/" + type.getName() + "” file. "
+            throw new ServiceConfigurationError("Missing “META-INF/services/" + type.getName() + "” file. "
                     + "The JAR file may be corrupted or the classpath incorrect.");
         }
         return factory;
@@ -117,7 +118,7 @@ public final class DefaultFactories extends SystemListener {
     public static <T, I extends T> I forBuildin(final Class<T> type, final Class<I> impl) {
         final T factory = forBuildin(type);
         if (!impl.isInstance(factory)) {
-            throw new AssertionError("The “META-INF/services/" + type.getName() + "” file should contains only “"
+            throw new ServiceConfigurationError("The “META-INF/services/" + type.getName() + "” file should contains only “"
                 + impl.getName() + "” in the Apache SIS namespace, but we found “" + factory.getClass().getName() + "”.");
         }
         return impl.cast(factory);

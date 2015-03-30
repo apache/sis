@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
@@ -70,13 +71,16 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     public void testGetOperationMethod() throws NoSuchIdentifierException {
         final DefaultMathTransformFactory factory = factory();
+        final OperationMethod affine   = factory.getOperationMethod(Constants.AFFINE);
+        final OperationMethod mercator = factory.getOperationMethod("Mercator (variant A)");
 
-        // A conversion which is not a projection.
-        OperationMethod method = factory.getOperationMethod(Constants.AFFINE);
-        assertInstanceOf("Affine", Affine.class, method);
+        assertInstanceOf("Affine",               Affine.class,      affine);
+        assertInstanceOf("Mercator (variant A)", Mercator1SP.class, mercator);
 
-        // Same than above, using EPSG code.
-        assertSame("EPSG:9624", method, factory.getOperationMethod("EPSG:9624"));
+        // Same than above, using EPSG code and alias.
+        assertSame("EPSG:9624",    affine,   factory.getOperationMethod("EPSG:9624"));
+        assertSame("EPSG:9804",    mercator, factory.getOperationMethod("EPSG:9804"));
+        assertSame("Mercator_1SP", mercator, factory.getOperationMethod("Mercator_1SP"));
     }
 
     /**
@@ -119,5 +123,29 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
          */
         assertTrue("Conversions should be a subset of transforms.",  transforms .containsAll(conversions));
         assertTrue("Projections should be a subset of conversions.", conversions.containsAll(projections));
+    }
+
+    /**
+     * Asks for names which are known to be duplicated. One of the duplicated elements is deprecated.
+     * However Apache SIS uses the same implementation.
+     *
+     * @throws NoSuchIdentifierException Should never happen.
+     */
+    @Test
+    @org.junit.Ignore("Pending port of Equidistant Cylindrical")
+    public void testDuplicatedNames() throws NoSuchIdentifierException {
+        final DefaultMathTransformFactory factory = factory();
+        final OperationMethod ellipsoidal = factory.getOperationMethod("EPSG:1028");
+        final OperationMethod spherical   = factory.getOperationMethod("EPSG:1029");
+        final OperationMethod deprecated  = factory.getOperationMethod("EPSG:9823");
+        assertSame(spherical, factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
+        assertSame("EPSG:1028 and 1029 are implemented by the same class.", ellipsoidal, spherical);
+        assertSame("Should share the non-deprecated implementation.", ellipsoidal, deprecated);
+
+//      assertFalse(isDeprecated(ellipsoidal, "Equidistant Cylindrical"));
+//      assertFalse(isDeprecated(spherical,   "Equidistant Cylindrical (Spherical)"));
+
+        assertSame(spherical,   factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
+        assertSame(ellipsoidal, factory.getOperationMethod("Equidistant Cylindrical"));
     }
 }

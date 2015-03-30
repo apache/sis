@@ -44,6 +44,7 @@ import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -62,7 +63,6 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -512,7 +512,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifier != null) {
             final Identifier id = identifier.getIdentifier();
-            if (id != null && canSetProperty(AbstractIdentifiedObject.class,
+            if (id != null && ReferencingUtilities.canSetProperty(AbstractIdentifiedObject.class,
                     "setIdentifier", "identifier", identifiers != null))
             {
                 identifiers = Collections.singleton(id);
@@ -694,10 +694,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @Override
     public boolean isDeprecated() {
-        if (name instanceof Deprecable) {
-            if (((Deprecable) name).isDeprecated()) {
-                return true;
-            }
+        if (isDeprecated(name)) {
+            return true;
         }
         boolean isDeprecated = false;
         for (final Identifier identifier : nonNull(identifiers)) {
@@ -709,6 +707,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         return isDeprecated;
+    }
+
+    /**
+     * Returns {@code true} if the given identifier is deprecated.
+     */
+    private static boolean isDeprecated(final Identifier object) {
+        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
     }
 
     /**
