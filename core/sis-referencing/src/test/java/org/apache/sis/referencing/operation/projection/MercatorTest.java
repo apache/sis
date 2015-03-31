@@ -62,6 +62,20 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
+     * the semi-major and semi-minor axis length. We expect nothing else because all other parameters are used
+     * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
+     */
+    @Test
+    public void testNormalizedWKT() {
+        initialize(true);
+        assertWktEquals(
+                "PARAM_MT[“Mercator_2SP”,\n" +
+                "  PARAMETER[“semi_major”, 1.0],\n" +
+                "  PARAMETER[“semi_minor”, 0.9966471893352525]]");
+    }
+
+    /**
      * Projects the given latitude value. The longitude is fixed to zero.
      * This method is useful for testing the behavior close to poles in a simple case.
      *

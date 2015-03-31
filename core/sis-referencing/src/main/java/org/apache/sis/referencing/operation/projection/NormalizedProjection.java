@@ -16,10 +16,13 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -27,10 +30,12 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
@@ -328,7 +333,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns a copy of the parameter values for this projection.
-     * This base class supplies a value for the following parameters:
+     * This base class supplies a value only for the following parameters:
      *
      * <ul>
      *   <li>Semi-major axis length, which is set to 1.</li>
@@ -336,17 +341,45 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *       <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code>.</li>
      * </ul>
      *
-     * Subclasses must complete.
+     * Subclasses must complete if needed. Many projections will not need to complete,
+     * because most parameters like the scale factor or the false easting/northing can
+     * be handled by the (de)normalization affine transforms.
+     *
+     * <div class="note"><b>Note:</b>
+     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * since the isolation of non-linear parameters in this class is highly implementation dependent.
+     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
+     * contextual parameters}.</div>
      *
      * @return A copy of the parameter values for this normalized projection.
      */
+    @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        final ParameterDescriptorGroup descriptor = super.getParameterDescriptors();
+        final ParameterDescriptorGroup descriptor = filter(getParameterDescriptors());
         final ParameterValueGroup values = descriptor.createValue();
         values.parameter(Constants.SEMI_MAJOR).setValue(1.0);
         values.parameter(Constants.SEMI_MINOR).setValue(sqrt(1 - excentricitySquared));
         return values;
+    }
+
+    /**
+     * Filter the given parameter descriptor in order to retain only the semi-major and semi-minor axis lengths.
+     * This filtered version is used for displaying the parameter values of this non-linear kernel only, not for
+     * displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying the kernel
+     * parameter values is for debugging purpose only, it is not worth to cache this descriptor.
+     */
+    private static ParameterDescriptorGroup filter(final ParameterDescriptorGroup descriptor) {
+        final List<GeneralParameterDescriptor> filtered = new ArrayList<>(5);
+        for (final GeneralParameterDescriptor p : descriptor.descriptors()) {
+            if (IdentifiedObjects.isHeuristicMatchForName(p, Constants.SEMI_MAJOR) ||
+                IdentifiedObjects.isHeuristicMatchForName(p, Constants.SEMI_MINOR))
+            {
+                filtered.add(p);
+            }
+        }
+        return new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
+                1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
     }
 
     /**
