@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -70,10 +71,11 @@ public final strictfp class FormulasTest extends TestCase {
      *   <li>Inverse flattening: 298.257222101</li>
      * </ul>
      *
-     * Expected result is the radius of <cite>GRS 1980 Authalic Sphere</cite> (EPSG:7048).
+     * Expected result is the radius of <cite>GRS 1980 Authalic Sphere</cite> (EPSG:7048),
+     * which is 6371007 metres.
      */
     @Test
     public void testGetAuthalicRadius() {
-        assertEquals(6371007, Formulas.getAuthalicRadius(6378137, 6356752), 0.5);
+        assertEquals(ReferencingServices.AUTHALIC_RADIUS, Formulas.getAuthalicRadius(6378137, 6356752), 0.5);
     }
 }

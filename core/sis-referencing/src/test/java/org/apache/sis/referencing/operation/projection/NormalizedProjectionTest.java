@@ -101,6 +101,21 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     }
 
     /**
+     * Tests the {@link NormalizedProjection#excentricity} value.
+     */
+    @Test
+    public void testExcentricity() {
+        NormalizedProjection projection;
+        transform = projection = new NoOp(false);
+        assertTrue("isSpherical", projection.isSpherical());
+        assertEquals("excentricity", 0.0, projection.excentricity, 0.0);
+
+        transform = projection = new NoOp(true);
+        assertFalse("isSpherical", projection.isSpherical());
+        assertEquals("excentricity", 0.08181919084262157, projection.excentricity, TOLERANCE);
+    }
+
+    /**
      * Tests a few formulas used by the Mercator projection in the spherical case.
      * This is a little bit more a Java test than an Apache SIS test (or to be more
      * accurate, a test of our understanding of the {@code java.lang.Math} library).
