@@ -18,10 +18,12 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
+import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -99,21 +101,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Verifies the consistency of spherical formulas with the elliptical formulas.
-     *
-     * @throws ProjectionException Should never happen.
-     */
-    @Test
-    @DependsOnMethod("testSpecialLatitudes")
-    public void testSphericalCase() throws ProjectionException {
-        initialize(false); // Spherical case
-        testSpecialLatitudes();
-
-        // Make sure that 'testSpecialLatitudes' did not overwrite the 'transform' field.
-        assertEquals("transform.class", Mercator.Spherical.class, transform.getClass());
-    }
-
-    /**
      * Tests the projection at some special latitudes (0, ±π/2, NaN).
      *
      * @throws ProjectionException Should never happen.
@@ -143,6 +130,25 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests the derivatives at a few points. This method compares the derivatives computed by
+     * the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws TransformException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSpecialLatitudes")
+    public void testDerivative() throws TransformException {
+        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
+            initialize(true);       // Elliptical case
+        }
+        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = 1E-9;
+        verifyDerivative(toRadians(15), toRadians( 30));
+        verifyDerivative(toRadians(10), toRadians(-60));
+    }
+
+    /**
      * Tests the <cite>"Mercator (variant A)"</cite> case (EPSG:9804).
      * This test is defined in GeoAPI conformance test suite.
      *
@@ -167,7 +173,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator2SP()
      */
     @Test
-    @DependsOnMethod("testSpecialLatitudes")
+    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testMercator2SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator2SP()).testMercator2SP();
     }
@@ -203,27 +209,26 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the derivatives at a few points. This method compares the derivatives computed by
-     * the projection with an estimation of derivatives computed by the finite different method.
+     * Verifies the consistency of spherical formulas with the elliptical formulas.
      *
-     * @throws TransformException Should never happen.
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
-    public void testDerivative() throws TransformException {
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
-        derivativeDeltas = new double[] {delta, delta};
-
-        // Tests spherical formulas
-        initialize(false);
-        tolerance = 1E-9;
-        verifyDerivative(toRadians(15), toRadians( 30));
-        verifyDerivative(toRadians(10), toRadians(-60));
-
-        // Tests ellipsoidal formulas
-        initialize(true);
-        tolerance = 1E-9;
-        verifyDerivative(toRadians(15), toRadians( 30));
-        verifyDerivative(toRadians(10), toRadians(-60));
+    @DependsOnMethod("testSpecialLatitudes")
+    public void testSphericalCase() throws FactoryException, TransformException {
+        initialize(false); // Spherical case
+        testSpecialLatitudes();
+        testDerivative();
+        /*
+         * Make sure that the above methods did not overwrote the 'transform' field.
+         */
+        assertEquals("transform.class", Mercator.Spherical.class, transform.getClass());
+        /*
+         * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
+         */
+        initialize(new Mercator1SP(), false);
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }
 }
