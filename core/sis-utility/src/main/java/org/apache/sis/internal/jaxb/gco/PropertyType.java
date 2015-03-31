@@ -64,7 +64,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       ISO 19139 schemas.</li>
  * </ul>
  *
- * {@section Guidlines for subclasses}
+ * <div class="section">Guidlines for subclasses</div>
  * Subclasses shall provide a method returning the SIS implementation class for the metadata value.
  * This method will be systematically called at marshalling time by JAXB. Typical implementation
  * ({@code BoundType} and {@code ValueType} need to be replaced by the concrete class):

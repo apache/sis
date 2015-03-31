@@ -336,7 +336,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * with the checks listed above, where failure to meet those conditions will cause the methods to
      * behave in an unexpected way.
      *
-     * {@section Implementation consistency}
+     * <div class="section">Implementation consistency</div>
      * The checks performed by this method shall be consistent with the checks performed by the following methods:
      * <ul>
      *   <li>{@link GeneralEnvelope#setCoordinateReferenceSystem(CoordinateReferenceSystem)}</li>

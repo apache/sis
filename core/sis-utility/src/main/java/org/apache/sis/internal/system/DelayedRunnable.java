@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A task to be submitted to {@link DelayedExecutor} for later execution.
  *
- * {@section Future evolution}
+ * <div class="section">Future evolution</div>
  * This interface may be removed in a future SIS version if we choose to use a library-wide executor
  * instead of {@code DelayedExecutor}. See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
  * for more information.

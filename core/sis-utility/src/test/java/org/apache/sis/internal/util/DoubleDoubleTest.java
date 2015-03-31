@@ -409,8 +409,9 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         for (int i=0; ; i++) {
             final DoubleDouble dd;
             switch (i) {
-                case 0:  dd = DoubleDouble.createDegreesToRadians(); break;
-                case 1:  dd = DoubleDouble.createSecondsToRadians(); break;
+                case 0:  dd = DoubleDouble.createRadiansToDegrees(); break;
+                case 1:  dd = DoubleDouble.createDegreesToRadians(); break;
+                case 2:  dd = DoubleDouble.createSecondsToRadians(); break;
                 default: return; // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);

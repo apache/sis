@@ -22,6 +22,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.InternationalString;
+import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.UnknownNameException;
@@ -61,7 +62,8 @@ public final strictfp class NamesTest extends TestCase {
      */
     @Test
     public void testClassFromClassname() {
-        final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(Random.class);
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final TypeName type = factory.toTypeName(Random.class);
         assertEquals("class:java.util.Random", type.toFullyQualifiedName().toString());
         assertValueClassEquals(Random.class, type);
         assertValueClassEquals(DefaultNameFactoryTest.class,
@@ -76,7 +78,8 @@ public final strictfp class NamesTest extends TestCase {
      */
     @Test
     public void testClassFromOGC() {
-        final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(String.class);
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final TypeName type = factory.toTypeName(String.class);
         assertEquals("OGC:CharacterString", type.toFullyQualifiedName().toString());
         assertValueClassEquals(String.class,               type);
         assertValueClassEquals(Double.class,               new DefaultTypeName(type.scope(), "Real"));

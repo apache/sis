@@ -47,7 +47,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
         final LongitudeRotation provider = new LongitudeRotation();
         ParameterValueGroup p = provider.getParameters().createValue();
         p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);   // Paris meridian
-        final MathTransform mt = provider.createMathTransform(p);
+        final MathTransform mt = provider.createMathTransform(null, p);
         /*
          * Verify the full matrix. Note that the longitude offset is expected to be in degrees.
          * This conversion from grad to degrees is specific to Apache SIS and may be revised in
@@ -74,6 +74,6 @@ public final strictfp class LongitudeRotationTest extends TestCase {
                 "Param_MT[“Affine”,\n" +
                 "  Parameter[“num_row”, 3],\n" +
                 "  Parameter[“num_col”, 3],\n" +
-                "  Parameter[“elt_0_2”, 2.33722917]]", provider.createMathTransform(p));
+                "  Parameter[“elt_0_2”, 2.33722917]]", provider.createMathTransform(null, p));
     }
 }

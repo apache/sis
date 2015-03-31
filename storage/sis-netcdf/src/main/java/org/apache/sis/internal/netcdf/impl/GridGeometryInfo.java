@@ -71,7 +71,7 @@ final class GridGeometryInfo extends GridGeometry {
     }
 
     /**
-     * Returns the number of dimensions of source coordinates in the "<cite>grid to CRS</cite>" conversion.
+     * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
      */
     @Override
@@ -80,7 +80,7 @@ final class GridGeometryInfo extends GridGeometry {
     }
 
     /**
-     * Returns the number of dimensions of target coordinates in the "<cite>grid to CRS</cite>" conversion.
+     * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
      */
     @Override

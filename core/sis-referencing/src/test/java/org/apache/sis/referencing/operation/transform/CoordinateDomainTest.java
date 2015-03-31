@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class CoordinateDomainTest extends TestCase {
@@ -47,13 +47,25 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeocentric() {
         assertArrayEquals(new double[] {
             // ………………X   ………………………Y    ……………………Z
-            -1277391.5,  -6002208.9,   1732520.1,
-               74602.9,   -589190.3,   6337303.4,
-            -4761978.5,  -1597877.1,  -3914795.3,
-            -4580863.2,   4167915.7,  -1530203.8,
-            -5088029.0,   1419280.2,   3574467.8
+             -790009.4,  -3712097.2,  -5115300.9,
+              876346.5,    537685.1,  -6296051.5,
+             -790310.7,   4969804.0,  -3922073.1,
+              729581.8,  -5762010.5,  -2627726.9,
+            -2261070.0,    427543.0,   5948444.0
         }, CoordinateDomain.GEOCENTRIC.generateRandomInput(new Random(6711701980687388701L), 3, 5), TOLERANCE);
     }
+
+/*
+    TIP: If the values need to be regenerated after a change in CoordinateDomain implementation,
+    one can use the following code:
+
+    public static void main(String[] args) {
+        double[] ordinates = CoordinateDomain.GEOGRAPHIC.generateRandomInput(new Random(9157324015136982593L), 3, 5));
+        for (int i=0; i<ordinates.length;) {
+            System.out.format(java.util.Locale.US, "            %6.1f, %6.1f, %8.1f,%n", ordinates[i++], ordinates[i++], ordinates[i++]);
+        }
+    }
+*/
 
     /**
      * Tests {@link CoordinateDomain#GEOGRAPHIC}.
@@ -63,44 +75,44 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographic() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-              83.5,   82.2,  -7586.1,
-             -87.6,  -88.4,    231.1,
-            -123.5,   18.3,   5601.5,
-              87.7,  -14.1,   8710.9,
-              52.4,  -68.4,  -4706.3
+              83.5,    2.1,  -1566.8,
+             164.3,  -61.8,   8710.9,
+            -136.6,   18.3,   2910.8,
+             -87.6,   50.4,  -7603.3,
+            -176.8,   43.9,  -4706.3
         }, CoordinateDomain.GEOGRAPHIC.generateRandomInput(new Random(9157324015136982593L), 3, 5), TOLERANCE);
     }
 
     /**
      * Tests {@link CoordinateDomain#GEOGRAPHIC_SAFE}.
-     * Latitude values shall be in the [-70 … +70]° range.
+     * Latitude values shall be in the [-66 … +66]° range approximatively.
      */
     @Test
     public void testGeographicSafe() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-             -18.4,  -35.6,  -3804.6,
-             152.4,    3.5,   3166.6,
-             -28.7,   14.7,   2820.3,
-             -38.9,  -36.0,  -1568.6,
-             161.0,   46.2,   2492.8
+             -18.4,   42.2,  -5144.4,
+             -91.0,  -10.7,  -3137.2,
+            -136.2,   14.0,   8993.6,
+             152.4,   37.5,   6593.3,
+               9.0,  -14.5,   4985.6
         }, CoordinateDomain.GEOGRAPHIC_SAFE.generateRandomInput(new Random(8378805665450590968L), 3, 5), TOLERANCE);
     }
 
     /**
      * Tests {@link CoordinateDomain#GEOGRAPHIC_POLES}.
-     * Latitude values shall be in the [-90 … -70]° or [70 … 90]° range.
+     * Latitude values shall be in the [-90 … -66]° or [66 … 90]° range approximatively.
      */
     @Test
     public void testGeographicPole() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-            -136.4,   87.3,  -1490.4,
-             -97.8,   71.1,  -4503.6,
-             -45.3,   75.7,  -3179.1,
-             -45.1,  -79.6,  -3440.5,
-              11.1,  -83.6,   2017.0
-        }, CoordinateDomain.GEOGRAPHIC_POLES.generateRandomInput(new Random(6784869539382621962L), 3, 5), TOLERANCE);
+            -136.6,  -74.3,   2467.5,
+             -17.9,   74.7,   2338.4,
+              98.2,   66.9,   2078.0,
+             151.9,   73.8,   2799.3,
+             -90.5,  -86.4,    585.3
+        }, CoordinateDomain.GEOGRAPHIC_POLES.generateRandomInput(new Random(6784869539382621964L), 3, 5), TOLERANCE);
     }
 
     /**
@@ -110,11 +122,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadians() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-            -144.2,   66.4,  -3970.0,
-              -3.1,   -8.0,   6627.9,
-             -20.4,   37.0,  -9071.7,
-             151.2,  -43.0,  -8346.5,
-            -121.7,   33.8,  -5843.4
+            -144.2,   59.7,  -4779.9,
+             132.7,  -10.2,  -8346.5,
+             -71.5,   37.0,  -6761.6,
+              -3.1,  -81.6,   3751.3,
+             -16.0,   75.6,  -5843.4
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS.generateRandomInput(new Random(8149671419063258264L), 3, 5)), TOLERANCE);
     }
 
@@ -126,11 +138,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadiansHalfλ() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-             -38.4,  -42.3,  -6357.0,
-              36.7,   18.2,  -2924.6,
-             -41.9,    2.4,  -9840.4,
-              69.7,   31.2,   1866.3,
-              15.4,  -89.1,   3977.3
+             -38.4,  -26.3,   3464.7,
+             -42.3,  -41.9,   1866.3,
+             -57.2,    2.4,   1713.4,
+              36.7,  -88.6,  -9903.1,
+              18.2,   69.7,   3977.3
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS_HALF_λ.generateRandomInput(new Random(544370108347649978L), 3, 5)), TOLERANCE);
     }
 
@@ -141,11 +153,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadiansNorth() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-              70.2,    0.3,  -2152.7,
-            -142.0,   21.1,  -6983.9,
-             -30.1,   20.5,   6443.0,
-              48.8,   35.1,   4712.3,
-               7.4,   16.6,  -7030.0
+              70.2,   13.6,  -2197.0,
+            -178.8,   37.5,   4712.3,
+             -38.7,   20.5,    413.2,
+            -142.0,   74.0,  -6309.6,
+             -95.8,   57.2,  -7030.0
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH.generateRandomInput(new Random(2332709146110987009L), 3, 5)), TOLERANCE);
     }
 
@@ -156,11 +168,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadiansSouth() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-              11.8,  -29.7,  -3783.7,
-            -140.4,  -62.1,  -8471.8,
-              64.2,   -2.5,  -1100.3,
-             -41.0,  -86.7,   4986.0,
-            -174.4,  -84.5,   5615.6
+              11.8,  -83.1,   9272.3,
+             -61.2,  -29.0,   4986.0,
+             -68.1,  -87.5,  -9688.0,
+            -140.4,  -50.0,   8784.8,
+              68.5,  -55.3,   5615.6
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH.generateRandomInput(new Random(3024333515949168349L), 3, 5)), TOLERANCE);
     }
 
@@ -171,11 +183,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadiansEast() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-              53.0,    22.9, -1166.6,
-              86.1,    12.1,  -255.3,
-             142.9,     8.1, -3782.4,
-             138.1,     3.4,  1172.8,
-             146.4,   -33.8, -4487.7
+              53.0,   -2.3,    373.2,
+             112.9,   52.9,   1172.8,
+              79.5,    8.1,   6267.0,
+              86.1,  -34.0,  -3750.7,
+             102.1,   48.1,  -4487.7
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS_EAST.generateRandomInput(new Random(3351157046773088704L), 3, 5)), TOLERANCE);
     }
 
@@ -186,11 +198,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testGeographicRadiansWest() {
         assertArrayEquals(new double[] {
             // ……λ   …………φ   ………………H
-            -175.6,    74.1,  8059.1,
-            -173.9,    81.9, -6712.6,
-             -11.3,    74.8,  4056.4,
-             -81.4,    -1.4, -9255.1,
-            -133.4,   -50.5, -2251.5
+              -4.4,  -60.4,   -153.3,
+             -15.9,  -78.7,  -9255.1,
+             -17.5,   74.8,   4824.4,
+              -6.1,   36.5,  -5616.2,
+              -8.1,   -8.6,  -2251.5
         }, toDegrees(CoordinateDomain.GEOGRAPHIC_RADIANS_WEST.generateRandomInput(new Random(7320025557405586859L), 3, 5)), TOLERANCE);
     }
 
@@ -201,11 +213,11 @@ public class CoordinateDomainTest extends TestCase {
     public void testProjected() {
         assertArrayEquals(new double[] {
             // ………………x   ……………………………y   ………………h
-            11376932.6,  -212881715.5,  -5712.7,
-             7918069.3,  -142014756.3,  -2917.9,
-            -1243860.7,  -209994389.7,   -893.4,
-            16373202.6,   414305247.8,  -6783.9,
-            -7715982.4,   -20958213.4,  -1625.9
+            11376932.6,  -133745096.2,   9038.7,
+            -9313575.1,   -28431102.7,  -6783.9,
+           -11455966.3,  -209994389.7,  -3847.7,
+             7918069.3,   -40952573.2,   -457.2,
+            -6213145.6,   374244630.7,  -1625.9
         }, toDegrees(CoordinateDomain.PROJECTED.generateRandomInput(new Random(4961499932406116863L), 3, 5)), TOLERANCE);
     }
 
@@ -221,20 +233,6 @@ public class CoordinateDomainTest extends TestCase {
             -2.3,
             -9.5
         }, CoordinateDomain.RANGE_10.generateRandomInput(new Random(2954568576395177702L), 1, 5), TOLERANCE);
-    }
-
-    /**
-     * Tests {@link CoordinateDomain#GAUSSIAN}.
-     */
-    @Test
-    public void testGaussian() {
-        assertArrayEquals(new double[] {
-            -0.916,
-             1.777,
-            -0.896,
-             0.093,
-             0.428
-        }, CoordinateDomain.GAUSSIAN.generateRandomInput(new Random(7679314270394487033L), 1, 5), 0.0005);
     }
 
     /**

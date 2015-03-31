@@ -35,7 +35,7 @@ public final class DataStores extends Static {
     /**
      * The registry to use for searching for {@link DataStoreProvider} implementations.
      *
-     * {@section Class loader}
+     * <div class="section">Class loader</div>
      * In current implementation, this registry is instantiated when first needed using the
      * {@linkplain Thread#getContextClassLoader() context class loader}. This means that the set of
      * available formats may depend on the first thread that invoked a {@code DataStores} method.

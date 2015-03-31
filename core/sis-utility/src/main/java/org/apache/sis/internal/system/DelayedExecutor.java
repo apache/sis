@@ -39,7 +39,7 @@ import org.apache.sis.util.logging.Logging;
  *   <li>{@link #schedule(DelayedRunnable)}</li>
  * </ul>
  *
- * {@section Comparison with <code>java.util.concurrent</code>}
+ * <div class="section">Comparison with {@code java.util.concurrent}</div>
  * We tried to use {@link java.util.concurrent.ScheduledThreadPoolExecutor} in a previous version,
  * but it seems more suitable to heavier tasks in applications controlling their own executor. For
  * example {@code ScheduledThreadPoolExecutor} acts as a fixed-sized pool, thus forcing us to use
@@ -61,7 +61,7 @@ import org.apache.sis.util.logging.Logging;
  * a more lightweight solution seems acceptable here. Pseudo-benchmarking using the
  * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.</p>
  *
- * {@section Future evolution}
+ * <div class="section">Future evolution</div>
  * We may remove (again) this class in a future SIS evolution if we happen to need an executor anyway.
  * However it may be better to wait and see what are the executor needs. Setting up an executor implies
  * choosing many arbitrary parameter values like the number of core threads, maximum threads, idle time,
@@ -89,7 +89,7 @@ public final class DelayedExecutor extends DaemonThread {
      * tasks. Completion of the task shall not be critical, since the JVM is allowed to
      * shutdown before task completion.
      *
-     * {@section Future evolution}
+     * <div class="section">Future evolution</div>
      * If {@code DelayedExecutor} is removed in a future SIS version in favor of JDK6 executors,
      * then the method signature will probably be {@code Executors.execute(Runnable)}.
      *
@@ -106,7 +106,7 @@ public final class DelayedExecutor extends DaemonThread {
      * submitted tasks. Completion of the task shall not be critical, since the JVM is allowed
      * to shutdown before task completion.
      *
-     * {@section Future evolution}
+     * <div class="section">Future evolution</div>
      * If {@code DelayedExecutor} is removed in a future SIS version in favor of JDK6 executors,
      * then the method signature will probably be {@code Executors.schedule(Runnable, long, TimeUnit)}.
      *

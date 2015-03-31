@@ -33,24 +33,24 @@ package org.apache.sis.util;
  * illustrated in the use cases below.</p></div>
  *
  * Some use cases for this exception are:
- * <ul>
- *   <li><p><b>Attempt to use an aborted calculation:</b>
+ * <ul class="verbose">
+ *   <li><b>Attempt to use an aborted calculation:</b><br>
  *   if an operation failed in the middle of a structural modification, some specific exception (<strong>not</strong>
  *   this {@code CorruptedObjectException}) should be thrown and the object discarded. But if the user does not discard
  *   the object and try to use it again, unpredictable behavior may happen. Some implementations are robust enough for
  *   detecting such unsafe usage: their methods may throw this {@code CorruptedObjectException} on attempt to use the
- *   object after the original failure.</p></li>
+ *   object after the original failure.</li>
  *
- *   <li><p><b>Change in an “immutable” object:</b>
+ *   <li><b>Change in an “immutable” object:</b><br>
  *   some objects are expected to be immutable. For example the same Coordinate Reference System (CRS) instance is
  *   typically shared by thousands of objects. However {@link org.opengis.referencing.crs.CoordinateReferenceSystem}
  *   is an interface, Therefore, nothing prevent users from providing a mutable instance. For example if the value
  *   returned by {@link org.opengis.referencing.cs.CoordinateSystem#getDimension()} changes between two invocations,
  *   many objects that use that coordinate system will fall in an inconsistent state. If an operation detects such
- *   inconsistency, it may throw this {@code CorruptedObjectException}.</p></li>
+ *   inconsistency, it may throw this {@code CorruptedObjectException}.</li>
  * </ul>
  *
- * {@section Exception cause}
+ * <div class="section">Exception cause</div>
  * Since this exception may be thrown an undetermined amount of time after the data corruption, the root cause is
  * often unknown at this point. Sometime a more descriptive exception has been thrown earlier, but may have been
  * ignored by the user.

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
+import java.awt.geom.AffineTransform;
 import Jama.Matrix;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -45,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
@@ -73,7 +74,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
      * and the {@code StrictMath.ulp(100.0)} value is approximatively 1.4E-14.
      *
-     * {@section How this value is determined}
+     * <div class="section">How this value is determined</div>
      * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.
      * However when using non-determinist sequence of random values ({@link #DETERMINIST} sets to {@code false}),
      * we do have from time-to-time a difference around 1E-9.
@@ -192,6 +193,29 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         assertEquals("numCol", numCol, actual.getNumCol());
         assertArrayEquals(expected, actual.getElements(), tolerance); // First because more informative in case of failure.
         assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, tolerance));
+    }
+
+    /**
+     * Asserts that an element from the given matrix is equals to the expected value, using a relative threshold.
+     */
+    private static void assertEqualsRelative(final String message, final double expected,
+            final MatrixSIS matrix, final int row, final int column)
+    {
+        assertEquals(message, expected, matrix.getElement(row, column), StrictMath.abs(expected) * 1E-12);
+    }
+
+    /**
+     * Returns the next random number as a value between approximatively -100 and 100
+     * with the guarantee to be different than zero. The values returned by this method
+     * are suitable for testing scale factors.
+     */
+    private double nextNonZeroRandom() {
+        double value = random.nextDouble() * 200 - 100;
+        value += StrictMath.copySign(0.001, value);
+        if (random.nextBoolean()) {
+            value = 1 / value;
+        }
+        return value;
     }
 
     /**
@@ -369,6 +393,71 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             }
             m = StrictMath.sqrt(m);
             assertEquals(1, m, 1E-12);
+        }
+    }
+
+    /**
+     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation. This test can be run only with matrices of size 3×3.
+     * Consequently it is sub-classes responsibility to add a {@code testConcatenate()} method
+     * which invoke this method.
+     *
+     * @param matrix The matrix of size 3×3 to test.
+     * @param withShear {@code true} for including shear in the matrix to test.
+     *        This value can be set to {@code false} if the subclass want to test a simpler case.
+     *
+     * @since 0.6
+     */
+    final void testConcatenate(final MatrixSIS matrix, final boolean withShear) {
+        initialize(4599164481916500056L);
+        final AffineTransform at = new AffineTransform();
+        if (withShear) {
+            at.shear(nextNonZeroRandom(), nextNonZeroRandom());
+            matrix.setElement(0, 1, at.getShearX());
+            matrix.setElement(1, 0, at.getShearY());
+        }
+        for (int i=0; i<100; i++) {
+            /*
+             * 1) For the first  30 iterations, test the result of applying only a scale.
+             * 2) For the next   30 iterations, test the result of applying only a translation.
+             * 3) For all remaining iterations, test combination of scale and translation.
+             */
+            final Number scale  = (i >= 60 || i < 30) ? nextNonZeroRandom() : null;
+            final Number offset = (i >= 30)           ? nextNonZeroRandom() : null;
+            /*
+             * Apply the scale and offset on the affine transform, which we use as the reference
+             * implementation. The scale and offset must be applied in the exact same order than
+             * the order documented in MatrixSIS.concatenate(…) javadoc.
+             */
+            final int srcDim = (i & 1);
+            if (offset != null) {
+                switch (srcDim) {
+                    case 0: at.translate(offset.doubleValue(), 0); break;
+                    case 1: at.translate(0, offset.doubleValue()); break;
+                }
+            }
+            if (scale != null) {
+                switch (srcDim) {
+                    case 0: at.scale(scale.doubleValue(), 1); break;
+                    case 1: at.scale(1, scale.doubleValue()); break;
+                }
+            }
+            /*
+             * Apply the operation and compare with our reference implementation.
+             */
+            matrix.concatenate(srcDim, scale, offset);
+            final String message = (offset == null) ? "After scale" :
+                                   (scale  == null) ? "After translate" : "After scale and translate";
+            assertEqualsRelative(message, 0,                  matrix, 2, 0);
+            assertEqualsRelative(message, 0,                  matrix, 2, 1);
+            assertEqualsRelative(message, 1,                  matrix, 2, 2);
+            assertEqualsRelative(message, at.getTranslateX(), matrix, 0, 2);
+            assertEqualsRelative(message, at.getTranslateY(), matrix, 1, 2);
+            assertEqualsRelative(message, at.getScaleX(),     matrix, 0, 0);
+            assertEqualsRelative(message, at.getScaleY(),     matrix, 1, 1);
+            assertEqualsRelative(message, at.getShearX(),     matrix, 0, 1);
+            assertEqualsRelative(message, at.getShearY(),     matrix, 1, 0);
+            assertTrue("isAffine", matrix.isAffine());
         }
     }
 

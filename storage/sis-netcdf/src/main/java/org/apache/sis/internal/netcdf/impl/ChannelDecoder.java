@@ -101,7 +101,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * The pattern to use for separating the component of a time unit.
-     * An example of time unit is "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     * An example of time unit is <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
      * @see #numberToDate(String, Number[])
      */
@@ -648,7 +648,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
-     * The unit symbol is typically a string like "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     * The unit symbol is typically a string like <cite>"days since 1970-01-01T00:00:00Z"</cite>.
      *
      * @param  values The values to convert. May contains {@code null} elements.
      * @return The converted values. May contains {@code null} elements.

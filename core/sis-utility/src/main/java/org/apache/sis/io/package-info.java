@@ -30,13 +30,13 @@
  * because it can format to an {@link java.lang.Appendable} and for consistency with the {@link org.apache.sis.io.wkt}
  * package.</div>
  *
- * {@section Unicode characters}
+ * <div class="section">Unicode characters</div>
  * Some formatters in this package make extensive use of Unicode characters. This may produce
  * unexpected results in a Windows console, unless the underlying output stream uses the correct
  * encoding (e.g. {@code new OutputStreamWriter(System.out, "Cp437")}). To display the appropriate
  * code page for a Windows console, type {@code chcp} on the command line.
  *
- * {@section Supplementary Unicode characters}
+ * <div class="section">Supplementary Unicode characters</div>
  * This package can handle the {@linkplain java.lang.Character#isSupplementaryCodePoint(int)
  * Unicode supplementary characters}.
  *

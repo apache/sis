@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Before to make this class public (if we do), we need to revisit the class name, define
  * parameters and improve the {@link #concatenate(MathTransform, boolean)} method.</p>
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the
  * same SIS version.

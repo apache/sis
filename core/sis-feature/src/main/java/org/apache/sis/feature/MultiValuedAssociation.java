@@ -33,7 +33,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * <div class="note"><b>Note:</b> in the common case where the {@linkplain DefaultAssociationRole association role}
  * restricts the cardinality to [0 … 1], the {@link SingletonAssociation} implementation consumes less memory.</div>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code MultiValuedAssociation} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>

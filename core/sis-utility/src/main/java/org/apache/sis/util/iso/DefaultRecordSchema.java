@@ -56,12 +56,12 @@ import org.apache.sis.internal.converter.SurjectiveConverter;
  *   <li>{@link DefaultNameFactory#toTypeName(Class)} if the factory given to the constructor.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code DefaultRecordSchema} instance can be safely used by many threads without synchronization
  * on the part of the caller if the {@link NameFactory} given to the constructor is also thread-safe.
  * Subclasses should make sure that any overridden methods remain safe to call from multiple threads.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * This class is currently not serializable because {@code RecordSchema} contain an arbitrary amount of record
  * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
  * to its schema, serializing a single {@code RecordType} could imply serializing all of them.
@@ -127,7 +127,7 @@ public class DefaultRecordSchema implements RecordSchema {
     public DefaultRecordSchema(NameFactory nameFactory, final NameSpace parent, final CharSequence schemaName) {
         ArgumentChecks.ensureNonNull("schemaName", schemaName);
         if (nameFactory == null) {
-            nameFactory = DefaultFactories.NAMES;
+            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         }
         this.nameFactory    = nameFactory;
         this.typeFactory    = (nameFactory instanceof DefaultNameFactory) ? null : new TypeNames(nameFactory);

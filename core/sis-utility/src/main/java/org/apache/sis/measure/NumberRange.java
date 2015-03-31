@@ -54,7 +54,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
- * {@section Relationship with standards}
+ * <div class="section">Relationship with standards</div>
  * {@code NumberRange} is the SIS class closest to the
  * <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
  * It is closely related, while not identical, to the ISO 19123 (<cite>Coverage geometry and functions</cite>)
@@ -62,12 +62,12 @@ import org.apache.sis.util.collection.WeakHashSet;
  * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
  * also be used with {@linkplain org.opengis.coverage.ContinuousCoverage continuous coverages}.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class and the {@link MeasurementRange} subclasses are immutable, and thus inherently thread-safe.
  * Other subclasses may or may not be immutable, at implementation choice. But implementors are encouraged
  * to make sure that all subclasses remain immutable for more predictable behavior.
  *
- * {@section Shared instances}
+ * <div class="section">Shared instances</div>
  * <i><b>Note:</b> following is implementation details provided for information purpose.
  * The caching policy may change in any SIS version.</i>
  *

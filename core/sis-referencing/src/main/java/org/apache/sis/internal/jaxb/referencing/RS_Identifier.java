@@ -29,7 +29,7 @@ import org.opengis.metadata.Identifier;
  * syntax instead. The ISO 19139 syntax represents the code and codespace as XML elements, while in this
  * GML representation the code is a XML value and the codespace is a XML attribute.</p>
  *
- * {@section Marshalling}
+ * <div class="section">Marshalling</div>
  * Identifiers are typically marshalled as below:
  *
  * {@preformat xml
@@ -43,7 +43,7 @@ import org.opengis.metadata.Identifier;
  *   <gml:identifier codeSpace="EPSG:8.3">4326</gml:identifier>
  * }
  *
- * {@section Unmarshalling}
+ * <div class="section">Unmarshalling</div>
  * Some data producers put a URN instead than a simple code value, as in the example below:
  *
  * {@preformat xml

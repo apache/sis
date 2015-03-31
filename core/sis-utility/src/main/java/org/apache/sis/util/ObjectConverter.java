@@ -33,7 +33,7 @@ import org.apache.sis.internal.jdk8.Function;
  * {@code apply(S)} does not throw {@link UnconvertibleObjectException} is called the <cite>domain</cite>
  * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
  *
- * {@section Function properties}
+ * <div class="section">Function properties</div>
  * Some characteristics about the <var>S</var> to <var>T</var> mapping are given by the
  * {@link #properties()} enumeration, together with the {@link #getSourceClass()} and
  * {@link #getTargetClass()} methods. Some possible function properties are:

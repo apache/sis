@@ -28,12 +28,12 @@ import org.opengis.metadata.constraint.LegalConstraints;
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * The {@linkplain #getOtherConstraints() other constraints} collection shall be non-empty if
  * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
  * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

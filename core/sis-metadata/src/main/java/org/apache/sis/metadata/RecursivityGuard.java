@@ -25,7 +25,7 @@ import java.util.IdentityHashMap;
  * {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  * {@link AbstractMetadata#equals(Object)} uses an other implementation in {@link ObjectPair}.
  *
- * {@section The problem}
+ * <div class="section">The problem</div>
  * Cyclic associations can exist in ISO 19115 metadata. For example {@code Instrument} know the platform
  * it is mounted on, and the {@code Platform} know its list of instrument. Consequently walking down the
  * metadata tree can cause infinite recursivity, unless we keep trace of previously visited metadata objects

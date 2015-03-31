@@ -17,8 +17,9 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
+import org.opengis.feature.FeatureAssociationRole;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -55,7 +56,8 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     static DefaultAssociationRole twinTown(final boolean cyclic) {
         final Map<String,?> properties = singletonMap(NAME_KEY, "twin town");
         if (cyclic) {
-            final GenericName valueType = DefaultFactories.SIS_NAMES.createTypeName(null, "Twin town");
+            final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+            final GenericName valueType = factory.createTypeName(null, "Twin town");
             return new DefaultAssociationRole(properties, valueType, 0, 1);
         } else {
             final DefaultFeatureType valueType = DefaultFeatureTypeTest.city();
@@ -146,10 +148,11 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     @Test
     @DependsOnMethod("testBidirectionalAssociation")
     public void testCyclicAssociation() {
-        final GenericName nameOfA = DefaultFactories.SIS_NAMES.createTypeName(null, "A");
-        final GenericName nameOfB = DefaultFactories.SIS_NAMES.createTypeName(null, "B");
-        final GenericName nameOfC = DefaultFactories.SIS_NAMES.createTypeName(null, "C");
-        final GenericName nameOfD = DefaultFactories.SIS_NAMES.createTypeName(null, "D");
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final GenericName nameOfA = factory.createTypeName(null, "A");
+        final GenericName nameOfB = factory.createTypeName(null, "B");
+        final GenericName nameOfC = factory.createTypeName(null, "C");
+        final GenericName nameOfD = factory.createTypeName(null, "D");
         /*
          * Associations defined only by the FeatureType name.
          */

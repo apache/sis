@@ -30,7 +30,7 @@ import org.apache.sis.xml.NilReason;
  * {@linkplain java.util.Collection#isEmpty() empty collections}.
  * This enumeration allows to control this behavior.
  *
- * {@section Difference between null and nil}
+ * <div class="section">Difference between null and nil</div>
  * A null property is a reference which is {@code null} in the Java sense.
  * Null references can be used for missing properties when no information is provided about why the property is missing.
  * On the other hand, a nil object is a placeholder for a missing property similar in purpose to {@code null} references,

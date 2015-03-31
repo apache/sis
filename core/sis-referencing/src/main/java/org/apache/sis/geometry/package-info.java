@@ -45,7 +45,7 @@
  *   </tr>
  * </table>
  *
- * {@section Envelopes spanning the anti-meridian of a Geographic CRS}
+ * <div class="section">Envelopes spanning the anti-meridian of a Geographic CRS</div>
  * The Web Coverage Service (WCS) 1.1 specification uses an extended interpretation
  * of the bounding box definition. In a WCS 1.1 data structure, the
  * {@linkplain org.apache.sis.geometry.GeneralEnvelope#getLowerCorner() lower corner}

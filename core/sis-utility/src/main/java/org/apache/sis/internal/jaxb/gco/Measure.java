@@ -37,7 +37,7 @@ import org.apache.sis.measure.Units;
  * because that{@code Measure} extends {@link Number} and we are not allowed to use the
  * {@code @XmlValue} annotation on a class that extends an other class.</p>
  *
- * {@section XML marshalling}
+ * <div class="section">XML marshalling</div>
  * Measures are used in different ways by the ISO 19115 (Metadata) and GML standards.
  * The former expresses some measurements with an object of XML type {@code gco:Distance}
  * (as a substitution for XML type {@code gco:Measure}):

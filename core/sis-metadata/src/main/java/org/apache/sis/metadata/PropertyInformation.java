@@ -47,7 +47,7 @@ import org.apache.sis.util.logging.Logging;
  * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
  * it would return {@code true} if the given value is valid for that property.</div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus thread-safe.
  *
  * @param <E> The value type, either the method return type if not a collection,

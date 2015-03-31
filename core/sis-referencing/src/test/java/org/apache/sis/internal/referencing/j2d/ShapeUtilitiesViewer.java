@@ -157,7 +157,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 break;
             }
             case COLINEAR_POINT: {
-                final double distance = Math.hypot(x4, y4);
+                final double distance = StrictMath.hypot(x4, y4);
                 input.moveTo(x1, y1);
                 input.lineTo(x2, y2);
                 addPoint(input, x3, y3);
