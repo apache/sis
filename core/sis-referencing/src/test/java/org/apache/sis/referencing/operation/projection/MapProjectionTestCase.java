@@ -21,9 +21,9 @@ import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.mock.MathTransformFactoryMock;
+import org.apache.sis.test.mock.GeodeticDatumMock;
 
 
 /**
@@ -50,7 +50,7 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      */
     static Parameters parameters(final MapProjection provider, final boolean ellipse) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
-        final Ellipsoid ellipsoid = (ellipse ? CommonCRS.WGS84 : CommonCRS.SPHERE).ellipsoid();
+        final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
         parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
         parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
         return parameters;

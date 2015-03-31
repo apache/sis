@@ -18,12 +18,14 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Collections;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.util.Workaround;
 
 
@@ -65,11 +67,12 @@ final strictfp class NoOp extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static Parameters parameters(final boolean ellipsoidal) {
+    private static Parameters parameters(final boolean ellipse) {
         final ParameterValueGroup group = new ParameterBuilder()
                 .addName("No-operation").createGroupForMapProjection().createValue();
-        group.parameter(Constants.SEMI_MAJOR).setValue(ellipsoidal ? 6378137 : 6371007);
-        group.parameter(Constants.SEMI_MINOR).setValue(ellipsoidal ? 6356752 : 6371007);
+        final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
+        group.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
+        group.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
         return (Parameters) group;
     }
 
