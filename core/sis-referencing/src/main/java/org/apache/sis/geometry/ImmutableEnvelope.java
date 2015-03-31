@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe if the {@link CoordinateReferenceSystem}
  * instance given to the constructor is immutable. This is usually the case in Apache SIS.
  *

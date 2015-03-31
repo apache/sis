@@ -27,7 +27,7 @@ package org.apache.sis.measure;
  * depends on the context, typically specified through the geodetic datum of a
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

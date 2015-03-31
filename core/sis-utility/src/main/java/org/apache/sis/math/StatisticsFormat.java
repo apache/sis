@@ -43,7 +43,7 @@ import static java.lang.Math.*;
  * in a tabular format using spaces as the column separator. This default configuration matches
  * the {@link Statistics#toString()} format.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * The current implementation can only format statistics - parsing is not yet implemented.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

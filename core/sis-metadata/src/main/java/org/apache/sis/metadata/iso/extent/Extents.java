@@ -136,7 +136,7 @@ public final class Extents extends Static {
      * Depths have negative height values: if the {@linkplain CoordinateSystemAxis#getDirection() axis direction}
      * is toward down, then this method reverses the sign of minimum and maximum values.
      *
-     * {@section Multi-occurrences}
+     * <div class="section">Multi-occurrences</div>
      * If the given {@code Extent} object contains more than one vertical extent, then this method
      * performs the following choices:
      *

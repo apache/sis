@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>The indentation.</li>
  * </ul>
  *
- * {@section String expansion}
+ * <div class="section">String expansion</div>
  * Because the strings to be parsed by this class are long and tend to contain repetitive substrings,
  * {@code WKTFormat} provides a mechanism for performing string substitutions before the parsing take place.
  * Long strings can be assigned short names by calls to the
@@ -71,7 +71,7 @@ import org.apache.sis.util.resources.Errors;
  * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
  * </div>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * {@code WKTFormat}s are not synchronized. It is recommended to create separated format instances for each thread.
  * If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.
  *

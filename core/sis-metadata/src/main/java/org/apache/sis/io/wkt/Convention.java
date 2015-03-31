@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
- * {@section WKT 1 variants}
+ * <div class="section">WKT 1 variants</div>
  * The WKT 2 format should be parsed and formatted consistently by all softwares.
  * But the WKT 1 format has been interpreted differently by various implementors.
  * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
@@ -104,7 +104,7 @@ public enum Convention {
      * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
      * names when available.</p>
      *
-     * {@section Differences compared to WKT 2}
+     * <div class="section">Differences compared to WKT 2</div>
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
      * and code list values. For {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes which were
      * defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
@@ -133,7 +133,7 @@ public enum Convention {
      *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
      *       no matter the units of the enclosing {@code GEOGCS} element.</li>
      *   <li>Unit names use American spelling instead than the international ones
-     *       (e.g. "<cite>meter</cite>" instead than "<cite>metre</cite>").</li>
+     *       (e.g. <cite>"meter"</cite> instead than <cite>"metre"</cite>).</li>
      * </ul>
      */
     WKT1_COMMON_UNITS(true),
@@ -163,6 +163,8 @@ public enum Convention {
      * </ul>
      *
      * This convention is used only for debugging purpose.
+     *
+     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#getParameterValues()
      */
     @Debug
     INTERNAL(false);

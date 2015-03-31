@@ -32,7 +32,7 @@ import org.apache.sis.io.wkt.Formatter;
  * This origin can be fixed with respect to the earth (such as a defined point at a construction site),
  * or be a defined point on a moving vehicle (such as on a ship or satellite).
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.

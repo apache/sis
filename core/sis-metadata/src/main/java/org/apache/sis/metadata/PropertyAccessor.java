@@ -73,7 +73,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *       XML marshalling.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code PropertyAccessor} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
  * from multiple threads, because the same {@code PropertyAccessor} instances are typically used by many
@@ -856,7 +856,7 @@ class PropertyAccessor {
      * of a single argument and return value because an array will be needed anyway for invoking
      * the {@link #convert(Object[], Class)} and {@link Method#invoke(Object, Object[])} methods.
      *
-     * {@section The collection special case}
+     * <div class="section">The collection special case</div>
      * If the metadata property is a collection, then there is a choice:
      *
      * <ul>

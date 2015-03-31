@@ -28,7 +28,7 @@ import static java.lang.Math.*;
  * A ellipsoid which is spherical. This ellipsoid implements a faster
  * {@link #orthodromicDistance(double, double, double, double)} method.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

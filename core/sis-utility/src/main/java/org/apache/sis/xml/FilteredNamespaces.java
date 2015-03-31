@@ -25,7 +25,7 @@ import javax.xml.namespace.NamespaceContext;
  * Substitutes at (un)marshalling time the XML namespaces used by SIS by the namespaces used in the XML document.
  * This class is used internally by {@link FilteredStreamReader} and {@link FilteredStreamWriter} only.
  *
- * {@section The problem}
+ * <div class="section">The problem</div>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
  * For example when GML has been updated from version 3.1 to 3.2, the URL mandated by the international standard
  * changed from {@code "http://www.opengis.net/gml"} to {@code "http://www.opengis.net/gml/3.2"}

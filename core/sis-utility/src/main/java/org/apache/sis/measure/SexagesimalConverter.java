@@ -38,7 +38,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * by {@link AngleFormat}) rather than a unit issue. Unfortunately, this pseudo-unit is extensively
  * used in the EPSG database, so we have to support it.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

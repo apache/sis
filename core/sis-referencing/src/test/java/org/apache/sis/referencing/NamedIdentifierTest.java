@@ -20,15 +20,16 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.test.Validators;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGP;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
@@ -77,8 +78,9 @@ public final strictfp class NamedIdentifierTest extends TestCase {
      */
     @Test
     public void testCreateFromName() {
-        final NameSpace scope = SIS_NAMES.createNameSpace(SIS_NAMES.createLocalName(null, "OGP"), null);
-        final NamedIdentifier identifier = new NamedIdentifier(SIS_NAMES.createGenericName(scope, "EPSG", "4326"));
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "OGP"), null);
+        final NamedIdentifier identifier = new NamedIdentifier(factory.createGenericName(scope, "EPSG", "4326"));
         Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
 

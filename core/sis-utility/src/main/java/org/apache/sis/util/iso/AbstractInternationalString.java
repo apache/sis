@@ -46,12 +46,12 @@ public abstract class AbstractInternationalString implements InternationalString
      * if this string has not yet been determined. This is the default string returned by
      * {@link #toString()} and others methods from the {@link CharSequence} interface.
      *
-     * {@section Thread safety}
+     * <div class="section">Thread safety</div>
      * For thread safety this field shall either be read and written in a synchronized block,
      * or be fixed at construction time and never changed after than point. All other usages
      * are prohibited.
      *
-     * {@section Serialization}
+     * <div class="section">Serialization</div>
      * This field is not serialized because serialization is often used for data transmission
      * between a server and a client, and the client may not use the same locale than the server.
      * We want the locale to be examined again on the client side.
@@ -108,14 +108,14 @@ public abstract class AbstractInternationalString implements InternationalString
      * then some fallback locale is used. The fallback locale is implementation-dependent, and
      * is not necessarily the same than the default locale used by the {@link #toString()} method.
      *
-     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * <div class="section">Handling of <code>Locale.ROOT</code> argument value</div>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
      * typically some programmatic values like enumerations or identifiers. While identifiers
      * often look like English words, {@code Locale.ROOT} is not considered synonymous to
      * {@link Locale#ENGLISH} because the values may differ in the way numbers and dates are
      * formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
      *
-     * {@section Handling of <code>null</code> argument value}
+     * <div class="section">Handling of <code>null</code> argument value</div>
      * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5
      * use the {@code null} value for "unlocalized" strings. Apache SIS accepts {@code null} value
      * for inter-operability with those libraries. However the behavior is implementation dependent:

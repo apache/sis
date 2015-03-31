@@ -136,7 +136,7 @@ public final class IO extends Static {
 
     /**
      * Returns the content of the given {@code Appendable} as a string if possible,
-     * or the localized "<cite>Unavailable content</cite>" string otherwise.
+     * or the localized <cite>"Unavailable content"</cite> string otherwise.
      */
     static String toString(final Appendable out) {
         final CharSequence content = IO.content(out);

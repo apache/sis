@@ -33,7 +33,7 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * Tests the {@link Solver} class using <a href="http://math.nist.gov/javanumerics/jama">JAMA</a>
  * as the reference implementation.
  *
- * {@section Cyclic dependency}
+ * <div class="section">Cyclic dependency</div>
  * There is a cyclic test dependency since {@link GeneralMatrix} needs {@link Solver} for some operations,
  * and conversely. To be more specific the dependency order is:
  *

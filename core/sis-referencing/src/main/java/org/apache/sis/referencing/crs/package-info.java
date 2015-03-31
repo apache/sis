@@ -49,7 +49,7 @@
  *   </tr>
  * </table>
  *
- * {@section Apache SIS extensions}
+ * <div class="section">Apache SIS extensions</div>
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
  *
  * <ul>

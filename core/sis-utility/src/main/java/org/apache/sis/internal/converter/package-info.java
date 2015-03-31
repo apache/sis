@@ -22,7 +22,7 @@
  * A system-wide instance of {@code ConverterRegistry} with a default set of conversions
  * is available as {@link org.apache.sis.internal.converter.SystemRegistry#INSTANCE}.
  *
- * {@section Adding system-wide converters}
+ * <div class="section">Adding system-wide converters</div>
  * Applications can add system-wide custom converters either by explicit calls to the
  * {@code SystemRegistry.INSTANCE.register(ObjectConverter)} method, or by listing the
  * fully qualified classnames of their {@link ObjectConverter} instances in a file having

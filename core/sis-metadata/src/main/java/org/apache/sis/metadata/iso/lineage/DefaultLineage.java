@@ -35,11 +35,11 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
  * Information about the events or source data used in constructing the data specified by
  * the scope or lack of knowledge about lineage.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * At least one of {@linkplain #getStatement statement}, {@linkplain #getProcessSteps() process steps}
  * and {@link #getSources() sources} shall be provided.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

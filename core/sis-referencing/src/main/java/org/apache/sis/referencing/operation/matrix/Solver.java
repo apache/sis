@@ -24,7 +24,7 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * Computes the value of <var>U</var> which solves {@code X} × <var>U</var> = {@code Y}.
- * The {@link #solve(MatrixSIS, Matrix, int)} method in this class is adapted from the {@code LUDecomposition}
+ * The {@link #solve(Matrix, Matrix, int)} method in this class is adapted from the {@code LUDecomposition}
  * class of the <a href="http://math.nist.gov/javanumerics/jama">JAMA matrix package</a>. JAMA is provided in
  * the public domain.
  *
@@ -37,9 +37,9 @@ import org.apache.sis.util.ArraysExt;
  * @version 0.4
  * @module
  */
-final class Solver implements Matrix {
+final class Solver implements Matrix { // Not Cloneable, despite the clone() method.
     /**
-     * The size of the (i, j, s) tuples used internally by {@link #solve(MatrixSIS, Matrix, double[], int, int)}
+     * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int)}
      * for storing information about the NaN values.
      */
     private static final int TUPLE_SIZE = 3;
@@ -112,7 +112,7 @@ final class Solver implements Matrix {
      * @param  noChange If {@code true}, do not allow modifications to the {@code X} matrix.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS inverse(final MatrixSIS X, final boolean noChange) throws NoninvertibleMatrixException {
+    static MatrixSIS inverse(final Matrix X, final boolean noChange) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
@@ -129,14 +129,14 @@ final class Solver implements Matrix {
      * @param  Y The desired result of {@code X} × <var>U</var>.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS solve(final MatrixSIS X, final Matrix Y) throws NoninvertibleMatrixException {
-        final int size = X.getNumRow();
+    static MatrixSIS solve(final Matrix X, final Matrix Y) throws NoninvertibleMatrixException {
+        final int size   = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
             throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
         }
         final int innerSize = Y.getNumCol();
-        GeneralMatrix.ensureNumRowMatch(size, Y, innerSize);
+        GeneralMatrix.ensureNumRowMatch(size, Y.getNumRow(), innerSize);
         double[] eltY = null;
         if (Y instanceof GeneralMatrix) {
             eltY = ((GeneralMatrix) Y).elements;
@@ -176,7 +176,7 @@ final class Solver implements Matrix {
      * @param  noChange  If {@code true}, do not allow modifications to the {@code X} matrix.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
-    private static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final double[] eltY,
+    private static MatrixSIS solve(final Matrix X, final Matrix Y, final double[] eltY,
             final int size, final int innerSize, final boolean noChange) throws NoninvertibleMatrixException
     {
         assert (X.getNumRow() == size && X.getNumCol() == size) : size;
@@ -191,7 +191,7 @@ final class Solver implements Matrix {
          */
         int[] indexOfNaN = null;
         int   indexCount = 0;
-        if (X.isAffine()) {
+        if ((X instanceof MatrixSIS) ? ((MatrixSIS) X).isAffine() : MatrixSIS.isAffine(X)) {    // Avoid dependency to Matrices class.
             /*
              * Conservatively search for NaN values only if the matrix looks like an affine transform.
              * If the matrix is affine, then we will assume that we can interpret the last column as
@@ -410,7 +410,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          * Copy right hand side with pivoting. Write the result directly in the elements array
          * of the result matrix. This block does not perform floating-point arithmetic operations.
          */
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize, false);
         final double[] elements = result.elements;
         final int errorOffset = size * innerSize;
         for (int k=0,j=0; j<size; j++) {

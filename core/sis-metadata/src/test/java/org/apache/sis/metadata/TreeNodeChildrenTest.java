@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  * Tests the {@link TreeNodeChildren} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
- * {@section Test dependency}
+ * <div class="section">Test dependency</div>
  * This class uses the {@link TreeNode#getUserObject()} method for comparing the values.
  * We can hardly avoid to use some {@code TreeNode} methods because of the cross-dependencies.
  * However we try to use nothing else than {@code getUserObject()} because the purpose of this

@@ -29,11 +29,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Associated resource information.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * According ISO 19115, at least one of {@linkplain #getName() name} and
  * {@linkplain #getMetadataReference() metadata reference} shall be provided.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -22,6 +22,7 @@ import java.util.Locale;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.CharSequences.equalsFiltered;
@@ -306,7 +307,7 @@ public final class Citations extends Static {
      * See {@link org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)}
      * for the public documentation of this method.
      *
-     * {@section When to use}
+     * <div class="section">When to use</div>
      * Use this method when assigning values to be returned by methods like {@link Identifier#getCodeSpace()},
      * since those values are likely to be compared without special care about ignorable identifier characters.
      * But if the intend is to format a more complex string like WKT or {@code toString()}, then we suggest to
@@ -320,6 +321,9 @@ public final class Citations extends Static {
      * @since 0.6
      */
     public static String getUnicodeIdentifier(final Citation citation) {
+        if (citation instanceof IdentifierSpace<?>) {
+            return ((IdentifierSpace<?>) citation).getName();
+        }
         final String identifier = getIdentifier(citation, true);
         if (identifier != null) {
             /*

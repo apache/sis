@@ -82,14 +82,14 @@ import org.apache.sis.internal.jdk7.Objects;
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  * }
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
  * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
  * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
  * {@link ParameterDescriptor#createValue()} method. The later is recommended since it allows descriptors to return
  * specialized implementations.
  *
- * {@section Implementation note for subclasses}
+ * <div class="section">Implementation note for subclasses</div>
  * All read and write operations (except constructors, {@link #equals(Object)} and {@link #hashCode()})
  * ultimately delegates to the following methods:
  *
@@ -102,11 +102,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
- * @param <T> The value type.
+ * @param <T> The type of the value stored in this parameter.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see DefaultParameterDescriptor
@@ -133,7 +133,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private T value;
 
     /**
-     * The unit of measure for the value, or {@code null} if it doesn't apply.
+     * The unit of measure for the value, or {@code null} if it does not apply.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
      * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(Object, Unit)}.
      */
@@ -158,6 +158,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * object is not cloned.
      *
      * @param parameter The parameter to copy values from.
+     *
+     * @see #clone()
+     * @see #unmodifiable(ParameterValue)
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
         ensureNonNull("parameter", parameter);
@@ -181,7 +184,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If the parameter value has no unit (for example because it is a {@link String} type),
      * then this method returns {@code null}. Note that "no unit" does not mean "dimensionless".
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * All getter methods which need unit information will invoke this {@code getUnit()} method.
      * Subclasses can override this method if they need to compute the unit dynamically.
      *
@@ -201,7 +204,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If no value has been set, then this method returns the
      * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} (which may be null).
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * All getter methods will invoke this {@code getValue()} method.
      * Subclasses can override this method if they need to compute the value dynamically.
      *
@@ -644,7 +647,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * <p>Current implementation does not clone the given value. In particular, references to
      * {@code int[]} and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
      *
-     * {@section Implementation note for subclasses}
+     * <div class="section">Implementation note for subclasses</div>
      * This method is invoked by all setter methods in this class, thus providing a single point that
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
@@ -670,13 +673,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Invoked by {@link #setValue(Object, Unit)} after the basic verifications have been done and before
      * the value is stored. Subclasses can override this method for performing additional verifications.
      *
-     * {@section Unit of measurement}
+     * <div class="section">Unit of measurement</div>
      * If the user specified a unit of measurement, then the value given to this method has been converted
      * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
      * standardized values. This converted value may be different than the value to be stored in this
      * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
      *
-     * {@section Standard validations}
+     * <div class="section">Standard validations</div>
      * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},
      * for {@linkplain DefaultParameterDescriptor#getValueDomain() value domain} and for
      * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
@@ -754,6 +757,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Returns a clone of this parameter value.
+     *
+     * @see #DefaultParameterValue(ParameterValue)
+     * @see #unmodifiable(ParameterValue)
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -763,6 +769,41 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } catch (CloneNotSupportedException exception) {
             throw new AssertionError(exception); // Should not happen, since we are cloneable
         }
+    }
+
+    /**
+     * Returns an unmodifiable implementation of the given parameter value.
+     * This method shall be used only with:
+     *
+     * <ul>
+     *   <li>immutable {@linkplain #getDescriptor() descriptor},</li>
+     *   <li>immutable or null {@linkplain #getUnit() unit}, and</li>
+     *   <li>immutable or {@linkplain Cloneable cloneable} parameter {@linkplain #getValue() value}.</li>
+     * </ul>
+     *
+     * If the parameter value implements the {@link Cloneable} interface and has a public {@code clone()} method,
+     * then that value will be cloned every time the {@link #getValue()} method is invoked.
+     * The value is not cloned by this method however; it is caller's responsibility to not modify the value of
+     * the given {@code parameter} instance after this method call.
+     *
+     * <div class="section">Instances sharing</div>
+     * If this method is invoked more than once with equal {@linkplain #getDescriptor() descriptor},
+     * {@linkplain #getValue() value} and {@linkplain #getUnit() unit}, then this method will return
+     * the same {@code DefaultParameterValue} instance on a <cite>best effort</cite> basis.
+     *
+     * <div class="note"><b>Rational:</b>
+     * the same parameter value is often used in many different coordinate operations. For example all <cite>Universal
+     * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
+     * </div>
+     *
+     * @param  <T> The type of the value stored in the given parameter.
+     * @param  parameter The parameter to make unmodifiable, or {@code null}.
+     * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     *
+     * @since 0.6
+     */
+    public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
+        return UnmodifiableParameterValue.create(parameter);
     }
 
     /**

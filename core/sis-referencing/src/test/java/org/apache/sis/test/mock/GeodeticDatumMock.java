@@ -25,6 +25,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.internal.metadata.ReferencingServices;
 
 
 /**
@@ -69,7 +70,8 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
     /**
      * The sphere based on the GRS 1980 Authalic sphere.
      */
-    public static final GeodeticDatum SPHERE = new GeodeticDatumMock("SPHERE", 6371007, 6371007, Double.POSITIVE_INFINITY, false);
+    public static final GeodeticDatum SPHERE = new GeodeticDatumMock("SPHERE", ReferencingServices.AUTHALIC_RADIUS,
+            ReferencingServices.AUTHALIC_RADIUS, Double.POSITIVE_INFINITY, false);
 
     /**
      * The equatorial radius.

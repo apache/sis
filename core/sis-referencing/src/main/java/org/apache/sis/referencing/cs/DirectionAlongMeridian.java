@@ -29,16 +29,16 @@ import org.apache.sis.io.wkt.Formatter;
 
 
 /**
- * Parses {@linkplain AxisDirection axis direction} of the kind "<cite>South along 90 deg East</cite>".
+ * Parses {@linkplain AxisDirection axis direction} of the kind <cite>"South along 90 deg East"</cite>.
  * Those directions are used in the EPSG database for polar stereographic projections.
  *
- * {@section Reference meridian}
+ * <div class="section">Reference meridian</div>
  * This class does not know whether the meridian is relative to Greenwich or any other reference meridian.
  * The reference meridian shall be inferred from the geodetic datum of the {@code GeographicCRS} instance
  * that contains (through its coordinate system) the axes having those directions. This is consistent with
  * ISO 19162 §7.5.4(iv) - WKT 2 formatting.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -51,8 +51,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * A parser for EPSG axis names. Examples:
      *
      * <ul>
-     *   <li>"<cite>South along 180 deg</cite>"</li>
-     *   <li>"<cite>South along 90 deg East</cite>"</li>
+     *   <li><cite>"South along 180 deg"</cite></li>
+     *   <li><cite>"South along 90 deg East"</cite></li>
      * </ul>
      */
     private static final Pattern EPSG = Pattern.compile(
@@ -178,7 +178,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * A positive angle denote a right-handed system.
      *
      * <div class="note"><b>Example:</b>
-     * The angle from "<cite>North along 90 deg East</cite>" to "<cite>North along 0 deg</cite> is 90°.</div>
+     * The angle from <cite>"North along 90 deg East"</cite> to <cite>"North along 0 deg</cite> is 90°.</div>
      */
     public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {

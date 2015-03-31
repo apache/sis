@@ -302,7 +302,7 @@ public strictfp class TensorParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAllDescriptors")
     public void testMatrixConversion() {
-        final int size = Math.min(6, TensorParameters.CACHE_SIZE);
+        final int size = StrictMath.min(6, TensorParameters.CACHE_SIZE);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int numRow = 2; numRow <= size; numRow++) {
             for (int numCol = 2; numCol <= size; numCol++) {

@@ -262,7 +262,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *
      * This method will ignore comments and the optional attributes given in arguments.
      *
-     * {@section Ignored attributes substitution}
+     * <div class="section">Ignored attributes substitution</div>
      * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
      * array by their full namespace URLs. For example this method replaces{@code "xsi:schemaLocation"}
      * by {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.

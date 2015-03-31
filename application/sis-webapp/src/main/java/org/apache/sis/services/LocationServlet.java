@@ -467,7 +467,6 @@ public class LocationServlet extends HttpServlet {
   /**
    * Replace all non-alphanumeric characters with empty strings.
    *
-   * @param id
    * @return String without any non-alphanumeric characters
    */
   private static String cleanStr(String id) {

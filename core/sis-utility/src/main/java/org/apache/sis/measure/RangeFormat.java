@@ -63,7 +63,7 @@ import org.apache.sis.util.resources.Errors;
  * If the range to format is an instance of {@link MeasurementRange}, then the
  * {@linkplain Unit unit of measurement} is appended except for empty ranges.
  *
- * {@section Lenient parsing}
+ * <div class="section">Lenient parsing</div>
  * At parsing time, the above formatting rules are relaxed as below:
  *
  * <ul>
@@ -73,7 +73,7 @@ import org.apache.sis.util.resources.Errors;
  *       as well as "{@code {value}}".</li>
  * </ul>
  *
- * {@section Range type and type of range elements}
+ * <div class="section">Range type and type of range elements</div>
  * The kind of ranges created by the {@link #parse(String) parse(…)} methods is determined
  * by the type of range elements:
  *

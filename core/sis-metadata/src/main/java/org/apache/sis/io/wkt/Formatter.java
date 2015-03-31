@@ -407,9 +407,9 @@ public class Formatter implements Localized {
      * This is not necessarily the authority who created the object to format.</p>
      *
      * <div class="note"><b>Example:</b>
-     * The EPSG name of the {@code EPSG:6326} datum is "<cite>World Geodetic System 1984</cite>".
+     * The EPSG name of the {@code EPSG:6326} datum is <cite>"World Geodetic System 1984"</cite>.
      * However if the preferred authority is OGC, then the formatted datum name will rather look like
-     * "<cite>WGS84</cite>" (the exact string depends on the object aliases).</div>
+     * <cite>"WGS84"</cite> (the exact string depends on the object aliases).</div>
      *
      * @return The authority for projection and parameter names.
      *
@@ -756,7 +756,7 @@ public class Formatter implements Localized {
      * Longitudes are relative to the Greenwich meridian, with values increasing toward East.
      * Latitudes values are increasing toward North.
      *
-     * {@section Numerical precision}
+     * <div class="section">Numerical precision</div>
      * The ISO 19162 standards recommends to format those values with only 2 decimal digits.
      * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
      * is an approximative information only.
@@ -1324,7 +1324,7 @@ public class Formatter implements Localized {
      *
      * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
-     * {@section Special case}
+     * <div class="section">Special case</div>
      * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit
      * and returns {@code null}. See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
      *

@@ -36,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * See the {@link ResourceBundle#getBundle(String, Locale, ClassLoader) ResourceBundle.getBundle(…)}
  * Javadoc for more information.
  *
- * {@section Example}
+ * <div class="section">Example</div>
  * If a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
  * and contains the following line:
  *
@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
  *
- * {@section Class loaders}
+ * <div class="section">Class loaders</div>
  * Developers can specify explicitely the {@link ClassLoader} to use be overriding the
  * {@link #getBundle(Locale)} method. This is recommended if the running environment
  * loads modules in isolated class loaders, as OSGi does for instance.
@@ -64,14 +64,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * We do not provide {@code ClassLoader} argument in the constructor of this class because class loaders
  * can often be hard-coded (thus avoiding the cost of an extra field) and are usually not serializable.</div>
  *
- * {@section Apache SIS resources}
+ * <div class="section">Apache SIS resources</div>
  * Apache SIS has its own resources mechanism, built on top of the standard {@code ResourceBundle}
  * with the addition of type safety and optional arguments to be formatted in the localized string.
  * Those resource bundles provide {@code formatInternational(int, …)} static methods for creating
  * international strings with the same functionality than this {@code ResourceInternationalString}.
  * See {@code org.apache.sis.util.resources} for more information.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the bundles created by {@link #getBundle(Locale)}
  * is also immutable. Subclasses may or may not be immutable, at implementation choice. But implementors are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
@@ -122,7 +122,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * bundle from the name given at {@linkplain #ResourceInternationalString construction time}.
      * Subclasses can override this method if they need to fetch the bundle in an other way.
      *
-     * {@section Class loaders}
+     * <div class="section">Class loaders</div>
      * By default, this method loads the resources using the caller's class loader.
      * Subclasses can override this method in order to specify a different class loader.
      * For example, the code below works well if {@code MyResource} is a class defined
@@ -149,7 +149,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * {@code locale}, then this method searches for a string in an other locale as
      * specified in the {@link ResourceBundle} class description.
      *
-     * {@section Handling of <code>null</code> argument value}
+     * <div class="section">Handling of <code>null</code> argument value</div>
      * In the default implementation, the {@code null} locale is handled as a synonymous of
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.

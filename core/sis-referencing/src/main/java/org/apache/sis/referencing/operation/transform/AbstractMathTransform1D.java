@@ -39,13 +39,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *   <li>{@link #derivative(double)}</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * All Apache SIS implementations of {@code MathTransform1D} are immutable and thread-safe.
  * It is highly recommended that third-party implementations be immutable and thread-safe too.
  * This means that unless otherwise noted in the javadoc, {@code MathTransform1D} instances can
  * be shared by many objects and passed between threads without synchronization.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * {@code MathTransform1D} may or may not be serializable, at implementation choices.
  * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
  * with future SIS versions. Serialization should be used only for short term storage or RMI between applications

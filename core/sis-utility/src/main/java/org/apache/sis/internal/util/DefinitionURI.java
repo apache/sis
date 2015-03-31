@@ -39,7 +39,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
  * </ul>
  *
- * {@section Components or URN}
+ * <div class="section">Components or URN</div>
  * URN begins with {@code "urn:ogc:def:"} (formerly {@code "urn:x-ogc:def:"}) followed by:
  * <ul>
  *   <li>an object {@linkplain #type}</li>
@@ -91,7 +91,7 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *   <tr><td>{@code "UCUM"}</td> <td>Unified Code for Units of Measure.</td></tr>
  * </table>
  *
- * {@section Combined URNs}
+ * <div class="section">Combined URNs</div>
  * This implementation does not handle combined URNs. An example of combined URN would be
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *
