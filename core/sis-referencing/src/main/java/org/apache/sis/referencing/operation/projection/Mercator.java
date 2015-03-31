@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
@@ -200,26 +199,6 @@ public class Mercator extends NormalizedProjection {
         }
         return context.completeTransform(factory, kernel);
     }
-
-    /**
-     * Returns the parameter descriptors for this normalized projection.
-     * The default implementation returns the descriptor of <cite>"Mercator (variant A)"</cite> in all cases
-     * except <cite>"Popular Visualisation Pseudo Mercator"</cite>.
-     * This method does not return the descriptor of other other cases because the <cite>"Mercator (variant B)"</cite>
-     * case (for example) is implemented as <cite>"Mercator (variant A)"</cite> with a different scale factor.
-     *
-     * @return The <cite>"Mercator (variant A)"</cite> or <cite>"Popular Visualisation Pseudo Mercator"</cite>
-     *         parameter descriptor.
-     */
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        // No special descriptor even for (type == MILLER).
-        return (type == PSEUDO) ? PseudoMercator.PARAMETERS : Mercator1SP.PARAMETERS;
-    }
-
-    // No need to override getParameterValues() because no additional
-    // parameter are significant to a normalized Mercator projection.
-
 
     /**
      * Converts the specified (<var>λ</var>,<var>φ</var>) coordinate (units in radians)

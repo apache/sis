@@ -362,7 +362,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      */
     protected final void assertWktEquals(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
-        assertEquals("WKT comparison with tolerance not yet implemented.", 0.0, tolerance, 0.0);
         ReferencingAssert.assertWktEquals(Convention.WKT1, expected, transform);
     }
 

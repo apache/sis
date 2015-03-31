@@ -163,6 +163,8 @@ public enum Convention {
      * </ul>
      *
      * This convention is used only for debugging purpose.
+     *
+     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#getParameterValues()
      */
     @Debug
     INTERNAL(false);
