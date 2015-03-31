@@ -268,6 +268,47 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Stress the current {@linkplain #transform transform} using random ordinates in the given domain.
+     * First, this method creates a grid of regularly spaced points along all dimensions in the given domain.
+     * Next, this method adds small random displacements to every points and shuffle the coordinates in random order.
+     * Finally this method delegates the resulting array of coordinates to the following methods:
+     *
+     * <ul>
+     *   <li>{@link #verifyConsistency(float[])}</li>
+     *   <li>{@link #verifyInverse(float[])}</li>
+     *   <li>{@link #verifyDerivative(double[])}</li>
+     * </ul>
+     *
+     * This method does not {@linkplain #validate() validate} the transform; it is caller responsibility
+     * to validate if desired.
+     *
+     * @param  domain The domain of the numbers to be generated.
+     * @param  randomSeed The seed for the random number generator, or 0 for choosing a random seed.
+     * @throws TransformException If a conversion, transformation or derivative failed.
+     *
+     * @since 0.6
+     */
+    @SuppressWarnings("fallthrough")
+    protected final void verifyInDomain(final CoordinateDomain domain, final long randomSeed) throws TransformException {
+        final int      dimension    = transform.getSourceDimensions();
+        final double[] minOrdinates = new double[dimension];
+        final double[] maxOrdinates = new double[dimension];
+        final int[]    numOrdinates = new int   [dimension];
+        switch (dimension) {
+            default: throw new UnsupportedOperationException("Too many dimensions.");
+            case 3: minOrdinates[2] = domain.zmin; maxOrdinates[2] = domain.zmax; numOrdinates[2] = 3;     // Fall through
+            case 2: minOrdinates[1] = domain.ymin; maxOrdinates[1] = domain.ymax; numOrdinates[1] = 8;     // Fall through
+            case 1: minOrdinates[0] = domain.xmin; maxOrdinates[0] = domain.xmax; numOrdinates[0] = 8;     // Fall through
+            case 0: break;
+        }
+        final Random random = (randomSeed == 0)
+                ? TestUtilities.createRandomNumberGenerator()
+                : TestUtilities.createRandomNumberGenerator(randomSeed);
+
+        verifyInDomain(minOrdinates, maxOrdinates, numOrdinates, random);
+    }
+
+    /**
      * Generates random numbers that can be used for the current transform.
      *
      * @param  domain  The domain of the numbers to be generated.

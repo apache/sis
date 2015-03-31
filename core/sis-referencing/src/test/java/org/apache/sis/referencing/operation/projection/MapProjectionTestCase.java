@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import javax.measure.unit.NonSI;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
@@ -64,5 +66,19 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      */
     static ParameterizedTransformTest createGeoApiTest(final MapProjection provider) {
         return new ParameterizedTransformTest(new MathTransformFactoryMock(provider));
+    }
+
+    /**
+     * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
+     * This method uses arbitrary central meridian, scale factor, false easting and false northing for increasing
+     * the chances to detect a mismatch.
+     */
+    final void initialize(final MapProjection provider, final boolean ellipse) throws FactoryException {
+        final Parameters parameters = parameters(provider, ellipse);
+        parameters.parameter("central_meridian").setValue(0.5, NonSI.DEGREE_ANGLE);
+        parameters.parameter("scale_factor")    .setValue(0.997);
+        parameters.parameter("false_easting")   .setValue(200);
+        parameters.parameter("false_northing")  .setValue(100);
+        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
     }
 }
