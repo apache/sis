@@ -49,7 +49,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * rather use the {@link ImmutableIdentifier} implementation, which is a class unrelated to the usual
  * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
  *
- * {@section Text, URN and XML representations}
+ * <div class="section">Text, URN and XML representations</div>
  * The XML representation of {@link DefaultIdentifier} is similar to the {@link ImmutableIdentifier}
  * one except for the {@code "MD_"} prefix. Example:
  *
@@ -68,7 +68,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *   </gmd:MD_Identifier>
  * }
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

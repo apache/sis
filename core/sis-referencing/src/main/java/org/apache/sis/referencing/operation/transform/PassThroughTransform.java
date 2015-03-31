@@ -48,11 +48,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * }
  * </div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * {@code PassThroughTransform} is immutable and thread-safe if its {@linkplain #subTransform} is also
  * immutable and thread-safe.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
@@ -610,18 +610,19 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Formats this transform as a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      *
      * <div class="note"><b>Compatibility note:</b>
-     * {@code PassThrough_MT} is defined in the WKT 1 specification only.</div>
+     * {@code PassThrough_MT} is defined in the WKT 1 specification only.
+     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+     * then this method silently uses the WKT 1 convention without raising an error
+     * (unless this {@code PassThroughTransform} can not be formatted as valid WKT 1 neither).</div>
      *
      * @param  formatter The formatter to use.
      * @return The WKT element name, which is {@code "PassThrough_MT"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         formatter.append(firstAffectedOrdinate);
         if (numTrailingOrdinates != 0) {
             formatter.append(numTrailingOrdinates);
-            formatter.setInvalidWKT(PassThroughTransform.class, null);
-        } else if (formatter.getConvention().majorVersion() != 1) {
             formatter.setInvalidWKT(PassThroughTransform.class, null);
         }
         formatter.append(subTransform);

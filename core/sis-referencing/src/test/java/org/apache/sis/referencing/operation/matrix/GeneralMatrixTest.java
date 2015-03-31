@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
@@ -92,5 +92,17 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
                 -1.9878495670576283E-15,
                 -2.2204460492503132E-17,
                 -2.5483615218035994E-18}, elements, STRICT);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testConcatenate() {
+        testConcatenate(new GeneralMatrix(3, 3, true, 1), true);    // Double precision
+        testConcatenate(new GeneralMatrix(3, 3, true, 2), true);    // Double-double precision
     }
 }

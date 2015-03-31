@@ -26,7 +26,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * While {@link MultiValuedAssociation} would be suitable to all cases, this {@code SingletonAssociation}
  * consumes less memory.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code SingletonAssociation} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>

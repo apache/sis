@@ -26,7 +26,7 @@ import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
  * the package name of the parent {@code NamespacePrefixMapper} class does not have
  * the "{@code internal}" part.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Cédric Briançon (Geomatys)

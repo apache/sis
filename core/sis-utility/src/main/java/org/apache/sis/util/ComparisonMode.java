@@ -55,7 +55,7 @@ public enum ComparisonMode {
      * consistent with {@link Object#hashCode()} and be symmetric ({@code A.equals(B)} implies
      * {@code B.equals(A)}).
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the SIS implementation, this comparison mode usually have the following
      * characteristics (not always, this is only typical):
      *
@@ -77,7 +77,7 @@ public enum ComparisonMode {
      * consistency, neither comparison symmetry (i.e. {@code A.equals(B)} and {@code B.equals(A)} may
      * return different results if the {@code equals} methods are implemented differently).</p>
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the SIS implementation, this comparison mode usually have the following
      * characteristics (not always, this is only typical):
      *
@@ -93,7 +93,7 @@ public enum ComparisonMode {
      * are only informative can be ignored. This comparison mode is typically less strict than
      * {@link #BY_CONTRACT}.
      *
-     * {@section Examples}
+     * <div class="section">Examples</div>
      * If the objects being compared are
      * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances, then only the
      * properties relevant to the coordinate localization shall be compared. Metadata like the
@@ -113,11 +113,9 @@ public enum ComparisonMode {
      * those objects as equivalent despite difference in the set of parameters, as long as coordinate
      * transformations still produce the same results.</p>
      *
-     * <div class="note"><b>Example:</b> A {@code "Mercator (2SP)"} projection with a
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#standardParallels
-     * standard parallel} value of 60° produces the same results than a {@code "Mercator (1SP)"} projection with a
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale
-     * factor} value of 0.5.</div>
+     * <div class="note"><b>Example:</b> A <cite>"Mercator (2SP)"</cite> projection with a <cite>standard parallel</cite>
+     * value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection with a <cite>scale factor</cite>
+     * value of 0.5.</div>
      *
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */
@@ -127,7 +125,7 @@ public enum ComparisonMode {
      * Only the attributes relevant to the object functionality are compared, with some tolerance
      * threshold on numerical values.
      *
-     * {@section Application to coordinate transforms}
+     * <div class="section">Application to coordinate transforms</div>
      * If two {@link org.opengis.referencing.operation.MathTransform} objects are considered equal
      * according this mode, then for any given identical source position, the two compared transforms
      * shall compute at least approximatively the same target position. A small difference is

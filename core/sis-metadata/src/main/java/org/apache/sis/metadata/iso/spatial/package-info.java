@@ -20,7 +20,7 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.spatial OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
+ * <div class="section">Overview</div>
  * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
  * <table class="sis">
@@ -66,7 +66,7 @@
  *                 {@linkplain org.opengis.metadata.spatial.SpatialRepresentationType                 Spatial representation type} «code list»<br>
  * </td></tr></table>
  *
- * {@section Null values, nil objects and collections}
+ * <div class="section">Null values, nil objects and collections</div>
  * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by

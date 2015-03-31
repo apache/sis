@@ -19,18 +19,13 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -48,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see java.awt.geom.AffineTransform
  */
-class ProjectiveTransform extends AbstractMathTransform implements LinearTransform, ExtendedPrecisionMatrix,
+class ProjectiveTransform extends AbstractLinearTransform implements LinearTransform, ExtendedPrecisionMatrix,
         Serializable // Not Cloneable, despite the clone() method.
 {
     /**
@@ -137,35 +132,6 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     }
 
     /**
-     * Returns a copy of the matrix given to the constructor.
-     */
-    @Override
-    public final Matrix getMatrix() {
-        return this;
-    }
-
-    /**
-     * Returns the parameter descriptors for this math transform.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(getSourceDimensions(), getTargetDimensions(), Matrices.isAffine(this)).getParameters();
-    }
-
-    /**
-     * Returns the matrix elements as a group of parameters values. The number of parameters depends on the
-     * matrix size. Only matrix elements different from their default value will be included in this group.
-     *
-     * @return A copy of the parameter values for this math transform.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return Affine.parameters(this);
-    }
-
-    /**
      * Returns a copy of matrix elements, including error terms if any.
      */
     @Override
@@ -181,24 +147,6 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
         ArgumentChecks.ensureBetween("row",    0, numRow - 1, row);
         ArgumentChecks.ensureBetween("column", 0, numCol - 1, column);
         return elt[row * numCol + column];
-    }
-
-    /**
-     * Unsupported operation, since this matrix is unmodifiable.
-     */
-    @Override
-    public final void setElement(final int row, final int column, final double value) {
-        throw new UnsupportedOperationException(Matrices.isAffine(this)
-                ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
-                : Errors.format(Errors.Keys.UnmodifiableObject_1, ProjectiveTransform.class));
-    }
-
-    /**
-     * Returns a copy of the matrix that user can modify.
-     */
-    @Override
-    public final Matrix clone() {
-        return Matrices.copy(this);
     }
 
     /**
@@ -479,9 +427,7 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
              *           inverse = this;
              *       } else { ... }
              */
-            MatrixSIS matrix = Matrices.copy(this);
-            matrix = matrix.inverse();
-            ProjectiveTransform inv = createInverse(matrix);
+            ProjectiveTransform inv = createInverse(Matrices.inverse(this));
             inv.inverse = this;
             inverse = inv;
         }
@@ -507,25 +453,13 @@ class ProjectiveTransform extends AbstractMathTransform implements LinearTransfo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * Compares this math transform with an object which is known to be an instance of the same class.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
-            return true;
-        }
-        if (mode != ComparisonMode.STRICT) {
-            if (object instanceof LinearTransform) {
-                return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
-            }
-        } else if (super.equals(object, mode)) {
-            final ProjectiveTransform that = (ProjectiveTransform) object;
-            return this.numRow == that.numRow &&
-                   this.numCol == that.numCol &&
-                   Arrays.equals(this.elt, that.elt);
-        }
-        return false;
+    protected boolean equalsSameClass(final Object object) {
+        final ProjectiveTransform that = (ProjectiveTransform) object;
+        return this.numRow == that.numRow &&
+               this.numCol == that.numCol &&
+               Arrays.equals(this.elt, that.elt);
     }
 }

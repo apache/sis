@@ -45,7 +45,7 @@ import org.apache.sis.math.DecimalFunctions;
  *
  * We do not provide convenience method for the above in order to avoid dependency to {@code BigDecimal}.
  *
- * {@section Impact of availability of FMA instructions}
+ * <div class="section">Impact of availability of FMA instructions</div>
  * If <cite>fused multiply-add</cite> (FMA) instruction are available in a future Java version
  * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
  * then the following methods should be revisited:
@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
@@ -178,7 +178,7 @@ public final class DoubleDouble extends Number {
 
     /**
      * The error that shall be added to the main {@link #value} in order to get the
-     * "<cite>real</cite>" (actually "<cite>the most accurate that we can</cite>") value.
+     * <cite>"real"</cite> (actually <cite>"the most accurate that we can"</cite>) value.
      */
     public double error;
 
@@ -238,6 +238,16 @@ public final class DoubleDouble extends Number {
 
     /**
      * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
+     * from radians to angular degrees.
+     *
+     * @return An instance initialized to the 57.2957795130823208767981548141052 value.
+     */
+    public static DoubleDouble createRadiansToDegrees() {
+        return new DoubleDouble(57.2957795130823208767981548141052, -1.9878495670576283E-15);
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
      * from angular degrees to radians.
      *
      * @return An instance initialized to the 0.01745329251994329576923690768488613 value.
@@ -269,7 +279,7 @@ public final class DoubleDouble extends Number {
      * is defined in base 10 (e.g. many unit conversion factors) and tries to compute an error term with
      * {@link DecimalFunctions#deltaForDoubleToDecimal(double)}.
      *
-     * {@section Rational}
+     * <div class="section">Rational</div>
      * SIS often creates matrices for unit conversions, and most conversion factors are defined precisely in base 10.
      * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which can not be
      * represented precisely as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that
@@ -489,7 +499,7 @@ public final class DoubleDouble extends Number {
      * Adds an other double-double value to this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
-     * {@section Implementation}
+     * <div class="section">Implementation</div>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
      *
      *   <blockquote>(a + b)</blockquote>
@@ -673,7 +683,7 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by an other double-double value.
      * The result is stored in this instance.
      *
-     * {@section Implementation}
+     * <div class="section">Implementation</div>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
      *
      *   <blockquote>(a * b)</blockquote>
@@ -855,7 +865,7 @@ public final class DoubleDouble extends Number {
      * Divides the given double-double value by this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
-     * {@section Implementation}
+     * <div class="section">Implementation</div>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then we estimate:
      *
      *   <blockquote>(a / b) = (a.value / b.value) + remainder / b</blockquote>
@@ -913,7 +923,7 @@ public final class DoubleDouble extends Number {
     /**
      * Sets this double-double value to its square root.
      *
-     * {@section Implementation}
+     * <div class="section">Implementation</div>
      * This method searches for a {@code (r + ε)} value where:
      *
      * <blockquote>(r + ε)²  =  {@linkplain #value} + {@linkplain #error}</blockquote>
@@ -941,6 +951,34 @@ public final class DoubleDouble extends Number {
         divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
         setToQuickSum(r, value);
     }
+
+    /**
+     * Returns a hash code value for this number.
+     *
+     * @return A hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Numerics.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+    }
+
+    /**
+     * Compares this number with the given object for equality.
+     *
+     * @param  obj The other object to compare with this number.
+     * @return {@code true} if both object are equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DoubleDouble) {
+            final DoubleDouble other = (DoubleDouble) obj;
+            return Numerics.equals(value, other.value) &&
+                   Numerics.equals(error, other.error);
+        }
+        return false;
+    }
+
+
 
     /**
      * Returns a string representation of this number for debugging purpose.

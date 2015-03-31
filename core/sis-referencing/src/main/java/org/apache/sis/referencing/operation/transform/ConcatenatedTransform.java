@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
@@ -69,8 +68,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * than 1 ULP (about 2.22E-16), it applies only the the zero terms in the matrix. The terms on the
      * diagonal are still expected to be exactly 1.
      *
-     * @todo Try to remove completely this tolerance threshold after we applied double-double arithmetic
-     *       to all matrices.
+     * @deprecated Try to remove completely this tolerance threshold after we applied double-double arithmetic
+     *             to all matrices.
      */
     private static final double IDENTITY_TOLERANCE = 1E-16;
 
@@ -240,7 +239,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (matrix1 != null) {
             final Matrix matrix2 = MathTransforms.getMatrix(tr2);
             if (matrix2 != null) {
-                final Matrix matrix = MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+                final Matrix matrix = Matrices.multiply(matrix2, matrix1);
                 if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
                     return MathTransforms.identity(matrix.getNumRow() - 1);
                 }
@@ -421,7 +420,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Returns all concatenated transforms, modified with the pre- and post-processing required for WKT formating.
      * More specifically, if there is any Apache SIS implementation of Map Projection in the chain, then the
-     * (<var>normalize</var>, <var>unitary projection</var>, <var>denormalize</var>) tuples are replaced by single
+     * (<var>normalize</var>, <var>normalized projection</var>, <var>denormalize</var>) tuples are replaced by single
      * (<var>projection</var>) elements, which does not need to be instances of {@link MathTransform}.
      */
     private List<Object> getPseudoSteps() {
@@ -584,7 +583,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (derivate) {
             final Matrix matrix1 = MathTransforms.derivativeAndTransform(transform1, srcPts, srcOff, buffer, offset);
             final Matrix matrix2 = MathTransforms.derivativeAndTransform(transform2, buffer, offset, dstPts, dstOff);
-            return MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+            return Matrices.multiply(matrix2, matrix1);
         } else {
             transform1.transform(srcPts, srcOff, buffer, offset, 1);
             transform2.transform(buffer, offset, dstPts, dstOff, 1);
@@ -849,7 +848,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     public Matrix derivative(final DirectPosition point) throws TransformException {
         final Matrix matrix1 = transform1.derivative(point);
         final Matrix matrix2 = transform2.derivative(transform1.transform(point, null));
-        return MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+        return Matrices.multiply(matrix2, matrix1);
     }
 
     /**
@@ -905,7 +904,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @return The WKT element name, which is {@code "Concat_MT"}.
      */
     @Override
-    public String formatTo(final Formatter formatter) {
+    protected String formatTo(final Formatter formatter) {
         final List<? super MathTransform> transforms;
         if (formatter.getConvention() == Convention.INTERNAL) {
             transforms = getSteps();

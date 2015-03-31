@@ -40,7 +40,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       feature instances by other feature instances.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments (e.g. {@code valueType}) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
@@ -144,7 +144,7 @@ public class DefaultAssociationRole extends FieldType {
      *   );
      * }
      *
-     * After the above code completed, the {@linkplain #getValueType() value type} of "<cite>association to B</cite>"
+     * After the above code completed, the {@linkplain #getValueType() value type} of <cite>"association to B"</cite>
      * has been automatically set to the {@code typeB} instance.
      * </div>
      *

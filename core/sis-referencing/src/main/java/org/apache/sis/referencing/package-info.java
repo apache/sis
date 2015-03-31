@@ -25,14 +25,14 @@
  * as well as 4D, 5D, <i>etc</i>. An other less-frequently used kind of Reference System uses labels instead, as in
  * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.</p>
  *
- * {@section Fetching geodetic object instances}
+ * <div class="section">Fetching geodetic object instances</div>
  * Geodetic objects can be instantiated either directly by specifying all information to a factory method
  * or constructor, or indirectly by specifying the identifier of an entry in a database. In particular,
  * the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many geodetic objects,
  * and Apache SIS provides convenience shortcuts for some of them in the
  * {@link org.apache.sis.referencing.CommonCRS} enumerations.
  *
- * {@section The EPSG database}
+ * <div class="section">The EPSG database</div>
  * The EPSG geodetic parameter dataset is a structured database required to:
  *
  * <ul>

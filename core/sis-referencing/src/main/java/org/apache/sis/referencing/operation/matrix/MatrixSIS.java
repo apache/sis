@@ -16,8 +16,12 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Arrays;
 import java.io.Serializable;
+import java.awt.geom.AffineTransform;   // For javadoc
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -28,18 +32,29 @@ import org.apache.sis.util.resources.Errors;
  * A {@link Matrix} able to perform some operations of interest to Spatial Information Systems (SIS).
  * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code sis-referencing}.
  * It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
- * This class focuses only on:
+ * This class focuses on:
  *
  * <ul>
- *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
- *       {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
- *   <li>some operations more specific to referencing by coordinates:
- *       {@link #isAffine()}, {@link #normalizeColumns()}.</li>
+ *   <li>Only the basic matrix operations needed for <cite>referencing by coordinates</cite>:
+ *     <ul>
+ *       <li>{@link #isIdentity()}</li>
+ *       <li>{@link #multiply(Matrix)}</li>
+ *       <li>{@link #inverse()}</li>
+ *       <li>{@link #transpose()}</li>
+ *     </ul>
+ *   </li><li>Other operations which are not general-purpose matrix operations,
+ *     but are needed in the context of referencing by coordinates:
+ *     <ul>
+ *       <li>{@link #isAffine()}</li>
+ *       <li>{@link #normalizeColumns()}</li>
+ *       <li>{@link #concatenate(int, Number, Number)}</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see Matrices
@@ -93,8 +108,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param numCol   The number of columns to report in case of errors. This is an arbitrary
      *                 value and have no incidence on the verification performed by this method.
      */
-    static void ensureNumRowMatch(final int expected, final Matrix matrix, final int numCol) {
-        final int actual = matrix.getNumRow();
+    static void ensureNumRowMatch(final int expected, final int actual, final int numCol) {
         if (actual != expected) {
             throw new MismatchedMatrixSizeException(Errors.format(
                     Errors.Keys.MismatchedMatrixSize_4, expected, "⒩", actual, numCol));
@@ -127,6 +141,25 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Stores the value at the specified row and column in the given {@code dd} object.
+     * This method does not need to verify argument validity.
+     */
+    void get(final int row, final int column, final DoubleDouble dd) {
+        dd.value = getElement(row, column);
+        dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+    }
+
+    /**
+     * Stores the value of the given {@code dd} object at the specified row and column.
+     * This method does not need to verify argument validity.
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
+     */
+    void set(final int row, final int column, final DoubleDouble dd) {
+        setElement(row, column, dd.value);
+    }
+
+    /**
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
      *
@@ -154,7 +187,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @return A copy of all current matrix elements in a row-major array.
      */
-    public abstract double[] getElements();
+    public double[] getElements() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = new double[numRow * numCol];
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                elements[k++] = getElement(j, i);
+            }
+        }
+        return elements;
+    }
 
     /**
      * Stores all matrix elements in the given flat array. This method does not verify the array length.
@@ -174,7 +217,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
      * @param elements The new matrix elements in a row-major array.
-     * @throws IllegalArgumentException If the given array does not have the expected length.
+     * @throws IllegalArgumentException if the given array does not have the expected length.
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see Matrices#create(int, int, double[])
      */
@@ -188,8 +232,30 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @return {@code true} if this matrix represents an affine transform.
      *
      * @see Matrices#isAffine(Matrix)
+     * @see org.apache.sis.referencing.operation.transform.LinearTransform#isAffine()
      */
-    public abstract boolean isAffine();
+    public boolean isAffine() {
+        return isAffine(this);
+    }
+
+    /**
+     * Fallback for matrix of unknown implementation.
+     */
+    static boolean isAffine(final Matrix matrix) {
+        int j = matrix.getNumRow();
+        int i = matrix.getNumCol();
+        if (i != j--) {
+            return false; // Matrix is not square.
+        }
+        double e = 1;
+        while (--i >= 0) {
+            if (matrix.getElement(j, i) != e) {
+                return false;
+            }
+            e = 0;
+        }
+        return true;
+    }
 
     /**
      * Returns {@code true} if this matrix is an identity matrix.
@@ -209,6 +275,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Sets the value of this matrix to its transpose.
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
     public abstract void transpose();
 
@@ -223,14 +291,100 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * In such matrix, each column is a vector representing the displacement in target space when an
      * ordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
+     *
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
-    public abstract void normalizeColumns();
+    public void normalizeColumns() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble dot = new DoubleDouble();
+        final DoubleDouble tmp = new DoubleDouble();
+        for (int i=0; i<numCol; i++) {
+            sum.clear();
+            for (int j=0; j<numRow; j++) {
+                get(j, i, dot);
+                dot.multiply(dot);
+                sum.add(dot);
+            }
+            sum.sqrt();
+            for (int j=0; j<numRow; j++) {
+                get(j, i, tmp);
+                dot.setFrom(sum);
+                dot.inverseDivide(tmp);
+                set(j, i, dot);
+            }
+        }
+    }
+
+    /**
+     * Assuming that this matrix represents an affine transform, applies a scale and a translation
+     * on the given dimension.
+     * If:
+     * <ul>
+     *   <li>{@code original} is this matrix before this method call</li>
+     *   <li>{@code modified} is this matrix after this method call</li>
+     * </ul>
+     *
+     * then transforming a coordinate by {@code modified} is equivalent to first replacing the ordinate
+     * value at dimension {@code srcDim} by ({@code scale} × <var>ordinate</var> + {@code offset}),
+     * then apply the {@code original} transform.
+     *
+     * <div class="section">Comparison with Java2D</div>
+     * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
+     * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
+     *
+     * <table class="sis">
+     *   <caption>Equivalence between this method and {@code AffineTransform} ({@code at}) methods</caption>
+     *   <tr>
+     *     <th>{@code concatenate(0, scale, offset)}</th>
+     *     <th class="sep">{@code concatenate(1, scale, offset)}</th>
+     *   </tr>
+     *   <tr>
+     *     <td><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0)</code></td>
+     *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset)</code></td>
+     *   </tr>
+     *   <tr>
+     *     <td><code>at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1)</code></td>
+     *     <td class="sep"><code>at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale)</code></td>
+     *   </tr>
+     * </table>
+     *
+     * @param srcDim The dimension of the ordinate to rescale in the source coordinates.
+     * @param scale  The amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
+     * @param offset The amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
+     *
+     * @see AffineTransform#concatenate(AffineTransform)
+     *
+     * @since 0.6
+     */
+    public void concatenate(final int srcDim, final Number scale, final Number offset) {
+        final int lastCol = getNumCol() - 1;
+        ArgumentChecks.ensureValidIndex(lastCol, srcDim);
+        final DoubleDouble s = new DoubleDouble();
+        final DoubleDouble t = new DoubleDouble();
+        for (int j = getNumRow(); --j >= 0;) {
+            if (offset != null) {
+                get(j, srcDim,  s);     // Scale factor
+                get(j, lastCol, t);     // Translation factor
+                s.multiply(offset);
+                t.add(s);
+                set(j, lastCol, t);
+            }
+            if (scale != null) {
+                get(j, srcDim, s);      // Scale factor
+                s.multiply(scale);
+                set(j, srcDim, s);
+            }
+        }
+    }
 
     /**
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
      * In other words, returns {@code this} × {@code matrix}.
      *
-     * {@section Relationship with coordinate operations}
+     * <div class="section">Relationship with coordinate operations</div>
      * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
      * <code>{@linkplain java.awt.geom.AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
      * first transforms by the supplied transform and then transform the result by the original transform.
@@ -241,11 +395,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *         number of columns in this matrix.
      */
     public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
-        final int numRow = getNumRow();
-        final int numCol = getNumCol();
         final int nc = matrix.getNumCol();
-        ensureNumRowMatch(numCol, matrix, nc);
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(numRow, nc);
+        ensureNumRowMatch(getNumCol(), matrix.getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc, false);
         result.setToProduct(this, matrix);
         return result;
     }
@@ -275,6 +427,43 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
         return Solver.inverse(this, true);
+    }
+
+    /**
+     * Returns a hash code value based on the data values in this matrix.
+     *
+     * @return A hash code value for this matrix.
+     */
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(getElements()) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns {@code true} if the specified object is of the same class than this matrix and
+     * all of the data members are equal to the corresponding data members in this matrix.
+     *
+     * @param object The object to compare with this matrix for equality.
+     * @return {@code true} if the given object is equal to this matrix.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final int numRow = getNumRow();
+            final int numCol = getNumCol();
+            final MatrixSIS that = (MatrixSIS) object;
+            if (that.getNumRow() == numRow && that.getNumCol() == numCol) {
+                for (int j=numRow; --j >= 0;) {
+                    for (int i=numCol; --i >= 0;) {
+                        if (!Numerics.equals(that.getElement(j, i), getElement(j, i))) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

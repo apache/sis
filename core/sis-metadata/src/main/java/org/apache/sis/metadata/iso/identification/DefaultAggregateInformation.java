@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 /**
  * Associated resource information.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * According ISO 19115, at least one of {@linkplain #getName() name} and
  * {@linkplain #getMetadataReference() metadata reference} shall be provided.
  *
@@ -43,7 +43,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * {@code AssociatedResource} interface (tentatively in GeoAPI 3.1 or 4.0).
  * </div>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -20,7 +20,7 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
+ * <div class="section">Overview</div>
  * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  * For some explanation about how to use various ISO 19115 elements for scientific dataset, the
  * <a href="https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115">NOAA wiki page</a>
@@ -57,7 +57,7 @@
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier                   Identifier}<br>
  * </td></tr></table>
  *
- * {@section Localization}
+ * <div class="section">Localization</div>
  * When a metadata object is marshalled as an ISO 19139 compliant XML document, the marshaller
  * {@link org.apache.sis.xml.XML#LOCALE} property will be used for the localization of every
  * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances,
@@ -66,7 +66,7 @@
  * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage setLanguage(Locale)} method
  * will have precedence. The later behavior is compliant with INSPIRE rules.
  *
- * {@section Null values, nil objects and collections}
+ * <div class="section">Null values, nil objects and collections</div>
  * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by

@@ -51,7 +51,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * When such interface will be available, most references to {@code DefaultAttributeType} in current
  * API will be replaced by references to the {@code AttributeType} interface.</div>
  *
- * {@section Value type}
+ * <div class="section">Value type</div>
  * Attributes can be used for both spatial and non-spatial properties.
  * Some examples are:
  *
@@ -63,7 +63,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <tr><td>Horizontal accuracy</td> <td>{@link org.opengis.metadata.quality.PositionalAccuracy}</td></tr>
  * </table>
  *
- * {@section Attribute characterization}
+ * <div class="section">Attribute characterization</div>
  * An {@code Attribute} can be characterized by other attributes. For example an attribute that carries a measurement
  * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
  * The accuracy value is often constant for all instances of that attribute
@@ -88,7 +88,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * It is still possible for any specific {@code Attribute} instance to specify their own value,
  * but {@linkplain DefaultFeatureType#isSimple() simple feature} usually don't do that.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments (e.g. {@code defaultValue}) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
@@ -178,7 +178,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * @param characterizedBy Other attribute types that describes this attribute type (can be {@code null} for none).
      *                        For example if this new {@code DefaultAttributeType} describes a measurement,
      *                        then {@code characterizedBy} could holds the measurement accuracy.
-     *                        See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
+     *                        See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      */
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
             final int minimumOccurs, final int maximumOccurs, final V defaultValue,
@@ -286,7 +286,7 @@ public class DefaultAttributeType<V> extends FieldType {
 
     /**
      * Other attribute types that describes this attribute type.
-     * See "<cite>Attribute characterization</cite>" in class Javadoc for more information.
+     * See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      *
      * <div class="note"><b>Example:</b>
      * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the

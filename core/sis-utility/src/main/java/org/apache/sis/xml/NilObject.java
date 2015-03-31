@@ -61,7 +61,7 @@ package org.apache.sis.xml;
  * both the {@code Series} and the {@code NilObject} interfaces, and the {@link #getNilReason()} method
  * on that instance will return the {@link NilReason#UNKNOWN} constant.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * Instances of {@code NilObject} are created by first fetching the reason why the information
  * is missing, then invoking {@link NilReason#createNilObject(Class)}. The following example
  * instantiates a {@code Citation} object which is nil because the information are missing:

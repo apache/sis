@@ -90,7 +90,7 @@ public final strictfp class OperationMethodsTest extends TestCase {
     }
 
     /**
-     * Tests {@link OperationMethods#checkDimensions(OperationMethod, MathTransform)}.
+     * Tests {@link OperationMethods#checkDimensions(OperationMethod, MathTransform, Map)}.
      */
     @Test
     public void testCheckDimensions() {

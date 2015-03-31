@@ -152,18 +152,18 @@ div.warning:before {
 
 
 /*
- * Formatting in the {@section} custom javadoc tag.
+ * Formatting of section headers
  */
-div.block h5 {
-  font-size:    16px;
-  margin-top:   30px;
-  margin-bottom: 6px;
+div.section {
+  font-size:    15px;
+  font-weight:  bold;
+  margin-top:   21px;
+  margin-bottom: 3px;
 }
 
-div.block h6 {
-  font-size:    16px;
-  margin-top:   30px;
-  margin-bottom: 6px;
+div.description div.section {
+  font-size:  18px;
+  margin-top: 30px;
 }
 
 /*
@@ -174,21 +174,52 @@ div.block ul,
 div.block ol {
   margin-top:    9px;
   margin-bottom: 9px;
+  text-align:   left;
 }
 
-div.block li > ul,
-div.block li > ol {
+div.block ul > li,
+div.block ol > li {
   margin-top:    0;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 
-ul.verbose li {
-  margin-top:    6px;
-  margin-bottom: 6px;
+div.block ul.verbose > li,
+div.block ol.verbose > li {
+  margin-top:    9px;
+  margin-bottom: 9px;
+  text-align: justify;
 }
 
+/*
+ * Reduce the space for sublists.
+ */
+div.block ul > li > ul,
+div.block ol > li > ul {
+  margin-top:    3px;
+  margin-bottom: 6px;
+  text-align:   left;
+}
+
+div.block ul > li > ul > li,
+div.block ol > li > ul > li {
+  margin-top:    0;
+  margin-bottom: 0;
+}
+
+div.block center {
+  margin-top:    18px;
+  margin-bottom: 18px;
+}
+
+/*
+ * Miscellaneous.
+ */
 span.deprecated {
   text-decoration: line-through;
+}
+
+div.block {
+  text-align: justify;
 }
 
 

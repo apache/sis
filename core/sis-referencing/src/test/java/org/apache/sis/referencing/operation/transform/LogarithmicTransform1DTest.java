@@ -24,7 +24,7 @@ import static java.lang.StrictMath.*;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -33,7 +33,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
@@ -72,7 +72,7 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
             final boolean preAffine, final boolean postAffine) throws TransformException
     {
         assertInstanceOf("Expected the use of mathematical identities.", expectedType, transform);
-        assertFalse(transform.isIdentity());
+        assertIsNotIdentity(transform);
         validate();
 
         final double[] values = generateRandomCoordinates(CoordinateDomain.RANGE_10, 0);
@@ -137,12 +137,9 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
      */
     @Test
     public void testSingle() throws TransformException {
-        messageOnFailure = "Logarithmic transform in base 10";
-        testSingle(10, 0, LogarithmicTransform1D.class);
-        messageOnFailure = "Logarithmic transform in base E";
-        testSingle(E, 0, LogarithmicTransform1D.class);
-        messageOnFailure = "Logarithmic transform in base 8.4"; // Arbitrary base.
-        testSingle(8.4, 0, ConcatenatedTransformDirect1D.class);
+        testSingle( 10, 0, LogarithmicTransform1D.class);         // Logarithmic transform in base 10
+        testSingle(  E, 0, LogarithmicTransform1D.class);         // Logarithmic transform in base E
+        testSingle(8.4, 0, ConcatenatedTransformDirect1D.class);  // Logarithmic transform in base 8.4 (arbitrary base)
     }
 
     /**
@@ -153,12 +150,9 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     @Test
     @DependsOnMethod("testSingle")
     public void testSingleWithOffset() throws TransformException {
-        messageOnFailure = "Logarithmic transform in base 10";
-        testSingle(10, 0.25, LogarithmicTransform1D.class);
-        messageOnFailure = "Logarithmic transform in base E";
-        testSingle(E, 0.25, ConcatenatedTransformDirect1D.class);
-        messageOnFailure = "Logarithmic transform in base 8.4"; // Arbitrary base.
-        testSingle(8.4, 0.25, ConcatenatedTransformDirect1D.class);
+        testSingle( 10, 0.25, LogarithmicTransform1D.class);         // Logarithmic transform in base 10
+        testSingle(  E, 0.25, ConcatenatedTransformDirect1D.class);  // Logarithmic transform in base E
+        testSingle(8.4, 0.25, ConcatenatedTransformDirect1D.class);  // Logarithmic transform in base 8.4 (arbitrary base)
     }
 
     /**
@@ -169,12 +163,9 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     @Test
     @DependsOnMethod("testSingleWithOffset")
     public void testAffinePreConcatenation() throws TransformException {
-        messageOnFailure = "Affine + logarithmic transform in base 10";
-        testAffinePreConcatenation(10);
-        messageOnFailure = "Affine + logarithmic transform in base E";
-        testAffinePreConcatenation(E);
-        messageOnFailure = "Affine + logarithmic transform in base 8.4"; // Arbitrary base.
-        testAffinePreConcatenation(8.4);
+        testAffinePreConcatenation(10);   // Affine + logarithmic transform in base 10
+        testAffinePreConcatenation(E);    // Affine + logarithmic transform in base E
+        testAffinePreConcatenation(8.4);  // Affine + logarithmic transform in base 8.4 (arbitrary base)
     }
 
     /**
@@ -185,12 +176,9 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
     @Test
     @DependsOnMethod("testSingleWithOffset")
     public void testAffinePostConcatenation() throws TransformException {
-        messageOnFailure = "Logarithmic transform in base 10 + affine";
-        testAffinePostConcatenation(10);
-        messageOnFailure = "Logarithmic transform in base E + affine";
-        testAffinePostConcatenation(E);
-        messageOnFailure = "Logarithmic transform in base 8.4 + affine"; // Arbitrary base.
-        testAffinePostConcatenation(8.4);
+        testAffinePostConcatenation(10);    // Logarithmic transform in base 10  + affine
+        testAffinePostConcatenation(E);     // Logarithmic transform in base E   + affine
+        testAffinePostConcatenation(8.4);   // Logarithmic transform in base 8.4 + affine (arbitrary base)
     }
 
     /**
@@ -204,12 +192,9 @@ public final strictfp class LogarithmicTransform1DTest extends MathTransformTest
         "testAffinePostConcatenation"
     })
     public void testAffineConcatenations() throws TransformException {
-        messageOnFailure = "Affine + logarithmic transform in base 10 + affine";
-        testAffineConcatenations(10);
-        messageOnFailure = "Affine + logarithmic transform in base E + affine";
-        testAffineConcatenations(E);
-        messageOnFailure = "Affine + logarithmic transform in base 8.4 + affine"; // Arbitrary base.
-        testAffineConcatenations(8.4);
+        testAffineConcatenations(10);   // Affine + logarithmic transform in base 10  + affine
+        testAffineConcatenations(E);    // Affine + logarithmic transform in base E   + affine
+        testAffineConcatenations(8.4);  // Affine + logarithmic transform in base 8.4 + affine
     }
 
     /**
