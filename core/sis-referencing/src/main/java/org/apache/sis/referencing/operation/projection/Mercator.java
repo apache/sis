@@ -16,9 +16,12 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
@@ -78,6 +81,12 @@ public class Mercator extends NormalizedProjection {
     private static final long serialVersionUID = 2564172914329253286L;
 
     /**
+     * Same parameter than {@link Mercator2SP#STANDARD_PARALLEL}, but declared as optional
+     * for allowing this class to process <cite>"Mercator (variant A)"</cite> parameters.
+     */
+    private static final ParameterDescriptor<Double> STANDARD_PARALLEL = makeOptional(Mercator2SP.STANDARD_PARALLEL);
+
+    /**
      * Codes for special kinds of Mercator projection.
      */
     static final byte PSEUDO = 1, MILLER = 2;
@@ -104,10 +113,10 @@ public class Mercator extends NormalizedProjection {
      */
     public Mercator(final OperationMethod method, final Parameters parameters) {
         super(method, parameters, Mercator2SP.FALSE_EASTING, Mercator2SP.FALSE_NORTHING);
-        double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
-        double φ0 = parameters.doubleValue(           Mercator2SP.LATITUDE_OF_ORIGIN);  // Do not store this parameter
-        double λ0 =           getAndStore(parameters, Mercator2SP.CENTRAL_MERIDIAN);
-        double k0 =           getAndStore(parameters, Mercator2SP.SCALE_FACTOR);
+        double φ1 = toRadians(getAndStore(parameters, STANDARD_PARALLEL));
+        double φ0 = parameters.doubleValue(Mercator2SP.LATITUDE_OF_ORIGIN);
+        double λ0 = getAndStore(parameters, Mercator2SP.CENTRAL_MERIDIAN);
+        double k0 = getAndStore(parameters, Mercator2SP.SCALE_FACTOR);
         /*
          * The "Latitude of origin" is not formally a parameter of Mercator projection, except in variant A (1SP)
          * where the parameter is included in the EPSG dataset for completeness in CRS labelling but is not allowed
@@ -131,15 +140,6 @@ public class Mercator extends NormalizedProjection {
         if (!isSpherical()) {
             k0 /= rν(sin(φ1));
         }
-        final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
-        if (IdentifiedObjects.isHeuristicMatchForName(descriptor, PseudoMercator.NAME)) {
-            type = PSEUDO;
-        } else if (IdentifiedObjects.isHeuristicMatchForName(descriptor, MillerCylindrical.NAME)) {
-            type = MILLER;
-            k0 *= 1.25;
-        } else {
-            type = 0;
-        }
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -154,11 +154,20 @@ public class Mercator extends NormalizedProjection {
          */
         final MatrixSIS   normalize = context.normalizeGeographicInputs(0);
         final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
-        final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-        offset.multiply(-λ0);
-        denormalize.concatenate(0, null, offset);
-        if (type == MILLER) {
-            normalize.concatenate(1, new DoubleDouble(0.8), null);
+        if (λ0 != 0) {
+            final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
+            offset.multiply(-λ0);
+            denormalize.concatenate(0, null, offset);
+        }
+        final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
+        if (IdentifiedObjects.isHeuristicMatchForName(descriptor, MillerCylindrical.NAME)) {
+            normalize  .concatenate(1, new DoubleDouble(0.8),  null);
+            denormalize.concatenate(1, new DoubleDouble(1.25), null);
+            type = MILLER;
+        } else if (IdentifiedObjects.isHeuristicMatchForName(descriptor, PseudoMercator.NAME)) {
+            type = PSEUDO;
+        } else {
+            type = 0;
         }
     }
 
@@ -171,12 +180,25 @@ public class Mercator extends NormalizedProjection {
     }
 
     /**
-     * Returns the transform that {@link #createMapProjection(MathTransformFactory)} should use as the
-     * non-linear kernel.
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * {@linkplain #isSpherical() is spherical}. In the later case, {@code this} transform will be replaced by
+     * a simplified implementation.</p>
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    final MathTransform2D kernel() {
-        return (isSpherical() || type == PSEUDO) ? new Spherical(this) : this;
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        Mercator kernel = this;
+        if (isSpherical() || type == PSEUDO) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**

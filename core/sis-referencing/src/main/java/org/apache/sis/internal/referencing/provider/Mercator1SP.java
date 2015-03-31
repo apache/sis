@@ -133,7 +133,7 @@ public final class Mercator1SP extends MapProjection {
             .addDeprecatedIdentifier(   "9841", "1026")                                           // The spherical (1SP) case
             .addName(NAME            /* "Mercator (variant A)" */)                                // Starting from EPSG version 7.6
             .addName(                   "Mercator (Spherical)")                                   // Starting from EPSG version 7.6
-            .addDeprecatedName(         "Mercator (1SP)", NAME     /* "Mercator (variant A)" */)  // Prior to EPSG version 7.6
+            .addName(                   "Mercator (1SP)")                                         // Prior to EPSG version 7.6
             .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")     // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_1SP")
             .addName(Citations.GEOTIFF, "CT_Mercator")

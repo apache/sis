@@ -30,6 +30,8 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
@@ -235,6 +237,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
+     * Returns a parameter descriptor with the same properties than the given one, except that the parameter is
+     * optional. This is sometime needed when invoking {@link #getAndStore(Parameters, ParameterDescriptor)} for
+     * a parameter value which is mandatory in principle, but may be absent because the parameters for the same
+     * projection may be specified in different ways (for example <cite>"Mercator (variant A)"</cite> versus
+     * <cite>"Mercator (variant B)"</cite>).
+     *
+     * @param  <T> The type of parameter value.
+     * @param  descriptor The mandatory descriptor to make optional.
+     * @return A parameter descriptor with the same properties than the given one, but optional.
+     */
+    static <T> ParameterDescriptor<T> makeOptional(final ParameterDescriptor<T> descriptor) {
+        assert descriptor.getMinimumOccurs() == 1; // This method is useless if minOccurs == 0.
+        return new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(descriptor), 0, 1,
+                descriptor.getValueClass(), Parameters.getValueDomain(descriptor), null, descriptor.getDefaultValue());
+    }
+
+    /**
      * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
      * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
      * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
@@ -272,6 +291,15 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
      * changes in axis order} are <strong>not</strong> managed by the returned transform.
      *
+     * <p>The default implementation is as below:</p>
+     * {@preformat java
+     *     return getContextualParameters().completeTransform(factory, this);
+     * }
+     *
+     * Subclasses can override this method if they wish to use alternative implementations under some circumstances.
+     * For example many subclasses will replace {@code this} by a specialized implementation if they detect that the
+     * ellipsoid is actually {@linkplain #isSpherical() spherical}.
+     *
      * @param  factory The factory to use for creating the transform.
      * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
@@ -279,16 +307,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
      */
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
-        return context.completeTransform(factory, kernel());
-    }
-
-    /**
-     * Returns the transform that {@link #createMapProjection(MathTransformFactory)} should use as the kernel.
-     * The default implementation returns {@code this}. Subclasses may override for returning an alternative
-     * implementation under some conditions.
-     */
-    MathTransform2D kernel() {
-        return this;
+        return context.completeTransform(factory, this);
     }
 
     /**

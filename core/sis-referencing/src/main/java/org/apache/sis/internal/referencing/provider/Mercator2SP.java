@@ -128,8 +128,8 @@ public final class Mercator2SP extends MapProjection {
 
         PARAMETERS = builder
             .addIdentifier(             "9805")
-            .addName(                   "Mercator (variant B)")                     // Starting from EPSG version 7.6
-            .addDeprecatedName(         "Mercator (2SP)", "Mercator (variant B)")   // Prior to EPSG version 7.6
+            .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
+            .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_2SP")
             .addName(Citations.ESRI,    "Mercator")
             .addName(Citations.NETCDF,  "Mercator")

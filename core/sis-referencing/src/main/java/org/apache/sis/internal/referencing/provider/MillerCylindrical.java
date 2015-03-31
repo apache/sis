@@ -74,26 +74,30 @@ public final class MillerCylindrical extends MapProjection {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
-
-        final ParameterDescriptor<?> latitudeOfCenter = createLatitude(
-                builder.addName("latitude_of_center")
-                       .addName(Citations.GEOTIFF, "ProjCenterLat")
-                       .addName(sameNameAs(Citations.PROJ4, Mercator1SP.LATITUDE_OF_ORIGIN)), false);
-
-        final ParameterDescriptor<?> longitudeOfCenter = createLongitude(
-                builder.addName("longitude_of_center")
-                       .addName(Citations.GEOTIFF, "ProjCenterLong")
-                       .addName(sameNameAs(Citations.PROJ4, Mercator1SP.CENTRAL_MERIDIAN)));
-
-        final ParameterDescriptor<?> falseEasting  = createShift(exceptEPSG(Mercator1SP.FALSE_EASTING,  builder));
-        final ParameterDescriptor<?> falseNorthing = createShift(exceptEPSG(Mercator1SP.FALSE_NORTHING, builder));
         /*
-         * The scale factor is not formally a parameter of the "Miller Cylindrical" projection.
-         * But we declare it as an optional parameters because it is sometime used.
+         * The remotesensing.org web page said that OGC parameter name should be "longitude_of_center" and
+         * GeoTIFF parameter name should be "ProjCenterLong", but the common practice that we found with a
+         * quick search on the web seems to be the same parameter name than other Mercator projections. So
+         * we keep the later for now. Same argument apply to the latitude of origin parameter.
+         */
+        final ParameterDescriptor<?> centralMeridian = createLongitude(
+                exceptEPSG(Mercator1SP.CENTRAL_MERIDIAN, builder));
+
+        final ParameterDescriptor<?> falseEasting = createShift(
+                exceptEPSG(Mercator1SP.FALSE_EASTING, builder));
+
+        final ParameterDescriptor<?> falseNorthing = createShift(exceptEPSG(
+                Mercator1SP.FALSE_NORTHING, builder));
+        /*
+         * The "latitude of origin" and the "scale factor" are not formally a parameter of the "Miller Cylindrical"
+         * projection. But we declare them as an optional parameters because they are sometime used.
          */
         final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Miller Cylindrical");
         final ParameterDescriptor<?> scaleFactor = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
                 .setRemarks(remarks).setRequired(false));
+
+        final ParameterDescriptor<?> latitudeOfOrigin = createLatitude(
+                exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder).setRemarks(remarks), false);
 
         PARAMETERS = builder
             .addName      (NAME)
@@ -102,8 +106,8 @@ public final class MillerCylindrical extends MapProjection {
             .addName      (Citations.PROJ4,    "mill")
             .addIdentifier(Citations.MAP_INFO, "11")
             .createGroupForMapProjection(
-                    latitudeOfCenter,
-                    longitudeOfCenter,
+                    latitudeOfOrigin,
+                    centralMeridian,
                     scaleFactor, // Not an official parameter, provided for compatibility with those who still use it.
                     falseEasting,
                     falseNorthing);
