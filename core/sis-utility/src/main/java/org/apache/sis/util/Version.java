@@ -35,7 +35,7 @@ import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
  * <p>This class provides methods for performing comparisons of {@code Version} objects where major,
  * minor and revision parts are compared as numbers when possible, or as strings otherwise.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
  * Subclasses may or may not be immutable, at implementation choice. But implementors are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.

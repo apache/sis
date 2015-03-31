@@ -280,7 +280,7 @@ abstract class SubCommand {
     }
 
     /**
-     * Prints the "<cite>Can not open …</cite>" error message followed by the message in the given exception.
+     * Prints the <cite>"Can not open …"</cite> error message followed by the message in the given exception.
      *
      * @param fileIndex Index in the {@link #files} list of the file that can not be opened.
      * @param e The exception which occurred.

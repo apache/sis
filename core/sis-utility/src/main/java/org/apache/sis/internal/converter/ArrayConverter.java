@@ -31,7 +31,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * the source and target types of the element converter shall be {@code <? super S>} and {@code <? extends T>}
  * respectively.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable, and thus inherently thread-safe,
  * if the converter given to the constructor is also immutable.
  *

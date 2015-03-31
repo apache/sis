@@ -16,20 +16,20 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 
 
 /**
- * The provider for "<cite>Longitude rotation</cite>" (EPSG:9601).
+ * The provider for <cite>"Longitude rotation"</cite> (EPSG:9601).
  * The "Longitude rotation" is created as an affine transform containing only a translation term in degrees.
  * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform} can
  * be efficiently concatenated with other affine transform instances.
@@ -61,7 +61,7 @@ public final class LongitudeRotation extends AbstractProvider {
     static final String NAME = "Longitude offset";
 
     /**
-     * The operation parameter descriptor for the "<cite>longitude offset</cite>" parameter value.
+     * The operation parameter descriptor for the <cite>"longitude offset"</cite> parameter value.
      */
     private static final ParameterDescriptor<Double> OFFSET;
 
@@ -103,12 +103,15 @@ public final class LongitudeRotation extends AbstractProvider {
      * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
      * operation was shown as a "Longitude rotation".</p>
      *
+     * @param  factory Ignored (can be null).
      * @param  values The group of parameter values.
      * @return The created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(final ParameterValueGroup values) throws ParameterNotFoundException {
+    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
+            throws ParameterNotFoundException
+    {
         final double offset = Parameters.castOrWrap(values).doubleValue(OFFSET);
         return new AffineTransform2D(1, 0, 0, 1, offset, 0);
     }

@@ -37,7 +37,7 @@ import org.opengis.metadata.citation.Citation;
  *     object.getIdentifierMap().put(IdentifierSpace.ID, "myID");
  * }
  *
- * {@section Relationship with GeoAPI}
+ * <div class="section">Relationship with GeoAPI</div>
  * Identifiers exist also in some (not all) GeoAPI objects. Some GeoAPI objects
  * ({@link org.opengis.metadata.acquisition.Instrument}, {@link org.opengis.metadata.acquisition.Platform},
  * {@link org.opengis.metadata.acquisition.Operation}, {@link org.opengis.metadata.lineage.Processing},

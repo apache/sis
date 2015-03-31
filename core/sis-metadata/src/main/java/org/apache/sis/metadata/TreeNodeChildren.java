@@ -32,7 +32,7 @@ import org.apache.sis.util.Debug;
  * This collection holds a reference to the metadata object at creation time;
  * it does not track changes in {@code parent.getUserObject()}.
  *
- * {@section Note on value existence policy}
+ * <div class="section">Note on value existence policy</div>
  * It is better to use this class with {@link ValueExistencePolicy#NON_EMPTY} in order
  * to avoid code complication and surprising behavior of {@link Iter#remove()} operation.
  * If the policy is set to another value, we need to keep the following aspects in mind:
@@ -125,7 +125,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * value policy. To check if the element shall be considered as removed (for example
      * in order to update index), invoke {@code isSkipped(value)} after this method.</p>
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * This method sets the property to {@code null}. This is not strictly correct for collections,
      * since we should rather set the property to an empty collection. However this approach would
      * force us to check if the expected collection type is actually a list, a set or any other type.
@@ -267,7 +267,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Each element is identified by its index in the {@link PropertyAccessor}, together with
      * its position in its sub-iterator when the metadata property is a collection.
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * It could be cheaper to not take an iterator for the properties that are collections,
      * and instead just increment a "sub-index" from 0 to the collection size.  It would be
      * cheaper because we don't really need to extract the values of those collections (i.e.

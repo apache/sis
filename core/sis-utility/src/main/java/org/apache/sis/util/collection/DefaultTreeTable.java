@@ -245,7 +245,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     @Override
     public DefaultTreeTable clone() throws CloneNotSupportedException {
         final DefaultTreeTable clone = (DefaultTreeTable) super.clone();
-        clone.root = (TreeTable.Node) new Cloner().clone(clone.root);
+        clone.root = (TreeTable.Node) Cloner.cloneIfPublic(clone.root);
         return clone;
     }
 
@@ -308,7 +308,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * of columns. The list of columns is specified by a {@link TreeTable}, or inherited from
      * a parent node.
      *
-     * {@section Note on the parent node}
+     * <div class="section">Note on the parent node</div>
      * The value returned by the {@link #getParent()} method is updated automatically when
      * this node is <em>added to</em> or <em>removed from</em> the {@linkplain #getChildren()
      * list of children} of another {@code Node} instance - there is no {@code setParent(Node)}

@@ -37,7 +37,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * The {@link #getLogger(String)} method shall return some {@link Logger} subclass
  * (typically {@link LoggerAdapter}) which forwards directly all log methods to the other framework.
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * This base class is safe for multi-threads usage. Subclasses registered in {@code META-INF/services/}
  * shall make sure that any overridden methods remain safe to call from multiple threads.
  *

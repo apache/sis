@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * This class is package-private for now in order to get more experience about what could be a good API.
  * This class may become public in a future SIS version.</div>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization
  * on the part of the caller.
  *

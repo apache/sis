@@ -28,7 +28,7 @@ import org.apache.sis.math.FunctionProperty;
  * The source class is fixed to {@code Collection}. The target class is determined
  * by the inner class which extends this {@code CollectionConverter} class.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *

@@ -25,10 +25,17 @@ import org.opengis.referencing.operation.Matrix;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public interface ExtendedPrecisionMatrix extends Matrix {
+    /**
+     * A sentinel value for {@link org.apache.sis.referencing.operation.matrix.Matrices#create(int, int, Number[])}
+     * meaning that we request an extended precision matrix initialized to the identity (or diagonal) matrix.
+     * This is a non-public feature because we try to hide our extended-precision mechanism from the users.
+     */
+    Number[] IDENTITY = new Number[0];
+
     /**
      * Returns a copy of all matrix elements, potentially followed by the error terms for extended-precision arithmetic.
      * Matrix elements are returned in a flat, row-major (column indices vary fastest) array.

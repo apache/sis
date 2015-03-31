@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
@@ -41,7 +42,8 @@ public final strictfp class IdentifiedObjectsTest extends TestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        final GenericName name = DefaultFactories.SIS_NAMES.createGenericName(null, "myScope", "myName");
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final GenericName name = factory.createGenericName(null, "myScope", "myName");
         IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
 
         // Test the code.

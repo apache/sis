@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+import java.text.ParseException;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -47,6 +48,7 @@ import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.Pending;     // Temporary import.
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
@@ -78,7 +80,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * or {@link MathTransforms} classes instead.
  *
  *
- * {@section Standard parameters}
+ * <div class="section">Standard parameters</div>
  * {@code MathTransform} instances are created from {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup
  * parameter values}. The parameters expected by each operation available in a default Apache SIS installation is
  * <a href="http://sis.apache.org/CoordinateOperationMethods.html">listed here</a>.
@@ -93,10 +95,10 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
  * For example the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
- * by OGC, while EPSG uses various names like "<cite>False easting</cite>" or "<cite>Easting at
- * false origin</cite>".</p>
+ * by OGC, while EPSG uses various names like <cite>"False easting"</cite> or <cite>"Easting at
+ * false origin"</cite>.</p>
  *
- * {@section Dynamic parameters}
+ * <div class="section">Dynamic parameters</div>
  * A few non-standard parameters are defined for compatibility reasons,
  * but delegates their work to standard parameters. Those dynamic parameters are not listed in the
  * {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#values() parameter values}.
@@ -117,7 +119,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * files for example, which often use spherical models instead than ellipsoidal ones.</p>
  *
  *
- * <a name="Obligation">{@section Mandatory and optional parameters}</a>
+ * <div class="section"><a name="Obligation">Mandatory and optional parameters</a></div>
  * Parameters are flagged as either <cite>mandatory</cite> or <cite>optional</cite>.
  * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
  * means that the parameter is an essential part of the projection defined by standards.
@@ -130,7 +132,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * default value.</p>
  *
  *
- * {@section Operation methods discovery}
+ * <div class="section">Operation methods discovery</div>
  * {@link OperationMethod} describes all the parameters expected for instantiating a particular kind of
  * math transform. The set of operation methods known to this factory can be obtained in two ways:
  *
@@ -143,7 +145,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * custom coordinate operation methods in a default Apache SIS installation.
  *
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * This class is safe for multi-thread usage if all referenced {@code OperationMethod} instances are thread-safe.
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
@@ -729,7 +731,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     Parameters.copy(parameters, copy);
                     parameters = copy;
                 }
-                transform  = ((MathTransformProvider) method).createMathTransform(parameters);
+                transform  = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 /*
                  * Catch only exceptions which may be the result of improper parameter
@@ -738,7 +740,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  */
                 throw new FactoryException(exception);
             }
-            transform = pool.unique(transform);
+            transform = unique(transform);
             method = DefaultOperationMethod.redimension(method,
                     transform.getSourceDimensions(), transform.getTargetDimensions());
             return transform;
@@ -763,8 +765,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
-        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider
-        return pool.unique(MathTransforms.linear(matrix));
+        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider.
+        return unique(MathTransforms.linear(matrix));
     }
 
     /**
@@ -787,14 +789,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throws FactoryException
     {
         lastMethod.remove();
-        MathTransform tr;
+        final MathTransform tr;
         try {
             tr = MathTransforms.concatenate(transform1, transform2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
-        tr = pool.unique(tr);
-        return tr;
+        return unique(tr);
     }
 
     /**
@@ -827,14 +828,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throws FactoryException
     {
         lastMethod.remove();
-        MathTransform tr;
+        final MathTransform tr;
         try {
             tr = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
-        tr = pool.unique(tr);
-        return tr;
+        return unique(tr);
     }
 
     /**
@@ -863,7 +863,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
-        throw new FactoryException("Not yet implemented.");
+        final Pending pending = Pending.getInstance();
+        try {
+            return pending.createFromWKT(this, text);
+        } catch (ParseException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;
+            }
+            throw new FactoryException(exception);
+        }
+    }
+
+    /**
+     * Replaces the given transform by a unique instance, if one already exists.
+     */
+    private MathTransform unique(final MathTransform tr) {
+        return pool.unique(tr);
     }
 
     /**

@@ -51,7 +51,7 @@ import java.util.Objects;
  * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
  *
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
  * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
@@ -60,13 +60,13 @@ import java.util.Objects;
  * any public {@code ImmutableIdentifier} state.
  *
  *
- * {@section Text, URN and XML representations}
+ * <div class="section">Text, URN and XML representations</div>
  * Identifiers are represented in various ways depending on the context. In particular identifiers are
  * marshalled differently depending on whether they appear in a metadata object or a referencing object.
  * The following examples show an identifier for a Geographic Coordinate Reference System (CRS)
  * identified by code 4326 in the "EPSG" code space:
  *
- * <ul><li><p><b><cite>Well Known Text</cite> (WKT) version 1</b></p>
+ * <ul class="verbose"><li><b><cite>Well Known Text</cite> (WKT) version 1</b><br>
  * The WKT 1 format contains only the {@linkplain #getCodeSpace() code space} and the {@linkplain #getCode() code}.
  * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
  * Example:
@@ -75,7 +75,7 @@ import java.util.Objects;
  *   AUTHORITY["EPSG", "4326"]
  * }
  *
- * </li><li><p><b><cite>Well Known Text</cite> (WKT) version 2</b></p>
+ * </li><li><b><cite>Well Known Text</cite> (WKT) version 2</b><br>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
  * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} citation if available.
  * The WKT can optionally provides a {@code URI} element, which expresses the same information in a different way
@@ -86,7 +86,7 @@ import java.util.Objects;
  *   ID["EPSG", 4326, URI["urn:ogc:def:crs:EPSG::4326"]]
  * }
  *
- * </li><li><p><b>XML in referencing objects</b></p>
+ * </li><li><b>XML in referencing objects</b><br>
  * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
  * found in Geographic Markup Language (GML) documents. Example:
  *
@@ -101,7 +101,7 @@ import java.util.Objects;
  * urn:ogc:def:&lt;type&gt;:&lt;{@linkplain #getCodeSpace() codespace}&gt;:&lt;{@linkplain #getVersion() version}&gt;:&lt;{@linkplain #getCode() code}&gt;
  * </code></blockquote>
  *
- * </li><li><p><b>XML in metadata objects</b></p>
+ * </li><li><b>XML in metadata objects</b><br>
  * The XML representation of {@link ImmutableIdentifier} in a metadata is similar to the {@link DefaultIdentifier}
  * one except for the {@code "RS_"} prefix:
  *
@@ -317,7 +317,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *   </tr>
      * </table>
      *
-     * {@section Localization}
+     * <div class="section">Localization</div>
      * {@code "remarks"} is a localizable attributes which may have a language and country
      * code suffix. For example the {@code "remarks_fr"} property stands for remarks in
      * {@linkplain Locale#FRENCH French} and the {@code "remarks_fr_CA"} property stands

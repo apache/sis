@@ -51,7 +51,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositive
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

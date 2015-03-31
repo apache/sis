@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>Subclasses need to define the {@link #setParentOf(TreeTable.Node, int)} method
  * because the way to set the parent is specific to the node implementation:</p>
  *
- * {@section Implementation note}
+ * <div class="section">Implementation note</div>
  * We do not extend {@link java.util.ArrayList} because:
  * <ul>
  *   <li>We want to use identity comparisons rather than {@link Object#equals(Object)}.</li>

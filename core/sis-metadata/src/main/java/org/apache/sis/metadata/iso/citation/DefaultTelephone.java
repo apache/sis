@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Telephone numbers for contacting the responsible individual or organization.
  *
- * {@section Differences between versions 2003 and 2014 of ISO 19115}
+ * <div class="section">Differences between versions 2003 and 2014 of ISO 19115</div>
  * For any contact having more than one telephone number, the way to organize the information
  * changed significantly between the two versions of ISO standard:
  *
@@ -44,7 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *       {@link #getNumber()} and {@link #getNumberType()}.</li>
  * </ul>
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -28,7 +28,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 /**
  * A two dimensional array of numbers. Row and column numbering begins with zero.
  *
- * {@section Support for extended precision}
+ * <div class="section">Support for extended precision</div>
  * This class can optionally support extended precision using the <cite>double-double arithmetic</cite>.
  * In extended precision mode, the {@link #elements} array have twice its normal length. The first half
  * of the array contains the same value than in normal precision mode, while the second half contains
@@ -157,16 +157,17 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
 
     /**
      * Creates a new extended precision matrix of the given size.
-     * Matrices elements are initialized to zero (not to the matrix identity).
      *
      * @param numRow Number of rows.
      * @param numCol Number of columns.
+     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
+     *        or {@code false} for leaving it initialized to zero.
      */
-    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol) {
+    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol, final boolean setToIdentity) {
         if (numRow == numCol) {
-            return new GeneralMatrix(numRow, numCol, false, 2);
+            return new GeneralMatrix(numRow, numCol, setToIdentity, 2);
         } else {
-            return new NonSquareMatrix(numRow, numCol, false, 2);
+            return new NonSquareMatrix(numRow, numCol, setToIdentity, 2);
         }
     }
 
@@ -236,6 +237,38 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     @Override
     public final int getNumCol() {
         return numCol;
+    }
+
+    /**
+     * Stores the value at the specified row and column in the given {@code dd} object.
+     * This method does not need to verify argument validity.
+     */
+    @Override
+    final void get(final int row, final int column, final DoubleDouble dd) {
+        int i = row * numCol + column;
+        dd.value = elements[i];
+        i += numRow * numCol;
+        if (i < elements.length) {
+            dd.error = elements[i];
+            assert dd.equals(getNumber(row, column));
+        } else {
+            dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+        }
+    }
+
+    /**
+     * Stores the value of the given {@code dd} object at the specified row and column.
+     * This method does not need to verify argument validity.
+     */
+    @Override
+    final void set(final int row, final int column, final DoubleDouble dd) {
+        int i = row * numCol + column;
+        elements[i] = dd.value;
+        i += numRow * numCol;
+        if (i < elements.length) {
+            elements[i] = dd.error;
+            assert dd.equals(getNumber(row, column));
+        }
     }
 
     /**
@@ -318,6 +351,13 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                     elements = elements.clone();
                 }
                 return elements; // Internal array already uses extended precision.
+            } else {
+                elements = Arrays.copyOf(elements, length);
+            }
+        } else if (matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            if (elements.length == length) {
+                return elements;
             } else {
                 elements = Arrays.copyOf(elements, length);
             }
@@ -517,41 +557,10 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void normalizeColumns() {
-        final int numRow = this.numRow; // Protection against accidental changes.
-        final int numCol = this.numCol;
-        final int errors = numRow * numCol; // Where error values start.
-        final double[] elt = getExtendedElements(this, numRow, numCol, false);
-        final DoubleDouble sum = new DoubleDouble();
-        final DoubleDouble dot = new DoubleDouble();
-        for (int i=0; i<numCol; i++) {
-            sum.clear();
-            for (int j=0; j<numRow; j++) {
-                dot.setFrom(elt, j*numCol + i, errors);
-                dot.multiply(dot);
-                sum.add(dot);
-            }
-            sum.sqrt();
-            for (int j=0; j<numRow; j++) {
-                final int k = j*numCol + i;
-                dot.setFrom(sum);
-                dot.inverseDivide(elt, k, errors);
-                dot.storeTo(elt, k, errors);
-            }
-        }
-        if (elt != elements) {
-            System.arraycopy(elt, 0, elements, 0, elements.length);
-        }
-    }
-
-    /**
      * Sets this matrix to the product of the given matrices: {@code this = A × B}.
      * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
-    final void setToProduct(final MatrixSIS A, final Matrix B) {
+    final void setToProduct(final Matrix A, final Matrix B) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         final int nc = A.getNumCol();

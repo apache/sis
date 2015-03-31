@@ -40,14 +40,14 @@ import java.util.Objects;
  *       if an array is sorted, strictly or not.</li>
  * </ul>
  *
- * {@section Handling of null values}
+ * <div class="section">Handling of null values</div>
  * Many (but not all) methods in this class are tolerant to null parameter values,
  * sometime under certain conditions. See the method javadoc for details.
  *
  * <p>All methods in this class are tolerant to null elements in arrays.
  * Null and {@linkplain Double#NaN NaN} elements are ignored.</p>
  *
- * {@section Performance consideration}
+ * <div class="section">Performance consideration</div>
  * The methods listed below are provided as convenience for <strong>casual</strong> use on
  * <strong>small</strong> arrays. For large arrays or for frequent use, consider using the
  * Java collection framework instead.
@@ -2053,7 +2053,7 @@ public final class ArraysExt extends Static {
      * increasing order. The output array is the union of the input arrays without duplicated
      * values, with elements sorted in strictly increasing order.
      *
-     * {@section Recommended assertions}
+     * <div class="section">Recommended assertions</div>
      * Callers are encouraged to place the following assertions before calls to this method,
      * using the {@link #isSorted(int[], boolean)} and {@link Arrays#toString(int[])} methods:
      *

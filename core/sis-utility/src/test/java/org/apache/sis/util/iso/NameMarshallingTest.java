@@ -86,7 +86,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testLocalName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final LocalName name = factory.createLocalName(null, "An ordinary local name");
         assertEquals("An ordinary local name", name.toString());
         final String expected =
@@ -109,7 +109,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testLocalName")
     public void testLocalNameWithAmp() throws JAXBException {
-        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
         assertEquals("A name with & and > and <.", name.toString());
         final String expected =
@@ -132,7 +132,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testLocalName")
     public void testLocalNameWithScope() throws JAXBException {
-        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "A code space"), null);
         final LocalName name = factory.createLocalName(scope, "A name in a scope");
         assertEquals("A name in a scope", name.toString());
@@ -155,7 +155,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testTypeName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final TypeName name = factory.createTypeName(null, "An other local name");
         assertEquals("An other local name", name.toString());
         final String expected =
@@ -181,7 +181,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      */
     @Test
     public void testScopedName() throws JAXBException {
-        final NameFactory factory = DefaultFactories.SIS_NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final GenericName name = factory.createGenericName(null, "myScope","myName");
         assertEquals("myScope:myName", name.toString());
         final String expected =

@@ -71,11 +71,11 @@ import java.util.Objects;
  *   <li>{@linkplain #getEccentricity() eccentricity}</li>
  * </ul>
  *
- * {@section Distance calculations}
+ * <div class="section">Distance calculations</div>
  * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
  * for calculating distances on great circles.
  *
- * {@section Creating new ellipsoid instances}
+ * <div class="section">Creating new ellipsoid instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
@@ -104,7 +104,7 @@ import java.util.Objects;
  *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructors are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.

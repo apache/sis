@@ -36,16 +36,16 @@ import org.opengis.referencing.operation.MathTransform;
  *       the number of {@linkplain #getTargetDimensions() target dimensions} plus 1.</li>
  * </ul>
  *
- * {@section Affine transform}
+ * <div class="section">Affine transform</div>
  * In most cases the transform in affine. For such transforms, the last matrix row contains only zero values
  * except in the last column, which contains 1. For example a conversion from projected coordinates (metres)
  * to display coordinates (pixel) can be done as below:
  *
- * <center><p>
+ * <center>
  * <img src="../matrix/doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
- * </p></center>
+ * </center>
  *
- * {@section Projective transform}
+ * <div class="section">Projective transform</div>
  * If the last matrix row does not met the above constraints, then the transform is not affine.
  * A <cite>projective</cite> transform can be used as a generalization of affine transforms.
  * In such case the computation performed by SIS is similar to {@code PerspectiveTransform}
@@ -53,15 +53,15 @@ import org.opengis.referencing.operation.MathTransform;
  * For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
  * The transformed points {@code (x',y',z')} are computed as below:
  *
- * <center><p>{@include formulas.html#ProjectiveTransform}</p></center>
+ * <center>{@include formulas.html#ProjectiveTransform}</center>
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * The easiest way to instantiate a {@code LinearTransform} is to use the {@link MathTransforms#linear(Matrix)}
  * convenience method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
@@ -70,6 +70,18 @@ import org.opengis.referencing.operation.MathTransform;
  * @see <a href="http://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  */
 public interface LinearTransform extends MathTransform {
+    /**
+     * Returns {@code true} if this transform is affine.
+     * An affine transform preserves parallelism.
+     *
+     * @return {@code true} if this transform is affine.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.MatrixSIS#isAffine()
+     *
+     * @since 0.6
+     */
+    boolean isAffine();
+
     /**
      * Returns the coefficients of this linear transform as a matrix.
      * Converting a coordinate with this {@code MathTransform} is equivalent to multiplying the

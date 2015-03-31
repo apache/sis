@@ -18,18 +18,30 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 import javax.measure.unit.SI;
+import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.resources.Messages;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
@@ -51,24 +63,18 @@ public abstract class MapProjection extends AbstractProvider {
     private static final long serialVersionUID = 6280666068007678702L;
 
     /**
-     * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor semi-major}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
+     * All names known to Apache SIS for the <cite>semi-major</cite> parameter.
+     * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajor"} and {@code "a"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
     /**
-     * All names known to Apache SIS for the
-     * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor semi-minor}
-     * parameter. This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
+     * All names known to Apache SIS for the <cite>semi-minor</cite> parameter.
+     * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
-     *
-     * @see org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMinor
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
     static {
@@ -119,10 +125,99 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection from the specified group of parameter values.
      *
-     * @param  values The group of parameter values.
+     * @param  factory The factory to use for creating and concatenating the (de)normalization transforms.
+     * @param  parameters The group of parameter values.
+     * @return The map projection created from the given parameter values.
+     * @throws ParameterNotFoundException if a required parameter was not found.
+     * @throws FactoryException if the map projection can not be created.
+     */
+    @Override
+    public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
+            throws ParameterNotFoundException, FactoryException
+    {
+        return createProjection(Parameters.castOrWrap(parameters)).createMapProjection(factory);
+    }
+
+    /**
+     * Creates a map projection on an ellipsoid having a semi-major axis length of 1.
+     *
+     * @param  parameters The group of parameter values.
      * @return The map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
-    @Override
-    public abstract MathTransform2D createMathTransform(ParameterValueGroup values) throws ParameterNotFoundException;
+    protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                          ////////
+    ////////                       HELPER METHODS FOR SUBCLASSES                      ////////
+    ////////                                                                          ////////
+    ////////    Following methods are defined for sharing the same GenericName or     ////////
+    ////////    Identifier instances when possible.                                   ////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the name of the given authority declared in the given parameter descriptor.
+     * This method is used only as a way to avoid creating many instances of the same name.
+     */
+    static GenericName sameNameAs(final Citation authority, final GeneralParameterDescriptor parameters) {
+        for (final GenericName candidate : parameters.getAlias()) {
+            if (candidate instanceof Identifier && ((Identifier) candidate).getAuthority() == authority) {
+                return candidate;
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    /**
+     * Copies the EPSG name and identifier from the given parameter into the builder.
+     * The EPSG objects are presumed the first name and identifier (this is not verified).
+     */
+    static ParameterBuilder onlyEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
+        return builder.addIdentifier(source.getIdentifiers().iterator().next()).addName(source.getName());
+    }
+
+    /**
+     * Copies all names except the EPSG one from the given parameter into the builder.
+     * The EPSG name is presumed the first name and identifier (this is not verified).
+     */
+    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
+        for (final GenericName alias : source.getAlias()) {
+            builder.addName(alias);
+        }
+        return builder;
+    }
+
+    /**
+     * Copies the names and identifiers from the given parameter into the builder.
+     * The given {@code esri} and {@code netcdf} parameters will be inserted after the OGC name.
+     */
+    static ParameterBuilder withEsriAndNetcdf(final ParameterDescriptor<?> source, final ParameterBuilder builder,
+            final String esri, final String netcdf)
+    {
+        for (final Identifier identifier : source.getIdentifiers()) {
+            builder.addIdentifier(identifier);
+        }
+        builder.addName(source.getName());
+        for (final GenericName alias : source.getAlias()) {
+            builder.addName(alias);
+            if (((Identifier) alias).getAuthority() == Citations.OGC) {
+                builder.addName(Citations.ESRI,   esri)
+                       .addName(Citations.NETCDF, netcdf);
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * Creates a remarks for parameters that are not formally EPSG parameter.
+     *
+     * @param origin The name of the projection for where the parameter is formally used.
+     * @param usedIn The name of the projection where we also use that parameter.
+     */
+    static InternationalString notFormalParameter(final String origin, final String usedIn) {
+        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_2, origin, usedIn);
+    }
 }

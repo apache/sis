@@ -26,15 +26,15 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * Handles conversions from {@link Date} to various objects.
  *
- * {@section String representation}
+ * <div class="section">String representation</div>
  * There is currently no converter between {@link String} and {@link java.util.Date} because the
  * date format is not yet defined (we are considering the ISO format for a future SIS version).
  *
- * {@section Special cases}
+ * <div class="section">Special cases</div>
  * The converter from dates to timestamps is not injective, because the same date could be mapped
  * to many timestamps since timestamps have an additional nanoseconds field.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

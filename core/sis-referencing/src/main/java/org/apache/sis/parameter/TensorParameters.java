@@ -77,7 +77,7 @@ import java.util.Objects;
  * For a more efficient matrix storage,
  * see the {@linkplain org.apache.sis.referencing.operation.matrix matrix package}.</p>
  *
- * {@section Formatting}
+ * <div class="section">Formatting</div>
  * In the particular case of a tensor of {@linkplain #rank() rank} 2 (i.e. a matrix),
  * the parameters are typically formatted as below. Note that in the EPSG convention,
  * the matrix is implicitly {@linkplain Matrices#isAffine affine} and of dimension 3×3.
@@ -121,7 +121,7 @@ import java.util.Objects;
  * depends on the {@code "num_row"} and {@code "num_col"} parameter values. For this reason, the descriptor of
  * matrix or tensor parameters is not immutable.
  *
- * {@section Usage examples}
+ * <div class="section">Usage examples</div>
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
  * one can use the following code:
  *
@@ -183,7 +183,7 @@ public class TensorParameters<E> implements Serializable {
      * }</td></tr>
      * </table>
      *
-     * {@section Relationship with EPSG}
+     * <div class="section">Relationship with EPSG</div>
      * The above-cited group of parameters are close, but not identical, to the definitions provided
      * by the <cite>"Affine parametric transformation"</cite> (EPSG:9624) operation method.
      * The differences are:
@@ -478,12 +478,12 @@ public class TensorParameters<E> implements Serializable {
      * This method is invoked by {@link #getElementDescriptor(int[])} when a new descriptor needs
      * to be created.
      *
-     * <p><b>Default implementation</b></p>
+     * <div class="section">Default implementation</div>
      * The default implementation converts the given indices to a parameter name by invoking the
      * {@link #indicesToName(int[])} method, then creates a descriptor for an optional parameter
      * of that name. The default value is given by {@link #getDefaultValue(int[])}.
      *
-     * <p><b>Subclassing</b></p>
+     * <div class="section">Subclassing</div>
      * Subclasses can override this method if they want more control on descriptor properties
      * like identification information, aliases or value domain.
      *
@@ -506,13 +506,13 @@ public class TensorParameters<E> implements Serializable {
      * Returns the parameter descriptor name of a matrix or tensor element at the given indices.
      * The returned name shall be parsable by the {@link #nameToIndices(String)} method.
      *
-     * <p><b>Default implementation</b></p>
+     * <div class="section">Default implementation</div>
      * The default implementation requires an {@code indices} array having a length equals to the {@linkplain #rank()
      * rank}. That length is usually 2, where {@code indices[0]} is the <var>row</var> index and {@code indices[1]} is
      * the <var>column</var> index. Then this method builds a name with the “{@link #prefix} + <var>row</var> +
      * {@link #separator} + <var>column</var> + …” pattern (e.g. {@code "elt_0_0"}).
      *
-     * <p><b>Subclassing</b></p>
+     * <div class="section">Subclassing</div>
      * If a subclass overrides this method for creating different names, then that subclass shall
      * also override {@link #nameToIndices(String)} for parsing those names.
      *
@@ -535,7 +535,7 @@ public class TensorParameters<E> implements Serializable {
      * Returns the indices of matrix element for the given parameter name, or {@code null} if none.
      * This method is the converse of {@link #indicesToName(int[])}.
      *
-     * <p><b>Default implementation</b></p>
+     * <div class="section">Default implementation</div>
      * The default implementation expects a name matching the “{@link #prefix} + <var>row</var> + {@link #separator} +
      * <var>column</var> + …” pattern and returns an array containing the <var>row</var>, <var>column</var> and other
      * indices, in that order.

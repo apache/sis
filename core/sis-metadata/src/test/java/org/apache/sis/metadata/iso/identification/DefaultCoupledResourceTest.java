@@ -17,19 +17,20 @@
 package org.apache.sis.metadata.iso.identification;
 
 import org.opengis.util.ScopedName;
+import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameterTest;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
 import static org.junit.Assert.*;
 
 
@@ -53,7 +54,8 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
         operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
         final DefaultCoupledResource resource = new DefaultCoupledResource();
-        resource.setScopedName((ScopedName) SIS_NAMES.createGenericName(null, "mySpace", "ABC-123"));
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        resource.setScopedName((ScopedName) factory.createGenericName(null, "mySpace", "ABC-123"));
         resource.setOperation(operation);
         return resource;
     }

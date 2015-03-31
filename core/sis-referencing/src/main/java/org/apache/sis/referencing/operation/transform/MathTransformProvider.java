@@ -22,6 +22,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 
 
 /**
@@ -40,7 +41,7 @@ import org.opengis.referencing.operation.MathTransform;
  * Alternative, one can also use a {@linkplain DefaultMathTransformFactory math transform factory}</p>
  *
  *
- * {@section How to add custom coordinate operations to Apache SIS}
+ * <div class="section">How to add custom coordinate operations to Apache SIS</div>
  * {@link DefaultMathTransformFactory} can discover automatically new coordinate operations
  * (including map projections) by scanning the classpath. To define a custom coordinate operation,
  * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this
@@ -58,7 +59,7 @@ import org.opengis.referencing.operation.MathTransform;
  *         }
  *
  *         &#64;Override
- *         public MathTransform createMathTransform(ParameterValueGroup values) {
+ *         public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
  *             double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
  *             double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
  *             // etc...
@@ -92,7 +93,7 @@ public interface MathTransformProvider {
      * before to instantiate the transform:
      *
      * {@preformat java
-     *     public MathTransform createMathTransform(ParameterValueGroup values) {
+     *     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
      *         double semiMajor = values.parameter("semi_major").doubleValue(SI.METRE);
      *         double semiMinor = values.parameter("semi_minor").doubleValue(SI.METRE);
      *         // etc...
@@ -101,15 +102,23 @@ public interface MathTransformProvider {
      * }
      * </div>
      *
-     * @param  values The group of parameter values.
-     * @return The created math transform.
-     * @throws InvalidParameterNameException if the values contains an unknown parameter.
+     * <div class="section">Purpose of the factory argument</div>
+     * Some math transforms may actually be implemented as a chain of operation steps, for example a
+     * {@linkplain DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
+     * concatenation} of {@linkplain DefaultMathTransformFactory#createAffineTransform affine transforms}
+     * with other kind of transforms. In such cases, implementors should use the given factory for creating
+     * the steps.
+     *
+     * @param  factory The factory to use if this constructor needs to create other math transforms.
+     * @param  parameters The parameter values that define the transform to create.
+     * @return The math transform created from the given parameters.
+     * @throws InvalidParameterNameException if the given parameter group contains an unknown parameter.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws InvalidParameterValueException if a parameter has an invalid value.
      * @throws FactoryException if the math transform can not be created for some other reason
      *         (for example a required file was not found).
      */
-    MathTransform createMathTransform(ParameterValueGroup values)
+    MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters)
             throws InvalidParameterNameException, ParameterNotFoundException,
                    InvalidParameterValueException, FactoryException;
 }

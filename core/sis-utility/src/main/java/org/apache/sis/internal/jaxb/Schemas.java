@@ -27,7 +27,7 @@ package org.apache.sis.internal.jaxb;
  *       constant in order to get the full path to a file.</li>
  * </ul>
  *
- * {@section Note on multi-lingual files}
+ * <div class="section">Note on multi-lingual files</div>
  * Some files are available in two variants: with and without {@code "ML_"} prefix, which stands for "Multi Lingual".
  * Some examples are {@code "[ML_]gmxCodelists.xml"} and {@code "[ML_]gmxUom.xml"}. The following assumptions hold:
  *

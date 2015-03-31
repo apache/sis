@@ -29,12 +29,12 @@ import static java.lang.Character.*;
  * class duplicate the functionalities already provided in the standard {@link String} class,
  * but works on a generic {@code CharSequence} instance instead than {@code String}.
  *
- * {@section Unicode support}
+ * <div class="section">Unicode support</div>
  * Every methods defined in this class work on <cite>code points</cite> instead than characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
- * {@section Policy on space characters}
+ * <div class="section">Policy on space characters</div>
  * Java defines two methods for testing if a character is a white space:
  * {@link Character#isWhitespace(int)} and {@link Character#isSpaceChar(int)}.
  * Those two methods differ in the way they handle {@linkplain Characters#NO_BREAK_SPACE
@@ -66,7 +66,7 @@ import static java.lang.Character.*;
  * distinction about whether the characters are space or not, and ignore all Unicode spaces.
  * The {@link #trimWhitespaces(String)} method defined in this class can be used as an alternative.</p>
  *
- * {@section Handling of null values}
+ * <div class="section">Handling of null values</div>
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
  * the method return value is either a {@code null} {@code CharSequence}, an empty array, or a
  * {@code 0} or {@code false} primitive type calculated as if the input was an empty string.
@@ -121,7 +121,7 @@ public final class CharSequences extends Static {
     /**
      * Returns a character sequence of the specified length filled with white spaces.
      *
-     * {@section Use case}
+     * <div class="section">Use case</div>
      * This method is typically invoked for performing right-alignment of text on the
      * {@linkplain java.io.Console console} or other device using monospaced font.
      * Callers compute a value for the {@code length} argument by (<var>desired width</var> - <var>used width</var>).
@@ -1073,15 +1073,15 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>More specifically if the given value ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are omitted. Otherwise this
-     * method returns the text unchanged. This is a "<cite>all or nothing</cite>" method:
+     * method returns the text unchanged. This is a <cite>"all or nothing"</cite> method:
      * either the fractional part is completely removed, or either it is left unchanged.</p>
      *
-     * {@section Examples}
+     * <div class="section">Examples</div>
      * This method returns {@code "4"} if the given value is {@code "4."}, {@code "4.0"} or
      * {@code "4.00"}, but returns {@code "4.10"} unchanged (including the trailing {@code '0'}
      * character) if the input is {@code "4.10"}.
      *
-     * {@section Use case}
+     * <div class="section">Use case</div>
      * This method is useful before to {@linkplain Integer#parseInt(String) parse a number}
      * if that number should preferably be parsed as an integer before attempting to parse
      * it as a floating point number.
@@ -1250,7 +1250,7 @@ searchWordBreak:    while (true) {
      * <ol>
      *   <li>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
      *     on the basis of character case. For example {@code "transferFunctionType"} become
-     *     "<cite>transfer function type</cite>". This works fine for ISO 19115 identifiers.</li>
+     *     <cite>"transfer function type"</cite>. This works fine for ISO 19115 identifiers.</li>
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
      *     an other common naming convention, which uses {@code '_'} as a word separator. This
@@ -1259,7 +1259,7 @@ searchWordBreak:    while (true) {
      *   <li>Finally ensure that the first character is upper-case.</li>
      * </ol>
      *
-     * {@section Exception to the above rules}
+     * <div class="section">Exception to the above rules</div>
      * If the given identifier contains only upper-case letters, digits and the {@code '_'} character,
      * then the identifier is returned "as is" except for the {@code '_'} characters which are replaced by {@code '-'}.
      * This work well for identifiers like {@code "UTF-8"} or {@code "ISO-LATIN-1"} for instance.
@@ -1301,7 +1301,7 @@ searchWordBreak:    while (true) {
      * Given a string in camel cases, returns a string with the same words separated by spaces.
      * A word begins with a upper-case character following a lower-case character. For example
      * if the given string is {@code "PixelInterleavedSampleModel"}, then this method returns
-     * "<cite>Pixel Interleaved Sample Model</cite>" or "<cite>Pixel interleaved sample model</cite>"
+     * <cite>"Pixel Interleaved Sample Model"</cite> or <cite>"Pixel interleaved sample model"</cite>
      * depending on the value of the {@code toLowerCase} argument.
      *
      * <p>If {@code toLowerCase} is {@code false}, then this method inserts spaces but does not change
@@ -1546,7 +1546,7 @@ cmp:    while (ia < lga) {
      * Unicode identifier start} and all remaining characters (if any) are
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts}.
      *
-     * {@section Relationship with legal XML identifiers}
+     * <div class="section">Relationship with legal XML identifiers</div>
      * Most legal Unicode identifiers are also legal XML identifiers, but the converse is not true.
      * The most noticeable differences are the ‘{@code :}’, ‘{@code -}’ and ‘{@code .}’ characters,
      * which are legal in XML identifiers but not in Unicode.
@@ -1567,7 +1567,7 @@ cmp:    while (ia < lga) {
      * Note that the ‘{@code _}’ (underscore) character is legal according both Unicode and XML, while spaces,
      * ‘{@code !}’, ‘{@code #}’, ‘{@code *}’, ‘{@code /}’, ‘{@code ?}’ and most other punctuation characters are not.
      *
-     * {@section Usage in Apache SIS}
+     * <div class="section">Usage in Apache SIS</div>
      * In its handling of {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier identifiers}, Apache SIS favors
      * Unicode identifiers without {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters since those
      * identifiers are legal XML identifiers except for the above-cited rarely used characters. As a side effect,

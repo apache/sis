@@ -61,7 +61,7 @@ import java.util.Objects;
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
  * where {@code Identifier} instances are required, like GML marshalling time.
  *
- * {@section Name ↔ Identifier mapping}
+ * <div class="section">Name ↔ Identifier mapping</div>
  * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
@@ -70,7 +70,7 @@ import java.util.Objects;
  *   <li><b>{@linkplain #scope() Scope}:</b> derived from the shortest {@linkplain #getAuthority() authority}'s
  *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
  *     if there is no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
- *     often contain abbreviation (for example "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>").</li>
+ *     often contain abbreviation (for example "DCW" as an alternative title for <cite>"Digital Chart of the World"</cite>).</li>
  * </ul>
  *
  * <div class="note"><b>Example:</b>
@@ -80,7 +80,7 @@ import java.util.Objects;
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
  * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#freeze()
@@ -255,7 +255,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @category Generic name
      */
     private GenericName createName(final Citation authority, final CharSequence code) {
-        final NameFactory factory = DefaultFactories.NAMES;
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final String identifier = getUnicodeIdentifier(authority);      // Whitespaces trimed by Citations.
         NameSpace scope = null;
         if (identifier != null) {

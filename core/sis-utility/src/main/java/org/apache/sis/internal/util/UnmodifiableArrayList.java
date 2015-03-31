@@ -44,7 +44,7 @@ import java.util.Objects;
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
  * interface.
  *
- * {@section WARNING! Type safety hole}
+ * <div class="section">WARNING! Type safety hole</div>
  * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
  * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
  * covariant (at the contrary of collections). In order to avoid such contract violation, callers
@@ -85,7 +85,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * the caller to instantiate the array explicitely, in order to make sure that the array type is
      * the intended one.</p>
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. See class javadoc for more information.
      *
@@ -100,7 +100,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
@@ -128,7 +128,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * <p>This method does not check the validity of the given index.
      * The check must be done by the caller.</p>
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
@@ -328,7 +328,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
         /**
          * Creates a new sublist.
          *
-         * {@section WARNING! Type safety hole}
+         * <p><b>WARNING! Type safety hole</b></p>
          * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
          * not a subtype of {@code E}. See {@link UnmodifiableArrayList} class javadoc for more information.
          */

@@ -194,7 +194,7 @@ public final strictfp class NumberConverterTest extends TestCase {
     public void testLargeValue() {
         final long longValue = 1000000000000000010L;
         final double doubleValue = longValue;
-        assertTrue(Math.ulp(doubleValue) > 10); // Need to have more digits than 'double' capacity.
+        assertTrue(StrictMath.ulp(doubleValue) > 10); // Need to have more digits than 'double' capacity.
         runConversion(create(BigDecimal.class, Double.class),
                 BigDecimal.valueOf(longValue), Double.valueOf(doubleValue), BigDecimal.valueOf(doubleValue));
 

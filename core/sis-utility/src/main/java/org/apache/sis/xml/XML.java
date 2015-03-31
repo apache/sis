@@ -79,7 +79,7 @@ public final class XML extends Static {
      * such case, the unmarshaller will try to pickup a string in the language specified
      * by this property.</p>
      *
-     * {@section Default behavior}
+     * <div class="section">Default behavior</div>
      * If this property is never set, then (un)marshalling will try to use "unlocalized" strings -
      * typically some programmatic strings like {@linkplain org.opengis.annotation.UML#identifier()
      * UML identifiers}. While such identifiers often look like English words, they are not
@@ -87,7 +87,7 @@ public final class XML extends Static {
      * The algorithm attempting to find a "unlocalized" string is defined in the
      * {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
      *
-     * {@section Special case}
+     * <div class="section">Special case</div>
      * If the object to be marshalled is an instance of
      * {@link org.apache.sis.metadata.iso.DefaultMetadata}, then the value given to its
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage(Locale) setLanguage(Locale)}
@@ -103,7 +103,7 @@ public final class XML extends Static {
      * The value for this property shall be an instance of {@link TimeZone}
      * or a {@link CharSequence} recognized by {@link TimeZone#getTimeZone(String)}.
      *
-     * {@section Default behavior}
+     * <div class="section">Default behavior</div>
      * If this property is never set, then (un)marshalling will use the
      * {@linkplain TimeZone#getDefault() default timezone}.
      */
@@ -125,7 +125,7 @@ public final class XML extends Static {
      * for the ISO 19139 schemas. Additional keys, if any, are ignored. Future SIS versions
      * may recognize more keys.
      *
-     * {@section Valid values}
+     * <div class="section">Valid values</div>
      * <table class="sis">
      *   <caption>Supported schemas</caption>
      *   <tr><th>Map key</th> <th>Typical values (choose only one)</th></tr>
@@ -143,7 +143,7 @@ public final class XML extends Static {
      * Specifies the default namespace of the XML document to write.
      * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
      *
-     * {@section Current limitation}
+     * <div class="section">Current limitation</div>
      * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
      * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
      * This limitation may be fixed in a future SIS version.
@@ -161,7 +161,7 @@ public final class XML extends Static {
      * The value can be {@link String} or {@link Version} objects.
      * If no version is specified, then the most recent GML version is assumed.
      *
-     * {@section Supported GML versions}
+     * <div class="section">Supported GML versions</div>
      * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
      * if this property is set to "3.2". It is also possible to set this property to "3.1",
      * but the marshalled XML is not GML 3.1.1 conformant because of the differences between the two schemas.
@@ -206,9 +206,8 @@ public final class XML extends Static {
      * for replacing an erroneous URL by a fixed URL. See the {@link ValueConverter} javadoc for
      * more details.</p>
      *
-     * {@section Example}
-     * The following example collects the failures in a list without stopping the (un)marshalling
-     * process.
+     * <div class="note"><b>Example:</b>
+     * the following example collects the failures in a list without stopping the (un)marshalling process.
      *
      * {@preformat java
      *     class WarningCollector extends ValueConverter {
@@ -237,6 +236,7 @@ public final class XML extends Static {
      *         // Report here the warnings to the user.
      *     }
      * }
+     * </div>
      *
      * @see Unmarshaller#setProperty(String, Object)
      * @see ValueConverter
@@ -254,7 +254,7 @@ public final class XML extends Static {
      *   <li>"{@code mimetype}" for substituting {@code <gmx:MimeFileType>} elements</li>
      * </ul>
      *
-     * {@section Example}
+     * <div class="note"><b>Example:</b>
      * INSPIRE compliant language code shall be formatted like below (details may vary):
      *
      * {@preformat xml
@@ -273,6 +273,7 @@ public final class XML extends Static {
      *     <gco:CharacterString>fra</gco:CharacterString>
      *   </gmd:language>
      * }
+     * </div>
      */
     public static final String STRING_SUBSTITUTES = "org.apache.sis.xml.stringSubstitutes";
 

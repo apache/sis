@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 import java.io.IOException;
-import org.opengis.referencing.operation.Matrix;
+import org.opengis.util.Factory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -28,6 +28,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.io.TableAppender;
@@ -40,7 +41,8 @@ import static java.lang.StrictMath.*;
 import org.opengis.test.Validators;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
-import static org.apache.sis.test.ReferencingAssert.*;
+import org.apache.sis.test.ReferencingAssert;
+import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.test.CalculationType;
@@ -49,11 +51,28 @@ import org.opengis.test.ToleranceModifier;
 
 /**
  * Base class for tests of {@link AbstractMathTransform} implementations.
- * This base class inherits the convenience methods defined in GeoAPI and adds a few {@code verifyFoo} methods.
+ * This base class provides the following methods, some of them inherited from GeoAPI:
+ *
+ * <p>Various assertion methods:</p>
+ * <ul>
+ *   <li>{@link #assertCoordinateEquals assertCoordinateEquals(…)}  — from GeoAPI</li>
+ *   <li>{@link #assertMatrixEquals     assertMatrixEquals(…)}      — from GeoAPI</li>
+ *   <li>{@link #assertParameterEquals  assertParameterEquals(…)}   — from Apache SIS</li>
+ *   <li>{@link #assertWktEquals        assertWktEquals(…)}         — from Apache SIS</li>
+ * </ul>
+ *
+ * <p>Various test methods:</p>
+ * <ul>
+ *   <li>{@link #verifyConsistency(float...)}           — from GeoAPI</li>
+ *   <li>{@link #verifyInverse(double...)}              — from GeoAPI</li>
+ *   <li>{@link #verifyDerivative(double...)}           — from GeoAPI</li>
+ *   <li>{@link #verifyInDomain verifyInDomain(…)}      — from GeoAPI</li>
+ *   <li>{@link #verifyTransform(double[], double[])}   — from GeoAPI and Apache SIS</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract strictfp class MathTransformTestCase extends TransformTestCase {
@@ -91,16 +110,21 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     protected double zTolerance;
 
     /**
-     * An optional message to pre-concatenate to the error message if one of the {@code assert}
-     * methods fail. This field shall contain information about the test configuration that may
-     * be useful in determining the cause of a test failure.
-     */
-    protected String messageOnFailure;
-
-    /**
      * Creates a new test case.
      */
     protected MathTransformTestCase() {
+        this(NO_FACTORY);
+    }
+
+    /**
+     * Creates a new test case which will use the given factories. Those factories will be given to
+     * {@link org.opengis.test.ImplementationDetails#configuration(Factory[])} in order to decide
+     * which tests should be enabled.
+     *
+     * @param factories The factories to be used by the test.
+     */
+    protected MathTransformTestCase(final Factory... factories) {
+        super(factories);
         /*
          * Use 'zTolerance' threshold instead of 'tolerance' when comparing vertical coordinate values.
          */
@@ -122,7 +146,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * given comparison mode, or -1 if none.
      */
     @SuppressWarnings("fallthrough")
-    static int forComparison(final int[] config, final CalculationType mode) {
+    private static int forComparison(final int[] config, final CalculationType mode) {
         if (config != null) {
             switch (mode) {
                 case INVERSE_TRANSFORM: if (config.length >= 2) return config[1]; // Intentional fallthrough.
@@ -133,7 +157,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Invoked by all {@code assertCoordinateEqual(…)} methods before two positions are compared.
+     * Invoked by all {@code assertCoordinateEquals(…)} methods before two positions are compared.
      * The SIS implementation ensures that longitude values are contained in the ±180° range,
      * applying 360° shifts if needed.
      *
@@ -146,9 +170,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     protected final void normalize(final DirectPosition expected, final DirectPosition actual, final CalculationType mode) {
         final int i = forComparison(λDimension, mode);
         if (i >= 0) {
-            double e;
-            e = expected.getOrdinate(i); e -= 360*floor(e/360); expected.setOrdinate(i, e);
-            e =   actual.getOrdinate(i); e -= 360*floor(e/360);   actual.setOrdinate(i, e);
+            expected.setOrdinate(i, Longitude.normalize(expected.getOrdinate(i)));
+            actual  .setOrdinate(i, Longitude.normalize(actual  .getOrdinate(i)));
         }
     }
 
@@ -176,18 +199,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Completes the error message by pre-concatenating {@link #messageOnFailure} if non-null.
-     */
-    private String completeMessage(final String message) {
-        if (messageOnFailure == null) {
-            return message;
-        }
-        final String lineSeparator = System.lineSeparator();
-        // Note: JUnit message will begin with a space.
-        return messageOnFailure + lineSeparator + message + lineSeparator + "JUnit message:";
-    }
-
-    /**
      * Validates the current {@linkplain #transform transform}. This method verifies that
      * the transform implements {@link MathTransform1D} or {@link MathTransform2D} if the
      * transform dimension suggests that it should. In addition, all Apache SIS transforms
@@ -200,51 +211,13 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         Validators.validate(transform);
         final int dimension = transform.getSourceDimensions();
         if (transform.getTargetDimensions() == dimension) {
-            assertEquals(completeMessage("MathTransform1D"), dimension == 1, (transform instanceof MathTransform1D));
-            assertEquals(completeMessage("MathTransform2D"), dimension == 2, (transform instanceof MathTransform2D));
+            assertEquals("transform instanceof MathTransform1D:", (transform instanceof MathTransform1D), dimension == 1);
+            assertEquals("transform instanceof MathTransform2D:", (transform instanceof MathTransform2D), dimension == 2);
         } else {
-            assertFalse(completeMessage("MathTransform1D"), transform instanceof MathTransform1D);
-            assertFalse(completeMessage("MathTransform2D"), transform instanceof MathTransform2D);
+            assertFalse("transform instanceof MathTransform1D:", transform instanceof MathTransform1D);
+            assertFalse("transform instanceof MathTransform2D:", transform instanceof MathTransform2D);
         }
-        assertInstanceOf(completeMessage("Parameterized"), Parameterized.class, transform);
-    }
-
-    /**
-     * Asserts that the parameters of current {@linkplain #transform transform} are equal to the given ones.
-     * This method can check the descriptor separately, for easier isolation of mismatch in case of failure.
-     *
-     * @param descriptor
-     *          The expected parameter descriptor, or {@code null} for bypassing this check.
-     *          The descriptor is required to be strictly the same instance, since Apache SIS
-     *          implementation returns constant values.
-     * @param values
-     *          The expected parameter values, or {@code null} for bypassing this check.
-     *          Floating points values are compared in the units of the expected value,
-     *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
-     */
-    protected final void verifyParameters(final ParameterDescriptorGroup descriptor, final ParameterValueGroup values) {
-        assertInstanceOf(completeMessage("TransformTestCase.transform"), Parameterized.class, transform);
-        if (descriptor != null) {
-            assertSame("ParameterDescriptor", descriptor, ((Parameterized) transform).getParameterDescriptors());
-        }
-        if (values != null) {
-            assertSame(descriptor, values.getDescriptor());
-            assertParameterEquals(values, ((Parameterized) transform).getParameterValues(), tolerance);
-        }
-    }
-
-    /**
-     * Verifies if {@link MathTransform#isIdentity()} on the current {@linkplain #transform transform}.
-     * If the current transform is linear, then this method will also verifies {@link Matrix#isIdentity()}.
-     *
-     * @param expected The expected return value of {@code isIdentit()} methods.
-     */
-    protected final void verifyIsIdentity(final boolean expected) {
-        assertEquals(completeMessage("isIdentity()"), expected, transform.isIdentity());
-        if (transform instanceof LinearTransform) {
-            assertEquals(completeMessage("getMatrix().isIdentity()"), expected,
-                    ((LinearTransform) transform).getMatrix().isIdentity());
-        }
+        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
     }
 
     /**
@@ -275,9 +248,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
          */
         final float[] asFloats = Numerics.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
-        final String  message  = completeMessage("Detected change in source coordinates.");
         for (int i=0; i<coordinates.length; i++) {
-            assertEquals(message, (float) coordinates[i], asFloats[i], 0f); // Paranoiac check.
+            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f); // Paranoiac check.
         }
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
@@ -300,14 +272,55 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Stress the current {@linkplain #transform transform} using random ordinates in the given domain.
+     * First, this method creates a grid of regularly spaced points along all dimensions in the given domain.
+     * Next, this method adds small random displacements to every points and shuffle the coordinates in random order.
+     * Finally this method delegates the resulting array of coordinates to the following methods:
+     *
+     * <ul>
+     *   <li>{@link #verifyConsistency(float[])}</li>
+     *   <li>{@link #verifyInverse(float[])}</li>
+     *   <li>{@link #verifyDerivative(double[])}</li>
+     * </ul>
+     *
+     * This method does not {@linkplain #validate() validate} the transform; it is caller responsibility
+     * to validate if desired.
+     *
+     * @param  domain The domain of the numbers to be generated.
+     * @param  randomSeed The seed for the random number generator, or 0 for choosing a random seed.
+     * @throws TransformException If a conversion, transformation or derivative failed.
+     *
+     * @since 0.6
+     */
+    @SuppressWarnings("fallthrough")
+    protected final void verifyInDomain(final CoordinateDomain domain, final long randomSeed) throws TransformException {
+        final int      dimension    = transform.getSourceDimensions();
+        final double[] minOrdinates = new double[dimension];
+        final double[] maxOrdinates = new double[dimension];
+        final int[]    numOrdinates = new int   [dimension];
+        switch (dimension) {
+            default: throw new UnsupportedOperationException("Too many dimensions.");
+            case 3: minOrdinates[2] = domain.zmin; maxOrdinates[2] = domain.zmax; numOrdinates[2] = 3;     // Fall through
+            case 2: minOrdinates[1] = domain.ymin; maxOrdinates[1] = domain.ymax; numOrdinates[1] = 8;     // Fall through
+            case 1: minOrdinates[0] = domain.xmin; maxOrdinates[0] = domain.xmax; numOrdinates[0] = 8;     // Fall through
+            case 0: break;
+        }
+        final Random random = (randomSeed == 0)
+                ? TestUtilities.createRandomNumberGenerator()
+                : TestUtilities.createRandomNumberGenerator(randomSeed);
+
+        verifyInDomain(minOrdinates, maxOrdinates, numOrdinates, random);
+    }
+
+    /**
      * Generates random numbers that can be used for the current transform.
      *
      * @param  domain  The domain of the numbers to be generated.
      * @param  propNaN Approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
      * @return Random  coordinates in the given domain.
      */
-    protected final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
-        assertNotNull("Transform field must be assigned a value.", transform);
+    final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
         final int dimension = transform.getSourceDimensions();
         final int numPts    = ORDINATE_COUNT / dimension;
         final Random random = TestUtilities.createRandomNumberGenerator();
@@ -319,16 +332,41 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Asserts that the parameters of current {@linkplain #transform transform} are equal to the given ones.
+     * This method can check the descriptor separately, for easier isolation of mismatch in case of failure.
+     *
+     * @param descriptor
+     *          The expected parameter descriptor, or {@code null} for bypassing this check.
+     *          The descriptor is required to be strictly the same instance, since Apache SIS
+     *          implementation returns constant values.
+     * @param values
+     *          The expected parameter values, or {@code null} for bypassing this check.
+     *          Floating points values are compared in the units of the expected value,
+     *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
+     */
+    protected final void assertParameterEquals(final ParameterDescriptorGroup descriptor, final ParameterValueGroup values) {
+        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        if (descriptor != null) {
+            assertSame("transform.getParameterDescriptors():", descriptor,
+                    ((Parameterized) transform).getParameterDescriptors());
+        }
+        if (values != null) {
+            assertSame(descriptor, values.getDescriptor());
+            ReferencingAssert.assertParameterEquals(values,
+                    ((Parameterized) transform).getParameterValues(), tolerance);
+        }
+    }
+
+    /**
      * Asserts that the current {@linkplain #transform transform} produces the given WKT.
      *
      * @param expected The expected WKT.
      *
      * @see #printInternalWKT()
      */
-    protected final void verifyWKT(final String expected) {
-        assertNotNull("Transform field must be assigned a value.", transform);
-        assertEquals("WKT comparison with tolerance not yet implemented.", 0.0, tolerance, 0.0);
-        assertWktEquals(Convention.WKT1, expected, transform);
+    protected final void assertWktEquals(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEquals(Convention.WKT1, expected, transform);
     }
 
     /**

@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -43,6 +44,7 @@ import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -61,17 +63,17 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. "<cite>World Geodetic System 1984</cite>"),
- * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. "<cite>WGS 84 / World Mercator</cite>") or
- * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. "<cite>Mercator (variant A)</cite>").
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <cite>"World Geodetic System 1984"</cite>),
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <cite>"WGS 84 / World Mercator"</cite>) or
+ * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
  * However it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
@@ -85,7 +87,7 @@ import java.util.Objects;
  *   <li>optional {@linkplain #getRemarks() remarks}.</li>
  * </ul>
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
  * However exceptions to this rule may occur when it is not possible to identify the exact type.
@@ -107,7 +109,7 @@ import java.util.Objects;
  *       All other information are fetched from the database.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable if the {@link Citation}, {@link Identifier}, {@link GenericName} and
  * {@link InternationalString} instances given to the constructor are also immutable. Most SIS subclasses and
  * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
@@ -277,7 +279,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   </tr>
      * </table>
      *
-     * {@section Localization}
+     * <div class="section">Localization</div>
      * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
      * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
@@ -287,7 +289,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
-     * {@section Properties map versus explicit arguments}
+     * <div class="section">Properties map versus explicit arguments</div>
      * Generally speaking, information provided in the {@code properties} map are considered ignorable metadata
      * while information provided in explicit arguments to the sub-class constructors have an impact on coordinate
      * transformation results. See {@link #equals(Object, ComparisonMode)} for more information.
@@ -321,11 +323,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         final GenericName[] names;
         try {
             /*
-             * Note: DefaultFactories.SIS_NAMES is guarantee to be a DefaultNameFactory class, not a sub-class.
-             * However for the purpose of this method, any sub-class would be okay. We should revisit this code
-             * with this flexibility in mind when we will use dependency injection.
+             * Note: DefaultFactories.forBuildin(Class) filters the implementations in order to guarantee an
+             * Apache SIS implementation. We need to revisit this mechanism for a real "dependency injection"
+             * mechanism in the future.
              */
-            names = DefaultFactories.SIS_NAMES.toGenericNames(value);
+            final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+            names = factory.toGenericNames(value);
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }
@@ -419,7 +422,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <p>The default implementation returns {@code IdentifiedObject.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.</p>
      *
-     * {@section Invariants}
+     * <div class="section">Invariants</div>
      * The following invariants must hold for all {@code AbstractIdentifiedObject} instances:
      * <ul>
      *   <li><code>getInterface().{@linkplain Class#isInstance(Object) isInstance}(this)</code>
@@ -509,7 +512,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private void setIdentifier(final Code identifier) {
         if (identifier != null) {
             final Identifier id = identifier.getIdentifier();
-            if (id != null && canSetProperty(AbstractIdentifiedObject.class,
+            if (id != null && ReferencingUtilities.canSetProperty(AbstractIdentifiedObject.class,
                     "setIdentifier", "identifier", identifiers != null))
             {
                 identifiers = Collections.singleton(id);
@@ -610,7 +613,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
      * be used in other context.</p>
      *
-     * {@section Why there is no <code>setNames(…)</code> method}
+     * <div class="section">Why there is no <code>setNames(…)</code> method</div>
      * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
      * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
      * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
@@ -691,10 +694,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @Override
     public boolean isDeprecated() {
-        if (name instanceof Deprecable) {
-            if (((Deprecable) name).isDeprecated()) {
-                return true;
-            }
+        if (isDeprecated(name)) {
+            return true;
         }
         boolean isDeprecated = false;
         for (final Identifier identifier : nonNull(identifiers)) {
@@ -706,6 +707,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
         }
         return isDeprecated;
+    }
+
+    /**
+     * Returns {@code true} if the given identifier is deprecated.
+     */
+    private static boolean isDeprecated(final Identifier object) {
+        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
     }
 
     /**
@@ -732,7 +740,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       projection or parameter name.</li>
      * </ul>
      *
-     * {@section Usage}
+     * <div class="section">Usage</div>
      * This method is invoked by SIS when comparing in {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} mode
      * two objects that can be differentiated only by some identifier (name or alias), like
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
@@ -746,7 +754,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the later is still in frequent use, SIS
      * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
      *
-     * {@section Overriding by subclasses}
+     * <div class="section">Overriding by subclasses</div>
      * Some subclasses add more flexibility to the comparisons:
      * <ul>
      *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)
@@ -757,7 +765,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
      * </ul>
      *
-     * {@section Future evolutions}
+     * <div class="section">Future evolutions</div>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
@@ -802,7 +810,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * then the transformation from {@code sourceCRS} to {@code targetCRS} should be the identity transform
      * even if the two CRS do not have the same name.
      *
-     * {@section When object name matter}
+     * <div class="section">When object name matter</div>
      * Some subclasses (especially
      * {@link org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis},
      * {@link org.apache.sis.referencing.datum.AbstractDatum} and
@@ -813,7 +821,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
      * See {@link #isHeuristicMatchForName(String)} for more information.
      *
-     * {@section Conformance to the <code>equals(Object)</code> method contract}
+     * <div class="section">Conformance to the <code>equals(Object)</code> method contract</div>
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
      * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
      * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
@@ -926,7 +934,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <em>not</em> guaranteed to be stable between different versions of the Apache SIS library, or
      * between libraries running on different JVM.
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * This method invokes {@link #computeHashCode()} when first needed, then caches the result.
      * Subclasses shall override {@link #computeHashCode()} instead than this method.
      *
@@ -953,7 +961,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * object in a JVM. The hash code value does not need to be the same in two different executions of
      * the JVM.
      *
-     * {@section Overriding}
+     * <div class="section">Overriding</div>
      * Subclasses can override this method for using more properties in hash code calculation.
      * All {@code computeHashCode()} methods shall invoke {@code super.computeHashCode()},
      * <strong>not</strong> {@code hashCode()}. Example:
@@ -1001,7 +1009,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * }
      * </td></tr></table>
      *
-     * {@section Formatting non-standard WKT}
+     * <div class="section">Formatting non-standard WKT</div>
      * If the implementation can not represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
      * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}

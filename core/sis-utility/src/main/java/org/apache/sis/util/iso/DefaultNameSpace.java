@@ -46,7 +46,7 @@ import java.util.Objects;
  *   <li>{@link DefaultNameFactory#createNameSpace(GenericName, Map)}</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
  * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
  * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
@@ -463,7 +463,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * <div class="note"><b>Example:</b> if the name of this namespace is “<code>org.apache.sis</code>”,
      * then this method returns “<code>{org.apache.sis}</code>”.</div>
      *
-     * {@section Usage}
+     * <div class="section">Usage</div>
      * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name
      * (except for escaping of illegal characters) with a simple concatenation as in the following code example:
      *

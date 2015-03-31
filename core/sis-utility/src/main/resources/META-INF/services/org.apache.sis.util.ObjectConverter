@@ -1,3 +1,4 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
 # Loaded by org.apache.sis.internal.converter.ConverterRegistry.
 org.apache.sis.internal.converter.StringConverter$Number
 org.apache.sis.internal.converter.StringConverter$Byte

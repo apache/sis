@@ -64,15 +64,15 @@ import java.util.Objects;
 /**
  * Coordinate system axis name, direction, unit and range of values.
  *
- * {@section Axis names}
+ * <div class="section">Axis names</div>
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
- * This constraint works in two directions. For example the names "<cite>geodetic latitude</cite>" and
- * "<cite>geodetic longitude</cite>" shall be used to designate the coordinate axis names associated
+ * This constraint works in two directions. For example the names <cite>"geodetic latitude"</cite> and
+ * <cite>"geodetic longitude"</cite> shall be used to designate the coordinate axis names associated
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.
@@ -173,7 +173,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * The abbreviation used for this coordinate system axes.
-     * Examples are "<var>X</var>" and "<var>Y</var>".
+     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
      */
     @XmlElement(name = "axisAbbrev", required = true)
     private final String abbreviation;
@@ -412,7 +412,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Returns the abbreviation used for this coordinate system axes.
-     * Examples are "<var>X</var>" and "<var>Y</var>".
+     * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
      *
      * @return The coordinate system axis abbreviation.
      */
@@ -542,11 +542,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * The above special cases are needed in order to workaround a conflict in specifications:
      * ISO 19111 states explicitly that the latitude and longitude axis names shall be
-     * "<cite>Geodetic latitude</cite>" and "<cite>Geodetic longitude</cite>", while the legacy
+     * <cite>"Geodetic latitude"</cite> and <cite>"Geodetic longitude"</cite>, while the legacy
      * OGC 01-009 (where version 1 of the WKT format is defined) said that the default values shall be
-     * "<cite>Lat</cite>" and "<cite>Lon</cite>".
+     * <cite>"Lat"</cite> and <cite>"Lon"</cite>.
      *
-     * {@section Future evolutions}
+     * <div class="section">Future evolutions</div>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
@@ -735,7 +735,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
-     * {@section Constraints for WKT validity}
+     * <div class="section">Constraints for WKT validity</div>
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
      * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
      * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are

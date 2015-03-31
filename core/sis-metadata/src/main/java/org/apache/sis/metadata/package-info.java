@@ -18,13 +18,13 @@
 /**
  * Root package for various metadata implementations.
  *
- * {@section Foreword}
+ * <div class="section">Foreword</div>
  * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O
  * metadata defined in {@link javax.imageio.metadata}. The SIS implementation focuses on ISO 19115 (including
  * its ISO 19115-2 extension), but the classes are designed in a way that allow the usage of different standards.
  * This genericity goal should be keep in mind in the discussion below.
  *
- * {@section How Metadata are defined}
+ * <div class="section">How Metadata are defined</div>
  * A metadata standard is defined by a set of Java interfaces belonging to a specific package and its sub-packages.
  * For example the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
  * defined in the {@link org.opengis.metadata} package and sub-packages. That standard is identified in SIS by the
@@ -45,7 +45,7 @@
  * or {@code Default}.</p>
  *
  * <p><b>Notes:</b></p>
- * <ul>
+ * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,
  *       sometime we wish to instantiate an "abstract" class despite the lack of knowledge about the exact sub-type.</li>
@@ -59,7 +59,7 @@
  *       package for generating metadata implementations backed by the content of a database.</li>
  * </ul>
  *
- * {@section How Metadata are handled}
+ * <div class="section">How Metadata are handled</div>
  * Metadata objects in SIS are mostly containers: they provide getter and setter methods for manipulating the values
  * associated to properties (for example the {@code title} property of a {@code Citation} object), but provide few logic.
  * The package {@link org.apache.sis.metadata.iso} and its sub-packages are the main examples of such containers.
@@ -70,19 +70,19 @@
  * and fallback on the reflection technic when the type is known only at runtime.</p>
  *
  * <p>Using Java reflection, a metadata can be viewed in many different ways:</p>
- * <ul>
- *   <li><p><b>As a {@link java.util.Map}</b><br>
+ * <ul class="verbose">
+ *   <li><b>As a {@link java.util.Map}</b><br>
  *       The {@link org.apache.sis.metadata.MetadataStandard} class provides various methods returning a view
  *       of an arbitrary metadata implementation as a {@code Map}, where the key are the property names and the
  *       values are the return values, types or descriptions of getter methods. The map is writable if the
  *       underlying metadata implementation has setter methods, otherwise attempts to set a value throw an
- *       {@code UnmodifiableMetadataException}.</p></li>
+ *       {@code UnmodifiableMetadataException}.</li>
  *
- *   <li><p><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
+ *   <li><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
  *       The metadata are organized as a tree. For example the {@code Citation} metadata contains one or many
  *       {@code ResponsibleParty} elements, each of them containing a {@code Contact} element, which contains
  *       a {@code Telephone} element, <i>etc</i>. For each node, there is many information that can be displayed
- *       in columns:</p>
+ *       in columns:
  *       <ul>
  *         <li>A description of the element.</li>
  *         <li>The type of values ({@code String}, {@code double}, <i>etc</i>).</li>
@@ -91,8 +91,8 @@
  *         <li>The value stored in the element, or the default value.</li>
  *       </ul></li>
  *
- *   <li><p><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
- *       It is possible to establish the following mapping between metadata and a SQL database:</p>
+ *   <li><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
+ *       It is possible to establish the following mapping between metadata and a SQL database:
  *       <ul>
  *         <li>Each metadata interface maps to a table of the same name in the database.</li>
  *         <li>Each property in the above interface maps to a column of the same name in the above table.</li>
@@ -102,7 +102,7 @@
  *       where each call to a getter method is translated into a SQL query for the above database.</li>
  * </ul>
  *
- * {@section How Metadata are marshalled}
+ * <div class="section">How Metadata are marshalled</div>
  * The ISO 19139 standard defines how ISO 19115 metadata shall be represented in XML.
  * The SIS library supports XML marshalling and unmarshalling with JAXB annotations.
  *

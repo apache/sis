@@ -42,7 +42,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * Each map projection or process will typically defines a single static {@code ParameterDescriptorGroup},
  * to be shared by all users of that projection or process.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * Coordinate operation or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
  * their task easier.
  *
@@ -73,7 +73,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * }
  * </div>
  *
- * {@section Usage}
+ * <div class="section">Usage</div>
  * Users can simply reference the descriptor provided par a coordinate operation or process providers like below:
  *
  * {@preformat java

@@ -18,12 +18,12 @@
 /**
  * A set of helper classes for JAXB handling in the SIS implementation.
  *
- * <STRONG>Do not use!</STRONG>
+ * <strong>Do not use!</strong>
  *
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * {@section Main content}
+ * <div class="section">Main content</div>
  * {@link org.apache.sis.internal.jaxb.IdentifierMapAdapter} is our internal implementation of
  * the public {@link org.apache.sis.xml.IdentifierMap} interface. The actual implementation is
  * usually the {@code IdentifierMapWithSpecialCases} subclass.

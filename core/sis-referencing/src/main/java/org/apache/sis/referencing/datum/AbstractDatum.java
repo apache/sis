@@ -49,11 +49,11 @@ import java.util.Objects;
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate systems}, thus creating specific types of
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable if the property <em>values</em> (not necessarily the map itself) given to the
  * constructor are also immutable. Most SIS subclasses and related classes are immutable under similar conditions.
  * This means that unless otherwise noted in the javadoc, {@code Datum} instances created using only SIS factories
@@ -348,7 +348,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       is ignored.</li>
      * </ul>
      *
-     * {@section Future evolutions}
+     * <div class="section">Future evolutions</div>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.

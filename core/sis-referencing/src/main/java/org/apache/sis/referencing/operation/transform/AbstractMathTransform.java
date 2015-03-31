@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -65,13 +65,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * However more performance may be gained by overriding the other {@code transform(…)} methods as well.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
  * It is highly recommended that third-party implementations be immutable and thread-safe too.
  * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
  * be shared by many objects and passed between threads without synchronization.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * {@code MathTransform} may or may not be serializable, at implementation choices.
  * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
  * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
@@ -79,7 +79,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultMathTransformFactory
@@ -157,32 +157,63 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
      * </div>
      *
-     * @return The parameter descriptors for this math transform, or {@code null}.
+     * @return The parameter descriptors for this math transform, or {@code null} if unspecified.
      *
      * @see OperationMethod#getParameters()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return null;
+        final ContextualParameters parameters = getContextualParameters();
+        return (parameters != null) ? parameters.getDescriptor() : null;
     }
 
     /**
-     * Returns a copy of the parameter values for this math transform, or {@code null} if unknown.
-     * Since this method returns a copy of the parameter values, any change to a value will have no
-     * effect on this math transform.
+     * Returns the parameter values for this math transform, or {@code null} if unknown.
+     * This is not necessarily the parameters that the user specified at construction time,
+     * since implementations may have applied normalizations.
      *
-     * <div class="note"><b>Relationship with ISO 19111:</b>
-     * This method is similar to {@link SingleOperation#getParameterValues()}, except that typical
-     * {@link MathTransform} implementations return parameters in standard units (usually
-     * {@linkplain SI#METRE metres} or {@linkplain NonSI#DEGREE_ANGLE decimal degrees}).
-     * </div>
+     * <div class="section">Normalized and contextual parameters</div>
+     * Most Apache SIS implementations of map projections perform their calculations on an ellipsoid
+     * having a semi-major axis length of 1. In such cases, the group returned by this method contains
+     * a {@code "semi_major"} parameter with a value of 1. If the real axis length is desired, we need
+     * to take in account the context of this math transform, i.e. the scales and offsets applied before
+     * and after this transform. This information is provided by {@link #getContextualParameters()}.
      *
-     * @return A copy of the parameter values for this math transform, or {@code null}.
+     * @return The parameter values for this math transform, or {@code null} if unspecified.
+     *         Note that those parameters may be normalized (e.g. represent a transformation
+     *         of an ellipsoid of semi-major axis length of 1).
      *
+     * @see #getContextualParameters()
      * @see SingleOperation#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
+        /*
+         * Do NOT try to infer the parameters from getContextualParameters(). This is usually not appropriate
+         * because if ContextualParameters declares "normalize" and "denormalize" affine transforms, then those
+         * transforms need to be taken in account in a way that only the subclass know.
+         */
+        return null;
+    }
+
+    /**
+     * Returns the parameters for a sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * transforms (<i>optional operation</i>).
+     *
+     * Subclasses can override this method if they choose to split their computation in linear and non-linear parts.
+     * Such split is optional: it can leads to better performance (because SIS can concatenate efficiently consecutive
+     * linear transforms), but should not change significantly the result (ignoring differences in rounding errors).
+     * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
+     * needs this method for reconstructing the parameters of the complete transform.
+     *
+     * @return The parameters values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     *         transforms, or {@code null} if unspecified.
+     *         Callers should not modify the returned parameters, since modifications (if allowed)
+     *         will generally not be reflected back in this {@code MathTransform}.
+     *
+     * @since 0.6
+     */
+    protected ContextualParameters getContextualParameters() {
         return null;
     }
 
@@ -297,7 +328,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * The source and destination may overlap. Consequently, implementors must read all source
      * ordinate values before to start writing the transformed ordinates in the destination array.
      *
@@ -884,32 +915,12 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
-     * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
-     * The parameter group name is used as the math transform name.
+     * Given a transformation chain, replaces the elements around {@code transforms.get(index)} transform by
+     * alternative objects to use when formatting WKT. The replacement is performed in-place in the given list.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code Param_MT} is defined in the WKT 1 specification only.</div>
-     *
-     * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
-     */
-    @Override
-    public String formatTo(final Formatter formatter) {
-        final ParameterValueGroup parameters = getParameterValues();
-        if (parameters != null) {
-            WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
-            WKTUtilities.append(parameters, formatter);
-        }
-        if (formatter.getConvention().majorVersion() != 1) {
-            formatter.setInvalidWKT(MathTransform.class, null);
-        }
-        return "Param_MT";
-    }
-
-    /**
-     * Strictly reserved to {@link AbstractMathTransform2D}, which will
-     * override this method. The default implementation must do nothing.
+     * <p>This method shall replace only the previous element and the few next elements that need
+     * to be changed as a result of the previous change. This method is not expected to continue
+     * the iteration after the changes that are of direct concern to this object.</p>
      *
      * <p>This method is invoked only by {@link ConcatenatedTransform#getPseudoSteps()} in order to
      * get the {@link ParameterValueGroup} of a map projection, or to format a {@code PROJCS} WKT.</p>
@@ -919,18 +930,51 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
      * @return Index of the last transform processed. Iteration should continue at that index + 1.
      *
-     * @see AbstractMathTransform2D#beforeFormat(List, int, boolean)
      * @see ConcatenatedTransform#getPseudoSteps()
      */
-    int beforeFormat(List<Object> transforms, int index, boolean inverse) {
-        return index;
+    int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+        assert unwrap(transforms.get(index), inverse) == this;
+        final ContextualParameters parameters = getContextualParameters();
+        return (parameters != null) ? parameters.beforeFormat(transforms, index, inverse) : index;
+    }
+
+    /**
+     * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+     * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
+     * The parameter group name is used as the math transform name.
+     *
+     * <div class="note"><b>Compatibility note:</b>
+     * {@code Param_MT} is defined in the WKT 1 specification only.
+     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+     * then this method silently uses the WKT 1 convention without raising an error
+     * (unless this {@code MathTransform} can not be formatted as valid WKT 1 neither).</div>
+     *
+     * @param  formatter The formatter to use.
+     * @return The WKT element name, which is {@code "Param_MT"} in the default implementation.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final ParameterValueGroup parameters = getParameterValues();
+        if (parameters != null) {
+            WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
+            WKTUtilities.append(parameters, formatter);
+        }
+        return "Param_MT";
+    }
+
+    /**
+     * Unwraps the given object if it is expected to be an inverse transform.
+     * This is used for assertions only.
+     */
+    private static Object unwrap(final Object object, final boolean inverse) {
+        return inverse ? ((Inverse) object).inverse() : object;
     }
 
     /**
      * Base class for implementations of inverse math transforms.
      * This inner class is the inverse of the enclosing {@link AbstractMathTransform}.
      *
-     * {@section Serialization}
+     * <div class="section">Serialization</div>
      * Instances of this class are serializable only if the enclosing math transform is also serializable.
      * Serialized math transforms are not guaranteed to be compatible with future SIS versions.
      * Serialization, if allowed, should be used only for short term storage or RMI between applications
@@ -938,7 +982,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.5
-     * @version 0.5
+     * @version 0.6
      * @module
      */
     protected abstract class Inverse extends AbstractMathTransform implements Serializable {
@@ -995,7 +1039,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (point != null) {
                 point = this.transform(point, null);
             }
-            return MatrixSIS.castOrCopy(AbstractMathTransform.this.derivative(point)).inverse();
+            return Matrices.inverse(AbstractMathTransform.this.derivative(point));
         }
 
         /**
@@ -1050,6 +1094,15 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
 
         /**
+         * Same work than {@link AbstractMathTransform#beforeFormat(List, int, boolean)}
+         * but with the knowledge that this transform is an inverse transform.
+         */
+        @Override
+        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+            return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+        }
+
+        /**
          * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
          * If this inverse math transform has any parameter values, then this method format the
          * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
@@ -1063,7 +1116,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          *         {@code "Inverse_MT"} in the default implementation.
          */
         @Override
-        public String formatTo(final Formatter formatter) {
+        protected String formatTo(final Formatter formatter) {
             final ParameterValueGroup parameters = getParameterValues();
             if (parameters != null) {
                 WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);

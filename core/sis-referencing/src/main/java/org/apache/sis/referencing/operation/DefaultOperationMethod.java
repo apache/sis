@@ -79,7 +79,7 @@ import java.util.Objects;
  *     constructor can not infer them.</li>
  * </ul></div>
  *
- * {@section Relationship with other classes or interfaces}
+ * <div class="section">Relationship with other classes or interfaces</div>
  * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
  * When values have been assigned to parameters, the result is a {@link SingleOperation}.
  * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
@@ -92,7 +92,7 @@ import java.util.Objects;
  * {@code DefaultOperationMethod} subclasses should implement the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thread-safe if all properties given to the constructor are also immutable and thread-safe.
  * It is strongly recommended for all subclasses to be thread-safe, especially the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} implementations to be used with
@@ -373,22 +373,22 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns an operation method with different dimensions, if we are allowed to change dimensionality.
      * The need to change an {@code OperationMethod} dimensionality may occur in two contexts:
      *
-     * <ul>
-     *   <li><p>When the original method can work with any number of dimensions. Those methods do not know
+     * <ul class="verbose">
+     *   <li>When the original method can work with any number of dimensions. Those methods do not know
      *     in advance the number of dimensions, which is fixed only after the actual {@link MathTransform}
      *     instance has been created.
-     *     Example: <cite>Affine</cite> conversion.</p></li>
-     *   <li><p>When a three-dimensional method can also be used in the two-dimensional case, typically by
+     *     Example: <cite>Affine</cite> conversion.</li>
+     *   <li>When a three-dimensional method can also be used in the two-dimensional case, typically by
      *     assuming that the ellipsoidal height is zero everywhere.
-     *     Example: <cite>Molodensky</cite> transform.</p></li>
+     *     Example: <cite>Molodensky</cite> transform.</li>
      * </ul>
      *
      * This {@code redimension(…)} implementation performs the following choice:
      *
-     * <ul>
-     *   <li><p>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
+     * <ul class="verbose">
+     *   <li>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
      *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
-     *     For example the <cite>Molodensky</cite> method needs to override.</p></li>
+     *     For example the <cite>Molodensky</cite> method needs to override.</li>
      *   <li>Otherwise for each dimension (<var>source</var> and <var>target</var>):
      *     <ul>
      *       <li>If the corresponding dimension of the given method is {@code null}, then
@@ -470,20 +470,20 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
      * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
      *
-     * <ul>
-     *   <li><p>{@link org.opengis.referencing.operation.Transformation}
+     * <ul class="verbose">
+     *   <li>{@link org.opengis.referencing.operation.Transformation}
      *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
      *     which the operation parameters were determined. Those errors do not depend on the floating point precision
-     *     or the accuracy of the implementation algorithm.</p></li>
-     *   <li><p>{@link org.opengis.referencing.operation.Conversion}
+     *     or the accuracy of the implementation algorithm.</li>
+     *   <li class="verbose">{@link org.opengis.referencing.operation.Conversion}
      *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
-     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</p></li>
-     *   <li><p>{@link org.opengis.referencing.operation.Projection}
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
+     *   <li>{@link org.opengis.referencing.operation.Projection}
      *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
      *     to plane (map) coordinates. This type can optionally be refined with one of the
      *     {@link org.opengis.referencing.operation.CylindricalProjection},
      *     {@link org.opengis.referencing.operation.ConicProjection} or
-     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</p></li>
+     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
      * </ul>
      *
      * In case of doubt, {@code getOperationType()} can conservatively return the base type.

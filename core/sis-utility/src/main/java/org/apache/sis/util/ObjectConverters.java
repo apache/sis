@@ -41,8 +41,8 @@ import org.apache.sis.internal.converter.SystemRegistry;
  *   <li>{@link #derivedValues(Map, Class, ObjectConverter)}</li>
  * </ul>
  *
- * {@section Example}
- * The following code converts instances in a collection from type {@code S} to type {@code T},
+ * <div class="note"><b>Example:</b>
+ * the following code converts instances in a collection from type {@code S} to type {@code T},
  * where the types are unknown at compile-time. Note that the converter is obtained only once
  * before to be applied to every elements in the loop.
  *
@@ -56,6 +56,7 @@ import org.apache.sis.internal.converter.SystemRegistry;
  *         targets.add(converter.apply(source));
  *     }
  * }
+ * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3

@@ -43,11 +43,11 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Information about the source data used in creating the data specified by the scope.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * According ISO 19115, at least one of {@linkplain #getDescription() description} and
  * {@linkplain #getSourceExtents() source extents} shall be provided.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

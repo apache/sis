@@ -65,7 +65,7 @@ import org.apache.sis.util.logging.Logging;
  * </tr>
  * </table>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
  * are not necessarily the metadata instances. For example an other common approach is to
@@ -96,7 +96,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * Implementation of this method shall not depend on the object state,
      * since this method may be indirectly invoked by copy constructors.
      *
@@ -132,7 +132,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * The default implementation uses Java reflection indirectly, by iterating over all entries
      * returned by {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
@@ -186,19 +186,19 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * object, so changes in the underlying metadata object are immediately reflected in the map
      * and conversely.
      *
-     * {@section Supported operations}
+     * <div class="section">Supported operations</div>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      *
-     * {@section Keys and values}
+     * <div class="section">Keys and values</div>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * {@section Multi-values entries}
+     * <div class="section">Multi-values entries</div>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -207,7 +207,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
@@ -228,38 +228,38 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
      * <p>The returned {@code TreeTable} instance contains the following columns:</p>
-     * <ul>
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     * <ul class="verbose">
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
-     *       there is a node having the {@code "title"} identifier.</p></li>
+     *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.</p>
+     *       for the first element and an other node with index 1 for the second element.
      *
      *       <div class="note"><b>Note:</b>
      *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
      *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
      *       the same keys may appear in the children of any other nodes.</div></li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
-     *       may be localizable.</p></li>
+     *       may be localizable.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
-     *       The base type of the value (usually an interface).</p></li>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
-     *       metadata class have a setter method for the property represented by the node.</p></li>
+     *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
-     * {@section Write operations}
+     * <div class="section">Write operations</div>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -275,7 +275,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java

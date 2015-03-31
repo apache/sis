@@ -69,7 +69,7 @@ import java.util.Objects;
  * <p>All other methods, including {@link #toString()}, {@link #equals(Object)} and {@link #hashCode()},
  * are implemented on top of the above four methods.</p>
  *
- * {@section Spanning the anti-meridian of a Geographic CRS}
+ * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
@@ -91,13 +91,13 @@ import java.util.Objects;
  * </ul>
  * </td></tr></table></center>
  *
- * {@section Choosing the range of longitude values}
+ * <div class="section">Choosing the range of longitude values</div>
  * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
  * range is also occasionally used. Users of this class need to ensure that this envelope CRS is
  * associated to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum}
  * and {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
  *
- * {@section Note on positive and negative zeros}
+ * <div class="section">Note on positive and negative zeros</div>
  * The IEEE 754 standard defines two different values for positive zero and negative zero.
  * When used with SIS envelopes and keeping in mind the above discussion, those zeros have
  * different meanings:
@@ -386,7 +386,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *     median = (getUpper(dimension) + getLower(dimension)) / 2;
      * }
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If <var>upper</var> &lt; <var>lower</var> and the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning} for the requested
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the median calculated
@@ -437,7 +437,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *     span = getUpper(dimension) - getLower(dimension);
      * }
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If <var>upper</var> &lt; <var>lower</var> and the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning} for the requested
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the span calculated
@@ -681,11 +681,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * If it least one ordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * {@section Pre-conditions}
+     * <div class="section">Pre-conditions</div>
      * This method assumes that the specified point uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
      * algorithm which is the opposite of the usual one: rather than testing if the given point is
      * inside the envelope interior, this method tests if the given point is <em>outside</em> the
@@ -730,11 +730,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * Returns {@code true} if this envelope completely encloses the specified envelope.
      *
-     * {@section Pre-conditions}
+     * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * For every cases illustrated below, the yellow box is considered completely enclosed
      * in the blue envelope:
      *
@@ -848,11 +848,11 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     /**
      * Returns {@code true} if this envelope intersects the specified envelope.
      *
-     * {@section Pre-conditions}
+     * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method can handle envelopes spanning the anti-meridian.
      *
      * @param  envelope The envelope to test for intersection.
@@ -985,7 +985,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      * smaller for geographic CRS than for UTM projections, because the former typically has a
      * [-180…180]° range while the later can have a range of thousands of meters.</div>
      *
-     * {@section Coordinate Reference System}
+     * <div class="section">Coordinate Reference System</div>
      * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() dimension}
      * and their CRS must be {@linkplain org.apache.sis.util.Utilities#equalsIgnoreMetadata equals,
      * ignoring metadata}. If at least one envelope has a null CRS, then the CRS are ignored and the
