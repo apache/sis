@@ -18,7 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.operation.transform.TransformTestCase;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -45,7 +45,7 @@ import static org.apache.sis.internal.jdk8.JDK8.nextDown;
 @DependsOn({
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class
 })
-public final strictfp class NormalizedProjectionTest extends MathTransformTestCase {
+public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */
@@ -303,6 +303,7 @@ public final strictfp class NormalizedProjectionTest extends MathTransformTestCa
      * Convenience method invoking {@link TransformTestCase#verifyInDomain} for an 1D transform.
      */
     private void verifyInDomain(final double min, final double max) throws TransformException {
+        derivativeDeltas = new double[] {2E-8};
         isInverseTransformSupported = false;
         verifyInDomain(
                 new double[] {min},     // Minimal value to test.
