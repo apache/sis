@@ -40,25 +40,25 @@
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
- * {@section Definition of terms}
- * <ul>
- *   <li><p><b>Coordinate operation</b><br>
+ * <div class="section">Definition of terms</div>
+ * <ul class="verbose">
+ *   <li><b>Coordinate operation</b><br>
  *       In the particular case of this package, the conversion of geographic coordinates in any
  *       axis order, geodesic orientation and angular units to projected coordinates in any axis
- *       order, horizontal orientation and linear units.<p></li>
- *   <li><p><b>Map projection</b> (a.k.a. cartographic projection)<br>
+ *       order, horizontal orientation and linear units.</li>
+ *   <li><b>Map projection</b> (a.k.a. cartographic projection)<br>
  *       The conversion of geographic coordinates from (<var>longitude</var>, <var>latitude</var>)
- *       in decimal degrees to projected coordinates (<var>x</var>, <var>y</var>) in metres.<p></li>
- *   <li><p><b>Unitary projection</b><br>
+ *       in decimal degrees to projected coordinates (<var>x</var>, <var>y</var>) in metres.</li>
+ *   <li><b>Normalized projection</b><br>
  *       The conversion of geographic coordinates from (<var>longitude</var>, <var>latitude</var>)
  *       in radians to projected coordinates (<var>x</var>, <var>y</var>) on a sphere or ellipse
  *       having a semi-major axis length of 1. This definition may be slightly relaxed if some
  *       projection-specifics coefficients are concatenated with the conversions that take place
- *       between the above map projection and this unitary projection.<p></li>
+ *       between the above map projection and this normalized projection.</li>
  * </ul>
  *
  *
- * {@section Axis units and orientation}
+ * <div class="section">Axis units and orientation</div>
  * Many {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference systems}
  * use axis in (<var>latitude</var>, <var>longitude</var>) order, but not all. Axis order, orientation and units
  * are CRS-dependent. For example some CRS use longitude values increasing toward
@@ -114,45 +114,47 @@
  * which axis flips are applied.
  *
  *
- * {@section Projection on unit ellipse}
- * A map projection in this package is actually the concatenation of the following transforms, in that order:
+ * <div class="section">Projection on unit ellipse</div>
+ * A map projection in this package is actually the concatenation of the following transforms, in that order
+ * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis order changes}
+ * and conversions from/to units other then degrees and metres, which are not the purpose of this package):
  *
  * <ul>
- *   <li>{@link org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#normalize(boolean) normalize} affine transform</li>
- *   <li>{@link org.apache.sis.referencing.operation.projection.UnitaryProjection} subclass</li>
- *   <li>{@link org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#normalize(boolean) denormalize} affine transform</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalization} affine transform</li>
+ *   <li>A {@link      org.apache.sis.referencing.operation.projection.NormalizedProjection} subclass</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#scaleAndTranslate2D denormalization} affine transform</li>
  * </ul>
  *
- * The first step ("<cite>normalize</cite>") converts longitude and latitude values from degrees to radians and removes the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#centralMeridian central meridian}
- * from the longitude. The last step ("<cite>denormalize</cite>") multiplies the result of the middle
- * step by the global scale factor (which is typically, but not always, the product of the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale factor} with the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#semiMajor semi-major} axis length),
- * then adds the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseEasting false easting} and
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseNorthing false northing}.
- * This means that the middle step ("<cite>unitary projection</cite>") is performed on an ellipse
- * (or sphere) having a semi-major axis of 1.
+ * The first step (<cite>"normalization"</cite>) converts longitude and latitude values from degrees to radians
+ * and removes the <cite>central meridian</cite> from the longitude.
+ * The last step (<cite>"denormalization"</cite>) multiplies the result of the middle step by the global scale factor
+ * (typically the product of the <cite>scale factor</cite> with the <cite>semi-major</cite> axis length),
+ * then adds the <cite>false easting</cite> and <cite>false northing</cite>.
+ * This means that the middle step (<cite>"normalized projection"</cite>) is performed on an ellipse (or sphere)
+ * having a semi-major axis of 1.
  *
  * <p>In other words, the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection#transform(double[],int,double[],int,boolean)
+ * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection#transform(double[],int,double[],int,boolean)
  * transform} method of the middle step works typically on longitude and latitude values in <strong>radians</strong>
  * relative to the central meridian (not necessarily Greenwich). Its results are typically (<var>x</var>, <var>y</var>)
  * coordinates having ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
  * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientation.
  * However in some cases the actual input and output coordinates may be different than the above by some scale factor,
  * translation or rotation, if the projection implementation choose to combine some linear coefficients with the
- * above-cited normalize and denormalize affine transforms.</p>
+ * above-cited normalization and denormalization affine transforms.</p>
  *
  * <div class="note"><b>Note:</b>
- * In <a href="http://www.remotesensing.org/proj/">PROJ.4</a>, the same standardization is handled by {@code pj_fwd.c}
+ * In <a href="http://www.remotesensing.org/proj/">Proj.4</a>, the same standardization is handled by {@code pj_fwd.c}
  * and {@code pj_inv.c}. This normalization makes the equations closer to the ones published in Snyder's book, where the
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseEasting false easting},
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#falseNorthing false northing} and
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale factor}
- * are usually not given.
- * </div>
+ * <cite>false easting</cite>, <cite>false northing</cite> and <cite>scale factor</cite> are usually not given.</div>
+ *
+ * <div class="section">References</div>
+ * <ul>
+ *   <li>"Coordinate Conversions and Transformations including Formulas",<br>
+ *       Geomatics Guidance Note Number 7, part 2, Version 49.</li>
+ *   <li>John P. Snyder (Map Projections - A Working Manual,<br>
+ *       U.S. Geological Survey Professional Paper 1395, 1987)</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)

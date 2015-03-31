@@ -29,7 +29,7 @@
  *   <li>{@link org.apache.sis.referencing.operation.transform} for any transform other than map projections</li>
  * </ul>
  *
- * {@section Apache SIS specific behavior}
+ * <div class="section">Apache SIS specific behavior</div>
  * The following operations have a behavior in Apache SIS which may be different
  * than the behavior found in other softwares. Those particularities apply only when the math transform is
  * {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform

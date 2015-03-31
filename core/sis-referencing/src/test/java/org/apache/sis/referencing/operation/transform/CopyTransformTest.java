@@ -23,13 +23,15 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 
+import static org.apache.sis.test.ReferencingAssert.*;
+
 
 /**
  * Tests the {@link CopyTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -52,16 +54,25 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
     }
 
     /**
+     * Initializes the {@link #transform} field to a {@link CopyTransform} instance created
+     * from the given argument. Then verifies that the matrix is consistent with the transform.
+     */
+    private void create(final int srcDim, final int... indices) {
+        transform = new CopyTransform(srcDim, indices);
+        assertEquals(transform, CopyTransform.create(((LinearTransform) transform).getMatrix()));
+        validate();
+    }
+
+    /**
      * Tests an identity transform.
      *
      * @throws TransformException should never happen.
      */
     @Test
     public void testIdentity() throws TransformException {
-        transform = new CopyTransform(3, 0, 1, 2);
-        validate();
-        verifyParameters(Affine.getProvider(3, 3, true).getParameters(), null);
-        verifyIsIdentity(true);
+        create(3, 0, 1, 2);
+        assertIsIdentity(transform);
+        assertParameterEquals(Affine.getProvider(3, 3, true).getParameters(), null);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = source.clone();
@@ -78,9 +89,8 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void test3D() throws TransformException {
-        transform = new CopyTransform(3, 2, 1, 0);
-        validate();
-        verifyIsIdentity(false);
+        create(3, 2, 1, 0);
+        assertIsNotIdentity(transform);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length];
@@ -102,10 +112,9 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      */
     @Test
     public void test3Dto2D() throws TransformException {
-        transform = new CopyTransform(3, 0, 1);
         isInverseTransformSupported = false;
-        validate();
-        verifyIsIdentity(false);
+        create(3, 0, 1);
+        assertIsNotIdentity(transform);
 
         final double[] source = generateRandomCoordinates();
         final double[] target = new double[source.length * 2/3];

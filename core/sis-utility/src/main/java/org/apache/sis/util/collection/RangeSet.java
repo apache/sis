@@ -54,7 +54,7 @@ import static org.apache.sis.util.Numbers.*;
  *       ranges may in some circumstances <strong>increase</strong> the size of this set.</li>
  * </ul>
  *
- * {@section Inclusive or exclusive endpoints}
+ * <div class="section">Inclusive or exclusive endpoints</div>
  * {@code RangeSet} requires that {@link Range#isMinIncluded()} and {@link Range#isMaxIncluded()}
  * return the same values for all instances added to this set. Those values need to be specified
  * at construction time. If a user needs to store mixed kind of ranges, then he needs to subclass
@@ -66,7 +66,7 @@ import static org.apache.sis.util.Numbers.*;
  * or half-open. This limitation exists because supporting open intervals implies that the internal array
  * shall support duplicated values.</div>
  *
- * {@section Extensions to <code>SortedSet</code> API}
+ * <div class="section">Extensions to <code>SortedSet</code> API</div>
  * This class contains some methods not found in standard {@link SortedSet} API.
  * Some of those methods look like {@link java.util.List} API, in that they work
  * with the index of a {@code Range} instance in the sequence of ranges returned
@@ -87,7 +87,7 @@ import static org.apache.sis.util.Numbers.*;
  *   <li>{@link #trimToSize()} frees unused space.</li>
  * </ul>
  *
- * {@section Implementation note}
+ * <div class="section">Implementation note</div>
  * For efficiency reasons, this set stores the range values in a Java array of primitive type if
  * possible. The {@code Range} instances given in argument to the {@link #add(Range)} method are
  * not retained by this class. Ranges are recreated during iterations by calls to the

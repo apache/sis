@@ -369,7 +369,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * {@section Choosing a collection type}
+     * <div class="section">Choosing a collection type</div>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
@@ -586,7 +586,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns the specified collection, or a new one if {@code c} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * {@section Choosing a collection type}
+     * <div class="section">Choosing a collection type</div>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet
      * nonNullSet(…)} instead than this method when the collection type is enforced by ISO
      * specification. When the type is not enforced by the specification, some freedom are

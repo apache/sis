@@ -55,7 +55,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Most SIS subclasses and
  * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,

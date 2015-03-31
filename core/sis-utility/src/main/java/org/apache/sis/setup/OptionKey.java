@@ -40,7 +40,7 @@ import org.apache.sis.util.logging.Logging;
  * <p>Options are <em>transitive</em>: if a service uses others services for its internal working, the given options
  * may also be given to those dependencies, at implementation choice.</p>
  *
- * {@section Defining new options}
+ * <div class="section">Defining new options</div>
  * Developers who wish to define their own options can define static constants in a subclass,
  * as in the following example:
  *

@@ -34,7 +34,7 @@ import org.apache.sis.math.FunctionProperty;
  *     ObjectConverter<S,String> c = StringConverter.getInstance(sourceClass).inverse();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @param <S> The source type.

@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
- * {@section Relationship with <code>GO_Real</code>}
+ * <div class="section">Relationship with {@code GO_Real}</div>
  * This adapter is identical to {@link GO_Real} except for the element name, which is {@code "Decimal"} instead
  * than {@code "Real"}. This adapter is used for the {@code westBoundLongitude}, {@code eastBoundLongitude},
  * {@code southBoundLatitude} and {@code northBoundLatitude} properties of {@code EX_DefaultGeographicBoundingBox}.

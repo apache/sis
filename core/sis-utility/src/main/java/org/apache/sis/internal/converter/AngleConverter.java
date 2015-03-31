@@ -25,7 +25,7 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * Handles conversions between {@link Angle} and {@link Double}.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
  * The same {@link #INSTANCE} can be passed between threads without synchronization.
  *
@@ -70,7 +70,7 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
     /**
      * The inverse of {@link AngleConverter}.
      *
-     * {@section Thread safety}
+     * <div class="section">Thread safety</div>
      * This class is immutable, and thus inherently thread-safe.
      */
     public static final class Inverse extends SystemConverter<Double,Angle> {

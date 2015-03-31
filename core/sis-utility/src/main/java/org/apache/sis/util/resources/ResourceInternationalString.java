@@ -35,7 +35,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@link IndexedResourceBundle}. Compared to the public class, this specialization works
  * with integer resource keys and accepts arguments.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -133,7 +133,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
             return false;
         }
         final ResourceInternationalString that = (ResourceInternationalString) object;
-        return (key == that.key) && (hasArguments == that.hasArguments) && Objects.equals(arguments, that.arguments);
+        return (key == that.key) && (hasArguments == that.hasArguments) && Objects.deepEquals(arguments, that.arguments);
     }
 
     /**

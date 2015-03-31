@@ -47,7 +47,7 @@ import org.apache.sis.util.Debug;
  * It is invoked when a new converter is {@linkplain ConverterRegistry#register(ObjectConverter)
  * registered} for the same source and target class than an existing converter.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable, and thus inherently thread-safe,
  * if the converters given to the static factory method are also immutable.
  *

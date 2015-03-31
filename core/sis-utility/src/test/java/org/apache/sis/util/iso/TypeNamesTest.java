@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Locale;
 import org.opengis.util.TypeName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -53,7 +54,8 @@ public final strictfp class TypeNamesTest extends TestCase {
     private static void verifyLookup(final String namespace, final String name, final Class<?> valueClass)
             throws ClassNotFoundException
     {
-        final TypeName type = DefaultFactories.SIS_NAMES.toTypeName(valueClass);
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final TypeName type = factory.toTypeName(valueClass);
         assertNotNull(name, type);
         assertSame   (name, valueClass, ((DefaultTypeName) type).toClass());
         assertEquals (name, namespace,  type.scope().name().toString());
@@ -64,8 +66,8 @@ public final strictfp class TypeNamesTest extends TestCase {
     /**
      * Returns the string representation of the fully qualified path of the type name for the given value.
      */
-    private static String toTypeName(final Class<?> valueClass) {
-        return DefaultFactories.SIS_NAMES.toTypeName(valueClass).toFullyQualifiedName().toString();
+    private static String toTypeName(final DefaultNameFactory factory, final Class<?> valueClass) {
+        return factory.toTypeName(valueClass).toFullyQualifiedName().toString();
     }
 
     /**
@@ -90,10 +92,11 @@ public final strictfp class TypeNamesTest extends TestCase {
      */
     @Test
     public void testNumbers() {
-        assertEquals("Short",  OGC+":Integer", toTypeName(Short .class));
-        assertEquals("Long",   OGC+":Integer", toTypeName(Long  .class));
-        assertEquals("Float",  OGC+":Real",    toTypeName(Float .class));
-        assertEquals("Double", OGC+":Real",    toTypeName(Double.class));
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        assertEquals("Short",  OGC+":Integer", toTypeName(factory, Short .class));
+        assertEquals("Long",   OGC+":Integer", toTypeName(factory, Long  .class));
+        assertEquals("Float",  OGC+":Real",    toTypeName(factory, Float .class));
+        assertEquals("Double", OGC+":Real",    toTypeName(factory, Double.class));
     }
 
     /**

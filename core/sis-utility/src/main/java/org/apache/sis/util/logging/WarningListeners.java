@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>Otherwise the warning is logged to the logger returned by {@link #getLogger()}.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code WarningListeners} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
@@ -139,7 +139,7 @@ public class WarningListeners<S> implements Localized {
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
      *
-     * {@section Stack trace omission}
+     * <div class="section">Stack trace omission</div>
      * If there is no registered listener, then the {@link #warning(LogRecord)} method will send the record to the
      * {@linkplain #getLogger() logger}, but <em>without</em> the stack trace. This is done that way because stack
      * traces consume lot of space in the logging files, while being considered implementation details in the context

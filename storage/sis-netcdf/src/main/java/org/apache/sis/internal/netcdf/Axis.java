@@ -43,7 +43,7 @@ public final class Axis {
      * The indices of the grid dimension associated to this axis. Values in this array are sorted with more
      * "significant" (defined below) dimensions first - this is not necessarily increasing order.
      *
-     * {@section Elements order}
+     * <div class="section">Elements order</div>
      * The length of this array is often 1. But if more than one grid dimension is associated to this axis
      * (i.e. if the wrapped NetCDF axis is an instance of {@link ucar.nc2.dataset.CoordinateAxis2D}), then
      * the first index is what seems the most significant grid dimension (i.e. the dimension which seems

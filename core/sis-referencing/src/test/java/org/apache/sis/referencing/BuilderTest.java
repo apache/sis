@@ -19,9 +19,11 @@ package org.apache.sis.referencing;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -30,7 +32,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.opengis.referencing.IdentifiedObject.*;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.*;
-import static org.apache.sis.internal.system.DefaultFactories.SIS_NAMES;
 
 
 /**
@@ -100,11 +101,13 @@ public final strictfp class BuilderTest extends TestCase {
      */
     @Test
     public void testUnscopedName() {
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+
         // Expected values to be used later in the test.
         final String    name   = "Mercator (variant A)";
-        final LocalName alias1 = SIS_NAMES.createLocalName(null, "Mercator (1SP)");
-        final LocalName alias2 = SIS_NAMES.createLocalName(null, "Mercator_1SP");
-        final LocalName alias3 = SIS_NAMES.createLocalName(null, "CT_Mercator");
+        final LocalName alias1 = factory.createLocalName(null, "Mercator (1SP)");
+        final LocalName alias2 = factory.createLocalName(null, "Mercator_1SP");
+        final LocalName alias3 = factory.createLocalName(null, "CT_Mercator");
         assertEquals("Mercator (1SP)", alias1.toString());
         assertEquals("Mercator_1SP",   alias2.toString());
         assertEquals("CT_Mercator",    alias3.toString());
@@ -127,12 +130,13 @@ public final strictfp class BuilderTest extends TestCase {
     @Test
     @DependsOnMethod({"testUnscopedName", "testSetCodeSpace"})
     public void testScopedName() {
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+
         // Expected values to be used later in the test.
         final String      name   = "Mercator (variant A)";
-        final GenericName alias1 = SIS_NAMES.createLocalName(scope("EPSG"), "Mercator (1SP)");
+        final GenericName alias1 = factory.createLocalName(scope(factory, "EPSG"), "Mercator (1SP)");
         final GenericName alias2 = new NamedIdentifier(OGC,     "Mercator_1SP");
         final GenericName alias3 = new NamedIdentifier(GEOTIFF, "CT_Mercator");
-        assertEquals("Mercator (variant A)", name);
         assertEquals("Mercator (1SP)",       alias1.toString());
         assertEquals("OGC:Mercator_1SP",     alias2.toString());
         assertEquals("GeoTIFF:CT_Mercator",  alias3.toString());
@@ -154,8 +158,8 @@ public final strictfp class BuilderTest extends TestCase {
     /**
      * Convenience method creating a namespace for {@link #testScopedName()} purpose.
      */
-    private static NameSpace scope(final String codespace) {
-        return SIS_NAMES.createNameSpace(SIS_NAMES.createLocalName(null, codespace), null);
+    private static NameSpace scope(final NameFactory factory, final String codespace) {
+        return factory.createNameSpace(factory.createLocalName(null, codespace), null);
     }
 
     /**

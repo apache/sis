@@ -71,6 +71,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConformanceMeansDatumShift = 8;
 
         /**
+         * This parameter is shown for completeness, but should never have a value different than {0}
+         * for this projection.
+         */
+        public static final short ConstantProjParameterValue_1 = 11;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
@@ -96,6 +102,11 @@ public final class Messages extends IndexedResourceBundle {
          * not match the definition of the “{0}” ellipsoid.
          */
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
+
+        /**
+         * This parameter borrowed from the “{0}” projection is not formally a “{1}” parameter.
+         */
+        public static final short NotFormalProjectionParameter_2 = 10;
 
         /**
          * Property “{0}” is hidden by “{1}”.

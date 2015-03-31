@@ -32,7 +32,7 @@ import org.apache.sis.util.UnknownNameException;
  *   <li>{@link DefaultNameFactory#toTypeName(Class)}</li>
  * </ul>
  *
- * {@section Mapping Java classes to type names}
+ * <div class="section">Mapping Java classes to type names</div>
  * It is sometime useful to establish a mapping between {@link Class} and {@code TypeName}.
  * When an UML identifier from an OGC standard exists for a given {@code Class}, Apache SIS
  * uses that identifier prefixed by the {@code "OGC"} namespace.
@@ -61,7 +61,7 @@ import org.apache.sis.util.UnknownNameException;
  * {@link DefaultNameFactory#toTypeName(Class)} or {@link #toClass()} instead than parsing the name.
  *
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
  * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
  * remain safe to call from multiple threads and do not change any public {@code TypeName} state.

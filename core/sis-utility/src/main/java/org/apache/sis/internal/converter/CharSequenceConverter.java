@@ -32,7 +32,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * <p>The main purpose of this class is to support the conversion of
  * {@link org.opengis.util.InternationalString}.</p>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable, and thus inherently thread-safe,
  * if the converter given to the constructor is also immutable.
  *

@@ -28,7 +28,7 @@ import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
  * bundled with JAXB 2.1. Even with working {@code @XmlSchema} annotations, this mapper still
  * a convenient may to gain more control like choosing a default namespace at runtime.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Cédric Briançon (Geomatys)

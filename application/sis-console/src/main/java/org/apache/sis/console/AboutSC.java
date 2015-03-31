@@ -43,7 +43,7 @@ import org.apache.sis.internal.system.SupervisorMBean;
  *   <li>{@code --verbose}: prints all information including the libraries.</li>
  * </ul>
  *
- * {@section About SIS installation on a remote machine}
+ * <div class="section">About SIS installation on a remote machine</div>
  * This sub-command can provide information about SIS installation on a remote machine,
  * provided that remote access has been enabled at the Java Virtual Machine startup time.
  * See {@link org.apache.sis.console} package javadoc for more information.

@@ -32,8 +32,21 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
+    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
+    org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
+    org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
+    org.apache.sis.internal.jaxb.referencing.CodeTest.class,
+    org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
 
-    // Test matrix early because they may be used in about every SIS corners.
+    // Identification of objects, needed by large parts of sis-referencing.
+    org.apache.sis.referencing.NamedIdentifierTest.class,
+    org.apache.sis.referencing.IdentifiedObjectsTest.class,
+    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
+    org.apache.sis.referencing.AbstractReferenceSystemTest.class,
+    org.apache.sis.referencing.BuilderTest.class,
+
+    // Test matrices early because they may be used in about every SIS corners.
     org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
     org.apache.sis.referencing.operation.matrix.SolverTest.class,
     org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
@@ -43,6 +56,23 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
+
+    // Parameter are needed for math transforms and map projections.
+    org.apache.sis.parameter.DefaultParameterDescriptorTest.class,
+    org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class,
+    org.apache.sis.parameter.DefaultParameterValueTest.class,
+    org.apache.sis.parameter.DefaultParameterValueGroupTest.class,
+    org.apache.sis.parameter.UnmodifiableParameterValueTest.class,
+    org.apache.sis.parameter.ParametersTest.class,
+    org.apache.sis.parameter.ParameterBuilderTest.class,
+    org.apache.sis.parameter.ParameterFormatTest.class,
+    org.apache.sis.parameter.TensorParametersTest.class,
+    org.apache.sis.parameter.MatrixParametersTest.class,
+    org.apache.sis.parameter.MatrixParametersAlphaNumTest.class,
+    org.apache.sis.parameter.TensorValuesTest.class,
+    org.apache.sis.parameter.MapProjectionParametersTest.class,
+
+    // Test transforms other than map projections.
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
@@ -55,41 +85,24 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
+    org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
 
-    org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
-    org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
-    org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
-    org.apache.sis.internal.jaxb.referencing.CodeTest.class,
-    org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
-    org.apache.sis.referencing.IdentifiedObjectsTest.class,
-    org.apache.sis.referencing.NamedIdentifierTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
-    org.apache.sis.referencing.AbstractReferenceSystemTest.class,
-    org.apache.sis.referencing.BuilderTest.class,
-    org.apache.sis.parameter.DefaultParameterDescriptorTest.class,
-    org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class,
-    org.apache.sis.parameter.DefaultParameterValueTest.class,
-    org.apache.sis.parameter.DefaultParameterValueGroupTest.class,
-    org.apache.sis.parameter.ParametersTest.class,
-    org.apache.sis.parameter.ParameterBuilderTest.class,
-    org.apache.sis.parameter.ParameterFormatTest.class,
-    org.apache.sis.parameter.TensorParametersTest.class,
-    org.apache.sis.parameter.MatrixParametersTest.class,
-    org.apache.sis.parameter.MatrixParametersAlphaNumTest.class,
-    org.apache.sis.parameter.TensorValuesTest.class,
-    org.apache.sis.parameter.MapProjectionParametersTest.class,
-
+    // Registration of map projections and other math transforms.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
+    org.apache.sis.internal.referencing.OperationMethodsTest.class,
     org.apache.sis.internal.referencing.provider.AffineTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
-    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
-    org.apache.sis.internal.referencing.OperationMethodsTest.class,
 
+    // Test map projections. Those tests need the providers tested above.
+    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
+    org.apache.sis.referencing.operation.projection.MercatorTest.class,
+
+    // Coordinate Reference System components.
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,

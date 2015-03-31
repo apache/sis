@@ -32,12 +32,12 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * An immutable and thread-safe set containing the operation methods given by an {@link Iterable}.
  * Initial iteration is synchronized on the given {@code Iterable} and the result is cached.
  *
- * {@section Rational}
+ * <div class="section">Rational</div>
  * We use this class instead than copying the {@link OperationMethod} instances in a {@link java.util.HashSet}
  * in order to allow deferred {@code OperationMethod} instantiation, for example in the usual case where the
  * iterable is a {@link java.util.ServiceLoader}: we do not invoke {@link Iterator#next()} before needed.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * The usual {@link Set} methods like {@code contains(Object)} are inefficient as they may require a traversal
  * of all elements in this set.
  *

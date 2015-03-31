@@ -41,12 +41,12 @@ import org.opengis.feature.type.FeatureType;
 /**
  * Description of the class of information covered by the information.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -290,7 +290,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the dataset to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -309,12 +309,12 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Returns the feature types to which the information applies.
      *
      * <div class="note"><b>Example:</b>
-     * If an administrative area performs a complete re-survey of the road network,
+     * if an administrative area performs a complete re-survey of the road network,
      * the change can be recorded at {@link ScopeCode#FEATURE_TYPE} level with a
      * “<cite>Administrative area A — Road network</cite>” description.
      * </div>
      *
-     * {@section Conditions}
+     * <div class="section">Conditions</div>
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
@@ -332,7 +332,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the feature types to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
@@ -350,12 +350,12 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Returns the attribute types to which the information applies.
      *
      * <div class="note"><b>Example:</b>
-     * If an administrative area detects an anomaly in all overhead clearance of the road survey,
+     * if an administrative area detects an anomaly in all overhead clearance of the road survey,
      * the correction can be recorded at {@link ScopeCode#ATTRIBUTE_TYPE} level with a
      * “<cite>Administrative area A — Overhead clearance</cite>” description.
      * </div>
      *
-     * {@section Conditions}
+     * <div class="section">Conditions</div>
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
@@ -373,7 +373,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the attribute types to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
@@ -396,7 +396,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — New bridge</cite>” description.
      * </div>
      *
-     * {@section Conditions}
+     * <div class="section">Conditions</div>
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
@@ -414,7 +414,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the feature instances to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
@@ -437,7 +437,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * “<cite>Administrative area A — New bridge — Overhead clearance</cite>” description.
      * </div>
      *
-     * {@section Conditions}
+     * <div class="section">Conditions</div>
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
      *
@@ -455,7 +455,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the attribute instances to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-empty, then this method automatically
      * discards all other properties.
      *
@@ -488,7 +488,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Sets the class of information that does not fall into the other categories to
      * which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *

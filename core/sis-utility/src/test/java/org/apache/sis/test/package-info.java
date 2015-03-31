@@ -22,7 +22,7 @@
  * {@link org.opengis.test.Assert} (which itself extends the JUnit {@link org.junit.Assert} class)
  * with the addition of assertion methods commonly used in SIS tests.
  *
- * {@section Outputs configuration}
+ * <div class="section">Outputs configuration</div>
  * By default, successful tests do not produce any output. However it is possible to ask for
  * verbose outputs, which is sometime useful for debugging purpose. This behavior is controlled
  * from the command line by defining {@linkplain java.lang.System#getProperties() system properties}

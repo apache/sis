@@ -28,20 +28,20 @@
  * The NetCDF attributes recognized by this package are listed in the
  * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
  *
- * {@section Note on the definition of terms}
+ * <div class="section">Note on the definition of terms</div>
  * The UCAR library sometime uses the same words than the ISO/OGC standards for different things.
- * In particular the words "<cite>domain</cite>" and "<cite>range</cite>" can be applied to arbitrary functions,
+ * In particular the words <cite>"domain"</cite> and <cite>"range"</cite> can be applied to arbitrary functions,
  * and the UCAR library chooses to apply it to the function that converts grid indices to geodetic coordinates.
  * The ISO 19123 standard on the other hand considers coverage as a function, and applies those <cite>domain</cite>
  * and <cite>range</cite> words to that function. More specifically:
  *
  * <ul>
- *   <li>UCAR "<cite>coordinate system</cite>" is actually a mix of <cite>coordinate system</cite>,
+ *   <li>UCAR <cite>"coordinate system"</cite> is actually a mix of <cite>coordinate system</cite>,
  *       <cite>coordinate reference system</cite> and <cite>grid geometry</cite> in OGC sense.</li>
- *   <li>UCAR coordinate system "<cite>domain</cite>" is not equivalent to ISO 19123 coverage domain,
+ *   <li>UCAR coordinate system <cite>"domain"</cite> is not equivalent to ISO 19123 coverage domain,
  *       but is rather related to <cite>grid envelope</cite>.</li>
- *   <li>ISO 19123 coverage <cite>domain</cite> is related to UCAR coordinate system "<cite>range</cite>".</li>
- *   <li>ISO 19123 coverage <cite>range</cite> is not equivalent to UCAR "<cite>range</cite>",
+ *   <li>ISO 19123 coverage <cite>domain</cite> is related to UCAR coordinate system <cite>"range"</cite>.</li>
+ *   <li>ISO 19123 coverage <cite>range</cite> is not equivalent to UCAR <cite>"range"</cite>,
  *       but is rather related to the NetCDF variable's minimum and maximum values.</li>
  * </ul>
  *
