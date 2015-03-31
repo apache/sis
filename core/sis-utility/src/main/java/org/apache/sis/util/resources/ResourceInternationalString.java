@@ -133,7 +133,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
             return false;
         }
         final ResourceInternationalString that = (ResourceInternationalString) object;
-        return (key == that.key) && (hasArguments == that.hasArguments) && Objects.equals(arguments, that.arguments);
+        return (key == that.key) && (hasArguments == that.hasArguments) && Objects.deepEquals(arguments, that.arguments);
     }
 
     /**
