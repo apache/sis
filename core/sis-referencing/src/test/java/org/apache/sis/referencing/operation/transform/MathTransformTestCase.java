@@ -36,7 +36,6 @@ import static java.lang.StrictMath.*;
 
 // Test imports
 import org.opengis.test.Validators;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.ReferencingAssert;
 import static org.opengis.test.Assert.*;
@@ -205,15 +204,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Placeholder for a GeoAPI 3.1 method which was not available in GeoAPI 3.0.
-     * This placeholder does nothing. See Apache SIS JDK6 branch for a real test.
-     *
-     * @param coordinate Ignored.
-     */
-    protected final void verifyDerivative(final double... coordinate) {
-    }
-
-    /**
      * Stress the current {@linkplain #transform transform} using random ordinates in the given domain.
      * First, this method creates a grid of regularly spaced points along all dimensions in the given domain.
      * Next, this method adds small random displacements to every points and shuffle the coordinates in random order.
@@ -252,20 +242,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
                 : TestUtilities.createRandomNumberGenerator(randomSeed);
 
         verifyInDomain(minOrdinates, maxOrdinates, numOrdinates, random);
-    }
-
-    /**
-     * Placeholder for a GeoAPI 3.1 method which was not available in GeoAPI 3.0.
-     * This placeholder does nothing. See Apache SIS JDK6 branch for a real test.
-     *
-     * @param minOrdinates    Ignored.
-     * @param maxOrdinates    Ignored.
-     * @param numOrdinates    Ignored.
-     * @param randomGenerator Ignored.
-     */
-    protected final void verifyInDomain(final double[] minOrdinates, final double[] maxOrdinates,
-            final int[] numOrdinates, final Random randomGenerator)
-    {
     }
 
     /**

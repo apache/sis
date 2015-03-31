@@ -58,6 +58,16 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     }
 
     /**
+     * Instantiates the object to use for running GeoAPI test.
+     *
+     * @param  provider The provider of the projection to test.
+     * @return The GeoAPI test class using the given provider.
+     */
+    static ParameterizedTransformTestMock createGeoApiTest(final MapProjection provider) {
+        return new ParameterizedTransformTestMock(new MathTransformFactoryMock(provider));
+    }
+
+    /**
      * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
      * This method uses arbitrary central meridian, scale factor, false easting and false northing for increasing
      * the chances to detect a mismatch.
