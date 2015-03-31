@@ -22,7 +22,6 @@ import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
-import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -144,7 +143,22 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the <cite>"Mercator (variant B)"</cite> case.
+     * Tests the <cite>"Mercator (variant A)"</cite> case (EPSG:9804).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator1SP()
+     */
+    @Test
+    @DependsOnMethod("testMercator2SP")  // Because our Mercator implementation checks for Mercator2SP parameters.
+    public void testMercator1SP() throws FactoryException, TransformException {
+        createGeoApiTest(new Mercator1SP()).testMercator1SP();
+    }
+
+    /**
+     * Tests the <cite>"Mercator (variant B)"</cite> case (EPSG:9805).
      * This test is defined in GeoAPI conformance test suite.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -156,5 +170,35 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @DependsOnMethod("testSpecialLatitudes")
     public void testMercator2SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator2SP()).testMercator2SP();
+    }
+
+    /**
+     * Tests the <cite>"Popular Visualisation Pseudo Mercator"</cite> case (EPSG:1024).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPseudoMercator()
+     */
+    @Test
+    @DependsOnMethod("testMercator1SP")
+    public void testPseudoMercator() throws FactoryException, TransformException {
+        createGeoApiTest(new PseudoMercator()).testPseudoMercator();
+    }
+
+    /**
+     * Tests the <cite>"Miller Cylindrical"</cite> case.
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMiller()
+     */
+    @Test
+    @DependsOnMethod("testMercator1SP")
+    public void testMiller() throws FactoryException, TransformException {
+        createGeoApiTest(new MillerCylindrical()).testMiller();
     }
 }
