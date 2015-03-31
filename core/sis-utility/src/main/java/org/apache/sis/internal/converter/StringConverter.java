@@ -44,7 +44,7 @@ import org.apache.sis.measure.Units;
  * completely bijective because various path separators ({@code '/'} and {@code '\'})
  * produce the same {@code File} object.</p>
  *
- * {@section Special cases}
+ * <div class="section">Special cases</div>
  * Conversion table from {@link String} to {@link java.lang.Boolean}:
  *
  * <table class="sis">
@@ -60,7 +60,7 @@ import org.apache.sis.measure.Units;
  *   <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
  * </table>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

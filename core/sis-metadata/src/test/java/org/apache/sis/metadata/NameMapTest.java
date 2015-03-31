@@ -92,7 +92,7 @@ public final strictfp class NameMapTest extends TestCase {
      * it would just consume more memory than needed. We want to intern those strings because they usually
      * match method names or field names, which are already interned by the JVM.
      *
-     * {@section Explicit calls to <code>String.intern()</code>}
+     * <div class="section">Explicit calls to {@code String.intern()}</div>
      * I though that annotation strings were interned like any other constants, but it does not
      * seem to be the case as of JDK7. To check if a future JDK release still needs explicit
      * call to {@link String#intern()}, try to remove the "{@code .intern()}" part in the

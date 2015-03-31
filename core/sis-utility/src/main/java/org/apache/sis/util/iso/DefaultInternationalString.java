@@ -48,7 +48,7 @@ import java.util.Objects;
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * Instances of {@code DefaultInternationalString} are thread-safe. While those instances are not strictly immutable,
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
@@ -251,7 +251,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * was requested but not found, then this method looks for the {@code "fr"} locale.
      * The {@linkplain Locale#ROOT root locale} is tried last.
      *
-     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * <div class="section">Handling of {@code Locale.ROOT} argument value</div>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
      * typically some programmatic values like enumerations or identifiers.
      * While identifiers often look like English words, {@code Locale.ROOT} is not considered
@@ -272,7 +272,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       an arbitrary string.</li>
      * </ul>
      *
-     * {@section Handling of <code>null</code> argument value}
+     * <div class="section">Handling of {@code null} argument value</div>
      * In the default implementation, the {@code null} locale is handled as a synonymous of
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.

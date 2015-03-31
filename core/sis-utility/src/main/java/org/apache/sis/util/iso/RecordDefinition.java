@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * Holds a {@code Record} definition in a way more convenient for Apache SIS than
  * what the {@code RecordType} interface provides.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * This base class is intentionally not serializable, and all private fields are marked as transient for making
  * this decision more visible. This is because the internal details of this class are quite arbitrary, so we do
  * not want to expose them in serialization for compatibility reasons. Furthermore some information are redundant,
@@ -59,7 +59,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
      * with other implementations.
      *
-     * {@section Serialization}
+     * <div class="section">Serialization</div>
      * This class is serializable if the {@code RecordType} given to the constructor is also serializable.
      */
     static final class Adapter extends RecordDefinition implements Serializable {

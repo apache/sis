@@ -45,7 +45,7 @@ import org.apache.sis.util.Debug;
  * don't work with {@link LogRecord}, and sometime provides nothing else than convenience methods
  * equivalent to {@link #severe(String) severe} … {@link #finest(String) finest}.</p>
  *
- * {@section Restrictions}
+ * <div class="section">Restrictions</div>
  * Because the configuration is expected to be fully controlled by the external logging
  * framework, every configuration methods inherited from {@link Logger} are disabled:
  *
@@ -70,7 +70,7 @@ import org.apache.sis.util.Debug;
  * The adapters can be created, garbage-collected and recreated again while preserving their
  * behavior since their configuration is entirely contained in the external logging framework.
  *
- * {@section Localization}
+ * <div class="section">Localization</div>
  * This logger is always created without resource bundles. Localizations shall be done through
  * explicit calls to {@code logrb} or {@link #log(LogRecord)} methods. This is sufficient for
  * SIS needs, which performs all localizations through the later. Note that those methods
@@ -78,7 +78,7 @@ import org.apache.sis.util.Debug;
  * adapter localizes and formats records immediately instead of letting the {@linkplain Handler}
  * performs this work only if needed.
  *
- * {@section Logging levels}
+ * <div class="section">Logging levels</div>
  * If a log record {@linkplain Level level} is not one of the predefined ones, then this class
  * maps to the first level below the specified one. For example if a log record has some level
  * between {@link Level#FINE FINE} and {@link Level#FINER FINER}, then the {@link #finer finer}
@@ -153,7 +153,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Returns {@code true} if the specified level is loggable.
      *
-     * {@section Implementation tip}
+     * <div class="section">Implementation tip</div>
      * Given that {@link Level#intValue} for all predefined levels are documented in the {@link Level}
      * specification and are multiple of 100, given that integer divisions are rounded toward zero and
      * given rule documented in this <a href="#skip-navbar_top">class javadoc</a>, then logging levels

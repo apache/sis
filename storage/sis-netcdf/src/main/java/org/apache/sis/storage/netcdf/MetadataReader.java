@@ -95,7 +95,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * {@linkplain #LONGITUDE longitude} and {@linkplain #LATITUDE latitude} resolutions are
  * often more accurate in that group.
  *
- * {@section Known limitations}
+ * <div class="section">Known limitations</div>
  * <ul>
  *   <li>{@code "degrees_west"} and {@code "degrees_south"} units not correctly handled.</li>
  *   <li>Units of measurement not yet declared in the {@link Band} elements.</li>
@@ -855,7 +855,7 @@ final class MetadataReader {
         String name = variable.getName();
         if (name != null && !(name = name.trim()).isEmpty()) {
             if (nameFactory == null) {
-                nameFactory = DefaultFactories.NAMES; // Real dependency injection to be used in a future version.
+                nameFactory = DefaultFactories.forBuildin(NameFactory.class); // Real dependency injection to be used in a future version.
             }
             band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));

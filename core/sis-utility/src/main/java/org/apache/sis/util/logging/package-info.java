@@ -29,7 +29,7 @@
  *       records on single line with colors, for easier reading on the console output.</li>
  * </ul>
  *
- * {@section Choosing a logging framework}
+ * <div class="section">Choosing a logging framework</div>
  * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging,
  * but this package allows redirection of logging messages to some other frameworks like
  * <a href="http://logging.apache.org/log4j/">Log4J</a>.
@@ -43,13 +43,13 @@
  *   <li>Any other JAR registering a {@link org.apache.sis.util.logging.LoggerFactory} implementation.</li>
  * </ul>
  *
- * {@section Apache SIS logger constants}
+ * <div class="section">Apache SIS logger constants</div>
  * Some static final {@code Logger} constant defined in Apache SIS are:
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata#LOGGER} for the {@code org.apache.sis.metadata.iso.*} packages</li>
  * </ul>
  *
- * {@section Note for SIS developers}
+ * <div class="section">Note for SIS developers</div>
  * All SIS code should fetch their logger through a call to our custom
  * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead than
  * the standard {@link java.util.logging.Logger#getLogger(String)} method. This is necessary in

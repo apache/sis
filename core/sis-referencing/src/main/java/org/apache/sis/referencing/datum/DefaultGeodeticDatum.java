@@ -30,7 +30,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ExtentSelector;
@@ -53,20 +53,20 @@ import java.util.Objects;
  * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
  * coordinate system centered in the ellipsoid (or sphere).
  *
- * {@section Bursa-Wolf parameters}
+ * <div class="section">Bursa-Wolf parameters</div>
  * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
  * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
  * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
  *
  * <p>The Bursa-Wolf parameters serve two purposes:</p>
- * <ol>
- *   <li><p><b>Fallback for datum shifts</b><br>
+ * <ol class="verbose">
+ *   <li><b>Fallback for datum shifts</b><br>
  *     There is different methods for transforming coordinates from one geodetic datum to an other datum,
  *     and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
  *     for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
  *     know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
- *     sometime together with the geographic extent of the coordinates to transform.</p>
+ *     sometime together with the geographic extent of the coordinates to transform.
  *
  *     <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
  *     {@link org.opengis.referencing.operation.CoordinateOperation} or a
@@ -77,17 +77,17 @@ import java.util.Objects;
  *     then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
  *   </li>
  *
- *   <li><p><b>WKT version 1 formatting</b><br>
+ *   <li><b>WKT version 1 formatting</b><br>
  *     The Bursa-Wolf parameters association serves an other purpose: when a CRS is formatted in the older
  *     <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
  *     with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
  *     for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
  *     Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
- *     do not exist in the EPSG database.</p>
+ *     do not exist in the EPSG database.
  *   </li>
  * </ol>
  *
- * {@section Creating new geodetic datum instances}
+ * <div class="section">Creating new geodetic datum instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a geodetic datum.
@@ -110,7 +110,7 @@ import java.util.Objects;
  *     GeodeticDatum datum = CommonCRS.WGS84.datum();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
@@ -362,27 +362,27 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * {@linkplain #getPrimeMeridian() prime meridian}, then it is caller's responsibility
      * to apply longitude rotation before to use the matrix returned by this method.</p>
      *
-     * <p><b>Search order</b><br>
-     * This method performs the search in the following order:</p>
+     * <div class="section">Search order</div>
+     * This method performs the search in the following order:
      * <ol>
      *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
      *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
      *       then the matrix will be built from those parameters.</li>
      *   <li>Otherwise if the other datum contains {@code BursaWolfParameters} having this datum
      *       as their target (ignoring metadata), then the matrix will be built from those parameters
-     *       and {@linkplain MatrixSIS#inverse() inverted}.</li>
+     *       and {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverted}.</li>
      * </ol>
      *
-     * <p><b>Multi-occurrences resolution</b><br>
+     * <div class="section">Multi-occurrences resolution</div>
      * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
      * the largest intersection between its {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
      * and the given extent will be selected. If more than one instance have the same intersection, then the first
-     * occurrence is selected.</p>
+     * occurrence is selected.
      *
-     * <p><b>Time-dependent parameters</b><br>
+     * <div class="section">Time-dependent parameters</div>
      * If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
-     * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.</p>
+     * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.
      *
      * @param  targetDatum The target datum.
      * @param  areaOfInterest The geographic and temporal extent where the transformation should be valid, or {@code null}.
@@ -404,7 +404,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (targetDatum instanceof DefaultGeodeticDatum) {
             candidate = ((DefaultGeodeticDatum) targetDatum).select(this, selector);
             if (candidate != null) try {
-                return MatrixSIS.castOrCopy(createTransformation(candidate, areaOfInterest)).inverse();
+                return Matrices.inverse(createTransformation(candidate, areaOfInterest));
             } catch (NoninvertibleMatrixException e) {
                 /*
                  * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)

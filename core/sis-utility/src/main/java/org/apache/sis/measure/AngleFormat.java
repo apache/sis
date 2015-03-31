@@ -106,7 +106,7 @@ import java.util.Objects;
  * or latitude values without the degrees field are unusual, omitting that field is likely to increase the
  * risk of confusion in those cases.
  *
- * {@section Examples}
+ * <div class="note"><b>Examples:</b>
  * <table class="sis">
  *   <caption>Pattern examples</caption>
  *   <tr><th>Pattern               </th>  <th>48.5      </th> <th>-12.53125    </th></tr>
@@ -118,6 +118,7 @@ import java.util.Objects;
  *   <tr><td>{@code DDMMSSs}       </td>  <td>4830000   </td> <td>-1231525     </td></tr>
  *   <tr><td>{@code DD°MM′?SS.s″?} </td>  <td>48°30′    </td> <td>-12°31′52.5″ </td></tr>
  * </table>
+ * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3

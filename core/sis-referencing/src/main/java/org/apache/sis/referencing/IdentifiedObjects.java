@@ -117,19 +117,19 @@ public final class IdentifiedObjects extends Static {
      * This method checks first the {@linkplain AbstractIdentifiedObject#getName() primary name},
      * then all {@linkplain AbstractIdentifiedObject#getAlias() aliases} in their iteration order.
      *
-     * <ul>
-     *   <li><p>If the name or alias implements the {@link Identifier} interface,
+     * <ul class="verbose">
+     *   <li>If the name or alias implements the {@link Identifier} interface,
      *       then this method compares the {@linkplain Identifier#getAuthority()
      *       identifier authority} against the specified citation using the
      *       {@link Citations#identifierMatches(Citation, Citation)} method.
      *       If a matching is found, then this method returns the
-     *       {@linkplain Identifier#getCode() identifier code} of that object.</p></li>
+     *       {@linkplain Identifier#getCode() identifier code} of that object.</li>
      *
-     *   <li><p>Otherwise, if the alias implements the {@link GenericName} interface, then this method
+     *   <li>Otherwise, if the alias implements the {@link GenericName} interface, then this method
      *       compares the {@linkplain GenericName#scope() name scope} against the specified citation
      *       using the {@link Citations#identifierMatches(Citation, String)} method.
      *       If a matching is found, then this method returns the
-     *       {@linkplain GenericName#tip() name tip} of that object.</p></li>
+     *       {@linkplain GenericName#tip() name tip} of that object.</li>
      * </ul>
      *
      * Note that alias may implement both the {@link Identifier} and {@link GenericName}
@@ -274,7 +274,7 @@ public final class IdentifiedObjects extends Static {
      * then this method fallback on <code>object.{@linkplain AbstractIdentifiedObject#getName() getName()}</code>.
      * The first element found is formatted by {@link #toString(Identifier)}.
      *
-     * {@section Recommanded alternatives}
+     * <div class="section">Recommended alternatives</div>
      * <ul>
      *   <li>If the code of a specific authority is wanted (typically EPSG), then consider
      *       using {@link #getIdentifier(IdentifiedObject, Citation)} instead.</li>

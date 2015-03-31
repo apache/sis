@@ -45,7 +45,7 @@ import java.util.Objects;
 /**
  * Defines the origin from which longitude values are determined.
  *
- * {@section Creating new prime meridian instances}
+ * <div class="section">Creating new prime meridian instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many prime meridians,
@@ -72,7 +72,7 @@ import java.util.Objects;
  *     PrimeMeridian pm = CommonCRS.WGS84.primeMeridian();
  * }
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

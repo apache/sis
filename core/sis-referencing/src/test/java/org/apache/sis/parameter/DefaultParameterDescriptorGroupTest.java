@@ -57,7 +57,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      * The very last parameter has a maximum number of occurrence of 2, which is illegal
      * according ISO 19111 but nevertheless supported by Apache SIS.
      */
-    static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
+    public static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
     static {
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<>(4);

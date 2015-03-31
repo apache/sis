@@ -72,7 +72,7 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Root entity which defines metadata about a resource or resources.
  *
- * {@section Localization}
+ * <div class="section">Localization</div>
  * When this object is marshalled as an ISO 19139 compliant XML document, the value
  * given to the {@link #setLanguage(Locale)} method will be used for the localization
  * of {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList}
@@ -80,7 +80,7 @@ import org.apache.sis.xml.Namespaces;
  * INSPIRE rules. If no language were specified, then the default locale will be the one
  * defined in the {@link org.apache.sis.xml.XML#LOCALE} marshaller property, if any.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

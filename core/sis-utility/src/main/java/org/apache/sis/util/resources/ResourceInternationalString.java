@@ -35,7 +35,7 @@ import java.util.Objects;
  * {@link IndexedResourceBundle}. Compared to the public class, this specialization works
  * with integer resource keys and accepts arguments.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -221,7 +221,7 @@ public final class Containers extends Static {
      * or {@code null} if the map is null or does not contain a value for the key.
      * If the mapped value is non-null but can not be casted to the given type, then this
      * method throws an {@link IllegalArgumentException} with a message of the form
-     * "<cite>Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’.</cite>".
+     * <cite>"Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’."</cite>.
      *
      * <p>This is a helper method for processing a {@code Map} argument containing property values of various
      * kinds, as in the {@link org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)

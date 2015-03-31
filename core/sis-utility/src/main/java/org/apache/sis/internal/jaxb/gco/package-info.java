@@ -28,17 +28,16 @@
  *
  * <p>This package includes:</p>
  *
- * <ul>
- *   <li><p>JAXB adapters for primitive types.
+ * <ul class="verbose">
+ *   <li><b>JAXB adapters for primitive types.</b><br>
  *   JAXB can write directly Java primitive type at marshalling time "as is". However ISO-19139
  *   requires those values to be surrounded by elements representing the data type. The role of
- *   these adapters is to add these elements around the value.</p></li>
+ *   these adapters is to add these elements around the value.</li>
  *
- *   <li><p>JAXB adapters for <cite>unit of measure</cite> as specified in the ISO-19103
- *   specifications. For example, a measure marshalled with JAXB will be formatted like
- *   {@code <gco:Measure uom="m">220.0</gco:Measure>}.</p></li>
+ *   <li><b>JAXB adapters for <cite>unit of measure</cite></b> as specified in the ISO-19103 specifications.<br>
+ *   For example, a measure marshalled with JAXB will be formatted like {@code <gco:Measure uom="m">220.0</gco:Measure>}.</li>
  *
- *   <li><p>JAXB adapters for date and time.</p></li>
+ *   <li>JAXB adapters for date and time.</li>
  * </ul>
  *
  * Classes prefixed by two letters, like {@code "GO_Decimal"}, are also wrappers around the actual
@@ -48,15 +47,15 @@
  * specifications; they are used only for consistency with current practice in
  * {@link org.apache.sis.internal.jaxb.metadata} and similar packages.
  *
- * {@section Object identification and reference}
- * <ul>
- *   <li><p><code>org.apache.sis.<b>metadata.iso</b></code> public packages:</p>
+ * <div class="section">Object identification and reference</div>
+ * <ul class="verbose">
+ *   <li><code>org.apache.sis.<b>metadata.iso</b></code> public packages:
  *   <ul>
  *     <li>Implement the ISO 19139 {@code Foo_Type}, where <var>Foo</var> is the ISO name of a class.</li>
  *     <li>Contains the {@code gco:ObjectIdentification} group of attributes ({@code id}, {@code uuid}).</li>
  *     <li>Conceptually could have been subclasses of {@code ObjectIdentification} defined in this package.</li>
  *   </ul></li>
- *   <li><p><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:</p>
+ *   <li><code>org.apache.sis.<b>internal.jaxb</b></code> private packages:
  *   <ul>
  *     <li>Implement the ISO 19139 {@code Foo_PropertyType} as subclasses of the {@link org.apache.sis.internal.jaxb.gco.PropertyType} class.</li>
  *     <li>Contains the {@code gco:ObjectReference} group of attributes ({@code xlink}, {@code uuidref}).</li>

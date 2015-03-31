@@ -57,14 +57,18 @@ import java.util.Objects;
  *       {@link #isAffine   isAffine},
  *       {@link #isIdentity isIdentity},
  *       {@link #equals(Matrix, Matrix, double, boolean) equals},
- *       {@link #equals(Matrix, Matrix, ComparisonMode)  equals},
  *       {@link #toString(Matrix) toString}.
+ *   </li>
+ *   <li>Miscellaneous:
+ *       {@link #multiply     multiply},
+ *       {@link #inverse      inverse},
+ *       {@link #unmodifiable unmodifiable},
  *   </li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.parameter.TensorParameters
@@ -192,7 +196,10 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS create(final int numRow, final int numCol, final Number[] elements) {
         ArgumentChecks.ensureNonNull("elements", elements);
-        final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol);
+        if (elements == ExtendedPrecisionMatrix.IDENTITY) { // Intentionally undocumented features.
+            return GeneralMatrix.createExtendedPrecision(numRow, numCol, true);
+        }
+        final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol, false);
         if (matrix.setElements(elements)) {
             /*
              * At least one org.apache.sis.internal.util.DoubleDouble instance has been found,
@@ -211,6 +218,7 @@ public final class Matrices extends Static {
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
      *        If {@code false}, then source and destination envelopes will be ignored and may be null.
      */
+    @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                              final Envelope dstEnvelope, final AxisDirection[] dstAxes,
                                              final boolean useEnvelopes)
@@ -288,13 +296,13 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points before the date line, since the wrap around operation can not be represented by an affine transform.
      *
-     * {@section Example}
+     * <div class="section">Example</div>
      * Given a source envelope of size 100 × 200 (the units do not matter for this method) and a destination
      * envelope of size 300 × 500, and given {@linkplain Envelope#getLowerCorner() lower corner} translation
      * from (-20, -40) to (-10, -25), then the following method call:
@@ -373,7 +381,7 @@ public final class Matrices extends Static {
      * (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
      * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
-     * {@section Example}
+     * <div class="section">Example</div>
      * The following method call:
      *
      * {@preformat java
@@ -422,15 +430,15 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
      * operation can not be represented by an affine transform.
      *
-     * {@section Example}
-     * Combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
+     * <div class="note"><b>Example:</b>
+     * combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -450,6 +458,7 @@ public final class Matrices extends Static {
      *   │   1 │   │ 0    0      1 │   │   1 │
      *   └     ┘   └               ┘   └     ┘
      * }
+     * </div>
      *
      * @param  srcEnvelope The source envelope.
      * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
@@ -506,8 +515,8 @@ public final class Matrices extends Static {
      *   <li>For any row <var>j</var> other than the last row, the column {@code selectedDimensions[j]}.</li>
      * </ul>
      *
-     * {@section Example}
-     * Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
+     * <div class="note"><b>Example:</b>
+     * given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
      * (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
      * and discard the <var>z</var> values, then the indices of source ordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
@@ -528,6 +537,7 @@ public final class Matrices extends Static {
      *   └   ┘   └           ┘   │ 1 │
      *                           └   ┘
      * }
+     * </div>
      *
      * @param  sourceDimensions The number of dimensions in source coordinates.
      * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
@@ -579,8 +589,8 @@ public final class Matrices extends Static {
      *       is copied in the last column of the sub-matrix.</li>
      * </ul>
      *
-     * {@section Example}
-     * Given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
+     * <div class="note"><b>Example:</b>
+     * given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
      *
      * {@preformat math
      *   ┌    ┐   ┌             ┐   ┌   ┐
@@ -602,6 +612,7 @@ public final class Matrices extends Static {
      *   │ 1  │   │ 0  0  0       0    1 │   │ 1 │
      *   └    ┘   └                      ┘   └   ┘
      * }
+     * </div>
      *
      * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
      * @param  subMatrix The matrix to use for affected ordinates.
@@ -692,6 +703,71 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns an unmodifiable view of the given matrix. The returned matrix is immutable
+     * only if the given {@code matrix} is not modified anymore after this method call.
+     *
+     * @param matrix The matrix for which to get an unmodifiable view, or {@code null}.
+     * @return A unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS unmodifiable(final Matrix matrix) {
+        if (matrix == null || matrix instanceof UnmodifiableMatrix) {
+            return (UnmodifiableMatrix) matrix;
+        } else {
+            return new UnmodifiableMatrix(matrix);
+        }
+    }
+
+    /**
+     * Returns a new matrix which is the result of multiplying the first matrix with the second one.
+     * In other words, returns {@code m1} × {@code m2}.
+     *
+     * @param  m1 The first matrix to multiply.
+     * @param  m2 The second matrix to multiply.
+     * @return The result of {@code m1} × {@code m2}.
+     * @throws MismatchedMatrixSizeException if the number of columns in {@code m1} is not equals to the
+     *         number of rows in {@code m2}.
+     *
+     * @see MatrixSIS#multiply(Matrix)
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS multiply(final Matrix m1, final Matrix m2) throws MismatchedMatrixSizeException {
+        if (m1 instanceof MatrixSIS) {
+            return ((MatrixSIS) m1).multiply(m2);  // Maybe the subclass override that method.
+        }
+        final int nc = m2.getNumCol();
+        MatrixSIS.ensureNumRowMatch(m1.getNumCol(), m2.getNumRow(), nc);
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(m1.getNumRow(), nc, false);
+        result.setToProduct(m1, m2);
+        return result;
+    }
+
+    /**
+     * Returns the inverse of the given matrix.
+     *
+     * @param  matrix The matrix to inverse, or {@code null}.
+     * @return The inverse of this matrix, or {@code null} if the given matrix was null.
+     * @throws NoninvertibleMatrixException if the given matrix is not invertible.
+     *
+     * @see MatrixSIS#inverse()
+     *
+     * @since 0.6
+     */
+    public static MatrixSIS inverse(final Matrix matrix) throws NoninvertibleMatrixException {
+        if (matrix == null) {
+            return null;
+        } else if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).inverse();  // Maybe the subclass override that method.
+        } else if (matrix.getNumRow() != matrix.getNumCol()) {
+            return new NonSquareMatrix(matrix).inverse();
+        } else {
+            return Solver.inverse(matrix, true);
+        }
+    }
+
+    /**
      * Returns {@code true} if the given matrix represents an affine transform.
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
@@ -705,21 +781,9 @@ public final class Matrices extends Static {
     public static boolean isAffine(final Matrix matrix) {
         if (matrix instanceof MatrixSIS) {
             return ((MatrixSIS) matrix).isAffine();
+        } else {
+            return MatrixSIS.isAffine(matrix);
         }
-        // Following is executed only if the given matrix is not a SIS implementation.
-        int j = matrix.getNumRow();
-        int i = matrix.getNumCol();
-        if (i != j--) {
-            return false; // Matrix is not square.
-        }
-        double e = 1;
-        while (--i >= 0) {
-            if (matrix.getElement(j, i) != e) {
-                return false;
-            }
-            e = 0;
-        }
-        return true;
     }
 
     /**
@@ -862,7 +926,7 @@ public final class Matrices extends Static {
      *
      * <p>The current implementation formats ±0 and ±1 without trailing {@code ".0"}, and all other values with
      * a per-column uniform number of fraction digits. The ±0 and ±1 values are treated especially because they
-     * usually imply a "<cite>no scale</cite>", "<cite>no translation</cite>" or "<cite>orthogonal axes</cite>"
+     * usually imply a <cite>"no scale"</cite>, <cite>"no translation"</cite> or <cite>"orthogonal axes"</cite>
      * meaning. A matrix in SIS is often populated mostly by ±0 and ±1 values, with a few "interesting" values.
      * The simpler ±0 and ±1 formatting makes easier to spot the "interesting" values.</p>
      *

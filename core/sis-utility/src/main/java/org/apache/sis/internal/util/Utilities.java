@@ -43,7 +43,7 @@ public final class Utilities extends Static {
      * The given separator character is append before the given {@code text} only if the buffer
      * is not empty and at least one {@code text} character is valid.
      *
-     * {@section Relationship with <code>gml:id</code>}
+     * <div class="section">Relationship with {@code gml:id}</div>
      * This method may be invoked for building {@code gml:id} values. Strictly speaking this is not appropriate
      * since the {@code xsd:ID} type defines valid identifiers as containing only letters, digits, underscores,
      * hyphens, and periods. This differ from Unicode identifier in two ways:

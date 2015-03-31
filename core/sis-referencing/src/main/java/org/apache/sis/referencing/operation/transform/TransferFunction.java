@@ -43,13 +43,13 @@ import org.apache.sis.util.Debug;
  *       <td><var>y</var> = scale⋅base<sup><var>x</var></sup> + offset</td></tr>
  * </table>
  *
- * {@section Missing values}
+ * <div class="section">Missing values</div>
  * This {@code TransferFunction} class handles only the continuous part of transfer functions.
  * This class does <strong>not</strong> handle missing values other than {@code NaN}.
  * For a more complete class with support for non-NaN missing values,
  * see {@link org.apache.sis.coverage.grid.GridSampleDimension}.
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the
  * same SIS version.

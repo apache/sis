@@ -28,7 +28,7 @@ import org.apache.sis.util.logging.WarningListeners;
 /**
  * Manages a series of features, coverages or sensor data.
  *
- * {@section Thread safety policy}
+ * <div class="section">Thread safety policy</div>
  * This {@code DataStore} base class is thread-safe. However subclasses are usually not.
  * Unless otherwise specified by subclasses, users should assume that {@code DataStore}
  * instances are not thread-safe.

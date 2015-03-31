@@ -24,21 +24,19 @@ import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
+import org.opengis.util.NameFactory;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.system.DefaultFactories.NAMES;
 
 // Branch-dependent imports
-import java.util.Objects;
 import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
  * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
@@ -49,64 +47,65 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
  *
- * <ul>
- *   <li><p><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
+ * <ul class="verbose">
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
  *       each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
- *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</p></li>
+ *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</li>
  *
- *   <li><p><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b>
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b>
  *       identified objects can optionally have an arbitrary amount of aliases, which are also specified
- *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</p></li>
+ *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</li>
  *
- *   <li><p><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
  *       identified objects can also have an arbitrary amount of identifiers, which are specified by any
  *       of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
- *       can be added by invoking the method many time.</p></li>
+ *       can be added by invoking the method many time.</li>
  *
- *   <li><p><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b>
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b>
  *       identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
- *       method.</p></li>
+ *       method.</li>
  * </ul>
  *
  * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
  * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
  *
- * <ul>
- *   <li><p><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
+ * <ul class="verbose">
+ *   <li><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
  *       each {@code Identifier} name or code can be local to a code space defined by an authority.
  *       Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
- *       and usually (but not necessarily) apply to all {@code Identifier} instances.</p></li>
+ *       and usually (but not necessarily) apply to all {@code Identifier} instances.</li>
  *
- *   <li><p><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b>
+ *   <li><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b>
  *       identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
- *       The version usually (but not necessarily) applies to all {@code Identifier} instances.</p></li>
+ *       The version usually (but not necessarily) applies to all {@code Identifier} instances.</li>
  *
- *   <li><p><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b>
+ *   <li><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b>
  *       identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
- *       The description applies only to the next identifier to create.</p></li>
+ *       The description applies only to the next identifier to create.</li>
  * </ul>
  *
- * {@section Namespaces and scopes}
+ * <div class="section">Namespaces and scopes</div>
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
- * <ul>
- *   <li><p>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
+ *
+ * <ul class="verbose">
+ *   <li>The {@link #addIdentifier(String)} and {@link #addName(CharSequence)} methods combine the given argument
  *       with the above-cited authority, code space, version and description information.
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} or identifier,
- *       in which the code space information is stored but not shown by the {@code toString()} method.</p></li>
+ *       in which the code space information is stored but not shown by the {@code toString()} method.</li>
  *
- *   <li><p>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
+ *   <li>The {@link #addIdentifier(Citation, String)} and {@link #addName(Citation, CharSequence)} methods use the given
  *       {@link Citation} argument, ignoring any authority or code space information given to this {@code Builder}.
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
- *       in which the code space information is shown by the {@code toString()} method.</p></li>
+ *       in which the code space information is shown by the {@code toString()} method.</li>
  *
- *   <li><p>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
+ *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
  *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
- *       information given to the {@code Builder} are ignored.</p></li>
+ *       information given to the {@code Builder} are ignored.</li>
  * </ul>
  *
  * <div class="note"><b>Example:</b>
- * The EPSG database defines a projection named "<cite>Mercator (variant A)</cite>" (EPSG:9804).
- * This projection was named "<cite>Mercator (1SP)</cite>" in older EPSG database versions.
+ * The EPSG database defines a projection named <cite>"Mercator (variant A)"</cite> (EPSG:9804).
+ * This projection was named <cite>"Mercator (1SP)"</cite> in older EPSG database versions.
  * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
  * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
  *
@@ -123,7 +122,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
  *
  *
- * {@section Builder property lifetimes}
+ * <div class="section">Builder property lifetimes</div>
  * Some complex objects require the creation of many components. For example constructing a
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
@@ -133,28 +132,27 @@ import org.apache.sis.internal.jdk8.JDK8;
  * In order to simplify that common usage, two groups of properties have different lifetimes in the {@code Builder} class:
  *
  * <ul>
- *   <li><p>
- *       {@linkplain NamedIdentifier#getAuthority() Authority},
- *       {@linkplain NamedIdentifier#getCodeSpace() code space} and
- *       {@linkplain NamedIdentifier#getVersion()   version}:<br>
- *       Kept until they are specified again, because those properties are typically shared by all components.
- *   </p></li>
- *   <li><p>
- *       {@linkplain AbstractIdentifiedObject#getName()        Name},
- *       {@linkplain AbstractIdentifiedObject#getAlias()       aliases},
- *       {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers},
- *       {@linkplain ImmutableIdentifier#getDescription()      description} and
- *       {@linkplain AbstractIdentifiedObject#getRemarks()     remarks}:<br>
- *       Cleared after each call to a {@code createXXX(…)} method, because those properties are usually specific
- *       to a particular {@code IdentifiedObject} or {@code Identifier} instance.
- *   </p></li>
+ *   <li>
+ *     {@linkplain NamedIdentifier#getAuthority() Authority},
+ *     {@linkplain NamedIdentifier#getCodeSpace() code space} and
+ *     {@linkplain NamedIdentifier#getVersion()   version}:<br>
+ *     Kept until they are specified again, because those properties are typically shared by all components.
+ *   </li><li>
+ *     {@linkplain AbstractIdentifiedObject#getName()        Name},
+ *     {@linkplain AbstractIdentifiedObject#getAlias()       aliases},
+ *     {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers},
+ *     {@linkplain ImmutableIdentifier#getDescription()      description} and
+ *     {@linkplain AbstractIdentifiedObject#getRemarks()     remarks}:<br>
+ *     Cleared after each call to a {@code createXXX(…)} method, because those properties are usually specific
+ *     to a particular {@code IdentifiedObject} or {@code Identifier} instance.
+ *   </li>
  * </ul>
  *
- * {@section Usage examples}
+ * <div class="section">Usage examples</div>
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
- * {@section Note for subclass implementors}
+ * <div class="section">Note for subclass implementors</div>
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -218,6 +216,13 @@ public abstract class Builder<B extends Builder<B>> {
     private NameSpace namespace;
 
     /**
+     * The name factory, fetched when first needed.
+     *
+     * @see #factory()
+     */
+    private transient NameFactory nameFactory;
+
+    /**
      * Creates a new builder.
      */
     protected Builder() {
@@ -268,14 +273,27 @@ public abstract class Builder<B extends Builder<B>> {
      * @throws IllegalStateException if a new value is specified in a phase where the value can not be changed.
      */
     private boolean setProperty(final String key, final Object value) throws IllegalStateException {
-        if (Objects.equals(properties.get(key), value)) {
-            return false;
+        final Object previous = JDK8.putIfAbsent(properties, key, value);
+        if (previous != null) {
+            if (previous.equals(value)) {
+                return false;
+            }
+            if (properties.get(IdentifiedObject.NAME_KEY) != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, key));
+            }
+            properties.put(key, value);
         }
-        if (properties.get(IdentifiedObject.NAME_KEY) != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, key));
-        }
-        properties.put(key, value);
         return true;
+    }
+
+    /**
+     * Returns the name factory to use for creating namespaces and local names.
+     */
+    private NameFactory factory() {
+        if (nameFactory == null) {
+            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        }
+        return nameFactory;
     }
 
     /**
@@ -285,7 +303,8 @@ public abstract class Builder<B extends Builder<B>> {
         if (namespace == null) {
             final String codespace = getCodeSpace();
             if (codespace != null) {
-                namespace = NAMES.createNameSpace(NAMES.createLocalName(null, codespace), null);
+                final NameFactory factory = factory();
+                namespace = factory.createNameSpace(factory.createLocalName(null, codespace), null);
             }
         }
         return namespace;
@@ -391,7 +410,7 @@ public abstract class Builder<B extends Builder<B>> {
      * and {@link #setVersion(String) version} information for creating the {@link Identifier} or {@link GenericName}
      * object.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name}, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -406,7 +425,7 @@ public abstract class Builder<B extends Builder<B>> {
         ensureNonNull("name", name);
         if (JDK8.putIfAbsent(properties, IdentifiedObject.NAME_KEY, name.toString()) != null) {
             // A primary name is already present. Add the given name as an alias instead.
-            aliases.add(name instanceof GenericName ? (GenericName) name : NAMES.createLocalName(namespace(), name));
+            aliases.add(name instanceof GenericName ? (GenericName) name : factory().createLocalName(namespace(), name));
         }
         return self();
     }
@@ -416,7 +435,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain AbstractIdentifiedObject#getAlias() aliases} defined after the primary name.
      *
      * <div class="note"><b>Example:</b>
-     * The "<cite>Longitude of natural origin</cite>" parameter defined by EPSG is named differently
+     * The <cite>"Longitude of natural origin"</cite> parameter defined by EPSG is named differently
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
      * {@preformat java
@@ -455,7 +474,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * identifier already contains those information.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -481,7 +500,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@link #setVersion(String) version} specified to this builder (if any), since the given
      * generic name already contains those information.
      *
-     * {@section Name and aliases}
+     * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.

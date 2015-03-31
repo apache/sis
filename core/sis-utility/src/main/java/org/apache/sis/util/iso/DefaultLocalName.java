@@ -50,7 +50,7 @@ import java.util.Objects;
  *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
  * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
@@ -90,7 +90,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * The name, either as a {@link String} or an {@link InternationalString}.
      *
-     * {@section Note on JAXB annotation}
+     * <div class="section">Note on JAXB annotation</div>
      * The {@link XmlElement} annotation applied here is appropriate for subclasses only ({@link DefaultTypeName}
      * and {@link DefaultMemberName}). It is <strong>not</strong> appropriate when (un)marshalling directly this
      * {@code DefaultLocalName} class. In this later case, we will rather rely on the {@link String} conversion

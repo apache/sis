@@ -27,7 +27,7 @@ import org.opengis.util.InternationalString;
 /**
  * Locale-dependent resources for error messages.
  *
- * {@section Argument order convention}
+ * <div class="section">Argument order convention</div>
  * This resource bundle applies the same convention than JUnit: for every {@code format(…)} method,
  * the first arguments provide information about the context in which the error occurred (e.g. the
  * name of a method argument or the range of valid values), while the erroneous values that caused
@@ -219,6 +219,11 @@ public final class Errors extends IndexedResourceBundle {
          * Element “{0}” has not been found.
          */
         public static final short ElementNotFound_1 = 70;
+
+        /**
+         * Elliptical projection not supported.
+         */
+        public static final short EllipticalNotSupported = 182;
 
         /**
          * Argument ‘{0}’ shall not be empty.
@@ -580,6 +585,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NegativeArrayLength_1 = 68;
 
         /**
+         * No convergence.
+         */
+        public static final short NoConvergence = 181;
+
+        /**
          * No convergence for points {0} and {1}.
          */
         public static final short NoConvergenceForPoints_2 = 69;
@@ -900,17 +910,17 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnmodifiableCellValue_2 = 120;
 
         /**
-         * This geometry is unmodifiable.
+         * This geometry is not modifiable.
          */
         public static final short UnmodifiableGeometry = 121;
 
         /**
-         * This metadata is unmodifiable.
+         * This metadata is not modifiable.
          */
         public static final short UnmodifiableMetadata = 122;
 
         /**
-         * Object ‘{0}’ is unmodifiable.
+         * This instance of ‘{0}’ is not modifiable.
          */
         public static final short UnmodifiableObject_1 = 123;
 

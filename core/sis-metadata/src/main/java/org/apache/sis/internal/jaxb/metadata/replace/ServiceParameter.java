@@ -56,7 +56,7 @@ import java.util.Objects;
  * parsing and formatting. For real parameter framework, consider using {@link org.apache.sis.parameter}
  * package instead.</p>
  *
- * {@section Note about raw-type usage}
+ * <div class="section">Note about raw-type usage</div>
  * We use raw type (i.e. we implement {@code ParameterDescriptor} instead of {@code ParameterDescriptor<T>})
  * because there is no way we can know {@code <T>} for sure at unmarshalling time. This is not a recommended
  * practice, so <strong>this class shall not be in public API</strong>.  However it should be okay to create

@@ -74,16 +74,16 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
  * (for example) if the stream uses a monospaced font and supports Unicode characters.
  *
- * {@section Customization}
+ * <div class="section">Customization</div>
  * Some formatting characteristics (indentation width, column where to draw the vertical line
  * below nodes) can be modified by calls to the setter methods defined in this formatter.
  * In particular, the dots joining the node labels to their values can be specified by the
  * {@linkplain #setColumnSeparatorPattern(String) column separator pattern}.
- * The default pattern is {@code "?……[…] "}, which means "<cite>If the next value is non-null,
+ * The default pattern is {@code "?……[…] "}, which means <cite>"If the next value is non-null,
  * then insert the {@code "……"} string, repeat the {@code '…'} character as many time as needed
- * (may be zero), and finally insert a space</cite>".
+ * (may be zero), and finally insert a space"</cite>.
  *
- * {@section Safety against infinite recursivity}
+ * <div class="section">Safety against infinite recursivity</div>
  * Some {@code TreeTable} implementations generate the nodes dynamically as wrappers around Java objects.
  * Such Java objects may contain cyclic associations (<var>A</var> contains <var>B</var> contains <var>C</var>
  * contains <var>A</var>), which result in a tree of infinite depth. Some examples can been found in ISO 19115
@@ -322,7 +322,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * This method can parse the trees created by the {@code format(…)} methods
      * defined in this class.
      *
-     * {@section Parsing rules}
+     * <div class="section">Parsing rules</div>
      * <ul>
      *   <li>Each node shall be represented by a single line made of two parts, in that order:
      *     <ol>

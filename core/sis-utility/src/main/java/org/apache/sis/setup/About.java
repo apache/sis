@@ -571,7 +571,7 @@ pathTree:   for (int j=0; ; j++) {
      * node but lost all value of the parent node. For this reason, we perform the merge only if the
      * parent has no value.
      *
-     * <p>See the "<cite>Reduce the depth of a tree</cite>" example in {@link TreeTables} for more information.
+     * <p>See the <cite>"Reduce the depth of a tree"</cite> example in {@link TreeTables} for more information.
      * In particular, note that this implementation assumes that children collections are {@link List} (this is
      * guaranteed for {@link DefaultTreeTable.Node} implementations).</p>
      *

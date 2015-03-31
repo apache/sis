@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 
 
 /**
@@ -93,7 +93,7 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
         final MathTransform2D transform2 = (MathTransform2D) this.transform2;
         final Matrix matrix1 = transform1.derivative(point);
         final Matrix matrix2 = transform2.derivative(transform1.transform(point,null));
-        return MatrixSIS.castOrCopy(matrix2).multiply(matrix1);
+        return Matrices.multiply(matrix2, matrix1);
     }
 
     /**

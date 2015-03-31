@@ -42,7 +42,7 @@ import java.util.Objects;
  * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
  * a more efficient implementation.
  *
- * {@section Coordinate Reference System (CRS) optionality}
+ * <div class="section">Coordinate Reference System (CRS) optionality</div>
  * Since {@code DirectPosition}s, as data types, will often be included in larger objects
  * (such as {@link org.opengis.geometry.Geometry}) that have references
  * to {@code CoordinateReferenceSystem}, the {@link #getCoordinateReferenceSystem()} method

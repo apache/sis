@@ -75,7 +75,7 @@ import org.apache.sis.internal.jdk8.BiFunction;
  * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
  * can also be used for other standards.
  *
- * {@section Defining new <code>MetadataStandard</code> instances}
+ * <div class="section">Defining new {@code MetadataStandard} instances</div>
  * Users should use the pre-defined constants when applicable.
  * However if new instances need to be defined, then there is a choice:
  *
@@ -87,7 +87,7 @@ import org.apache.sis.internal.jdk8.BiFunction;
  *       method must be overridden in a {@code MetadataStandard} subclass.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code MetadataStandard} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
  * from multiple threads, because the same {@code MetadataStandard} instances are typically referenced
@@ -724,21 +724,21 @@ public class MetadataStandard implements Serializable {
      * {@code valuePolicy} determines whether entries having a null value or an empty collection
      * shall be included in the map.</p>
      *
-     * {@section Supported operations}
+     * <div class="section">Supported operations</div>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      * Note that whether the entry appears as effectively removed from the map or just cleared
      * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * {@section Keys and values}
+     * <div class="section">Keys and values</div>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * {@section Multi-values entries}
+     * <div class="section">Multi-values entries</div>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -772,38 +772,38 @@ public class MetadataStandard implements Serializable {
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
      * <p>The returned {@code TreeTable} instance contains the following columns:</p>
-     * <ul>
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     * <ul class="verbose">
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
-     *       there is a node having the {@code "title"} identifier.</p></li>
+     *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.</p>
+     *       for the first element and an other node with index 1 for the second element.
      *
      *       <div class="note"><b>Note:</b>
      *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
      *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
      *       the same keys may appear in the children of any other nodes.</div></li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
-     *       may be localizable.</p></li>
+     *       may be localizable.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
-     *       The base type of the value (usually an interface).</p></li>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
-     *       metadata class have a setter method for the property represented by the node.</p></li>
+     *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
-     * {@section Write operations}
+     * <div class="section">Write operations</div>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -857,7 +857,7 @@ public class MetadataStandard implements Serializable {
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
      * arguments do not need to be the same implementation class.
      *
-     * {@section Shallow or deep comparisons}
+     * <div class="section">Shallow or deep comparisons</div>
      * This method implements a <cite>shallow</cite> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
      * to this {@code standard.equals(…)} method for children metadata. However the comparison will

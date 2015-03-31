@@ -54,12 +54,12 @@ import org.opengis.feature.FeatureAssociationRole;
  * compared to the Java language, {@code FeatureType} is equivalent to {@link Class} while
  * {@code Feature} instances are equivalent to {@link Object} instances of that class.</div>
  *
- * {@section Naming}
+ * <div class="section">Naming</div>
  * The feature type {@linkplain #getName() name} is mandatory and should be unique. Those names are the main
  * criterion used for deciding if a feature type {@linkplain #isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
- * {@section Properties and inheritance}
+ * <div class="section">Properties and inheritance</div>
  * Each feature type can provide descriptions for the following {@linkplain #getProperties(boolean) properties}:
  *
  * <ul>
@@ -78,7 +78,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
  * is safe for read operations but not for write operations — the later may throw {@link ArrayStoreException}).</div>
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments ({@link AttributeType} instances) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.

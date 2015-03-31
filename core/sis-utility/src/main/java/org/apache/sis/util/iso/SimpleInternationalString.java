@@ -33,12 +33,12 @@ import java.util.Objects;
  * For such a particular case, this implementation is more effective than
  * other implementations provided in this package.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * If the characters sequence to wrap is known to be a {@code String} instance, then
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
  * the {@link Types#toInternationalString(CharSequence)} method.
  *
- * {@section Immutability and thread safety}
+ * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe.
  * Subclasses may or may not be immutable, at implementation choice. But implementors are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.

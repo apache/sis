@@ -63,7 +63,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *   <li>{@link #toTypeName(Class)}</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * The same {@code DefaultNameFactory} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.

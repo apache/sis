@@ -43,7 +43,7 @@ import org.apache.sis.util.ComparisonMode;
  * }
  * </div>
  *
- * {@section Serialization}
+ * <div class="section">Serialization</div>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the
  * same SIS version.

@@ -73,7 +73,7 @@ public final strictfp class ParameterBuilderTest extends TestCase {
     }
 
     /**
-     * Tests the "<cite>Mercator (variant A)</cite>" example given in Javadoc.
+     * Tests the <cite>"Mercator (variant A)"</cite> example given in Javadoc.
      */
     @Test
     @DependsOnMethod("testCreate")

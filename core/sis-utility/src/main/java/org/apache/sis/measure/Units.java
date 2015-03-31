@@ -322,12 +322,12 @@ public final class Units extends Static {
      * hands especially a few symbols found in WKT parsing or in XML files. The list of symbols
      * handled especially is implementation-dependent and may change in future SIS versions.
      *
-     * {@section Parsing authority codes}
+     * <div class="section">Parsing authority codes</div>
      * As a special case, if the given {@code uom} arguments is of the form {@code "EPSG:####"}
      * or {@code "urn:ogc:def:uom:EPSG:####"} (ignoring case and whitespaces), then {@code "####"}
      * is parsed as an integer and forwarded to the {@link #valueOfEPSG(int)} method.
      *
-     * {@section NetCDF unit symbols}
+     * <div class="section">NetCDF unit symbols</div>
      * The attributes in NetCDF files often merge the axis direction with the angular unit,
      * as in {@code "degrees_east"} or {@code "degrees_north"}. This {@code valueOf} method
      * ignores those suffixes and unconditionally returns {@link NonSI#DEGREE_ANGLE} for all

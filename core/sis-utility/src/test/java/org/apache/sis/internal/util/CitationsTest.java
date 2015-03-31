@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -62,5 +63,25 @@ public final strictfp class CitationsTest extends TestCase {
     public void testGetUnicodeIdentifier() {
         final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
         assertEquals("ValidIdentifier", Citations.getUnicodeIdentifier(citation));
+
+        assertNull("Shall not be taken as a valid identifier.",
+                Citations.getUnicodeIdentifier(new SimpleCitation("Proj.4")));
+        assertEquals("Shall fallback on the the identifier space name.",
+                "TheProj4Space", Citations.getUnicodeIdentifier(new Proj4()));
+    }
+
+    /**
+     * A citation which is also an {@link IdentifierSpace}, for {@link #testGetUnicodeIdentifier()} purpose.
+     */
+     @SuppressWarnings("serial")
+     private static final class Proj4 extends SimpleCitation implements IdentifierSpace<Integer> {
+        Proj4() {
+            super("Proj.4");
+        }
+
+        @Override
+        public String getName() {
+            return "TheProj4Space";  // Intentionally a very different name than "Proj4".
+        }
     }
 }

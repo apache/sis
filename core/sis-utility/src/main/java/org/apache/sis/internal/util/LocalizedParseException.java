@@ -95,8 +95,8 @@ public final class LocalizedParseException extends ParseException implements Loc
 
     /**
      * Creates a {@link ParseException} with a localized message built from the given parsing
-     * information. This convenience constructor creates a message of the kind "<cite>Can not
-     * parse string "text" as an object of type 'type'</cite>".
+     * information. This convenience constructor creates a message of the kind <cite>"Can not
+     * parse string "text" as an object of type 'type'"</cite>.
      *
      * @param  locale The locale for {@link #getLocalizedMessage()}.
      * @param  type   The type of objects parsed by the {@link java.text.Format}.

@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -99,5 +99,16 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
 
         // Now the actual test.
         assertEqualsElements(expected, SIZE, SIZE, A.solve(B), TOLERANCE);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testConcatenate() {
+        testConcatenate(new Matrix3(), true);
     }
 }

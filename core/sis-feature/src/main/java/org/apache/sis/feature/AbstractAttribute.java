@@ -53,7 +53,7 @@ import org.opengis.feature.AttributeType;
  *
  * {@code AbstractAttribute} can be instantiated by calls to {@link DefaultAttributeType#newInstance()}.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractAttribute} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -231,7 +231,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Sets the attribute value. All previous values are replaced by the given singleton.
      *
-     * {@section Validation}
+     * <div class="section">Validation</div>
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
@@ -261,7 +261,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Other attributes that describes this attribute. For example if this attribute carries a measurement,
      * then a characteristic of this attribute could be the measurement accuracy.
-     * See "<cite>Attribute characterization</cite>" in {@link DefaultAttributeType} Javadoc for more information.
+     * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
      *
      * <p>The map returned by this method contains only the characteristics explicitely defined for this attribute.
      * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
@@ -276,7 +276,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
      * all the "standard" characteristics and need no special processing.</div>
      *
-     * {@section Reading a characteristic}
+     * <div class="section">Reading a characteristic</div>
      * The characteristic values are enumerated in the {@linkplain Map#values() map values}.
      * The {@linkplain Map#keySet() map keys} are the {@code String} representations of characteristics
      * {@linkplain DefaultAttributeType#getName() name}, for more convenient lookups.
@@ -296,7 +296,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     }
      * }
      *
-     * {@section Adding a characteristic}
+     * <div class="section">Adding a characteristic</div>
      * A new characteristic can be added in the map in three different ways:
      * <ol>
      *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitely.

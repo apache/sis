@@ -67,7 +67,7 @@ import static java.util.Collections.singletonMap;
  *   <li>Methods providing information, like {@link #isHorizontalCRS(CoordinateReferenceSystem)}.</li>
  * </ul>
  *
- * {@section Note on kinds of CRS}
+ * <div class="section">Note on kinds of CRS</div>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
  * list of single components. In such flat list, vertical and temporal components can easily be identified by
  * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
@@ -279,7 +279,7 @@ public final class CRS extends Static {
      * Otherwise if the given CRS is compound, then this method searches for the first vertical component
      * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
-     * {@section Height in a three-dimensional geographic CRS}
+     * <div class="section">Height in a three-dimensional geographic CRS</div>
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
      * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
      * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}

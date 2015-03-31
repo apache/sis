@@ -37,7 +37,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * If needed, this {@code Appender} can be viewed as a synchronized
  * {@link java.io.Writer} by invoking the {@link IO#asWriter(Appendable)} method.
  *
- * {@section Flushing and closing the stream}
+ * <div class="section">Flushing and closing the stream</div>
  * Subclasses implement the {@link java.io.Flushable} interface only if they
  * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
  * This is the case of {@link TableAppender} and {@link LineAppender} for instance.
@@ -185,7 +185,7 @@ abstract class Appender implements Appendable {
 
     /**
      * Returns the content of this {@code Appendable} as a string if possible,
-     * or the localized "<cite>Unavailable content</cite>" string otherwise.
+     * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
      * @return The content of this {@code Appendable}, or a localized message for unavailable content.
      *

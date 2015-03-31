@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -45,11 +46,11 @@ import java.util.Objects;
  * For example the above-cited strings can both be split into smaller name components.
  * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
- * {@section <code>Comparable</code> ordering}
+ * <div class="section">{@code Comparable} ordering</div>
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *
- * {@section Note for implemetors}
+ * <div class="section">Note for implemetors</div>
  * Subclasses need only to implement the following methods:
  * <ul>
  *   <li>{@link #scope()}</li>
@@ -140,10 +141,11 @@ public abstract class AbstractName implements GenericName, Serializable {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
         }
         /*
-         * Following cast should be safe because the SIS_NAMES factory is fixed to a
-         * DefaultNameFactory instance, which is known to create AbstractName instances.
+         * Following cast should be safe because DefaultFactories.forBuildin(Class) filters the factories in
+         * order to return the Apache SIS implementation, which is known to create AbstractName instances.
          */
-        return (AbstractName) DefaultFactories.SIS_NAMES.createGenericName(object.scope(), names);
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return (AbstractName) factory.createGenericName(object.scope(), names);
     }
 
     /**

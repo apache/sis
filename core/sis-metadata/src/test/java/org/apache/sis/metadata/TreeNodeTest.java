@@ -129,7 +129,7 @@ public final strictfp class TreeNodeTest extends TestCase {
 
     /**
      * Tests {@link TreeNode#getName()} on a metadata with only one entry in collections.
-     * Those names shall <em>not</em> contain numbering like "<cite>(1 of 2)</cite>".
+     * Those names shall <em>not</em> contain numbering like <cite>"(1 of 2)"</cite>.
      */
     @Test
     @DependsOnMethod("testRootNode") // Because tested more basic methods than 'getValue(TableColumn)'.
@@ -146,7 +146,7 @@ public final strictfp class TreeNodeTest extends TestCase {
 
     /**
      * Tests {@link TreeNode#getName()} on a metadata with more than one entry in collections.
-     * Those names <em>shall</em> contain numbering like "<cite>(1 of 2)</cite>".
+     * Those names <em>shall</em> contain numbering like <cite>"(1 of 2)"</cite>.
      */
     @Test
     @DependsOnMethod("testGetNameForSingleton")
@@ -194,7 +194,7 @@ public final strictfp class TreeNodeTest extends TestCase {
 
     /**
      * Tests {@link TreeNode#getIdentifier()} on a metadata with a hierarchy.
-     * Those names shall <em>not</em> contain numbering like "<cite>(1 of 2)</cite>", even if the same
+     * Those names shall <em>not</em> contain numbering like <cite>"(1 of 2)"</cite>, even if the same
      * identifiers are repeated. Those identifiers are not intended to be unique in a list of children.
      * The repetition of the same identifier means that they shall be part of a collection.
      */

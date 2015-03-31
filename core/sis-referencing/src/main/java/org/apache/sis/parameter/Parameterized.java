@@ -39,11 +39,16 @@ public interface Parameterized {
     ParameterDescriptorGroup getParameterDescriptors();
 
     /**
-     * Returns a copy of the parameter values for this parameterized object, or {@code null} if unknown.
-     * Since this method returns a copy of the parameter values, any change to the returned values will
-     * have no effect on this object.
+     * Returns the parameter values for this parameterized object, or {@code null} if unknown.
      *
-     * @return A copy of the parameter values for this object, or {@code null}.
+     * <div class="section">Modifying parameter values</div>
+     * Unless explicitely allowed by the implementation class, callers should not modify the values
+     * returned by this method. Implementors are encouraged to protect their internal data by returning
+     * an unmodifiable view or a copy of their parameters. If the caller wishes to edit parameter values,
+     * then (s)he should {@linkplain DefaultParameterValueGroup#clone() clone} the parameters before to
+     * modify them, then use the modified parameters for creating a new {@code Parameterized} object.
+     *
+     * @return The parameter values for this object, or {@code null} if unknown.
      */
     ParameterValueGroup getParameterValues();
 }
