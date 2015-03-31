@@ -217,32 +217,6 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Asserts that the parameters of current {@linkplain #transform transform} are equal to the given ones.
-     * This method can check the descriptor separately, for easier isolation of mismatch in case of failure.
-     *
-     * @param descriptor
-     *          The expected parameter descriptor, or {@code null} for bypassing this check.
-     *          The descriptor is required to be strictly the same instance, since Apache SIS
-     *          implementation returns constant values.
-     * @param values
-     *          The expected parameter values, or {@code null} for bypassing this check.
-     *          Floating points values are compared in the units of the expected value,
-     *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
-     */
-    protected final void assertParameterEquals(final ParameterDescriptorGroup descriptor, final ParameterValueGroup values) {
-        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
-        if (descriptor != null) {
-            assertSame("transform.getParameterDescriptors():", descriptor,
-                    ((Parameterized) transform).getParameterDescriptors());
-        }
-        if (values != null) {
-            assertSame(descriptor, values.getDescriptor());
-            ReferencingAssert.assertParameterEquals(values,
-                    ((Parameterized) transform).getParameterValues(), tolerance);
-        }
-    }
-
-    /**
      * Transforms the given coordinates and verifies that the result is equals (within a positive delta)
      * to the expected ones. If the difference between an expected and actual ordinate value is greater
      * than the {@linkplain #tolerance tolerance} threshold, then the assertion fails.
@@ -300,7 +274,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * @param  propNaN Approximative percentage of NaN values as a fraction between 0 and 1, or 0 if none.
      * @return Random  coordinates in the given domain.
      */
-    protected final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
+    final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
         final int dimension = transform.getSourceDimensions();
         final int numPts    = ORDINATE_COUNT / dimension;
@@ -310,6 +284,32 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             coordinates[random.nextInt(coordinates.length)] = Double.NaN;
         }
         return coordinates;
+    }
+
+    /**
+     * Asserts that the parameters of current {@linkplain #transform transform} are equal to the given ones.
+     * This method can check the descriptor separately, for easier isolation of mismatch in case of failure.
+     *
+     * @param descriptor
+     *          The expected parameter descriptor, or {@code null} for bypassing this check.
+     *          The descriptor is required to be strictly the same instance, since Apache SIS
+     *          implementation returns constant values.
+     * @param values
+     *          The expected parameter values, or {@code null} for bypassing this check.
+     *          Floating points values are compared in the units of the expected value,
+     *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
+     */
+    protected final void assertParameterEquals(final ParameterDescriptorGroup descriptor, final ParameterValueGroup values) {
+        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        if (descriptor != null) {
+            assertSame("transform.getParameterDescriptors():", descriptor,
+                    ((Parameterized) transform).getParameterDescriptors());
+        }
+        if (values != null) {
+            assertSame(descriptor, values.getDescriptor());
+            ReferencingAssert.assertParameterEquals(values,
+                    ((Parameterized) transform).getParameterValues(), tolerance);
+        }
     }
 
     /**

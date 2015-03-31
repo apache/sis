@@ -201,4 +201,27 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     public void testMiller() throws FactoryException, TransformException {
         createGeoApiTest(new MillerCylindrical()).testMiller();
     }
+
+    /**
+     * Tests the derivatives at a few points.
+     *
+     * @throws TransformException Should never happen.
+     */
+    @Test
+    public void testDerivative() throws TransformException {
+        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+
+        // Tests spherical formulas
+        initialize(false);
+        tolerance = 1E-9;
+        verifyDerivative(toRadians(15), toRadians( 30));
+        verifyDerivative(toRadians(10), toRadians(-60));
+
+        // Tests ellipsoidal formulas
+        initialize(true);
+        tolerance = 1E-9;
+        verifyDerivative(toRadians(15), toRadians( 30));
+        verifyDerivative(toRadians(10), toRadians(-60));
+    }
 }
