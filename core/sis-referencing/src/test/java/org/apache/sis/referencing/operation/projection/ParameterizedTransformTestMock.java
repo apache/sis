@@ -18,6 +18,9 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.MathTransformFactory;
 
+import static org.junit.Assume.*;
+import static org.apache.sis.test.Assert.*;
+
 
 /**
  * Placeholder for a GeoAPI 3.1 method which was not available in GeoAPI 3.0.
@@ -36,20 +39,24 @@ final class ParameterizedTransformTestMock {
     public void testMercator1SP() {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 
     public void testMercator2SP() {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 
     public void testPseudoMercator() {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 
     public void testMiller() {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 }
