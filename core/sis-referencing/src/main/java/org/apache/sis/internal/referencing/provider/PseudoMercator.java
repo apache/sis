@@ -70,8 +70,8 @@ public final class PseudoMercator extends MapProjection {
          * according EPSG. But we declare it as an optional parameters because it is sometime used.
          */
         final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Pseudo Mercator");
-        final ParameterDescriptor<?> scaleFactor = createScale(withEsriAndNetcdf(Mercator1SP.SCALE_FACTOR, builder,
-                "Scale_Factor", "scale_factor_at_projection_origin").setRemarks(remarks).setRequired(false));
+        final ParameterDescriptor<?> scaleFactor = createScale(onlyEPSG(Mercator1SP.SCALE_FACTOR, builder)
+                .setRemarks(remarks).setRequired(false));
 
         PARAMETERS = builder
             .addIdentifier("1024")
