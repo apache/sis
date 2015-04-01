@@ -18,6 +18,9 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Random;
 
+import static org.junit.Assume.*;
+import static org.apache.sis.test.Assert.*;
+
 
 /**
  * Placeholder for a GeoAPI 3.1 method which was not available in GeoAPI 3.0.
@@ -43,6 +46,7 @@ public class TransformTestCase extends org.opengis.test.referencing.TransformTes
     protected final void verifyDerivative(final double... coordinate) {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 
     /**
@@ -59,5 +63,6 @@ public class TransformTestCase extends org.opengis.test.referencing.TransformTes
     {
         // See GeoAPI 3.1 for the real test.
         // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
 }
