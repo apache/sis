@@ -16,6 +16,10 @@
  */
 package org.apache.sis.referencing;
 
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.util.GenericName;
+
 
 /**
  * A {@link Builder} that doesn't build anything. Such builder is useless and is defined here
@@ -23,8 +27,45 @@ package org.apache.sis.referencing;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 final strictfp class BuilderMock extends Builder<BuilderMock> {
+    /**
+     * Convenience accessor for the property value assigned to {@link IdentifiedObject#NAME_KEY}.
+     */
+    Object getName() {
+        return properties.get(IdentifiedObject.NAME_KEY);
+    }
+
+    /**
+     * Convenience accessor for the property value assigned to {@link IdentifiedObject#ALIAS_KEY}.
+     */
+    GenericName[] getAliases() {
+        return (GenericName[]) properties.get(IdentifiedObject.ALIAS_KEY);
+    }
+
+    /**
+     * Convenience accessor for the property value assigned to {@link IdentifiedObject#IDENTIFIERS_KEY}.
+     */
+    Identifier[] getIdentifiers() {
+        return (Identifier[]) properties.get(IdentifiedObject.IDENTIFIERS_KEY);
+    }
+
+    /**
+     * Convenience accessor for aliases or identifiers as strings.
+     *
+     * @param kind 0 for identifiers, or 1 for names.
+     */
+    String[] getAsStrings(final int kind) {
+        final Object[] values = (kind == 0) ? getIdentifiers() : getAliases();
+        final String[] s = new String[values.length + kind];
+        if (kind != 0) {
+            s[0] = getName().toString();
+        }
+        for (int i=0; i<values.length; i++) {
+            s[i + kind] = values[i].toString();
+        }
+        return s;
+    }
 }

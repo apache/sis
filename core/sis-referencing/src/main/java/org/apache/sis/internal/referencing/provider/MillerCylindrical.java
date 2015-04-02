@@ -92,9 +92,10 @@ public final class MillerCylindrical extends MapProjection {
          * The "latitude of origin" and the "scale factor" are not formally a parameter of the "Miller Cylindrical"
          * projection. But we declare them as an optional parameters because they are sometime used.
          */
+        builder.setRequired(false); // Will apply to all remaining parameters.
         final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Miller Cylindrical");
-        final ParameterDescriptor<?> scaleFactor = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
-                .setRemarks(remarks).setRequired(false));
+        final ParameterDescriptor<?> scaleFactor = createScale(
+                exceptEPSG(Mercator1SP.SCALE_FACTOR, builder).setRemarks(remarks));
 
         final ParameterDescriptor<?> latitudeOfOrigin = createLatitude(
                 exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder).setRemarks(remarks), false);
