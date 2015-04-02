@@ -191,27 +191,6 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies the names and identifiers from the given parameter into the builder.
-     * The given {@code esri} and {@code netcdf} parameters will be inserted after the OGC name.
-     */
-    static ParameterBuilder withEsriAndNetcdf(final ParameterDescriptor<?> source, final ParameterBuilder builder,
-            final String esri, final String netcdf)
-    {
-        for (final Identifier identifier : source.getIdentifiers()) {
-            builder.addIdentifier(identifier);
-        }
-        builder.addName(source.getName());
-        for (final GenericName alias : source.getAlias()) {
-            builder.addName(alias);
-            if (((Identifier) alias).getAuthority() == Citations.OGC) {
-                builder.addName(Citations.ESRI,   esri)
-                       .addName(Citations.NETCDF, netcdf);
-            }
-        }
-        return builder;
-    }
-
-    /**
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
      * @param origin The name of the projection for where the parameter is formally used.

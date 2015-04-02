@@ -31,6 +31,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -261,6 +262,64 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
+     * Returns the name factory to use for creating namespaces and local names.
+     * The factory will be fetched when first needed, and while not change anymore
+     * for the rest of this {@code Builder} lifetime.
+     */
+    private NameFactory factory() {
+        if (nameFactory == null) {
+            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        }
+        return nameFactory;
+    }
+
+    /**
+     * Creates or returns an existing name for the given string in the current namespace.
+     * The namespace may be cleared at anytime by a call to {@link #setCodeSpace(Citation, String)}.
+     */
+    private GenericName createName(final CharSequence name) {
+        final NameFactory factory = factory();
+        if (namespace == null) {
+            final String codespace = getCodeSpace();
+            if (codespace != null) {
+                namespace = factory.createNameSpace(factory.createLocalName(null, codespace), null);
+            }
+        }
+        return factory.createLocalName(namespace, name);
+    }
+
+    /**
+     * Creates or returns an existing name for the given string in the given namespace.
+     */
+    private GenericName createName(final Citation authority, final CharSequence name) {
+        if (authority == getAuthority()) {
+            return createName(name);
+        } else {
+            return new NamedIdentifier(authority, name);
+        }
+    }
+
+    /**
+     * Creates an identifier from a string for the given authority.
+     */
+    private Identifier createIdentifier(final Citation authority, final String identifier) {
+        if (authority == getAuthority()) {
+            return new ImmutableIdentifier(authority, getCodeSpace(), identifier, getVersion(), null);
+        } else {
+            // Do not use the version information since it applies to the default authority rather than the given one.
+            return new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier);
+        }
+    }
+
+    /**
+     * Converts the given name into an identifier. Note that {@link NamedIdentifier}
+     * implements both {@link GenericName} and {@link Identifier} interfaces.
+     */
+    private static Identifier toIdentifier(final GenericName name) {
+        return (name instanceof Identifier) ? (Identifier) name : new NamedIdentifier(name);
+    }
+
+    /**
      * Sets the property value for the given key, if a change is still possible. The check for change permission
      * is needed for all keys defined in the {@link Identifier} interface. This check is not needed for other keys,
      * so callers do not need to invoke this method for other keys.
@@ -282,30 +341,6 @@ public abstract class Builder<B extends Builder<B>> {
             properties.put(key, value);
         }
         return true;
-    }
-
-    /**
-     * Returns the name factory to use for creating namespaces and local names.
-     */
-    private NameFactory factory() {
-        if (nameFactory == null) {
-            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
-        }
-        return nameFactory;
-    }
-
-    /**
-     * Returns the namespace, creating it when first needed.
-     */
-    private NameSpace namespace() {
-        if (namespace == null) {
-            final String codespace = getCodeSpace();
-            if (codespace != null) {
-                final NameFactory factory = factory();
-                namespace = factory.createNameSpace(factory.createLocalName(null, codespace), null);
-            }
-        }
-        return namespace;
     }
 
     /**
@@ -423,7 +458,7 @@ public abstract class Builder<B extends Builder<B>> {
         ensureNonNull("name", name);
         if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
             // A primary name is already present. Add the given name as an alias instead.
-            aliases.add(name instanceof GenericName ? (GenericName) name : factory().createLocalName(namespace(), name));
+            aliases.add(createName(name));
         }
         return self();
     }
@@ -512,7 +547,7 @@ public abstract class Builder<B extends Builder<B>> {
     public B addName(final GenericName name) {
         ensureNonNull("name", name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
-            properties.put(IdentifiedObject.NAME_KEY, (name instanceof Identifier) ? name : new NamedIdentifier(name));
+            properties.put(IdentifiedObject.NAME_KEY, toIdentifier(name));
         } else {
             aliases.add(name);
         }
@@ -577,8 +612,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
-        // Do not use the version information since it applies to the default authority rather than the given one.
-        identifiers.add(new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier));
+        identifiers.add(createIdentifier(authority, identifier));
         return self();
     }
 
@@ -621,6 +655,183 @@ public abstract class Builder<B extends Builder<B>> {
     public B addDeprecatedIdentifier(final String identifier, final String supersededBy) {
         ensureNonNull("identifier", identifier);
         identifiers.add(new DeprecatedCode(getAuthority(), getCodeSpace(), identifier, getVersion(), supersededBy));
+        return self();
+    }
+
+    /**
+     * Returns {@code true} if the given name or identifier is deprecated.
+     */
+    private static boolean isDeprecated(final Object object) {
+        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
+    }
+
+    /**
+     * Adds all non-deprecated names and identifiers from the given object.
+     * Other properties like description and remarks are ignored.
+     *
+     * <p>This is a convenience method for using an existing object as a template, before to modify
+     * some names and identifiers by calls to {@link #replaceNames(Citation, CharSequence...)} or
+     * {@link #replaceIdentifiers(Citation, String...)}.</p>
+     *
+     * @param  object The object from which to copy the references to names and identifiers.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B addNamesAndIdentifiers(final IdentifiedObject object) {
+        ensureNonNull("object", object);
+        for (final Identifier id : object.getIdentifiers()) {
+            if (!isDeprecated(id)) {
+                addIdentifier(id);
+            }
+        }
+        Identifier id = object.getName();
+        if (!isDeprecated(id)) {
+            addName(id);
+        }
+        for (final GenericName alias : object.getAlias()) {
+            if (!isDeprecated(alias)) {
+                addName(alias);
+            }
+        }
+        return self();
+    }
+
+    /**
+     * Replaces the names associated to the given authority by the given new names.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>The first occurrence of a name associated to {@code authority} will be replaced by a new name
+     *       with the same authority and the local part defined by {@code replacements[0]}.</li>
+     *   <li>The second occurrence of a name associated to {@code authority} will be replaced by a new name
+     *       with the same authority and the local part defined by {@code replacements[1]}.</li>
+     *   <li><i>etc.</i> until one of the following conditions is meet:
+     *     <ul>
+     *       <li>There is no more name associated to the given authority in this {@code Builder}, in which case
+     *           new names are inserted for all remaining elements in the {@code replacements} array.</li>
+     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
+     *           names associated to the given authority in this {@code Builder} are removed.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param  authority The authority of the names to replaces.
+     * @param  replacements The new local parts for the names to replace,
+     *         or {@code null} for removing all identifiers associated to the given authority.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B replaceNames(final Citation authority, final CharSequence... replacements) {
+        ensureNonNull("authority", authority);
+        final int length = (replacements != null) ? replacements.length : 0;
+        /*
+         * IdentifiedObjects store the "primary name" separately from aliases. Consequently we will start
+         * the iteration at index -1 where i=-1 is used as a sentinel value meaning "primary name" before
+         * to iterate over the aliases. Note that the type is not the same:
+         *
+         *   - Primary:   Identifier or String
+         *   - Aliases:   Identifier or GenericName
+         */
+        int next = 0;
+        int insertAt = aliases.size();
+        for (int i = -1; i < aliases.size(); i++) {
+            final Object name = (i < 0) ? properties.get(IdentifiedObject.NAME_KEY) : aliases.get(i);
+            if (name != null) {  // Actually only the primary name can be null.
+                final boolean isIdentifier = (name instanceof Identifier);
+                if (authority.equals(isIdentifier ? ((Identifier) name).getAuthority() : getAuthority())) {
+                    /*
+                     * Found a name associated to the given authority. Process to the replacement if we still
+                     * have some elements to take in the 'replacements' array, otherwise remove the name.
+                     */
+                    if (next < length) {
+                        final CharSequence code = replacements[next++];
+                        if (!code.toString().equals(isIdentifier ? ((Identifier) name).getCode() : name.toString())) {
+                            if (i < 0) {
+                                properties.put(IdentifiedObject.NAME_KEY, (authority != getAuthority())
+                                        ? new NamedIdentifier(authority, code) : code.toString());
+                            } else {
+                                aliases.set(i, createName(authority, code));
+                            }
+                            insertAt = i + 1;
+                        }
+                    } else {
+                        if (i < 0) {
+                            properties.remove(IdentifiedObject.NAME_KEY);
+                        } else {
+                            aliases.remove(i--);
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * If there is any remaining elements in the 'replacements' array, insert them right after the last
+         * element of the given authority that we found (so we keep together the names of the same authority).
+         */
+        while (next < length) {
+            aliases.add(insertAt++, createName(authority, replacements[next++]));
+        }
+        /*
+         * If the primary name has been removed as a result of this method execution,
+         * take the first alias as the new primary name.
+         */
+        if (properties.get(IdentifiedObject.NAME_KEY) == null && !aliases.isEmpty()) {
+            properties.put(IdentifiedObject.NAME_KEY, toIdentifier(aliases.remove(0)));
+        }
+        return self();
+    }
+
+    /**
+     * Replaces the identifiers associated to the given authority by the given new identifiers.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>The first occurrence of an identifier associated to {@code authority} will be replaced by a new
+     *       identifier with the same authority and the code defined by {@code replacements[0]}.</li>
+     *   <li>The second occurrence of an identifier associated to {@code authority} will be replaced by a new
+     *       identifier with the same authority and the code defined by {@code replacements[1]}.</li>
+     *   <li><i>etc.</i> until one of the following conditions is meet:
+     *     <ul>
+     *       <li>There is no more identifier associated to the given authority in this {@code Builder}, in which case
+     *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>
+     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
+     *           identifiers associated to the given authority in this {@code Builder} are removed.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * @param  authority The authority of the names to replaces.
+     * @param  replacements The new codes for the identifiers to replace,
+     *         or {@code null} for removing all identifiers associated to the given authority.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 0.6
+     */
+    public B replaceIdentifiers(final Citation authority, final String... replacements) {
+        ensureNonNull("authority", authority);
+        final int length = (replacements != null) ? replacements.length : 0;
+        int next = 0;
+        int insertAt = identifiers.size();
+        for (int i=0; i<identifiers.size();) {
+            final Identifier identifier = identifiers.get(i);
+            if (authority.equals(identifier.getAuthority())) {
+                if (next >= length) {
+                    identifiers.remove(i);
+                    continue; // Do not increment i.
+                }
+                final String code = replacements[next++];
+                if (!code.equals(identifier.getCode())) {
+                    identifiers.set(i, createIdentifier(authority, code));
+                    insertAt = i + 1;
+                }
+            }
+            i++;
+        }
+        while (next < length) {
+            identifiers.add(insertAt++, createIdentifier(authority, replacements[next++]));
+        }
         return self();
     }
 

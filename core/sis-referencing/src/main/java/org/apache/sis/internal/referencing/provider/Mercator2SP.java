@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 /**
  * The provider for "<cite>Mercator (variant B)</cite>" projection (EPSG:9805).
- * This provider reuses many of the parameters defined in {@link Mercator1SP}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -81,13 +80,13 @@ public final class Mercator2SP extends MapProjection {
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = EquidistantCylindrical.FALSE_EASTING;
 
     /**
      * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = EquidistantCylindrical.FALSE_NORTHING;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -96,34 +95,31 @@ public final class Mercator2SP extends MapProjection {
     static {
         final ParameterBuilder builder = builder();
 
-        STANDARD_PARALLEL = createLatitude(builder
-                .addIdentifier("8823")
-                .addName("Latitude of 1st standard parallel")
-                .addName(Citations.OGC,     "standard_parallel_1")
-                .addName(Citations.ESRI,    "Standard_Parallel_1")
-                .addName(Citations.NETCDF,  "standard_parallel")
-                .addName(Citations.GEOTIFF, "StdParallel1")
-                .addName(Citations.PROJ4,   "lat_1"), false);
+        STANDARD_PARALLEL = createLatitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.STANDARD_PARALLEL)
+                .replaceNames(Citations.GEOTIFF, "StdParallel1")
+                .replaceNames(Citations.PROJ4,   "lat_1"), false);
 
-        CENTRAL_MERIDIAN = createLongitude(withEsriAndNetcdf(Mercator1SP.CENTRAL_MERIDIAN,
-                builder, "Central_Meridian", "longitude_of_projection_origin"));
+        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.CENTRAL_MERIDIAN)
+                .replaceNames(Citations.GEOTIFF, "NatOriginLong"));
 
-        FALSE_EASTING = createShift(withEsriAndNetcdf(Mercator1SP.FALSE_EASTING,
-                builder, "False_Easting", "false_easting"));
-
-        FALSE_NORTHING = createShift(withEsriAndNetcdf(Mercator1SP.FALSE_NORTHING,
-                builder, "False_Northing", "false_northing"));
         /*
          * "Latitude of natural origin" and "Scale factor" are not formally parameters
          * of the "Mercator (variant B)" projection according EPSG. But we declare them
          * as optional parameters because they are sometime used.
          */
-        LATITUDE_OF_ORIGIN = createConstant(withEsriAndNetcdf(Mercator1SP.LATITUDE_OF_ORIGIN, builder,
-                "Latitude_Of_Origin", "latitude_of_projection_origin").setRequired(false)
-                .setRemarks(Mercator1SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
+        builder.setRequired(false); // Will apply to all remaining parameters.
+        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(EquidistantCylindrical.LATITUDE_OF_ORIGIN)
+                .replaceNames(Citations.GEOTIFF, "NatOriginLat")
+                .setRemarks(EquidistantCylindrical.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
-        SCALE_FACTOR = createScale(withEsriAndNetcdf(Mercator1SP.SCALE_FACTOR, builder,
-                "Scale_Factor", "scale_factor_at_projection_origin")
+        SCALE_FACTOR = createScale(builder
+                .addIdentifier("8805")
+                .addName("Scale factor at natural origin")
+                .addName(Citations.OGC,     "scale_factor")
+                .addName(Citations.ESRI,    "Scale_Factor")
+                .addName(Citations.NETCDF,  "scale_factor_at_projection_origin")
+                .addName(Citations.GEOTIFF, "ScaleAtNatOrigin")
+                .addName(Citations.PROJ4,   "k")
                 .setRemarks(notFormalParameter(Mercator1SP.NAME, "Mercator (variant B)")));
 
         PARAMETERS = builder
@@ -133,8 +129,8 @@ public final class Mercator2SP extends MapProjection {
             .addName(Citations.OGC,     "Mercator_2SP")
             .addName(Citations.ESRI,    "Mercator")
             .addName(Citations.NETCDF,  "Mercator")
-            .addName(sameNameAs(Citations.GEOTIFF, Mercator1SP.PARAMETERS))
-            .addName(sameNameAs(Citations.PROJ4,   Mercator1SP.PARAMETERS))
+            .addName(Citations.GEOTIFF, "CT_Mercator")
+            .addName(Citations.PROJ4,   "merc")
             .addIdentifier(Citations.MAP_INFO, "26")    // MapInfo names this projection "Regional Mercator".
             .addIdentifier(Citations.S57,       "8")
             .createGroupForMapProjection(

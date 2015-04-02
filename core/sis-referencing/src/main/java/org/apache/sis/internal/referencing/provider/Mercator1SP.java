@@ -24,13 +24,14 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.Mercator;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.apache.sis.util.resources.Messages;
 
 
 /**
  * The provider for <cite>"Mercator (variant A)"</cite> projection
  * (EPSG:9804, EPSG:1026, <span class="deprecated">EPSG:9841</span>).
  * EPSG defines two codes for this projection, 1026 being the spherical case and 9804 the ellipsoidal case.
+ *
+ * <p>This provider reuses many of the parameters defined in {@link Mercator2SP}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -91,41 +92,26 @@ public final class Mercator1SP extends MapProjection {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_ORIGIN = createConstant(builder
-                .addIdentifier("8801")
-                .addName("Latitude of natural origin")
-                .addName(Citations.OGC,     "latitude_of_origin")
-                .addName(Citations.GEOTIFF, "NatOriginLat")
-                .addName(Citations.PROJ4,   "lat_0")
-                .setRemarks(Messages.format(Messages.Keys.ConstantProjParameterValue_1, 0)), 0.0);
+        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Mercator2SP.LATITUDE_OF_ORIGIN)
+                .replaceNames(Citations.ESRI,    (String[]) null)
+                .replaceNames(Citations.NETCDF,  (String[]) null)
+                .setRemarks(Mercator2SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
-        CENTRAL_MERIDIAN = createLongitude(builder
-                .addIdentifier("8802")
-                .addName("Longitude of natural origin")
-                .addName(Citations.OGC,     "central_meridian")
-                .addName(Citations.GEOTIFF, "NatOriginLong")
-                .addName(Citations.PROJ4,   "lon_0"));
+        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Mercator2SP.CENTRAL_MERIDIAN)
+                .replaceNames(Citations.ESRI,    (String[]) null)
+                .replaceNames(Citations.NETCDF,  (String[]) null));
 
-        SCALE_FACTOR = createScale(builder
-                .addIdentifier("8805")
-                .addName("Scale factor at natural origin")
-                .addName(Citations.OGC,     "scale_factor")
-                .addName(Citations.GEOTIFF, "ScaleAtNatOrigin")
-                .addName(Citations.PROJ4,   "k"));
+        SCALE_FACTOR = createScale(builder.addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
+                .replaceNames(Citations.ESRI,    (String[]) null)
+                .replaceNames(Citations.NETCDF,  (String[]) null));
 
-        FALSE_EASTING = createShift(builder
-                .addIdentifier("8806")
-                .addName("False easting")
-                .addName(Citations.OGC,     "false_easting")
-                .addName(Citations.GEOTIFF, "FalseEasting")
-                .addName(Citations.PROJ4,   "x_0"));
+        FALSE_EASTING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_EASTING)
+                .replaceNames(Citations.ESRI,    (String[]) null)
+                .replaceNames(Citations.NETCDF,  (String[]) null));
 
-        FALSE_NORTHING = createShift(builder
-                .addIdentifier("8807")
-                .addName("False northing")
-                .addName(Citations.OGC,     "false_northing")
-                .addName(Citations.GEOTIFF, "FalseNorthing")
-                .addName(Citations.PROJ4,   "y_0"));
+        FALSE_NORTHING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_NORTHING)
+                .replaceNames(Citations.ESRI,    (String[]) null)
+                .replaceNames(Citations.NETCDF,  (String[]) null));
 
         PARAMETERS = builder
             .addIdentifier(             "9804")                                                   // The ellipsoidal case
@@ -136,8 +122,8 @@ public final class Mercator1SP extends MapProjection {
             .addName(                   "Mercator (1SP)")                                         // Prior to EPSG version 7.6
             .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")     // Prior to EPSG version 7.6
             .addName(Citations.OGC,     "Mercator_1SP")
-            .addName(Citations.GEOTIFF, "CT_Mercator")
-            .addName(Citations.PROJ4,   "merc")
+            .addName(sameNameAs(Citations.GEOTIFF, Mercator2SP.PARAMETERS))
+            .addName(sameNameAs(Citations.PROJ4,   Mercator2SP.PARAMETERS))
             .addIdentifier(Citations.GEOTIFF,   "7")
             .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
             .createGroupForMapProjection(
