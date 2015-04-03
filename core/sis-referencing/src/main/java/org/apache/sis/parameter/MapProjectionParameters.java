@@ -77,6 +77,16 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
     }
 
     /**
+     * Returns {@code true} since the {@link #parameterIfExist(String)} method below is compatible with
+     * {@link #parameter(String)}. Note that we would need to revisit this condition if this class was
+     * no longer final.
+     */
+    @Override
+    boolean isKnownImplementation() {
+        return true;
+    }
+
+    /**
      * Returns the value in this group for the specified name. If the given name is one of the
      * "invisible" parameters, returns a dynamic parameter view without adding it to the list
      * of real parameter values.
@@ -86,7 +96,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      * @throws ParameterNotFoundException if there is no parameter value for the given name.
      */
     @Override
-    public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+    ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         if (MapProjectionDescriptor.isHeuristicMatchForName(name, MapProjectionDescriptor.EARTH_RADIUS)) {
             ParameterValue<?> value = earthRadius;
             if (value == null) {
@@ -116,7 +126,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
                 return value;
             }
         }
-        return super.parameter(name);
+        return super.parameterIfExist(name);
     }
 
 

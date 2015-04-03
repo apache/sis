@@ -172,14 +172,6 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies the EPSG name and identifier from the given parameter into the builder.
-     * The EPSG objects are presumed the first name and identifier (this is not verified).
-     */
-    static ParameterBuilder onlyEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
-        return builder.addIdentifier(source.getIdentifiers().iterator().next()).addName(source.getName());
-    }
-
-    /**
      * Copies all names except the EPSG one from the given parameter into the builder.
      * The EPSG name is presumed the first name and identifier (this is not verified).
      */
@@ -194,9 +186,8 @@ public abstract class MapProjection extends AbstractProvider {
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
      * @param origin The name of the projection for where the parameter is formally used.
-     * @param usedIn The name of the projection where we also use that parameter.
      */
-    static InternationalString notFormalParameter(final String origin, final String usedIn) {
-        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_2, origin, usedIn);
+    static InternationalString notFormalParameter(final String origin) {
+        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
     }
 }
