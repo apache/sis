@@ -233,20 +233,17 @@ public final strictfp class BuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link Builder#replaceNames(Citation, CharSequence...)}.
-     *
-     * <div class="note">This test depends on {@link #testReplaceIdentifiers()} because
-     * {@code replaceIdentifiers} implementation is simpler than {@code replaceNames}.</div>
+     * Tests {@link Builder#rename(Citation, CharSequence[])}.
      *
      * @since 0.6
      */
     @Test
-    @DependsOnMethod("testReplaceIdentifiers")  // See javadoc.
-    public void testReplaceNames() {
+    @DependsOnMethod("testAddNamesAndIdentifiers")
+    public void testRename() {
         final BuilderMock builder = createMercator(true, false);
 
         // Replace "OGC:Mercator_1SP" and insert a new OGC code before the GeoTIFF one.
-        assertSame(builder, builder.replaceNames(OGC, "Replacement 1", "Replacement 2"));
+        assertSame(builder, builder.rename(OGC, "Replacement 1", "Replacement 2"));
         builder.onCreate(false);
         assertArrayEquals(new String[] {
             "Mercator (variant A)",
@@ -257,7 +254,7 @@ public final strictfp class BuilderTest extends TestCase {
         }, builder.getAsStrings(1));
 
         // Replace "EPSG:Mercator (variant A)" and "(1SP)", and insert a new EPSG code as an alias.
-        assertSame(builder, builder.replaceNames(OGP, "Replacement 3", "Replacement 4", "Replacement 5"));
+        assertSame(builder, builder.rename(OGP, "Replacement 3", "Replacement 4", "Replacement 5"));
         builder.onCreate(false);
         assertArrayEquals(new String[] {
             "Replacement 3",
@@ -269,50 +266,12 @@ public final strictfp class BuilderTest extends TestCase {
         }, builder.getAsStrings(1));
 
         // Remove all EPSG codes.
-        assertSame(builder, builder.replaceNames(OGP, (String[]) null));
+        assertSame(builder, builder.rename(OGP, (String[]) null));
         builder.onCreate(false);
         assertArrayEquals(new String[] {
             "OGC:Replacement 1",
             "OGC:Replacement 2",
             "GeoTIFF:CT_Mercator"
         }, builder.getAsStrings(1));
-    }
-
-    /**
-     * Tests {@link Builder#replaceNames(Citation, CharSequence...)}.
-     *
-     * @since 0.6
-     */
-    @Test
-    @DependsOnMethod("testAddNamesAndIdentifiers")
-    public void testReplaceIdentifiers() {
-        final BuilderMock builder = createMercator(false, true);
-
-        // Replace "GeoTIFF:7" and append a new GeoTIFF code at the end of the list.
-        assertSame(builder, builder.replaceIdentifiers(GEOTIFF, "Replacement 1", "Replacement 2"));
-        builder.onCreate(false);
-        assertArrayEquals(new String[] {
-            "Id[\"EPSG\", 9804, Citation[\"OGP\"]]",
-            "Id[\"GeoTIFF\", \"Replacement 1\"]",
-            "Id[\"GeoTIFF\", \"Replacement 2\"]"
-        }, builder.getAsStrings(0));
-
-        // Replace "EPSG:9804" and insert a new EPSG code as an alias.
-        assertSame(builder, builder.replaceIdentifiers(OGP, "Replacement 3", "Replacement 4"));
-        builder.onCreate(false);
-        assertArrayEquals(new String[] {
-            "Id[\"EPSG\", \"Replacement 3\", Citation[\"OGP\"]]",
-            "Id[\"EPSG\", \"Replacement 4\", Citation[\"OGP\"]]",
-            "Id[\"GeoTIFF\", \"Replacement 1\"]",
-            "Id[\"GeoTIFF\", \"Replacement 2\"]"
-        }, builder.getAsStrings(0));
-
-        // Remove all EPSG codes.
-        assertSame(builder, builder.replaceIdentifiers(OGP, (String[]) null));
-        builder.onCreate(false);
-        assertArrayEquals(new String[] {
-            "Id[\"GeoTIFF\", \"Replacement 1\"]",
-            "Id[\"GeoTIFF\", \"Replacement 2\"]"
-        }, builder.getAsStrings(0));
     }
 }

@@ -96,11 +96,11 @@ public final class Mercator2SP extends MapProjection {
         final ParameterBuilder builder = builder();
 
         STANDARD_PARALLEL = createLatitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.STANDARD_PARALLEL)
-                .replaceNames(Citations.GEOTIFF, "StdParallel1")
-                .replaceNames(Citations.PROJ4,   "lat_1"), false);
+                .rename(Citations.GEOTIFF, "StdParallel1")
+                .rename(Citations.PROJ4,   "lat_1"), false);
 
         CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.CENTRAL_MERIDIAN)
-                .replaceNames(Citations.GEOTIFF, "NatOriginLong"));
+                .rename(Citations.GEOTIFF, "NatOriginLong"));
 
         /*
          * "Latitude of natural origin" and "Scale factor" are not formally parameters
@@ -109,7 +109,7 @@ public final class Mercator2SP extends MapProjection {
          */
         builder.setRequired(false); // Will apply to all remaining parameters.
         LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(EquidistantCylindrical.LATITUDE_OF_ORIGIN)
-                .replaceNames(Citations.GEOTIFF, "NatOriginLat")
+                .rename(Citations.GEOTIFF, "NatOriginLat")
                 .setRemarks(EquidistantCylindrical.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
         SCALE_FACTOR = createScale(builder

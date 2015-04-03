@@ -670,8 +670,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Other properties like description and remarks are ignored.
      *
      * <p>This is a convenience method for using an existing object as a template, before to modify
-     * some names and identifiers by calls to {@link #replaceNames(Citation, CharSequence...)} or
-     * {@link #replaceIdentifiers(Citation, String...)}.</p>
+     * some names by calls to {@link #rename(Citation, CharSequence[])}.</p>
      *
      * @param  object The object from which to copy the references to names and identifiers.
      * @return {@code this}, for method call chaining.
@@ -723,7 +722,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @since 0.6
      */
-    public B replaceNames(final Citation authority, final CharSequence... replacements) {
+    public B rename(final Citation authority, final CharSequence... replacements) {
         ensureNonNull("authority", authority);
         final int length = (replacements != null) ? replacements.length : 0;
         /*
@@ -779,58 +778,6 @@ public abstract class Builder<B extends Builder<B>> {
          */
         if (properties.get(IdentifiedObject.NAME_KEY) == null && !aliases.isEmpty()) {
             properties.put(IdentifiedObject.NAME_KEY, toIdentifier(aliases.remove(0)));
-        }
-        return self();
-    }
-
-    /**
-     * Replaces the identifiers associated to the given authority by the given new identifiers.
-     * More specifically:
-     *
-     * <ul>
-     *   <li>The first occurrence of an identifier associated to {@code authority} will be replaced by a new
-     *       identifier with the same authority and the code defined by {@code replacements[0]}.</li>
-     *   <li>The second occurrence of an identifier associated to {@code authority} will be replaced by a new
-     *       identifier with the same authority and the code defined by {@code replacements[1]}.</li>
-     *   <li><i>etc.</i> until one of the following conditions is meet:
-     *     <ul>
-     *       <li>There is no more identifier associated to the given authority in this {@code Builder}, in which case
-     *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>
-     *       <li>There is no more elements in the {@code replacements} array, in which case all remaining
-     *           identifiers associated to the given authority in this {@code Builder} are removed.</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
-     * @param  authority The authority of the names to replaces.
-     * @param  replacements The new codes for the identifiers to replace,
-     *         or {@code null} for removing all identifiers associated to the given authority.
-     * @return {@code this}, for method call chaining.
-     *
-     * @since 0.6
-     */
-    public B replaceIdentifiers(final Citation authority, final String... replacements) {
-        ensureNonNull("authority", authority);
-        final int length = (replacements != null) ? replacements.length : 0;
-        int next = 0;
-        int insertAt = identifiers.size();
-        for (int i=0; i<identifiers.size();) {
-            final Identifier identifier = identifiers.get(i);
-            if (authority.equals(identifier.getAuthority())) {
-                if (next >= length) {
-                    identifiers.remove(i);
-                    continue; // Do not increment i.
-                }
-                final String code = replacements[next++];
-                if (!code.equals(identifier.getCode())) {
-                    identifiers.set(i, createIdentifier(authority, code));
-                    insertAt = i + 1;
-                }
-            }
-            i++;
-        }
-        while (next < length) {
-            identifiers.add(insertAt++, createIdentifier(authority, replacements[next++]));
         }
         return self();
     }

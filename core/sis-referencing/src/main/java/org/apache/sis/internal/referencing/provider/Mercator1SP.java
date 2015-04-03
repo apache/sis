@@ -93,25 +93,25 @@ public final class Mercator1SP extends MapProjection {
         final ParameterBuilder builder = builder();
 
         LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Mercator2SP.LATITUDE_OF_ORIGIN)
-                .replaceNames(Citations.ESRI,    (String[]) null)
-                .replaceNames(Citations.NETCDF,  (String[]) null)
+                .rename(Citations.ESRI,   (String[]) null)
+                .rename(Citations.NETCDF, (String[]) null)
                 .setRemarks(Mercator2SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
         CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Mercator2SP.CENTRAL_MERIDIAN)
-                .replaceNames(Citations.ESRI,    (String[]) null)
-                .replaceNames(Citations.NETCDF,  (String[]) null));
+                .rename(Citations.ESRI,   (String[]) null)
+                .rename(Citations.NETCDF, (String[]) null));
 
         SCALE_FACTOR = createScale(builder.addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
-                .replaceNames(Citations.ESRI,    (String[]) null)
-                .replaceNames(Citations.NETCDF,  (String[]) null));
+                .rename(Citations.ESRI,   (String[]) null)
+                .rename(Citations.NETCDF, (String[]) null));
 
         FALSE_EASTING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_EASTING)
-                .replaceNames(Citations.ESRI,    (String[]) null)
-                .replaceNames(Citations.NETCDF,  (String[]) null));
+                .rename(Citations.ESRI,   (String[]) null)
+                .rename(Citations.NETCDF, (String[]) null));
 
         FALSE_NORTHING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_NORTHING)
-                .replaceNames(Citations.ESRI,    (String[]) null)
-                .replaceNames(Citations.NETCDF,  (String[]) null));
+                .rename(Citations.ESRI,   (String[]) null)
+                .rename(Citations.NETCDF, (String[]) null));
 
         PARAMETERS = builder
             .addIdentifier(             "9804")                                                   // The ellipsoidal case
