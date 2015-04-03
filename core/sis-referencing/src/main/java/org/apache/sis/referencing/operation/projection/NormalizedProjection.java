@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -239,6 +240,26 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         excentricity        = other.excentricity;
         excentricitySquared = other.excentricitySquared;
         inverse             = new Inverse();
+    }
+
+    /**
+     * Returns {@code true} if the projection specified by the given parameters has the given name or identifier.
+     * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the name.
+     *
+     * @param  parameters The user-specified parameters.
+     * @param  name       The name to compare against the parameter group name.
+     * @param  identifier The identifier to compare against the parameter group name.
+     * @return {@code true} if the given parameter group has a name or EPSG identifier matching the given ones.
+     */
+    static boolean identMatch(final ParameterDescriptorGroup parameters, final String name, final String identifier) {
+        if (identifier != null) {
+            for (final Identifier id : parameters.getIdentifiers()) {
+                if (identifier.equals(id.getCode()) && Constants.EPSG.equals(id.getCodeSpace())) {
+                    return true;
+                }
+            }
+        }
+        return IdentifiedObjects.isHeuristicMatchForName(parameters, name);
     }
 
     /**
@@ -624,6 +645,21 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     final double rν(final double sinφ) {
         return sqrt(1 - excentricitySquared * (sinφ*sinφ));
+    }
+
+    /**
+     * Computes the radius of conformal sphere (Rc) at latitude φ. This is used when the user requested
+     * explicitely spherical formulas for example with <cite>"Mercator (Spherical)"</cite> projection
+     * (EPSG:1026), but the figure of the Earth used is an ellipsoid rather than a sphere.
+     *
+     * <p><b>Source:</b> <cite>Geomatics Guidance Note Number 7, part 2, version 49</cite> from EPSG:
+     * table 3 in section 1.2 and explanation in section 1.3.3.1.</p>
+     *
+     * @param  sinφ The sine of the φ latitude in radians.
+     * @return Radius of conformal sphere at latitude φ.
+     */
+    final double radiusOfConformalSphere(final double sinφ) {
+        return sqrt(1 - excentricitySquared) / (1 - excentricitySquared * (sinφ*sinφ));
     }
 
     /**

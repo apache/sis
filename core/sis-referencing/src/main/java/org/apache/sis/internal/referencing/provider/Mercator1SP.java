@@ -18,20 +18,13 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.CylindricalProjection;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.operation.projection.Mercator;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Mercator (variant A)"</cite> projection
- * (EPSG:9804, EPSG:1026, <span class="deprecated">EPSG:9841</span>).
- * EPSG defines two codes for this projection, 1026 being the spherical case and 9804 the ellipsoidal case.
- *
- * <p>This provider reuses many of the parameters defined in {@link Mercator2SP}.</p>
+ * The provider for <cite>"Mercator (variant A)"</cite> projection (EPSG:9804).
+ * EPSG defines two projections with the same parameters, 1026 being the spherical case and 9804 the ellipsoidal case.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -41,89 +34,65 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
  */
-public final class Mercator1SP extends MapProjection {
+public final class Mercator1SP extends AbstractMercator {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5886510621481710072L;
 
-    /**
-     * The name of this projection method.
+    /*
+     * ACCESS POLICY: Only formal EPSG parameters shall be public.
+     * Parameters that we add ourselves should be package-privated.
      */
-    static final String NAME = "Mercator (variant A)";
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * Valid values range is (-90 … 90)° and default value is 0°.
-     *
-     * <p>In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.</p>
+     * In theory, this parameter should not be used and its value should be 0 in all cases.
+     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.
      */
-    static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
+    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
      * Valid values range is (0 … ∞) and default value is 1.
      */
-    static final ParameterDescriptor<Double> SCALE_FACTOR;
-
-    /**
-     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
-     * Valid values range is unrestricted and default value is 0 metre.
-     */
-    static final ParameterDescriptor<Double> FALSE_EASTING;
-
-    /**
-     * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
-     * Valid values range is unrestricted and default value is 0 metre.
-     */
-    static final ParameterDescriptor<Double> FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(EquidistantCylindrical.LATITUDE_OF_ORIGIN)
+                .rename(Citations.GEOTIFF, "NatOriginLat")
+                .setRemarks(EquidistantCylindrical.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
-        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Mercator2SP.LATITUDE_OF_ORIGIN)
-                .rename(Citations.ESRI,   (String[]) null)
-                .rename(Citations.NETCDF, (String[]) null)
-                .setRemarks(Mercator2SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
+        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.CENTRAL_MERIDIAN)
+                .rename(Citations.GEOTIFF, "NatOriginLong"));
 
-        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Mercator2SP.CENTRAL_MERIDIAN)
-                .rename(Citations.ESRI,   (String[]) null)
-                .rename(Citations.NETCDF, (String[]) null));
-
-        SCALE_FACTOR = createScale(builder.addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
-                .rename(Citations.ESRI,   (String[]) null)
-                .rename(Citations.NETCDF, (String[]) null));
-
-        FALSE_EASTING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_EASTING)
-                .rename(Citations.ESRI,   (String[]) null)
-                .rename(Citations.NETCDF, (String[]) null));
-
-        FALSE_NORTHING = createShift(builder.addNamesAndIdentifiers(Mercator2SP.FALSE_NORTHING)
-                .rename(Citations.ESRI,   (String[]) null)
-                .rename(Citations.NETCDF, (String[]) null));
+        SCALE_FACTOR = createScale(builder
+                .addIdentifier("8805")
+                .addName("Scale factor at natural origin")
+                .addName(Citations.OGC,     "scale_factor")
+                .addName(Citations.ESRI,    "Scale_Factor")
+                .addName(Citations.NETCDF,  "scale_factor_at_projection_origin")
+                .addName(Citations.GEOTIFF, "ScaleAtNatOrigin")
+                .addName(Citations.PROJ4,   "k"));
 
         PARAMETERS = builder
-            .addIdentifier(             "9804")                                                   // The ellipsoidal case
-            .addIdentifier(             "1026")                                                   // The spherical case
-            .addDeprecatedIdentifier(   "9841", "1026")                                           // The spherical (1SP) case
-            .addName(NAME            /* "Mercator (variant A)" */)                                // Starting from EPSG version 7.6
-            .addName(                   "Mercator (Spherical)")                                   // Starting from EPSG version 7.6
-            .addName(                   "Mercator (1SP)")                                         // Prior to EPSG version 7.6
-            .addDeprecatedName(         "Mercator (1SP) (Spherical)", "Mercator (Spherical)")     // Prior to EPSG version 7.6
-            .addName(Citations.OGC,     "Mercator_1SP")
-            .addName(sameNameAs(Citations.GEOTIFF, Mercator2SP.PARAMETERS))
-            .addName(sameNameAs(Citations.PROJ4,   Mercator2SP.PARAMETERS))
+            .addIdentifier(              "9804")                        // The ellipsoidal case
+            .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
+            .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
+            .addName(Citations.OGC,      "Mercator_1SP")
+            .addName(Citations.GEOTIFF,  "CT_Mercator")
+            .addName(Citations.PROJ4,    "merc")
             .addIdentifier(Citations.GEOTIFF,   "7")
             .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
             .createGroupForMapProjection(
@@ -139,25 +108,5 @@ public final class Mercator1SP extends MapProjection {
      */
     public Mercator1SP() {
         super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code CylindricalProjection.class}
-     */
-    @Override
-    public Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return The map projection created from the given parameter values.
-     */
-    @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) {
-        return new Mercator(this, parameters);
     }
 }

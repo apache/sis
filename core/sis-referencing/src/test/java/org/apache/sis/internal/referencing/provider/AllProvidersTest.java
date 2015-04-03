@@ -53,9 +53,11 @@ public final strictfp class AllProvidersTest extends TestCase {
             Affine.class,
             LongitudeRotation.class,
             EquidistantCylindrical.class,
-            Mercator2SP.class,
             Mercator1SP.class,
+            Mercator2SP.class,
+            MercatorSpherical.class,
             PseudoMercator.class,
+            RegionalMercator.class,
             MillerCylindrical.class
         };
     }

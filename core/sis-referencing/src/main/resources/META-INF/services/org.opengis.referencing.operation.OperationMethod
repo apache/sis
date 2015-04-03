@@ -3,7 +3,9 @@
 org.apache.sis.internal.referencing.provider.Affine
 org.apache.sis.internal.referencing.provider.LongitudeRotation
 org.apache.sis.internal.referencing.provider.EquidistantCylindrical
-org.apache.sis.internal.referencing.provider.Mercator2SP
 org.apache.sis.internal.referencing.provider.Mercator1SP
+org.apache.sis.internal.referencing.provider.Mercator2SP
+org.apache.sis.internal.referencing.provider.MercatorSpherical
 org.apache.sis.internal.referencing.provider.PseudoMercator
+org.apache.sis.internal.referencing.provider.RegionalMercator
 org.apache.sis.internal.referencing.provider.MillerCylindrical

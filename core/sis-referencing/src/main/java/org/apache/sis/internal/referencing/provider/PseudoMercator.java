@@ -16,14 +16,8 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.opengis.util.InternationalString;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.CylindricalProjection;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.referencing.operation.projection.Mercator;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
@@ -36,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @version 0.6
  * @module
  */
-public final class PseudoMercator extends MapProjection {
+public final class PseudoMercator extends AbstractMercator {
     /**
      * For cross-version compatibility.
      */
@@ -48,40 +42,20 @@ public final class PseudoMercator extends MapProjection {
     public static final String NAME = "Popular Visualisation Pseudo Mercator";
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "1024";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-
-        final ParameterDescriptor<?> latitudeOfOrigin = createLatitude(
-                onlyEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder), false);
-
-        final ParameterDescriptor<?> centralMeridian = createLongitude(
-                onlyEPSG(Mercator1SP.CENTRAL_MERIDIAN, builder));
-
-        final ParameterDescriptor<?> falseEasting = createShift(
-                onlyEPSG(Mercator1SP.FALSE_EASTING, builder));
-
-        final ParameterDescriptor<?> falseNorthing = createShift(
-                onlyEPSG(Mercator1SP.FALSE_NORTHING, builder));
-        /*
-         * The scale factor is not formally a parameter of the "Popular Visualisation Pseudo Mercator" projection
-         * according EPSG. But we declare it as an optional parameters because it is sometime used.
-         */
-        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Pseudo Mercator");
-        final ParameterDescriptor<?> scaleFactor = createScale(onlyEPSG(Mercator1SP.SCALE_FACTOR, builder)
-                .setRemarks(remarks).setRequired(false));
-
         PARAMETERS = builder
-            .addIdentifier("1024")
+            .addIdentifier(IDENTIFIER)
             .addName(NAME)
-            .createGroupForMapProjection(
-                    latitudeOfOrigin,
-                    centralMeridian,
-                    scaleFactor, // Not an official parameter, provided for compatibility with those who still use it.
-                    falseEasting,
-                    falseNorthing);
+            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**
@@ -89,25 +63,5 @@ public final class PseudoMercator extends MapProjection {
      */
     public PseudoMercator() {
         super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code CylindricalProjection.class}
-     */
-    @Override
-    public Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return The map projection created from the given parameter values.
-     */
-    @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) {
-        return new Mercator(this, parameters);
     }
 }

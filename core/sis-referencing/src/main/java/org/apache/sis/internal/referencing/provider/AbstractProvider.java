@@ -121,7 +121,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
     }
 
     /**
-     * Creates a descriptor for a latitude parameter in degrees.
+     * Creates a descriptor for a latitude parameter in degrees with a default value of 0°.
      */
     static ParameterDescriptor<Double> createLatitude(final ParameterBuilder builder, final boolean includePoles) {
         return builder.createBounded(MeasurementRange.create(
@@ -131,7 +131,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
     }
 
     /**
-     * Creates a descriptor for a longitude parameter in degrees.
+     * Creates a descriptor for a longitude parameter in degrees with a default value of 0°.
      */
     static ParameterDescriptor<Double> createLongitude(final ParameterBuilder builder) {
         return builder.createBounded(MeasurementRange.create(
