@@ -44,13 +44,13 @@ public class AbstractMercator extends MapProjection {
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING = EquidistantCylindrical.FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = Equirectangular.FALSE_EASTING;
 
     /**
      * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING = EquidistantCylindrical.FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = Equirectangular.FALSE_NORTHING;
 
     /**
      * Returns the given descriptor as an array, excluding the two first elements which are assumed

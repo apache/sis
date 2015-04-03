@@ -86,7 +86,7 @@ public final class Mercator2SP extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        STANDARD_PARALLEL = createLatitude(builder.addNamesAndIdentifiers(EquidistantCylindrical.STANDARD_PARALLEL)
+        STANDARD_PARALLEL = createLatitude(builder.addNamesAndIdentifiers(Equirectangular.STANDARD_PARALLEL)
                 .rename(Citations.GEOTIFF, "StdParallel1")
                 .rename(Citations.PROJ4,   "lat_1"), false);
         /*

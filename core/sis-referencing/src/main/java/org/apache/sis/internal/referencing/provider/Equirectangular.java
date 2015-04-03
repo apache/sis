@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
  */
-public final class EquidistantCylindrical extends AbstractProvider {
+public final class Equirectangular extends AbstractProvider {
     /**
      * For cross-version compatibility.
      */
@@ -174,7 +174,7 @@ public final class EquidistantCylindrical extends AbstractProvider {
     /**
      * Constructs a new provider.
      */
-    public EquidistantCylindrical() {
+    public Equirectangular() {
         super(2, 2, PARAMETERS);
     }
 
