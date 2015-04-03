@@ -52,7 +52,7 @@ public final strictfp class AllProvidersTest extends TestCase {
         return new Class<?>[] {
             Affine.class,
             LongitudeRotation.class,
-            EquidistantCylindrical.class,
+            Equirectangular.class,
             Mercator1SP.class,
             Mercator2SP.class,
             MercatorSpherical.class,

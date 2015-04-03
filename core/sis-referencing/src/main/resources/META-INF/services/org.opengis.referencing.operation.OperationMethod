@@ -2,7 +2,7 @@
 # Heavier classes (e.g. having more dependencies) or classes less likely to be used, should be last.
 org.apache.sis.internal.referencing.provider.Affine
 org.apache.sis.internal.referencing.provider.LongitudeRotation
-org.apache.sis.internal.referencing.provider.EquidistantCylindrical
+org.apache.sis.internal.referencing.provider.Equirectangular
 org.apache.sis.internal.referencing.provider.Mercator1SP
 org.apache.sis.internal.referencing.provider.Mercator2SP
 org.apache.sis.internal.referencing.provider.MercatorSpherical
