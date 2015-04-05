@@ -24,6 +24,12 @@ import org.apache.sis.parameter.ParameterBuilder;
 /**
  * The provider for "<cite>Mercator (variant C)</cite>" projection (EPSG:1044).
  *
+ * <div class="note"><b>Note on naming:</b>
+ * The "Regional Mercator" class name is inspired by MapInfo practice, while not exactly the same projection.
+ * The idea is that this class stands for the Mercator projection giving the most control to the user for
+ * fitting a Mercator projection to a particular area of interest.
+ * </div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6

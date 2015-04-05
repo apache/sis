@@ -198,7 +198,7 @@ public class Mercator extends NormalizedProjection {
             denormalize.concatenate(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.concatenate(0, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.concatenate(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (type == MILLER) {
             normalize  .concatenate(1, new DoubleDouble(0.8),  null);

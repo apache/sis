@@ -50,7 +50,7 @@ public final class Mercator2SP extends AbstractMercator {
      * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> (φ₁) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
+    public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
@@ -86,9 +86,6 @@ public final class Mercator2SP extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        STANDARD_PARALLEL = createLatitude(builder.addNamesAndIdentifiers(Equirectangular.STANDARD_PARALLEL)
-                .rename(Citations.GEOTIFF, "StdParallel1")
-                .rename(Citations.PROJ4,   "lat_1"), false);
         /*
          * "Latitude of natural origin" and "Scale factor" are not formally parameters of the "Mercator (variant B)"
          * projection according EPSG. But we declare them as optional parameters because they are sometime used.
@@ -97,7 +94,7 @@ public final class Mercator2SP extends AbstractMercator {
          * factor applied here would rather at the standard parallel.
          */
         builder.setRequired(false); // Will apply to all remaining parameters.
-        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
+        LATITUDE_OF_ORIGIN = createConstant(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder)
                 .setRemarks(Mercator1SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
         SCALE_FACTOR = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)

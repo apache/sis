@@ -288,16 +288,25 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        Comparable<Double> check = descriptor.getMinimumValue();
-        if (check instanceof Number && !(value >= ((Number) check).doubleValue())) {
-            throw outOfBounds(descriptor, value);
+        final Comparable<Double> min = descriptor.getMinimumValue();
+        final Comparable<Double> max = descriptor.getMaximumValue();
+        if (!Objects.equals(min, max)) {
+            /*
+             * Why we do not check the bounds in min == max:
+             * The only case when our descriptor have (min == max) is when a parameter can only be zero,
+             * because of the way the map projection is defined. But in some cases, it would be possible
+             * to deal with non-zero values, even if in principle we should not. In such case we let the
+             * caller decides.
+             */
+            if (min instanceof Number && !(value >= ((Number) min).doubleValue())) {
+                throw outOfBounds(descriptor, value);
+            }
+            if (max instanceof Number && !(value <= ((Number) max).doubleValue())) {
+                throw outOfBounds(descriptor, value);
+            }
         }
-        check = descriptor.getMaximumValue();
-        if (check instanceof Number && !(value <= ((Number) check).doubleValue())) {
-            throw outOfBounds(descriptor, value);
-        }
-        check = descriptor.getDefaultValue();
-        if (check == null || !check.equals(value)) {
+        final Double defaultValue = descriptor.getDefaultValue();
+        if (defaultValue == null || !defaultValue.equals(value)) {
             context.parameter(descriptor.getName().getCode()).setValue(value);
         }
         return value;
