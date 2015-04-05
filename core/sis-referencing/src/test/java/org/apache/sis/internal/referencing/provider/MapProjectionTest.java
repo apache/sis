@@ -80,7 +80,7 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertParamEquals(null,                                 SEMI_MAJOR,           true, it.next());
         assertParamEquals(null,                                 SEMI_MINOR,           true, it.next());
         assertParamEquals("Latitude of 1st standard parallel", "standard_parallel_1", true,  it.next());
-        assertParamEquals("Latitude of natural origin",        "latitude_of_origin",  false, it.next());
+        assertParamEquals(null,                                "latitude_of_origin",  false, it.next());
         assertParamEquals("Longitude of natural origin",       "central_meridian",    true,  it.next());
         assertParamEquals(null,                                "scale_factor",        false, it.next());
         assertParamEquals("False easting",                     "false_easting",       true,  it.next());
