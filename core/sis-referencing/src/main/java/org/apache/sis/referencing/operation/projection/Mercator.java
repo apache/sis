@@ -133,15 +133,16 @@ public class Mercator extends NormalizedProjection {
     @Workaround(library="JDK", version="1.7")
     private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters,
-                (type == REGIONAL) ? RegionalMercator .EASTING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_EASTING,
-                (type == REGIONAL) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_NORTHING);
+                (type == SPHERICAL) ? Mercator2SP     .STANDARD_PARALLEL        : null,
+                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : AbstractMercator.FALSE_EASTING,
+                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_NORTHING);
         this.type = type;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
          * for now; it will be converted to radians later.
          */
-        double λ0 = getAndStore(parameters, Mercator1SP.CENTRAL_MERIDIAN);
+        final double λ0 = getAndStore(parameters, Mercator1SP.CENTRAL_MERIDIAN);
         /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
@@ -154,30 +155,17 @@ public class Mercator extends NormalizedProjection {
          * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        double φ0 = toRadians(getAndStore(parameters, (type == REGIONAL)
+        final double φ0 = toRadians(getAndStore(parameters, (type == REGIONAL)
                 ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
          * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while
-         * the later is for projections "1SP" (namely variant A and spherical).
+         * the later is for projections "1SP" (namely variant A and spherical). However we let users specify both
+         * if they really want, since we sometime see such CRS definitions.
          */
-        double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
+        final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
         double k0 = getAndStore(parameters, Mercator1SP.SCALE_FACTOR);
-        /*
-         * A correction that allows us to employ a standard parallel that is not correspondent to the equator,
-         * as described in Snyder and al. at page 47. This is the same correction factor than the one applied
-         * for the Mercator (2SP) case, constant "ko" in EPSG:9805.
-         *
-         * The scale correction is multiplied with the global scale, which allows the Apache SIS referencing
-         * module to merge this correction with the scale factor in a single multiplication. In principle we
-         * should never have both the scale factor and a standard parallel. Nevertheless we sometime see such
-         * CRS definitions.
-         */
-        switch (type) {
-            case PSEUDO:    /* Do nothing since a is taken as the radius. */ break;
-            case SPHERICAL: k0 *= radiusOfConformalSphere(sin(φ1));          break;
-            default:        k0 *= cos(φ1) / rν(sin(φ1));                     break;
-        }
+        k0 *= cos(φ1) / rν(sin(φ1));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -231,8 +219,7 @@ public class Mercator extends NormalizedProjection {
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * {@linkplain #isSpherical() is spherical}. In the later case, {@code this} transform will be replaced by
-     * a simplified implementation.</p>
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
      * @param  factory The factory to use for creating the transform.
      * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -241,7 +228,7 @@ public class Mercator extends NormalizedProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Mercator kernel = this;
-        if (isSpherical() || (type & SPHERICAL) != 0) {
+        if ((type & SPHERICAL) != 0 || excentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -382,9 +369,6 @@ public class Mercator extends NormalizedProjection {
          */
         Spherical(final Mercator other) {
             super(other);
-            if ((type & SPHERICAL) == 0) {
-                ensureSpherical();
-            }
         }
 
         /**
@@ -421,7 +405,7 @@ public class Mercator extends NormalizedProjection {
             /*
              * Following part is common to all spherical projections: verify, store and return.
              */
-            assert ((type & SPHERICAL) != 0)
+            assert (excentricity != 0)  // Can not perform the following assertions if excentricity is not zero.
                    || (Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
                    && Assertions.checkTransform(dstPts, dstOff, λ, y)); // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
@@ -475,7 +459,8 @@ public class Mercator extends NormalizedProjection {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             y = PI/2 - 2 * atan(exp(-y));     // Part of Snyder (7-4)
-            assert ((type & SPHERICAL) != 0) || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
+            assert (excentricity != 0)  // Can not perform the following assertion if excentricity is not zero.
+                   || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
         }

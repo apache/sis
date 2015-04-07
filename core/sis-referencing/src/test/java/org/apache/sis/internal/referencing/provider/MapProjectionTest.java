@@ -28,8 +28,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.internal.util.Constants.SEMI_MAJOR;
-import static org.apache.sis.internal.util.Constants.SEMI_MINOR;
+import static org.apache.sis.internal.util.Constants.*;
 
 
 /**
@@ -57,14 +56,14 @@ public final strictfp class MapProjectionTest extends TestCase {
     @DependsOnMethod("testSemiAxes")
     public void testMercator1SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator1SP.PARAMETERS.descriptors().iterator();
-        assertParamEquals("Mercator (variant A)",           "Mercator_1SP",       true, Mercator1SP.PARAMETERS);
-        assertParamEquals(null,                              SEMI_MAJOR,          true, it.next());
-        assertParamEquals(null,                              SEMI_MINOR,          true, it.next());
-        assertParamEquals("Latitude of natural origin",     "latitude_of_origin", true, it.next());
-        assertParamEquals("Longitude of natural origin",    "central_meridian",   true, it.next());
-        assertParamEquals("Scale factor at natural origin", "scale_factor",       true, it.next());
-        assertParamEquals("False easting",                  "false_easting",      true, it.next());
-        assertParamEquals("False northing",                 "false_northing",     true, it.next());
+        assertParamEquals("Mercator (variant A)",          "Mercator_1SP",       true, Mercator1SP.PARAMETERS);
+        assertParamEquals(null,                             SEMI_MAJOR,          true, it.next());
+        assertParamEquals(null,                             SEMI_MINOR,          true, it.next());
+        assertParamEquals("Latitude of natural origin",    "latitude_of_origin", true, it.next());
+        assertParamEquals("Longitude of natural origin",    CENTRAL_MERIDIAN,    true, it.next());
+        assertParamEquals("Scale factor at natural origin", SCALE_FACTOR,        true, it.next());
+        assertParamEquals("False easting",                  FALSE_EASTING,       true, it.next());
+        assertParamEquals("False northing",                 FALSE_NORTHING,      true, it.next());
         assertFalse(it.hasNext());
         assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor("latitude_of_origin"));
     }
@@ -76,15 +75,15 @@ public final strictfp class MapProjectionTest extends TestCase {
     @DependsOnMethod("testSemiAxes")
     public void testMercator2SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator2SP.PARAMETERS.descriptors().iterator();
-        assertParamEquals("Mercator (variant B)",              "Mercator_2SP",        true,  Mercator2SP.PARAMETERS);
-        assertParamEquals(null,                                 SEMI_MAJOR,           true, it.next());
-        assertParamEquals(null,                                 SEMI_MINOR,           true, it.next());
-        assertParamEquals("Latitude of 1st standard parallel", "standard_parallel_1", true,  it.next());
-        assertParamEquals(null,                                "latitude_of_origin",  false, it.next());
-        assertParamEquals("Longitude of natural origin",       "central_meridian",    true,  it.next());
-        assertParamEquals(null,                                "scale_factor",        false, it.next());
-        assertParamEquals("False easting",                     "false_easting",       true,  it.next());
-        assertParamEquals("False northing",                    "false_northing",      true,  it.next());
+        assertParamEquals("Mercator (variant B)",             "Mercator_2SP",        true,  Mercator2SP.PARAMETERS);
+        assertParamEquals(null,                                SEMI_MAJOR,           true, it.next());
+        assertParamEquals(null,                                SEMI_MINOR,           true, it.next());
+        assertParamEquals("Latitude of 1st standard parallel", STANDARD_PARALLEL_1,  true,  it.next());
+        assertParamEquals(null,                               "latitude_of_origin",  false, it.next());
+        assertParamEquals("Longitude of natural origin",       CENTRAL_MERIDIAN,     true,  it.next());
+        assertParamEquals(null,                                SCALE_FACTOR,         false, it.next());
+        assertParamEquals("False easting",                     FALSE_EASTING,        true,  it.next());
+        assertParamEquals("False northing",                    FALSE_NORTHING,       true,  it.next());
         assertFalse(it.hasNext());
         assertIsForcedToZero((ParameterDescriptor<?>) Mercator1SP.PARAMETERS.descriptor("latitude_of_origin"));
     }

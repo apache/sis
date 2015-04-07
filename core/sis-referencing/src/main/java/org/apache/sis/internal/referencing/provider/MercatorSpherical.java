@@ -55,7 +55,7 @@ public final class MercatorSpherical extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
         /*
-         * The "Scale factor at natural origin" is not formally a parameter for this map projection.
+         * The "Latitude of 1st standard parallel" is not formally a parameter for this map projection.
          * But we declare it (as an optional parameter) for compatibility with those who still use it.
          */
         final ParameterDescriptor<?> standardParallel = createLatitude(builder
