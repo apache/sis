@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -80,7 +81,7 @@ public final class Mercator1SP extends AbstractMercator {
         SCALE_FACTOR = createScale(builder
                 .addIdentifier("8805")
                 .addName("Scale factor at natural origin")
-                .addName(Citations.OGC,     "scale_factor")
+                .addName(Citations.OGC,     Constants.SCALE_FACTOR)
                 .addName(Citations.ESRI,    "Scale_Factor")
                 .addName(Citations.NETCDF,  "scale_factor_at_projection_origin")
                 .addName(Citations.GEOTIFF, "ScaleAtNatOrigin")

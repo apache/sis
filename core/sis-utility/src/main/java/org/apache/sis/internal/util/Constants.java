@@ -78,11 +78,47 @@ public final class Constants extends Static {
                                SEMI_MINOR = "semi_minor";
 
     /**
+     * The OGC parameter name for the central meridian.
+     */
+    public static final String CENTRAL_MERIDIAN = "central_meridian";
+
+    /**
      * The OGC parameter name for the standard parallels.
      */
     public static final String STANDARD_PARALLEL_1 = "standard_parallel_1",
                                STANDARD_PARALLEL_2 = "standard_parallel_2";
 
+    /**
+     * The OGC parameter name for the scale factor.
+     * While Apache SIS uses EPSG names when possible, the OGC names are convenient in this case
+     * because they do not depend on the projection. For example EPSG has at least three different
+     * names for the scale factor, depending on the projection:
+     *
+     * <ul>
+     *   <li><cite>Scale factor at natural origin</cite></li>
+     *   <li><cite>Scale factor on initial line</cite></li>
+     *   <li><cite>Scale factor on pseudo standard parallel</cite></li>
+     * </ul>
+     *
+     * Usage of OGC names avoid the need to choose a name according the projection.
+     */
+    public static final String SCALE_FACTOR = "scale_factor";
+
+    /**
+     * The OGC parameter name for the false easting or northing.
+     * While Apache SIS uses EPSG names when possible, the OGC names are convenient in this case
+     * because they do not depend on the projection. For example EPSG has at least two different
+     * names for false northing, depending on the projection:
+     *
+     * <ul>
+     *   <li><cite>Northing at false origin</cite></li>
+     *   <li><cite>Northing at projection centre</cite></li>
+     * </ul>
+     *
+     * Usage of OGC names avoid the need to choose a name according the projection.
+     */
+    public static final String FALSE_EASTING  = "false_easting",
+                               FALSE_NORTHING = "false_northing";
     /**
      * Name of the {@value} matrix parameters.
      */

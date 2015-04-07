@@ -16,21 +16,33 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.awt.geom.AffineTransform;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.CylindricalProjection;
-
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Messages;
+
+import static java.lang.Math.*;
 
 
 /**
  * The provider for "<cite>Equidistant Cylindrical (Spherical)</cite>" projection
  * (EPSG:1029, <span class="deprecated">EPSG:9823</span>).
+ *
+ * At the difference of most other map projection providers, this class does not extend {@link MapProjection}
+ * because it does not create non-liner kernel. Instead, the projection created by this class is implemented
+ * by an affine transform.
  *
  * <div class="note"><b>Note:</b>
  * EPSG defines two codes for this projection, 1029 being the spherical case and 1028 the ellipsoidal case.
@@ -104,7 +116,7 @@ public final class Equirectangular extends AbstractProvider {
         STANDARD_PARALLEL = createLatitude(builder
                 .addIdentifier("8823")
                 .addName("Latitude of 1st standard parallel")
-                .addName(Citations.OGC,     "standard_parallel_1")
+                .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_1)
                 .addName(Citations.ESRI,    "Standard_Parallel_1")
                 .addName(Citations.NETCDF,  "standard_parallel")
                 .addName(Citations.GEOTIFF, "ProjStdParallel1")
@@ -113,7 +125,7 @@ public final class Equirectangular extends AbstractProvider {
         CENTRAL_MERIDIAN = createLongitude(builder
                 .addIdentifier("8802")
                 .addName("Longitude of natural origin")
-                .addName(Citations.OGC,     "central_meridian")
+                .addName(Citations.OGC,     Constants.CENTRAL_MERIDIAN)
                 .addName(Citations.ESRI,    "Central_Meridian")
                 .addName(Citations.NETCDF,  "longitude_of_projection_origin")
                 .addName(Citations.GEOTIFF, "ProjCenterLong")
@@ -122,7 +134,7 @@ public final class Equirectangular extends AbstractProvider {
         FALSE_EASTING = createShift(builder
                 .addIdentifier("8806")
                 .addName("False easting")
-                .addName(Citations.OGC,     "false_easting")
+                .addName(Citations.OGC,     Constants.FALSE_EASTING)
                 .addName(Citations.ESRI,    "False_Easting")
                 .addName(Citations.NETCDF,  "false_easting")
                 .addName(Citations.GEOTIFF, "FalseEasting")
@@ -131,7 +143,7 @@ public final class Equirectangular extends AbstractProvider {
         FALSE_NORTHING = createShift(builder
                 .addIdentifier("8807")
                 .addName("False northing")
-                .addName(Citations.OGC,     "false_northing")
+                .addName(Citations.OGC,     Constants.FALSE_NORTHING)
                 .addName(Citations.ESRI,    "False_Northing")
                 .addName(Citations.NETCDF,  "false_northing")
                 .addName(Citations.GEOTIFF, "FalseNorthing")
@@ -165,7 +177,7 @@ public final class Equirectangular extends AbstractProvider {
             .addIdentifier(Citations.GEOTIFF, "17")
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
-                    LATITUDE_OF_ORIGIN,
+                    LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
                     CENTRAL_MERIDIAN,
                     FALSE_EASTING,
                     FALSE_NORTHING);
@@ -189,12 +201,70 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an Equirectangular projection from the specified group of parameter values.
      *
+     * @param  factory The factory to use if this constructor needs to create other math transforms.
+     * @param  parameters The parameter values that define the transform to create.
      * @return The map projection created from the given parameter values.
+     * @throws FactoryException if an error occurred while creating the math transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters) {
-        return null;
+    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
+            throws FactoryException
+    {
+        return createMathTransform(this, factory, Parameters.castOrWrap(parameters));
+    }
+
+    /**
+     * Creates an Equirectangular or Plate-Carrée projection from the specified group of parameter values. This
+     * method is an adaptation of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}
+     * constructor, reproduced in this method because we will create an affine transform instead than the usual
+     * projection classes.
+     */
+    static MathTransform createMathTransform(final AbstractProvider method, final MathTransformFactory factory,
+            final Parameters parameters) throws FactoryException
+    {
+        final ContextualParameters context = new ContextualParameters(method);
+        double a  = MapProjection.getAndStore(parameters, context, MapProjection.SEMI_MAJOR);
+        double b  = MapProjection.getAndStore(parameters, context, MapProjection.SEMI_MINOR);
+        double λ0 = MapProjection.getAndStore(parameters, context, CENTRAL_MERIDIAN);
+        double φ0 = MapProjection.getAndStore(parameters, context, LATITUDE_OF_ORIGIN);
+        double φ1 = MapProjection.getAndStore(parameters, context, STANDARD_PARALLEL);
+        double fe = MapProjection.getAndStore(parameters, context, FALSE_EASTING);
+        double fn = MapProjection.getAndStore(parameters, context, FALSE_NORTHING);
+        /*
+         * Perform following transformation, in that order. Note that following
+         * AffineTransform convention, the Java code appears in reverse order:
+         *
+         *   1) Subtract φ0 to the latitude.
+         *   2) Subtract λ0 to the longitude.
+         *   3) Convert degrees to radians.
+         *   4) Scale longitude by cos(φ1).
+         */
+        φ1 = toRadians(φ1);
+        context.getMatrix(true).concatenate(0, cos(φ1), null);
+        context.normalizeGeographicInputs(λ0)
+               .concatenate(1, null, -φ0);
+        /*
+         * At this point, we usually invoke scaleAndTranslate2D(false, a, fe, fn) where 'a' (the semi-major
+         * axis length) is taken as the Earth radius (R). However quoting EPSG: "If the figure of the earth
+         * used is an ellipsoid rather than a sphere then R should be calculated as the radius of the conformal
+         * sphere at the projection origin at latitude φ1 using the formula for RC given in section 1.2, table 3".
+         */
+        if (a != b) {
+            final double rs = b / a;
+            final double sinφ1 = sin(φ1);
+            a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
+        }
+        context.scaleAndTranslate2D(false, a, fe, fn);
+        /*
+         * Creates the ConcatenatedTransform, letting the factory returns the cached instance
+         * if the caller already invoked this method previously (which usually do not happen).
+         */
+        MathTransform mt = context.completeTransform(factory, MathTransforms.identity(2));
+        if (mt instanceof AffineTransform) {  // Always true in Apache SIS implementation.
+            mt = new ParameterizedAffine((AffineTransform) mt, context, true);
+        }
+        return mt;
     }
 }

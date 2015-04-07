@@ -75,10 +75,10 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      */
     final void initialize(final MapProjection provider, final boolean ellipse) throws FactoryException {
         final Parameters parameters = parameters(provider, ellipse);
-        parameters.parameter("central_meridian").setValue(0.5, NonSI.DEGREE_ANGLE);
-        parameters.parameter("scale_factor")    .setValue(0.997);
-        parameters.parameter("false_easting")   .setValue(200);
-        parameters.parameter("false_northing")  .setValue(100);
+        parameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(0.5, NonSI.DEGREE_ANGLE);
+        parameters.parameter(Constants.SCALE_FACTOR)    .setValue(0.997);
+        parameters.parameter(Constants.FALSE_EASTING)   .setValue(200);
+        parameters.parameter(Constants.FALSE_NORTHING)  .setValue(100);
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
     }
 }
