@@ -147,7 +147,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
         final Map<String, Object> properties = properties(name);
         assertNull(properties.put(DefaultParameterDescriptor.IDENTIFIERS_KEY,
-                new ImmutableIdentifier(HardCodedCitations.OGP, Constants.EPSG, Short.toString(code))));
+                new ImmutableIdentifier(HardCodedCitations.IOGP, Constants.EPSG, Short.toString(code))));
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, null);
     }
 
@@ -323,6 +323,6 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.A0);
-        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
     }
 }

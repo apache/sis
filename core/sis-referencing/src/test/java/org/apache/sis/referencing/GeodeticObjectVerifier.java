@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
 
 /**
  * Verifies the values of some geodetic objects. Methods in this class ignore most textual properties like remarks,
- * because OGP allows implementations to modify non-essential properties.
+ * because IOGP allows implementations to modify non-essential properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

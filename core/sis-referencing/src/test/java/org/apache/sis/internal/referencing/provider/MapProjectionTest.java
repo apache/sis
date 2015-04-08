@@ -128,7 +128,7 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertEquals("minimumOccurs", isMandatory ? 1 : 0, actual.getMinimumOccurs());
         if (epsgName != null) {
             for (final GenericName alias : actual.getAlias()) {
-                if (alias instanceof Identifier && ((Identifier) alias).getAuthority() != Citations.OGP) {
+                if (alias instanceof Identifier && ((Identifier) alias).getAuthority() != Citations.EPSG) {
                     ReferencingAssert.assertOgcIdentifierEquals(ogcName, (Identifier) alias);
                     return;
                 }

@@ -865,7 +865,8 @@ public class Formatter implements Localized {
             if (transform instanceof FormattableObject) {
                 append((FormattableObject) transform);
             } else {
-                final FormattableObject object = ReferencingServices.getInstance().toFormattableObject(transform);
+                final FormattableObject object = ReferencingServices.getInstance()
+                        .toFormattableObject(transform, convention == Convention.INTERNAL);
                 if (object != null) {
                     append(object);
                 } else {

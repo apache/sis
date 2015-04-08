@@ -79,7 +79,7 @@ public final strictfp class ParameterBuilderTest extends TestCase {
     @DependsOnMethod("testCreate")
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();
-        builder.setCodeSpace(HardCodedCitations.OGP, "EPSG").setRequired(true);
+        builder.setCodeSpace(HardCodedCitations.IOGP, "EPSG").setRequired(true);
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("Longitude of natural origin")
                    .addName(HardCodedCitations.OGC, "central_meridian")

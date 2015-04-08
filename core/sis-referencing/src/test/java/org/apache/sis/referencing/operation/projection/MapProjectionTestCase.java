@@ -94,5 +94,6 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
             parameters.parameter(Constants.SCALE_FACTOR).setValue(0.997);
         }
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
+        validate();
     }
 }

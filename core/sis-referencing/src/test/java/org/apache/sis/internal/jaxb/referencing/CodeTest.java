@@ -43,7 +43,7 @@ public final strictfp class CodeTest extends TestCase {
      */
     @Test
     public void testSimple() {
-        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326");
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326");
         final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG", value.codeSpace);
         assertEquals("code",      "4326", value.code);
@@ -64,7 +64,7 @@ public final strictfp class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testWithVersion() {
-        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
         final Code value = new Code(id);
         assertEquals("codeSpace", "EPSG:8.2", value.codeSpace);
         assertEquals("code",      "4326",     value.code);
@@ -85,10 +85,10 @@ public final strictfp class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testWithVersion")
     public void testForIdentifiedObject() {
-        final Identifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
+        final Identifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
         final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
         assertNotNull(value);
-        assertEquals("codeSpace", "OGP", value.codeSpace);
+        assertEquals("codeSpace", "IOGP", value.codeSpace);
         assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
     }
 

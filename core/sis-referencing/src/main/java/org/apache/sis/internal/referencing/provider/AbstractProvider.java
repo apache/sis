@@ -110,7 +110,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      * Creates the parameter builder with the default namespace set to EPSG.
      */
     static ParameterBuilder builder() {
-        return new ParameterBuilder().setCodeSpace(Citations.OGP, Constants.EPSG).setRequired(true);
+        return new ParameterBuilder().setCodeSpace(Citations.EPSG, Constants.EPSG).setRequired(true);
     }
 
     /**

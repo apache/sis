@@ -71,7 +71,11 @@ public final class Citations extends Static {
      * @category Organization
      *
      * @since 0.4
+     *
+     * @deprecated The OGP organization is now known as IOGP. This citation will be removed in SIS 0.6
+     *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
      */
+    @Deprecated
     public static final Citation OGP = new SimpleCitation("OGP");
 
     /**
@@ -81,12 +85,14 @@ public final class Citations extends Static {
      *
      * <div class="note"><b>Historical note:</b>
      * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
-     * But this meaning does not apply anymore since the European and American associations merged
-     * into the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
+     * But this meaning does not apply anymore since the European and American associations merged into
+     * the <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP).
      * The legacy acronym now applies only to the database Coordinate Reference System definitions,
      * known as <cite>EPSG dataset</cite>.</div>
      *
-     * @see #OGP
+     * The citation {@linkplain DefaultCitation#getTitle() title} and contact information reference
+     * the IOGP organization, but the {@link IdentifierSpace#getName() namespace} is {@code "EPSG"}.
+     *
      * @see #AUTO
      * @see #AUTO2
      * @see #CRS
@@ -94,7 +100,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.EPSG, Constants.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>("IOGP", Constants.EPSG);
 
     /**
      * The <a href="http://sis.apache.org">Apache SIS</a> project.
@@ -221,6 +227,14 @@ public final class Citations extends Static {
     public static Citation fromName(String title) {
         if (title == null || ((title = CharSequences.trimWhitespaces(title)).isEmpty())) {
             return null;
+        }
+        /*
+         * We perform a special check because it is our only IdentifierSpace having an namespace ("EPSG")
+         * that can not be inferred from the authority abbreviation ("IOGP"). We test this special case
+         * first because it is usually to be the most frequently used citation.
+         */
+        if (title.equalsIgnoreCase(Constants.EPSG)) {
+            return EPSG;
         }
         for (final Citation citation : CITATIONS) {
             if (titleMatches(citation, title)) {
