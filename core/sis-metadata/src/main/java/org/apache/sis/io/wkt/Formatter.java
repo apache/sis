@@ -52,7 +52,6 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.Enumerated;
 
 import org.apache.sis.measure.Units;
@@ -66,7 +65,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Range;
@@ -867,58 +865,12 @@ public class Formatter implements Localized {
             if (transform instanceof FormattableObject) {
                 append((FormattableObject) transform);
             } else {
-                final Matrix matrix = ReferencingServices.getInstance().getMatrix(transform);
-                if (matrix != null) {
-                    openElement(true, "Param_MT");
-                    buffer.appendCodePoint(symbols.getOpeningQuote(0)).append(Constants.AFFINE)
-                          .appendCodePoint(symbols.getClosingQuote(0));
-                    indent(+1);
-                    append(matrix);
-                    indent(-1);
-                    closeElement(true);
+                final FormattableObject object = ReferencingServices.getInstance().toFormattableObject(transform);
+                if (object != null) {
+                    append(object);
                 } else {
                     throw new UnformattableObjectException(Errors.format(
                             Errors.Keys.IllegalClass_2, FormattableObject.class, transform.getClass()));
-                }
-            }
-        }
-    }
-
-    /**
-     * Appends the given matrix as a sequence of {@code PARAMETER[…]} elements.
-     * Only elements different than the default values are appended.
-     * The default values are 1 on the matrix diagonal and 0 elsewhere.
-     *
-     * @param matrix The matrix to append to the WKT, or {@code null} if none.
-     */
-    public void append(final Matrix matrix) {
-        if (matrix == null) {
-            return;
-        }
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        final int openQuote  = symbols.getOpeningQuote(0);
-        final int closeQuote = symbols.getClosingQuote(0);
-        boolean columns = false;
-        do {
-            openElement(true, "Parameter");
-            buffer.appendCodePoint(openQuote)
-                  .append(columns ? Constants.NUM_COL : Constants.NUM_ROW)
-                  .appendCodePoint(closeQuote);
-            append(columns ? numCol : numRow);
-            closeElement(false);
-        } while ((columns = !columns) == true);
-        for (int j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                final double element = matrix.getElement(j, i);
-                if (element != (i == j ? 1 : 0)) {
-                    openElement(true, "Parameter");
-                    setColor(ElementKind.PARAMETER);
-                    buffer.appendCodePoint(openQuote).append("elt_").append(j)
-                            .append('_').append(i).appendCodePoint(closeQuote);
-                    resetColor();
-                    append(element);
-                    closeElement(false);
                 }
             }
         }
@@ -1245,8 +1197,6 @@ public class Formatter implements Localized {
             append(ReferencingServices.getInstance().toFormattableObject((IdentifiedObject) value));
         } else if (value instanceof MathTransform) {
             append((MathTransform) value);
-        } else if (value instanceof Matrix) {
-            append((Matrix) value);
         } else if (value instanceof Unit<?>) {
             append((Unit<?>) value);
         } else if (value instanceof GeographicBoundingBox) {

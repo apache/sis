@@ -44,10 +44,10 @@ import static java.lang.Math.*;
  * because it does not create non-liner kernel. Instead, the projection created by this class is implemented
  * by an affine transform.
  *
- * <div class="note"><b>Note:</b>
- * EPSG defines two codes for this projection, 1029 being the spherical case and 1028 the ellipsoidal case.
- * However the formulas are the same in both cases, with an additional adjustment of Earth radius in the
- * ellipsoidal case. Consequently they are implemented in Apache SIS by the same class.</div>
+ * <p>This provider is <strong>not</strong> suitable for the <cite>Equidistant Cylindrical</cite> projection
+ * (EPSG:1028, <span class="deprecated">EPSG:9842</span>). EPSG defines Equidistant Cylindrical projection as
+ * the ellipsoidal case of this projection, which uses a more complicated formula than the affine transform
+ * used here.</p>
  *
  * <div class="note"><b>Note:</b>
  * EPSG:1028 and 1029 are the current codes, while EPSG:9842 and 9823 are deprecated codes.
@@ -166,12 +166,14 @@ public final class Equirectangular extends AbstractProvider {
                 .setRemarks(Messages.formatInternational(Messages.Keys.ConstantProjParameterValue_1, 0))
                 .setRequired(false), 0.0);
 
+        // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
+        // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
         PARAMETERS = builder
             .addIdentifier(             "1029")
             .addDeprecatedIdentifier(   "9823", "1029")  // Using deprecated parameter names
             .addName(                   "Equidistant Cylindrical (Spherical)")
+            .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
             .addName(Citations.OGC,     "Equirectangular")
-            .addName(Citations.ESRI,    "Equidistant_Cylindrical")
             .addName(Citations.GEOTIFF, "CT_Equirectangular")
             .addName(Citations.PROJ4,   "eqc")
             .addIdentifier(Citations.GEOTIFF, "17")
@@ -201,7 +203,10 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
-     * Creates an Equirectangular projection from the specified group of parameter values.
+     * Creates an Equirectangular projection from the specified group of parameter values. This method is an
+     * adaptation of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} constructor,
+     * reproduced in this method because we will create an affine transform instead than the usual projection
+     * classes.
      *
      * @param  factory The factory to use if this constructor needs to create other math transforms.
      * @param  parameters The parameter values that define the transform to create.
@@ -212,26 +217,15 @@ public final class Equirectangular extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
             throws FactoryException
     {
-        return createMathTransform(this, factory, Parameters.castOrWrap(parameters));
-    }
-
-    /**
-     * Creates an Equirectangular or Plate-Carrée projection from the specified group of parameter values. This
-     * method is an adaptation of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}
-     * constructor, reproduced in this method because we will create an affine transform instead than the usual
-     * projection classes.
-     */
-    static MathTransform createMathTransform(final AbstractProvider method, final MathTransformFactory factory,
-            final Parameters parameters) throws FactoryException
-    {
-        final ContextualParameters context = new ContextualParameters(method);
-        double a  = MapProjection.getAndStore(parameters, context, MapProjection.SEMI_MAJOR);
-        double b  = MapProjection.getAndStore(parameters, context, MapProjection.SEMI_MINOR);
-        double λ0 = MapProjection.getAndStore(parameters, context, CENTRAL_MERIDIAN);
-        double φ0 = MapProjection.getAndStore(parameters, context, LATITUDE_OF_ORIGIN);
-        double φ1 = MapProjection.getAndStore(parameters, context, STANDARD_PARALLEL);
-        double fe = MapProjection.getAndStore(parameters, context, FALSE_EASTING);
-        double fn = MapProjection.getAndStore(parameters, context, FALSE_NORTHING);
+        final Parameters p = Parameters.castOrWrap(parameters);
+        final ContextualParameters context = new ContextualParameters(this);
+        double a  = MapProjection.getAndStore(p, context, MapProjection.SEMI_MAJOR);
+        double b  = MapProjection.getAndStore(p, context, MapProjection.SEMI_MINOR);
+        double λ0 = MapProjection.getAndStore(p, context, CENTRAL_MERIDIAN);
+        double φ0 = MapProjection.getAndStore(p, context, LATITUDE_OF_ORIGIN);
+        double φ1 = MapProjection.getAndStore(p, context, STANDARD_PARALLEL);
+        double fe = MapProjection.getAndStore(p, context, FALSE_EASTING);
+        double fn = MapProjection.getAndStore(p, context, FALSE_NORTHING);
         /*
          * Perform following transformation, in that order. Note that following
          * AffineTransform convention, the Java code appears in reverse order:

@@ -19,7 +19,6 @@ package org.apache.sis.internal.metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -43,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract class ReferencingServices extends SystemListener {
@@ -111,18 +110,6 @@ public abstract class ReferencingServices extends SystemListener {
     }
 
     /**
-     * Returns the matrix for the given transform, or {@code null} if none.
-     *
-     * @param  tr The transform for which to get the matrix.
-     * @return The matrix, or {@code null} if none.
-     *
-     * @see org.apache.sis.referencing.operation.transform.LinearTransform#getMatrix()
-     *
-     * @since 0.4
-     */
-    public abstract Matrix getMatrix(MathTransform tr);
-
-    /**
      * Returns a fully implemented parameter descriptor.
      *
      * @param  parameter A partially implemented parameter descriptor, or {@code null}.
@@ -133,7 +120,7 @@ public abstract class ReferencingServices extends SystemListener {
     public abstract ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter);
 
     /**
-     * Converts the given object in a {@link org.apache.sis.io.wkt.FormattableObject} instance.
+     * Converts the given object in a {@code FormattableObject} instance.
      *
      * @param  object The object to wrap.
      * @return The given object converted to a {@code FormattableObject} instance.
@@ -143,6 +130,18 @@ public abstract class ReferencingServices extends SystemListener {
      * @since 0.4
      */
     public abstract FormattableObject toFormattableObject(IdentifiedObject object);
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public abstract FormattableObject toFormattableObject(MathTransform object);
 
     /**
      * Sets a geographic bounding box from the specified envelope.

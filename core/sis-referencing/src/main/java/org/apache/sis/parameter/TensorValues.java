@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
@@ -465,8 +464,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, ElementKind.PARAMETER);
-        WKTUtilities.append(this, formatter);
+        WKTUtilities.appendParamMT(this, formatter);
         return "ParameterGroup";
     }
 }
