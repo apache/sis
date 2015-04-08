@@ -137,11 +137,12 @@ public abstract class ReferencingServices extends SystemListener {
      * returns {@code null} if it can not convert the object.
      *
      * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
      * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
      *
      * @since 0.6
      */
-    public abstract FormattableObject toFormattableObject(MathTransform object);
+    public abstract FormattableObject toFormattableObject(MathTransform object, boolean internal);
 
     /**
      * Sets a geographic bounding box from the specified envelope.

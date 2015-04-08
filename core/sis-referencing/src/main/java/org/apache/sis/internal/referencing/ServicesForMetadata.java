@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -43,6 +44,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
@@ -53,6 +55,7 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Utilities;
@@ -101,25 +104,33 @@ public final class ServicesForMetadata extends ReferencingServices {
      * returns {@code null} if it can not convert the object.
      *
      * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
      * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
      *
      * @since 0.6
      */
     @Override
-    public FormattableObject toFormattableObject(final MathTransform object) {
-        if (object instanceof Parameterized) {
-            final ParameterValueGroup parameters = ((Parameterized) object).getParameterValues();
-            if (parameters != null) {
-                return new FormattableObject() {
-                    @Override
-                    protected String formatTo(final Formatter formatter) {
-                        WKTUtilities.appendParamMT(parameters, formatter);
-                        return "Param_MT";
-                    }
-                };
+    public FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
+        Matrix matrix;
+        final ParameterValueGroup parameters;
+        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
+            parameters = Affine.parameters(matrix);
+        } else if (object instanceof Parameterized) {
+            parameters = ((Parameterized) object).getParameterValues();
+        } else {
+            matrix = MathTransforms.getMatrix(object);
+            if (matrix == null) {
+                return null;
             }
+            parameters = Affine.parameters(matrix);
         }
-        return null;
+        return new FormattableObject() {
+            @Override
+            protected String formatTo(final Formatter formatter) {
+                WKTUtilities.appendParamMT(parameters, formatter);
+                return "Param_MT";
+            }
+        };
     }
 
     /**

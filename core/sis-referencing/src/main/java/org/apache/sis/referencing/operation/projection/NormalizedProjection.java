@@ -213,11 +213,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * The parameters of the given {@code method} argument shall contains descriptor for the given parameters
      * (using OGC names):
      * <ul>
-     *   <li>{@code "semi_major"}</li>
-     *   <li>{@code "semi_minor"}</li>
-     *   <li>{@code "central_meridian"}</li>
-     *   <li>{@code "false_easting"}</li>
-     *   <li>{@code "false_northing"}</li>
+     *   <li>{@code "semi_major"}       (mandatory)</li>
+     *   <li>{@code "semi_minor"}       (mandatory)</li>
+     *   <li>{@code "central_meridian"} (optional, default to 0°)</li>
+     *   <li>{@code "false_easting"}    (optional, default to 0 metre)</li>
+     *   <li>{@code "false_northing"}   (optional, default to 0 metre)</li>
      * </ul>
      *
      * <div class="note"><b>Note:</b>

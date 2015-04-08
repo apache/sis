@@ -66,13 +66,13 @@ public final strictfp class BuilderTest extends TestCase {
     @Test
     public void testSetCodeSpace() {
         final BuilderMock builder = new BuilderMock();
-        builder.setCodeSpace(OGP, "EPSG");
+        builder.setCodeSpace(IOGP, "EPSG");
         builder.addName("Mercator (variant A)");
         /*
          * Setting the same codespace should have no effect, while attempt to
          * set a new codespace after we added a name shall not be allowed.
          */
-        builder.setCodeSpace(OGP, "EPSG");
+        builder.setCodeSpace(IOGP, "EPSG");
         try {
             builder.setCodeSpace(EPSG, "EPSG");
             fail("Setting a different codespace shall not be allowed.");
@@ -84,14 +84,14 @@ public final strictfp class BuilderTest extends TestCase {
          * The failed attempt to set a new codespace shall not have modified builder state.
          */
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
+        assertSame  (IOGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         /*
          * After a cleanup (normally after a createXXX(…) method call), user shall be allowed to
          * set a new codespace again. Note that the cleanup operation shall not clear the codespace.
          */
         builder.onCreate(true);
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
+        assertSame  (IOGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         builder.setCodeSpace(EPSG, "EPSG");
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
         assertSame  ( EPSG,  builder.properties.get(Identifier.AUTHORITY_KEY));
@@ -134,7 +134,7 @@ public final strictfp class BuilderTest extends TestCase {
      */
     private static BuilderMock createMercator(final boolean withNames, final boolean withIdentifiers) {
         final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.setCodeSpace(OGP, "EPSG"));
+        assertSame(builder, builder.setCodeSpace(IOGP, "EPSG"));
         if (withNames) {
             assertSame(builder, builder.addName(         "Mercator (variant A)")); // EPSG version 7.6 and later.
             assertSame(builder, builder.addName(         "Mercator (1SP)"));       // EPSG before version 7.6.
@@ -187,7 +187,7 @@ public final strictfp class BuilderTest extends TestCase {
     @Test
     public void testAddIdentifiers() {
         // Expected values to be used later in the test.
-        final Identifier id1 = new ImmutableIdentifier(OGP,     "EPSG",    "9804");
+        final Identifier id1 = new ImmutableIdentifier(IOGP,     "EPSG",    "9804");
         final Identifier id2 = new ImmutableIdentifier(GEOTIFF, "GeoTIFF", "7");
         assertEquals("EPSG:9804", IdentifiedObjects.toString(id1));
         assertEquals("GeoTIFF:7", IdentifiedObjects.toString(id2));
@@ -212,7 +212,7 @@ public final strictfp class BuilderTest extends TestCase {
             final Object value = entry.getValue();
             switch (entry.getKey()) {
                 case Identifier.AUTHORITY_KEY: {
-                    assertSame("Authority and codespace shall be unchanged.", OGP, value);
+                    assertSame("Authority and codespace shall be unchanged.", IOGP, value);
                     break;
                 }
                 case Identifier.CODESPACE_KEY: {
@@ -254,7 +254,7 @@ public final strictfp class BuilderTest extends TestCase {
         }, builder.getAsStrings(1));
 
         // Replace "EPSG:Mercator (variant A)" and "(1SP)", and insert a new EPSG code as an alias.
-        assertSame(builder, builder.rename(OGP, "Replacement 3", "Replacement 4", "Replacement 5"));
+        assertSame(builder, builder.rename(IOGP, "Replacement 3", "Replacement 4", "Replacement 5"));
         builder.onCreate(false);
         assertArrayEquals(new String[] {
             "Replacement 3",
@@ -266,7 +266,7 @@ public final strictfp class BuilderTest extends TestCase {
         }, builder.getAsStrings(1));
 
         // Remove all EPSG codes.
-        assertSame(builder, builder.rename(OGP, (String[]) null));
+        assertSame(builder, builder.rename(IOGP, (String[]) null));
         builder.onCreate(false);
         assertArrayEquals(new String[] {
             "OGC:Replacement 1",

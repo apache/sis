@@ -322,7 +322,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         validate(group);
         assertWktEquals(
                 "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 3],\n"    +   // Shall be shown even if equals to the defautl value.
+                "  Parameter[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
                 "  Parameter[“num_col”, 3],\n"    +
                 "  Parameter[“elt_0_2”, 4.0],\n"  +
                 "  Parameter[“elt_1_0”, -2.0],\n" +

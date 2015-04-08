@@ -518,7 +518,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * {@preformat wkt
      *      Datum["World Geodetic System 1984",
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
-     *      Id["EPSG", 6326, Citation["OGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
+     *      Id["EPSG", 6326, Citation["IOGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
      * }
      *
      * <p>Same datum using WKT 1.</p>

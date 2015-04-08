@@ -109,7 +109,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
  *
  * {@preformat java
- *   builder.setCodespace (Citations.OGP, "EPSG")
+ *   builder.setCodespace (Citations.EPSG, "EPSG")
  *          .addName("Mercator (variant A)")
  *          .addName("Mercator (1SP)")
  *          .addName(Citations.OGC, "Mercator_1SP")
@@ -372,7 +372,7 @@ public abstract class Builder<B extends Builder<B>> {
      * The code space is often the authority's abbreviation, but not necessarily.
      *
      * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) objects identified by codes from the
-     * EPSG database are maintained by the {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGP OGP}
+     * EPSG database are maintained by the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP)
      * authority, but the code space is {@code "EPSG"} for historical reasons.</div>
      *
      * This method is typically invoked only once, since a compound object often uses the same code space
@@ -472,7 +472,7 @@ public abstract class Builder<B extends Builder<B>> {
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
      * {@preformat java
-     *   builder.setCodespace(Citations.OGP, "EPSG")           // Sets the default namespace to "EPSG".
+     *   builder.setCodespace(Citations.EPSG, "EPSG")          // Sets the default namespace to "EPSG".
      *          .addName("Longitude of natural origin")        // Primary name in builder default namespace.
      *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
      *          .addName(Citations.GEOTIFF, "NatOriginLong");  // Second alias in "GeoTIFF" namespace.

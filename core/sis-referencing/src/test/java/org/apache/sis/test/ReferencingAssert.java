@@ -84,7 +84,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
 
     /**
      * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
-     * The authority is expected to have the {@code "OGP"} title or alternate title.
+     * The authority is expected to have the {@code "IOGP"} title or alternate title.
      *
      * @param expected The expected identifier code.
      * @param actual   The identifier to verify.
@@ -95,7 +95,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertNotNull(actual);
         assertEquals("code",       expected, actual.getCode());
         assertEquals("codeSpace",  EPSG,  actual.getCodeSpace());
-        assertEquals("authority",  "OGP", Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("authority", "IOGP", Citations.getIdentifier(actual.getAuthority()));
         assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }

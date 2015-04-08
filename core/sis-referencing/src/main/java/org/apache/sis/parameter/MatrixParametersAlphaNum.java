@@ -95,7 +95,7 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
             throw new AssertionError();
         }
         final ParameterDescriptor<Double> wkt = WKT1.getElementDescriptor(indices);   // Really 'WKT1', not 'super'.
-        final GenericName name = first(wkt.getAlias());
+        GenericName name = first(wkt.getAlias());
         if (name == null) {
             /*
              * Outside the range of names (e.g. more than 26 rows or more than 10 columns).
@@ -104,15 +104,16 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
             return wkt;
         }
         final Map<String,Object> properties = new HashMap<>(6);
-        properties.put(ParameterDescriptor.NAME_KEY, first(wkt.getAlias()));
-        properties.put(ParameterDescriptor.ALIAS_KEY, wkt.getName());
         /*
          * Declare the EPSG identifier only for A0, A1, A2, B0, B1 and B2.
          */
         if (isEPSG(indices)) {
+            name = EPSGName.create(name.tip().toString()); // Put the name in EPSG namespace.
             final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
             properties.put(ParameterDescriptor.IDENTIFIERS_KEY, EPSGName.identifier(code));
         }
+        properties.put(ParameterDescriptor.NAME_KEY, name);
+        properties.put(ParameterDescriptor.ALIAS_KEY, wkt.getName());
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, wkt.getDefaultValue());
     }
 
