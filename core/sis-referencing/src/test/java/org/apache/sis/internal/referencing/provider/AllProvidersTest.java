@@ -42,6 +42,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     AffineTest.class,
+    LongitudeRotationTest.class,
     MapProjectionTest.class
 })
 public final strictfp class AllProvidersTest extends TestCase {

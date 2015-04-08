@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -28,7 +29,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -43,8 +43,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -62,7 +63,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -70,17 +71,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Creates a new instance. This constructor is invoked by reflection only.
      */
     public ServicesForMetadata() {
-    }
-
-    /**
-     * Returns the matrix for the given transform, or {@code null} if none.
-     *
-     * @param  tr The transform for which to get the matrix.
-     * @return The matrix, or {@code null} if none.
-     */
-    @Override
-    public Matrix getMatrix(final MathTransform tr) {
-        return MathTransforms.getMatrix(tr);
     }
 
     /**
@@ -95,7 +85,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Converts the given object in a {@link org.apache.sis.io.wkt.FormattableObject} instance.
+     * Converts the given object in a {@code FormattableObject} instance.
      *
      * @param  object The object to wrap.
      * @return The given object converted to a {@code FormattableObject} instance.
@@ -103,6 +93,33 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public FormattableObject toFormattableObject(final IdentifiedObject object) {
         return AbstractIdentifiedObject.castOrCopy(object);
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     *
+     * @since 0.6
+     */
+    @Override
+    public FormattableObject toFormattableObject(final MathTransform object) {
+        if (object instanceof Parameterized) {
+            final ParameterValueGroup parameters = ((Parameterized) object).getParameterValues();
+            if (parameters != null) {
+                return new FormattableObject() {
+                    @Override
+                    protected String formatTo(final Formatter formatter) {
+                        WKTUtilities.appendParamMT(parameters, formatter);
+                        return "Param_MT";
+                    }
+                };
+            }
+        }
+        return null;
     }
 
     /**

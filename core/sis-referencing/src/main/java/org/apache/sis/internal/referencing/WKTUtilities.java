@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class WKTUtilities extends Static {
@@ -177,6 +177,19 @@ public final class WKTUtilities extends Static {
             }
         }
         formatter.append(name, (type != null) ? type : ElementKind.NAME);
+    }
+
+    /**
+     * Appends a {@linkplain ParameterValueGroup group of parameters} in a {@code Param_MT[…]} element.
+     *
+     * @param parameters The parameter to append to the WKT, or {@code null} if none.
+     * @param formatter The formatter where to append the parameter.
+     */
+    public static void appendParamMT(final ParameterValueGroup parameters, final Formatter formatter) {
+        if (parameters != null) {
+            appendName(parameters.getDescriptor(), formatter, ElementKind.PARAMETER);
+            append(parameters, formatter);
+        }
     }
 
     /**

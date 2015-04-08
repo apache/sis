@@ -954,11 +954,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final ParameterValueGroup parameters = getParameterValues();
-        if (parameters != null) {
-            WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
-            WKTUtilities.append(parameters, formatter);
-        }
+        WKTUtilities.appendParamMT(getParameterValues(), formatter);
         return "Param_MT";
     }
 
@@ -1119,8 +1115,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         protected String formatTo(final Formatter formatter) {
             final ParameterValueGroup parameters = getParameterValues();
             if (parameters != null) {
-                WKTUtilities.appendName(parameters.getDescriptor(), formatter, null);
-                WKTUtilities.append(parameters, formatter);
+                WKTUtilities.appendParamMT(parameters, formatter);
                 return "Param_MT";
             } else {
                 formatter.append((FormattableObject) AbstractMathTransform.this);

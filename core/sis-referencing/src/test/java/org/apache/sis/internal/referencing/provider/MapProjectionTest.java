@@ -50,10 +50,34 @@ public final strictfp class MapProjectionTest extends TestCase {
     }
 
     /**
-     * Verifies some {@link Mercator1SP} parameter descriptors.
+     * Verifies some parameters of {@link Equirectangular}. Note that {@code Equirectangular} is the first projection
+     * to be loaded by {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} and defines
+     * some parameters which will be reused by other projections.
+     *
+     * <p><b>Note:</b> there is no test for {@code Equirectangular.createMathTransform(…)} in this class because
+     * the math transforms are tested in the {@link org.apache.sis.referencing.operation.projection} package.</p>
      */
     @Test
     @DependsOnMethod("testSemiAxes")
+    public void testEquirectangular() {
+        final Iterator<GeneralParameterDescriptor> it = Equirectangular.PARAMETERS.descriptors().iterator();
+        assertParamEquals("Equidistant Cylindrical (Spherical)", "Equirectangular",    true,  Equirectangular.PARAMETERS);
+        assertParamEquals(null,                                   SEMI_MAJOR,          true,  it.next());
+        assertParamEquals(null,                                   SEMI_MINOR,          true,  it.next());
+        assertParamEquals("Latitude of 1st standard parallel",    STANDARD_PARALLEL_1, true,  it.next());
+        assertParamEquals("Latitude of natural origin",          "latitude_of_origin", false, it.next());
+        assertParamEquals("Longitude of natural origin",          CENTRAL_MERIDIAN,    true,  it.next());
+        assertParamEquals("False easting",                        FALSE_EASTING,       true,  it.next());
+        assertParamEquals("False northing",                       FALSE_NORTHING,      true,  it.next());
+        assertFalse(it.hasNext());
+        assertIsForcedToZero((ParameterDescriptor<?>) Equirectangular.PARAMETERS.descriptor("latitude_of_origin"));
+    }
+
+    /**
+     * Verifies some {@link Mercator1SP} parameter descriptors.
+     */
+    @Test
+    @DependsOnMethod("testEquirectangular")
     public void testMercator1SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator1SP.PARAMETERS.descriptors().iterator();
         assertParamEquals("Mercator (variant A)",          "Mercator_1SP",       true, Mercator1SP.PARAMETERS);
@@ -72,12 +96,12 @@ public final strictfp class MapProjectionTest extends TestCase {
      * Verifies some {@link Mercator2SP} parameter descriptors.
      */
     @Test
-    @DependsOnMethod("testSemiAxes")
+    @DependsOnMethod("testMercator1SP")
     public void testMercator2SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator2SP.PARAMETERS.descriptors().iterator();
         assertParamEquals("Mercator (variant B)",             "Mercator_2SP",        true,  Mercator2SP.PARAMETERS);
-        assertParamEquals(null,                                SEMI_MAJOR,           true, it.next());
-        assertParamEquals(null,                                SEMI_MINOR,           true, it.next());
+        assertParamEquals(null,                                SEMI_MAJOR,           true,  it.next());
+        assertParamEquals(null,                                SEMI_MINOR,           true,  it.next());
         assertParamEquals("Latitude of 1st standard parallel", STANDARD_PARALLEL_1,  true,  it.next());
         assertParamEquals(null,                               "latitude_of_origin",  false, it.next());
         assertParamEquals("Longitude of natural origin",       CENTRAL_MERIDIAN,     true,  it.next());
@@ -115,7 +139,7 @@ public final strictfp class MapProjectionTest extends TestCase {
 
     /**
      * Asserts the the given parameter forces its value to zero.
-     * This test is mostly for {@link AbstractMercator#LATITUDE_OF_ORIGIN}.
+     * This test is mostly for {@link Equirectangular#LATITUDE_OF_ORIGIN}.
      */
     private static void assertIsForcedToZero(final ParameterDescriptor<?> parameter) {
         final Double zero = Double.valueOf(0);

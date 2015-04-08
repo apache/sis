@@ -49,7 +49,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
-     * Returns a new instance of {@link Mercator} for an ellipsoid.
+     * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
@@ -59,7 +59,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         if (!ellipse) {
             transform = new Mercator.Spherical((Mercator) transform);
         }
-        tolerance = 1E-12;
+        tolerance = NORMALIZED_TOLERANCE;
         validate();
     }
 
@@ -273,7 +273,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new Mercator1SP(), false);
+        initialize(new Mercator1SP(), false, false, true);
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }
