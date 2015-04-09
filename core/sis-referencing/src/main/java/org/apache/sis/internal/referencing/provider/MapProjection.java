@@ -41,9 +41,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -123,6 +127,57 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
+     * Gets a parameter value identified by the given descriptor and stores it in the {@code context}.
+     * This method performs the following actions:
+     *
+     * <ul>
+     *   <li>Convert the value to the units specified by the descriptor.</li>
+     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
+     *   <li>Store the value only if different than the default value.</li>
+     * </ul>
+     *
+     * This method should be invoked at {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
+     * execution time only.
+     *
+     * @param  source     The parameters from which to read the value.
+     * @param  target     Where to store the parameter values.
+     * @param  descriptor The descriptor that specify the parameter names and desired units.
+     * @return The parameter value in the units given by the descriptor.
+     * @throws IllegalArgumentException if the given value is out of bounds.
+     */
+    public static double getAndStore(final Parameters source, final ParameterValueGroup target,
+            final ParameterDescriptor<Double> descriptor) throws IllegalArgumentException
+    {
+        final double value = source.doubleValue(descriptor);    // Apply a unit conversion if needed.
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
+                    descriptor.getName(), value));
+        }
+        final Comparable<Double> min = descriptor.getMinimumValue();
+        final Comparable<Double> max = descriptor.getMaximumValue();
+        if (!Objects.equals(min, max)) {
+            /*
+             * RATIONAL: why we do not check the bounds if (min == max):
+             * The only case when our descriptor have (min == max) is when a parameter can only be zero,
+             * because of the way the map projection is defined (see e.g. Mercator1SP.LATITUDE_OF_ORIGIN).
+             * But in some cases, it would be possible to deal with non-zero values, even if in principle
+             * we should not. In such case we let the caller decides.
+             */
+            if ((min instanceof Number && !(value >= ((Number) min).doubleValue())) ||
+                (max instanceof Number && !(value <= ((Number) max).doubleValue())))
+            {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
+                        descriptor.getName(), min, max, value));
+            }
+        }
+        final Double defaultValue = descriptor.getDefaultValue();
+        if (defaultValue == null || !defaultValue.equals(value)) {
+            target.parameter(descriptor.getName().getCode()).setValue(value);
+        }
+        return value;
+    }
+
+    /**
      * Creates a map projection from the specified group of parameter values.
      *
      * @param  factory The factory to use for creating and concatenating the (de)normalization transforms.
@@ -172,14 +227,6 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies the EPSG name and identifier from the given parameter into the builder.
-     * The EPSG objects are presumed the first name and identifier (this is not verified).
-     */
-    static ParameterBuilder onlyEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
-        return builder.addIdentifier(source.getIdentifiers().iterator().next()).addName(source.getName());
-    }
-
-    /**
      * Copies all names except the EPSG one from the given parameter into the builder.
      * The EPSG name is presumed the first name and identifier (this is not verified).
      */
@@ -191,33 +238,11 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies the names and identifiers from the given parameter into the builder.
-     * The given {@code esri} and {@code netcdf} parameters will be inserted after the OGC name.
-     */
-    static ParameterBuilder withEsriAndNetcdf(final ParameterDescriptor<?> source, final ParameterBuilder builder,
-            final String esri, final String netcdf)
-    {
-        for (final Identifier identifier : source.getIdentifiers()) {
-            builder.addIdentifier(identifier);
-        }
-        builder.addName(source.getName());
-        for (final GenericName alias : source.getAlias()) {
-            builder.addName(alias);
-            if (((Identifier) alias).getAuthority() == Citations.OGC) {
-                builder.addName(Citations.ESRI,   esri)
-                       .addName(Citations.NETCDF, netcdf);
-            }
-        }
-        return builder;
-    }
-
-    /**
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
      * @param origin The name of the projection for where the parameter is formally used.
-     * @param usedIn The name of the projection where we also use that parameter.
      */
-    static InternationalString notFormalParameter(final String origin, final String usedIn) {
-        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_2, origin, usedIn);
+    static InternationalString notFormalParameter(final String origin) {
+        return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
     }
 }

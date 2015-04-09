@@ -74,9 +74,10 @@ import java.util.Objects;
  * </ul>
  *
  * <div class="note"><b>Example:</b>
- * If the identifier attributes are {@code authority} = {@link Citations#OGP}, {@code codeSpace} = {@code "EPSG"}
- * and {@code code} = {@code "4326"}, then the name attributes will be {@code scope} = {@code "OGP"},
- * {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and {@link #toString()} = {@code "EPSG:4326"}.
+ * If the identifier attributes are {@code authority} = {@code new DefaultCitation("IOGP")},
+ * {@code codeSpace} = {@code "EPSG"} and {@code code} = {@code "4326"}, then the name attributes will be
+ * {@code scope} = {@code "IOGP"}, {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and
+ * {@link #toString()} = {@code "EPSG:4326"}.
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *

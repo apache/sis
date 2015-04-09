@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -45,6 +46,8 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -52,6 +55,7 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Utilities;
@@ -62,7 +66,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
@@ -70,17 +74,6 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Creates a new instance. This constructor is invoked by reflection only.
      */
     public ServicesForMetadata() {
-    }
-
-    /**
-     * Returns the matrix for the given transform, or {@code null} if none.
-     *
-     * @param  tr The transform for which to get the matrix.
-     * @return The matrix, or {@code null} if none.
-     */
-    @Override
-    public Matrix getMatrix(final MathTransform tr) {
-        return MathTransforms.getMatrix(tr);
     }
 
     /**
@@ -95,7 +88,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Converts the given object in a {@link org.apache.sis.io.wkt.FormattableObject} instance.
+     * Converts the given object in a {@code FormattableObject} instance.
      *
      * @param  object The object to wrap.
      * @return The given object converted to a {@code FormattableObject} instance.
@@ -103,6 +96,41 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public FormattableObject toFormattableObject(final IdentifiedObject object) {
         return AbstractIdentifiedObject.castOrCopy(object);
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     *
+     * @since 0.6
+     */
+    @Override
+    public FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
+        Matrix matrix;
+        final ParameterValueGroup parameters;
+        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
+            parameters = Affine.parameters(matrix);
+        } else if (object instanceof Parameterized) {
+            parameters = ((Parameterized) object).getParameterValues();
+        } else {
+            matrix = MathTransforms.getMatrix(object);
+            if (matrix == null) {
+                return null;
+            }
+            parameters = Affine.parameters(matrix);
+        }
+        return new FormattableObject() {
+            @Override
+            protected String formatTo(final Formatter formatter) {
+                WKTUtilities.appendParamMT(parameters, formatter);
+                return "Param_MT";
+            }
+        };
     }
 
     /**

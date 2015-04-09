@@ -51,7 +51,7 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation OGC;
     static {
         final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.OGC)));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
         c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
         c.freeze();
@@ -85,18 +85,18 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
+     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas Producers</a> organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGP"
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "IOGP"
      * (according ISO 19115, alternate titles often contain abbreviations).
      */
-    public static final DefaultCitation OGP;
+    public static final DefaultCitation IOGP;
     static {
         final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("OGP")));
-        c.setIdentifiers(singleton(new DefaultIdentifier("OGP")));
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.IOGP)));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.IOGP)));
         c.freeze();
-        OGP = c;
+        IOGP = c;
     }
 
     /**
@@ -130,7 +130,7 @@ public final strictfp class HardCodedCitations extends Static {
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibility p = new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,
-                new DefaultOrganisation(OGP.getTitle(), null, null, new DefaultContact(r)));
+                new DefaultOrganisation(IOGP.getTitle(), null, null, new DefaultContact(r)));
 
         final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));

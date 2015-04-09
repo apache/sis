@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Map;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
@@ -25,11 +26,11 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.opengis.referencing.IdentifiedObject.*;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.*;
 
 
@@ -38,9 +39,10 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
+@DependsOn(AbstractIdentifiedObjectTest.class)
 public final strictfp class BuilderTest extends TestCase {
     /**
      * Tests {@link Builder#verifyParameterizedType(Class)}.
@@ -64,13 +66,13 @@ public final strictfp class BuilderTest extends TestCase {
     @Test
     public void testSetCodeSpace() {
         final BuilderMock builder = new BuilderMock();
-        builder.setCodeSpace(OGP, "EPSG");
+        builder.setCodeSpace(IOGP, "EPSG");
         builder.addName("Mercator (variant A)");
         /*
          * Setting the same codespace should have no effect, while attempt to
          * set a new codespace after we added a name shall not be allowed.
          */
-        builder.setCodeSpace(OGP, "EPSG");
+        builder.setCodeSpace(IOGP, "EPSG");
         try {
             builder.setCodeSpace(EPSG, "EPSG");
             fail("Setting a different codespace shall not be allowed.");
@@ -82,14 +84,14 @@ public final strictfp class BuilderTest extends TestCase {
          * The failed attempt to set a new codespace shall not have modified builder state.
          */
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
+        assertSame  (IOGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         /*
          * After a cleanup (normally after a createXXX(…) method call), user shall be allowed to
          * set a new codespace again. Note that the cleanup operation shall not clear the codespace.
          */
         builder.onCreate(true);
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
-        assertSame  ( OGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
+        assertSame  (IOGP,   builder.properties.get(Identifier.AUTHORITY_KEY));
         builder.setCodeSpace(EPSG, "EPSG");
         assertEquals("EPSG", builder.properties.get(Identifier.CODESPACE_KEY));
         assertSame  ( EPSG,  builder.properties.get(Identifier.AUTHORITY_KEY));
@@ -99,7 +101,7 @@ public final strictfp class BuilderTest extends TestCase {
      * Tests {@link Builder#addName(CharSequence)} without codespace.
      */
     @Test
-    public void testUnscopedName() {
+    public void testAddName() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
 
         // Expected values to be used later in the test.
@@ -118,17 +120,41 @@ public final strictfp class BuilderTest extends TestCase {
         assertSame(builder, builder.addName("Mercator_1SP"));           // OGC
         assertSame(builder, builder.addName("CT_Mercator"));            // GeoTIFF
         builder.onCreate(false);
-        assertEquals(name, builder.properties.get(NAME_KEY));
-        assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
-                (GenericName[]) builder.properties.get(ALIAS_KEY));
+        assertEquals(name, builder.getName());
+        assertArrayEquals(new GenericName[] {alias1, alias2, alias3}, builder.getAliases());
+    }
+
+    /**
+     * Creates a {@link Builder} with <cite>"Mercator (variant A)"</cite> projection (EPSG:9804) names and identifiers.
+     * This method uses scopes for differentiating the EPSG names from the OGC and GeoTIFF ones.
+     *
+     * @param  withNames       {@code true} for adding the names in the builder.
+     * @param  withIdentifiers {@code true} for adding the identifiers in the builder.
+     * @return The builder with Mercator names and/or identifiers.
+     */
+    private static BuilderMock createMercator(final boolean withNames, final boolean withIdentifiers) {
+        final BuilderMock builder = new BuilderMock();
+        assertSame(builder, builder.setCodeSpace(IOGP, "EPSG"));
+        if (withNames) {
+            assertSame(builder, builder.addName(         "Mercator (variant A)")); // EPSG version 7.6 and later.
+            assertSame(builder, builder.addName(         "Mercator (1SP)"));       // EPSG before version 7.6.
+            assertSame(builder, builder.addName(OGC,     "Mercator_1SP"));
+            assertSame(builder, builder.addName(GEOTIFF, "CT_Mercator"));
+        }
+        if (withIdentifiers) {
+            assertSame(builder, builder.addIdentifier(      "9804"));
+            assertSame(builder, builder.addIdentifier(GEOTIFF, "7"));
+        }
+        builder.onCreate(false);
+        return builder;
     }
 
     /**
      * Tests {@link Builder#addName(Citation, CharSequence)} and {@link Builder#addName(CharSequence)} with codespace.
      */
     @Test
-    @DependsOnMethod({"testUnscopedName", "testSetCodeSpace"})
-    public void testScopedName() {
+    @DependsOnMethod({"testAddName", "testSetCodeSpace"})
+    public void testAddNameWithScope() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
 
         // Expected values to be used later in the test.
@@ -142,16 +168,9 @@ public final strictfp class BuilderTest extends TestCase {
         assertEquals("EPSG",                 alias1.scope().name().toString());
 
         // The test.
-        final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.setCodeSpace(OGP, "EPSG"));
-        assertSame(builder, builder.addName(          "Mercator (variant A)"));
-        assertSame(builder, builder.addName(          "Mercator (1SP)"));
-        assertSame(builder, builder.addName(OGC,      "Mercator_1SP"));
-        assertSame(builder, builder.addName(GEOTIFF,  "CT_Mercator"));
-        builder.onCreate(false);
-        assertEquals(name, builder.properties.get(NAME_KEY));
-        assertArrayEquals(new GenericName[] {alias1, alias2, alias3},
-                (GenericName[]) builder.properties.get(ALIAS_KEY));
+        final BuilderMock builder = createMercator(true, false);
+        assertEquals(name, builder.getName());
+        assertArrayEquals(new GenericName[] {alias1, alias2, alias3}, builder.getAliases());
     }
 
     /**
@@ -166,19 +185,93 @@ public final strictfp class BuilderTest extends TestCase {
      * with codespace.
      */
     @Test
-    public void testIdentifiers() {
+    public void testAddIdentifiers() {
         // Expected values to be used later in the test.
-        final Identifier id1 = new ImmutableIdentifier(OGP,     "EPSG",    "9804");
+        final Identifier id1 = new ImmutableIdentifier(IOGP,     "EPSG",    "9804");
         final Identifier id2 = new ImmutableIdentifier(GEOTIFF, "GeoTIFF", "7");
         assertEquals("EPSG:9804", IdentifiedObjects.toString(id1));
         assertEquals("GeoTIFF:7", IdentifiedObjects.toString(id2));
 
         // The test.
-        final BuilderMock builder = new BuilderMock();
-        assertSame(builder, builder.setCodeSpace (OGP,  "EPSG"));
-        assertSame(builder, builder.addIdentifier(      "9804"));
-        assertSame(builder, builder.addIdentifier(GEOTIFF, "7"));
+        final BuilderMock builder = createMercator(false, true);
+        assertArrayEquals(new Identifier[] {id1, id2}, builder.getIdentifiers());
+    }
+
+    /**
+     * Tests {@link Builder#addNamesAndIdentifiers(IdentifiedObject)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod({"testAddNameWithScope", "testAddIdentifiers"})
+    public void testAddNamesAndIdentifiers() {
+        final BuilderMock builder = createMercator(true, true);
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(builder.properties);
+        builder.onCreate(true);
+        for (final Map.Entry<String,?> entry : builder.properties.entrySet()) {
+            final Object value = entry.getValue();
+            switch (entry.getKey()) {
+                case Identifier.AUTHORITY_KEY: {
+                    assertSame("Authority and codespace shall be unchanged.", IOGP, value);
+                    break;
+                }
+                case Identifier.CODESPACE_KEY: {
+                    assertEquals("Authority and codespace shall be unchanged.", "EPSG", value);
+                    break;
+                }
+                default: {
+                    assertNull("Should not contain any non-null value except the authority.", value);
+                    break;
+                }
+            }
+        }
+        assertSame(builder, builder.addNamesAndIdentifiers(object));
         builder.onCreate(false);
-        assertArrayEquals(new Identifier[] {id1, id2}, (Identifier[]) builder.properties.get(IDENTIFIERS_KEY));
+        assertSame       ("name",        object.getName(),                  builder.getName());
+        assertArrayEquals("aliases",     object.getAlias().toArray(),       builder.getAliases());
+        assertArrayEquals("identifiers", object.getIdentifiers().toArray(), builder.getIdentifiers());
+    }
+
+    /**
+     * Tests {@link Builder#rename(Citation, CharSequence[])}.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testAddNamesAndIdentifiers")
+    public void testRename() {
+        final BuilderMock builder = createMercator(true, false);
+
+        // Replace "OGC:Mercator_1SP" and insert a new OGC code before the GeoTIFF one.
+        assertSame(builder, builder.rename(OGC, "Replacement 1", "Replacement 2"));
+        builder.onCreate(false);
+        assertArrayEquals(new String[] {
+            "Mercator (variant A)",
+            "Mercator (1SP)",
+            "OGC:Replacement 1",
+            "OGC:Replacement 2",
+            "GeoTIFF:CT_Mercator"
+        }, builder.getAsStrings(1));
+
+        // Replace "EPSG:Mercator (variant A)" and "(1SP)", and insert a new EPSG code as an alias.
+        assertSame(builder, builder.rename(IOGP, "Replacement 3", "Replacement 4", "Replacement 5"));
+        builder.onCreate(false);
+        assertArrayEquals(new String[] {
+            "Replacement 3",
+            "Replacement 4",
+            "Replacement 5",
+            "OGC:Replacement 1",
+            "OGC:Replacement 2",
+            "GeoTIFF:CT_Mercator"
+        }, builder.getAsStrings(1));
+
+        // Remove all EPSG codes.
+        assertSame(builder, builder.rename(IOGP, (String[]) null));
+        builder.onCreate(false);
+        assertArrayEquals(new String[] {
+            "OGC:Replacement 1",
+            "OGC:Replacement 2",
+            "GeoTIFF:CT_Mercator"
+        }, builder.getAsStrings(1));
     }
 }

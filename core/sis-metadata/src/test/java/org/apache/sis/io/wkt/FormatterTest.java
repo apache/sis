@@ -19,14 +19,12 @@ package org.apache.sis.io.wkt;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.util.CodeList;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.X364;
-import org.apache.sis.test.mock.MatrixMock;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -92,24 +90,6 @@ public final strictfp class FormatterTest extends TestCase {
         extent.setMinimumValue(100.2);
         extent.setMaximumValue(100.8);
         assertWktEquals(Convention.WKT2, "VerticalExtent[100.2, 100.8, LengthUnit[“ft”, 0.3048]]", extent);
-    }
-
-    /**
-     * Tests (indirectly) {@link Formatter#append(Matrix)}.
-     */
-    @Test
-    public void testAppendMatrix() {
-        final Matrix m = new MatrixMock(4, 4,
-                1, 0, 4, 0,
-               -2, 1, 0, 0,
-                0, 0, 1, 7,
-                0, 0, 0, 1);
-        assertWktEquals(
-                "Parameter[“num_row”, 4],\n"    +
-                "Parameter[“num_col”, 4],\n"    +
-                "Parameter[“elt_0_2”, 4.0],\n"  +
-                "Parameter[“elt_1_0”, -2.0],\n"  +
-                "Parameter[“elt_2_3”, 7.0]", m);
     }
 
     /**

@@ -21,7 +21,6 @@ import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.parameter.Parameterized;
 
 
 /**
@@ -54,9 +53,9 @@ public final class ParameterizedAffine extends AffineTransform2D {
     private static final long serialVersionUID = 906346920928432466L;
 
     /**
-     * An object capable to provide the parameters used for creating this transform.
+     * The (presumed immutable) parameters used for creating this transform.
      */
-    public final Parameterized parameters;
+    private final ParameterValueGroup parameters;
 
     /**
      * {@code true} if {@link #parameters} provides an accurate description of this transform, or
@@ -70,11 +69,11 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * Creates a new transform from the given affine and parameters.
      *
      * @param transform    The affine transform to copy.
-     * @param parameters   The parameters to remember.
+     * @param parameters   The parameters to remember. It is caller's responsibility to provide an immutable instance.
      * @param isDefinitive {@code true} if {@code parameters} provides an accurate description of {@code transform}, or
      *                     {@code false} if the transform may be different than the one described by {@code parameters}.
      */
-    public ParameterizedAffine(final AffineTransform transform, final Parameterized parameters, final boolean isDefinitive) {
+    public ParameterizedAffine(final AffineTransform transform, final ParameterValueGroup parameters, final boolean isDefinitive) {
         super(transform);
         this.parameters   = parameters;
         this.isDefinitive = isDefinitive;
@@ -104,7 +103,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return isDefinitive ? parameters.getParameterDescriptors() : super.getParameterDescriptors();
+        return isDefinitive ? parameters.getDescriptor() : super.getParameterDescriptors();
     }
 
     /**
@@ -115,7 +114,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return isDefinitive ? parameters.getParameterValues() : super.getParameterValues();
+        return isDefinitive ? parameters : super.getParameterValues();
     }
 
     /**

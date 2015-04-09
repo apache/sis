@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGC;
-import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGP;
+import static org.apache.sis.metadata.iso.citation.HardCodedCitations.IOGP;
 
 
 /**
@@ -62,7 +62,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
     @BeforeClass
     public static void createParameterDescriptor() {
         ParameterBuilder builder = new ParameterBuilder();
-        builder.setCodeSpace(OGP, "EPSG").setRequired(true);
+        builder.setCodeSpace(IOGP, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
             builder.addName("Latitude of natural origin")      .addName(OGC, "latitude_of_origin").createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
             builder.addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),

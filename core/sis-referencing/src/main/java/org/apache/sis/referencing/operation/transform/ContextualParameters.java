@@ -578,8 +578,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(descriptor, formatter, null);
-        WKTUtilities.append(this, formatter);
+        WKTUtilities.appendParamMT(this, formatter);
         return "Param_MT";
     }
 

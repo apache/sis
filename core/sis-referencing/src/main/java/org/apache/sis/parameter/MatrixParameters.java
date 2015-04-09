@@ -19,12 +19,10 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.ObjectStreamException;
-import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.referencing.provider.EPSGName;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -146,13 +144,13 @@ class MatrixParameters extends TensorParameters<Double> {
      * This method creates:
      *
      * <ul>
-     *   <li>The OGC name (e.g. {@code "elt_1_2"}) as primary name</li>
-     *   <li>The EPSG name (e.g. {@code "B2"}) as an alias</li>
+     *   <li>The OGC name (e.g. {@code "elt_1_2"}) as primary name.</li>
+     *   <li>The alpha-numeric name (e.g. {@code "B2"}) as an alias.</li>
      * </ul>
      *
-     * This method does <strong>not</strong> create the EPSG identifiers (e.g. EPSG:8641) because the primary name
-     * created by this method is not the EPSG name. However the {@link MatrixParametersAlphaNum} subclass uses the
-     * EPSG name as the primary name. Consequently that subclass will create the EPSG identifier.
+     * This method does <strong>not</strong> assign the alpha-numeric names to the EPSG authority in order to avoid
+     * confusion when formatting the parameters as Well Known Text (WKT). However {@link MatrixParametersAlphaNum}
+     * subclass will assign some names to the EPSG authority, as well as their identifier (e.g. EPSG:8641).
      */
     @Override
     protected ParameterDescriptor<Double> createElementDescriptor(final int[] indices) throws IllegalArgumentException {
@@ -161,13 +159,8 @@ class MatrixParameters extends TensorParameters<Double> {
                 new NamedIdentifier(Citations.OGC, Constants.OGC, indicesToName(indices), null, null));
         final String c = indicesToAlias(indices);
         if (c != null) {
-            final GenericName alias;
-            if (isEPSG(indices)) {
-                alias = EPSGName.create(c);
-            } else {
-                alias = new NamedIdentifier(Citations.SIS, Constants.SIS, c, null, null);
-            }
-            properties.put(ParameterDescriptor.ALIAS_KEY, alias);
+            properties.put(ParameterDescriptor.ALIAS_KEY,
+                    new NamedIdentifier(Citations.SIS, Constants.SIS, c, null, null));
         }
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, getDefaultValue(indices));
     }
