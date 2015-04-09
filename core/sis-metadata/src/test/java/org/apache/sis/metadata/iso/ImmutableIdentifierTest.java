@@ -24,6 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -131,13 +132,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     @DependsOnMethod("testConstructorWithStringValues")
     public void testPredefinedCitation() {
         final Map<String,Object> properties = properties();
-        assertNotNull(properties.put(AUTHORITY_KEY, "EPSG"));
+        assertNotNull(properties.put(AUTHORITY_KEY, Constants.EPSG));
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
         assertSame  (AUTHORITY_KEY,   Citations.EPSG,         identifier.getAuthority());
-        assertEquals(CODESPACE_KEY,   "EPSG",                 identifier.getCodeSpace()); // Inferred from authority.
+        assertEquals(CODESPACE_KEY,   Constants.EPSG,         identifier.getCodeSpace()); // Inferred from authority.
         assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
         assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));

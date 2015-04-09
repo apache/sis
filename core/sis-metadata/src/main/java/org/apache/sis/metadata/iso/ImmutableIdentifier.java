@@ -355,7 +355,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
          */
         value = properties.get(CODESPACE_KEY);
         if (value == null && !properties.containsKey(CODESPACE_KEY)) {
-            codeSpace = org.apache.sis.internal.util.Citations.getUnicodeIdentifier(authority);
+            codeSpace = org.apache.sis.internal.util.Citations.getCodeSpace(authority);
         } else if (value instanceof String) {
             codeSpace = trimWhitespaces((String) value);
         } else {

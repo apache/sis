@@ -196,7 +196,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getUnicodeIdentifier(authority);
+        return Citations.getCodeSpace(authority);
     }
 
     /**

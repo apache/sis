@@ -23,12 +23,12 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-cs-6422">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:cs:EPSG::6422</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:cs:EPSG::6422</gml:identifier>
   <gml:name>Latitude (north), Longitude (east)</gml:name>
   <gml:remarks>Used in two-dimensional GeographicCRS.</gml:remarks>
   <gml:axis>
     <gml:CoordinateSystemAxis gml:id="epsg-axis-106" uom="urn:ogc:def:uom:EPSG::9122">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::106</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::106</gml:identifier>
       <gml:name>Geodetic latitude</gml:name>
       <gml:axisAbbrev>φ</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
@@ -39,7 +39,7 @@
   </gml:axis>
   <gml:axis>
     <gml:CoordinateSystemAxis gml:id="epsg-axis-107" uom="urn:ogc:def:uom:EPSG::9122">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::107</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::107</gml:identifier>
       <gml:name>Geodetic longitude</gml:name>
       <gml:axisAbbrev>λ</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
