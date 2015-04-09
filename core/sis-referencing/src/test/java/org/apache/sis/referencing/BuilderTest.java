@@ -109,6 +109,9 @@ public final strictfp class BuilderTest extends TestCase {
         final LocalName alias1 = factory.createLocalName(null, "Mercator (1SP)");
         final LocalName alias2 = factory.createLocalName(null, "Mercator_1SP");
         final LocalName alias3 = factory.createLocalName(null, "CT_Mercator");
+        assertTrue("That name should not have a scope.", alias1.scope().isGlobal());
+        assertTrue("That name should not have a scope.", alias2.scope().isGlobal());
+        assertTrue("That name should not have a scope.", alias3.scope().isGlobal());
         assertEquals("Mercator (1SP)", alias1.toString());
         assertEquals("Mercator_1SP",   alias2.toString());
         assertEquals("CT_Mercator",    alias3.toString());
@@ -162,10 +165,13 @@ public final strictfp class BuilderTest extends TestCase {
         final GenericName alias1 = factory.createLocalName(scope(factory, "EPSG"), "Mercator (1SP)");
         final GenericName alias2 = new NamedIdentifier(OGC,     "Mercator_1SP");
         final GenericName alias3 = new NamedIdentifier(GEOTIFF, "CT_Mercator");
+        assertTrue ("That name should not have a scope.", alias3.scope().isGlobal());
+        assertTrue ("That name should not have a scope.", alias2.scope().isGlobal());
+        assertFalse("That name should be in EPSG scope.", alias1.scope().isGlobal());
+        assertEquals("EPSG",                 alias1.scope().name().toString());
         assertEquals("Mercator (1SP)",       alias1.toString());
         assertEquals("OGC:Mercator_1SP",     alias2.toString());
         assertEquals("GeoTIFF:CT_Mercator",  alias3.toString());
-        assertEquals("EPSG",                 alias1.scope().name().toString());
 
         // The test.
         final BuilderMock builder = createMercator(true, false);

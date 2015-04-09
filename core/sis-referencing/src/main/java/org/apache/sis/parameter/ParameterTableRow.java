@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.FieldPosition;
 import javax.measure.unit.Unit;
-import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -147,14 +146,9 @@ final class ParameterTableRow {
             if (aliases != null) { // Paranoiac check.
                 for (GenericName alias : aliases) {
                     if (!isDeprecated(alias)) {
-                        String codespace = NameToIdentifier.getCodeSpace(alias, locale);
+                        final String codespace = NameToIdentifier.getCodeSpace(alias, locale);
                         if (codespace != null) {
                             alias = alias.tip();
-                        } else {
-                            final NameSpace scope = alias.scope();
-                            if (scope != null && !scope.isGlobal()) {
-                                codespace = NameToIdentifier.toString(scope.name().tip(), locale);
-                            }
                         }
                         if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
                             addIdentifier(codespace, NameToIdentifier.toString(alias, locale));
