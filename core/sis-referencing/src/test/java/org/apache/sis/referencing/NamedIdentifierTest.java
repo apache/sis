@@ -30,7 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.metadata.iso.citation.HardCodedCitations.OGP;
+import static org.apache.sis.metadata.iso.citation.HardCodedCitations.IOGP;
 import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
@@ -49,14 +49,14 @@ public final strictfp class NamedIdentifierTest extends TestCase {
      */
     @Test
     public void testCreateFromCode() {
-        final NamedIdentifier identifier = new NamedIdentifier(OGP, "EPSG", "4326", "8.3", null);
+        final NamedIdentifier identifier = new NamedIdentifier(IOGP, "EPSG", "4326", "8.3", null);
         Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertSame  ("authority",  OGP,   identifier.getAuthority());
+        assertSame  ("authority",  IOGP,  identifier.getAuthority());
         assertEquals("version",   "8.3",  identifier.getVersion());
         assertNull  ("remarks",           identifier.getRemarks());
         assertFalse ("isDeprecated",      identifier.isDeprecated());
@@ -69,8 +69,8 @@ public final strictfp class NamedIdentifierTest extends TestCase {
 
         // Scope (derived from the autority)
         final NameSpace scope = identifier.scope();
-        assertFalse ("scope",        scope.isGlobal());
-        assertEquals("scope", "OGP", scope.name().toString());
+        assertFalse ("scope",         scope.isGlobal());
+        assertEquals("scope", "IOGP", scope.name().toString());
     }
 
     /**
@@ -79,7 +79,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     @Test
     public void testCreateFromName() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "OGP"), null);
+        final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "IOGP"), null);
         final NamedIdentifier identifier = new NamedIdentifier(factory.createGenericName(scope, "EPSG", "4326"));
         Validators.validate((Identifier)  identifier);
         Validators.validate((GenericName) identifier);
@@ -87,7 +87,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertEquals("authority", "OGP",  identifier.getAuthority().getTitle().toString());
+        assertEquals("authority", "IOGP", identifier.getAuthority().getTitle().toString());
         assertNull  ("version",           identifier.getVersion());
         assertNull  ("remarks",           identifier.getRemarks());
         assertFalse ("isDeprecated",      identifier.isDeprecated());

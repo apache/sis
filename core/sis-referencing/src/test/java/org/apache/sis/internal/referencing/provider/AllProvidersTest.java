@@ -19,7 +19,8 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.ServiceLoader;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
@@ -41,34 +42,76 @@ import static org.junit.Assert.*;
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     AffineTest.class,
+    LongitudeRotationTest.class,
     MapProjectionTest.class
 })
 public final strictfp class AllProvidersTest extends TestCase {
     /**
-     * Returns all registered operation methods.
+     * Returns all providers to test.
      */
-    private static Iterable<OperationMethod> methods() {
-        return ServiceLoader.load(OperationMethod.class, AbstractProvider.class.getClassLoader());
+    private static Class<?>[] methods() {
+        return new Class<?>[] {
+            Affine.class,
+            LongitudeRotation.class,
+            Equirectangular.class,
+            Mercator1SP.class,
+            Mercator2SP.class,
+            MercatorSpherical.class,
+            PseudoMercator.class,
+            RegionalMercator.class,
+            MillerCylindrical.class
+        };
     }
 
     /**
      * Ensures that every parameter instance is unique. Actually this test is not strong requirement.
      * This is only for sharing existing resources by avoiding unnecessary objects duplication.
+     *
+     * @throws ReflectiveOperationException if the instantiation of a service provider failed.
      */
     @Test
-    public void ensureParameterUniqueness() {
+    public void ensureParameterUniqueness() throws ReflectiveOperationException {
         final Map<GeneralParameterDescriptor, String> groupNames = new IdentityHashMap<>();
-        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> existings = new HashMap<>();
-        for (final OperationMethod method : methods()) {
+        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<>();
+        final Map<Object, Object> namesAndIdentifiers = new HashMap<>();
+        for (final Class<?> c : methods()) {
+            final OperationMethod method = (OperationMethod) c.newInstance();
             final ParameterDescriptorGroup group = method.getParameters();
-            final String name = group.getName().getCode();
+            final String operationName = group.getName().getCode();
             for (final GeneralParameterDescriptor param : group.descriptors()) {
-                assertFalse("Parameter declared twice in the same group.", name.equals(groupNames.put(param, name)));
-                final GeneralParameterDescriptor existing = existings.put(param, param);
+                assertFalse("Parameter declared twice in the same group.",
+                        operationName.equals(groupNames.put(param, operationName)));
+                /*
+                 * Ensure uniqueness of the parameter descriptor as a whole.
+                 */
+                final Identifier name = param.getName();
+                Object existing = parameters.put(param, param);
                 if (existing != null && existing != param) {
-                    fail("Parameter “" + param.getName().getCode() + "” defined in “" + name + '”'
+                    fail("Parameter “" + name.getCode() + "” defined in “" + operationName + '”'
                             + " was already defined in “" + groupNames.get(existing) + "”."
                             + " The same instance could be shared.");
+                }
+                /*
+                 * Ensure uniqueness of each name and identifier.
+                 */
+                existing = namesAndIdentifiers.put(name, name);
+                if (existing != null && existing != name) {
+                    fail("The name of parameter “" + name.getCode() + "” defined in “" + operationName + '”'
+                            + " was already defined elsewhere. The same instance could be shared.");
+                }
+                for (final GenericName alias : param.getAlias()) {
+                    existing = namesAndIdentifiers.put(alias, alias);
+                    if (existing != null && existing != alias) {
+                        fail("Alias “" + alias + "” of parameter “" + name.getCode() + "” defined in “" + operationName + '”'
+                                + " was already defined elsewhere. The same instance could be shared.");
+                    }
+                }
+                for (final Identifier id : param.getIdentifiers()) {
+                    existing = namesAndIdentifiers.put(id, id);
+                    if (existing != null && existing != id) {
+                        fail("Identifier “" + id + "” of parameter “" + name.getCode() + "” defined in “" + operationName + '”'
+                                + " was already defined elsewhere. The same instance could be shared.");
+                    }
                 }
             }
         }

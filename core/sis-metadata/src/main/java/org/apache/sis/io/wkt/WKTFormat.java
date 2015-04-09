@@ -434,7 +434,6 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Formats the specified object as a Well Know Text. The formatter accepts at least the following types:
      * {@link FormattableObject}, {@link IdentifiedObject},
      * {@link org.opengis.referencing.operation.MathTransform},
-     * {@link org.opengis.referencing.operation.Matrix}
      * {@link org.opengis.metadata.extent.GeographicBoundingBox},
      * {@link org.opengis.metadata.extent.VerticalExtent},
      * {@link org.opengis.metadata.extent.TemporalExtent}

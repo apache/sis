@@ -17,30 +17,31 @@
 package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.AbstractMercator;
+import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
-import org.apache.sis.internal.referencing.provider.PseudoMercator;
+import org.apache.sis.internal.referencing.provider.MercatorSpherical;
+import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.MillerCylindrical;
-import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 
 
 /**
- * <cite>Mercator Cylindrical</cite> projection (EPSG codes 9804, 9805, 1026, 1024, <span class="deprecated">9841</span>).
+ * <cite>Mercator Cylindrical</cite> projection (EPSG codes 9804, 9805, 1026, 1024, 1044, <span class="deprecated">9841</span>).
  * See the <a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a> for an overview.
  *
  * <div class="section">Description</div>
@@ -80,19 +81,28 @@ public class Mercator extends NormalizedProjection {
     private static final long serialVersionUID = 2564172914329253286L;
 
     /**
-     * Same parameter than {@link Mercator2SP#STANDARD_PARALLEL}, but declared as optional
-     * for allowing this class to process <cite>"Mercator (variant A)"</cite> parameters.
+     * Codes for special kinds of Mercator projection. We do not provide such codes in public API because
+     * they duplicate the functionality of {@link OperationMethod} instances. We use them only for convenience.
+     *
+     * <p><b>CONVENTION:</b> Spherical cases must be odd, all other cases must be even. This allow us to perform
+     * quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
      */
-    private static final ParameterDescriptor<Double> STANDARD_PARALLEL = makeOptional(Mercator2SP.STANDARD_PARALLEL);
+    static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
+                      REGIONAL  = 2, MILLER = 4;    // Must be even.
 
     /**
-     * Codes for special kinds of Mercator projection.
-     */
-    static final byte PSEUDO = 1, MILLER = 2;
-
-    /**
-     * 0 if this projection is a standard Mercator, {@link #PSEUDO} if this projection is the "Pseudo Mercator" case.
+     * The type of Mercator projection. Possible values are:
+     * <ul>
+     *   <li>0                  if this projection is a Mercator variant A or B.</li>
+     *   <li>{@link #REGIONAL}  if this projection is the "Mercator (variant C)" case.</li>
+     *   <li>{@link #SPHERICAL} if this projection is the "Mercator (Spherical)" case.</li>
+     *   <li>{@link #PSEUDO}    if this projection is the "Pseudo Mercator" case.</li>
+     *   <li>{@link #MILLER}    if this projection is the "Miller Cylindrical" case.</li>
+     * </ul>
+     *
      * Other cases may be added in the future.
+     *
+     * @see #getType(ParameterDescriptorGroup)
      */
     final byte type;
 
@@ -103,6 +113,8 @@ public class Mercator extends NormalizedProjection {
      * <ul>
      *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
      *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant C)"</cite>.</li>
+     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
      *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
      *   <li><cite>"Miller Cylindrical"</cite>.</li>
      * </ul>
@@ -111,34 +123,60 @@ public class Mercator extends NormalizedProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public Mercator(final OperationMethod method, final Parameters parameters) {
-        super(method, parameters, Mercator2SP.FALSE_EASTING, Mercator2SP.FALSE_NORTHING);
-        double φ1 = toRadians(getAndStore(parameters, STANDARD_PARALLEL));
-        double φ0 = parameters.doubleValue(Mercator2SP.LATITUDE_OF_ORIGIN);
-        double λ0 = getAndStore(parameters, Mercator2SP.CENTRAL_MERIDIAN);
-        double k0 = getAndStore(parameters, Mercator2SP.SCALE_FACTOR);
+        this(method, parameters, getType(parameters.getDescriptor()));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
+        super(method, parameters,
+                (type == SPHERICAL) ? Mercator2SP     .STANDARD_PARALLEL        : null,     // See note below.
+                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : AbstractMercator.FALSE_EASTING,
+                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_NORTHING);
         /*
-         * The "Latitude of origin" is not formally a parameter of Mercator projection, except in variant A (1SP)
-         * where the parameter is included in the EPSG dataset for completeness in CRS labelling but is not allowed
-         * to be assigned any value other than zero.
+         * Note on above Mercator2SP.STANDARD_PARALLEL argument (used for computing radius of conformal sphere):
+         * according the EPSG guide we should rather use Mercator2SP.LATITUDE_OF_ORIGIN. But the later is fixed
+         * to 0° by EPSG guide, which makes radius calculation ineffective when using the official parameters.
+         * Given that we already allow usage of Mercator2SP.STANDARD_PARALLEL (which is not an EPSG parameter)
+         * for compatibility reasons, user who set the standard parallel may expect this latitude to be used for
+         * radius calculation. Using the standard parallel instead than the latitude of origin is also consistent
+         * with what EPSG does for the Equirectangular projection. Anyway, this choice matters only when the user
+         * request explicitely spherical formulas applied on an ellipsoidal figure of the Earth, which should be
+         * very rare.
          */
-        if (!(abs(φ0) <= Formulas.ANGULAR_TOLERANCE)) {   // Use '!' for catching NaN.
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
-                    Mercator2SP.LATITUDE_OF_ORIGIN.getName(), φ0));
-        }
+        this.type = type;
         /*
-         * A correction that allows us to employ a standard parallel that is not correspondent to the equator,
-         * as described in Snyder and al. at page 47. This is the same correction factor than the one applied
-         * for the Mercator (2SP) case, constant "ko" in EPSG:9805.
+         * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
+         * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
+         * for now; it will be converted to radians later.
+         */
+        final double λ0 = getAndStore(parameters, Mercator1SP.CENTRAL_MERIDIAN);
+        /*
+         * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
+         * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
+         * that the value must be zero. The EPSG dataset provides this parameter for "Mercator variant A" (1SP),
+         * but Apache SIS accepts it also for other projections because we found some Well Known Text (WKT) strings
+         * containing it.
          *
-         * The scale correction is multiplied with the global scale, which allows the Apache SIS referencing
-         * module to merge this correction with the scale factor in a single multiplication. In principle we
-         * should never have both the scale factor and a standard parallel. Nevertheless we sometime see such
-         * CRS definitions.
+         * According EPSG documentation, the only exception to the above paragraph is "Mercator variant C", where
+         * the parameter is named "Latitude of false origin" and can have any value. While strictly speaking the
+         * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
+         * for "Latitude of false origin".
          */
-        k0 *= cos(φ1);
-        if (!isSpherical()) {
-            k0 /= rν(sin(φ1));
-        }
+        final double φ0 = toRadians(getAndStore(parameters, (type == REGIONAL)
+                ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
+        /*
+         * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
+         * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while
+         * the later is for projections "1SP" (namely variant A and spherical). However we let users specify both
+         * if they really want, since we sometime see such CRS definitions.
+         */
+        final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
+        double k0 = getAndStore(parameters, Mercator1SP.SCALE_FACTOR);
+        k0 *= cos(φ1) / rν(sin(φ1));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -158,15 +196,12 @@ public class Mercator extends NormalizedProjection {
             offset.multiply(-λ0);
             denormalize.concatenate(0, null, offset);
         }
-        final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
-        if (IdentifiedObjects.isHeuristicMatchForName(descriptor, MillerCylindrical.NAME)) {
+        if (φ0 != 0) {
+            denormalize.concatenate(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+        }
+        if (type == MILLER) {
             normalize  .concatenate(1, new DoubleDouble(0.8),  null);
             denormalize.concatenate(1, new DoubleDouble(1.25), null);
-            type = MILLER;
-        } else if (IdentifiedObjects.isHeuristicMatchForName(descriptor, PseudoMercator.NAME)) {
-            type = PSEUDO;
-        } else {
-            type = 0;
         }
     }
 
@@ -179,13 +214,23 @@ public class Mercator extends NormalizedProjection {
     }
 
     /**
+     * Returns the type of the projection based on the name and identifier of the given parameter group.
+     */
+    private static byte getType(final ParameterDescriptorGroup parameters) {
+        if (identMatch(parameters, RegionalMercator .NAME, RegionalMercator .IDENTIFIER)) return REGIONAL;
+        if (identMatch(parameters, MercatorSpherical.NAME, MercatorSpherical.IDENTIFIER)) return SPHERICAL;
+        if (identMatch(parameters, PseudoMercator   .NAME, PseudoMercator   .IDENTIFIER)) return PSEUDO;
+        if (identMatch(parameters, MillerCylindrical.NAME, null))                         return MILLER;
+        return 0;
+    }
+
+    /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
      * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * {@linkplain #isSpherical() is spherical}. In the later case, {@code this} transform will be replaced by
-     * a simplified implementation.</p>
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
      * @param  factory The factory to use for creating the transform.
      * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -194,7 +239,7 @@ public class Mercator extends NormalizedProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Mercator kernel = this;
-        if (isSpherical() || type == PSEUDO) {
+        if ((type & SPHERICAL) != 0 || excentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -335,9 +380,6 @@ public class Mercator extends NormalizedProjection {
          */
         Spherical(final Mercator other) {
             super(other);
-            if (type != PSEUDO) {
-                ensureSpherical();
-            }
         }
 
         /**
@@ -374,8 +416,9 @@ public class Mercator extends NormalizedProjection {
             /*
              * Following part is common to all spherical projections: verify, store and return.
              */
-            assert (type == PSEUDO) || (Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                    && Assertions.checkTransform(dstPts, dstOff, λ, y)); // dstPts = result from ellipsoidal formulas.
+            assert (excentricity != 0)  // Can not perform the following assertions if excentricity is not zero.
+                   || (Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
+                   && Assertions.checkTransform(dstPts, dstOff, λ, y)); // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
                 dstPts[dstOff  ] = λ;
                 dstPts[dstOff+1] = y;
@@ -427,7 +470,8 @@ public class Mercator extends NormalizedProjection {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             y = PI/2 - 2 * atan(exp(-y));     // Part of Snyder (7-4)
-            assert (type == PSEUDO) || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
+            assert (excentricity != 0)  // Can not perform the following assertion if excentricity is not zero.
+                   || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
         }

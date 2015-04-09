@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -34,7 +35,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -99,7 +99,7 @@ import java.util.Objects;
  * org.opengis.referencing.cs.CoordinateSystem) higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
- * on intend, in order to make clear that those parameters are not used by subclasses.
+ * on intend (except indirectly), in order to make clear that those parameters are not used by subclasses.
  * The ability to recognize two {@code NormalizedProjection}s as {@linkplain #equals(Object, ComparisonMode) equivalent}
  * without consideration for the scale factor (among other) allow more efficient concatenation in some cases
  * (typically some combinations of inverse projection followed by a direct projection).
@@ -189,42 +189,130 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <ul>
      *   <li>On the <b>normalization</b> matrix (to be applied before {@code this} transform):
      *     <ul>
-     *       <li>Nothing. Callers shall invoke {@link ContextualParameters#normalizeGeographicInputs(double)} themselves.</li>
+     *       <li>{@linkplain ContextualParameters#normalizeGeographicInputs(double) Subtract}
+     *           the <cite>central meridian</cite> value.</li>
+     *       <li>Convert from degrees to radians.</li>
      *     </ul>
      *   </li>
      *   <li>On the <b>denormalization</b> matrix (to be applied after {@code this} transform):
      *     <ul>
      *       <li>{@linkplain ContextualParameters#scaleAndTranslate2D(boolean, double, double, double) Scale}
      *           by the <cite>semi-major</cite> axis length.</li>
-     *       <li>Translate by the false easting and false northing (after the scale).</li>
+     *       <li>Translate by the <cite>false easting</cite> and <cite>false northing</cite> (after the scale).</li>
      *     </ul>
      *   </li>
      *   <li>On the <b>contextual parameters</b> (not the parameters of {@code this} transform):
      *     <ul>
      *       <li>Store the values for <cite>semi-major</cite> axis length, <cite>semi-minor</cite> axis length,
-     *           <cite>false easting</cite> and <cite>false northing</cite>.</li>
+     *           <cite>central meridian</cite>, <cite>false easting</cite> and <cite>false northing</cite> values.</li>
      *     </ul>
      *   </li>
      * </ul>
      *
-     * @param method        Description of the map projection parameters.
-     * @param parameters    The parameters of the projection to be created.
-     * @param falseEasting  The descriptor for fetching the <cite>false easting</cite> parameter.
-     * @param falseNorthing The descriptor for fetching the <cite>false northing</cite> parameter.
+     * <div class="section">Pre-requite</div>
+     * The parameters of the given {@code method} argument shall contains descriptor for the given parameters
+     * (using OGC names):
+     * <ul>
+     *   <li>{@code "semi_major"}       (mandatory)</li>
+     *   <li>{@code "semi_minor"}       (mandatory)</li>
+     *   <li>{@code "central_meridian"} (optional, default to 0°)</li>
+     *   <li>{@code "false_easting"}    (optional, default to 0 metre)</li>
+     *   <li>{@code "false_northing"}   (optional, default to 0 metre)</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * Apache SIS uses EPSG names as much as possible, but this constructor is an exception to this rule.
+     * In this particular case we use OGC names because they are identical for a wide range of projections.
+     * For example there is at least two different EPSG names for the <cite>false northing</cite> parameter,
+     * depending on the projection:
+     *
+     * <ul>
+     *   <li><cite>Northing at false origin</cite></li>
+     *   <li><cite>Northing at projection centre</cite></li>
+     * </ul>
+     *
+     * OGC defines only {@code "false_northing"} for all, which makes a convenient name to look for in this
+     * constructor.</div>
+     *
+     * @param method     Description of the map projection parameters.
+     * @param parameters The parameters of the projection to be created.
      */
-    protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
+    protected NormalizedProjection(final OperationMethod method, final Parameters parameters) {
+        this(method, parameters, null,
+                descriptor(method, Constants.FALSE_EASTING),
+                descriptor(method, Constants.FALSE_NORTHING));
+        context.normalizeGeographicInputs(getAndStore(parameters, descriptor(method, Constants.CENTRAL_MERIDIAN)));
+    }
+
+    /**
+     * Returns the parameter descriptor for the given name.
+     * This is a helper method for above constructor only.
+     */
+    private static ParameterDescriptor<Double> descriptor(final OperationMethod method, final String name) {
+        ensureNonNull("method", method);
+        return Parameters.cast((ParameterDescriptor<?>) method.getParameters().descriptor(name), Double.class);
+    }
+
+    /**
+     * Constructs a new map projection by fetching the values using the given parameter descriptors.
+     * At the difference of the {@link #NormalizedProjection(OperationMethod, Parameters)} constructor,
+     * this constructor does <strong>not</strong> apply the following operations:
+     *
+     * <ul>
+     *   <li>Normalization: no operation done. Callers shall invoke
+     *     {@link ContextualParameters#normalizeGeographicInputs(double)} themselves.</li>
+     * </ul>
+     *
+     *
+     * <div class="section">Radius of conformal sphere (Rc)</div>
+     * If the {@code conformalSphereAtφ} argument is non-null, then the radius of the conformal sphere
+     * at latitude φ will be used instead than the semi-major axis length <var>a</var> (<b>Source:</b>
+     * <cite>Geomatics Guidance Note Number 7, part 2, version 49</cite> from EPSG: table 3 in section
+     * 1.2 and explanation in section 1.3.3.1).
+     *
+     * <p><b>Important usage notes:</b><p>
+     * <ul>
+     *   <li>The {@code conformalSphereAtφ} argument shall be non-null <strong>only</strong> when the user
+     *       requested explicitely spherical formulas, for example the <cite>"Mercator (Spherical)"</cite>
+     *       projection (EPSG:1026), but the figure of the Earth is an ellipsoid rather than a sphere.</li>
+     *   <li>This parameter value is <strong>not</strong> stored since we presume that the caller will fetch
+     *       the value for its own processing.</li>
+     * </ul>
+     *
+     * @param conformalSphere_φ If non-null, the the latitude where to compute the radius of conformal sphere.
+     * @param falseEasting      The descriptor for fetching the <cite>"False easting"</cite> parameter.
+     * @param falseNorthing     The descriptor for fetching the <cite>"False northing"</cite> parameter.
+     */
+    NormalizedProjection(final OperationMethod method, final Parameters parameters,
+            final ParameterDescriptor<Double> conformalSphere_φ,
             final ParameterDescriptor<Double> falseEasting,
             final ParameterDescriptor<Double> falseNorthing)
     {
         ensureNonNull("parameters", parameters);
         context = new ContextualParameters(method);
-        final double a  = getAndStore(parameters, MapProjection.SEMI_MAJOR);
+              double a  = getAndStore(parameters, MapProjection.SEMI_MAJOR);
         final double b  = getAndStore(parameters, MapProjection.SEMI_MINOR);
         final double fe = getAndStore(parameters, falseEasting);
         final double fn = getAndStore(parameters, falseNorthing);
-        context.scaleAndTranslate2D(false, a, fe, fn);
-        excentricitySquared = 1.0 - (b*b) / (a*a);
+        final double rs = b / a;
+        excentricitySquared = 1 - (rs * rs);
         excentricity = sqrt(excentricitySquared);
+        if (conformalSphere_φ != null && excentricitySquared != 0) {
+            /*
+             * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
+             * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
+             * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
+             * for Rc given in section 1.2, table 3.
+             *
+             * Table 3 gives:
+             * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
+             *
+             * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
+             */
+            final double sinφ = sin(toRadians(parameters.doubleValue(conformalSphere_φ)));
+            a = b / (1 - excentricitySquared * (sinφ*sinφ));
+        }
+        context.scaleAndTranslate2D(false, a, fe, fn);
         inverse = new Inverse();
     }
 
@@ -242,20 +330,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns a parameter descriptor with the same properties than the given one, except that the parameter is
-     * optional. This is sometime needed when invoking {@link #getAndStore(Parameters, ParameterDescriptor)} for
-     * a parameter value which is mandatory in principle, but may be absent because the parameters for the same
-     * projection may be specified in different ways (for example <cite>"Mercator (variant A)"</cite> versus
-     * <cite>"Mercator (variant B)"</cite>).
+     * Returns {@code true} if the projection specified by the given parameters has the given name or identifier.
+     * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the name.
      *
-     * @param  <T> The type of parameter value.
-     * @param  descriptor The mandatory descriptor to make optional.
-     * @return A parameter descriptor with the same properties than the given one, but optional.
+     * @param  parameters The user-specified parameters.
+     * @param  name       The name to compare against the parameter group name.
+     * @param  identifier The identifier to compare against the parameter group name.
+     * @return {@code true} if the given parameter group has a name or EPSG identifier matching the given ones.
      */
-    static <T> ParameterDescriptor<T> makeOptional(final ParameterDescriptor<T> descriptor) {
-        assert descriptor.getMinimumOccurs() == 1; // This method is useless if minOccurs == 0.
-        return new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(descriptor), 0, 1,
-                descriptor.getValueClass(), Parameters.getValueDomain(descriptor), null, descriptor.getDefaultValue());
+    static boolean identMatch(final ParameterDescriptorGroup parameters, final String name, final String identifier) {
+        if (identifier != null) {
+            for (final Identifier id : parameters.getIdentifiers()) {
+                if (identifier.equals(id.getCode()) && Constants.EPSG.equals(id.getCodeSpace())) {
+                    return true;
+                }
+            }
+        }
+        return IdentifiedObjects.isHeuristicMatchForName(parameters, name);
     }
 
     /**
@@ -266,27 +357,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <p>This method shall be invoked at construction time only.</p>
      */
     final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
-        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        Comparable<Double> check = descriptor.getMinimumValue();
-        if (check instanceof Number && !(value >= ((Number) check).doubleValue())) {
-            throw outOfBounds(descriptor, value);
-        }
-        check = descriptor.getMaximumValue();
-        if (check instanceof Number && !(value <= ((Number) check).doubleValue())) {
-            throw outOfBounds(descriptor, value);
-        }
-        check = descriptor.getDefaultValue();
-        if (check == null || !check.equals(value)) {
-            context.parameter(descriptor.getName().getCode()).setValue(value);
-        }
-        return value;
-    }
-
-    /**
-     * Creates the exception for a parameter value out of bounds.
-     */
-    private static IllegalArgumentException outOfBounds(final ParameterDescriptor<Double> descriptor, double value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2, descriptor.getName(), value));
+        return MapProjection.getAndStore(parameters, context, descriptor);
     }
 
     /**
@@ -303,7 +374,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * Subclasses can override this method if they wish to use alternative implementations under some circumstances.
      * For example many subclasses will replace {@code this} by a specialized implementation if they detect that the
-     * ellipsoid is actually {@linkplain #isSpherical() spherical}.
+     * ellipsoid is actually spherical.
      *
      * @param  factory The factory to use for creating the transform.
      * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
@@ -380,28 +451,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         }
         return new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
                 1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
-    }
-
-    /**
-     * Returns {@code true} if this projection is done on a sphere rather than an ellipsoid.
-     * Projections on spheres have an {@linkplain #excentricity} equals to zero.
-     *
-     * @return {@code true} if this projection is on a sphere.
-     */
-    public final boolean isSpherical() {
-        return excentricity == 0;
-    }
-
-    /**
-     * Ensures that this projection is done on a sphere rather than an ellipsoid.
-     * This method is invoked by constructors of classes implementing only spherical formulas.
-     *
-     * @throws IllegalArgumentException If the projection is not done on a sphere.
-     */
-    final void ensureSpherical() throws IllegalArgumentException {
-        if (!isSpherical()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EllipticalNotSupported));
-        }
     }
 
     /**

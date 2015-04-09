@@ -91,7 +91,7 @@ import java.util.Objects;
  * found in Geographic Markup Language (GML) documents. Example:
  *
  * {@preformat xml
- *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+ *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
  * In Apache SIS, the GML {@code codeSpace} attribute - despite its name - is mapped to the identifier
@@ -446,7 +446,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * code space}, but not necessarily.
      *
      * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
-     * {@link Citations#OGP}, since OGP is the organization maintaining the EPSG geodetic database.</div>
+     * contact information for the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP), since
+     * IOGP is the organization maintaining the EPSG geodetic database.</div>
      *
      * @return The authority, or {@code null} if not available.
      */

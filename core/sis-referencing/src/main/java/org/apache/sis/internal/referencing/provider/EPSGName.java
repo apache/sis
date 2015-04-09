@@ -76,7 +76,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @return An EPSG name or alias for the given string.
      */
     public static NamedIdentifier create(final String code) {
-        return new NamedIdentifier(Citations.OGP, Constants.EPSG, code, VERSION, REMARKS);
+        return new NamedIdentifier(Citations.EPSG, Constants.EPSG, code, VERSION, REMARKS);
     }
 
     /**
@@ -86,7 +86,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @return The EPSG identifier for the given numerical value.
      */
     public static Identifier identifier(final int code) {
-        return new ImmutableIdentifier(Citations.OGP, Constants.EPSG, String.valueOf(code).intern(), VERSION, REMARKS);
+        return new ImmutableIdentifier(Citations.EPSG, Constants.EPSG, String.valueOf(code).intern(), VERSION, REMARKS);
     }
 
     /**

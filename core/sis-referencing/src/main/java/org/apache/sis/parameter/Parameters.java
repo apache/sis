@@ -343,23 +343,32 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
          * was created from an EPSG database, then we want to use the EPSG names instead than the OGC names.
          */
         final String name = getName(parameter);
-        if (parameter.getMinimumOccurs() == 0) {
-            /*
-             * The parameter is optional. We do not want to invoke 'parameter(name)' because we do not want
-             * to create a new parameter if the user did not supplied one.  We search the parameter ourself
-             * (so we don't create any) and return null if we do not find any.
-             *
-             * If we find a parameter,  we can return it directly only if this object is an instance of a known
-             * implementation (currently DefaultParameterValueGroup only), otherwise we do not know if the user
-             * overrode the 'parameter' method  (we do not use Class.getMethod(...).getDeclaringClass() because
-             * it is presumed not worth the cost).  In case of doubt, we delegate to 'parameter(name)'.
-             */
-            final ParameterValue<?> value = parameterIfExist(name);
-            if (value == null || getClass() == DefaultParameterValueGroup.class) {
-                return value;
-            }
+        /*
+         * We do not want to invoke 'parameter(name)' because we do not want to create a new parameter
+         * if the user did not supplied one.  We search the parameter ourself (so we don't create any)
+         * and return null if we do not find any.
+         *
+         * If we find a parameter, we can return it directly only if this object is an instance of a known
+         * implementation (currently DefaultParameterValueGroup and MapProjectionParameters), otherwise we
+         * do not know if the user overrode the 'parameter' method in a way incompatible with this method.
+         * We do not use Class.getMethod(…).getDeclaringClass() because it is presumed not worth the cost.
+         * In case of doubt, we delegate to 'parameter(name)'.
+         */
+        final ParameterValue<?> value = parameterIfExist(name);
+        if (value == null || isKnownImplementation()) {
+            return value;
+        } else {
+            return parameter(name);
         }
-        return parameter(name);
+    }
+
+    /**
+     * Returns {@code true} if this class is an implementation of an instance which is known to not override
+     * {@link #parameter(String)} in a way incompatible with {@link #parameterIfExist(String)}.
+     * The {@link DefaultParameterValueGroup} class needs to override this method.
+     */
+    boolean isKnownImplementation() {
+        return false;
     }
 
     /**

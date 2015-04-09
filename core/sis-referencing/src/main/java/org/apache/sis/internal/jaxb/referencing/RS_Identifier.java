@@ -47,11 +47,11 @@ import org.opengis.metadata.Identifier;
  * Some data producers put a URN instead than a simple code value, as in the example below:
  *
  * {@preformat xml
- *   <gml:identifier codeSpace="OGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+ *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
  * In such case this class takes the codespace as the {@linkplain Identifier#getAuthority() authority}
- * ("OGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional)
+ * ("IOGP" in above example), and the 3 last URI elements are parsed as the codespace, version (optional)
  * and code values respectively.
  *
  * @author  Guilhem Legal (Geomatys)

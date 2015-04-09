@@ -91,7 +91,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     @Override
     public Map<String, Object> readNextRowAsObjects() {
         // TODO: ignore deleted records
-        byte isDeleted = getByteBuffer().get(); // denotes whether deleted or current
+        /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
         // read first part of record
 
         HashMap<String, Object> fieldsValues = new HashMap<>();
