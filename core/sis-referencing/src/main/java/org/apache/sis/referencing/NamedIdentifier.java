@@ -33,12 +33,10 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.metadata.iso.citation.Citations;  // For javadoc
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArgumentChecks;
-
-import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -177,7 +175,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          the authority. The code can not be null.
      */
     public NamedIdentifier(final Citation authority, final CharSequence code) {
-        super(authority, getUnicodeIdentifier(authority), toString(code));
+        super(authority, Citations.getCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {
             name = createName(authority, code);
             isNameSupplied = true; // Because 'code' is an international string.
@@ -257,7 +255,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private GenericName createName(final Citation authority, final CharSequence code) {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final String identifier = getUnicodeIdentifier(authority);      // Whitespaces trimed by Citations.
+        final String identifier = Citations.getCodeSpace(authority);      // Whitespaces trimed by Citations.
         NameSpace scope = null;
         if (identifier != null) {
             synchronized (SCOPES) {

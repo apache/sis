@@ -307,7 +307,7 @@ public abstract class Builder<B extends Builder<B>> {
             return new ImmutableIdentifier(authority, getCodeSpace(), identifier, getVersion(), null);
         } else {
             // Do not use the version information since it applies to the default authority rather than the given one.
-            return new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier);
+            return new ImmutableIdentifier(authority, Citations.getCodeSpace(authority), identifier);
         }
     }
 
