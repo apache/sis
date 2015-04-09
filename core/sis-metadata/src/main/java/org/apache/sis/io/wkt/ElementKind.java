@@ -76,7 +76,7 @@ public enum ElementKind {
     CODE_LIST,
 
     /**
-     * {@linkplain org.apache.sis.parameter.DefaultParameterValue Parameter values},
+     * Name of {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters},
      * often represented by {@code PARAMETER[…]} elements.
      */
     PARAMETER,

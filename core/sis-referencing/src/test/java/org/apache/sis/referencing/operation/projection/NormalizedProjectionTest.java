@@ -43,6 +43,8 @@ import static org.apache.sis.internal.jdk8.JDK8.nextDown;
  * @module
  */
 @DependsOn({
+    // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.
+    // Those parameters are needed by NoOp pseudo-projection, which is used in this class.
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class
 })
 public final strictfp class NormalizedProjectionTest extends TransformTestCase {
@@ -110,11 +112,9 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     public void testExcentricity() {
         NormalizedProjection projection;
         transform = projection = new NoOp(false);
-        assertTrue("isSpherical", projection.isSpherical());
         assertEquals("excentricity", 0.0, projection.excentricity, 0.0);
 
         transform = projection = new NoOp(true);
-        assertFalse("isSpherical", projection.isSpherical());
         assertEquals("excentricity", 0.08181919084262157, projection.excentricity, TOLERANCE);
     }
 

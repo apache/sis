@@ -203,7 +203,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          * but is reproduced here for easier comparison with the test following it.
          */
         final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0);
-        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
         /*
          * When the parameter is part of a larger element, we expect a simplification.
          * Here, the URI should be omitted because it is a long value which does not
@@ -212,7 +212,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         final DefaultParameterDescriptorGroup group = new DefaultParameterDescriptorGroup(
                 Collections.singletonMap(NAME_KEY, "Affine"), 1, 1, descriptor);
         assertWktEquals("ParameterGroup[“Affine”,\n" +
-                        "  Parameter[“A0”, Id[“EPSG”, 8623, Citation[“OGP”]]]]", group);
+                        "  Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”]]]]", group);
     }
 
     /**

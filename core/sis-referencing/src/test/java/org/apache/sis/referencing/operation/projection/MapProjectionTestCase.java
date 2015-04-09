@@ -23,6 +23,7 @@ import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.mock.GeodeticDatumMock;
@@ -38,6 +39,11 @@ import org.apache.sis.test.mock.GeodeticDatumMock;
  */
 strictfp class MapProjectionTestCase extends MathTransformTestCase {
     /**
+     * Tolerance level for comparing formulas on the unitary sphere or ellipsoid.
+     */
+    static final double NORMALIZED_TOLERANCE = 1E-12;
+
+    /**
      * Creates a new test case.
      */
     MapProjectionTestCase() {
@@ -50,7 +56,7 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * @param  ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return The parameters to use for instantiating the projection.
      */
-    static Parameters parameters(final MapProjection provider, final boolean ellipse) {
+    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipse) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
         final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
         parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
@@ -73,12 +79,21 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * This method uses arbitrary central meridian, scale factor, false easting and false northing for increasing
      * the chances to detect a mismatch.
      */
-    final void initialize(final MapProjection provider, final boolean ellipse) throws FactoryException {
+    final void initialize(final DefaultOperationMethod provider, final boolean ellipse,
+            final boolean hasStandardParallel, final boolean hasScaleFactor)
+            throws FactoryException
+    {
         final Parameters parameters = parameters(provider, ellipse);
-        parameters.parameter("central_meridian").setValue(0.5, NonSI.DEGREE_ANGLE);
-        parameters.parameter("scale_factor")    .setValue(0.997);
-        parameters.parameter("false_easting")   .setValue(200);
-        parameters.parameter("false_northing")  .setValue(100);
+        parameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(0.5, NonSI.DEGREE_ANGLE);
+        parameters.parameter(Constants.FALSE_EASTING)   .setValue(200);
+        parameters.parameter(Constants.FALSE_NORTHING)  .setValue(100);
+        if (hasStandardParallel) {
+            parameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(20);
+        }
+        if (hasScaleFactor) {
+            parameters.parameter(Constants.SCALE_FACTOR).setValue(0.997);
+        }
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
+        validate();
     }
 }

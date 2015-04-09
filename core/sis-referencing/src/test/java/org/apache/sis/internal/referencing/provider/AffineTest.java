@@ -83,7 +83,7 @@ public final strictfp class AffineTest extends TestCase {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
         assertWktEquals(
                 "ParameterGroup[“Affine parametric transformation”," +
-                " Id[“EPSG”, 9624, Citation[“OGP”]]]", Affine.parameters(matrix));
+                " Id[“EPSG”, 9624, Citation[“IOGP”]]]", Affine.parameters(matrix));
         /*
          * Try arbitrary values.
          */
@@ -95,7 +95,7 @@ public final strictfp class AffineTest extends TestCase {
                 "  Parameter[“A1”, 2.0, Id[“EPSG”, 8624]],\n"  +
                 "  Parameter[“B1”, 0.0, Id[“EPSG”, 8640]],\n" +
                 "  Parameter[“B2”, -1.0, Id[“EPSG”, 8641]],\n" +
-                "  Id[“EPSG”, 9624, Citation[“OGP”]]]", Affine.parameters(matrix));
+                "  Id[“EPSG”, 9624, Citation[“IOGP”]]]", Affine.parameters(matrix));
         /*
          * Setting a value on the last row make the matrix non-affine.
          * So it should not be anymore EPSG:9624.
