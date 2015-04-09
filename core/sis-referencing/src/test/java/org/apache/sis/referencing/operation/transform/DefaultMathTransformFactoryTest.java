@@ -132,20 +132,11 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
      * @throws NoSuchIdentifierException Should never happen.
      */
     @Test
-    @org.junit.Ignore("Pending port of Equidistant Cylindrical")
     public void testDuplicatedNames() throws NoSuchIdentifierException {
         final DefaultMathTransformFactory factory = factory();
-        final OperationMethod ellipsoidal = factory.getOperationMethod("EPSG:1028");
-        final OperationMethod spherical   = factory.getOperationMethod("EPSG:1029");
-        final OperationMethod deprecated  = factory.getOperationMethod("EPSG:9823");
-        assertSame(spherical, factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
-        assertSame("EPSG:1028 and 1029 are implemented by the same class.", ellipsoidal, spherical);
-        assertSame("Should share the non-deprecated implementation.", ellipsoidal, deprecated);
-
-//      assertFalse(isDeprecated(ellipsoidal, "Equidistant Cylindrical"));
-//      assertFalse(isDeprecated(spherical,   "Equidistant Cylindrical (Spherical)"));
-
-        assertSame(spherical,   factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
-        assertSame(ellipsoidal, factory.getOperationMethod("Equidistant Cylindrical"));
+        final OperationMethod current    = factory.getOperationMethod("EPSG:1029");
+        final OperationMethod deprecated = factory.getOperationMethod("EPSG:9823");
+        assertSame(current, factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
+        assertSame("Should share the non-deprecated implementation.", current, deprecated);
     }
 }

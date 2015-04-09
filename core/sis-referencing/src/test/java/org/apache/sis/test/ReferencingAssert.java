@@ -42,7 +42,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.util.Constants.EPSG;
+import static org.apache.sis.internal.util.Constants.*;
 
 
 /**
@@ -79,7 +79,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
         assertSame("Authority", Citations.OGC, actual.getAuthority());
-        assertIdentifierEquals(null, "OGC", "OGC", null, expected, actual);
+        assertIdentifierEquals(null, OGC, OGC, null, expected, actual);
     }
 
     /**
@@ -95,7 +95,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertNotNull(actual);
         assertEquals("code",       expected, actual.getCode());
         assertEquals("codeSpace",  EPSG,  actual.getCodeSpace());
-        assertEquals("authority", "IOGP", Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("authority",  IOGP,  Citations.getIdentifier(actual.getAuthority()));
         assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }

@@ -51,7 +51,7 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation OGC;
     static {
         final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.OGC)));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
         c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
         c.freeze();
@@ -93,8 +93,8 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation IOGP;
     static {
         final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("IOGP")));
-        c.setIdentifiers(singleton(new DefaultIdentifier("IOGP")));
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.IOGP)));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.IOGP)));
         c.freeze();
         IOGP = c;
     }

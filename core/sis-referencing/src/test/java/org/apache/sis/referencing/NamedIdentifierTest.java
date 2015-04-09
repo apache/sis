@@ -56,7 +56,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertSame  ("authority",  IOGP,   identifier.getAuthority());
+        assertSame  ("authority",  IOGP,  identifier.getAuthority());
         assertEquals("version",   "8.3",  identifier.getVersion());
         assertNull  ("remarks",           identifier.getRemarks());
         assertFalse ("isDeprecated",      identifier.isDeprecated());

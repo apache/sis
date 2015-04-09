@@ -100,7 +100,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>("IOGP", Constants.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.IOGP, Constants.EPSG);
 
     /**
      * The <a href="http://sis.apache.org">Apache SIS</a> project.
