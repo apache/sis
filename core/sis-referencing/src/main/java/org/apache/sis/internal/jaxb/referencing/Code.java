@@ -164,6 +164,8 @@ public final class Code {
                          * is to use the "codeSpace" attribute for the authority ("OGP" or "IOGP" for objects
                          * from the EPSG database). Consequently in the common case where the authority is our
                          * Citations.EPSG constant, we really want the "IOGP" string rather than "EPSG".
+                         *
+                         * See https://issues.apache.org/jira/browse/SIS-196
                          */
                         code.codeSpace = getUnicodeIdentifier(fallback.getAuthority());
                         code.code = urn;

@@ -39,12 +39,12 @@ import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class NamedIdentifierTest extends TestCase {
     /**
-     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String, String, String, InternationalString)}
+     * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String, CharSequence, String, InternationalString)}
      * constructor.
      */
     @Test
@@ -66,11 +66,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("tip",   "4326",      identifier.tip().toString());
         assertEquals("head",  "EPSG",      identifier.head().toString());
         assertEquals("name",  "EPSG:4326", identifier.toString());
-
-        // Scope (derived from the autority)
-        final NameSpace scope = identifier.scope();
-        assertFalse ("scope",         scope.isGlobal());
-        assertEquals("scope", "IOGP", scope.name().toString());
+        assertTrue  ("scope.isGlobal",     identifier.scope().isGlobal());
     }
 
     /**
@@ -98,6 +94,8 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("head",  "EPSG",      identifier.head().toString());
         assertEquals("name",  "EPSG:4326", identifier.toString());
         assertSame  ("scope", scope,       identifier.scope());
+        assertFalse ("scope.isGlobal",     scope.isGlobal());
+        assertEquals("scope", "IOGP",      scope.name().toString());
     }
 
     /**
@@ -138,11 +136,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("name",  "EPSG:name", identifier.toInternationalString().toString(Locale.ENGLISH));
         assertEquals("name",  "EPSG:nom",  identifier.toInternationalString().toString(Locale.FRENCH));
         assertEquals("name",  "EPSG:名前",  identifier.toInternationalString().toString(Locale.JAPANESE));
-
-        // Scope (derived from the autority)
-        final NameSpace scope = identifier.scope();
-        assertFalse ("scope",         scope.isGlobal());
-        assertEquals("scope", "EPSG", scope.name().toString());
+        assertTrue  ("scope.isGlobal",     identifier.scope().isGlobal());
     }
 
     /**
