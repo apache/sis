@@ -33,6 +33,10 @@ import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.LN_INFINITY;
 
+// Branch-specific imports
+import static org.junit.Assume.assumeTrue;
+import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
+
 
 /**
  * Tests the {@link Mercator} projection.
@@ -47,7 +51,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
-     * Returns a new instance of {@link Mercator} for an ellipsoid.
+     * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
@@ -57,7 +61,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         if (!ellipse) {
             transform = new Mercator.Spherical((Mercator) transform);
         }
-        tolerance = 1E-12;
+        tolerance = NORMALIZED_TOLERANCE;
         validate();
     }
 
@@ -172,7 +176,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator1SP()
      */
     @Test
-    @DependsOnMethod("testMercator2SP")  // Because our Mercator implementation checks for Mercator2SP parameters.
+    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testMercator1SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator1SP()).testMercator1SP();
     }
@@ -187,9 +191,39 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercator2SP()
      */
     @Test
-    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
+    @DependsOnMethod("testMercator1SP")
     public void testMercator2SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator2SP()).testMercator2SP();
+    }
+
+    /**
+     * Tests the <cite>"Mercator (variant C)"</cite> case (EPSG:1044).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorVariantC()
+     */
+    @Test
+    @DependsOnMethod("testMercator2SP")
+    public void testRegionalMercator() throws FactoryException, TransformException {
+        assumeTrue(PENDING_NEXT_GEOAPI_RELEASE);   // Test not available in GeoAPI 3.0
+    }
+
+    /**
+     * Tests the <cite>"Mercator (Spherical)"</cite> case (EPSG:1026).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testMercatorSpherical()
+     */
+    @Test
+    @DependsOnMethod("testMercator1SP")
+    public void testMercatorSpherical() throws FactoryException, TransformException {
+        assumeTrue(PENDING_NEXT_GEOAPI_RELEASE);   // Test not available in GeoAPI 3.0
     }
 
     /**
@@ -202,7 +236,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testPseudoMercator()
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
+    @DependsOnMethod("testMercatorSpherical")
     public void testPseudoMercator() throws FactoryException, TransformException {
         createGeoApiTest(new PseudoMercator()).testPseudoMercator();
     }
@@ -241,7 +275,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new Mercator1SP(), false);
+        initialize(new Mercator1SP(), false, false, true);
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }

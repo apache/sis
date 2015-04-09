@@ -16,16 +16,10 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.opengis.util.InternationalString;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.operation.projection.Mercator;
-import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
@@ -57,7 +51,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/miller_cylindrical.html">Miller Cylindrical on RemoteSensing.org</a>
  */
-public final class MillerCylindrical extends MapProjection {
+public final class MillerCylindrical extends AbstractMercator {
     /**
      * For cross-version compatibility.
      */
@@ -71,46 +65,16 @@ public final class MillerCylindrical extends MapProjection {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
-        /*
-         * The remotesensing.org web page said that OGC parameter name should be "longitude_of_center" and
-         * GeoTIFF parameter name should be "ProjCenterLong", but the common practice that we found with a
-         * quick search on the web seems to be the same parameter name than other Mercator projections. So
-         * we keep the later for now. Same argument apply to the latitude of origin parameter.
-         */
-        final ParameterDescriptor<?> centralMeridian = createLongitude(
-                exceptEPSG(Mercator1SP.CENTRAL_MERIDIAN, builder));
-
-        final ParameterDescriptor<?> falseEasting = createShift(
-                exceptEPSG(Mercator1SP.FALSE_EASTING, builder));
-
-        final ParameterDescriptor<?> falseNorthing = createShift(exceptEPSG(
-                Mercator1SP.FALSE_NORTHING, builder));
-        /*
-         * The "latitude of origin" and the "scale factor" are not formally a parameter of the "Miller Cylindrical"
-         * projection. But we declare them as an optional parameters because they are sometime used.
-         */
-        final InternationalString remarks = notFormalParameter(Mercator1SP.NAME, "Miller Cylindrical");
-        final ParameterDescriptor<?> scaleFactor = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
-                .setRemarks(remarks).setRequired(false));
-
-        final ParameterDescriptor<?> latitudeOfOrigin = createLatitude(
-                exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder).setRemarks(remarks), false);
-
         PARAMETERS = builder
             .addName      (NAME)
             .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
             .addIdentifier(Citations.GEOTIFF,  "20")
             .addName      (Citations.PROJ4,    "mill")
             .addIdentifier(Citations.MAP_INFO, "11")
-            .createGroupForMapProjection(
-                    latitudeOfOrigin,
-                    centralMeridian,
-                    scaleFactor, // Not an official parameter, provided for compatibility with those who still use it.
-                    falseEasting,
-                    falseNorthing);
+            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**
@@ -118,25 +82,5 @@ public final class MillerCylindrical extends MapProjection {
      */
     public MillerCylindrical() {
         super(PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type for this map projection.
-     *
-     * @return {@code CylindricalProjection.class}
-     */
-    @Override
-    public Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return The map projection created from the given parameter values.
-     */
-    @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) {
-        return new Mercator(this, parameters);
     }
 }

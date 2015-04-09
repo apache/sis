@@ -57,7 +57,7 @@ final strictfp class NoOp extends NormalizedProjection {
     private NoOp(final Parameters parameters) {
         super(new DefaultOperationMethod(
                 Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
-                2, 2, parameters.getDescriptor()), parameters,
+                2, 2, parameters.getDescriptor()), parameters, null,
                 MapProjection.SEMI_MAJOR,   // Should actually by FALSE_EASTING,  but we do not care for this test.
                 MapProjection.SEMI_MINOR);  // Should actually by FALSE_NORTHING, but we do not care for this test.
     }
