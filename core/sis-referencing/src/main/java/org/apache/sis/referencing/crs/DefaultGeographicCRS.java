@@ -266,7 +266,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      Area["World"],
      *      BBox[-90.00, -180.00, 90.00, 180.00],
      *      Scope["Used by GPS satellite navigation system."]
-     *      Id["EPSG", 4326, Citation["OGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
+     *      Id["EPSG", 4326, Citation["IOGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
      * }
      *
      * <p>Same coordinate reference system using WKT 1.</p>

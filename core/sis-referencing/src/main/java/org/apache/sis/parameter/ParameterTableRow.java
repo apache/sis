@@ -39,6 +39,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.metadata.NameToIdentifier;
@@ -149,20 +150,22 @@ final class ParameterTableRow {
             final Collection<GenericName> aliases = object.getAlias();
             if (aliases != null) { // Paranoiac check.
                 for (GenericName alias : aliases) {
-                    String codespace = NameToIdentifier.getCodeSpace(alias, locale);
-                    if (codespace != null) {
-                        alias = alias.tip();
-                    } else {
-                        final NameSpace scope = alias.scope();
-                        if (scope != null && !scope.isGlobal()) {
-                            codespace = NameToIdentifier.toString(scope.name().tip(), locale);
+                    if (!isDeprecated(alias)) {
+                        String codespace = NameToIdentifier.getCodeSpace(alias, locale);
+                        if (codespace != null) {
+                            alias = alias.tip();
+                        } else {
+                            final NameSpace scope = alias.scope();
+                            if (scope != null && !scope.isGlobal()) {
+                                codespace = NameToIdentifier.toString(scope.name().tip(), locale);
+                            }
                         }
-                    }
-                    if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
-                        addIdentifier(codespace, NameToIdentifier.toString(alias, locale));
-                        name = null;
-                        if (isBrief) {
-                            break;
+                        if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
+                            addIdentifier(codespace, NameToIdentifier.toString(alias, locale));
+                            name = null;
+                            if (isBrief) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -182,9 +185,11 @@ final class ParameterTableRow {
             final Collection<? extends ReferenceIdentifier> ids = object.getIdentifiers();
             if (ids != null) { // Paranoiac check.
                 for (final ReferenceIdentifier id : ids) {
-                    final String codespace = id.getCodeSpace();
-                    if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
-                        addIdentifier(codespace, id); // No .getCode() here.
+                    if (!isDeprecated(id)) {
+                        final String codespace = id.getCodeSpace();
+                        if (preferredCodespaces == null || preferredCodespaces.contains(codespace)) {
+                            addIdentifier(codespace, id); // No .getCode() here.
+                        }
                     }
                 }
             }
@@ -198,6 +203,13 @@ final class ParameterTableRow {
             final Integer p = JDK8.putIfAbsent(remarks, r.toString(locale), n);
             this.remarks = (p != null) ? p : n;
         }
+    }
+
+    /**
+     * Returns {@code true} if the given name or identifier is deprecated.
+     */
+    private static boolean isDeprecated(final Object object) {
+        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
     }
 
     /**
