@@ -41,8 +41,8 @@ public final strictfp class CitationsTest extends TestCase {
         assertSame(ISO,      fromName("ISO"));
         assertSame(OGC,      fromName(Constants.OGC));
         assertSame(EPSG,     fromName(Constants.EPSG));  // This one is important.
-        assertSame(EPSG,     fromName("IOGP"));          // This one is not really needed (and maybe not strictly correct).
-        assertSame(SIS,      fromName("SIS"));
+        assertSame(EPSG,     fromName(Constants.IOGP));  // This one is not really needed (and maybe not strictly correct).
+        assertSame(SIS,      fromName(Constants.SIS));
         assertSame(ESRI,     fromName("ESRI"));
         assertSame(ORACLE,   fromName("Oracle"));
         assertSame(NETCDF,   fromName("NetCDF"));

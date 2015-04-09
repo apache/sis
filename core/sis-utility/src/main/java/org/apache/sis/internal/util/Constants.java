@@ -28,7 +28,7 @@ import org.apache.sis.util.Static;
  * not be used for abbreviations for instance, even if the abbreviation result in the same string.
  *
  * Those constants do not need to be used systematically in tests neither, especially when the test
- * builds its tested object itself.
+ * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -42,7 +42,13 @@ public final class Constants extends Static {
     public static final String EPSG = "EPSG";
 
     /**
-     * The {@value} code space.
+     * The {@value} authority, which is the maintainer of the {@link #EPSG} database.
+     * Used as the EPSG authority, while EPSG is used as the code space.
+     */
+    public static final String IOGP = "IOGP";
+
+    /**
+     * The {@value} authority and code space.
      */
     public static final String OGC = "OGC";
 

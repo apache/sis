@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.Collections;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -88,7 +89,7 @@ public final strictfp class CodeTest extends TestCase {
         final Identifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
         final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
         assertNotNull(value);
-        assertEquals("codeSpace", "IOGP", value.codeSpace);
+        assertEquals("codeSpace", Constants.IOGP, value.codeSpace);
         assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
     }
 
