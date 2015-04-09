@@ -70,7 +70,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * {@preformat java
  *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.setCodeSpace(Citations.OGP, "EPSG")                    // The default namespace to be used below.
+ *   builder.setCodeSpace(Citations.EPSG, "EPSG")                   // The default namespace to be used below.
  *          .setRequired(true);                                     // All parameters will be considered mandatory.
  *
  *   // Constructs the list of parameters.

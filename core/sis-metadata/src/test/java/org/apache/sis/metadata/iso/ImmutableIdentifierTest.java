@@ -43,7 +43,10 @@ import static org.opengis.metadata.Identifier.*;
  * @version 0.4
  * @module
  */
-@DependsOn(DefaultIdentifierTest.class)
+@DependsOn({
+    DefaultIdentifierTest.class,
+    org.apache.sis.metadata.iso.citation.CitationsTest.class
+})
 public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.
@@ -175,8 +178,8 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        final ImmutableIdentifier id = new ImmutableIdentifier(HardCodedCitations.OGP, "EPSG", "4326", "8.2", null);
-        assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”, Citation[“OGP”]]", id);
+        final ImmutableIdentifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
+        assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]]", id);
         assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
     }
 }

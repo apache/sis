@@ -55,7 +55,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *         public static final ParameterDescriptorGroup PARAMETERS;
  *         static {
  *             ParameterBuilder builder = new ParameterBuilder();
- *             builder.setCodeSpace(Citations.OGP, "EPSG").setRequired(true);
+ *             builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);
  *             ParameterDescriptor<?>[] parameters = {
  *                 builder.addName("Latitude of natural origin")    .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
  *                 builder.addName("Longitude of natural origin")   .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),

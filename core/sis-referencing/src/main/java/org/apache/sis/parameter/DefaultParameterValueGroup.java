@@ -131,6 +131,16 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     }
 
     /**
+     * Conservatively returns {@code false} if this instance is for a subclass, because we do not know if the
+     * subclass overrides {@link #parameter(String)} in a way incompatible with {@link #parameterIfExist(String)}.
+     * (note: using {@code Class.getMethod(…).getDeclaringClass()} is presumed not worth the cost.
+     */
+    @Override
+    boolean isKnownImplementation() {
+        return getClass() == DefaultParameterValueGroup.class;
+    }
+
+    /**
      * Returns the abstract definition of this group of parameters.
      *
      * @return The abstract definition of this group of parameters.
@@ -202,6 +212,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+        ArgumentChecks.ensureNonNull("name", name);
         ParameterValue<?> value = parameterIfExist(name);
         if (value == null) {
             /*
@@ -229,10 +240,11 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Returns the value in this group for the specified name if it exists, or {@code null} if none.
      * This method does not create any new {@code ParameterValue} instance.
+     *
+     * @see #isKnownImplementation()
      */
     @Override
-    final ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
+    ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         final ParameterValueList values = this.values; // Protect against accidental changes.
         /*
          * Quick search for an exact match. By invoking 'descriptor(i)' instead of 'get(i)',

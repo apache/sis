@@ -65,6 +65,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.citation.DefaultResponsibilityTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.citation.CitationsTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     org.apache.sis.metadata.iso.extent.DefaultExtentTest.class,
