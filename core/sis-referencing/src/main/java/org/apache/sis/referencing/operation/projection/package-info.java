@@ -36,7 +36,7 @@
  * More on this convention is explained below.</p>
  *
  * <p>Users wanting to know more about the available projections and their parameters should look at the
- * <a href="http://sis.apache.org/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
+ * <a href="http://sis.apache.org/content/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
