@@ -80,7 +80,7 @@ import org.apache.sis.util.resources.Messages;
  * <div class="section">Standard parameters</div>
  * {@code MathTransform} instances are created from {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup
  * parameter values}. The parameters expected by each operation available in a default Apache SIS installation is
- * <a href="http://sis.apache.org/CoordinateOperationMethods.html">listed here</a>.
+ * <a href="http://sis.apache.org/content/CoordinateOperationMethods.html">listed here</a>.
  * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
  * <ul>
