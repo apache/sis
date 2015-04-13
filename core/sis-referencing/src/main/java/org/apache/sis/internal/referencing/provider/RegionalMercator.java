@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 
 
@@ -82,18 +83,20 @@ public class RegionalMercator extends AbstractMercator {
 
         EASTING_AT_FALSE_ORIGIN = createShift(builder
                 .addIdentifier("8826")
-                .addName("Easting at false origin"));
+                .addName("Easting at false origin")
+                .addName(sameNameAs(Citations.OGC, FALSE_EASTING)));
 
         NORTHING_AT_FALSE_ORIGIN = createShift(builder
                 .addIdentifier("8827")
-                .addName("Northing at false origin"));
+                .addName("Northing at false origin")
+                .addName(sameNameAs(Citations.OGC, FALSE_NORTHING)));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
             .addName(NAME)
             .createGroupForMapProjection(
                     Mercator2SP.STANDARD_PARALLEL,
-                    Mercator2SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.CENTRAL_MERIDIAN,
                     LATITUDE_OF_FALSE_ORIGIN,
                     EASTING_AT_FALSE_ORIGIN,
                     NORTHING_AT_FALSE_ORIGIN);

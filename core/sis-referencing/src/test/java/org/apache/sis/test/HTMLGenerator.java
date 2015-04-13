@@ -110,7 +110,7 @@ public abstract class HTMLGenerator implements AutoCloseable {
         out.write("<meta charset=\"" + ENCODING + "\"/>");
         out.newLine();
         println("title", CharSequences.replace(title, "™", ""));
-        openTag   ("style type=\"text/css\" media=\"all\"");
+        openTag("style type=\"text/css\" media=\"all\"");
         println("@import url(\"./reports.css\");");
         closeTags(head);
         openTag("body");
@@ -201,42 +201,32 @@ public abstract class HTMLGenerator implements AutoCloseable {
 
     /**
      * Writes the given text in the given HTML element.
-     * {@code &}, {@code <} and {@code >} characters in {@code value} will be escaped.
+     * The {@code &}, {@code <} and {@code >} characters are <strong>not</strong> escaped.
+     * For escaping those characters, invoke <code>println(tag, {@linkplain #escape(CharSequence) escape}(value))</code>.
      *
-     * @param  element The HTML element without brackets (e.g. {@code "h1"}).
+     * @param  tag The HTML tag without brackets (e.g. {@code "h1"}).
      * @param  value The text to write, or {@code null} for none.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void println(final String element, final CharSequence value) throws IOException {
-        printlnHTML(element, escape(value));
-    }
-
-    /**
-     * Writes the given text in the given HTML element without escaping the characters.
-     * This method can be invoked when the given {@code value} is already valid HTML
-     *
-     * @param  element The HTML element without brackets (e.g. {@code "h1"}).
-     * @param  value The text to write, or {@code null} for none.
-     * @throws IOException if an error occurred while writing to the file.
-     */
-    protected final void printlnHTML(final String element, final CharSequence value) throws IOException {
+    protected final void println(final String tag, final CharSequence value) throws IOException {
         out.write(margin);
         out.write('<');
-        out.write(element);
+        out.write(tag);
         out.write('>');
         if (value != null) {
             out.write(value.toString());
         }
         out.write("</");
-        final int s = element.indexOf(' ');
-        out.write(element, 0, (s >= 0) ? s : element.length());
+        final int s = tag.indexOf(' ');
+        out.write(tag, 0, (s >= 0) ? s : tag.length());
         out.write('>');
         out.newLine();
     }
 
     /**
      * Writes the given text on its own line, then write EOL sequence.
-     * {@code &}, {@code <} and {@code >} characters in {@code value} will be escaped.
+     * The {@code &}, {@code <} and {@code >} characters are <strong>not</strong> escaped.
+     * For escaping those characters, invoke <code>println({@linkplain #escape(CharSequence) escape}(value))</code>.
      *
      * @param  value The text to write, or {@code null} if none.
      * @throws IOException if an error occurred while writing to the file.
@@ -244,7 +234,7 @@ public abstract class HTMLGenerator implements AutoCloseable {
     protected final void println(final CharSequence value) throws IOException {
         if (value != null) {
             out.write(margin);
-            out.write(escape(value).toString());
+            out.write(value.toString());
             out.newLine();
         }
     }

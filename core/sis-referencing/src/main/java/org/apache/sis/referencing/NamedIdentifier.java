@@ -109,9 +109,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     private transient boolean isNameSupplied;
 
     /**
-     * Creates a new identifier from the specified one. This is a copy constructor
-     * which will get the code, codespace, authority, version and the remarks (if
-     * available) from the given identifier.
+     * Creates a new identifier from the specified one. This is a copy constructor which get the code,
+     * codespace, authority, version and the description (if available) from the given identifier.
      *
      * <p>If the given identifier implements the {@link GenericName} interface, then calls to
      * {@link #tip()}, {@link #head()}, {@link #scope()} and similar methods will delegate
@@ -177,7 +176,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * Constructs an identifier from an authority and localizable code,
-     * with an optional version number and remarks.
+     * with an optional version number and description.
      *
      * <p>If the given code is an {@link InternationalString}, then the {@code code.toString(Locale.ROOT)}
      * return value will be used for the {@link #getCode() code} property, and the complete international
@@ -195,13 +194,13 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param version
      *          The version of the associated code space or code as specified by the code authority,
      *          or {@code null} if none.
-     * @param remarks
-     *          Comments on or information about this identifier, or {@code null} if none.
+     * @param description
+     *          Natural language description of the meaning of the code value, or {@code null} if none.
      */
     public NamedIdentifier(final Citation authority, final String codeSpace, final CharSequence code,
-            final String version, final InternationalString remarks)
+            final String version, final InternationalString description)
     {
-        super(authority, codeSpace, toString(code), version, remarks);
+        super(authority, codeSpace, toString(code), version, description);
         if (code instanceof InternationalString) {
             name = createName(authority, codeSpace, code);
             isNameSupplied = true; // Because 'code' is an international string.
