@@ -16,69 +16,54 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import java.util.List;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.referencing.operation.CylindricalProjection;
+import org.opengis.referencing.operation.ConicProjection;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.projection.Mercator;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * Base class of providers for all Mercator projections, and for Mercator-like projections.
+ * Base class of providers for all Lambert Conical projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-class AbstractMercator extends MapProjection {
+class AbstractLambert extends MapProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4478846770971053309L;
+    private static final long serialVersionUID = 4270971056061114243L;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING = Equirectangular.FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = Mercator1SP.FALSE_EASTING;
 
     /**
      * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING = Equirectangular.FALSE_NORTHING;
-
-    /**
-     * Returns the given descriptor as an array, excluding the two first elements which are assumed
-     * to be the axis lengths.This method assumes that all elements in the given list are instances
-     * of {@link ParameterDescriptor}.
-     *
-     * @throws ArrayStoreException if a {@code descriptors} element is not an instance of {@link ParameterDescriptor}.
-     */
-    static ParameterDescriptor<?>[] toArray(List<GeneralParameterDescriptor> descriptors) {
-        descriptors = descriptors.subList(2, descriptors.size());
-        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);  // Intentional array subtype.
-    }
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = Mercator1SP.FALSE_NORTHING;
 
     /**
      * For subclass constructors only.
      */
-    AbstractMercator(final ParameterDescriptorGroup parameters) {
+    AbstractLambert(final ParameterDescriptorGroup parameters) {
         super(parameters);
     }
 
     /**
      * Returns the operation type for this map projection.
      *
-     * @return {@code CylindricalProjection.class}
+     * @return {@code ConicProjection.class}
      */
     @Override
-    public final Class<CylindricalProjection> getOperationType() {
-        return CylindricalProjection.class;
+    public final Class<ConicProjection> getOperationType() {
+        return ConicProjection.class;
     }
 
     /**
@@ -88,6 +73,6 @@ class AbstractMercator extends MapProjection {
      */
     @Override
     protected final NormalizedProjection createProjection(final Parameters parameters) {
-        return new Mercator(this, parameters);
+        return null; // TODO
     }
 }

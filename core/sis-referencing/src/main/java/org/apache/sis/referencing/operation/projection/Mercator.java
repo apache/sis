@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.AbstractMercator;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
@@ -134,8 +133,8 @@ public class Mercator extends NormalizedProjection {
     private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters,
                 (type == SPHERICAL) ? Mercator2SP     .STANDARD_PARALLEL        : null,     // See note below.
-                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : AbstractMercator.FALSE_EASTING,
-                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_NORTHING);
+                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : Mercator1SP.FALSE_EASTING,
+                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : Mercator1SP.FALSE_NORTHING);
         /*
          * Note on above Mercator2SP.STANDARD_PARALLEL argument (used for computing radius of conformal sphere):
          * according the EPSG guide we should rather use Mercator2SP.LATITUDE_OF_ORIGIN. But the later is fixed

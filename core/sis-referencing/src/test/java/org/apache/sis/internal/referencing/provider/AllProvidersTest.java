@@ -59,7 +59,8 @@ public final strictfp class AllProvidersTest extends TestCase {
             MercatorSpherical.class,
             PseudoMercator.class,
             RegionalMercator.class,
-            MillerCylindrical.class
+            MillerCylindrical.class,
+            LambertConformal1SP.class
         };
     }
 
