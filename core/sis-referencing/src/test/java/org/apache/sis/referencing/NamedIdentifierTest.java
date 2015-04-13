@@ -58,8 +58,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
         assertSame  ("authority",  IOGP,  identifier.getAuthority());
         assertEquals("version",   "8.3",  identifier.getVersion());
-        assertNull  ("remarks",           identifier.getRemarks());
-        assertFalse ("isDeprecated",      identifier.isDeprecated());
+        assertNull  ("description",       identifier.getDescription());
 
         // NamedIdentifier properties
         assertEquals("depth",  2,          identifier.depth());
@@ -85,8 +84,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
         assertEquals("authority", "IOGP", identifier.getAuthority().getTitle().toString());
         assertNull  ("version",           identifier.getVersion());
-        assertNull  ("remarks",           identifier.getRemarks());
-        assertFalse ("isDeprecated",      identifier.isDeprecated());
+        assertNull  ("description",       identifier.getDescription());
 
         // NamedIdentifier properties
         assertEquals("depth",  2,          identifier.depth());
@@ -124,8 +122,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
         assertSame  ("authority",  EPSG,  identifier.getAuthority());
         assertNull  ("version",           identifier.getVersion());
-        assertNull  ("remarks",           identifier.getRemarks());
-        assertFalse ("isDeprecated",      identifier.isDeprecated());
+        assertNull  ("description",       identifier.getDescription());
 
         // NamedIdentifier properties
         assertEquals("depth",  2,          identifier.depth());

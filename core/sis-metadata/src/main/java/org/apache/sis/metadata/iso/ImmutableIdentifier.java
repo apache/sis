@@ -25,7 +25,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -39,7 +38,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -129,7 +127,7 @@ import java.util.Objects;
  * @see DefaultIdentifier
  */
 @XmlRootElement(name = "RS_Identifier")
-public class ImmutableIdentifier extends FormattableObject implements Identifier, Deprecable, Serializable {
+public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -179,13 +177,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     private final InternationalString description;
 
     /**
-     * Comments on or information about this identifier, or {@code null} if none.
-     *
-     * @see #getRemarks()
-     */
-    private final InternationalString remarks;
-
-    /**
      * Empty constructor for JAXB.
      */
     private ImmutableIdentifier() {
@@ -194,13 +185,11 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         authority   = null;
         version     = null;
         description = null;
-        remarks     = null;
     }
 
     /**
-     * Creates a new identifier from the specified one. This is a copy constructor
-     * which will get the code, codespace, authority, version and (if available)
-     * the remarks from the given identifier.
+     * Creates a new identifier from the specified one. This is a copy constructor which
+     * get the code, codespace, authority and version from the given identifier.
      *
      * @param identifier The identifier to copy.
      */
@@ -211,11 +200,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         authority   = identifier.getAuthority();
         version     = identifier.getVersion();
         description = identifier.getDescription();
-        if (identifier instanceof Deprecable) {
-            remarks = ((Deprecable) identifier).getRemarks();
-        } else {
-            remarks = null;
-        }
         validate(null);
     }
 
@@ -238,7 +222,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
 
     /**
      * Creates a new identifier from the specified code and authority,
-     * with an optional version number and remarks.
+     * with an optional version number and description.
      *
      * @param authority
      *          Organization or party responsible for definition and maintenance of the code
@@ -252,18 +236,17 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @param version
      *          The version of the associated code space or code as specified by the code authority,
      *          or {@code null} if none.
-     * @param remarks
-     *          Comments on or information about this identifier, or {@code null} if none.
+     * @param description
+     *          Natural language description of the meaning of the code value, or {@code null} if none.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace,
-            final String code, final String version, final InternationalString remarks)
+            final String code, final String version, final InternationalString description)
     {
         this.code        = code;
         this.codeSpace   = codeSpace;
         this.authority   = authority;
         this.version     = version;
-        this.description = null;
-        this.remarks     = remarks;
+        this.description = description;
         validate(null);
     }
 
@@ -306,11 +289,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *     <td>{@link #getDescription()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
-     *     <td>{@link String} or {@link InternationalString}</td>
-     *     <td>{@link #getRemarks()}</td>
-     *   </tr>
-     *   <tr>
      *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
      *     <td>{@link Locale}</td>
      *     <td>(none)</td>
@@ -318,10 +296,10 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * </table>
      *
      * <div class="section">Localization</div>
-     * {@code "remarks"} is a localizable attributes which may have a language and country
-     * code suffix. For example the {@code "remarks_fr"} property stands for remarks in
-     * {@linkplain Locale#FRENCH French} and the {@code "remarks_fr_CA"} property stands
-     * for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+     * {@code "description"} is a localizable attributes which may have a language and country
+     * code suffix. For example the {@code "description_fr"} property stands for description in
+     * {@linkplain Locale#FRENCH French} and the {@code "description_fr_CA"} property stands
+     * for description in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      *
      * <p>The {@code "locale"} property applies only to exception messages, if any.
      * After successful construction, {@code ImmutableIdentifier} instances do not keep the locale
@@ -335,7 +313,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         code        = trimWhitespaces(  property (properties, CODE_KEY,    String.class));
         version     = trimWhitespaces(  property (properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
-        remarks     = Types.toInternationalString(properties, REMARKS_KEY);
         /*
          * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
          */
@@ -490,10 +467,13 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
      * @return Optional comments about this identifier, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getDescription()} for non-deprecated identifiers, or by
+     *             {@link org.apache.sis.util.Deprecable#getRemarks()} for identifiers that may be deprecated.
      */
-    @Override
+    @Deprecated
     public InternationalString getRemarks() {
-        return remarks;
+        return description;
     }
 
     /**
@@ -505,8 +485,11 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @see org.apache.sis.referencing.AbstractIdentifiedObject#isDeprecated()
      *
      * @return {@code true} if this code is deprecated.
+     *
+     * @deprecated Moved to {@link org.apache.sis.util.Deprecable#isDeprecated()} if this
+     *             {@code ImmutableIdentifier} instance implements {@code Deprecable}.
      */
-    @Override
+    @Deprecated
     public boolean isDeprecated() {
         return false;
     }
@@ -539,11 +522,11 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         }
         if (object != null && object.getClass() == getClass()) {
             final ImmutableIdentifier that = (ImmutableIdentifier) object;
-            return Objects.equals(code,      that.code)      &&
-                   Objects.equals(codeSpace, that.codeSpace) &&
-                   Objects.equals(authority, that.authority) &&
-                   Objects.equals(version,   that.version)   &&
-                   Objects.equals(remarks,   that.remarks);
+            return Objects.equals(code,        that.code)      &&
+                   Objects.equals(codeSpace,   that.codeSpace) &&
+                   Objects.equals(authority,   that.authority) &&
+                   Objects.equals(version,     that.version)   &&
+                   Objects.equals(description, that.description);
         }
         return false;
     }

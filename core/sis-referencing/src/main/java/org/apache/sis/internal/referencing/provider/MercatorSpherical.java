@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 
@@ -54,25 +53,14 @@ public final class MercatorSpherical extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        /*
-         * The "Latitude of 1st standard parallel" is not formally a parameter for this map projection.
-         * But we declare it (as an optional parameter) for compatibility with those who still use it.
-         */
-        final ParameterDescriptor<?> standardParallel = createLatitude(builder
-                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL)
-                .setRemarks(notFormalParameter("Mercator (variant B)"))
-                .setRequired(false), false);
-
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
             .addDeprecatedIdentifier("9841", IDENTIFIER)
             .addName(NAME)                                          // Starting from EPSG version 7.6
             .addDeprecatedName("Mercator (1SP) (Spherical)", NAME)  // Prior to EPSG version 7.6
             .createGroupForMapProjection(
-                    standardParallel,                   // Not formally a Mercator Spherical parameter.
                     Mercator1SP.LATITUDE_OF_ORIGIN,
                     Mercator1SP.CENTRAL_MERIDIAN,
-                    Mercator2SP.SCALE_FACTOR,           // Not formally a Mercator Spherical parameter.
                     FALSE_EASTING,
                     FALSE_NORTHING);
     }

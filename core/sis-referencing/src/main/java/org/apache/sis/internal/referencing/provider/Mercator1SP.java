@@ -41,11 +41,6 @@ public final class Mercator1SP extends AbstractMercator {
      */
     private static final long serialVersionUID = -5886510621481710072L;
 
-    /*
-     * ACCESS POLICY: Only formal EPSG parameters shall be public.
-     * Parameters that we add ourselves should be package-privated.
-     */
-
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * In theory, this parameter should not be used and its value should be 0 in all cases.
