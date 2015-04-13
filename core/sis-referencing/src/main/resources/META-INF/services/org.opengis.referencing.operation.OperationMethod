@@ -9,3 +9,4 @@ org.apache.sis.internal.referencing.provider.MercatorSpherical
 org.apache.sis.internal.referencing.provider.PseudoMercator
 org.apache.sis.internal.referencing.provider.RegionalMercator
 org.apache.sis.internal.referencing.provider.MillerCylindrical
+org.apache.sis.internal.referencing.provider.LambertConformal1SP
