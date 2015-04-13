@@ -166,32 +166,26 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      */
     public void writeIndex(final Iterable<? extends OperationMethod> methods) throws IOException {
         printlnHTML("p", "<b>Table of content:</b>");
-        open("ul");
+        final int ul = openTag("ul");
+        int innerUL  = ul + 1;
         int category = 0;
         for (final OperationMethod method : methods) {
             final int nc = category(method);
             if (nc != category) {
-                if (category != 0) {
-                    close("ul");
-                    close("li");
-                }
-                open("li");
+                closeTags(innerUL);
+                reopenTag("li");
                 switch (nc) {
                     case PROJECTION:     println("Projections");    break;
                     case CONVERSION:     println("Conversions");    break;
                     case TRANSFORMATION: println("Tranformations"); break;
                     default: throw new AssertionError(category);
                 }
-                open("ul");
+                innerUL = openTag("ul");
                 category = nc;
             }
             printlnHTML("li", "<a href=\"#" + getAnchor(method) + "\">" + escape(method.getName().getCode()) + "</a>");
         }
-        if (category != 0) {
-            close("ul");
-            close("li");
-        }
-        close("ul");
+        closeTags(ul);
     }
 
     /**
@@ -202,10 +196,10 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      */
     public void write(final OperationMethod method) throws IOException {
         println("h2 id=\"" + getAnchor(method) + '"', method.getName().getCode());
-        open("blockquote");
+        final int blockquote = openTag("blockquote");
         writeIdentification(method);
         writeParameters(method.getParameters());
-        close("blockquote");
+        closeTags(blockquote);
     }
 
     /**
@@ -219,7 +213,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * </ul>
      */
     private void writeIdentification(final OperationMethod method) throws IOException {
-        open("table class=\"info\"");
+        final int table = openTag("table class=\"info\"");
         /*
          * ────────────────    EPSG IDENTIFIERS    ────────────────────────────────────
          */
@@ -240,10 +234,10 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             }
         }
         if (buffer.length() != 0) {
-            open("tr");
+            final int tr = openTag("tr");
             println("th", "EPSG code:");
             printlnHTML("td", buffer);
-            close("tr");
+            closeTags(tr);
         }
         /*
          * ────────────────    ALIASES    ─────────────────────────────────────────────
@@ -262,10 +256,10 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             }
         }
         if (buffer.length() != 0) {
-            open("tr");
+            final int tr = openTag("tr");
             println("th", "Aliases:");
             printlnHTML("td", buffer);
-            close("tr");
+            closeTags(tr);
         }
         /*
          * ────────────────    DOMAIN OF VALIDITY    ──────────────────────────────────
@@ -273,15 +267,14 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
         buffer.setLength(0);
         final DefaultGeographicBoundingBox domain = getDomainOfValidity(method);
         if (domain != null) {
-            open("tr");
+            openTag("tr");
             println("th", "Domain of validity:");
             println("td", buffer.append(new Latitude (domain.getSouthBoundLatitude())).append(" to ")
                                 .append(new Latitude (domain.getNorthBoundLatitude())).append(" and ")
                                 .append(new Longitude(domain.getWestBoundLongitude())).append(" to ")
                                 .append(new Longitude(domain.getEastBoundLongitude())));
-            close("tr");
         }
-        close("table");
+        closeTags(table);
     }
 
     /**
@@ -297,9 +290,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * </ul>
      */
     private void writeParameters(final ParameterDescriptorGroup group) throws IOException {
-        open   ("table class=\"param\"");
+        int table = openTag("table class=\"param\"");
         println("caption", "Operation parameters:");
-        open   ("tr");
+        openTag("tr");
         println("th", "EPSG");
         println("th class=\"sep\"", "Name");
         println("th class=\"sep\"", "Remarks");
@@ -308,7 +301,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
         final Map<String, Integer> footnotes = new LinkedHashMap<>();
         for (final GeneralParameterDescriptor gp : group.descriptors()) {
             final ParameterDescriptor<?> param = (ParameterDescriptor<?>) gp;
-            reopen ("tr", "tr");
+            reopenTag("tr");
             println("td", getFirstEpsgCode(param.getIdentifiers()));
             writeName(param);
             String remarks = toLocalizedString(param.getRemarks());
@@ -331,17 +324,15 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             }
             println("td class=\"sep\"", getDefaultValue(param, getUnit(param)));
         }
-        close("tr");
-        close("table");
+        closeTags(table);
         if (!footnotes.isEmpty()) {
-            open("table class=\"footnotes\"");
+            table = openTag("table class=\"footnotes\"");
             for (final Map.Entry<String,Integer> entry : footnotes.entrySet()) {
-                open("tr");
+                reopenTag("tr");
                 println("td", String.valueOf(toSuperScript(entry.getValue())));
                 println("td", entry.getKey());
-                close("tr");
             }
-            close("table");
+            closeTags(table);
         }
     }
 
@@ -349,8 +340,8 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * Writes the primary name and aliases.
      */
     private void writeName(final ParameterDescriptor<?> param) throws IOException {
-        open("td class=\"sep\"");
-        open("details");
+        final int td = openTag("td class=\"sep\"");
+        openTag("details");
         final Identifier name = param.getName();
         final String codeSpace = name.getCodeSpace();
         if (Constants.EPSG.equalsIgnoreCase(codeSpace)) {
@@ -359,16 +350,13 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             printlnHTML("summary", "<span class=\"non-epsg\">" + codeSpace
                     + ":</span><code>" + name.getCode() + "</code>");
         }
-        open("table class=\"aliases\"");
+        openTag("table class=\"aliases\"");
         for (final GenericName alias : param.getAlias()) {
-            open("tr");
+            reopenTag("tr");
             println("th", alias.head().toString() + ':');
             println("td", alias.tip().toString());
-            close("tr");
         }
-        close("table");
-        close("details");
-        close("td");
+        closeTags(td);
     }
 
     /**
