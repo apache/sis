@@ -60,7 +60,9 @@ public final strictfp class AllProvidersTest extends TestCase {
             PseudoMercator.class,
             RegionalMercator.class,
             MillerCylindrical.class,
-            LambertConformal1SP.class
+            LambertConformal1SP.class,
+            LambertConformal2SP.class,
+            LambertConformalBelgium.class
         };
     }
 

@@ -53,7 +53,7 @@ public class RegionalMercator extends AbstractMercator {
     public static final String IDENTIFIER = "1044";
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of false origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Latitude of false origin</cite> (φf) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_FALSE_ORIGIN;
@@ -77,19 +77,20 @@ public class RegionalMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_FALSE_ORIGIN = createLatitude(builder
+        LATITUDE_OF_FALSE_ORIGIN = createLatitude(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder
                 .addIdentifier("8821")
-                .addName("Latitude of false origin"), false);
+                .addName("Latitude of false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginLat"), false);
 
-        EASTING_AT_FALSE_ORIGIN = createShift(builder
+        EASTING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_EASTING, builder
                 .addIdentifier("8826")
-                .addName("Easting at false origin")
-                .addName(sameNameAs(Citations.OGC, FALSE_EASTING)));
+                .addName("Easting at false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginEasting"));
 
-        NORTHING_AT_FALSE_ORIGIN = createShift(builder
+        NORTHING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_NORTHING, builder
                 .addIdentifier("8827")
-                .addName("Northing at false origin")
-                .addName(sameNameAs(Citations.OGC, FALSE_NORTHING)));
+                .addName("Northing at false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)

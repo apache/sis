@@ -94,7 +94,8 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
     /**
      * Values returned by {@link #category(OperationMethod)}.
      */
-    private static final int PROJECTION = 1, CONVERSION = 2, TRANSFORMATION = 3;
+    private static final int CYLINDRICAL_PROJECTION = 1, CONIC_PROJECTION = 2,
+            PLANAR_PROJECTION = 3, CONVERSION = 4, TRANSFORMATION = 5;
 
     /**
      * Parameters to default to the latitude of origin. We can hardly detect those cases
@@ -103,9 +104,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToLatitudeOfOrigin[] = {
-//      AlbersEqualArea            .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
-//      LambertConformal2SP        .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
-//      LambertConformal2SP.Belgium.PARAMETERS.descriptor("Latitude of 1st standard parallel")
+//      AlbersEqualArea        .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
+        LambertConformal2SP    .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
+        LambertConformalBelgium.PARAMETERS.descriptor("Latitude of 1st standard parallel")
     };
 
     /**
@@ -115,9 +116,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToStandardParallel1[] = {
-//      AlbersEqualArea            .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
-//      LambertConformal2SP        .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
-//      LambertConformal2SP.Belgium.PARAMETERS.descriptor("Latitude of 2nd standard parallel")
+//      AlbersEqualArea        .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
+        LambertConformal2SP    .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
+        LambertConformalBelgium.PARAMETERS.descriptor("Latitude of 2nd standard parallel")
     };
 
     /**
@@ -151,21 +152,22 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public CoordinateOperationMethodsHTML() throws IOException {
-        super("CoordinateOperationMethods.html", "Apache SIS™ Coordinate Operation Methods");
+        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods");
         domainOfValidity = Collections.emptyMap(); // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
-        int p = openTag("p");
+        final int header = openTag("header");
+        println("h1", "Apache SIS™ Coordinate Operation Methods");
+        openTag("p");
         println("The following tables summarize the coordinate operation methods known to Apache SIS, together with the recognized parameters.");
         println("Unless otherwise noticed, all parameters are mandatory");
         println("(in the sense that they should always be shown in forms, regardless of whether they have default value),");
         println("but two of them are handled in a special way: the <code>semi-major</code> and <code>semi-minor</code> parameters.");
         println("Those two parameters are needed for all map projections, but usually do not need to be specified explicitely since they are inferred from the ellipsoid.");
         println("The only exception is when <a href=\"http://sis.apache.org/apidocs/org/apache/sis/referencing/operation/transform/DefaultMathTransformFactory.html\">creating parameterized transforms directly</a>.");
-        closeTags(p);
-        p = openTag("p");
+        reopenTag("p");
         println("All map projections support also implicit <code>earth_radius</code> and <code>inverse_flattening</code> parameters (not shown below).");
         println("Read and write operations on those implicit parameters are delegated to the <code>semi-major</code> and <code>semi-minor</code> parameters.");
-        closeTags(p);
+        closeTags(header);
     }
 
     /**
@@ -175,9 +177,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public void writeIndex(final Iterable<? extends OperationMethod> methods) throws IOException {
+        final int nav = openTag("nav");
         println("p", "<b>Table of content:</b>");
-        final int ul = openTag("ul");
-        int innerUL  = ul + 1;
+        int innerUL  = openTag("ul") + 1;
         int category = 0;
         for (final OperationMethod method : methods) {
             final int nc = category(method);
@@ -185,9 +187,11 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
                 closeTags(innerUL);
                 reopenTag("li");
                 switch (nc) {
-                    case PROJECTION:     println("Projections");    break;
-                    case CONVERSION:     println("Conversions");    break;
-                    case TRANSFORMATION: println("Tranformations"); break;
+                    case CYLINDRICAL_PROJECTION: println("Cylindrical projections"); break;
+                    case CONIC_PROJECTION:       println("Conic projections");       break;
+                    case PLANAR_PROJECTION:      println("Planar projections");      break;
+                    case CONVERSION:             println("Conversions");             break;
+                    case TRANSFORMATION:         println("Tranformations");          break;
                     default: throw new AssertionError(category);
                 }
                 innerUL = openTag("ul");
@@ -195,7 +199,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             }
             println("li", "<a href=\"#" + getAnchor(method) + "\">" + escape(method.getName().getCode()) + "</a>");
         }
-        closeTags(ul);
+        closeTags(nav);
     }
 
     /**
@@ -205,11 +209,15 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public void write(final OperationMethod method) throws IOException {
+        final int article = openTag("article");
+        final int header = openTag("header");
         println("h2 id=\"" + getAnchor(method) + '"', escape(method.getName().getCode()));
+        closeTags(header);
         final int blockquote = openTag("blockquote");
         writeIdentification(method);
         writeParameters(method.getParameters());
         closeTags(blockquote);
+        closeTags(article);
     }
 
     /**
@@ -487,9 +495,11 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      */
     private static int category(final OperationMethod method) {
         final Class<?> c = ((DefaultOperationMethod) method).getOperationType();
-        if (Projection    .class.isAssignableFrom(c)) return PROJECTION;
-        if (Conversion    .class.isAssignableFrom(c)) return CONVERSION;
-        if (Transformation.class.isAssignableFrom(c)) return TRANSFORMATION;
+        if (CylindricalProjection.class.isAssignableFrom(c)) return CYLINDRICAL_PROJECTION;
+        if (ConicProjection      .class.isAssignableFrom(c)) return CONIC_PROJECTION;
+        if (PlanarProjection     .class.isAssignableFrom(c)) return PLANAR_PROJECTION;
+        if (Conversion           .class.isAssignableFrom(c)) return CONVERSION;
+        if (Transformation       .class.isAssignableFrom(c)) return TRANSFORMATION;
         return 0;
     }
 

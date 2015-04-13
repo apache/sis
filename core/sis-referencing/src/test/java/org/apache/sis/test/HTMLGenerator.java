@@ -80,10 +80,10 @@ public abstract class HTMLGenerator implements AutoCloseable {
 
     /**
      * Creates a new instance which will write in the given file.
-     * This constructor immediately writes the HTML header up to the {@code <h1>} line, inclusive.
+     * This constructor immediately writes the HTML header up to the {@code <body>} line, inclusive.
      *
      * @param  filename The name of the file where to write.
-     * @param  title The document title and the title to write as {@code <h1>} line.
+     * @param  title The document title.
      * @throws IOException if the file can not be created (e.g. because it already exists).
      */
     protected HTMLGenerator(final String filename, final String title) throws IOException {
@@ -109,12 +109,11 @@ public abstract class HTMLGenerator implements AutoCloseable {
         out.write(margin);
         out.write("<meta charset=\"" + ENCODING + "\"/>");
         out.newLine();
-        println("title", CharSequences.replace(title, "™", ""));
+        println("title", title);
         openTag("style type=\"text/css\" media=\"all\"");
         println("@import url(\"./reports.css\");");
         closeTags(head);
         openTag("body");
-        println("h1", title);
     }
 
     /**
