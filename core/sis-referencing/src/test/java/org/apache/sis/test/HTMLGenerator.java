@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test;
 
+import java.util.Deque;
+import java.util.ArrayDeque;
 import java.util.Locale;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,6 +74,11 @@ public abstract class HTMLGenerator implements AutoCloseable {
     private String margin = "";
 
     /**
+     * HTML tags currently opened.
+     */
+    private final Deque<String> openedTags;
+
+    /**
      * Creates a new instance which will write in the given file.
      * This constructor immediately writes the HTML header up to the {@code <h1>} line, inclusive.
      *
@@ -84,6 +91,7 @@ public abstract class HTMLGenerator implements AutoCloseable {
         if (file.exists()) {
             throw new IOException("File " + file.getAbsolutePath() + " already exists.");
         }
+        openedTags = new ArrayDeque<>();
         out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), ENCODING));
         out.write("<!DOCTYPE html>");
         out.newLine();
@@ -96,17 +104,16 @@ public abstract class HTMLGenerator implements AutoCloseable {
         out.newLine();
         out.write("-->");
         out.newLine();
-        open   ("html");
-        open   ("head");
+        openTag("html");
+        final int head = openTag("head");
         out.write(margin);
         out.write("<meta charset=\"" + ENCODING + "\"/>");
         out.newLine();
         println("title", CharSequences.replace(title, "™", ""));
-        open   ("style type=\"text/css\" media=\"all\"");
+        openTag   ("style type=\"text/css\" media=\"all\"");
         println("@import url(\"./reports.css\");");
-        close  ("style");
-        close  ("head");
-        open   ("body");
+        closeTags(head);
+        openTag("body");
         println("h1", title);
     }
 
@@ -124,51 +131,72 @@ public abstract class HTMLGenerator implements AutoCloseable {
     }
 
     /**
-     * Opens a new HTML element and increase the indentation.
+     * Return the given HTML tag without the attributes. For example if {@code tag} is
+     * {@code "table class='param'"}, then this method returns only {@code "table"}.
+     */
+    private static String omitAttributes(String tag) {
+        final int s = tag.indexOf(' ');
+        if (s >= 0) {
+            tag = tag.substring(0, s);
+        }
+        return tag;
+    }
+
+    /**
+     * Opens a new HTML tag and increase the indentation.
      *
-     * @param  element The HTML element without brackets (e.g. {@code "h2"}).
+     * @param  tag The HTML tag without brackets (e.g. {@code "h2"}).
+     * @return The value to give to {@link #closeTags(int)} for closing the tags.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void open(final String element) throws IOException {
+    protected final int openTag(final String tag) throws IOException {
         out.write(margin);
         out.write('<');
-        out.write(element);
+        out.write(tag);
         out.write('>');
         out.newLine();
         margin = CharSequences.spaces(margin.length() + INDENTATION).toString();
+        final int openedTag = openedTags.size();
+        openedTags.add(omitAttributes(tag));
+        return openedTag;
     }
 
     /**
-     * Closes a HTML element an opens a new one on the same line.
+     * Closes the last HTML tag if it is equals to the given element, and opens a new tag on the same line.
      *
-     * @param  previous The HTML element to close, without brackets.
-     * @param  element  The HTML element without brackets (e.g. {@code "h2"}).
+     * @param  tag The HTML tag without brackets (e.g. {@code "h2"}).
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void reopen(final String previous, final String element) throws IOException {
-        out.write(CharSequences.spaces(margin.length() - INDENTATION).toString());
-        out.write("</");
-        out.write(previous);
-        out.write("><");
-        out.write(element);
-        out.write('>');
-        out.newLine();
+    protected final void reopenTag(final String tag) throws IOException {
+        final String tagWithoutAttributes = omitAttributes(tag);
+        if (openedTags.getLast().equals(tagWithoutAttributes)) {
+            out.write(CharSequences.spaces(margin.length() - INDENTATION).toString());
+            out.write("</");
+            out.write(tagWithoutAttributes);
+            out.write("><");
+            out.write(tag);
+            out.write('>');
+            out.newLine();
+        } else {
+            openTag(tag);
+        }
     }
 
     /**
-     * Closes a HTML element and decrease the indentation. The {@code previous} argument must matches
-     * the argument given to the last call to {@link #open(String)}.
+     * Closes the HTML tag identified by the given number, together will all child tags.
      *
-     * @param  previous The HTML element without brackets (e.g. {@code "h2"}).
+     * @param  openedTag The value returned by the {@link #openTag(String)} matching the tag to close.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void close(final String previous) throws IOException {
-        margin = CharSequences.spaces(margin.length() - INDENTATION).toString();
-        out.write(margin);
-        out.write("</");
-        out.write(previous);
-        out.write('>');
-        out.newLine();
+    protected final void closeTags(final int openedTag) throws IOException {
+        while (openedTags.size() != openedTag) {
+            margin = CharSequences.spaces(margin.length() - INDENTATION).toString();
+            out.write(margin);
+            out.write("</");
+            out.write(openedTags.removeLast());
+            out.write('>');
+            out.newLine();
+        }
     }
 
     /**
@@ -228,8 +256,7 @@ public abstract class HTMLGenerator implements AutoCloseable {
      */
     @Override
     public void close() throws IOException {
-        close("body");
-        close("html");
+        closeTags(0);
         out.close();
     }
 
