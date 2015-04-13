@@ -83,9 +83,12 @@ public final class Mercator2SP extends AbstractMercator {
         /*
          * Remove the EPSG name and identifier at least for the scale factor, because its meaning does not fit well
          * in this context. The EPSG name is "Scale factor at natural origin" while actually the scale factor applied
-         * here would rather be at the standard parallel.
+         * here would rather be at the standard parallel. We keep the OGC, ESRI and Proj.4 names because they are just
+         * "scale_factor" or "k", which is vague enough for the purpose of this non-standard parameter.
          */
         SCALE_FACTOR = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
+                .rename(Citations.NETCDF,  (String[]) null)  // "scale_factor_at_projection_origin" is too specific.
+                .rename(Citations.GEOTIFF, (String[]) null)  // "ScaleAtNatOrigin" is too specific.
                 .setRemarks(remarks).setDeprecated(true));
 
         PARAMETERS = builder.setDeprecated(false)
