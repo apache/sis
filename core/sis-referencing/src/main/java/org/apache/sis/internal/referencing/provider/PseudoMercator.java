@@ -37,11 +37,6 @@ public final class PseudoMercator extends AbstractMercator {
     private static final long serialVersionUID = -8126827491349984471L;
 
     /**
-     * The name of this operation method.
-     */
-    public static final String NAME = "Popular Visualisation Pseudo Mercator";
-
-    /**
      * The EPSG identifier, to be preferred to the name when available.
      */
     public static final String IDENTIFIER = "1024";
@@ -54,7 +49,7 @@ public final class PseudoMercator extends AbstractMercator {
         final ParameterBuilder builder = builder();
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
-            .addName(NAME)
+            .addName("Popular Visualisation Pseudo Mercator")
             .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 

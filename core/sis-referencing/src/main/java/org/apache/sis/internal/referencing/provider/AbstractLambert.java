@@ -20,6 +20,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.ConicProjection;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.projection.LambertConformal;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
@@ -73,6 +74,6 @@ class AbstractLambert extends MapProjection {
      */
     @Override
     protected final NormalizedProjection createProjection(final Parameters parameters) {
-        return null; // TODO
+        return new LambertConformal(this, parameters);
     }
 }

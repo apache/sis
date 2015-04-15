@@ -37,12 +37,18 @@ import static java.lang.Math.*;
 
 
 /**
- * The provider for "<cite>Equidistant Cylindrical (Spherical)</cite>" projection
+ * The provider for <cite>"Equidistant Cylindrical (Spherical)"</cite> projection
  * (EPSG:1029, <span class="deprecated">EPSG:9823</span>).
+ * In the particular case where the longitude of origin and the standard parallel are 0°,
+ * this projection is also known as <cite>"Plate Carrée"</cite>.
  *
- * At the difference of most other map projection providers, this class does not extend {@link MapProjection}
+ * <p>At the difference of most other map projection providers, this class does not extend {@link MapProjection}
  * because it does not create non-liner kernel. Instead, the projection created by this class is implemented
- * by an affine transform.
+ * by an affine transform.</p>
+ *
+ * <p>We do not provide <cite>"Pseudo Plate Carrée"</cite> projection (EPSG:9825) at this time because that
+ * pseudo-projection is only the identity transform. Even the semi-major and semi-minor axis lengths are set
+ * to 1.</p>
  *
  * <p>This provider is <strong>not</strong> suitable for the <cite>Equidistant Cylindrical</cite> projection
  * (EPSG:1028, <span class="deprecated">EPSG:9842</span>). EPSG defines Equidistant Cylindrical projection as
@@ -174,6 +180,7 @@ public final class Equirectangular extends AbstractProvider {
             .addName(                   "Equidistant Cylindrical (Spherical)")
             .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
             .addName(Citations.OGC,     "Equirectangular")
+            .addName(Citations.ESRI,    "Plate_Carree")
             .addName(Citations.GEOTIFF, "CT_Equirectangular")
             .addName(Citations.PROJ4,   "eqc")
             .addIdentifier(Citations.GEOTIFF, "17")
@@ -203,6 +210,26 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
+     * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
+     *
+     * @param  source     The parameters from which to read the value.
+     * @param  target     Where to store the parameter values.
+     * @param  descriptor The descriptor that specify the parameter names and desired units.
+     * @return The parameter value in the units given by the descriptor.
+     * @throws IllegalArgumentException if the given value is out of bounds.
+     */
+    private static double getAndStore(final Parameters source, final ParameterValueGroup target,
+            final ParameterDescriptor<Double> descriptor) throws IllegalArgumentException
+    {
+        final double value = source.doubleValue(descriptor);    // Apply a unit conversion if needed.
+        MapProjection.validate(descriptor, value);              // Unconditional validation for semi-axes.
+        if (value != 0) {                                       // All default values in this class are zero.
+            target.parameter(descriptor.getName().getCode()).setValue(value);
+        }
+        return value;
+    }
+
+    /**
      * Creates an Equirectangular projection from the specified group of parameter values. This method is an
      * adaptation of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} constructor,
      * reproduced in this method because we will create an affine transform instead than the usual projection
@@ -219,13 +246,13 @@ public final class Equirectangular extends AbstractProvider {
     {
         final Parameters p = Parameters.castOrWrap(parameters);
         final ContextualParameters context = new ContextualParameters(this);
-        double a  = MapProjection.getAndStore(p, context, MapProjection.SEMI_MAJOR);
-        double b  = MapProjection.getAndStore(p, context, MapProjection.SEMI_MINOR);
-        double λ0 = MapProjection.getAndStore(p, context, CENTRAL_MERIDIAN);
-        double φ0 = MapProjection.getAndStore(p, context, LATITUDE_OF_ORIGIN);
-        double φ1 = MapProjection.getAndStore(p, context, STANDARD_PARALLEL);
-        double fe = MapProjection.getAndStore(p, context, FALSE_EASTING);
-        double fn = MapProjection.getAndStore(p, context, FALSE_NORTHING);
+        double a  = getAndStore(p, context, MapProjection.SEMI_MAJOR);
+        double b  = getAndStore(p, context, MapProjection.SEMI_MINOR);
+        double λ0 = getAndStore(p, context, CENTRAL_MERIDIAN);
+        double φ0 = getAndStore(p, context, LATITUDE_OF_ORIGIN);
+        double φ1 = getAndStore(p, context, STANDARD_PARALLEL);
+        double fe = getAndStore(p, context, FALSE_EASTING);
+        double fn = getAndStore(p, context, FALSE_NORTHING);
         /*
          * Perform following transformation, in that order. Note that following
          * AffineTransform convention, the Java code appears in reverse order:

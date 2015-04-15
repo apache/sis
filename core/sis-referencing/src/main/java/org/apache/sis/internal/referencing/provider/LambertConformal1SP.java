@@ -40,10 +40,15 @@ public final class LambertConformal1SP extends AbstractLambert {
     private static final long serialVersionUID = -4243116402872545772L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9801";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
      * Valid values range is [-90 … 90]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN = Mercator1SP.LATITUDE_OF_ORIGIN;
+    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
@@ -63,8 +68,12 @@ public final class LambertConformal1SP extends AbstractLambert {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+
+        LATITUDE_OF_ORIGIN = createMandatoryLatitude(builder
+                .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN));
+
         PARAMETERS = builder
-            .addIdentifier(              "9801")
+            .addIdentifier(IDENTIFIER)
             .addName(                    "Lambert Conic Conformal (1SP)")
             .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
             .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")

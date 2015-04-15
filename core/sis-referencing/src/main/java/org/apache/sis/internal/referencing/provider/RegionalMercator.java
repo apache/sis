@@ -43,11 +43,6 @@ public class RegionalMercator extends AbstractMercator {
     private static final long serialVersionUID = 5957081563587752477L;
 
     /**
-     * The name of this projection method.
-     */
-    public static final String NAME = "Mercator (variant C)";
-
-    /**
      * The EPSG identifier, to be preferred to the name when available.
      */
     public static final String IDENTIFIER = "1044";
@@ -94,7 +89,7 @@ public class RegionalMercator extends AbstractMercator {
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
-            .addName(NAME)
+            .addName("Mercator (variant C)")
             .createGroupForMapProjection(
                     Mercator2SP.STANDARD_PARALLEL,
                     Mercator1SP.CENTRAL_MERIDIAN,

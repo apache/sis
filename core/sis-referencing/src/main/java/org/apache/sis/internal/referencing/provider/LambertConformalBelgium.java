@@ -39,14 +39,19 @@ public final class LambertConformalBelgium extends AbstractLambert {
     private static final long serialVersionUID = -6388030784088639876L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9803";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
 
         PARAMETERS = builder
-            .addIdentifier(              "9803")
+            .addIdentifier(IDENTIFIER)
             .addName(                    "Lambert Conic Conformal (2SP Belgium)")
             .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP_Belgium")
             .addName(Citations.ESRI,     "Lambert_Conformal_Conic_2SP_Belgium")
