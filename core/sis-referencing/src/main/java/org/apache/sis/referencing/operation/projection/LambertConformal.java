@@ -125,42 +125,35 @@ public class LambertConformal extends NormalizedProjection {
         φ1 = toRadians(φ1);
         φ2 = toRadians(φ2);
         /*
-         * Computes constants.
+         * Computes constants. We do not need to use special formulas for the spherical case below,
+         * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the excentricity is zero.
+         * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
+         * a 0/0 indetermination.
          */
-        final double  ρ0, F;
-        final double  cosφ1  = cos(φ1);
-        final double  sinφ1  = sin(φ1);
-        final boolean secant = abs(φ1 - φ2) > ANGULAR_TOLERANCE;    // Should be 'true' for 2SP case.
-        if (excentricity == 0) {
-            if (secant) {
-                n = log(cosφ1 / cos(φ2)) /
-                    log(tan(PI/4 + 0.5*φ2) / tan(PI/4 + 0.5*φ1));
-            } else {
-                n = sinφ1;
-            }
-            F = cosφ1 * pow(tan(PI/4 + 0.5*φ1), n) / n;
-            if (abs(abs(φ0) - PI/2) >= ANGULAR_TOLERANCE) {
-                ρ0 = F * pow(tan(PI/4 + 0.5*φ0), -n);
-            } else {
-                ρ0 = 0.0;
-            }
+        final double sinφ1 = sin(φ1);
+        final double m1    = cos(φ1) / rν(sinφ1);
+        final double t1    = expOfNorthing(φ1, excentricity*sinφ1);
+        if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
+            final double sinφ2 = sin(φ2);
+            final double m2 = cos(φ2) / rν(sinφ2);
+            final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
+            n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
-            final double m1 = cosφ1 / rν(sinφ1);
-            final double t1 = expOfNorthing(-φ1, -excentricity * sinφ1);
-            if (secant) {
-                final double sinφ2 = sin(φ2);
-                final double m2 = cos(φ2) / rν(sinφ2);
-                final double t2 = expOfNorthing(-φ2, -excentricity * sinφ2);
-                n = log(m1/m2) / log(t1/t2);
-            } else {
-                n = sinφ1;
-            }
-            F = m1 * pow(t1, -n) / n;
-            if (abs(abs(φ0) - PI/2) >= ANGULAR_TOLERANCE) {
-                ρ0 = F * pow(expOfNorthing(-φ0, -excentricity * sin(φ0)), n);
-            } else {
-                ρ0 = 0.0;
-            }
+            n = -sinφ1;
+        }
+        /*
+         * Following constants will be stored in the denormalization matrix, to be applied after
+         * the non-linear formulas implemented by this LambertConformal class. Opportunistically
+         * use double-double arithmetic since we the matrix coefficients will be stored in this
+         * format anyway. This makes a change in the 2 or 3 last digits.
+         */
+        final DoubleDouble F = new DoubleDouble(-pow(t1, -n), 0);
+        F.multiply(m1, 0);
+        F.divide(n, 0);
+        final DoubleDouble ρ0 = new DoubleDouble();         // Initialized to zero.
+        if (abs(abs(φ0) - PI/2) >= ANGULAR_TOLERANCE) {
+            ρ0.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
+            ρ0.multiply(F);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -173,22 +166,23 @@ public class LambertConformal extends NormalizedProjection {
          *   - In the Belgium case only, subtract BELGE_A to the scaled longitude.
          *
          * Denormalization
-         *   - Revert the sign of y.
+         *   - Revert the sign of y (by negating the factor F).
          *   - Scale x and y by F.
          *   - Translate y by ρ0.
          *   - Multiply by the scale factor.
          *   - Add false easting and fasle northing (done by the super-class constructor).
          */
-        context.getMatrix(true).concatenate(0, new DoubleDouble(n),       // Multiplication factor for longitudes.
-                (type == BELGIUM) ? new DoubleDouble(-BELGE_A) : null);   // Longitude translation for Belgium.
+        context.getMatrix(true).concatenate(0, new DoubleDouble(-n, 0),      // Multiplication factor for longitudes.
+                (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
         context.normalizeGeographicInputs(getAndStore(parameters,
-                (type == SP1) ? LambertConformal1SP.CENTRAL_MERIDIAN : LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN));
+                (type == SP1) ? LambertConformal1SP.CENTRAL_MERIDIAN
+                              : LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN));
 
-        final MatrixSIS denormalize = context.scaleAndTranslate2D(false,
-                getAndStore(parameters, LambertConformal1SP.SCALE_FACTOR), 0, 0);
-
-        denormalize.concatenate(0, new DoubleDouble(F), null);
-        denormalize.concatenate(1, new DoubleDouble(-F), new DoubleDouble(ρ0));
+        final double k0 = getAndStore(parameters, LambertConformal1SP.SCALE_FACTOR);
+        final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
+        denormalize.concatenate(0, F, null);
+        F.negate();
+        denormalize.concatenate(1, F, ρ0);
     }
 
     /**
@@ -280,10 +274,10 @@ public class LambertConformal extends NormalizedProjection {
         final double ρ;     // Snyder p. 108
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            ρ = pow(expOfNorthing(-φ, -excentricity * sinφ), n);
+            ρ = pow(expOfNorthing(φ, excentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
-            ρ = (φ*n <= 0) ? POSITIVE_INFINITY : 0;
+            ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
         } else {
             ρ = sinφ = NaN;
         }
@@ -301,7 +295,7 @@ public class LambertConformal extends NormalizedProjection {
         //
         final double dρ;
         if (sinφ != 1) {
-            dρ = n * -dy_dφ(sinφ, cos(φ)) * ρ;
+            dρ = n * dy_dφ(sinφ, cos(φ)) * ρ;
         } else {
             dρ = ρ;
         }
@@ -328,7 +322,7 @@ public class LambertConformal extends NormalizedProjection {
          * linear operations applied after the last non-linear one moved to the inverse of the "normalize" transform.
          */
         dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = φ(pow(hypot(x, y), 1/n));
+        dstPts[dstOff+1] = φ(pow(hypot(x, y), -1/n));
     }
 
 
@@ -390,9 +384,9 @@ public class LambertConformal extends NormalizedProjection {
             final double cosλ = cos(λ);
             final double ρ;
             if (absφ < PI/2) {
-                ρ = pow(tan(PI/4 + 0.5*φ), -n);
+                ρ = pow(tan(PI/4 + 0.5*φ), n);
             } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
-                ρ = (φ*n <= 0) ? POSITIVE_INFINITY : 0;
+                ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
             } else {
                 ρ = NaN;
             }
@@ -402,7 +396,7 @@ public class LambertConformal extends NormalizedProjection {
             if (derivate) {
                 final double dρ;
                 if (absφ < PI/2) {
-                    dρ = -n*ρ / cos(φ);
+                    dρ = n*ρ / cos(φ);
                 } else {
                     dρ = NaN;
                 }
@@ -431,7 +425,7 @@ public class LambertConformal extends NormalizedProjection {
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
             x = atan2(x, y);  // Really (x,y), not (y,x)
-            y = 2 * atan(pow(1/ρ, 1/n)) - PI/2;
+            y = 2 * atan(pow(1/ρ, -1/n)) - PI/2;
             assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
