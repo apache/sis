@@ -38,11 +38,6 @@ public final class MercatorSpherical extends AbstractMercator {
     private static final long serialVersionUID = 4761755206841656129L;
 
     /**
-     * The name of this projection method.
-     */
-    public static final String NAME = "Mercator (Spherical)";
-
-    /**
      * The EPSG identifier, to be preferred to the name when available.
      */
     public static final String IDENTIFIER = "1026";
@@ -56,8 +51,8 @@ public final class MercatorSpherical extends AbstractMercator {
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
             .addDeprecatedIdentifier("9841", IDENTIFIER)
-            .addName(NAME)                                          // Starting from EPSG version 7.6
-            .addDeprecatedName("Mercator (1SP) (Spherical)", NAME)  // Prior to EPSG version 7.6
+            .addName("Mercator (Spherical)")                                          // Starting from EPSG version 7.6
+            .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")  // Prior to EPSG version 7.6
             .createGroupForMapProjection(
                     Mercator1SP.LATITUDE_OF_ORIGIN,
                     Mercator1SP.CENTRAL_MERIDIAN,

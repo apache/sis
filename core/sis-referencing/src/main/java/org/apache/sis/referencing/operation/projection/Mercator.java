@@ -27,7 +27,6 @@ import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
-import org.apache.sis.internal.referencing.provider.MillerCylindrical;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -85,6 +84,8 @@ public class Mercator extends NormalizedProjection {
      *
      * <p><b>CONVENTION:</b> Spherical cases must be odd, all other cases must be even. This allow us to perform
      * quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
+     *
+     * @see #getType(ParameterDescriptorGroup)
      */
     static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
                       REGIONAL  = 2, MILLER = 4;    // Must be even.
@@ -216,10 +217,10 @@ public class Mercator extends NormalizedProjection {
      * Returns the type of the projection based on the name and identifier of the given parameter group.
      */
     private static byte getType(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, RegionalMercator .NAME, RegionalMercator .IDENTIFIER)) return REGIONAL;
-        if (identMatch(parameters, MercatorSpherical.NAME, MercatorSpherical.IDENTIFIER)) return SPHERICAL;
-        if (identMatch(parameters, PseudoMercator   .NAME, PseudoMercator   .IDENTIFIER)) return PSEUDO;
-        if (identMatch(parameters, MillerCylindrical.NAME, null))                         return MILLER;
+        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
+        if (identMatch(parameters, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
+        if (identMatch(parameters, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
+        if (identMatch(parameters, "(?i).*\\bMiller.*",          null))                         return MILLER;
         return 0;
     }
 
@@ -245,9 +246,9 @@ public class Mercator extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (<var>λ</var>,<var>φ</var>) coordinate (units in radians)
-     * and stores the result in {@code dstPts} (linear distance on a unit sphere). In addition,
-     * opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
+     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
+     * if {@code derivate} is {@code true}.
      *
      * @return The matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -362,8 +363,10 @@ public class Mercator extends NormalizedProjection {
      * </ul>
      * </div>
      *
-     * @author Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @author Rueben Schulz (UBC)
+     * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+     * @author  Rueben Schulz (UBC)
+     * @since   0.6
+     * @version 0.6
      * @module
      */
     static final class Spherical extends Mercator {
@@ -375,7 +378,7 @@ public class Mercator extends NormalizedProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other  The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
          */
         Spherical(final Mercator other) {
             super(other);

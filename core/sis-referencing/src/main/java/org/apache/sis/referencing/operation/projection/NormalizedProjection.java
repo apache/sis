@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -330,23 +331,30 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns {@code true} if the projection specified by the given parameters has the given name or identifier.
-     * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the name.
+     * Returns {@code true} if the projection specified by the given parameters has the given keyword or identifier.
+     * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the keyword.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * Since callers usually give a constant string for the {@code regex} argument, it would be more efficient to
+     * compile the {@link java.util.regex.Pattern} once for all. However the regular expression is used only as a
+     * fallback if the descriptor does not contain EPSG identifier, which should be rare. Usually, the regular
+     * expression will never be compiled.</div>
      *
      * @param  parameters The user-specified parameters.
-     * @param  name       The name to compare against the parameter group name.
+     * @param  regex      The regular expression to use when using the operation name as the criterion.
      * @param  identifier The identifier to compare against the parameter group name.
-     * @return {@code true} if the given parameter group has a name or EPSG identifier matching the given ones.
+     * @return {@code true} if the given parameter group name contains the given keyword
+     *         or has an EPSG identifier equals to the given identifier.
      */
-    static boolean identMatch(final ParameterDescriptorGroup parameters, final String name, final String identifier) {
+    static boolean identMatch(final ParameterDescriptorGroup parameters, final String regex, final String identifier) {
         if (identifier != null) {
             for (final Identifier id : parameters.getIdentifiers()) {
-                if (identifier.equals(id.getCode()) && Constants.EPSG.equals(id.getCodeSpace())) {
-                    return true;
+                if (Constants.EPSG.equals(id.getCodeSpace())) {
+                    return identifier.equals(id.getCode());
                 }
             }
         }
-        return IdentifiedObjects.isHeuristicMatchForName(parameters, name);
+        return parameters.getName().getCode().matches(regex);
     }
 
     /**
@@ -354,10 +362,40 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
      * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
      *
-     * <p>This method shall be invoked at construction time only.</p>
+     * <p>This method performs the following actions:</p>
+     * <ul>
+     *   <li>Convert the value to the units specified by the descriptor.</li>
+     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
+     *   <li>Store the value only if different than the default value.</li>
+     * </ul>
+     *
+     * This method shall be invoked at construction time only.
      */
     final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
-        return MapProjection.getAndStore(parameters, context, descriptor);
+        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
+        final Double defaultValue = descriptor.getDefaultValue();
+        if (defaultValue == null || !defaultValue.equals(value)) {
+            MapProjection.validate(descriptor, value);
+            context.parameter(descriptor.getName().getCode()).setValue(value);
+        }
+        return value;
+    }
+
+    /**
+     * Same as {@link #getAndStore(Parameters, ParameterDescriptor)}, but returns the given default value
+     * if the parameter is not specified.  This method shall be used only for parameters having a default
+     * value more complex than what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
+     */
+    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor,
+            final double defaultValue)
+    {
+        final Double value = parameters.getValue(descriptor);   // Apply a unit conversion if needed.
+        if (value == null) {
+            return defaultValue;
+        }
+        MapProjection.validate(descriptor, value);
+        context.parameter(descriptor.getName().getCode()).setValue(value);
+        return value;
     }
 
     /**
@@ -427,30 +465,51 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        final ParameterDescriptorGroup descriptor = filter(getParameterDescriptors());
-        final ParameterValueGroup values = descriptor.createValue();
-        values.parameter(Constants.SEMI_MAJOR).setValue(1.0);
-        values.parameter(Constants.SEMI_MINOR).setValue(sqrt(1 - excentricitySquared));
-        return values;
+        return getParameterValues(new String[] {
+            Constants.SEMI_MAJOR,
+            Constants.SEMI_MINOR
+        });
     }
 
     /**
-     * Filter the given parameter descriptor in order to retain only the semi-major and semi-minor axis lengths.
-     * This filtered version is used for displaying the parameter values of this non-linear kernel only, not for
-     * displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying the kernel
-     * parameter values is for debugging purpose only, it is not worth to cache this descriptor.
+     * Filters the parameter descriptor in order to retain only the parameters of the given names, and
+     * sets the semi-major and semi-minor axis lengths. The specified parameters list should contains at
+     * least the {@code "semi_major"} and {@code "semi_minor"} strings.
+     *
+     * <p>This filtered descriptor is used for displaying the parameter values of this non-linear kernel only,
+     * not for displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying
+     * the kernel parameter values is for debugging purpose only, it is not worth to cache this descriptor.</p>
      */
-    private static ParameterDescriptorGroup filter(final ParameterDescriptorGroup descriptor) {
-        final List<GeneralParameterDescriptor> filtered = new ArrayList<>(5);
+    @Debug
+    final ParameterValueGroup getParameterValues(final String[] nonLinearParameters) {
+        ParameterDescriptorGroup descriptor = getParameterDescriptors();
+        final List<GeneralParameterDescriptor> filtered = new ArrayList<>(nonLinearParameters.length);
         for (final GeneralParameterDescriptor p : descriptor.descriptors()) {
-            if (IdentifiedObjects.isHeuristicMatchForName(p, Constants.SEMI_MAJOR) ||
-                IdentifiedObjects.isHeuristicMatchForName(p, Constants.SEMI_MINOR))
-            {
-                filtered.add(p);
+            for (final String name : nonLinearParameters) {
+                if (IdentifiedObjects.isHeuristicMatchForName(p, name)) {
+                    filtered.add(p);
+                    break;
+                }
             }
         }
-        return new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
+        descriptor = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
                 1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
+        /*
+         * Parameter values for the ellipsoid semi-major and semi-minor axis lengths are 1 and <= 1
+         * respectively because the denormalization (e.g. multiplication by a scale factor) will be
+         * applied by an affine transform after this NormalizedProjection.
+         */
+        final ParameterValueGroup values = descriptor.createValue();
+        for (final GeneralParameterDescriptor desc : filtered) {
+            final String name = desc.getName().getCode();
+            final ParameterValue<?> p = values.parameter(name);
+            switch (name) {
+                case Constants.SEMI_MAJOR: p.setValue(1.0); break;
+                case Constants.SEMI_MINOR: p.setValue(sqrt(1 - excentricitySquared)); break;
+                default: p.setValue(context.parameter(name).getValue());
+            }
+        }
+        return values;
     }
 
     /**

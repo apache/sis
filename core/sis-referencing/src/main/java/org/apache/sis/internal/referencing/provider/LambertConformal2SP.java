@@ -41,6 +41,11 @@ public final class LambertConformal2SP extends AbstractLambert {
     private static final long serialVersionUID = 3240860802816724947L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9802";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of false origin</cite> (φf) parameter value.
      * Valid values range is [-90 … 90]° and default value is 0°.
      */
@@ -92,7 +97,7 @@ public final class LambertConformal2SP extends AbstractLambert {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         /*
@@ -122,23 +127,27 @@ public final class LambertConformal2SP extends AbstractLambert {
          * ESRI:    Standard_Parallel_1
          * NetCDF:  standard_parallel
          * GeoTIFF: StdParallel1
+         *
+         * Special case: default value shall be the value of LATITUDE_OF_FALSE_ORIGIN.
          */
-        STANDARD_PARALLEL_1 = createLatitude(builder
-                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL), true);  // TODO: default value should be NaN
+        STANDARD_PARALLEL_1 = createMandatoryLatitude(builder
+                .addNamesAndIdentifiers(Mercator2SP.STANDARD_PARALLEL));
         /*
          * EPSG:    Latitude of 2nd standard parallel
          * OGC:     standard_parallel_2
          * ESRI:    Standard_Parallel_2
          * NetCDF:  standard_parallel
          * GeoTIFF: StdParallel2
+         *
+         * Special case: default value shall be the value of STANDARD_PARALLEL_1.
          */
-        STANDARD_PARALLEL_2 = createLatitude(builder
+        STANDARD_PARALLEL_2 = createMandatoryLatitude(builder
                 .addIdentifier("8824")
                 .addName("Latitude of 2nd standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_2)
                 .addName(Citations.ESRI,    "Standard_Parallel_2")
                 .addName(Citations.GEOTIFF, "StdParallel2")
-                .addName(Citations.PROJ4,   "lat_2"), true);  // TODO: default value should be NaN
+                .addName(Citations.PROJ4,   "lat_2"));
         /*
          * Remove the EPSG name and identifier at least for the scale factor, because its meaning does not fit well
          * in this context. The EPSG name is "Scale factor at natural origin" while actually the scale factor applied
@@ -149,7 +158,7 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .setRemarks(notFormalParameter("Lambert Conic Conformal (1SP)")).setDeprecated(true));
 
         PARAMETERS = builder
-            .addIdentifier(              "9802")
+            .addIdentifier(IDENTIFIER)
             .addName(                    "Lambert Conic Conformal (2SP)")
             .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP")
             .addName(Citations.ESRI,     "Lambert_Conformal_Conic")
