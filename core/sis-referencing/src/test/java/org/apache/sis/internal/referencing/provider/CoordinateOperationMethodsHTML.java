@@ -454,11 +454,11 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
             } else if (defaultValue instanceof String) {
                 return (String) defaultValue;
             }
-        } else if (param.getMinimumOccurs() == 0) {
+        } else {
             if (ArraysExt.contains(defaultToLatitudeOfOrigin, param)) {
-                return "latitude of origin";
+                return "Latitude of origin";
             } else if (ArraysExt.contains(defaultToStandardParallel1, param)) {
-                return "standard parallel 1";
+                return "Standard parallel 1";
             } else if (ArraysExt.contains(defaultToAzimuth, param)) {
                 return "Azimuth of initial line";
             } else if (param.getValueClass() == Boolean.class) {
