@@ -215,15 +215,15 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * </ul>
      *
      * In matrix form, this constructor creates the following matrices (subclasses are free to modify):
-     * <table class="sis" style="td {vertical-align: middle}">
+     * <table class="sis">
      *   <caption>Initial matrix coefficients after construction</caption>
      *   <tr>
      *     <th>Normalization</th>
-     *     <th>Denormalization</th>
+     *     <th class="sep">Denormalization</th>
      *   </tr>
      *   <tr>
      *     <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
-     *     <td>{@include ../transform/formulas.html#DenormalizeCartesian}</td>
+     *     <td class="sep">{@include ../transform/formulas.html#DenormalizeCartesian}</td>
      *   </tr>
      * </table>
      *
@@ -233,7 +233,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <ul>
      *   <li>{@code "semi_major"}       (mandatory)</li>
      *   <li>{@code "semi_minor"}       (mandatory)</li>
-     *   <li>{@code "central_meridian"} default to 0°)</li>
+     *   <li>{@code "central_meridian"} (default to 0°)</li>
      *   <li>{@code "scale_factor"}     (optional, default to 1)</li>
      *   <li>{@code "false_easting"}    (default to 0 metre)</li>
      *   <li>{@code "false_northing"}   (default to 0 metre)</li>
@@ -242,13 +242,13 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note:</b>
      * Apache SIS uses EPSG names as much as possible, but this constructor is an exception to this rule.
      * In this particular case we use OGC names because they are identical for a wide range of projections.
-     * For example there is at least three different EPSG names for the <cite>scale factor</cite> parameter,
+     * For example there is at least three different EPSG names for the <cite>"scale factor"</cite> parameter,
      * depending on the projection:
      *
      * <ul>
-     *   <li><cite>Scale factor at natural origin</cite></li>
-     *   <li><cite>Scale factor on initial line</cite></li>
-     *   <li><cite>Scale factor on pseudo standard parallel</cite></li>
+     *   <li>Scale factor at natural origin</li>
+     *   <li>Scale factor on initial line</li>
+     *   <li>Scale factor on pseudo standard parallel</li>
      * </ul>
      *
      * OGC defines only {@code "scale_factor"} for all, which makes a convenient name to look for in this

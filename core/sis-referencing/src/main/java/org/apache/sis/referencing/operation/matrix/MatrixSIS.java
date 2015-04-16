@@ -336,8 +336,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1);</code></td>
      *   </tr><tr>
-     *     <td>{@code concatenate(1, scale, offset)}</td>
-     *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset);
+     *     <td class="hsep">{@code concatenate(1, scale, offset)}</td>
+     *     <td class="hsep sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale);</code></td>
      *   </tr>
      * </table>

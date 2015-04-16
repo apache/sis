@@ -255,23 +255,20 @@ public class ContextualParameters extends FormattableObject implements Parameter
      *
      *
      * <div class="section">Application to map projections</div>
-     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction,
-     * those matrices are initialized to the following values:
+     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
+     * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
      *
-     * <table class="sis" style="td {vertical-align: middle}">
+     * <table class="sis">
      *   <caption>Initial matrix coefficients after construction</caption>
      *   <tr>
      *     <th>{@code getMatrix(true)}</th>
-     *     <th>{@code getMatrix(false)}</th>
+     *     <th class="sep">{@code getMatrix(false)}</th>
      *   </tr><tr>
      *     <td>{@include formulas.html#NormalizeGeographic}</td>
-     *     <td>{@include formulas.html#DenormalizeCartesian}</td>
+     *     <td class="sep">{@include formulas.html#DenormalizeCartesian}</td>
      *   </tr>
      * </table>
-     *
-     * <div class="note"><b>Note:</b>
-     * Some {@code NormalizedProjection} subclasses apply further modifications on those matrices.
-     * </div>
      *
      * @param  norm {@code true} for fetching the <cite>normalization</cite> transform to apply before the kernel,
      *         or {@code false} for the <cite>denormalization</cite> transform to apply after the kernel.
