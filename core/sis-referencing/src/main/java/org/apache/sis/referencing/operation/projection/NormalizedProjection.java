@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -39,10 +40,12 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 
@@ -69,8 +72,7 @@ import java.util.Objects;
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
  *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
- *   northing (FN) are applied by the {@linkplain ContextualParameters#scaleAndTranslate2D denormalization}
- *   affine transform.</li>
+ *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
  * </ul>
  *
  * The normalization and denormalization steps are represented below by the matrices immediately on the left and right
@@ -121,6 +123,7 @@ import java.util.Objects;
  * @version 0.6
  * @module
  *
+ * @see ContextualParameters
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
@@ -197,42 +200,58 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   </li>
      *   <li>On the <b>denormalization</b> matrix (to be applied after {@code this} transform):
      *     <ul>
-     *       <li>{@linkplain ContextualParameters#scaleAndTranslate2D(boolean, double, double, double) Scale}
-     *           by the <cite>semi-major</cite> axis length.</li>
+     *       <li>{@linkplain MatrixSIS#convertAfter(int, Number, Number) Scale} by the <cite>semi-major</cite> axis length.</li>
+     *       <li>If a scale factor is present (not all map projections have a scale factor), apply that scale.</li>
      *       <li>Translate by the <cite>false easting</cite> and <cite>false northing</cite> (after the scale).</li>
      *     </ul>
      *   </li>
      *   <li>On the <b>contextual parameters</b> (not the parameters of {@code this} transform):
      *     <ul>
      *       <li>Store the values for <cite>semi-major</cite> axis length, <cite>semi-minor</cite> axis length,
-     *           <cite>central meridian</cite>, <cite>false easting</cite> and <cite>false northing</cite> values.</li>
+     *         <cite>scale factor</cite> (if present), <cite>central meridian</cite>,
+     *         <cite>false easting</cite> and <cite>false northing</cite> values.</li>
      *     </ul>
      *   </li>
      * </ul>
      *
+     * In matrix form, this constructor creates the following matrices (subclasses are free to modify):
+     * <table class="sis" style="td {vertical-align: middle}">
+     *   <caption>Initial matrix coefficients after construction</caption>
+     *   <tr>
+     *     <th>Normalization</th>
+     *     <th>Denormalization</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
+     *     <td>{@include ../transform/formulas.html#DenormalizeCartesian}</td>
+     *   </tr>
+     * </table>
+     *
      * <div class="section">Pre-requite</div>
-     * The parameters of the given {@code method} argument shall contains descriptor for the given parameters
+     * The parameters of the given {@code method} argument shall contains descriptors for the given parameters
      * (using OGC names):
      * <ul>
      *   <li>{@code "semi_major"}       (mandatory)</li>
      *   <li>{@code "semi_minor"}       (mandatory)</li>
-     *   <li>{@code "central_meridian"} (optional, default to 0°)</li>
-     *   <li>{@code "false_easting"}    (optional, default to 0 metre)</li>
-     *   <li>{@code "false_northing"}   (optional, default to 0 metre)</li>
+     *   <li>{@code "central_meridian"} default to 0°)</li>
+     *   <li>{@code "scale_factor"}     (optional, default to 1)</li>
+     *   <li>{@code "false_easting"}    (default to 0 metre)</li>
+     *   <li>{@code "false_northing"}   (default to 0 metre)</li>
      * </ul>
      *
      * <div class="note"><b>Note:</b>
      * Apache SIS uses EPSG names as much as possible, but this constructor is an exception to this rule.
      * In this particular case we use OGC names because they are identical for a wide range of projections.
-     * For example there is at least two different EPSG names for the <cite>false northing</cite> parameter,
+     * For example there is at least three different EPSG names for the <cite>scale factor</cite> parameter,
      * depending on the projection:
      *
      * <ul>
-     *   <li><cite>Northing at false origin</cite></li>
-     *   <li><cite>Northing at projection centre</cite></li>
+     *   <li><cite>Scale factor at natural origin</cite></li>
+     *   <li><cite>Scale factor on initial line</cite></li>
+     *   <li><cite>Scale factor on pseudo standard parallel</cite></li>
      * </ul>
      *
-     * OGC defines only {@code "false_northing"} for all, which makes a convenient name to look for in this
+     * OGC defines only {@code "scale_factor"} for all, which makes a convenient name to look for in this
      * constructor.</div>
      *
      * @param method     Description of the map projection parameters.
@@ -240,9 +259,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters) {
         this(method, parameters, null,
+                descriptor(method, Constants.CENTRAL_MERIDIAN),
+                descriptor(method, Constants.SCALE_FACTOR),     // Optional (handled in a special way).
                 descriptor(method, Constants.FALSE_EASTING),
                 descriptor(method, Constants.FALSE_NORTHING));
-        context.normalizeGeographicInputs(getAndStore(parameters, descriptor(method, Constants.CENTRAL_MERIDIAN)));
     }
 
     /**
@@ -251,18 +271,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     private static ParameterDescriptor<Double> descriptor(final OperationMethod method, final String name) {
         ensureNonNull("method", method);
-        return Parameters.cast((ParameterDescriptor<?>) method.getParameters().descriptor(name), Double.class);
+        final GeneralParameterDescriptor p;
+        try {
+            p = method.getParameters().descriptor(name);
+        } catch (ParameterNotFoundException e) {
+            if (name == Constants.SCALE_FACTOR) {   // Identity comparison is okay here.
+                return null;
+            }
+            throw e;
+        }
+        return Parameters.cast((ParameterDescriptor<?>) p, Double.class);
     }
 
     /**
      * Constructs a new map projection by fetching the values using the given parameter descriptors.
-     * At the difference of the {@link #NormalizedProjection(OperationMethod, Parameters)} constructor,
-     * this constructor does <strong>not</strong> apply the following operations:
-     *
-     * <ul>
-     *   <li>Normalization: no operation done. Callers shall invoke
-     *     {@link ContextualParameters#normalizeGeographicInputs(double)} themselves.</li>
-     * </ul>
+     * This constructor is equivalent to the {@link #NormalizedProjection(OperationMethod, Parameters)} constructor,
+     * except that the descriptors are explicitely specified. Note that the list of arguments may change in any future
+     * SIS version.
      *
      *
      * <div class="section">Radius of conformal sphere (Rc)</div>
@@ -271,7 +296,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <cite>Geomatics Guidance Note Number 7, part 2, version 49</cite> from EPSG: table 3 in section
      * 1.2 and explanation in section 1.3.3.1).
      *
-     * <p><b>Important usage notes:</b><p>
+     * <p><b>Important usage notes:</b></p>
      * <ul>
      *   <li>The {@code conformalSphereAtφ} argument shall be non-null <strong>only</strong> when the user
      *       requested explicitely spherical formulas, for example the <cite>"Mercator (Spherical)"</cite>
@@ -286,13 +311,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final ParameterDescriptor<Double> conformalSphere_φ,
+            final ParameterDescriptor<Double> centralMeridian,
+            final ParameterDescriptor<Double> scaleFactor,
             final ParameterDescriptor<Double> falseEasting,
             final ParameterDescriptor<Double> falseNorthing)
     {
         ensureNonNull("parameters", parameters);
         context = new ContextualParameters(method);
+
               double a  = getAndStore(parameters, MapProjection.SEMI_MAJOR);
         final double b  = getAndStore(parameters, MapProjection.SEMI_MINOR);
+        final double λ0 = getAndStore(parameters, centralMeridian);
         final double fe = getAndStore(parameters, falseEasting);
         final double fn = getAndStore(parameters, falseNorthing);
         final double rs = b / a;
@@ -313,7 +342,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             final double sinφ = sin(toRadians(parameters.doubleValue(conformalSphere_φ)));
             a = b / (1 - excentricitySquared * (sinφ*sinφ));
         }
-        context.scaleAndTranslate2D(false, a, fe, fn);
+        context.normalizeGeographicInputs(λ0);
+        final DoubleDouble k = new DoubleDouble(a);
+        if (scaleFactor != null) {
+            k.multiply(getAndStore(parameters, scaleFactor));
+        }
+        final MatrixSIS denormalize = context.getMatrix(false);
+        denormalize.convertAfter(0, k, new DoubleDouble(fe));
+        denormalize.convertAfter(1, k, new DoubleDouble(fn));
         inverse = new Inverse();
     }
 
@@ -372,6 +408,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * This method shall be invoked at construction time only.
      */
     final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
+        if (descriptor == null) {
+            return 0;   // Default value for all parameters except scale factor.
+        }
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
         final Double defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {

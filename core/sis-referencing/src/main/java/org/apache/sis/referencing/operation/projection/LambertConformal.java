@@ -106,8 +106,10 @@ public class LambertConformal extends NormalizedProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters, null,
-                (type == SP1) ? LambertConformal1SP.FALSE_EASTING  : LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
-                (type == SP1) ? LambertConformal1SP.FALSE_NORTHING : LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
+                (type == SP1) ? LambertConformal1SP.CENTRAL_MERIDIAN : LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
+                LambertConformal1SP.SCALE_FACTOR,
+                (type == SP1) ? LambertConformal1SP.FALSE_EASTING    : LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
+                (type == SP1) ? LambertConformal1SP.FALSE_NORTHING   : LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
         double φ0 = getAndStore(parameters,
                 (type == SP1) ? LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
@@ -160,8 +162,8 @@ public class LambertConformal extends NormalizedProjection {
          * the linear operations in the (de)normalize affine transforms:
          *
          * Normalization:
-         *   - Subtract central meridian to longitudes.
-         *   - Convert longitudes and latitudes from degrees to radians
+         *   - Subtract central meridian to longitudes (done by the super-class constructor).
+         *   - Convert longitudes and latitudes from degrees to radians (done by the super-class constructor)
          *   - Multiply longitude by 'n'.
          *   - In the Belgium case only, subtract BELGE_A to the scaled longitude.
          *
@@ -169,20 +171,16 @@ public class LambertConformal extends NormalizedProjection {
          *   - Revert the sign of y (by negating the factor F).
          *   - Scale x and y by F.
          *   - Translate y by ρ0.
-         *   - Multiply by the scale factor.
+         *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and fasle northing (done by the super-class constructor).
          */
-        context.getMatrix(true).concatenate(0, new DoubleDouble(-n, 0),      // Multiplication factor for longitudes.
+        context.getMatrix(true).convertAfter(0, new DoubleDouble(-n, 0),    // Multiplication factor for longitudes.
                 (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
-        context.normalizeGeographicInputs(getAndStore(parameters,
-                (type == SP1) ? LambertConformal1SP.CENTRAL_MERIDIAN
-                              : LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN));
 
-        final double k0 = getAndStore(parameters, LambertConformal1SP.SCALE_FACTOR);
-        final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
-        denormalize.concatenate(0, F, null);
+        final MatrixSIS denormalize = context.getMatrix(false);
+        denormalize.convertBefore(0, F, null);
         F.negate();
-        denormalize.concatenate(1, F, ρ0);
+        denormalize.convertBefore(1, F, ρ0);
     }
 
     /**

@@ -27,9 +27,11 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Messages;
 
@@ -263,21 +265,24 @@ public final class Equirectangular extends AbstractProvider {
          *   4) Scale longitude by cos(φ1).
          */
         φ1 = toRadians(φ1);
-        context.getMatrix(true).concatenate(0, cos(φ1), null);
+        context.getMatrix(true).convertBefore(0, cos(φ1), null);
         context.normalizeGeographicInputs(λ0)
-               .concatenate(1, null, -φ0);
+               .convertBefore(1, null, -φ0);
         /*
-         * At this point, we usually invoke scaleAndTranslate2D(false, a, fe, fn) where 'a' (the semi-major
-         * axis length) is taken as the Earth radius (R). However quoting EPSG: "If the figure of the earth
-         * used is an ellipsoid rather than a sphere then R should be calculated as the radius of the conformal
-         * sphere at the projection origin at latitude φ1 using the formula for RC given in section 1.2, table 3".
+         * At this point, we usually invoke 'denormalize.convertAfter(…, a, …)' where 'a' (the semi-major axis length)
+         * is taken as the Earth radius (R). However quoting EPSG: "If the figure of the earth used is an ellipsoid
+         * rather than a sphere then R should be calculated as the radius of the conformal sphere at the projection
+         * origin at latitude φ1 using the formula for RC given in section 1.2, table 3".
          */
         if (a != b) {
             final double rs = b / a;
             final double sinφ1 = sin(φ1);
             a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
         }
-        context.scaleAndTranslate2D(false, a, fe, fn);
+        final DoubleDouble k = new DoubleDouble(a);
+        final MatrixSIS denormalize = context.getMatrix(false);
+        denormalize.convertAfter(0, k, new DoubleDouble(fe));
+        denormalize.convertAfter(1, k, new DoubleDouble(fn));
         /*
          * Creates the ConcatenatedTransform, letting the factory returns the cached instance
          * if the caller already invoked this method previously (which usually do not happen).
