@@ -152,8 +152,8 @@ public class LambertConformal extends NormalizedProjection {
         final DoubleDouble F = new DoubleDouble(-pow(t1, -n), 0);
         F.multiply(m1, 0);
         F.divide(n, 0);
-        final DoubleDouble ρ0 = new DoubleDouble();         // Initialized to zero.
-        if (abs(abs(φ0) - PI/2) >= ANGULAR_TOLERANCE) {
+        final DoubleDouble ρ0 = new DoubleDouble();    // Initialized to zero.
+        if (φ0 != copySign(PI/2, -n)) {    // For avoiding the rounding error documented in expOfNorthing(+π/2).
             ρ0.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
             ρ0.multiply(F);
         }
