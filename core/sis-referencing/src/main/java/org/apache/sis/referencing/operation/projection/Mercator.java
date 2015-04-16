@@ -132,8 +132,8 @@ public class Mercator extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters,
-                (type == SPHERICAL) ? Mercator2SP     .STANDARD_PARALLEL        : null,     // See note below.
+        super(method, parameters, // Rational for the 2 next arguments are explained in comments later.
+                (type == SPHERICAL) ? Mercator2SP.STANDARD_PARALLEL : null, null, Mercator1SP.SCALE_FACTOR,
                 (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : Mercator1SP.FALSE_EASTING,
                 (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : Mercator1SP.FALSE_NORTHING);
         /*
@@ -175,13 +175,12 @@ public class Mercator extends NormalizedProjection {
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
-        double k0 = getAndStore(parameters, Mercator1SP.SCALE_FACTOR);
-        k0 *= cos(φ1) / rν(sin(φ1));
+        final DoubleDouble k0 = new DoubleDouble(cos(φ1), 0);
+        k0.divide(rν(sin(φ1)), 0);
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
-         *     context.normalizeGeographicInputs(λ0);
-         *     context.scaleAndTranslate2D(false, k0, 0, 0);
+         *     context.normalizeGeographicInputs(λ0);   // Actually done by the super-class constructor.
          *
          * However in the particular case of Mercator projection, we will apply the longitude rotation in the
          * denormalization matrix instead.   This is possible only for this particular projection because the
@@ -189,19 +188,20 @@ public class Mercator extends NormalizedProjection {
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
-        final MatrixSIS   normalize = context.normalizeGeographicInputs(0);
-        final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
+        final MatrixSIS denormalize = context.getMatrix(false);
+        denormalize.convertBefore(0, k0, null);
+        denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
             offset.multiply(-λ0);
-            denormalize.concatenate(0, null, offset);
+            denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.concatenate(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (type == MILLER) {
-            normalize  .concatenate(1, new DoubleDouble(0.8),  null);
-            denormalize.concatenate(1, new DoubleDouble(1.25), null);
+            context.getMatrix(true).convertBefore(1, new DoubleDouble(0.8), null);
+            denormalize.convertBefore(1, new DoubleDouble(1.25), null);
         }
     }
 
