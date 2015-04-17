@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 
 
@@ -42,17 +43,12 @@ public class RegionalMercator extends AbstractMercator {
     private static final long serialVersionUID = 5957081563587752477L;
 
     /**
-     * The name of this projection method.
-     */
-    public static final String NAME = "Mercator (variant C)";
-
-    /**
      * The EPSG identifier, to be preferred to the name when available.
      */
     public static final String IDENTIFIER = "1044";
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of false origin</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Latitude of false origin</cite> (φf) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_FALSE_ORIGIN;
@@ -76,24 +72,27 @@ public class RegionalMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_FALSE_ORIGIN = createLatitude(builder
+        LATITUDE_OF_FALSE_ORIGIN = createLatitude(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder
                 .addIdentifier("8821")
-                .addName("Latitude of false origin"), false);
+                .addName("Latitude of false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginLat"), false);
 
-        EASTING_AT_FALSE_ORIGIN = createShift(builder
+        EASTING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_EASTING, builder
                 .addIdentifier("8826")
-                .addName("Easting at false origin"));
+                .addName("Easting at false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginEasting"));
 
-        NORTHING_AT_FALSE_ORIGIN = createShift(builder
+        NORTHING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_NORTHING, builder
                 .addIdentifier("8827")
-                .addName("Northing at false origin"));
+                .addName("Northing at false origin"))
+                .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
-            .addName(NAME)
+            .addName("Mercator (variant C)")
             .createGroupForMapProjection(
                     Mercator2SP.STANDARD_PARALLEL,
-                    Mercator2SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.CENTRAL_MERIDIAN,
                     LATITUDE_OF_FALSE_ORIGIN,
                     EASTING_AT_FALSE_ORIGIN,
                     NORTHING_AT_FALSE_ORIGIN);

@@ -40,49 +40,40 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import org.apache.sis.internal.jdk8.JDK8;
 
 /**
- * Base class of builders for various kind of {@link IdentifiedObject}. {@code Builder}s aim to make object creation
- * easier — they do not add any new functionality compared to {@link org.opengis.referencing.ObjectFactory}.
- * Builder methods like {@link #addName(CharSequence)} and {@link #addIdentifier(String)} provide convenient ways
- * to fill the {@link #properties} map, which will be given to the {@code ObjectFactory} methods when any
- * {@code createXXX(…)} method is invoked.
- *
- * <p>This base class provides methods for defining the {@link IdentifiedObject} properties shown below:</p>
+ * Base class of builders for various kind of {@link IdentifiedObject}. This class provides convenience methods
+ * for filling the {@link #properties} map to be given to an {@link org.opengis.referencing.ObjectFactory}.
+ * The main properties are:
  *
  * <ul class="verbose">
- *   <li><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b>
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getName() Name}:</b><br>
  *       each {@code IdentifiedObject} shall have a name, which can be specified by a call to any of the
  *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</li>
  *
- *   <li><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b>
- *       identified objects can optionally have an arbitrary amount of aliases, which are also specified
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b><br>
+ *       {@code IdentifiedObject}s can optionally have an arbitrary amount of aliases, which are also specified
  *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</li>
  *
- *   <li><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b>
- *       identified objects can also have an arbitrary amount of identifiers, which are specified by any
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b><br>
+ *       {@code IdentifiedObject}s can also have an arbitrary amount of identifiers, which are specified by any
  *       of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
  *       can be added by invoking the method many time.</li>
  *
- *   <li><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b>
- *       identified objects can have at most one remark, which is specified by the {@code setRemarks(…)}
- *       method.</li>
- * </ul>
- *
- * The names and identifiers cited in the above table can be built from {@link CharSequence} given to the
- * {@code addName(…)} or {@code addIdentifier(…)} methods combined with the following properties:
- *
- * <ul class="verbose">
- *   <li><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b>
- *       each {@code Identifier} name or code can be local to a code space defined by an authority.
+ *   <li><b>{@linkplain ImmutableIdentifier#getCodeSpace() Code space}:</b><br>
+ *       {@code IdentifiedObject} names and identifiers can be local to a code space defined by an authority.
  *       Both the authority and code space can be specified by the {@link #setCodeSpace(Citation, String)} method,
  *       and usually (but not necessarily) apply to all {@code Identifier} instances.</li>
  *
- *   <li><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b>
- *       identifiers can optionally have a version specified by the {@link #setVersion(String)} method.
+ *   <li><b>{@linkplain ImmutableIdentifier#getVersion() Version}:</b><br>
+ *       {@code Identifier}s can optionally have a version specified by the {@link #setVersion(String)} method.
  *       The version usually (but not necessarily) applies to all {@code Identifier} instances.</li>
  *
- *   <li><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b>
- *       identifiers can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
+ *   <li><b>{@linkplain ImmutableIdentifier#getDescription() Description}:</b><br>
+ *       {@code Identifier}s can optionally have a description specified by the {@link #setDescription(CharSequence)} method.
  *       The description applies only to the next identifier to create.</li>
+ *
+ *   <li><b>{@linkplain AbstractIdentifiedObject#getRemarks() Remarks}:</b><br>
+ *       {@code IdentifiedObject}s can have at most one remark, which is specified by the
+ *       {@link #setRemarks(CharSequence) code setRemarks(…)} method.</li>
  * </ul>
  *
  * <div class="section">Namespaces and scopes</div>
@@ -309,7 +300,7 @@ public abstract class Builder<B extends Builder<B>> {
             return new ImmutableIdentifier(authority, getCodeSpace(), identifier, getVersion(), null);
         } else {
             // Do not use the version information since it applies to the default authority rather than the given one.
-            return new ImmutableIdentifier(authority, Citations.getUnicodeIdentifier(authority), identifier);
+            return new ImmutableIdentifier(authority, Citations.getCodeSpace(authority), identifier);
         }
     }
 
@@ -436,6 +427,31 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B setVersion(final String version) {
         setProperty(Identifier.VERSION_KEY, version);
+        return self();
+    }
+
+    /**
+     * Sets whether the next {@code IdentifiedObject}s to create shall be considered deprecated. Deprecated objects
+     * exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
+     *
+     * <p>Note that this method does not apply to name and identifiers, which have their own
+     * {@code addDeprecatedFoo(…)} methods.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * this property is kept unchanged until this {@code setDeprecated(…)} method is invoked again.</p>
+     *
+     * @param  deprecated {@code true} if the next names, identifiers and identified objects should be
+     *         considered deprecated, or {@code false} otherwise.
+     * @return {@code this}, for method call chaining.
+     *
+     * @see #addDeprecatedName(CharSequence, CharSequence)
+     * @see #addDeprecatedIdentifier(String, String)
+     * @see AbstractIdentifiedObject#isDeprecated()
+     *
+     * @since 0.6
+     */
+    public B setDeprecated(final boolean deprecated) {
+        properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, deprecated);
         return self();
     }
 
@@ -571,6 +587,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  supersededBy The name to use instead of this one, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      *
+     * @see #addDeprecatedIdentifier(String, String)
+     * @see #setDeprecated(boolean)
+     *
      * @since 0.6
      */
     public B addDeprecatedName(final CharSequence name, final CharSequence supersededBy) {
@@ -651,6 +670,9 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  identifier   The {@code IdentifiedObject} deprecated identifier.
      * @param  supersededBy The identifier to use instead of this one, or {@code null} if none.
      * @return {@code this}, for method call chaining.
+     *
+     * @see #addDeprecatedName(CharSequence, CharSequence)
+     * @see #setDeprecated(boolean)
      *
      * @since 0.6
      */

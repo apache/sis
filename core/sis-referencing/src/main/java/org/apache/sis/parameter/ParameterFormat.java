@@ -828,7 +828,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             if (aliases != null) { // Paranoiac check.
                 for (final GenericName alias : aliases) {
                     if (alias != null) { // Paranoiac check.
-                        final String codespace = NameToIdentifier.getCodespaceOrAuthority(alias, displayLocale);
+                        final String codespace = NameToIdentifier.getCodeSpace(alias, displayLocale);
                         if (isPreferredCodespace(codespace)) {
                             row = putIfAbsent(resources, row, columnIndices, codespace,
                                     alias.tip().toInternationalString().toString(displayLocale));

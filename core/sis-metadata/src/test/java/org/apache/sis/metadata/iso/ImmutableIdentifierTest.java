@@ -24,6 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -40,7 +41,7 @@ import static org.opengis.metadata.Identifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -53,18 +54,18 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      */
     private static Map<String,Object> properties() {
         final Map<String,Object> properties = new HashMap<>();
-        assertNull(properties.put(CODE_KEY,        "This is a code"));
-        assertNull(properties.put(AUTHORITY_KEY,   "This is an authority"));
-        assertNull(properties.put(VERSION_KEY,     "This is a version"));
-        assertNull(properties.put("dummy",         "Doesn't matter"));
-        assertNull(properties.put("remarks",       "There is remarks"));
-        assertNull(properties.put("remarks_fr",    "Voici des remarques"));
-        assertNull(properties.put("remarks_fr_CA", "Pareil"));
+        assertNull(properties.put(CODE_KEY,            "This is a code"));
+        assertNull(properties.put(AUTHORITY_KEY,       "This is an authority"));
+        assertNull(properties.put(VERSION_KEY,         "This is a version"));
+        assertNull(properties.put("dummy",             "Doesn't matter"));
+        assertNull(properties.put("description",       "There is a description"));
+        assertNull(properties.put("description_fr",    "Voici une description"));
+        assertNull(properties.put("description_fr_CA", "Pareil"));
         return properties;
     }
 
     /**
-     * Tests the constructor with only {@link String} values, including localized remarks.
+     * Tests the constructor with only {@link String} values, including a localized description.
      */
     @Test
     public void testConstructorWithStringValues() {
@@ -72,34 +73,34 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
-        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,   "This is an authority", identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
-        assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
-        assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));
-        assertEquals("remarks_fr_BE", "Voici des remarques",  identifier.getRemarks().toString(new Locale("fr", "BE")));
+        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority().getTitle().toString());
+        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
     }
 
     /**
-     * Tests the constructor with the {@code "remarks"} attribute as a {@link SimpleInternationalString}.
+     * Tests the constructor with the {@code "description"} attribute as a {@link SimpleInternationalString}.
      */
     @Test
     @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithInternationalString() {
         final Map<String,Object> properties = properties();
-        assertNotNull(properties.put("remarks", new SimpleInternationalString("Overwritten remarks")));
+        assertNotNull(properties.put("description", new SimpleInternationalString("Overwritten description")));
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
-        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,   "This is an authority", identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
-        assertEquals("remarks",       "Overwritten remarks",  identifier.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
-        assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));
+        assertEquals(CODE_KEY,            "This is a code",          identifier.getCode());
+        assertNull  (CODESPACE_KEY,                                  identifier.getCodeSpace());
+        assertEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority().getTitle().toString());
+        assertEquals(VERSION_KEY,         "This is a version",       identifier.getVersion());
+        assertEquals("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -113,13 +114,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
-        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,   "An other authority",   identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
-        assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
-        assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));
+        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority().getTitle().toString());
+        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -131,17 +132,17 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     @DependsOnMethod("testConstructorWithStringValues")
     public void testPredefinedCitation() {
         final Map<String,Object> properties = properties();
-        assertNotNull(properties.put(AUTHORITY_KEY, "EPSG"));
+        assertNotNull(properties.put(AUTHORITY_KEY, Constants.EPSG));
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
-        assertSame  (AUTHORITY_KEY,   Citations.EPSG,         identifier.getAuthority());
-        assertEquals(CODESPACE_KEY,   "EPSG",                 identifier.getCodeSpace()); // Inferred from authority.
-        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
-        assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
-        assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));
+        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
+        assertSame  (AUTHORITY_KEY,       Citations.EPSG,           identifier.getAuthority());
+        assertEquals(CODESPACE_KEY,       Constants.EPSG,           identifier.getCodeSpace()); // Inferred from authority.
+        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**

@@ -23,7 +23,7 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-meridian-8903">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
   <gml:name>Paris</gml:name>
   <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>
   <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>

@@ -50,7 +50,7 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
-     * Tests {@link Citations#getUnicodeIdentifier(Citation)} with some ignorable characters.
+     * Tests {@link Citations#getCodeSpace(Citation)} with some ignorable characters.
      * Ignorable character used in this test are:
      *
      * <ul>
@@ -60,14 +60,14 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testGetIdentifier")
-    public void testGetUnicodeIdentifier() {
+    public void testGetCodeSpace() {
         final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
-        assertEquals("ValidIdentifier", Citations.getUnicodeIdentifier(citation));
+        assertEquals("ValidIdentifier", Citations.getCodeSpace(citation));
 
         assertNull("Shall not be taken as a valid identifier.",
-                Citations.getUnicodeIdentifier(new SimpleCitation("Proj.4")));
+                Citations.getCodeSpace(new SimpleCitation("Proj.4")));
         assertEquals("Shall fallback on the the identifier space name.",
-                "TheProj4Space", Citations.getUnicodeIdentifier(new Proj4()));
+                "TheProj4Space", Citations.getCodeSpace(new Proj4()));
     }
 
     /**

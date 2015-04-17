@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -36,6 +37,13 @@ final class DeprecatedName extends NamedIdentifier {
     private static final long serialVersionUID = 1792369861343798471L;
 
     /**
+     * Information about the replacement for this name.
+     *
+     * @see #getRemarks()
+     */
+    private final InternationalString remarks;
+
+    /**
      * Creates a new deprecated EPSG name.
      *
      * @param supersededBy The name that replace this one.
@@ -43,8 +51,8 @@ final class DeprecatedName extends NamedIdentifier {
     DeprecatedName(final Citation authority, final String codeSpace, final CharSequence code, final String version,
             final CharSequence supersededBy)
     {
-        super(authority, codeSpace, code, version,
-                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
+        super(authority, codeSpace, code, version, null);
+        remarks = Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
     }
 
     /**
@@ -55,5 +63,17 @@ final class DeprecatedName extends NamedIdentifier {
     @Override
     public boolean isDeprecated() {
         return true;
+    }
+
+    /**
+     * Information about the replacement for this name.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
+     *
+     * @return Information about the replacement for this name, or {@code null} if none.
+     */
+    @Override
+    public InternationalString getRemarks() {
+        return remarks;
     }
 }

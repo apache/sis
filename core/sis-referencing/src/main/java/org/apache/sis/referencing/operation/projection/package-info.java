@@ -36,7 +36,7 @@
  * More on this convention is explained below.</p>
  *
  * <p>Users wanting to know more about the available projections and their parameters should look at the
- * <a href="http://sis.apache.org/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
+ * <a href="http://sis.apache.org/content/CoordinateOperationMethods.html">list of coordinate operation methods</a>.
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
@@ -122,7 +122,7 @@
  * <ul>
  *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#normalizeGeographicInputs normalization} affine transform</li>
  *   <li>A {@link      org.apache.sis.referencing.operation.projection.NormalizedProjection} subclass</li>
- *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#scaleAndTranslate2D denormalization} affine transform</li>
+ *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#getMatrix denormalization} affine transform</li>
  * </ul>
  *
  * The first step (<cite>"normalization"</cite>) converts longitude and latitude values from degrees to radians

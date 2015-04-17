@@ -98,8 +98,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     it actually used in a new {@code ContextualParameters} instance.</li>
  *
  *   <li>The map projection constructor may keep only the non-linear parameters for itself,
- *     and gives the linear parameters to the {@link #normalizeGeographicInputs normalizeGeographicInputs(…)}
- *     and {@link #scaleAndTranslate2D scaleAndTranslate2D(…)} methods, which will create the matrices show above.
+ *     and gives the linear parameters to the {@link #normalizeGeographicInputs normalizeGeographicInputs(…)} and
+ *     {@link MatrixSIS#convertAfter MatrixSIS.convertAfter(…)} methods, which will create the matrices show above.
  *     The projection constructor is free to apply additional operations on the two affine transforms
  *     ({@linkplain #getMatrix(boolean) normalize / denormalize}) before or after the above-cited
  *     methods have been invoked.</li>
@@ -240,20 +240,35 @@ public class ContextualParameters extends FormattableObject implements Parameter
 
     /**
      * Returns the affine transforms to be applied before or after the non-linear kernel operation.
-     *
-     * <p>Immediately after {@linkplain #ContextualParameters(OperationMethod) construction}, those matrices
+     * Immediately after {@linkplain #ContextualParameters(OperationMethod) construction}, those matrices
      * are modifiable identity matrices. Callers can modify the matrix element values, typically by calls to
-     * the {@link MatrixSIS#concatenate(int, Number, Number) MatrixSIS.concatenate(…)} method. Alternatively,
-     * the following methods can be invoked for applying some frequently used configurations:
+     * the {@link MatrixSIS#convertBefore(int, Number, Number) MatrixSIS.convertBefore(…)} method.
+     * Alternatively, the following methods can be invoked for applying some frequently used configurations:
      *
      * <ul>
      *   <li>{@link #normalizeGeographicInputs(double)}</li>
      *   <li>{@link #denormalizeGeographicOutputs(double)}</li>
-     *   <li>{@link #scaleAndTranslate2D(boolean, double, double, double)}</li>
      * </ul>
      *
      * After the {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)} method has been
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
+     *
+     *
+     * <div class="section">Application to map projections</div>
+     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
+     * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
+     *
+     * <table class="sis">
+     *   <caption>Initial matrix coefficients after construction</caption>
+     *   <tr>
+     *     <th>{@code getMatrix(true)}</th>
+     *     <th class="sep">{@code getMatrix(false)}</th>
+     *   </tr><tr>
+     *     <td>{@include formulas.html#NormalizeGeographic}</td>
+     *     <td class="sep">{@include formulas.html#DenormalizeCartesian}</td>
+     *   </tr>
+     * </table>
      *
      * @param  norm {@code true} for fetching the <cite>normalization</cite> transform to apply before the kernel,
      *         or {@code false} for the <cite>denormalization</cite> transform to apply after the kernel.
@@ -266,43 +281,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
         } else {
             return Matrices.unmodifiable(m);
         }
-    }
-
-    /**
-     * Concatenates a uniform two-dimensional scale and a translation to the (de)normalization matrix.
-     * The scale and translations are applied only on the two first dimensions.
-     *
-     * <div class="section">Application to map projections</div>
-     * In map projections, the scale is the <cite>semi-major</cite> axis length (<var>a</var>) – potentially multiplied
-     * by an other scale factor <var>k</var>₀ – and the translation terms are the <cite>false easting</cite> (FE) and
-     * <cite>false northing</cite> (FN). The following method invocation:
-     *
-     * {@preformat java
-     *   scaleAndTranslate2D(false, a*k0, FE, FN);
-     * }
-     *
-     * is then equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating} the denormalization
-     * matrix with the following matrix. This will have the effect of applying the conversion described above after
-     * the non-linear kernel operation.
-     *
-     * <center>{@include formulas.html#DenormalizeCartesian}</center>
-     *
-     * @param  norm  {@code true} to apply the scale and translations on the <cite>normalize</cite> transform,
-     *               or {@code false} to apply them on the <cite>denormalize</cite> transform.
-     * @param  scale The scale to apply on the 2 first axes.
-     * @param  tx    The translation to apply on the <var>x</var> axis after the scale.
-     * @param  ty    The translation to apply on the <var>y</var> axis after the scale.
-     * @return The (de)normalization affine transform as a matrix.
-     *         Callers can change that matrix directly if they want to apply additional (de)normalization operations.
-     * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
-     */
-    public MatrixSIS scaleAndTranslate2D(final boolean norm, double scale, double tx, double ty) {
-        ensureModifiable();
-        final MatrixSIS m = (MatrixSIS) (norm ? normalize : denormalize);  // Must be the same instance, not a copy.
-        final DoubleDouble s = (scale != 1) ? new DoubleDouble(scale) : null;
-        m.concatenate(0, s, (tx != 0) ? tx : null);
-        m.concatenate(1, s, (ty != 0) ? ty : null);
-        return m;
     }
 
     /**
@@ -333,8 +311,8 @@ public class ContextualParameters extends FormattableObject implements Parameter
             offset.multiply(toRadians);
         }
         final MatrixSIS normalize = (MatrixSIS) this.normalize;  // Must be the same instance, not a copy.
-        normalize.concatenate(0, toRadians, offset);
-        normalize.concatenate(1, toRadians, null);
+        normalize.convertBefore(0, toRadians, offset);
+        normalize.convertBefore(1, toRadians, null);
         return normalize;
     }
 
@@ -358,8 +336,8 @@ public class ContextualParameters extends FormattableObject implements Parameter
         ensureModifiable();
         final DoubleDouble toDegrees = DoubleDouble.createRadiansToDegrees();
         final MatrixSIS denormalize = (MatrixSIS) this.denormalize;  // Must be the same instance, not a copy.
-        denormalize.concatenate(0, toDegrees, (λ0 != 0) ? λ0 : null);
-        denormalize.concatenate(1, toDegrees, null);
+        denormalize.convertAfter(0, toDegrees, (λ0 != 0) ? λ0 : null);
+        denormalize.convertAfter(1, toDegrees, null);
         return denormalize;
     }
 

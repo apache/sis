@@ -18,14 +18,12 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for <cite>"Mercator (variant A)"</cite> projection (EPSG:9804).
- * EPSG defines two projections with the same parameters, 1026 being the spherical case and 9804 the ellipsoidal case.
+ * The provider for <cite>"Lambert Conic Conformal (1SP)"</cite> projection (EPSG:9801).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -33,18 +31,22 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @version 0.6
  * @module
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
+ * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_1sp.html">Lambert Conic Conformal 1SP on RemoteSensing.org</a>
  */
-public final class Mercator1SP extends AbstractMercator {
+public final class LambertConformal1SP extends AbstractLambert {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -5886510621481710072L;
+    private static final long serialVersionUID = -4243116402872545772L;
+
+    /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9801";
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.
+     * Valid values range is [-90 … 90]° and default value is 0°.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
@@ -52,13 +54,13 @@ public final class Mercator1SP extends AbstractMercator {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Mercator1SP.CENTRAL_MERIDIAN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
      * Valid values range is (0 … ∞) and default value is 1.
      */
-    public static final ParameterDescriptor<Double> SCALE_FACTOR;
+    public static final ParameterDescriptor<Double> SCALE_FACTOR = Mercator1SP.SCALE_FACTOR;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -66,31 +68,16 @@ public final class Mercator1SP extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        LATITUDE_OF_ORIGIN = createConstant(builder.addNamesAndIdentifiers(Equirectangular.LATITUDE_OF_ORIGIN)
-                .rename(Citations.GEOTIFF, "NatOriginLat")
-                .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
-        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.CENTRAL_MERIDIAN)
-                .rename(Citations.GEOTIFF, "NatOriginLong"));
-
-        SCALE_FACTOR = createScale(builder
-                .addIdentifier("8805")
-                .addName("Scale factor at natural origin")
-                .addName(Citations.OGC,     Constants.SCALE_FACTOR)
-                .addName(Citations.ESRI,    "Scale_Factor")
-                .addName(Citations.NETCDF,  "scale_factor_at_projection_origin")
-                .addName(Citations.GEOTIFF, "ScaleAtNatOrigin")
-                .addName(Citations.PROJ4,   "k"));
+        LATITUDE_OF_ORIGIN = createMandatoryLatitude(builder
+                .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN));
 
         PARAMETERS = builder
-            .addIdentifier(              "9804")                        // The ellipsoidal case
-            .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
-            .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
-            .addName(Citations.OGC,      "Mercator_1SP")
-            .addName(Citations.GEOTIFF,  "CT_Mercator")
-            .addName(Citations.PROJ4,    "merc")
-            .addIdentifier(Citations.GEOTIFF,   "7")
-            .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
+            .addIdentifier(IDENTIFIER)
+            .addName(                    "Lambert Conic Conformal (1SP)")
+            .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
+            .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
+            .addIdentifier(Citations.GEOTIFF, "9")
             .createGroupForMapProjection(
                     LATITUDE_OF_ORIGIN,
                     CENTRAL_MERIDIAN,
@@ -102,7 +89,7 @@ public final class Mercator1SP extends AbstractMercator {
     /**
      * Constructs a new provider.
      */
-    public Mercator1SP() {
+    public LambertConformal1SP() {
         super(PARAMETERS);
     }
 }

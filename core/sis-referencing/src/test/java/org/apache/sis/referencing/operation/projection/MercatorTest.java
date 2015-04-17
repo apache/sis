@@ -78,45 +78,6 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     }
 
     /**
-     * Projects the given latitude value. The longitude is fixed to zero.
-     * This method is useful for testing the behavior close to poles in a simple case.
-     *
-     * @param  φ The latitude.
-     * @return The northing.
-     * @throws ProjectionException if the projection failed.
-     */
-    private double transform(final double φ) throws ProjectionException {
-        final double[] coordinate = new double[2];
-        coordinate[1] = φ;
-        ((NormalizedProjection) transform).transform(coordinate, 0, coordinate, 0, false);
-        final double y = coordinate[1];
-        if (!Double.isNaN(y) && !Double.isInfinite(y)) {
-            assertEquals(0, coordinate[0], tolerance);
-        }
-        return y;
-    }
-
-    /**
-     * Inverse projects the given northing value. The longitude is fixed to zero.
-     * This method is useful for testing the behavior close to poles in a simple case.
-     *
-     * @param  y The northing.
-     * @return The latitude.
-     * @throws ProjectionException if the projection failed.
-     */
-    private double inverseTransform(final double y) throws ProjectionException {
-        final double[] coordinate = new double[2];
-        coordinate[1] = y;
-        ((NormalizedProjection) transform).inverseTransform(coordinate, 0, coordinate, 0);
-        final double φ = coordinate[1];
-        if (!Double.isNaN(φ)) {
-            final double λ = coordinate[0];
-            assertEquals(0, λ, tolerance);
-        }
-        return φ;
-    }
-
-    /**
      * Tests the projection at some special latitudes (0, ±π/2, NaN).
      *
      * @throws ProjectionException Should never happen.
@@ -273,7 +234,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new Mercator1SP(), false, false, true);
+        initialize(new Mercator1SP(), false, false, false, true);
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }
