@@ -158,6 +158,15 @@ public final class Code {
                     final String urn = DefinitionURI.format(NameMeaning.toObjectType(type), fallback);
                     if (urn != null) {
                         final Code code = new Code();
+                        /*
+                         * Really getUnicodeIdentifier(…) below, not getCodeSpace(…). The reason is that the
+                         * code space already appears in the URN string, and common usage found in GML files
+                         * is to use the "codeSpace" attribute for the authority ("OGP" or "IOGP" for objects
+                         * from the EPSG database). Consequently in the common case where the authority is our
+                         * Citations.EPSG constant, we really want the "IOGP" string rather than "EPSG".
+                         *
+                         * See https://issues.apache.org/jira/browse/SIS-196
+                         */
                         code.codeSpace = getUnicodeIdentifier(fallback.getAuthority());
                         code.code = urn;
                         return code;

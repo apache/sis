@@ -215,9 +215,9 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
         assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "OGP", "EPSG", null, "4400", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "OGP", "EPSG", null, "1",    getSingleton(E.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "OGP", "EPSG", null, "2",    getSingleton(N.getIdentifiers()));
+        assertIdentifierEquals(        "identifier", "IOGP", "EPSG", null, "4400", getSingleton(cs.getIdentifiers()));
+        assertIdentifierEquals("axis[0].identifier", "IOGP", "EPSG", null, "1",    getSingleton(E.getIdentifiers()));
+        assertIdentifierEquals("axis[1].identifier", "IOGP", "EPSG", null, "2",    getSingleton(N.getIdentifiers()));
         /*
          * Marshal and compare with the original file.
          */

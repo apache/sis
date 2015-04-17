@@ -134,9 +134,9 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         final CoordinateSystemAxis λ = cs.getAxis(1);
         assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
         assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "OGP", "EPSG", null, "6422", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "OGP", "EPSG", null, "106",  getSingleton(φ.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "OGP", "EPSG", null, "107",  getSingleton(λ.getIdentifiers()));
+        assertIdentifierEquals(        "identifier", "IOGP", "EPSG", null, "6422", getSingleton(cs.getIdentifiers()));
+        assertIdentifierEquals("axis[0].identifier", "IOGP", "EPSG", null, "106",  getSingleton(φ.getIdentifiers()));
+        assertIdentifierEquals("axis[1].identifier", "IOGP", "EPSG", null, "107",  getSingleton(λ.getIdentifiers()));
         assertEquals("axis[0].abbreviation", "φ", φ.getAbbreviation());
         assertEquals("axis[1].abbreviation", "λ", λ.getAbbreviation());
         /*

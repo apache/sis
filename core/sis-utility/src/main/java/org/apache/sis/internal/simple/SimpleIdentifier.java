@@ -103,7 +103,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getUnicodeIdentifier(authority);
+        return Citations.getCodeSpace(authority);
     }
 
     /**

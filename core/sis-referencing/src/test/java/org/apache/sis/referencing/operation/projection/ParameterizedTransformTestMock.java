@@ -59,4 +59,22 @@ final class ParameterizedTransformTestMock {
         // The test is run on Apache SIS branches.
        assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
     }
+
+    public void testLambertConicConformal1SP() {
+        // See GeoAPI 3.1 for the real test.
+        // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
+    }
+
+    public void testLambertConicConformal2SP() {
+        // See GeoAPI 3.1 for the real test.
+        // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
+    }
+
+    public void testLambertConicConformalBelgium() {
+        // See GeoAPI 3.1 for the real test.
+        // The test is run on Apache SIS branches.
+       assumeTrue(PENDING_NEXT_GEOAPI_RELEASE); // For reporting the test as skippped.
+    }
 }
