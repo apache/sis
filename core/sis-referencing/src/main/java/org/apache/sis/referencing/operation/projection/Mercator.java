@@ -16,7 +16,10 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Map;
+import java.util.EnumMap;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -107,6 +110,56 @@ public class Mercator extends NormalizedProjection {
     final byte type;
 
     /**
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given type.
+     *
+     * @param  type One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
+     * @return The roles map to give to super-class constructor.
+     */
+    @SuppressWarnings("fallthrough")
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        /*
+         * "Longitude of origin" is a parameter of all Mercator projections, but is intentionally omitted from
+         * this map because it will be handled in a special way by the Mercator constructor. The "scale factor"
+         * is not formally a "Mercator 2SP" argument, but we accept it anyway for all Mercator projections
+         * since it may be used in some Well Known Text (WKT).
+         */
+        roles.put(ParameterRole.SCALE_FACTOR, Mercator1SP.SCALE_FACTOR);
+        switch (type) {
+            case REGIONAL: {
+                roles.put(ParameterRole.FALSE_EASTING,  RegionalMercator.EASTING_AT_FALSE_ORIGIN);
+                roles.put(ParameterRole.FALSE_NORTHING, RegionalMercator.NORTHING_AT_FALSE_ORIGIN);
+                break;
+            }
+            case SPHERICAL: {
+                /*
+                 * According to EPSG guide, the latitude of conformal sphere radius should be the latitude of origin.
+                 * However that origin is fixed to 0° by EPSG guide, which makes radius calculation ineffective when
+                 * using the official parameters. We could fallback on the standard parallel (φ1) if φ0 is not set,
+                 * but for now we wait to see for real cases. Some arguments that may be worth consideration:
+                 *
+                 *   - The standard parallel is not an EPSG parameter for Spherical case.
+                 *   - Users who set the standard parallel anyway may expect that latitude to be used for radius
+                 *     calculation, since standard parallels are also known as "latitude of true scale".
+                 *   - Using the standard parallel instead than the latitude of origin would be consistent
+                 *     with what EPSG does for the Equirectangular projection.
+                 *
+                 * Anyway, this choice matters only when the user request explicitely spherical formulas applied
+                 * on an ellipsoidal figure of the Earth, which should be very rare.
+                 */
+                roles.put(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS, Mercator1SP.LATITUDE_OF_ORIGIN);
+                // Fall through
+            }
+            default: {
+                roles.put(ParameterRole.FALSE_EASTING,  Mercator1SP.FALSE_EASTING);
+                roles.put(ParameterRole.FALSE_NORTHING, Mercator1SP.FALSE_NORTHING);
+                break;
+            }
+        }
+        return roles;
+    }
+
+    /**
      * Creates a Mercator projection from the given parameters.
      * The {@code method} argument can be the description of one of the following:
      *
@@ -132,21 +185,7 @@ public class Mercator extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters, // Rational for the 2 next arguments are explained in comments later.
-                (type == SPHERICAL) ? Mercator2SP.STANDARD_PARALLEL : null, null, Mercator1SP.SCALE_FACTOR,
-                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : Mercator1SP.FALSE_EASTING,
-                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : Mercator1SP.FALSE_NORTHING);
-        /*
-         * Note on above Mercator2SP.STANDARD_PARALLEL argument (used for computing radius of conformal sphere):
-         * according the EPSG guide we should rather use Mercator2SP.LATITUDE_OF_ORIGIN. But the later is fixed
-         * to 0° by EPSG guide, which makes radius calculation ineffective when using the official parameters.
-         * Given that we already allow usage of Mercator2SP.STANDARD_PARALLEL (which is not an EPSG parameter)
-         * for compatibility reasons, user who set the standard parallel may expect this latitude to be used for
-         * radius calculation. Using the standard parallel instead than the latitude of origin is also consistent
-         * with what EPSG does for the Equirectangular projection. Anyway, this choice matters only when the user
-         * request explicitely spherical formulas applied on an ellipsoidal figure of the Earth, which should be
-         * very rare.
-         */
+        super(method, parameters, roles(type));
         this.type = type;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
