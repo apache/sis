@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.EnumMap;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
@@ -187,6 +189,168 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     private final MathTransform2D inverse;
 
     /**
+     * Maps the parameters to be used for initializing {@link NormalizedProjection} and its
+     * {@linkplain ContextualParameters#getMatrix(boolean) normalization / denormalization} matrices.
+     * This is an enumeration of parameters found in almost every map projections, but under different names.
+     * This enumeration allows {@code NormalizedProjection} subclasses to specify which parameter names, ranges
+     * and default values should be used by the
+     * {@linkplain NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map) projection constructor}.
+     *
+     * <p>{@code NormalizedProjection} subclasses will typically provide values only for the following keys:
+     * {@link #CENTRAL_MERIDIAN}, {@link #SCALE_FACTOR}, {@link #FALSE_EASTING} and {@link #FALSE_NORTHING}.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.6
+     * @version 0.6
+     * @module
+     *
+     * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
+     */
+    protected static enum ParameterRole {
+        /**
+         * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
+         * This value is used for computing {@link NormalizedProjection#excentricity},
+         * and is also a multiplication factor for the denormalization matrix.
+         *
+         * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_major"}.
+         * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
+         */
+        SEMI_MAJOR(Constants.SEMI_MAJOR),
+
+        /**
+         * Maps the <cite>semi-minor axis length</cite> parameter (symbol: <var>b</var>).
+         * This value is used for computing {@link NormalizedProjection#excentricity}.
+         *
+         * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_minor"}.
+         * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
+         */
+        SEMI_MINOR(Constants.SEMI_MINOR),
+
+        /**
+         * Maps the parameter for the latitude where to compute the <cite>radius of conformal sphere</cite>
+         * (symbol: <var>R</var><sub>c</sub>). If this parameter is provided, then the radius of the conformal
+         * sphere at latitude φ will be used instead than the semi-major axis length in the denormalisation matrix.
+         * In other words, if provided then <var>a</var> is replaced by <var>R</var><sub>c</sub> below:
+         *
+         * <center>{@include ../transform/formulas.html#DenormalizeCartesian}</center>
+         *
+         * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitely spherical
+         * formulas, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026), but the figure
+         * of the Earth may be an ellipsoid rather than a sphere. In the majority of cases, this enumeration should
+         * not be used.</p>
+         */
+        LATITUDE_OF_CONFORMAL_SPHERE_RADIUS(null),
+
+        /**
+         * Maps the <cite>central meridian</cite> parameter (symbol: λ₀).
+         * This value is subtracted from the longitude values before the map projections.
+         *
+         * <p>Some common names for this parameter are:</p>
+         * <ul>
+         *   <li>Longitude of origin</li>
+         *   <li>Longitude of false origin</li>
+         *   <li>Longitude of natural origin</li>
+         *   <li>Spherical longitude of origin</li>
+         *   <li>Longitude of projection centre</li>
+         * </ul>
+         */
+        CENTRAL_MERIDIAN(Constants.CENTRAL_MERIDIAN),
+
+        /**
+         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k</var>₀).
+         * This is a multiplication factor for the (<var>x</var>,<var>y</var>) values obtained after map projections.
+         *
+         * <p>Some common names for this parameter are:</p>
+         * <ul>
+         *   <li>Scale factor at natural origin</li>
+         *   <li>Scale factor on initial line</li>
+         *   <li>Scale factor on pseudo standard parallel</li>
+         * </ul>
+         */
+        SCALE_FACTOR(Constants.SCALE_FACTOR),
+
+        /**
+         * Maps the <cite>false easting</cite> parameter (symbol: <var>FE</var>).
+         * This is a translation term for the <var>x</var> values obtained after map projections.
+         *
+         * <p>Some common names for this parameter are:</p>
+         * <ul>
+         *   <li>False easting</li>
+         *   <li>Easting at false origin</li>
+         *   <li>Easting at projection centre</li>
+         * </ul>
+         */
+        FALSE_EASTING(Constants.FALSE_EASTING),
+
+        /**
+         * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
+         * This is a translation term for the <var>y</var> values obtained after map projections.
+         *
+         * <p>Some common names for this parameter are:</p>
+         * <ul>
+         *   <li>False northing</li>
+         *   <li>Northing at false origin</li>
+         *   <li>Northing at projection centre</li>
+         * </ul>
+         */
+        FALSE_NORTHING(Constants.FALSE_NORTHING);
+
+        /**
+         * The OGC name for this parameter. This is used only when inferring automatically the role map.
+         * We use the OGC name instead than the EPSG name because OGC names are identical for a wider
+         * range of projections (e.g. {@code "scale_factor"} for almost all projections).
+         */
+        private final String name;
+
+        /**
+         * Creates a new parameter role associated to the given OGC name.
+         */
+        private ParameterRole(final String name) {
+            this.name = name;
+        }
+
+        /**
+         * Provides default (<var>role</var> → <var>parameter</var>) associations for the given map projection.
+         * This is a convenience method for a typical set of parameters found in map projections.
+         * This method expects a {@code projection} argument containing descriptors for the given parameters
+         * (using OGC names):
+         *
+         * <ul>
+         *   <li>{@code "semi_major"}</li>
+         *   <li>{@code "semi_minor"}</li>
+         *   <li>{@code "central_meridian"}</li>
+         *   <li>{@code "scale_factor"}</li>
+         *   <li>{@code "false_easting"}</li>
+         *   <li>{@code "false_northing"}</li>
+         * </ul>
+         *
+         * <div class="note"><b>Note:</b>
+         * Apache SIS uses EPSG names as much as possible, but this method is an exception to this rule.
+         * In this particular case we use OGC names because they are identical for a wide range of projections.
+         * For example there is at least {@linkplain #SCALE_FACTOR three different EPSG names} for the
+         * <cite>"scale factor"</cite> parameter, which OGC defines only {@code "scale_factor"} for all of them.</div>
+         *
+         * @param  projection The map projection method for which to infer (<var>role</var> → <var>parameter</var>) associations.
+         * @return The parameters associated to most role in this enumeration.
+         * @throws ParameterNotFoundException if one of the above-cited parameters is not found in the given projection method.
+         * @throws ClassCastException if a parameter has been found but is not an instance of {@code ParameterDescriptor<Double>}.
+         */
+        public static Map<ParameterRole, ParameterDescriptor<Double>> defaultMap(final OperationMethod projection)
+                throws ParameterNotFoundException, ClassCastException
+        {
+            final ParameterDescriptorGroup parameters = projection.getParameters();
+            final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+            for (final ParameterRole role : values()) {
+                if (role.name != null) {
+                    final GeneralParameterDescriptor p = parameters.descriptor(role.name);
+                    roles.put(role, Parameters.cast((ParameterDescriptor<?>) p, Double.class));
+                }
+            }
+            return roles;
+        }
+    }
+
+    /**
      * Constructs a new map projection from the supplied parameters.
      * This constructor applies the following operations on the {@link ContextualParameter}:
      *
@@ -227,123 +391,79 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   </tr>
      * </table>
      *
-     * <div class="section">Pre-requite</div>
-     * The parameters of the given {@code method} argument shall contains descriptors for the given parameters
-     * (using OGC names):
-     * <ul>
-     *   <li>{@code "semi_major"}       (mandatory)</li>
-     *   <li>{@code "semi_minor"}       (mandatory)</li>
-     *   <li>{@code "central_meridian"} (default to 0°)</li>
-     *   <li>{@code "scale_factor"}     (optional, default to 1)</li>
-     *   <li>{@code "false_easting"}    (default to 0 metre)</li>
-     *   <li>{@code "false_northing"}   (default to 0 metre)</li>
-     * </ul>
-     *
-     * <div class="note"><b>Note:</b>
-     * Apache SIS uses EPSG names as much as possible, but this constructor is an exception to this rule.
-     * In this particular case we use OGC names because they are identical for a wide range of projections.
-     * For example there is at least three different EPSG names for the <cite>"scale factor"</cite> parameter,
-     * depending on the projection:
+     * <div class="section">Which parameters are considered</div>
+     * The {@code roles} map specifies which parameters to look for <cite>central meridian</cite>,
+     * <cite>scale factor</cite>, <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * All entries in the {@code roles} map are optional.
+     * All descriptors in the map shall comply to the following constraints:
      *
      * <ul>
-     *   <li>Scale factor at natural origin</li>
-     *   <li>Scale factor on initial line</li>
-     *   <li>Scale factor on pseudo standard parallel</li>
+     *   <li>Descriptors associated to {@link ParameterRole#SEMI_MAJOR}, {@link ParameterRole#SEMI_MINOR SEMI_MINOR},
+     *     {@link ParameterRole#FALSE_EASTING FALSE_EASTING} and {@link ParameterRole#FALSE_NORTHING FALSE_NORTHING}
+     *     shall have the same linear unit of measurement (usually metre).</li>
+     *   <li>Descriptors associated to angular measures ({@link ParameterRole#CENTRAL_MERIDIAN} and
+     *     {@link ParameterRole#LATITUDE_OF_CONFORMAL_SPHERE_RADIUS LATITUDE_OF_CONFORMAL_SPHERE_RADIUS})
+     *     shall use degrees.</li>
      * </ul>
      *
-     * OGC defines only {@code "scale_factor"} for all, which makes a convenient name to look for in this
-     * constructor.</div>
+     * Note that users can still use units of their choice in the {@link Parameters} object given in argument to
+     * this constructor. But those values will be converted to the units of measurement specified by the parameter
+     * descriptors in the {@code roles} map, which must be the above-cited units.
      *
      * @param method     Description of the map projection parameters.
      * @param parameters The parameters of the projection to be created.
+     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *        <cite>false easting</cite>, <cite>false northing</cite> and other values, or {@code null}
+     *        for the {@linkplain ParameterRole#defaultMap(OperationMethod) default associations}.
      */
-    protected NormalizedProjection(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, null,
-                descriptor(method, Constants.CENTRAL_MERIDIAN),
-                descriptor(method, Constants.SCALE_FACTOR),     // Optional (handled in a special way).
-                descriptor(method, Constants.FALSE_EASTING),
-                descriptor(method, Constants.FALSE_NORTHING));
-    }
-
-    /**
-     * Returns the parameter descriptor for the given name.
-     * This is a helper method for above constructor only.
-     */
-    private static ParameterDescriptor<Double> descriptor(final OperationMethod method, final String name) {
-        ensureNonNull("method", method);
-        final GeneralParameterDescriptor p;
-        try {
-            p = method.getParameters().descriptor(name);
-        } catch (ParameterNotFoundException e) {
-            if (name == Constants.SCALE_FACTOR) {   // Identity comparison is okay here.
-                return null;
-            }
-            throw e;
-        }
-        return Parameters.cast((ParameterDescriptor<?>) p, Double.class);
-    }
-
-    /**
-     * Constructs a new map projection by fetching the values using the given parameter descriptors.
-     * This constructor is equivalent to the {@link #NormalizedProjection(OperationMethod, Parameters)} constructor,
-     * except that the descriptors are explicitely specified. Note that the list of arguments may change in any future
-     * SIS version.
-     *
-     *
-     * <div class="section">Radius of conformal sphere (Rc)</div>
-     * If the {@code conformalSphereAtφ} argument is non-null, then the radius of the conformal sphere
-     * at latitude φ will be used instead than the semi-major axis length <var>a</var> (<b>Source:</b>
-     * <cite>Geomatics Guidance Note Number 7, part 2, version 49</cite> from EPSG: table 3 in section
-     * 1.2 and explanation in section 1.3.3.1).
-     *
-     * <p><b>Important usage notes:</b></p>
-     * <ul>
-     *   <li>The {@code conformalSphereAtφ} argument shall be non-null <strong>only</strong> when the user
-     *       requested explicitely spherical formulas, for example the <cite>"Mercator (Spherical)"</cite>
-     *       projection (EPSG:1026), but the figure of the Earth is an ellipsoid rather than a sphere.</li>
-     *   <li>This parameter value is <strong>not</strong> stored since we presume that the caller will fetch
-     *       the value for its own processing.</li>
-     * </ul>
-     *
-     * @param conformalSphere_φ If non-null, the the latitude where to compute the radius of conformal sphere.
-     * @param falseEasting      The descriptor for fetching the <cite>"False easting"</cite> parameter.
-     * @param falseNorthing     The descriptor for fetching the <cite>"False northing"</cite> parameter.
-     */
-    NormalizedProjection(final OperationMethod method, final Parameters parameters,
-            final ParameterDescriptor<Double> conformalSphere_φ,
-            final ParameterDescriptor<Double> centralMeridian,
-            final ParameterDescriptor<Double> scaleFactor,
-            final ParameterDescriptor<Double> falseEasting,
-            final ParameterDescriptor<Double> falseNorthing)
+    protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
+            Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
+        ensureNonNull("method", method);
         ensureNonNull("parameters", parameters);
+        if (roles == null) {
+            roles = ParameterRole.defaultMap(method);
+        }
         context = new ContextualParameters(method);
+        /*
+         * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
+         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
+         * in this constructor signature.
+         */
+        ParameterDescriptor<Double> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
+        ParameterDescriptor<Double> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
+        if (semiMajor == null) semiMajor = MapProjection.SEMI_MAJOR;
+        if (semiMinor == null) semiMinor = MapProjection.SEMI_MINOR;
 
-              double a  = getAndStore(parameters, MapProjection.SEMI_MAJOR);
-        final double b  = getAndStore(parameters, MapProjection.SEMI_MINOR);
-        final double λ0 = getAndStore(parameters, centralMeridian);
-        final double fe = getAndStore(parameters, falseEasting);
-        final double fn = getAndStore(parameters, falseNorthing);
+              double a  = getAndStore(parameters, semiMajor);
+        final double b  = getAndStore(parameters, semiMinor);
+        final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
+        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING));
+        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING));
         final double rs = b / a;
         excentricitySquared = 1 - (rs * rs);
         excentricity = sqrt(excentricitySquared);
-        if (conformalSphere_φ != null && excentricitySquared != 0) {
-            /*
-             * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-             * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-             * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-             * for Rc given in section 1.2, table 3.
-             *
-             * Table 3 gives:
-             * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-             *
-             * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-             */
-            final double sinφ = sin(toRadians(parameters.doubleValue(conformalSphere_φ)));
-            a = b / (1 - excentricitySquared * (sinφ*sinφ));
+        if (excentricitySquared != 0) {
+            final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
+            if (radius != null) {
+                /*
+                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
+                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
+                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
+                 * for Rc given in section 1.2, table 3.
+                 *
+                 * Table 3 gives:
+                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
+                 *
+                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
+                 */
+                final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
+                a = b / (1 - excentricitySquared * (sinφ*sinφ));
+            }
         }
         context.normalizeGeographicInputs(λ0);
         final DoubleDouble k = new DoubleDouble(a);
+        final ParameterDescriptor<Double> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
             k.multiply(getAndStore(parameters, scaleFactor));
         }

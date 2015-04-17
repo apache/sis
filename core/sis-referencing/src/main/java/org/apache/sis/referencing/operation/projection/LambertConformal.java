@@ -16,7 +16,10 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Map;
+import java.util.EnumMap;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
@@ -83,6 +86,37 @@ public class LambertConformal extends NormalizedProjection {
     final double n;
 
     /**
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given type.
+     *
+     * @param  type One of {@link #SP1}, {@link #SP2} or {@link #BELGIUM} constants.
+     * @return The roles map to give to super-class constructor.
+     */
+    @SuppressWarnings("fallthrough")
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        /*
+         * "Scale factor" is not formally a "Lambert Conformal (2SP)" argument, but we accept it
+         * anyway for all Lambert projections since it may be used in some Well Known Text (WKT).
+         */
+        roles.put(ParameterRole.SCALE_FACTOR, LambertConformal1SP.SCALE_FACTOR);
+        switch (type) {
+            case SP1: {
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
+                roles.put(ParameterRole.FALSE_EASTING,    LambertConformal1SP.FALSE_EASTING);
+                roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
+                break;
+            }
+            default: {
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
+                roles.put(ParameterRole.FALSE_EASTING,    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
+                roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
+                break;
+            }
+        }
+        return roles;
+    }
+
+    /**
      * Creates a Lambert projection from the given parameters.
      * The {@code method} argument can be the description of one of the following:
      *
@@ -105,13 +139,9 @@ public class LambertConformal extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters, null,
-                (type == SP1) ? LambertConformal1SP.CENTRAL_MERIDIAN : LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
-                LambertConformal1SP.SCALE_FACTOR,
-                (type == SP1) ? LambertConformal1SP.FALSE_EASTING    : LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
-                (type == SP1) ? LambertConformal1SP.FALSE_NORTHING   : LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
-        double φ0 = getAndStore(parameters,
-                (type == SP1) ? LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
+        super(method, parameters, roles(type));
+        double φ0 = getAndStore(parameters, (type == SP1) ?
+                LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
          * in case the user gave us non-standard parameters. For the 1SP case, or for the 2SP case left to

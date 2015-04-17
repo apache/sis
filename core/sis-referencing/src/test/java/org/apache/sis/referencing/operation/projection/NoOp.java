@@ -56,7 +56,7 @@ final strictfp class NoOp extends NormalizedProjection {
     private NoOp(final Parameters parameters) {
         super(new DefaultOperationMethod(
                 Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
-                2, 2, parameters.getDescriptor()), parameters, null, null, null, null, null);
+                2, 2, parameters.getDescriptor()), parameters, Collections.emptyMap());
     }
 
     /**
