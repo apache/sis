@@ -118,7 +118,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @XmlType(name="IdentifiedObjectType", propOrder={
@@ -153,6 +153,17 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      */
     public static final String LOCALE_KEY = Errors.LOCALE_KEY;
+
+    /**
+     * Optional key which can be given to the {@linkplain #AbstractIdentifiedObject(Map) constructor}
+     * for specifying the object is deprecated. If deprecated, then the replacement should be specified
+     * in the {@linkplain #getRemarks() remarks}.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
+     *
+     * @since 0.6
+     */
+    public static final String DEPRECATED_KEY = "deprecated";
 
     /**
      * The name for this object or code. Shall never be {@code null}.
@@ -194,6 +205,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private final InternationalString remarks;
 
     /**
+     * {@code true} if this object is deprecated.
+     *
+     * @since 0.6
+     */
+    private final boolean deprecated;
+
+    /**
      * The cached hash code value, or 0 if not yet computed. This field is calculated only when
      * first needed. We do not declare it {@code volatile} because it is not a big deal if this
      * field is calculated many time, and the same value should be produced by all computations.
@@ -208,6 +226,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     AbstractIdentifiedObject() {
         remarks = null;
+        deprecated = false;
     }
 
     /**
@@ -271,6 +290,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value #DEPRECATED_KEY}</td>
+     *     <td>{@link Boolean}</td>
+     *     <td>{@link #isDeprecated()}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value #LOCALE_KEY}</td>
@@ -352,6 +376,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // "remarks": String or InternationalString
         // ----------------------------------------
         remarks = Types.toInternationalString(properties, REMARKS_KEY);
+
+        // ---------------------
+        // "deprecated": Boolean
+        // ---------------------
+        value = properties.get(DEPRECATED_KEY);
+        if (value == null) {
+            deprecated = false;
+        } else if (value instanceof Boolean) {
+            deprecated = (Boolean) value;
+        } else {
+            throw illegalPropertyType(properties, DEPRECATED_KEY, value);
+        }
     }
 
     /**
@@ -379,6 +415,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());
         remarks     =          object.getRemarks();
+        deprecated  = (object instanceof Deprecable) ? ((Deprecable) object).isDeprecated() : false;
     }
 
     /**
@@ -666,6 +703,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns comments on or information about this object, including data source information.
+     * If this object {@linkplain #isDeprecated() is deprecated}, then the remarks should give
+     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
      *
      * @return The remarks, or {@code null} if none.
      */
@@ -676,44 +715,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns {@code true} if this object is deprecated. Deprecated objects exist in some
-     * {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the
-     * EPSG database. Deprecated objects are usually obtained from a deprecated authority code.
-     * For this reason, the default implementation applies the following rules:
-     *
-     * <ul>
-     *   <li>If the {@linkplain #getName() name} is deprecated, then returns {@code true}.</li>
-     *   <li>Otherwise if <strong>all</strong> {@linkplain #getIdentifiers() identifiers}
-     *       are deprecated, ignoring the identifiers that are not instance of {@link Deprecable}
-     *       (because they can not be tested), then returns {@code true}.</li>
-     *   <li>Otherwise returns {@code false}.</li>
-     * </ul>
+     * {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
+     * If this method returns {@code true}, then the {@linkplain #getRemarks() remarks} should give
+     * indication about the replacement (e.g. <cite>"superceded by …"</cite>).
      *
      * @return {@code true} if this object is deprecated.
-     *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#isDeprecated()
      */
     @Override
     public boolean isDeprecated() {
-        if (isDeprecated(name)) {
-            return true;
-        }
-        boolean isDeprecated = false;
-        for (final Identifier identifier : nonNull(identifiers)) {
-            if (identifier instanceof Deprecable) {
-                if (!((Deprecable) identifier).isDeprecated()) {
-                    return false;
-                }
-                isDeprecated = true;
-            }
-        }
-        return isDeprecated;
-    }
-
-    /**
-     * Returns {@code true} if the given identifier is deprecated.
-     */
-    private static boolean isDeprecated(final Identifier object) {
-        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
+        return deprecated;
     }
 
     /**

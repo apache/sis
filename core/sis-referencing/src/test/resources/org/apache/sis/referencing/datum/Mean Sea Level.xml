@@ -24,7 +24,7 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-datum-5100">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:datum:EPSG::5100</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::5100</gml:identifier>
   <gml:name>Mean Sea Level</gml:name>
   <gml:remarks>Approximates geoid.</gml:remarks>
   <gml:domainOfValidity>

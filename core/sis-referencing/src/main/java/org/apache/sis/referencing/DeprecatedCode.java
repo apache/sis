@@ -16,8 +16,10 @@
  */
 package org.apache.sis.referencing;
 
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -30,11 +32,18 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 0.6
  * @module
  */
-final class DeprecatedCode extends ImmutableIdentifier {
+final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 357222258307746767L;
+
+    /**
+     * Information about the replacement for this identifier.
+     *
+     * @see #getRemarks()
+     */
+    private final InternationalString remarks;
 
     /**
      * Creates a deprecated identifier.
@@ -44,8 +53,8 @@ final class DeprecatedCode extends ImmutableIdentifier {
     DeprecatedCode(final Citation authority, final String codeSpace,
             final String code, final String version, final CharSequence supersededBy)
     {
-        super(authority, codeSpace, code, version,
-                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
+        super(authority, codeSpace, code, version, null);
+        remarks = Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
     }
 
     /**
@@ -56,5 +65,17 @@ final class DeprecatedCode extends ImmutableIdentifier {
     @Override
     public boolean isDeprecated() {
         return true;
+    }
+
+    /**
+     * Information about the replacement for this identifier.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
+     *
+     * @return Information about the replacement for this identifier, or {@code null} if none.
+     */
+    @Override
+    public InternationalString getRemarks() {
+        return remarks;
     }
 }

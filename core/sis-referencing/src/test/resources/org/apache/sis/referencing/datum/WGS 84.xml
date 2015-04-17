@@ -24,7 +24,7 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-datum-6326">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:datum:EPSG::6326</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::6326</gml:identifier>
   <gml:name>World Geodetic System 1984</gml:name>
   <gml:remarks>No distinction between the original and subsequent WGS 84 frames.</gml:remarks>
   <gml:domainOfValidity>
@@ -47,14 +47,14 @@
   <gml:realizationEpoch>1984-01-01</gml:realizationEpoch>
   <gml:primeMeridian>
     <gml:PrimeMeridian gml:id = "epsg-meridian-8901">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
       <gml:name>Greenwich</gml:name>
       <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
     </gml:PrimeMeridian>
   </gml:primeMeridian>
   <gml:ellipsoid>
     <gml:Ellipsoid gml:id = "epsg-ellipsoid-7030">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:ellipsoid:EPSG::7030</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7030</gml:identifier>
       <gml:name>WGS 84</gml:name>
       <gml:remarks>Defining parameters cited in EPSG database.</gml:remarks>
       <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>

@@ -102,13 +102,24 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
      * as a reference implementation.
      *
      * @since 0.6
      */
     @Test
-    public void testConcatenate() {
-        testConcatenate(new Matrix3(), true);
+    public void testConvertBefore() {
+        testConvertBefore(new Matrix3(), true);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testConvertAfter() {
+        testConvertAfter(new Matrix3());
     }
 }

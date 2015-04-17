@@ -127,28 +127,15 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Gets a parameter value identified by the given descriptor and stores it in the {@code context}.
-     * This method performs the following actions:
+     * Validates the given parameter value.
      *
-     * <ul>
-     *   <li>Convert the value to the units specified by the descriptor.</li>
-     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
-     *   <li>Store the value only if different than the default value.</li>
-     * </ul>
-     *
-     * This method should be invoked at {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
-     * execution time only.
-     *
-     * @param  source     The parameters from which to read the value.
-     * @param  target     Where to store the parameter values.
-     * @param  descriptor The descriptor that specify the parameter names and desired units.
-     * @return The parameter value in the units given by the descriptor.
+     * @param  descriptor The descriptor that specify the parameter to validate.
+     * @param  value The parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
-    public static double getAndStore(final Parameters source, final ParameterValueGroup target,
-            final ParameterDescriptor<Double> descriptor) throws IllegalArgumentException
+    public static void validate(final ParameterDescriptor<Double> descriptor, final double value)
+            throws IllegalArgumentException
     {
-        final double value = source.doubleValue(descriptor);    // Apply a unit conversion if needed.
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
@@ -170,11 +157,6 @@ public abstract class MapProjection extends AbstractProvider {
                         descriptor.getName(), min, max, value));
             }
         }
-        final Double defaultValue = descriptor.getDefaultValue();
-        if (defaultValue == null || !defaultValue.equals(value)) {
-            target.parameter(descriptor.getName().getCode()).setValue(value);
-        }
-        return value;
     }
 
     /**

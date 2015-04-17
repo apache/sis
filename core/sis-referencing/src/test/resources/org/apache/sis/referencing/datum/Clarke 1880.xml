@@ -23,7 +23,7 @@
                xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                gml:id             = "epsg-ellipsoid-7055">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:ellipsoid:EPSG::7055</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7055</gml:identifier>
   <gml:name>Clarke 1880 (international foot)</gml:name>
   <gml:remarks>Definition in feet assumed to be international foot.</gml:remarks>
   <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9002">20926202</gml:semiMajorAxis>

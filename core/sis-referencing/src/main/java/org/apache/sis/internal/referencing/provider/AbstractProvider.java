@@ -121,6 +121,18 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
     }
 
     /**
+     * Creates a descriptor for a latitude parameter in degrees without default value.
+     * This method is used for latitude of origin that can not be zero, of for standard parallels
+     * where the default value should be the value of another parameter instead than 0°.
+     */
+    static ParameterDescriptor<Double> createMandatoryLatitude(final ParameterBuilder builder) {
+        return builder.createBounded(MeasurementRange.create(
+                Latitude.MIN_VALUE, true,
+                Latitude.MAX_VALUE, true,
+                NonSI.DEGREE_ANGLE), null);
+    }
+
+    /**
      * Creates a descriptor for a latitude parameter in degrees with a default value of 0°.
      */
     static ParameterDescriptor<Double> createLatitude(final ParameterBuilder builder, final boolean includePoles) {
