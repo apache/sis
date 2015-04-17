@@ -321,9 +321,6 @@ public final class Citations extends Static {
      * @since 0.6
      */
     public static String getUnicodeIdentifier(final Citation citation) {
-        if (citation instanceof IdentifierSpace<?>) {
-            return ((IdentifierSpace<?>) citation).getName();
-        }
         final String identifier = getIdentifier(citation, true);
         if (identifier != null) {
             /*
@@ -362,5 +359,25 @@ public final class Citations extends Static {
             }
         }
         return identifier;
+    }
+
+    /**
+     * Infers a code space from the given citation, or returns {@code null} if none.
+     * This method is very close to {@link #getUnicodeIdentifier(Citation)}; its main difference is regarding
+     * the {@link org.apache.sis.metadata.iso.citation.Citations#EPSG} constant: this method returns "EPSG"
+     * instead than "IOGP".
+     *
+     * @param  citation The citation for which to infer the code space, or {@code null}.
+     * @return A non-empty code space for the given citation without leading or trailing whitespaces,
+     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
+     *
+     * @since 0.6
+     */
+    public static String getCodeSpace(final Citation citation) {
+        if (citation instanceof IdentifierSpace<?>) {
+            return ((IdentifierSpace<?>) citation).getName();
+        } else {
+            return getUnicodeIdentifier(citation);
+        }
     }
 }

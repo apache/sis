@@ -102,7 +102,7 @@ public class SimpleIdentifier implements Identifier, Serializable {
      */
     @Override
     public String getCodeSpace() {
-        return Citations.getUnicodeIdentifier(authority);
+        return Citations.getCodeSpace(authority);
     }
 
     /**

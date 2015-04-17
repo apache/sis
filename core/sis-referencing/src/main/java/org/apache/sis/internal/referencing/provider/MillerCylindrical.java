@@ -58,18 +58,13 @@ public final class MillerCylindrical extends AbstractMercator {
     private static final long serialVersionUID = -7682370461334391883L;
 
     /**
-     * The name of this operation method.
-     */
-    public static final String NAME = "Miller_Cylindrical";
-
-    /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
         PARAMETERS = builder
-            .addName      (NAME)
+            .addName      ("Miller_Cylindrical")
             .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
             .addIdentifier(Citations.GEOTIFF,  "20")
             .addName      (Citations.PROJ4,    "mill")

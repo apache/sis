@@ -22,12 +22,12 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.test.ReferencingAssert;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.internal.util.Constants.*;
 
 
@@ -103,7 +103,7 @@ public final strictfp class MapProjectionTest extends TestCase {
         assertParamEquals(null,                                SEMI_MAJOR,           true,  it.next());
         assertParamEquals(null,                                SEMI_MINOR,           true,  it.next());
         assertParamEquals("Latitude of 1st standard parallel", STANDARD_PARALLEL_1,  true,  it.next());
-        assertParamEquals(null,                               "latitude_of_origin",  false, it.next());
+        assertParamEquals("Latitude of natural origin",        "latitude_of_origin",  false, it.next());
         assertParamEquals("Longitude of natural origin",       CENTRAL_MERIDIAN,     true,  it.next());
         assertParamEquals(null,                                SCALE_FACTOR,         false, it.next());
         assertParamEquals("False easting",                     FALSE_EASTING,        true,  it.next());
@@ -121,15 +121,15 @@ public final strictfp class MapProjectionTest extends TestCase {
             final GeneralParameterDescriptor actual)
     {
         if (epsgName != null) {
-            ReferencingAssert.assertEpsgIdentifierEquals(epsgName, actual.getName());
+            assertEpsgIdentifierEquals(epsgName, actual.getName());
         } else {
-            ReferencingAssert.assertOgcIdentifierEquals(ogcName, actual.getName());
+            assertOgcIdentifierEquals(ogcName, actual.getName());
         }
         assertEquals("minimumOccurs", isMandatory ? 1 : 0, actual.getMinimumOccurs());
         if (epsgName != null) {
             for (final GenericName alias : actual.getAlias()) {
                 if (alias instanceof Identifier && ((Identifier) alias).getAuthority() != Citations.EPSG) {
-                    ReferencingAssert.assertOgcIdentifierEquals(ogcName, (Identifier) alias);
+                    assertOgcIdentifierEquals(ogcName, (Identifier) alias);
                     return;
                 }
             }
