@@ -459,6 +459,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short KeyCollision_1 = 54;
 
         /**
+         * Latitudes {0} and {1} are opposite.
+         */
+        public static final short LatitudesAreOpposite_2 = 183;
+
+        /**
          * Attribute “{0}” is mandatory for an object of type ‘{1}’.
          */
         public static final short MandatoryAttribute_2 = 55;

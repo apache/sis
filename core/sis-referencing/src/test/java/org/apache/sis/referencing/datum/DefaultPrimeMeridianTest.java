@@ -150,13 +150,13 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
         assertWktEquals(Convention.WKT2,
-                "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“IOGP”], URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“OGP”]],\n" +
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, Citation[“IOGP”]],\n" +
                 "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
-                "  <gml:identifier codeSpace=\"OGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>\n" +
+                "  <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>\n" +
                 "  <gml:name>Paris</gml:name>\n" +
                 "  <gml:remarks>Equivalent to 2°20′14.025″.</gml:remarks>\n" +
                 "  <gml:greenwichLongitude uom=\"urn:ogc:def:uom:EPSG::9105\">2.5969213</gml:greenwichLongitude>\n" +

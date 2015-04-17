@@ -48,6 +48,7 @@ import org.opengis.util.InternationalString;
 public interface Deprecable {
     /**
      * Returns {@code true} if this instance is deprecated.
+     * In such case, the {@linkplain #getRemarks() remarks} may contain information about the new object to use.
      *
      * @return {@code true} if this instance is deprecated.
      */
@@ -56,6 +57,8 @@ public interface Deprecable {
     /**
      * If this instance is deprecated, the reason or the alternative to use.
      * Otherwise, an optional free text.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
      * @return Comments about this instance, or {@code null} if none. Shall be the
      *         reason for deprecation or the alternative to use if this instance

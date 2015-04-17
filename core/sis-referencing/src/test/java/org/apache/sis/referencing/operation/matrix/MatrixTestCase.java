@@ -397,9 +397,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
-     * Consequently it is sub-classes responsibility to add a {@code testConcatenate()} method
+     * Consequently it is sub-classes responsibility to add a {@code testConvertBefore()} method
      * which invoke this method.
      *
      * @param matrix The matrix of size 3×3 to test.
@@ -408,7 +408,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      *
      * @since 0.6
      */
-    final void testConcatenate(final MatrixSIS matrix, final boolean withShear) {
+    final void testConvertBefore(final MatrixSIS matrix, final boolean withShear) {
         initialize(4599164481916500056L);
         final AffineTransform at = new AffineTransform();
         if (withShear) {
@@ -445,19 +445,60 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             /*
              * Apply the operation and compare with our reference implementation.
              */
-            matrix.concatenate(srcDim, scale, offset);
-            final String message = (offset == null) ? "After scale" :
-                                   (scale  == null) ? "After translate" : "After scale and translate";
-            assertEqualsRelative(message, 0,                  matrix, 2, 0);
-            assertEqualsRelative(message, 0,                  matrix, 2, 1);
-            assertEqualsRelative(message, 1,                  matrix, 2, 2);
-            assertEqualsRelative(message, at.getTranslateX(), matrix, 0, 2);
-            assertEqualsRelative(message, at.getTranslateY(), matrix, 1, 2);
-            assertEqualsRelative(message, at.getScaleX(),     matrix, 0, 0);
-            assertEqualsRelative(message, at.getScaleY(),     matrix, 1, 1);
-            assertEqualsRelative(message, at.getShearX(),     matrix, 0, 1);
-            assertEqualsRelative(message, at.getShearY(),     matrix, 1, 0);
-            assertTrue("isAffine", matrix.isAffine());
+            matrix.convertBefore(srcDim, scale, offset);
+            assertCoefficientsEqual(at, matrix);
+        }
+    }
+
+    /**
+     * Asserts that the given matrix has approximatively the same coefficients than the given affine transform.
+     */
+    private static void assertCoefficientsEqual(final AffineTransform at, final MatrixSIS matrix) {
+        assertEqualsRelative("m20",        0,                  matrix, 2, 0);
+        assertEqualsRelative("m21",        0,                  matrix, 2, 1);
+        assertEqualsRelative("m22",        1,                  matrix, 2, 2);
+        assertEqualsRelative("translateX", at.getTranslateX(), matrix, 0, 2);
+        assertEqualsRelative("translateY", at.getTranslateY(), matrix, 1, 2);
+        assertEqualsRelative("scaleX",     at.getScaleX(),     matrix, 0, 0);
+        assertEqualsRelative("scaleY",     at.getScaleY(),     matrix, 1, 1);
+        assertEqualsRelative("shearX",     at.getShearX(),     matrix, 0, 1);
+        assertEqualsRelative("shearY",     at.getShearY(),     matrix, 1, 0);
+        assertTrue("isAffine", matrix.isAffine());
+    }
+
+    /**
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation. This test can be run only with matrices of size 3×3.
+     * Consequently it is sub-classes responsibility to add a {@code testConvertAfter()} method
+     * which invoke this method.
+     *
+     * @param matrix The matrix of size 3×3 to test.
+     *
+     * @since 0.6
+     */
+    final void testConvertAfter(final MatrixSIS matrix) {
+        initialize(6501103578268988251L);
+        final AffineTransform pre = new AffineTransform();
+        final AffineTransform at = AffineTransform.getShearInstance(nextNonZeroRandom(), nextNonZeroRandom());
+        matrix.setElement(0, 1, at.getShearX());
+        matrix.setElement(1, 0, at.getShearY());
+        for (int i=0; i<30; i++) {
+            final Number scale  = nextNonZeroRandom();
+            final Number offset = nextNonZeroRandom();
+            final int tgtDim = (i & 1);
+            switch (tgtDim) {
+                default: pre.setToIdentity();
+                         break;
+                case 0:  pre.setToTranslation(offset.doubleValue(), 0);
+                         pre.scale(scale.doubleValue(), 1);
+                         break;
+                case 1:  pre.setToTranslation(0, offset.doubleValue());
+                         pre.scale(1, scale.doubleValue());
+                         break;
+            }
+            at.preConcatenate(pre);
+            matrix.convertAfter(tgtDim, scale, offset);
+            assertCoefficientsEqual(at, matrix);
         }
     }
 
