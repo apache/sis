@@ -118,7 +118,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      */
     @Test
     public void testRandomPoints() throws FactoryException, TransformException {
-        initialize(new Equirectangular(), true, true, false);
+        initialize(new Equirectangular(), true, false, true, false);
         tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.
         derivativeDeltas = new double[] {100, 100};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 0);

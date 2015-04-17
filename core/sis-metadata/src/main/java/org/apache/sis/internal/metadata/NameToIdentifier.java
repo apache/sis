@@ -18,7 +18,6 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Locale;
 import org.opengis.util.NameSpace;
-import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -35,9 +34,12 @@ import java.util.Objects;
 /**
  * Does the unobvious mapping between {@link Identifier} properties and {@link GenericName} ones.
  *
+ * <p><b>Limitation:</b>
+ * Current version does not yet work with URN or HTTP syntax.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class NameToIdentifier implements Identifier {
@@ -57,56 +59,49 @@ public final class NameToIdentifier implements Identifier {
     }
 
     /**
-     * Infers the authority from the scope.
+     * Returns the scope of the given name if it is not global.
+     * This method is null-safe, including paranoiac checks against null scope.
      *
-     * @return The authority, or {@code null} if none.
+     * @param  name The name from which to get the scope, or {@code null}.
+     * @return The scope of the given name, or {@code null} if the given name was null or has a global scope.
      */
-    @Override
-    public Citation getAuthority() {
-        final NameSpace scope = name.scope();
-        if (scope != null && !scope.isGlobal()) {
-            return Citations.fromName(scope.name().tip().toString());
+    private static GenericName scope(final GenericName name) {
+        if (name != null) {
+            final NameSpace scope = name.scope();
+            if (scope != null && !scope.isGlobal()) {
+                return scope.name();
+            }
         }
         return null;
     }
 
     /**
-     * Returns the code space of the given name, or its authority if there is no code space.
+     * Infers the authority from the scope if any, or from the code space otherwise.
      *
-     * @param  name The name from which to get the code space or authority, or {@code null}.
-     * @param  locale The locale, or {@code null} for a call to {@code name.toString()}.
-     * @return The code space or authority, or {@code null} if none.
+     * @return The authority, or {@code null} if none.
      */
-    public static String getCodespaceOrAuthority(final GenericName name, final Locale locale) {
-        String codespace = getCodeSpace(name, locale);
-        if (codespace == null) {
-            final NameSpace scope = name.scope();
-            if (scope != null && !scope.isGlobal()) {
-                codespace = toString(scope.name().tip(), locale);
+    @Override
+    public Citation getAuthority() {
+        GenericName scope = scope(name);
+        if (scope == null) {
+            scope = scope(name.tip());
+            if (scope == null) {
+                return null;
             }
         }
-        return codespace;
+        return Citations.fromName(scope.head().toString());
     }
 
     /**
-     * Takes everything except the tip as the code space.
+     * Takes the element before the tip as the code space.
      *
      * @param  name The name from which to get the code space, or {@code null}.
      * @param  locale The locale, or {@code null} for a call to {@code name.toString()}.
      * @return The code space, or {@code null} if none.
      */
     public static String getCodeSpace(final GenericName name, final Locale locale) {
-        if (name != null) {
-            if (name instanceof ScopedName) {
-                return toString(((ScopedName) name).path(), locale);
-            }
-            if (name.depth() == 2) {
-                // May happen on GenericName implementation that do not implement the ScopedName interface.
-                // The most importance case is org.apache.sis.referencing.NamedIdentifier.
-                return toString(name.head(), locale);
-            }
-        }
-        return null;
+        final GenericName scope = scope(name.tip());
+        return (scope != null) ? toString(scope.tip(), locale) : null;
     }
 
     /**
@@ -188,9 +183,9 @@ public final class NameToIdentifier implements Identifier {
      * Such null values should never happen since the properties used here are mandatory, but we try to make this class
      * robust to broken implementations.
      *
-     * @param  name   The name from which to get the localized string.
+     * @param  name   The name from which to get the localized string, or {@code null}.
      * @param  locale The locale, or {@code null} for a call to {@code name.toString()}.
-     * @return The localized string representation.
+     * @return The localized string representation, or {@code null} if the given name was null.
      */
     public static String toString(final GenericName name, final Locale locale) {
         if (name != null) {

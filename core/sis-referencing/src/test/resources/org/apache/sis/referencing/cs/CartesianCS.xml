@@ -23,12 +23,12 @@
                  xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                  gml:id             = "epsg-cs-4400">
 
-  <gml:identifier codeSpace="OGP">urn:ogc:def:cs:EPSG::4400</gml:identifier>
+  <gml:identifier codeSpace="IOGP">urn:ogc:def:cs:EPSG::4400</gml:identifier>
   <gml:name>Easting, northing (E,N)</gml:name>
   <gml:remarks>Used in ProjectedCRS.</gml:remarks>
   <gml:axis>
     <gml:CoordinateSystemAxis gml:id="epsg-axis-1" uom="urn:ogc:def:uom:EPSG::9001">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::1</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::1</gml:identifier>
       <gml:name>Easting</gml:name>
       <gml:axisAbbrev>E</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
@@ -36,7 +36,7 @@
   </gml:axis>
   <gml:axis>
     <gml:CoordinateSystemAxis gml:id="epsg-axis-2" uom="urn:ogc:def:uom:EPSG::9001">
-      <gml:identifier codeSpace="OGP">urn:ogc:def:axis:EPSG::2</gml:identifier>
+      <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::2</gml:identifier>
       <gml:name>Northing</gml:name>
       <gml:axisAbbrev>N</gml:axisAbbrev>
       <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>

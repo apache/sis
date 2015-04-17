@@ -33,12 +33,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.metadata.iso.citation.Citations;  // For javadoc
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.ArgumentChecks;
-
-import static org.apache.sis.internal.util.Citations.getUnicodeIdentifier;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -66,8 +63,8 @@ import java.util.Objects;
  *
  * <ul>
  *   <li><b>{@linkplain #tip() Tip}:</b> derived from the identifier {@linkplain #getCode() code}.</li>
- *   <li><b>{@linkplain #head() Head}:</b> derived from the identifier {@linkplain #getCodeSpace() code space}.</li>
- *   <li><b>{@linkplain #scope() Scope}:</b> derived from the shortest {@linkplain #getAuthority() authority}'s
+ *   <li><b>{@linkplain #head() Head}:</b> derived from the identifier {@linkplain #getCodeSpace() code space} if non-null.
+ *     If there is no code space, then the scope is derived from the shortest {@linkplain #getAuthority() authority}'s
  *     {@linkplain Citation#getAlternateTitles() alternate titles}, or the {@linkplain Citation#getTitle() main title}
  *     if there is no alternate titles. This policy exploits the ISO 19115 comment saying that citation alternate titles
  *     often contain abbreviation (for example "DCW" as an alternative title for <cite>"Digital Chart of the World"</cite>).</li>
@@ -76,8 +73,7 @@ import java.util.Objects;
  * <div class="note"><b>Example:</b>
  * If the identifier attributes are {@code authority} = {@code new DefaultCitation("IOGP")},
  * {@code codeSpace} = {@code "EPSG"} and {@code code} = {@code "4326"}, then the name attributes will be
- * {@code scope} = {@code "IOGP"}, {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and
- * {@link #toString()} = {@code "EPSG:4326"}.
+ * {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and {@link #toString()} = {@code "EPSG:4326"}.
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *
@@ -101,11 +97,6 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     private static final long serialVersionUID = -3982456534858346939L;
 
     /**
-     * A pool of {@link NameSpace} values for given {@link InternationalString}.
-     */
-    private static final Map<CharSequence,NameSpace> SCOPES = new WeakValueHashMap<>(CharSequence.class);
-
-    /**
      * The name of this identifier as a generic name.
      * If {@code null}, will be constructed only when first needed.
      */
@@ -118,9 +109,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     private transient boolean isNameSupplied;
 
     /**
-     * Creates a new identifier from the specified one. This is a copy constructor
-     * which will get the code, codespace, authority, version and the remarks (if
-     * available) from the given identifier.
+     * Creates a new identifier from the specified one. This is a copy constructor which get the code,
+     * codespace, authority, version and the description (if available) from the given identifier.
      *
      * <p>If the given identifier implements the {@link GenericName} interface, then calls to
      * {@link #tip()}, {@link #head()}, {@link #scope()} and similar methods will delegate
@@ -177,16 +167,16 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          the authority. The code can not be null.
      */
     public NamedIdentifier(final Citation authority, final CharSequence code) {
-        super(authority, getUnicodeIdentifier(authority), toString(code));
+        super(authority, Citations.getCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {
-            name = createName(authority, code);
+            name = createName(authority, super.getCodeSpace(), code);
             isNameSupplied = true; // Because 'code' is an international string.
         }
     }
 
     /**
      * Constructs an identifier from an authority and localizable code,
-     * with an optional version number and remarks.
+     * with an optional version number and description.
      *
      * <p>If the given code is an {@link InternationalString}, then the {@code code.toString(Locale.ROOT)}
      * return value will be used for the {@link #getCode() code} property, and the complete international
@@ -204,15 +194,15 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @param version
      *          The version of the associated code space or code as specified by the code authority,
      *          or {@code null} if none.
-     * @param remarks
-     *          Comments on or information about this identifier, or {@code null} if none.
+     * @param description
+     *          Natural language description of the meaning of the code value, or {@code null} if none.
      */
     public NamedIdentifier(final Citation authority, final String codeSpace, final CharSequence code,
-            final String version, final InternationalString remarks)
+            final String version, final InternationalString description)
     {
-        super(authority, codeSpace, toString(code), version, remarks);
+        super(authority, codeSpace, toString(code), version, description);
         if (code instanceof InternationalString) {
-            name = createName(authority, code);
+            name = createName(authority, codeSpace, code);
             isNameSupplied = true; // Because 'code' is an international string.
         }
     }
@@ -242,7 +232,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private synchronized GenericName getName() {
         if (name == null) {
-            name = createName(super.getAuthority(), super.getCode());
+            name = createName(super.getAuthority(), super.getCodeSpace(), super.getCode());
         }
         return name;
     }
@@ -251,28 +241,22 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * Constructs a generic name from the specified authority and code.
      *
      * @param  authority The authority, or {@code null} if none.
-     * @param  code The code.
+     * @param  codeSpace The code space, or {@code null} if none.
+     * @param  code      The code.
      * @return A new generic name for the given authority and code.
      * @category Generic name
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-197">SIS-197</a>
      */
-    private GenericName createName(final Citation authority, final CharSequence code) {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        final String identifier = getUnicodeIdentifier(authority);      // Whitespaces trimed by Citations.
-        NameSpace scope = null;
-        if (identifier != null) {
-            synchronized (SCOPES) {
-                scope = SCOPES.get(identifier);
-                if (scope == null) {
-                    scope = factory.createNameSpace(factory.createLocalName(null, identifier), null);
-                    SCOPES.put(identifier, scope);
-                }
-            }
+    private static GenericName createName(final Citation authority, String codeSpace, final CharSequence code) {
+        if (codeSpace == null) {
+            codeSpace = Citations.getCodeSpace(authority);   // Whitespaces trimed by Citations.
         }
-        final String codeSpace = super.getCodeSpace();
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         if (codeSpace != null) {
-            return factory.createGenericName(scope, codeSpace, code);
+            return factory.createGenericName(null, codeSpace, code);
         } else {
-            return factory.createLocalName(scope, code);
+            return factory.createLocalName(null, code);
         }
     }
 

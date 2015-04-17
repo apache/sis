@@ -18,45 +18,58 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for "<cite>Popular Visualisation Pseudo Mercator</cite>" projection (EPSG:1024).
- * This is also known as the "Google projection", defined by popular demand but not considered
- * a valid projection method.
+ * The provider for <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection (EPSG:9803).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Rueben Schulz (UBC)
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_2sp_belgium.html">Lambert Conic Conformal 2SP (Belgium) on RemoteSensing.org</a>
  */
-public final class PseudoMercator extends AbstractMercator {
+public final class LambertConformalBelgium extends AbstractLambert {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8126827491349984471L;
+    private static final long serialVersionUID = -6388030784088639876L;
 
     /**
      * The EPSG identifier, to be preferred to the name when available.
      */
-    public static final String IDENTIFIER = "1024";
+    public static final String IDENTIFIER = "9803";
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
-            .addName("Popular Visualisation Pseudo Mercator")
-            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+            .addName(                    "Lambert Conic Conformal (2SP Belgium)")
+            .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP_Belgium")
+            .addName(Citations.ESRI,     "Lambert_Conformal_Conic_2SP_Belgium")
+            .addIdentifier(Citations.MAP_INFO, "19")
+            .addIdentifier(Citations.S57,       "6")
+            .createGroupForMapProjection(
+                    LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
+                    LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
+                    LambertConformal2SP.STANDARD_PARALLEL_1,
+                    LambertConformal2SP.STANDARD_PARALLEL_2,
+                    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
+                    LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**
      * Constructs a new provider.
      */
-    public PseudoMercator() {
+    public LambertConformalBelgium() {
         super(PARAMETERS);
     }
 }

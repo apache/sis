@@ -16,19 +16,20 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Map;
+import java.util.EnumMap;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.AbstractMercator;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
 import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
-import org.apache.sis.internal.referencing.provider.MillerCylindrical;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -86,6 +87,8 @@ public class Mercator extends NormalizedProjection {
      *
      * <p><b>CONVENTION:</b> Spherical cases must be odd, all other cases must be even. This allow us to perform
      * quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
+     *
+     * @see #getType(ParameterDescriptorGroup)
      */
     static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
                       REGIONAL  = 2, MILLER = 4;    // Must be even.
@@ -105,6 +108,56 @@ public class Mercator extends NormalizedProjection {
      * @see #getType(ParameterDescriptorGroup)
      */
     final byte type;
+
+    /**
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given type.
+     *
+     * @param  type One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
+     * @return The roles map to give to super-class constructor.
+     */
+    @SuppressWarnings("fallthrough")
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        /*
+         * "Longitude of origin" is a parameter of all Mercator projections, but is intentionally omitted from
+         * this map because it will be handled in a special way by the Mercator constructor. The "scale factor"
+         * is not formally a "Mercator 2SP" argument, but we accept it anyway for all Mercator projections
+         * since it may be used in some Well Known Text (WKT).
+         */
+        roles.put(ParameterRole.SCALE_FACTOR, Mercator1SP.SCALE_FACTOR);
+        switch (type) {
+            case REGIONAL: {
+                roles.put(ParameterRole.FALSE_EASTING,  RegionalMercator.EASTING_AT_FALSE_ORIGIN);
+                roles.put(ParameterRole.FALSE_NORTHING, RegionalMercator.NORTHING_AT_FALSE_ORIGIN);
+                break;
+            }
+            case SPHERICAL: {
+                /*
+                 * According to EPSG guide, the latitude of conformal sphere radius should be the latitude of origin.
+                 * However that origin is fixed to 0° by EPSG guide, which makes radius calculation ineffective when
+                 * using the official parameters. We could fallback on the standard parallel (φ1) if φ0 is not set,
+                 * but for now we wait to see for real cases. Some arguments that may be worth consideration:
+                 *
+                 *   - The standard parallel is not an EPSG parameter for Spherical case.
+                 *   - Users who set the standard parallel anyway may expect that latitude to be used for radius
+                 *     calculation, since standard parallels are also known as "latitude of true scale".
+                 *   - Using the standard parallel instead than the latitude of origin would be consistent
+                 *     with what EPSG does for the Equirectangular projection.
+                 *
+                 * Anyway, this choice matters only when the user request explicitely spherical formulas applied
+                 * on an ellipsoidal figure of the Earth, which should be very rare.
+                 */
+                roles.put(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS, Mercator1SP.LATITUDE_OF_ORIGIN);
+                // Fall through
+            }
+            default: {
+                roles.put(ParameterRole.FALSE_EASTING,  Mercator1SP.FALSE_EASTING);
+                roles.put(ParameterRole.FALSE_NORTHING, Mercator1SP.FALSE_NORTHING);
+                break;
+            }
+        }
+        return roles;
+    }
 
     /**
      * Creates a Mercator projection from the given parameters.
@@ -132,21 +185,7 @@ public class Mercator extends NormalizedProjection {
      */
     @Workaround(library="JDK", version="1.7")
     private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters,
-                (type == SPHERICAL) ? Mercator2SP     .STANDARD_PARALLEL        : null,     // See note below.
-                (type == REGIONAL ) ? RegionalMercator.EASTING_AT_FALSE_ORIGIN  : AbstractMercator.FALSE_EASTING,
-                (type == REGIONAL ) ? RegionalMercator.NORTHING_AT_FALSE_ORIGIN : AbstractMercator.FALSE_NORTHING);
-        /*
-         * Note on above Mercator2SP.STANDARD_PARALLEL argument (used for computing radius of conformal sphere):
-         * according the EPSG guide we should rather use Mercator2SP.LATITUDE_OF_ORIGIN. But the later is fixed
-         * to 0° by EPSG guide, which makes radius calculation ineffective when using the official parameters.
-         * Given that we already allow usage of Mercator2SP.STANDARD_PARALLEL (which is not an EPSG parameter)
-         * for compatibility reasons, user who set the standard parallel may expect this latitude to be used for
-         * radius calculation. Using the standard parallel instead than the latitude of origin is also consistent
-         * with what EPSG does for the Equirectangular projection. Anyway, this choice matters only when the user
-         * request explicitely spherical formulas applied on an ellipsoidal figure of the Earth, which should be
-         * very rare.
-         */
+        super(method, parameters, roles(type));
         this.type = type;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
@@ -175,13 +214,12 @@ public class Mercator extends NormalizedProjection {
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
-        double k0 = getAndStore(parameters, Mercator1SP.SCALE_FACTOR);
-        k0 *= cos(φ1) / rν(sin(φ1));
+        final DoubleDouble k0 = new DoubleDouble(cos(φ1), 0);
+        k0.divide(rν(sin(φ1)), 0);
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
-         *     context.normalizeGeographicInputs(λ0);
-         *     context.scaleAndTranslate2D(false, k0, 0, 0);
+         *     context.normalizeGeographicInputs(λ0);   // Actually done by the super-class constructor.
          *
          * However in the particular case of Mercator projection, we will apply the longitude rotation in the
          * denormalization matrix instead.   This is possible only for this particular projection because the
@@ -189,19 +227,20 @@ public class Mercator extends NormalizedProjection {
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
-        final MatrixSIS   normalize = context.normalizeGeographicInputs(0);
-        final MatrixSIS denormalize = context.scaleAndTranslate2D(false, k0, 0, 0);
+        final MatrixSIS denormalize = context.getMatrix(false);
+        denormalize.convertBefore(0, k0, null);
+        denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
             offset.multiply(-λ0);
-            denormalize.concatenate(0, null, offset);
+            denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.concatenate(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (type == MILLER) {
-            normalize  .concatenate(1, new DoubleDouble(0.8),  null);
-            denormalize.concatenate(1, new DoubleDouble(1.25), null);
+            context.getMatrix(true).convertBefore(1, new DoubleDouble(0.8), null);
+            denormalize.convertBefore(1, new DoubleDouble(1.25), null);
         }
     }
 
@@ -217,10 +256,10 @@ public class Mercator extends NormalizedProjection {
      * Returns the type of the projection based on the name and identifier of the given parameter group.
      */
     private static byte getType(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, RegionalMercator .NAME, RegionalMercator .IDENTIFIER)) return REGIONAL;
-        if (identMatch(parameters, MercatorSpherical.NAME, MercatorSpherical.IDENTIFIER)) return SPHERICAL;
-        if (identMatch(parameters, PseudoMercator   .NAME, PseudoMercator   .IDENTIFIER)) return PSEUDO;
-        if (identMatch(parameters, MillerCylindrical.NAME, null))                         return MILLER;
+        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
+        if (identMatch(parameters, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
+        if (identMatch(parameters, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
+        if (identMatch(parameters, "(?i).*\\bMiller.*",          null))                         return MILLER;
         return 0;
     }
 
@@ -246,9 +285,9 @@ public class Mercator extends NormalizedProjection {
     }
 
     /**
-     * Converts the specified (<var>λ</var>,<var>φ</var>) coordinate (units in radians)
-     * and stores the result in {@code dstPts} (linear distance on a unit sphere). In addition,
-     * opportunistically computes the projection derivative if {@code derivate} is {@code true}.
+     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
+     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
+     * if {@code derivate} is {@code true}.
      *
      * @return The matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -363,8 +402,10 @@ public class Mercator extends NormalizedProjection {
      * </ul>
      * </div>
      *
-     * @author Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @author Rueben Schulz (UBC)
+     * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+     * @author  Rueben Schulz (UBC)
+     * @since   0.6
+     * @version 0.6
      * @module
      */
     static final class Spherical extends Mercator {
@@ -376,7 +417,7 @@ public class Mercator extends NormalizedProjection {
         /**
          * Constructs a new map projection from the parameters of the given projection.
          *
-         * @param other  The other projection (usually ellipsoidal) from which to copy the parameters.
+         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
          */
         Spherical(final Mercator other) {
             super(other);

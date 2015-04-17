@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.util.InternationalString;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -53,23 +54,6 @@ public final class Mercator2SP extends AbstractMercator {
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * In theory, this parameter should not be used and its value should be 0 in all cases.
-     * This parameter is included in the EPSG dataset for completeness in CRS labelling only.
-     *
-     * <p>This parameter is used by {@link Mercator1SP} and is not formally a parameter of {@link Mercator2SP}
-     * projections. Nevertheless we declare it is as an optional parameter because it is sometime used in Well
-     * Known Text (WKT).</p>
-     */
-    static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
-
-    /**
-     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
-     * Valid values range is [-180 … 180]° and default value is 0°.
-     */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Mercator1SP.CENTRAL_MERIDIAN;
-
-    /**
      * The operation parameter descriptor for the <cite>Scale factor</cite> (not necessarily at natural origin)
      * parameter value. Valid values range is (0 … ∞) and default value is 1.
      *
@@ -88,19 +72,26 @@ public final class Mercator2SP extends AbstractMercator {
         final ParameterBuilder builder = builder();
         /*
          * "Latitude of natural origin" and "Scale factor" are not formally parameters of the "Mercator (variant B)"
-         * projection according EPSG. But we declare them as optional parameters because they are sometime used.
-         * However we remove the EPSG name and identifier at least for the scale factor, because its meaning does
-         * not fit well in this context. The EPSG name is "Scale factor at natural origin" while actually the scale
-         * factor applied here would rather at the standard parallel.
+         * projection according EPSG. But we declare them as optional parameters because they are sometime used in
+         * Well Known Text (WKT).
          */
         builder.setRequired(false); // Will apply to all remaining parameters.
-        LATITUDE_OF_ORIGIN = createConstant(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder)
-                .setRemarks(Mercator1SP.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
-
+        final InternationalString remarks = notFormalParameter("Mercator (variant A)");
+        final ParameterDescriptor<Double> latitudeOfOrigin = createConstant(builder
+                .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
+                .setRemarks(remarks), 0.0);
+        /*
+         * Remove the EPSG name and identifier at least for the scale factor, because its meaning does not fit well
+         * in this context. The EPSG name is "Scale factor at natural origin" while actually the scale factor applied
+         * here would rather be at the standard parallel. We keep the OGC, ESRI and Proj.4 names because they are just
+         * "scale_factor" or "k", which is vague enough for the purpose of this non-standard parameter.
+         */
         SCALE_FACTOR = createScale(exceptEPSG(Mercator1SP.SCALE_FACTOR, builder)
-                .setRemarks(notFormalParameter("Mercator (variant A)")));
+                .rename(Citations.NETCDF,  (String[]) null)  // "scale_factor_at_projection_origin" is too specific.
+                .rename(Citations.GEOTIFF, (String[]) null)  // "ScaleAtNatOrigin" is too specific.
+                .setRemarks(remarks).setDeprecated(true));
 
-        PARAMETERS = builder
+        PARAMETERS = builder.setDeprecated(false)
             .addIdentifier(             "9805")
             .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
             .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6
@@ -112,8 +103,8 @@ public final class Mercator2SP extends AbstractMercator {
             .addIdentifier(Citations.S57,       "8")
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
-                    LATITUDE_OF_ORIGIN,     // Not formally a Mercator2SP parameter.
-                    CENTRAL_MERIDIAN,
+                    latitudeOfOrigin,       // Not formally a Mercator2SP parameter.
+                    Mercator1SP.CENTRAL_MERIDIAN,
                     SCALE_FACTOR,           // Not formally a Mercator2SP parameter.
                     FALSE_EASTING,
                     FALSE_NORTHING);

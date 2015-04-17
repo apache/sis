@@ -76,7 +76,7 @@ public final class Citations extends Static {
      *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
      */
     @Deprecated
-    public static final Citation OGP = new SimpleCitation("OGP");
+    public static final Citation OGP = new SimpleCitation("OGP"); // TODO: after removal, forName("OGP") should map to EPSG.
 
     /**
      * The <a href="http://www.epsg.org">EPSG</a> dataset. This citation is used as an authority for
@@ -92,6 +92,8 @@ public final class Citations extends Static {
      *
      * The citation {@linkplain DefaultCitation#getTitle() title} and contact information reference
      * the IOGP organization, but the {@link IdentifierSpace#getName() namespace} is {@code "EPSG"}.
+     * Note that both the new "IOGP" and the legacy "OGP" abbreviations may be used as a code space
+     * in GML files.
      *
      * @see #AUTO
      * @see #AUTO2

@@ -95,14 +95,26 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#concatenate(int, Number, Number)} using {@link AffineTranform}
+     * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTranform}
      * as a reference implementation.
      *
      * @since 0.6
      */
     @Test
-    public void testConcatenate() {
-        testConcatenate(new GeneralMatrix(3, 3, true, 1), true);    // Double precision
-        testConcatenate(new GeneralMatrix(3, 3, true, 2), true);    // Double-double precision
+    public void testConvertBefore() {
+        testConvertBefore(new GeneralMatrix(3, 3, true, 1), true);    // Double precision
+        testConvertBefore(new GeneralMatrix(3, 3, true, 2), true);    // Double-double precision
+    }
+
+    /**
+     * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTranform}
+     * as a reference implementation.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testConvertAfter() {
+        testConvertAfter(new GeneralMatrix(3, 3, true, 1));    // Double precision
+        testConvertAfter(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
     }
 }
