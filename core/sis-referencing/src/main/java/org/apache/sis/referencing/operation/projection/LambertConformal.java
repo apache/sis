@@ -91,7 +91,6 @@ public class LambertConformal extends NormalizedProjection {
      * @param  type One of {@link #SP1}, {@link #SP2} or {@link #BELGIUM} constants.
      * @return The roles map to give to super-class constructor.
      */
-    @SuppressWarnings("fallthrough")
     private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*

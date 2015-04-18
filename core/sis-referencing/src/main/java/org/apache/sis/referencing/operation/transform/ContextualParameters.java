@@ -36,6 +36,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -125,7 +126,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
  */
-public class ContextualParameters extends FormattableObject implements ParameterValueGroup, Cloneable, Serializable {
+public class ContextualParameters extends Parameters implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -506,12 +507,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
         /*
          * Now proceed to the clone of this ContextualParameters instance.
          */
-        final ContextualParameters clone;
-        try {
-            clone = (ContextualParameters) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);    // Should never happen since we are cloneable.
-        }
+        final ContextualParameters clone = (ContextualParameters) super.clone();
         clone.values      = param;
         clone.normalize   = normalize.clone();
         clone.denormalize = denormalize.clone();
@@ -545,30 +541,20 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
-     *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code Param_MT} is defined in the WKT 1 specification only.
-     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
-     * then this method silently uses the WKT 1 convention without raising an error.</div>
-     *
-     * @return {@code "Param_MT"}.
+     * Formats the <cite>Well Known Text</cite> for the transform or the inverse of the transform
+     * that would be built from the enclosing {@code ContextualParameters}.
      */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendParamMT(this, formatter);
-        return "Param_MT";
-    }
+    private final class WKT extends FormattableObject implements Parameterized {
+        /**
+         * {@code true} if this proxy is for the inverse transform instead than the direct one.
+         */
+        private final boolean inverse;
 
-    /**
-     * Formats the <cite>Well Known Text</cite> for the inverse of the transform that would be built
-     * from the enclosing {@code ContextualParameters}.
-     */
-    private final class InverseWKT extends FormattableObject implements Parameterized {
         /**
          * Creates a new object to be formatted instead than the enclosing transform.
          */
-        InverseWKT() {
+        WKT(final boolean inverse) {
+            this.inverse = inverse;
         }
 
         /**
@@ -588,12 +574,24 @@ public class ContextualParameters extends FormattableObject implements Parameter
         }
 
         /**
-         * Process to the WKT formatting of the inverse transform.
+         * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
+         *
+         * <div class="note"><b>Compatibility note:</b>
+         * {@code Param_MT} is defined in the WKT 1 specification only.
+         * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+         * then this method silently uses the WKT 1 convention without raising an error.</div>
+         *
+         * @return {@code "Param_MT"}.
          */
         @Override
         protected String formatTo(final Formatter formatter) {
-            formatter.append(ContextualParameters.this);
-            return "Inverse_MT";
+            if (inverse) {
+                formatter.append(new WKT(false));
+                return "Inverse_MT";
+            } else {
+                WKTUtilities.appendParamMT(ContextualParameters.this, formatter);
+                return "Param_MT";
+            }
         }
     }
 
@@ -703,7 +701,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
                 transforms.add(index++, before);
             }
         }
-        transforms.set(index, inverse ? new InverseWKT() : this);
+        transforms.set(index, new WKT(inverse));
         if (after == null) {
             if (hasAfter) {
                 final Object old = transforms.remove(index + 1);
