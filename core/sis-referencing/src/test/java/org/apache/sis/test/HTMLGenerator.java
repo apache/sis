@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
+import java.io.Closeable;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Deprecable;
@@ -41,7 +42,7 @@ import org.apache.sis.util.Deprecable;
  * @version 0.6
  * @module
  */
-public abstract class HTMLGenerator implements AutoCloseable {
+public abstract class HTMLGenerator implements Closeable {
     /**
      * The encoding of the files to generate.
      */
