@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.EnumMap;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
@@ -27,7 +26,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -215,7 +213,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_major"}.
          * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
          */
-        SEMI_MAJOR(Constants.SEMI_MAJOR),
+        SEMI_MAJOR,
 
         /**
          * Maps the <cite>semi-minor axis length</cite> parameter (symbol: <var>b</var>).
@@ -224,7 +222,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_minor"}.
          * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
          */
-        SEMI_MINOR(Constants.SEMI_MINOR),
+        SEMI_MINOR,
 
         /**
          * Maps the parameter for the latitude where to compute the <cite>radius of conformal sphere</cite>
@@ -239,7 +237,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * of the Earth may be an ellipsoid rather than a sphere. In the majority of cases, this enumeration should
          * not be used.</p>
          */
-        LATITUDE_OF_CONFORMAL_SPHERE_RADIUS(null),
+        LATITUDE_OF_CONFORMAL_SPHERE_RADIUS,
 
         /**
          * Maps the <cite>central meridian</cite> parameter (symbol: λ₀).
@@ -254,7 +252,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Longitude of projection centre</li>
          * </ul>
          */
-        CENTRAL_MERIDIAN(Constants.CENTRAL_MERIDIAN),
+        CENTRAL_MERIDIAN,
 
         /**
          * Maps the <cite>scale factor</cite> parameter (symbol: <var>k</var>₀).
@@ -267,7 +265,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Scale factor on pseudo standard parallel</li>
          * </ul>
          */
-        SCALE_FACTOR(Constants.SCALE_FACTOR),
+        SCALE_FACTOR,
 
         /**
          * Maps the <cite>false easting</cite> parameter (symbol: <var>FE</var>).
@@ -280,7 +278,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Easting at projection centre</li>
          * </ul>
          */
-        FALSE_EASTING(Constants.FALSE_EASTING),
+        FALSE_EASTING,
 
         /**
          * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
@@ -293,61 +291,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Northing at projection centre</li>
          * </ul>
          */
-        FALSE_NORTHING(Constants.FALSE_NORTHING);
-
-        /**
-         * The OGC name for this parameter. This is used only when inferring automatically the role map.
-         * We use the OGC name instead than the EPSG name because OGC names are identical for a wider
-         * range of projections (e.g. {@code "scale_factor"} for almost all projections).
-         */
-        private final String name;
-
-        /**
-         * Creates a new parameter role associated to the given OGC name.
-         */
-        private ParameterRole(final String name) {
-            this.name = name;
-        }
-
-        /**
-         * Provides default (<var>role</var> → <var>parameter</var>) associations for the given map projection.
-         * This is a convenience method for a typical set of parameters found in map projections.
-         * This method expects a {@code projection} argument containing descriptors for the given parameters
-         * (using OGC names):
-         *
-         * <ul>
-         *   <li>{@code "semi_major"}</li>
-         *   <li>{@code "semi_minor"}</li>
-         *   <li>{@code "central_meridian"}</li>
-         *   <li>{@code "scale_factor"}</li>
-         *   <li>{@code "false_easting"}</li>
-         *   <li>{@code "false_northing"}</li>
-         * </ul>
-         *
-         * <div class="note"><b>Note:</b>
-         * Apache SIS uses EPSG names as much as possible, but this method is an exception to this rule.
-         * In this particular case we use OGC names because they are identical for a wide range of projections.
-         * For example there is at least {@linkplain #SCALE_FACTOR three different EPSG names} for the
-         * <cite>"scale factor"</cite> parameter, which OGC defines only {@code "scale_factor"} for all of them.</div>
-         *
-         * @param  projection The map projection method for which to infer (<var>role</var> → <var>parameter</var>) associations.
-         * @return The parameters associated to most role in this enumeration.
-         * @throws ParameterNotFoundException if one of the above-cited parameters is not found in the given projection method.
-         * @throws ClassCastException if a parameter has been found but is not an instance of {@code ParameterDescriptor<Double>}.
-         */
-        public static Map<ParameterRole, ParameterDescriptor<Double>> defaultMap(final OperationMethod projection)
-                throws ParameterNotFoundException, ClassCastException
-        {
-            final ParameterDescriptorGroup parameters = projection.getParameters();
-            final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
-            for (final ParameterRole role : values()) {
-                if (role.name != null) {
-                    final GeneralParameterDescriptor p = parameters.descriptor(role.name);
-                    roles.put(role, Parameters.cast((ParameterDescriptor<?>) p, Double.class));
-                }
-            }
-            return roles;
-        }
+        FALSE_NORTHING
     }
 
     /**
@@ -413,17 +357,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param method     Description of the map projection parameters.
      * @param parameters The parameters of the projection to be created.
      * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values, or {@code null}
-     *        for the {@linkplain ParameterRole#defaultMap(OperationMethod) default associations}.
+     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
-            Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
+            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
-        ensureNonNull("method", method);
+        ensureNonNull("method",     method);
         ensureNonNull("parameters", parameters);
-        if (roles == null) {
-            roles = ParameterRole.defaultMap(method);
-        }
+        ensureNonNull("roles",      roles);
         context = new ContextualParameters(method);
         /*
          * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
