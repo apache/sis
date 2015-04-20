@@ -52,7 +52,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * {@preformat java
  *     public class Mercator {
- *         public static final ParameterDescriptorGroup PARAMETERS;
+ *         static final ParameterDescriptorGroup PARAMETERS;
  *         static {
  *             ParameterBuilder builder = new ParameterBuilder();
  *             builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);

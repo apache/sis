@@ -18,6 +18,9 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -36,6 +39,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -125,7 +129,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
  */
-public class ContextualParameters extends FormattableObject implements ParameterValueGroup, Cloneable, Serializable {
+public class ContextualParameters extends Parameters implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -367,13 +371,44 @@ public class ContextualParameters extends FormattableObject implements Parameter
     {
         if (!isFrozen) {
             isFrozen = true;
-            for (int i=0; i < values.length; i++) {
-                final ParameterValue<?> p = values[i];
+            /*
+             * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
+             * but makes easier to read 'toString()' output by ensuring a consistent order for most projections.
+             * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
+             * order. We proceed by first copying all parameters in a temporary HashMap:
+             */
+            final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
+            for (ParameterValue<?> p : values) {
                 if (p == null) {
-                    values = Arrays.copyOf(values, i);  // Trim extra values.
-                    break;
+                    break;  // The first null value in the array indicates the end of sequence.
                 }
-                values[i] = DefaultParameterValue.unmodifiable(p);
+                p = DefaultParameterValue.unmodifiable(p);
+                final ParameterDescriptor<?> desc = p.getDescriptor();
+                if (parameters.put(desc, p) != null) {
+                    // Should never happen unless ParameterValue.descriptor changed (contract violation).
+                    throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, desc.getName()));
+                }
+            }
+            /*
+             * Then, copy all HashMap values back to the 'values' array in the order they are declared in the
+             * descriptor. Implementation note: the iteration termination condition uses the values array, not
+             * the descriptors list, because the former is often shorter than the later. We should never reach
+             * the end of descriptors list before the end of values array because 'descriptors' contains all
+             * 'parameters' keys. This is verified by the 'assert' below.
+             */
+            values = new ParameterValue<?>[parameters.size()];
+            assert descriptor.descriptors().containsAll(parameters.keySet());
+            final Iterator<GeneralParameterDescriptor> it = descriptor.descriptors().iterator();
+            for (int i=0; i < values.length;) {
+                /*
+                 * No need to check for it.hasNext(), since a NoSuchElementException below would be a bug in
+                 * our algorithm (or a concurrent change in the 'descriptor.descriptors()' list, which would
+                 * be a contract violation). See above 'assert'.
+                 */
+                final ParameterValue<?> p = parameters.get(it.next());
+                if (p != null) {
+                    values[i++] = p;
+                }
             }
         }
         /*
@@ -417,11 +452,6 @@ public class ContextualParameters extends FormattableObject implements Parameter
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];
             if (p == null) {
-                /*
-                 * No existing parameter instance. Create a new one if this ContextualParameter
-                 * is still modifiable.
-                 */
-                ensureModifiable();
                 p = ((ParameterDescriptor<?>) desc).createValue();
                 values[i] = p;
             } else if (p.getDescriptor() != desc) {  // Identity comparison should be okay here.
@@ -429,7 +459,17 @@ public class ContextualParameters extends FormattableObject implements Parameter
             }
             return p;   // Found or created a parameter.
         }
-        ensureModifiable();
+        /*
+         * We may reach this point if map projection construction is completed (i.e. 'completeTransform(…)' has
+         * been invoked) and the user asks for a parameter which is not one of the parameters that we retained.
+         * Returns a parameter initialized to the default value, which is the actual value (otherwise we would
+         * have stored that parameter).  Note: we do not bother making the parameter immutable for performance
+         * reason. If the user invokes a setter method on the returned parameter, he may get a false impression
+         * that this ContextualParameters is still modifiable. We presume that such scenario would be rare.
+         */
+        if (isFrozen) {
+            return ((ParameterDescriptor<?>) desc).createValue();
+        }
         /*
          * Should never reach this point. If it happen anyway, this means that the descriptor now accepts
          * more parameters than what it declared at ContextualParameteres construction time, or that some
@@ -506,12 +546,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
         /*
          * Now proceed to the clone of this ContextualParameters instance.
          */
-        final ContextualParameters clone;
-        try {
-            clone = (ContextualParameters) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e);    // Should never happen since we are cloneable.
-        }
+        final ContextualParameters clone = (ContextualParameters) super.clone();
         clone.values      = param;
         clone.normalize   = normalize.clone();
         clone.denormalize = denormalize.clone();
@@ -545,30 +580,20 @@ public class ContextualParameters extends FormattableObject implements Parameter
     }
 
     /**
-     * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
-     *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code Param_MT} is defined in the WKT 1 specification only.
-     * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
-     * then this method silently uses the WKT 1 convention without raising an error.</div>
-     *
-     * @return {@code "Param_MT"}.
+     * Formats the <cite>Well Known Text</cite> for the transform or the inverse of the transform
+     * that would be built from the enclosing {@code ContextualParameters}.
      */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendParamMT(this, formatter);
-        return "Param_MT";
-    }
+    private final class WKT extends FormattableObject implements Parameterized {
+        /**
+         * {@code true} if this proxy is for the inverse transform instead than the direct one.
+         */
+        private final boolean inverse;
 
-    /**
-     * Formats the <cite>Well Known Text</cite> for the inverse of the transform that would be built
-     * from the enclosing {@code ContextualParameters}.
-     */
-    private final class InverseWKT extends FormattableObject implements Parameterized {
         /**
          * Creates a new object to be formatted instead than the enclosing transform.
          */
-        InverseWKT() {
+        WKT(final boolean inverse) {
+            this.inverse = inverse;
         }
 
         /**
@@ -588,12 +613,24 @@ public class ContextualParameters extends FormattableObject implements Parameter
         }
 
         /**
-         * Process to the WKT formatting of the inverse transform.
+         * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
+         *
+         * <div class="note"><b>Compatibility note:</b>
+         * {@code Param_MT} is defined in the WKT 1 specification only.
+         * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+         * then this method silently uses the WKT 1 convention without raising an error.</div>
+         *
+         * @return {@code "Param_MT"}.
          */
         @Override
         protected String formatTo(final Formatter formatter) {
-            formatter.append(ContextualParameters.this);
-            return "Inverse_MT";
+            if (inverse) {
+                formatter.append(new WKT(false));
+                return "Inverse_MT";
+            } else {
+                WKTUtilities.appendParamMT(ContextualParameters.this, formatter);
+                return "Param_MT";
+            }
         }
     }
 
@@ -703,7 +740,7 @@ public class ContextualParameters extends FormattableObject implements Parameter
                 transforms.add(index++, before);
             }
         }
-        transforms.set(index, inverse ? new InverseWKT() : this);
+        transforms.set(index, new WKT(inverse));
         if (after == null) {
             if (hasAfter) {
                 final Object old = transforms.remove(index + 1);
