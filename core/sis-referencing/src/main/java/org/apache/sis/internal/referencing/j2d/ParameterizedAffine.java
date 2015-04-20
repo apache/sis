@@ -21,6 +21,7 @@ import java.awt.geom.AffineTransform;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.internal.system.Semaphores;
 
 
 /**
@@ -109,12 +110,35 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * Returns the parameter values for this map projection.
      *
+     * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However if
+     * {@link Semaphores#PROJCS} is set, then this method returns the map projection parameters even
+     * if they are not a complete description of this math transform. This internal hack shall be used
+     * only by {@link org.apache.sis.referencing.operation.DefaultSingleOperation}.</p>
+     *
+     * <p><b>Use case of above hack:</b> consider an "Equidistant Cylindrical (Spherical)" map projection
+     * from a {@code GeographiCRS} base using (latitude, longitude) axis order. We need to concatenate an
+     * affine transform performing the axis swapping before the actual map projection. The concatenated
+     * transform is part of {@code SingleOperation}, which is itself part of {@code ProjecteCRS}.
+     * Consequently we have two conflicting needs:</p>
+     *
+     * <ul>
+     *   <li>If this method is queried from a {@code SingleOperation} instance (usually indirectly as part of a
+     *     {@code ProjectedCRS}), then we want to return the "Equidistant Cylindrical (Spherical)" map projection
+     *     parameters without bothering about axis swapping, because the later is described by the {@code Axis["…"]}
+     *     elements in the enclosing {@code ProjectedCRS} instance.</li>
+     *   <li>But if this {@code MathTransform} is formatted directly (not as a component of {@code ProjectedCRS}),
+     *     then we want to format it as a matrix, otherwise the users would have no way to see that an axis swapping
+     *     has been applied.</li>
+     * </ul>
+     *
+     * The {@code Semaphores.PROJCS} flag is SIS internal mechanism for distinguish the two above-cited cases.
+     *
      * @return The map projection parameters if they are an accurate description of this transform,
      *         or the generic affine parameters in case of doubt.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return isDefinitive ? parameters : super.getParameterValues();
+        return isDefinitive || Semaphores.query(Semaphores.PROJCS) ? parameters : super.getParameterValues();
     }
 
     /**
@@ -131,7 +155,8 @@ public final class ParameterizedAffine extends AffineTransform2D {
         if (super.equals(object)) {
             if (object instanceof ParameterizedAffine) {
                 final ParameterizedAffine that = (ParameterizedAffine) object;
-                return Objects.equals(this.parameters, that.parameters);
+                return (this.isDefinitive == that.isDefinitive) &&
+                       Objects.equals(this.parameters, that.parameters);
             }
             return true;
         }

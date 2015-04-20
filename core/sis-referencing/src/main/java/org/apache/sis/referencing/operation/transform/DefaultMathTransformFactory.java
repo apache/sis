@@ -665,7 +665,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * "elt_0_0", "elt_0_1", etc.  The following code just forwards those parameters to the newly
          * created transform; it does not change the operation.
          */
-        if (parameterized instanceof ParameterizedAffine) {
+        if (parameterized instanceof ParameterizedAffine && !(mt instanceof ParameterizedAffine)) {
             mt = ((ParameterizedAffine) parameterized).newTransform(mt);
         }
         return mt;
