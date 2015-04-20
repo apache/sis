@@ -18,6 +18,9 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -368,13 +371,44 @@ public class ContextualParameters extends Parameters implements Serializable {
     {
         if (!isFrozen) {
             isFrozen = true;
-            for (int i=0; i < values.length; i++) {
-                final ParameterValue<?> p = values[i];
+            /*
+             * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
+             * but makes easier to read 'toString()' output by ensuring a consistent order for most projections.
+             * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
+             * order. We proceed by first copying all parameters in a temporary HashMap:
+             */
+            final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
+            for (ParameterValue<?> p : values) {
                 if (p == null) {
-                    values = Arrays.copyOf(values, i);  // Trim extra values.
-                    break;
+                    break;  // The first null value in the array indicates the end of sequence.
                 }
-                values[i] = DefaultParameterValue.unmodifiable(p);
+                p = DefaultParameterValue.unmodifiable(p);
+                final ParameterDescriptor<?> desc = p.getDescriptor();
+                if (parameters.put(desc, p) != null) {
+                    // Should never happen unless ParameterValue.descriptor changed (contract violation).
+                    throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, desc.getName()));
+                }
+            }
+            /*
+             * Then, copy all HashMap values back to the 'values' array in the order they are declared in the
+             * descriptor. Implementation note: the iteration termination condition uses the values array, not
+             * the descriptors list, because the former is often shorter than the later. We should never reach
+             * the end of descriptors list before the end of values array because 'descriptors' contains all
+             * 'parameters' keys. This is verified by the 'assert' below.
+             */
+            values = new ParameterValue<?>[parameters.size()];
+            assert descriptor.descriptors().containsAll(parameters.keySet());
+            final Iterator<GeneralParameterDescriptor> it = descriptor.descriptors().iterator();
+            for (int i=0; i < values.length;) {
+                /*
+                 * No need to check for it.hasNext(), since a NoSuchElementException below would be a bug in
+                 * our algorithm (or a concurrent change in the 'descriptor.descriptors()' list, which would
+                 * be a contract violation). See above 'assert'.
+                 */
+                final ParameterValue<?> p = parameters.get(it.next());
+                if (p != null) {
+                    values[i++] = p;
+                }
             }
         }
         /*
@@ -418,11 +452,6 @@ public class ContextualParameters extends Parameters implements Serializable {
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];
             if (p == null) {
-                /*
-                 * No existing parameter instance. Create a new one if this ContextualParameter
-                 * is still modifiable.
-                 */
-                ensureModifiable();
                 p = ((ParameterDescriptor<?>) desc).createValue();
                 values[i] = p;
             } else if (p.getDescriptor() != desc) {  // Identity comparison should be okay here.
@@ -430,7 +459,17 @@ public class ContextualParameters extends Parameters implements Serializable {
             }
             return p;   // Found or created a parameter.
         }
-        ensureModifiable();
+        /*
+         * We may reach this point if map projection construction is completed (i.e. 'completeTransform(…)' has
+         * been invoked) and the user asks for a parameter which is not one of the parameters that we retained.
+         * Returns a parameter initialized to the default value, which is the actual value (otherwise we would
+         * have stored that parameter).  Note: we do not bother making the parameter immutable for performance
+         * reason. If the user invokes a setter method on the returned parameter, he may get a false impression
+         * that this ContextualParameters is still modifiable. We presume that such scenario would be rare.
+         */
+        if (isFrozen) {
+            return ((ParameterDescriptor<?>) desc).createValue();
+        }
         /*
          * Should never reach this point. If it happen anyway, this means that the descriptor now accepts
          * more parameters than what it declared at ContextualParameteres construction time, or that some
