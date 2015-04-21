@@ -72,7 +72,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      *
-     * @deprecated The OGP organization is now known as IOGP. This citation will be removed in SIS 0.6
+     * @deprecated The OGP organization is now known as IOGP. This citation will be removed in SIS 0.7
      *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
      */
     @Deprecated

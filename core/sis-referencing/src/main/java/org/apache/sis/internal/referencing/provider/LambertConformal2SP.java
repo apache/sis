@@ -72,17 +72,6 @@ public final class LambertConformal2SP extends AbstractLambert {
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL_2;
 
     /**
-     * The operation parameter descriptor for the <cite>Scale factor</cite> (not necessarily at natural origin)
-     * parameter value. Valid values range is (0 … ∞) and default value is 1.
-     *
-     * <p>This parameter is used by {@link LambertConformal1SP} and is not formally a parameter of
-     * {@link LambertConformal2SP} projections. Nevertheless we declare it is as an optional parameter because
-     * it is sometime used in Well Known Text (WKT). However it shall be interpreted as a <cite>Scale factor at
-     * the standard parallels</cite> rather than at the natural origin.</p>
-     */
-    static final ParameterDescriptor<Double> SCALE_FACTOR;
-
-    /**
      * The operation parameter descriptor for the <cite>Easting at false origin</cite> (Ef) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
@@ -149,13 +138,16 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .addName(Citations.GEOTIFF, "StdParallel2")
                 .addName(Citations.PROJ4,   "lat_2"));
         /*
-         * Remove the EPSG name and identifier at least for the scale factor, because its meaning does not fit well
-         * in this context. The EPSG name is "Scale factor at natural origin" while actually the scale factor applied
-         * here would rather be at the standard parallels.
+         * The scale factor is used by LambertConformal1SP and is not formally a parameter of LambertConformal2SP.
+         * Nevertheless we declare it is as an optional parameter because it is sometime used in Well Known Text,
+         * but we omit the EPSG name and identifier because its meaning does not fit well in this context.
+         * The EPSG name is "Scale factor at natural origin" while actually the scale factor applied here
+         * would rather be at the standard parallels.
          */
-        SCALE_FACTOR = createScale(builder
+        final ParameterDescriptor<Double> scaleFactor = createScale(builder
                 .addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
-                .setRemarks(notFormalParameter("Lambert Conic Conformal (1SP)")).setDeprecated(true));
+                .setRemarks(notFormalParameter("Lambert Conic Conformal (1SP)"))
+                .setRequired(false).setDeprecated(true));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
@@ -174,7 +166,7 @@ public final class LambertConformal2SP extends AbstractLambert {
                     LONGITUDE_OF_FALSE_ORIGIN,
                     STANDARD_PARALLEL_1,
                     STANDARD_PARALLEL_2,
-                    SCALE_FACTOR,
+                    scaleFactor,           // Not formally a LambertConformal2SP parameter.
                     EASTING_AT_FALSE_ORIGIN,
                     NORTHING_AT_FALSE_ORIGIN);
     }

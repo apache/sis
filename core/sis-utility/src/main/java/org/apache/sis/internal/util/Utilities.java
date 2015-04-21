@@ -18,9 +18,11 @@ package org.apache.sis.internal.util;
 
 import java.util.Formatter;
 import java.util.FormattableFlags;
+import javax.measure.unit.Unit;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -28,7 +30,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class Utilities extends Static {
@@ -36,6 +38,31 @@ public final class Utilities extends Static {
      * Do not allow instantiation of this class.
      */
     private Utilities() {
+    }
+
+    /**
+     * Returns the string representation of the given unit, or {@code null} if none.
+     * This method is used as a workaround for a bug in JSR-275, which sometime throws
+     * an exception in the {@link Unit#toString()} method.
+     *
+     * @param  unit The unit for which to get a string representation, or {@code null}.
+     * @return The string representation of the given string (may be an empty string), or {@code null}.
+     *
+     * @since 0.6
+     */
+    @Workaround(library="JSR-275", version="0.9.3")
+    public static String toString(final Unit<?> unit) {
+        if (unit != null) try {
+            String text = unit.toString();
+            if (text.equals("deg")) {
+                text = "°";
+            }
+            return text;
+        } catch (IllegalArgumentException e) {
+            // Workaround for JSR-275 implementation bug.
+            // Do nothing, we will return null below.
+        }
+        return null;
     }
 
     /**
