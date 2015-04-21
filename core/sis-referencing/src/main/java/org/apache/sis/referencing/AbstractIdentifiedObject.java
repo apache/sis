@@ -431,6 +431,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       {@link org.opengis.referencing.datum.Datum},
      *       {@link org.opengis.referencing.datum.Ellipsoid},
      *       {@link org.opengis.referencing.datum.PrimeMeridian},
+     *       {@link org.opengis.referencing.operation.OperationMethod},
      *       {@link org.opengis.parameter.ParameterDescriptor} or
      *       {@link org.opengis.parameter.ParameterDescriptorGroup},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.

@@ -89,13 +89,13 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
         assertWktEquals("Axis[“x”, east, LengthUnit[“metre”, 1]]",  X);
         assertWktEquals("Axis[“y”, north, LengthUnit[“metre”, 1]]", Y);
         assertWktEquals("Axis[“z”, up, LengthUnit[“metre”, 1]]",    Z);
-        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“grade”, 0.015707963267948967]]",            LONGITUDE_gon);
-        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“grade”, 0.015707963267948967]]",            LATITUDE_gon);
+        assertWktEquals("Axis[“Longitude (L)”, east, AngleUnit[“grade”, 0.015707963267948967]]",            LONGITUDE_gon);
+        assertWktEquals("Axis[“Latitude (B)”, north, AngleUnit[“grade”, 0.015707963267948967]]",            LATITUDE_gon);
         assertWktEquals("Axis[“Altitude (h)”, up, LengthUnit[“metre”, 1]]",                                 ALTITUDE);
         assertWktEquals("Axis[“Time (t)”, future, TimeUnit[“day”, 86400]]",                                 TIME);
-        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LONGITUDE);
+        assertWktEquals("Axis[“Longitude (L)”, east, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LONGITUDE);
         assertWktEquals("Axis[“Spherical longitude (Ω)”, east, AngleUnit[“degree”, 0.017453292519943295]]", SPHERICAL_LONGITUDE);
-        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LATITUDE);
+        assertWktEquals("Axis[“Latitude (B)”, north, AngleUnit[“degree”, 0.017453292519943295]]",           GEODETIC_LATITUDE);
         assertWktEquals("Axis[“Spherical latitude (Θ)”, north, AngleUnit[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
 
         assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",  X);

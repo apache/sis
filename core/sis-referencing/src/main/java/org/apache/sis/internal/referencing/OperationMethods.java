@@ -17,11 +17,17 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
+import java.util.Collection;
+import org.opengis.util.Record;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.metadata.quality.Result;
+import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.metadata.quality.QuantitativeResult;
+import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
@@ -30,6 +36,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -38,14 +45,57 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class OperationMethods extends Static {
     /**
+     * The key for specifying explicitely the value to be returned by
+     * {@link org.apache.sis.referencing.operation.DefaultSingleOperation#getParameterValues()}.
+     * It is usually not necessary to specify those parameters because they are inferred either from
+     * the {@link MathTransform}, or specified explicitely in a {@code DefiningConversion}. However
+     * there is a few cases, for example the Molodenski transform, where none of the above can apply,
+     * because SIS implements those operations as a concatenation of math transforms, and such
+     * concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
+     */
+    public static final String PARAMETERS_KEY = "parameters";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private OperationMethods() {
+    }
+
+    /**
+     * Returns the most specific {@link CoordinateOperation} interface implemented by the specified operation.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If the operation implements the {@link Transformation} interface,
+     *       then this method returns {@code Transformation.class}. Transformation
+     *       has precedence over any other interface implemented by the operation.</li>
+     *   <li>Otherwise if the operation implements the {@link Conversion} interface,
+     *       then this method returns the most specific {@code Conversion} sub-interface.</li>
+     *   <li>Otherwise if the operation implements the {@link SingleOperation} interface,
+     *       then this method returns {@code SingleOperation.class}.</li>
+     *   <li>Otherwise if the operation implements the {@link ConcatenatedOperation} interface,
+     *       then this method returns {@code ConcatenatedOperation.class}.</li>
+     *   <li>Otherwise this method returns {@code CoordinateOperation.class}.</li>
+     * </ul>
+     *
+     * @param  operation A coordinate operation.
+     * @return The most specific GeoAPI interface implemented by the given operation.
+     */
+    public static Class<? extends CoordinateOperation> getType(final CoordinateOperation operation) {
+        if (operation instanceof        Transformation) return        Transformation.class;
+        if (operation instanceof       ConicProjection) return       ConicProjection.class;
+        if (operation instanceof CylindricalProjection) return CylindricalProjection.class;
+        if (operation instanceof      PlanarProjection) return      PlanarProjection.class;
+        if (operation instanceof            Projection) return            Projection.class;
+        if (operation instanceof            Conversion) return            Conversion.class;
+        if (operation instanceof       SingleOperation) return       SingleOperation.class;
+        if (operation instanceof ConcatenatedOperation) return ConcatenatedOperation.class;
+        return CoordinateOperation.class;
     }
 
     /**
@@ -206,5 +256,101 @@ public final class OperationMethods extends Static {
             }
         }
         return false;
+    }
+
+    /**
+     * Convenience method returning the accuracy in meters for the specified operation.
+     * This method tries each of the following procedures and returns the first successful one:
+     *
+     * <ul>
+     *   <li>If a {@link QuantitativeResult} is found with a linear unit, then this accuracy estimate
+     *       is converted to {@linkplain SI#METRE metres} and returned.</li>
+     *
+     *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
+     *       is by definition accurate up to rounding errors.</li>
+     *
+     *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
+     *       were applied with the help of Bursa-Wolf parameters. This procedure looks for SIS-specific
+     *       {@link PositionalAccuracyConstant#DATUM_SHIFT_APPLIED} and
+     *       {@link PositionalAccuracyConstant#DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.
+     *       If a datum shift has been applied, returns 25 meters.
+     *       If a datum shift should have been applied but has been omitted, returns 1000 meters.
+     *       The 1000 meters value is higher than the highest value (999 meters) found in the EPSG
+     *       database version 6.7. The 25 meters value is the next highest value found in the EPSG
+     *       database for a significant number of transformations.
+     *
+     *   <li>Otherwise, if the operation is a {@link ConcatenatedOperation}, returns the sum of the accuracy
+     *       of all components. This is a conservative scenario where we assume that errors cumulate linearly.
+     *       Note that this is not necessarily the "worst case" scenario since the accuracy could be worst
+     *       if the math transforms are highly non-linear.</li>
+     * </ul>
+     *
+     * @param  operation The operation to inspect for accuracy.
+     * @return The accuracy estimate (always in meters), or NaN if unknown.
+     */
+    public static double getLinearAccuracy(final CoordinateOperation operation) {
+        final Collection<PositionalAccuracy> accuracies = operation.getCoordinateOperationAccuracy();
+        for (final PositionalAccuracy accuracy : accuracies) {
+            for (final Result result : accuracy.getResults()) {
+                if (result instanceof QuantitativeResult) {
+                    final QuantitativeResult quantity = (QuantitativeResult) result;
+                    final Collection<? extends Record> records = quantity.getValues();
+                    if (records != null) {
+                        final Unit<?> unit = quantity.getValueUnit();
+                        if (Units.isLinear(unit)) {
+                            final Unit<Length> unitOfLength = unit.asType(Length.class);
+                            for (final Record record : records) {
+                                for (final Object value : record.getAttributes().values()) {
+                                    if (value instanceof Number) {
+                                        double v = ((Number) value).doubleValue();
+                                        v = unitOfLength.getConverterTo(SI.METRE).convert(v);
+                                        return v;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * No quantitative (linear) accuracy were found. If the coordinate operation is actually
+         * a conversion, the accuracy is up to rounding error (i.e. conceptually 0) by definition.
+         */
+        if (operation instanceof Conversion) {
+            return 0;
+        }
+        /*
+         * If the coordinate operation is actually a transformation, checks if Bursa-Wolf parameters
+         * were available for the datum shift. This is SIS-specific. See method javadoc for a rational
+         * about the return values chosen.
+         */
+        if (operation instanceof Transformation) {
+            if (!accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_OMITTED)) {
+                if (accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED)) {
+                    return 25;
+                }
+            }
+            return 1000;
+        }
+        /*
+         * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,
+         * skipping unknown ones. Making the sum is a conservative approach (not exactly the "worst case" scenario,
+         * since it could be worst if the transforms are highly non-linear).
+         */
+        double accuracy = Double.NaN;
+        if (operation instanceof ConcatenatedOperation) {
+            for (final SingleOperation op : ((ConcatenatedOperation) operation).getOperations()) {
+                final double candidate = Math.abs(getLinearAccuracy(op));
+                if (!Double.isNaN(candidate)) {
+                    if (Double.isNaN(accuracy)) {
+                        accuracy = candidate;
+                    } else {
+                        accuracy += candidate;
+                    }
+                }
+            }
+        }
+        return accuracy;
     }
 }
