@@ -18,7 +18,6 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import java.nio.CharBuffer;
-import java.util.StringJoiner;
 import org.opengis.metadata.citation.Citation;      // For javadoc
 import org.opengis.referencing.IdentifiedObject;    // For javadoc
 
@@ -916,55 +915,6 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             parsed[i] = Byte.parseByte(trimWhitespaces(tokens[i]).toString(), radix);
         }
         return parsed;
-    }
-
-    /**
-     * Formats the given elements as a (typically) comma-separated list. This method is similar to
-     * {@link java.util.AbstractCollection#toString()} or {@link java.util.Arrays#toString(Object[])}
-     * except for the following:
-     *
-     * <ul>
-     *   <li>There is no leading {@code '['} or trailing {@code ']'} characters.</li>
-     *   <li>Null elements are ignored instead than formatted as {@code "null"}.</li>
-     *   <li>If the {@code collection} argument is null or contains only null elements,
-     *       then this method returns {@code null}.</li>
-     *   <li>In the common case where the collection contains a single {@link String} element,
-     *       that string is returned directly (no object duplication).</li>
-     * </ul>
-     *
-     * @param  collection The elements to format in a (typically) comma-separated list, or {@code null}.
-     * @param  separator  The element separator, which is usually {@code ", "}.
-     * @return The (typically) comma-separated list, or {@code null} if the given {@code collection}
-     *         was null or contains only null elements.
-     *
-     * @see java.util.StringJoiner
-     * @see java.util.Arrays#toString(Object[])
-     *
-     * @deprecated As of JDK8, use {@link StringJoiner} instead.
-     */
-    @Deprecated
-    public static String toString(final Iterable<?> collection, final String separator) {
-        ArgumentChecks.ensureNonNull("separator", separator);
-        String list = null;
-        if (collection != null) {
-            StringJoiner buffer = null;
-            for (final Object element : collection) {
-                if (element != null) {
-                    if (list == null) {
-                        list = element.toString();
-                    } else {
-                        if (buffer == null) {
-                            buffer = new StringJoiner(separator).add(list);
-                        }
-                        buffer.add(element.toString());
-                    }
-                }
-            }
-            if (buffer != null) {
-                list = buffer.toString();
-            }
-        }
-        return list;
     }
 
     /**
