@@ -43,7 +43,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
         final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame(SPHERICAL, normalized);
         assertEquals(new DefaultSphericalCS(
-            Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (deg), North (deg), Up (m)."),
+            Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
             HardCodedAxes.SPHERICAL_LONGITUDE,
             HardCodedAxes.SPHERICAL_LATITUDE,
             HardCodedAxes.GEOCENTRIC_RADIUS

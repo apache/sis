@@ -485,33 +485,24 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         final List<Object> transforms = getPseudoSteps();
         if (transforms.size() == 1 || Semaphores.query(Semaphores.PROJCS)) {
             for (final Object candidate : transforms) {
-                if (!(candidate instanceof Parameterized)) {
-                    /*
-                     * If a step does not implement the Parameterized interface, we conservatively
-                     * handle it as if it was a non-linear step: we should return its parameters
-                     * (which are null), or return null if there is more non-linear steps.
-                     */
-                    return null;
-                }
-                if (param != null) {
-                    /*
-                     * We found more than one Parameterized step. If both steps are non-linear,
-                     * we fail (return null) because we don't know which one to choose. If both
-                     * steps are linear, we fail for the same reason   (actually the later case
-                     * should never occur, since consecutive linear transforms should have been
-                     * concatenated in a single affine transform. But we check as a safety). If
-                     * the previous step was linear and the current candidate is non-linear, we
-                     * retain the current candidate. Otherwise we discart it.
-                     */
-                    final boolean isLinear = (candidate instanceof LinearTransform);
-                    if ((param instanceof LinearTransform) == isLinear) {
+                /*
+                 * Search for non-linear parameters only, ignoring affine transforms and the matrices
+                 * computed by ContextualParameters. Note that the 'transforms' list is guaranteed to
+                 * contains at least one non-linear parameter, otherwise we would not have created a
+                 * ConcatenatedTransform instance.
+                 */
+                if (!(candidate instanceof Matrix) && !(candidate instanceof LinearTransform)) {
+                    if ((param == null) && (candidate instanceof Parameterized)) {
+                        param = (Parameterized) candidate;
+                    } else {
+                        /*
+                         * Found more than one group of non-linear parameters, or found an object
+                         * that do not declare its parameters.  In the later case, conservatively
+                         * returns 'null' because we do not know what the real parameters are.
+                         */
                         return null;
                     }
-                    if (isLinear) {
-                        continue;
-                    }
                 }
-                param = (Parameterized) candidate;
             }
         }
         return param;

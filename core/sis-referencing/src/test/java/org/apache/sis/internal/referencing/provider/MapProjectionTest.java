@@ -22,7 +22,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;

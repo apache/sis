@@ -251,33 +251,6 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     }
 
     /**
-     * Creates an optional or mandatory parameter. As a consequence of the merge with ISO 19115 {@code SV_Parameter},
-     * {@code DefaultParameterDescriptor} has been generalized to accept an arbitrary amount of occurrences.
-     *
-     * @param properties   The properties to be given to the identified object.
-     * @param valueClass   The class that describes the type of the parameter value.
-     * @param valueDomain  The minimum value, maximum value and unit of measurement, or {@code null} if none.
-     * @param validValues  The list of valid values, or {@code null} if there is no restriction.
-     *                     This property is mostly for restricting values to a {@linkplain CodeList code list}
-     *                     or enumeration subset. It is not necessary to provide this property when all values
-     *                     from the code list or enumeration are valid.
-     * @param defaultValue The default value for the parameter, or {@code null} if none.
-     * @param required     {@code true} if this parameter is mandatory, or {@code false} if it is optional.
-     *
-     * @deprecated Replaced by the constructor with explicit minimum and maximum number of occurrences.
-     */
-    @Deprecated
-    public DefaultParameterDescriptor(final Map<String,?> properties,
-                                      final Class<T>      valueClass,
-                                      final Range<?>      valueDomain,
-                                      final T[]           validValues,
-                                      final T             defaultValue,
-                                      final boolean       required)
-    {
-        this(properties, required ? 1 : 0, 1, valueClass, valueDomain, validValues, defaultValue);
-    }
-
-    /**
      * Creates a new descriptor with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one or a
      * user-defined one (as a subclass), usually in order to leverage some implementation-specific API.

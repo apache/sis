@@ -138,15 +138,6 @@ public class MetadataStandard implements Serializable {
     public static final MetadataStandard ISO_19115;
 
     /**
-     * An instance working on ISO 19119 standard as defined by GeoAPI interfaces
-     * in the {@code org.opengis.service} package and sub-packages.
-     *
-     * @deprecated as of ISO 19115:2014 revision, merged with {@link #ISO_19115}.
-     */
-    @Deprecated
-    public static final MetadataStandard ISO_19119;
-
-    /**
      * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
      * in the {@link org.opengis.coverage} package and sub-packages.
      */
@@ -157,12 +148,10 @@ public class MetadataStandard implements Serializable {
         // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", null, null);
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", acronyms, new MetadataStandard[] {ISO_19115});
-        ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.", ISO_19111.dependencies);
         ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", new MetadataStandard[] {ISO_19111});
         INSTANCES = new MetadataStandard[] {
             ISO_19111,
             ISO_19115,
-            ISO_19119,
             ISO_19123
         };
         SystemListener.add(new SystemListener(Modules.METADATA) {

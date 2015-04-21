@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 
@@ -48,6 +49,19 @@ public final class MercatorSpherical extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        /*
+         * The scale factor is used by Mercator1SP and is not formally a parameter of "Mercator (Spherical)" projection.
+         * Nevertheless we declare it as an optional parameter because it was used in EPSG:7.9:3785 (the legacy "Popular
+         * Visualisation CRS / Mercator", now deprecated). But at the difference of what we did in Mercator2SP, we keep
+         * the EPSG name here since there is no "standard parallel" parameter.  So the "Scale factor at natural origin"
+         * parameter name still okay provided that the "Latitude of natural origin" parameter value stay zero (which is
+         * normally enforced by the Mercator1SP.LATITUDE_OF_ORIGIN minimum and maximum values).
+         */
+        final ParameterDescriptor<Double> scaleFactor = createScale(builder
+                .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)
+                .setRemarks(Mercator2SP.SCALE_FACTOR.getRemarks())
+                .setRequired(false));
+
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
             .addDeprecatedIdentifier("9841", IDENTIFIER)
@@ -56,6 +70,7 @@ public final class MercatorSpherical extends AbstractMercator {
             .createGroupForMapProjection(
                     Mercator1SP.LATITUDE_OF_ORIGIN,
                     Mercator1SP.CENTRAL_MERIDIAN,
+                    scaleFactor,
                     FALSE_EASTING,
                     FALSE_NORTHING);
     }
