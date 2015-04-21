@@ -33,6 +33,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.PolarCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -79,7 +81,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see AbstractCS
@@ -743,8 +745,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * The only actions (derived from ISO 19162 rules) taken by this method are:
      *
      * <ul>
-     *   <li>Replace “<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” names (case insensitive)
-     *       by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
+     *   <li>Replace <cite>“Geodetic latitude”</cite> and <cite>“Geodetic longitude”</cite> names (case insensitive)
+     *       by <cite>“latitude”</cite> and <cite>“longitude”</cite> respectively.</li>
+     *   <li>For latitude and longitude axes, replace “φ” and “λ” abbreviations by <var>“B”</var> and <var>“L”</var>
+     *       respectively (from German “Breite” and “Länge”, used in academic texts worldwide).
+     *       Note that <var>“L”</var> is also the transliteration of Greek letter “lambda” (λ).</li>
+     *   <li>In {@link SphericalCS}, replace “φ” and “θ” abbreviations by <var>“U”</var> and <var>“V”</var> respectively.</li>
+     *   <li>In {@link PolarCS}, replace “θ” abbreviation by <var>“U”</var>.</li>
      * </ul>
      *
      * @return {@code "Axis"}.
@@ -760,9 +767,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             if (name == null) {
                 name = IdentifiedObjects.getName(this, null);
             }
-            if (!isInternal && name != null) {
+            if (name != null && !isInternal) {
                 if (name.equalsIgnoreCase("Geodetic latitude")) {
-                    name = "Latitude"; // ISO 19162 §7.5.3(ii)
+                    name = "Latitude";    // ISO 19162 §7.5.3(ii)
                 } else if (name.equalsIgnoreCase("Geodetic longitude")) {
                     name = "Longitude";
                 }
@@ -770,13 +777,52 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
         /*
          * ISO 19162 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
+         * special case of Geocentric axis, and disallows Greek letters.
          */
-        if (!isWKT1 && (name == null || !name.equals(abbreviation))) {
+        String a = abbreviation;
+        if (!isWKT1 && (a != null) && !a.equals(name)) {
+            if (!isInternal && a.length() == 1) {
+                switch (a.charAt(0)) {
+                    /*
+                     * ISO 19162 §7.5.3 recommendations:
+                     *
+                     *   a) For PolarCS using Greek letter θ for direction, the letter ‘U’ should be used in WKT.
+                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
+                     */
+                    case 'θ': {
+                        final Object e = formatter.getEnclosingElement(0);
+                        if  (e instanceof SphericalCS) a ="V";
+                        else if (e instanceof PolarCS) a ="U";
+                        break;
+                    }
+                    /*
+                     * ISO 19162 §7.5.3 requirement (ii) and recommendation (b):
+                     *
+                     *  ii) Greek letters φ and λ for geodetic latitude and longitude must be replaced by Latin char.
+                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
+                     */
+                    case 'φ': {
+                        if (formatter.getEnclosingElement(0) instanceof SphericalCS) {
+                            a = "U";
+                        } else if ("Latitude".equalsIgnoreCase(name)) {
+                            a = "B";    // From German "Breite", used in academic texts worldwide.
+                        }
+                        break;
+                    }
+                    case 'λ': {
+                        if ("Longitude".equalsIgnoreCase(name)) {
+                            a = "L";    // From German "Länge", used in academic texts worldwide.
+                        }
+                        break;
+                    }
+                }
+            }
             final StringBuilder buffer = new StringBuilder();
             if (name != null) {
                 buffer.append(name).append(' ');
             }
-            name = buffer.append('(').append(abbreviation).append(')').toString();
+            name = buffer.append('(').append(a).append(')').toString();
         }
         formatter.append(name, ElementKind.AXIS);
         /*

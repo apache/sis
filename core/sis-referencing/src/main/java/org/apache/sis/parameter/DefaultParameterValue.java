@@ -848,6 +848,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             }
             formatter.append(convertedValue);
         } else {
+            if (!isWKT1 && (unit == null) && (value instanceof URI || value instanceof URL
+                    || value instanceof File || value instanceof Path))
+            {
+                formatter.append(value.toString(), null);
+                return "ParameterFile";
+            }
             formatter.appendAny(value);
         }
         /*

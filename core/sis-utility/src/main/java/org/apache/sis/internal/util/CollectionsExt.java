@@ -104,6 +104,22 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a copy of the given array as a non-empty immutable set.
+     * If the given array is empty, then this method returns {@code null}.
+     *
+     * @param  <T> The type of elements.
+     * @param  elements The elements to copy in a set.
+     * @return An unmodifiable set which contains all the given elements, or {@code null}.
+     *
+     * @since 0.6
+     */
+    @SafeVarargs
+    public static <T> Set<T> nonEmptySet(final T... elements) {
+        final Set<T> asSet = immutableSet(true, elements);
+        return (asSet != null && asSet.isEmpty()) ? null : asSet;
+    }
+
+    /**
      * Returns the given array if non-empty, or {@code null} if the given array is null or empty.
      * This method is generally not recommended, since public API should prefer empty array instead of null.
      * However this method is occasionally useful for managing private fields.
