@@ -31,11 +31,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-import org.opengis.util.NameFactory;
-import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Enumerated;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
@@ -43,7 +40,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**
@@ -750,42 +746,5 @@ public final class Types extends Static {
             copy[i] = toInternationalString(strings[i]);
         }
         return copy;
-    }
-
-    /**
-     * Converts the given value to an array of generic names. If the given value is an instance of
-     * {@link GenericName}, {@link String} or any other type enumerated below, then it is converted
-     * and returned in an array of length 1. If the given value is an array or a collection, then an
-     * array of same length is returned where each element has been converted.
-     *
-     * <p>Allowed types or element types are:</p>
-     * <ul>
-     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
-     *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
-     *       to be parsed as a generic name using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
-     *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@link DefaultNameSpace#DEFAULT_SEPARATOR ':'} separator.</li>
-     * </ul>
-     *
-     * If {@code value} is an array or a collection containing {@code null} elements,
-     * then the corresponding element in the returned array will also be {@code null}.
-     *
-     * @param  value The object to cast into an array of generic names, or {@code null}.
-     * @param  factory The factory to use for creating names, or {@code null} for the default.
-     * @return The generic names, or {@code null} if the given {@code value} was null.
-     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
-     * @throws ClassCastException if {@code value} can't be casted.
-     *
-     * @deprecated Moved to {@link DefaultNameFactory#toGenericNames(Object)}.
-     */
-    @Deprecated
-    public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
-        if (value == null) {
-            return null;
-        }
-        if (!(factory instanceof DefaultNameFactory)) {
-            factory = DefaultFactories.forBuildin(NameFactory.class);
-        }
-       return ((DefaultNameFactory) factory).toGenericNames(value);
     }
 }
