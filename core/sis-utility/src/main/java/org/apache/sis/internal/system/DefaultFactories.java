@@ -59,7 +59,7 @@ public final class DefaultFactories extends SystemListener {
 
     /**
      * Return the default factory implementing the given interface.
-     * This method returns only Apache SIS implementation of factories, and ignore all other.
+     * This method gives preference to Apache SIS implementation of factories if present.
      * This is a temporary mechanism while we are waiting for a real dependency injection mechanism.
      *
      * @param  <T>  The interface type.
@@ -69,6 +69,7 @@ public final class DefaultFactories extends SystemListener {
     public static synchronized <T> T forClass(final Class<T> type) {
         T factory = type.cast(FACTORIES.get(type));
         if (factory == null && !FACTORIES.containsKey(type)) {
+            T fallback = null;
             for (final T candidate : ServiceLoader.load(type)) {
                 final Class<?> ct = candidate.getClass();
                 if (ct.getName().startsWith("org.apache.sis.")) {
@@ -76,8 +77,12 @@ public final class DefaultFactories extends SystemListener {
                         throw new ServiceConfigurationError("Found two implementations of " + type);
                     }
                     factory = candidate;
-                    break;
+                } else if (fallback == null) {
+                    fallback = candidate;
                 }
+            }
+            if (factory == null) {
+                factory = fallback;
             }
             FACTORIES.put(type, factory);
         }

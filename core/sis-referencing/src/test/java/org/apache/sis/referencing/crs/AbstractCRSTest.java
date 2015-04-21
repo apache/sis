@@ -48,7 +48,7 @@ public final strictfp class AbstractCRSTest extends TestCase {
                     new AbstractCS (singletonMap(NAME_KEY, "My strange CS"),
                     HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.GEODETIC_LONGITUDE));
         expected =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
-                    new AbstractCS (singletonMap(NAME_KEY, "Coordinate system: East (deg), North (deg), Up (m), Future (d)."),
+                    new AbstractCS (singletonMap(NAME_KEY, "Coordinate system: East (°), North (°), Up (m), Future (d)."),
                     HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME));
         actual   =  toTest.forConvention(AxesConvention.RIGHT_HANDED);
 

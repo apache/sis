@@ -112,15 +112,16 @@ public final strictfp class ContextualParametersTest extends TestCase {
     @Test
     public void testSameTransform() throws FactoryException {
         final ContextualParameters p = create(1, 1);
+        p.parameter("Mandatory 1").setValue(4);
         final MathTransform kernel = MathTransforms.linear(3, 4);
         assertEquals(kernel, p.completeTransform(DefaultMathTransformFactoryTest.factory(), kernel));
         try {
-            p.parameter("Mandatory 1");
+            p.parameter("Mandatory 1").setValue(10);
             fail("Shall not be allowed to modify an immutable instance.");
-        } catch (IllegalStateException e) {
+        } catch (UnsupportedOperationException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message, message.contains("ContextualParameters"));
+            assertTrue(message, message.contains("ParameterValue"));
         }
     }
 
