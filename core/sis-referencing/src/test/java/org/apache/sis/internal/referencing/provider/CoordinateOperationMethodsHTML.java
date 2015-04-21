@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.io.IOException;
-import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
@@ -35,6 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -46,7 +46,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.test.HTMLGenerator;
 
 
@@ -472,20 +471,10 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * Returns the string representation of the given parameter unit,
      * or an empty string (never {@code null}) if none.
      */
-    @Workaround(library="JSR-275", version="0.9.3")
     private static String getUnit(final ParameterDescriptor<?> param) {
-        final Unit<?> unit = param.getUnit();
-        if (unit != null) {
-            final String text;
-            try {
-                text = unit.toString();
-                if (!text.isEmpty()) {
-                    return text.equals("deg") ? "°" : " " + text;
-                }
-            } catch (IllegalArgumentException e) {
-                // Workaround for JSR-275 implementation bug.
-                // Do nothing, we will returns the empty string below.
-            }
+        final String unit = Utilities.toString(param.getUnit());
+        if (unit != null && !unit.isEmpty()) {
+            return " " + unit;
         }
         return "";
     }

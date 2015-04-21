@@ -18,10 +18,10 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
-import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
@@ -150,12 +150,9 @@ public class DefaultCompoundCS extends AbstractCS {
         for (final CoordinateSystemAxis axis : axes) {
             buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
             separator = ", ";
-            final Unit<?> unit = axis.getUnit();
-            if (unit != null) {
-                final String symbol = unit.toString();
-                if (!symbol.isEmpty()) {
-                    buffer.append(" (").append(symbol).append(')');
-                }
+            final String symbol = Utilities.toString(axis.getUnit());
+            if (symbol != null && !symbol.isEmpty()) {
+                buffer.append(" (").append(symbol).append(')');
             }
         }
         return buffer.append('.').toString();
