@@ -44,7 +44,7 @@ public final class PseudoMercator extends AbstractMercator {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         PARAMETERS = builder
