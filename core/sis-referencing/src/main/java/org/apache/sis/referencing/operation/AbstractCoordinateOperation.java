@@ -570,7 +570,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * @throws UnsupportedOperationException if the parameter values can not
      *         be determined for the current math transform implementation.
      */
-    ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
+    ParameterValueGroup getParameterValues() {
         MathTransform mt = transform;
         while (mt != null) {
             if (mt instanceof Parameterized) {
@@ -658,7 +658,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
 
     /**
      * Invoked by {@code hashCode()} for computing the hash code when first needed.
-     * See {@link #computeHashCode()} for more information.
+     * See {@link AbstractIdentifiedObject#computeHashCode()} for more information.
      *
      * @return The hash code value. This value may change in any future Apache SIS version.
      */
