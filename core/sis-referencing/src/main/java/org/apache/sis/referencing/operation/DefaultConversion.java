@@ -79,11 +79,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *     <td>{@link #getIdentifiers()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
-     *     <td>{@link org.opengis.metadata.quality.PositionalAccuracy} (optionally as array)</td>
-     *     <td>{@link #getCoordinateOperationAccuracy()}</td>
-     *   </tr>
-     *   <tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
