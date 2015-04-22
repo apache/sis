@@ -265,6 +265,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * array in a future SIS version.</div>
      *
      * @return Indices of the modified source coordinates.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
     public final int[] getModifiedCoordinates() {
         final int[] index = new int[subTransform.getSourceDimensions()];
@@ -279,6 +281,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * This is often the sub-transform specified at construction time, but not necessarily.
      *
      * @return The sub-transform.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getOperation()
      */
     public final MathTransform getSubTransform() {
         return subTransform;

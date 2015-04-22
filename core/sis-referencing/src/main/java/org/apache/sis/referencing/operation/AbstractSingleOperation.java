@@ -122,7 +122,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *         for the current math transform implementation.
      */
     @Override
-    public ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
+    public ParameterValueGroup getParameterValues() {
         return (parameters != null) ? parameters.clone() : super.getParameterValues();
     }
 
