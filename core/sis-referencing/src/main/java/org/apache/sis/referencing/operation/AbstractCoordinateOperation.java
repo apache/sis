@@ -24,7 +24,6 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -443,29 +442,29 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * <div class="section">Current implementation</div>
      * The current implementation uses the heuristic rules listed below.
-     * Note that this rules may change in any future SIS version.
+     * Note that those rules may change in any future SIS version.
      *
      * <ul>
-     *   <li><p>If a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
+     *   <li>If a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
      *     is found with a linear unit, then this accuracy estimate is converted to
-     *     {@linkplain javax.measure.unit.SI#METRE metres} and returned.</p></li>
+     *     {@linkplain javax.measure.unit.SI#METRE metres} and returned.</li>
      *
-     *   <li><p>Otherwise, if the operation is a {@linkplain DefaultConversion conversion}, then returns 0 since a
-     *     conversion is by definition accurate up to rounding errors.</p></li>
+     *   <li>Otherwise, if the operation is a {@linkplain DefaultConversion conversion}, then returns 0 since a
+     *     conversion is by definition accurate up to rounding errors.</li>
      *
-     *   <li><p>Otherwise, if the operation is a {@linkplain DefaultTransformation transformation}, then checks if
+     *   <li>Otherwise, if the operation is a {@linkplain DefaultTransformation transformation}, then checks if
      *     the datum shift were applied with the help of Bursa-Wolf parameters.
      *     If a datum shift has been applied, returns 25 meters.
-     *     If a datum shift should have been applied but has been omitted, returns 3000 meters.</p>
+     *     If a datum shift should have been applied but has been omitted, returns 3000 meters.
      *
      *     <div class="note"><b>Note:</b>
      *     the 3000 meters value is higher than the highest value (999 meters) found in the EPSG
      *     database version 6.7. The 25 meters value is the next highest value found in the EPSG
      *     database for a significant number of transformations.</div>
      *
-     *   <li><p>Otherwise, if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
+     *   <li>Otherwise, if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
      *     returns the sum of the accuracy of all components. This is a conservative scenario where we assume that
-     *     errors cumulate linearly.</p>
+     *     errors cumulate linearly.
      *
      *     <div class="note"><b>Note:</b>
      *     this is not necessarily the "worst case" scenario since the accuracy could be worst if the math transforms
@@ -525,19 +524,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns the operation method. {@link DefaultConversion} and {@link DefaultTransformation} need to override
-     * {@code method()} as a final method because {@code equals(Object, ComparisonMode.STRICT)} assumes that the
-     * field value is returned directly.
-     */
-    OperationMethod method() {
-        return null;
-    }
-
-    /**
-     * Returns the operation method.
-     *
-     * The difference between {@link #method()} and {@code getMethod()} is that {@link DefaultConversion}
-     * and {@link DefaultTransformation} will override {@code getMethod()} as a non-final method.
+     * Returns the operation method. This apply only to {@link AbstractSingleOperation} subclasses,
+     * which will make this method public.
      */
     OperationMethod getMethod() {
         return null;
@@ -571,12 +559,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
                 break;
             }
         }
-        /*
-         * Fallback on the method descriptor. We should never get a NullPointerException here, because this method
-         * should be invoked only by DefaultConversion and DefaultTransformation subclasses which verified that the
-         * method is non-null.
-         */
-        return method().getParameters();
+        final OperationMethod method = getMethod();
+        return (method != null) ? method.getParameters() : null;
     }
 
     /**
@@ -620,91 +604,56 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
-     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
-     *         relevant to transformations.
-     * @return {@code true} if both objects are equal.
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for ignoring properties
+     *         that do not make a difference in the numerical results of coordinate operations.
+     * @return {@code true} if both objects are equal for the given comparison mode.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true;   // Slight optimization.
-        }
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        if (mode == ComparisonMode.STRICT) {
-            final AbstractCoordinateOperation that = (AbstractCoordinateOperation) object;
-            if (!Objects.equals(method(),                    that.method())         ||
-                !Objects.equals(sourceCRS,                   that.sourceCRS)        ||
-                !Objects.equals(interpolationCRS,            that.interpolationCRS) ||
-                !Objects.equals(transform,                   that.transform)        ||
-                !Objects.equals(scope,                       that.scope)            ||
-                !Objects.equals(domainOfValidity,            that.domainOfValidity) ||
-                !Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
-            {
-                return false;
+        if (super.equals(object, mode)) {
+            if (mode == ComparisonMode.STRICT) {
+                final AbstractCoordinateOperation that = (AbstractCoordinateOperation) object;
+                if (Objects.equals(sourceCRS,                   that.sourceCRS)        &&
+                    Objects.equals(interpolationCRS,            that.interpolationCRS) &&
+                    Objects.equals(transform,                   that.transform)        &&
+                    Objects.equals(scope,                       that.scope)            &&
+                    Objects.equals(domainOfValidity,            that.domainOfValidity) &&
+                    Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
+                {
+                    // Check against never-ending recursivity with DerivedCRS.
+                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+                        return true;
+                    } else try {
+                        return Objects.equals(targetCRS, that.targetCRS);
+                    } finally {
+                        Semaphores.clear(Semaphores.COMPARING);
+                    }
+                }
+            } else {
+                final CoordinateOperation that = (CoordinateOperation) object;
+                if (mode == ComparisonMode.BY_CONTRACT) {
+                    if (!deepEquals(getScope(),                       that.getScope(), mode) ||
+                        !deepEquals(getDomainOfValidity(),            that.getDomainOfValidity(), mode) ||
+                        !deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))
+                    {
+                        return false;
+                    }
+                }
+                if (deepEquals(getMathTransform(),    that.getMathTransform(),   mode) &&
+                    deepEquals(getSourceCRS(),        that.getSourceCRS(),       mode) &&
+                    deepEquals(getInterpolationCRS(), getInterpolationCRS(that), mode))
+                {
+                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+                        return true;
+                    } else try {
+                        return deepEquals(getTargetCRS(), that.getTargetCRS(), mode);
+                    } finally {
+                        Semaphores.clear(Semaphores.COMPARING);
+                    }
+                }
             }
-            // See comment at the end of this method.
-            if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
-                return true;
-            } else try {
-                return Objects.equals(targetCRS, that.targetCRS);
-            } finally {
-                Semaphores.clear(Semaphores.COMPARING);
-            }
         }
-        final CoordinateOperation that = (CoordinateOperation) object;
-        if (mode == ComparisonMode.BY_CONTRACT) {
-            if (!deepEquals(getMethod(), (that instanceof SingleOperation) ? ((SingleOperation) that).getMethod() : null, mode) ||
-                !deepEquals(getScope(),                       that.getScope(), mode) ||
-                !deepEquals(getDomainOfValidity(),            that.getDomainOfValidity(), mode) ||
-                !deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))
-            {
-                return false;
-            }
-            // SourceCRS, targetCRS and transform to be tested below.
-        }
-        /*
-         * We consider the operation method as metadata. One could argue that OperationMethod's 'sourceDimension' and
-         * 'targetDimension' are not metadata, but their values should be identical to the 'sourceCRS' and 'targetCRS'
-         * dimensions, already checked below. We could also argue that 'OperationMethod.parameters' are not metadata,
-         * but their values should have been taken in account for the MathTransform creation, compared below.
-         *
-         * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
-         * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometime provided as explicit parameters,
-         * and sometime inferred from the geodetic datum. The two cases would be different set of parameters from the
-         * OperationMethod's point of view, but still result in the creation of identical MathTransforms.
-         *
-         * An other rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
-         * DefaultOperationMethod. Consequently there is a wide range of subclasses, which make the comparisons more
-         * difficult. For example Mercator1SP and Mercator2SP providers are two different ways to describe the same
-         * projection. The SQL-backed EPSG factory uses yet an other implementation.
-         *
-         * NOTE: A previous Geotk implementation made this final check:
-         *
-         *     return nameMatches(this.method, that.method);
-         *
-         * but it was not strictly necessary since it was redundant with the comparisons of MathTransforms.
-         * Actually it was preventing to detect that two CRS were equivalent despite different method names
-         * (e.g. "Mercator (1SP)" and "Mercator (2SP)" when the parameters are properly chosen).
-         */
-        if (!deepEquals(getMathTransform(), that.getMathTransform(), mode)
-                || !deepEquals(getSourceCRS(), that.getSourceCRS(), mode)
-                || !deepEquals(getInterpolationCRS(), getInterpolationCRS(that), mode))
-        {
-            return false;
-        }
-        /*
-         * Avoid never-ending recursivity: AbstractDerivedCRS has a 'conversionFromBase'
-         * field that is set to this AbstractCoordinateOperation.
-         */
-        if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
-            return true;
-        } else try {
-            return deepEquals(getTargetCRS(), that.getTargetCRS(), mode);
-        } finally {
-            Semaphores.clear(Semaphores.COMPARING);
-        }
+        return false;
     }
 
     /**
@@ -732,10 +681,10 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        append(formatter, sourceCRS, "SourceCRS");
-        append(formatter, targetCRS, "TargetCRS");
-        formatter.append(DefaultOperationMethod.castOrCopy(method()));
-        append(formatter, interpolationCRS, "InterpolationCRS");
+        append(formatter, getSourceCRS(), "SourceCRS");
+        append(formatter, getTargetCRS(), "TargetCRS");
+        formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
+        append(formatter, getInterpolationCRS(), "InterpolationCRS");
         final double accuracy = getLinearAccuracy();
         if (accuracy > 0) {
             formatter.append(new FormattableObject() {

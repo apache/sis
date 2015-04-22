@@ -27,6 +27,12 @@ import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+
+import static org.apache.sis.util.Utilities.deepEquals;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -81,14 +87,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the operation method (non-overrideable).
-     */
-    @Override
-    final OperationMethod method() {
-        return method;
-    }
-
-    /**
      * Returns the operation method.
      *
      * @return The operation method.
@@ -126,5 +124,60 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     @Override
     public ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
         return (parameters != null) ? parameters.clone() : super.getParameterValues();
+    }
+
+    /**
+     * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
+     * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
+     * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
+     * {@linkplain #getScope() scope}.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;   // Slight optimization.
+        }
+        if (!super.equals(object, mode)) {
+            return false;
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractSingleOperation that = (AbstractSingleOperation) object;
+                return Objects.equals(method,     that.method) &&
+                       Objects.equals(parameters, that.parameters);
+            }
+            case BY_CONTRACT: {
+                final SingleOperation that = (SingleOperation) object;
+                return deepEquals(getMethod(),          that.getMethod(),          mode) &&
+                       deepEquals(getParameterValues(), that.getParameterValues(), mode);
+            }
+        }
+        /*
+         * We consider the operation method as metadata. One could argue that OperationMethod's 'sourceDimension' and
+         * 'targetDimension' are not metadata, but their values should be identical to the 'sourceCRS' and 'targetCRS'
+         * dimensions, already checked below. We could also argue that 'OperationMethod.parameters' are not metadata,
+         * but their values should have been taken in account for the MathTransform creation, compared below.
+         *
+         * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
+         * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometime provided as explicit parameters,
+         * and sometime inferred from the geodetic datum. The two cases would be different set of parameters from the
+         * OperationMethod's point of view, but still result in the creation of identical MathTransforms.
+         *
+         * An other rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
+         * DefaultOperationMethod. Consequently there is a wide range of subclasses, which make the comparisons more
+         * difficult. For example Mercator1SP and Mercator2SP providers are two different ways to describe the same
+         * projection. The SQL-backed EPSG factory uses yet an other implementation.
+         *
+         * NOTE: A previous Geotk implementation made this final check:
+         *
+         *     return nameMatches(this.method, that.method);
+         *
+         * but it was not strictly necessary since it was redundant with the comparisons of MathTransforms.
+         * Actually it was preventing to detect that two CRS were equivalent despite different method names
+         * (e.g. "Mercator (1SP)" and "Mercator (2SP)" when the parameters are properly chosen).
+         */
+        return true;
     }
 }
