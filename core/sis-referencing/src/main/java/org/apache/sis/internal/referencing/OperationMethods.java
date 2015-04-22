@@ -274,10 +274,7 @@ public final class OperationMethods extends Static {
      *       {@link PositionalAccuracyConstant#DATUM_SHIFT_APPLIED} and
      *       {@link PositionalAccuracyConstant#DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.
      *       If a datum shift has been applied, returns 25 meters.
-     *       If a datum shift should have been applied but has been omitted, returns 1000 meters.
-     *       The 1000 meters value is higher than the highest value (999 meters) found in the EPSG
-     *       database version 6.7. The 25 meters value is the next highest value found in the EPSG
-     *       database for a significant number of transformations.
+     *       If a datum shift should have been applied but has been omitted, returns 3000 meters.</li>
      *
      *   <li>Otherwise, if the operation is a {@link ConcatenatedOperation}, returns the sum of the accuracy
      *       of all components. This is a conservative scenario where we assume that errors cumulate linearly.
@@ -285,8 +282,12 @@ public final class OperationMethods extends Static {
      *       if the math transforms are highly non-linear.</li>
      * </ul>
      *
+     * If the above is modified, please update {@code AbstractCoordinateOperation.getLinearAccuracy()} javadoc.
+     *
      * @param  operation The operation to inspect for accuracy.
      * @return The accuracy estimate (always in meters), or NaN if unknown.
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
     public static double getLinearAccuracy(final CoordinateOperation operation) {
         final Collection<PositionalAccuracy> accuracies = operation.getCoordinateOperationAccuracy();
@@ -331,7 +332,7 @@ public final class OperationMethods extends Static {
                     return 25;
                 }
             }
-            return 1000;
+            return 3000;
         }
         /*
          * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,
