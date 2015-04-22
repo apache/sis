@@ -23,9 +23,14 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.*;     // We really use most of this package content.
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -539,14 +544,47 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns the parameter values. The default implementation infers the parameter
-     * values from the {@linkplain #transform transform}, if possible.
+     * Returns the parameter descriptor. The default implementation infers the descriptor from the
+     * {@linkplain #transform}, if possible. If no descriptor can be inferred from the math transform,
+     * then this method fallback on the {@link OperationMethod} parameters.
+     */
+    ParameterDescriptorGroup getParameterDescriptors() throws UnsupportedOperationException {
+        MathTransform mt = transform;
+        while (mt != null) {
+            if (mt instanceof Parameterized) {
+                final ParameterDescriptorGroup param;
+                if (Semaphores.queryAndSet(Semaphores.PROJCS)) {
+                    throw new AssertionError(); // Should never happen.
+                }
+                try {
+                    param = ((Parameterized) mt).getParameterDescriptors();
+                } finally {
+                    Semaphores.clear(Semaphores.PROJCS);
+                }
+                if (param != null) {
+                    return param;
+                }
+            }
+            if (mt instanceof PassThroughTransform) {
+                mt = ((PassThroughTransform) mt).getSubTransform();
+            } else {
+                break;
+            }
+        }
+        /*
+         * Fallback on the method descriptor. We should never get a NullPointerException here, because this method
+         * should be invoked only by DefaultConversion and DefaultTransformation subclasses which verified that the
+         * method is non-null.
+         */
+        return method().getParameters();
+    }
+
+    /**
+     * Returns the parameter values. The default implementation infers the
+     * parameter values from the {@linkplain #transform}, if possible.
      *
-     * @throws UnsupportedOperationException if the parameter values can't be determined
-     *         for the current math transform implementation.
-     *
-     * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup)
-     * @see Parameterized#getParameterValues()
+     * @throws UnsupportedOperationException if the parameter values can not
+     *         be determined for the current math transform implementation.
      */
     ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
         MathTransform mt = transform;
@@ -573,7 +611,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         }
         throw new UnsupportedImplementationException(Classes.getClass(mt));
     }
-
 
     /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
@@ -683,7 +720,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
          * inside the above 'equals(Object, ComparisonMode)' method for more information.
          * Note that we use the 'transform' hash code, which should be sufficient.
          */
-        return super.computeHashCode() + Objects.hash(sourceCRS, targetCRS, transform);
+        return super.computeHashCode() + Objects.hash(sourceCRS, targetCRS, interpolationCRS, transform);
     }
 
     /**
