@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -108,6 +109,8 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
                                  final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
     }
 
     /**

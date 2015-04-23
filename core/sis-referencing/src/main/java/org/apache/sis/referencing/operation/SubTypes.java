@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import org.opengis.referencing.operation.*;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 
 /**
@@ -27,6 +29,8 @@ import org.opengis.referencing.operation.*;
  * <p>This class currently provides implementation for the following methods:</p>
  * <ul>
  *   <li>{@link AbstractCoordinateOperation#castOrCopy(CoordinateOperation)}</li>
+ *   <li>{@link DefaultConversion#castOrCopy(Conversion)}</li>
+ *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -95,5 +99,54 @@ final class SubTypes {
             return (DefaultConversion) object;
         }
         return new DefaultConversion(object);
+    }
+
+    /**
+     * Returns a conversion from the specified defining conversion.
+     * The new conversion will be a more specific type like a {@linkplain PlanarProjection planar},
+     * {@linkplain CylindricalProjection cylindrical} or {@linkplain ConicProjection conic projection}.
+     * The returned conversion will implement at least the {@code baseType} interface, but may implement
+     * a more specific GeoAPI interface if this method has been able to infer the type from the
+     * {@code conversion} argument.
+     *
+     * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
+     * @param  definition The defining conversion.
+     * @param  sourceCRS  The source CRS.
+     * @param  targetCRS  The target CRS.
+     * @return The conversion of the given type between the given CRS.
+     * @throws ClassCastException if a contradiction is found between the given {@code baseType},
+     *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
+     *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     */
+    static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+    {
+        Class<? extends T> type = baseType;
+        if (definition instanceof AbstractIdentifiedObject) {
+            final Class<?> c = ((AbstractIdentifiedObject) definition).getInterface();
+            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+                type = c.asSubclass(type);
+            }
+        }
+        final OperationMethod method = definition.getMethod();
+        if (method instanceof DefaultOperationMethod) {
+            final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
+            if (!c.isAssignableFrom(baseType)) {  // Do nothing if c is a parent type.
+                type = c.asSubclass(type);
+            }
+        }
+        final Conversion conversion;
+        if (CylindricalProjection.class.isAssignableFrom(type)) {
+            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS);
+        } else if (ConicProjection.class.isAssignableFrom(type)) {
+            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS);
+        } else if (PlanarProjection.class.isAssignableFrom(type)) {
+            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS);
+        } else if (Projection.class.isAssignableFrom(type)) {
+            conversion = new DefaultProjection(definition, sourceCRS, targetCRS);
+        } else {
+            conversion = new DefaultConversion(definition, sourceCRS, targetCRS);
+        }
+        return type.cast(conversion);
     }
 }

@@ -21,16 +21,10 @@ import org.opengis.util.Record;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.referencing.operation.*;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.util.Citations;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Units;
 
@@ -63,120 +57,18 @@ public final class OperationMethods extends Static {
     }
 
     /**
-     * Returns the most specific {@link CoordinateOperation} interface implemented by the specified operation.
-     * Special cases:
-     *
-     * <ul>
-     *   <li>If the operation implements the {@link Transformation} interface,
-     *       then this method returns {@code Transformation.class}. Transformation
-     *       has precedence over any other interface implemented by the operation.</li>
-     *   <li>Otherwise if the operation implements the {@link Conversion} interface,
-     *       then this method returns the most specific {@code Conversion} sub-interface.</li>
-     *   <li>Otherwise if the operation implements the {@link SingleOperation} interface,
-     *       then this method returns {@code SingleOperation.class}.</li>
-     *   <li>Otherwise if the operation implements the {@link ConcatenatedOperation} interface,
-     *       then this method returns {@code ConcatenatedOperation.class}.</li>
-     *   <li>Otherwise this method returns {@code CoordinateOperation.class}.</li>
-     * </ul>
-     *
-     * @param  operation A coordinate operation.
-     * @return The most specific GeoAPI interface implemented by the given operation.
-     */
-    public static Class<? extends CoordinateOperation> getType(final CoordinateOperation operation) {
-        if (operation instanceof        Transformation) return        Transformation.class;
-        if (operation instanceof       ConicProjection) return       ConicProjection.class;
-        if (operation instanceof CylindricalProjection) return CylindricalProjection.class;
-        if (operation instanceof      PlanarProjection) return      PlanarProjection.class;
-        if (operation instanceof            Projection) return            Projection.class;
-        if (operation instanceof            Conversion) return            Conversion.class;
-        if (operation instanceof       SingleOperation) return       SingleOperation.class;
-        if (operation instanceof ConcatenatedOperation) return ConcatenatedOperation.class;
-        return CoordinateOperation.class;
-    }
-
-    /**
-     * Determines whether a match or mismatch is found between the two given collections of identifiers.
-     * If any of the given collections is {@code null} or empty, this method returns {@code null}.
-     *
-     * <p>According ISO 19162 (<cite>Well known text representation of coordinate reference systems</cite>),
-     * {@linkplain AbstractIdentifiedObject#getIdentifier() identifiers} should have precedence over
-     * {@linkplain AbstractIdentifiedObject#getName() name} for identifying {@code IdentifiedObject}s,
-     * at least in the case of {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod
-     * operation methods} and {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters}.</p>
-     *
-     * @param  id1 The first collection of identifiers, or {@code null}.
-     * @param  id2 The second collection of identifiers, or {@code null}.
-     * @return {@code TRUE} or {@code FALSE} on match or mismatch respectively, or {@code null} if this method
-     *         can not determine if there is a match or mismatch.
-     */
-    public static Boolean hasCommonIdentifier(final Iterable<? extends Identifier> id1,
-                                              final Iterable<? extends Identifier> id2)
-    {
-        if (id1 != null && id2 != null) {
-            boolean hasFound = false;
-            for (final Identifier identifier : id1) {
-                final Citation authority = identifier.getAuthority();
-                final String   codeSpace = identifier.getCodeSpace();
-                for (final Identifier other : id2) {
-                    if (authorityMatches(identifier, authority, codeSpace)) {
-                        if (CharSequences.equalsFiltered(identifier.getCode(), other.getCode(), Characters.Filter.UNICODE_IDENTIFIER, true)) {
-                            return Boolean.TRUE;
-                        }
-                        hasFound = true;
-                    }
-                }
-            }
-            if (hasFound) {
-                return Boolean.FALSE;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns {@code true} if the given identifier authority matches the given {@code authority}.
-     * If one of the authority is null, then the comparison fallback on the given {@code codeSpace}.
-     * If the code spaces are also null, then this method conservatively returns {@code false}.
-     *
-     * @param  identifier The identifier to compare.
-     * @param  authority  The desired authority, or {@code null}.
-     * @param  codeSpace  The desired code space or {@code null}, used as a fallback if an authority is null.
-     * @return {@code true} if the authority or code space (as a fallback only) matches.
-     */
-    private static boolean authorityMatches(final Identifier identifier, final Citation authority, final String codeSpace) {
-        if (authority != null) {
-            final Citation other = identifier.getAuthority();
-            if (other != null) {
-                return Citations.identifierMatches(authority, other);
-            }
-        }
-        if (codeSpace != null) {
-            final String other = identifier.getCodeSpace();
-            if (other != null) {
-                return CharSequences.equalsFiltered(codeSpace, other, Characters.Filter.UNICODE_IDENTIFIER, true);
-            }
-        }
-        return false;
-    }
-
-    /**
      * Convenience method returning the accuracy in meters for the specified operation.
      * This method tries each of the following procedures and returns the first successful one:
      *
      * <ul>
      *   <li>If a {@link QuantitativeResult} is found with a linear unit, then this accuracy estimate
      *       is converted to {@linkplain SI#METRE metres} and returned.</li>
-     *
      *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
      *       is by definition accurate up to rounding errors.</li>
-     *
      *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
      *       were applied with the help of Bursa-Wolf parameters. This procedure looks for SIS-specific
      *       {@link PositionalAccuracyConstant#DATUM_SHIFT_APPLIED} and
-     *       {@link PositionalAccuracyConstant#DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.
-     *       If a datum shift has been applied, returns 25 meters.
-     *       If a datum shift should have been applied but has been omitted, returns 3000 meters.</li>
-     *
+     *       {@link PositionalAccuracyConstant#DATUM_SHIFT_OMITTED DATUM_SHIFT_OMITTED} constants.</li>
      *   <li>Otherwise, if the operation is a {@link ConcatenatedOperation}, returns the sum of the accuracy
      *       of all components. This is a conservative scenario where we assume that errors cumulate linearly.
      *       Note that this is not necessarily the "worst case" scenario since the accuracy could be worst
@@ -224,16 +116,16 @@ public final class OperationMethods extends Static {
         }
         /*
          * If the coordinate operation is actually a transformation, checks if Bursa-Wolf parameters
-         * were available for the datum shift. This is SIS-specific. See method javadoc for a rational
+         * were available for the datum shift. This is SIS-specific. See field javadoc for a rational
          * about the return values chosen.
          */
         if (operation instanceof Transformation) {
             if (!accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_OMITTED)) {
                 if (accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED)) {
-                    return 25;
+                    return PositionalAccuracyConstant.DATUM_SHIFT_ACCURACY;
                 }
             }
-            return 3000;
+            return PositionalAccuracyConstant.UNKNOWN_ACCURACY;
         }
         /*
          * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,

@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -39,7 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * and {@linkplain #getTargetCRS() target CRS}. But {@code Conversion} instances without those information may exist
  * temporarily while creating a {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
  * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
- * Those <cite>defining conversions</cite> have no source and target CRS since those elements are created by the
+ * Those <cite>defining conversions</cite> have no source and target CRS since those elements are provided by the
  * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
  * MathTransform) constructor} for such defining conversions.
  *
@@ -109,17 +110,19 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                              final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
     }
 
     /**
      * Creates a defining conversion from the given transform.
-     * This conversion has no source and target CRS since those elements will be created by the
+     * This conversion has no source and target CRS since those elements will be provided by the
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
      *
      * <p>The properties given in argument follow the same rules than for the
-     * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
-     * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) super-class constructor}.</p>
+     * {@linkplain #DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, OperationMethod, MathTransform) above constructor}.</p>
      *
      * @param properties The properties to be given to the identified object.
      * @param method     The operation method.
@@ -129,7 +132,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                              final OperationMethod method,
                              final MathTransform   transform)
     {
-        super(properties, method, transform);
+        super(properties, null, null, null, method, transform);
     }
 
     /**
@@ -204,5 +207,42 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     @Override
     public Class<? extends Conversion> getInterface() {
         return Conversion.class;
+    }
+
+    /**
+     * Returns a specialization of this conversion with a more specific type, source and target CRS.
+     * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
+     * OperationMethod, MathTransform) defining conversion} instances, when more information become
+     * available about the conversion to create.
+     *
+     * <p>The given {@code baseType} argument can be one of the following values:</p>
+     * <ul>
+     *   <li><code>{@linkplain org.opengis.referencing.operation.Conversion}.class</code></li>
+     *   <li><code>{@linkplain org.opengis.referencing.operation.Projection}.class</code></li>
+     *   <li><code>{@linkplain org.opengis.referencing.operation.CylindricalProjection}.class</code></li>
+     *   <li><code>{@linkplain org.opengis.referencing.operation.ConicProjection}.class</code></li>
+     *   <li><code>{@linkplain org.opengis.referencing.operation.PlanarProjection}.class</code></li>
+     * </ul>
+     *
+     * This {@code specialize(…)} method returns a conversion which implement at least the given {@code baseType}
+     * interface, but may also implement a more specific GeoAPI interface if {@code specialize(…)} has been able
+     * to infer the type from this operation {@linkplain #getMethod() method}.
+     *
+     * @param  <T>        Compile-time type of the {@code baseType} argument.
+     * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
+     * @param  sourceCRS  The source CRS.
+     * @param  targetCRS  The target CRS.
+     * @return The conversion of the given type between the given CRS.
+     * @throws ClassCastException if a contradiction is found between the given {@code baseType},
+     *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
+     *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     */
+    public <T extends Conversion> T specialize(final Class<T> baseType,
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+    {
+        ArgumentChecks.ensureNonNull("baseType",  baseType);
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        return SubTypes.create(baseType, this, sourceCRS, targetCRS);
     }
 }
