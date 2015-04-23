@@ -92,7 +92,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
-    org.apache.sis.internal.referencing.OperationMethodsTest.class,
     org.apache.sis.internal.referencing.provider.AffineTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,

@@ -75,8 +75,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
-        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("method",    method);
         ArgumentChecks.ensureNonNull("transform", transform);
         checkDimensions(method, transform, properties);
@@ -88,21 +86,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          */
         parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
         // No clone since this is a SIS internal property and SIS does not modify those values after construction.
-    }
-
-    /**
-     * Creates a defining conversion. This is for {@link DefaultConversion} constructor only.
-     */
-    AbstractSingleOperation(final Map<String,?>   properties,
-                            final OperationMethod method,
-                            final MathTransform   transform)
-    {
-        super(properties, null, null, null, transform);
-        ArgumentChecks.ensureNonNull("method",    method);
-        ArgumentChecks.ensureNonNull("transform", transform);
-        checkDimensions(method, transform, properties);
-        this.method = method;
-        parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
     }
 
     /**

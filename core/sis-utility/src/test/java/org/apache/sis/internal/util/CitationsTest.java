@@ -16,8 +16,12 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.List;
+import java.util.ArrayList;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -35,6 +39,48 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class CitationsTest extends TestCase {
+    /**
+     * Creates an identifier with a code space.
+     */
+     @SuppressWarnings("serial")
+     private static Identifier identifier(final String codeSpace, final String code) {
+        return new SimpleIdentifier(null, code) {
+            @Override public String getCodeSpace() {
+                return codeSpace;
+            }
+        };
+    }
+
+    /**
+     * Tests {@link Citations#hasCommonIdentifier(Iterable, Iterable)}.
+     */
+    @Test
+    public void testHasCommonIdentifier() {
+        final List<Identifier> id1 = new ArrayList<>(3);
+        final List<Identifier> id2 = new ArrayList<>(2);
+        assertNull(Citations.hasCommonIdentifier(id1, id2));
+        /*
+         * Add codes for two Operation Methods which are implemented in Apache SIS by the same class:
+         *
+         *  - EPSG:9804  —  "Mercator (variant A)" (formerly known as "Mercator (1SP)").
+         *  - EPSG:1026  —  "Mercator (Spherical)"
+         *  - GeoTIFF:7  —  "CT_Mercator"
+         */
+        id1.add(identifier("EPSG", "9804"));
+        id1.add(identifier("EPSG", "1026"));
+        id1.add(identifier("GeoTIFF", "7"));
+        assertNull(Citations.hasCommonIdentifier(id1, id2));
+        /*
+         * EPSG:9841 is a legacy (now deprecated) code for "Mercator (1SP)".
+         * We could have declared it as a deprecated code in the above list,
+         * but for the sake of this test we do not.
+         */
+        id2.add(identifier("EPSG", "9841"));
+        assertEquals(Boolean.FALSE, Citations.hasCommonIdentifier(id1, id2));
+        id2.add(identifier("EPSG", "9804"));
+        assertEquals(Boolean.TRUE, Citations.hasCommonIdentifier(id1, id2));
+    }
+
     /**
      * Tests {@link Citations#getIdentifier(Citation, boolean)}.
      */
