@@ -23,7 +23,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -141,14 +140,12 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     private final MathTransform transform;
 
     /**
-     * Constructs a new coordinate operation with the same values than the specified
-     * defining conversion, together with the specified source and target CRS.
-     * This constructor is used by {@link DefaultConversion} only.
+     * Constructs a new coordinate operation with the same values than the specified defining conversion,
+     * together with the specified source and target CRS. This constructor is used by {@link DefaultConversion} only.
      */
-    AbstractCoordinateOperation(final Conversion               definition,
+    AbstractCoordinateOperation(final CoordinateOperation       definition,
                                 final CoordinateReferenceSystem sourceCRS,
-                                final CoordinateReferenceSystem targetCRS,
-                                final MathTransform             transform)
+                                final CoordinateReferenceSystem targetCRS)
     {
         super(definition);
         this.sourceCRS                   = sourceCRS;
@@ -158,7 +155,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         this.coordinateOperationAccuracy = definition.getCoordinateOperationAccuracy();
         this.domainOfValidity            = definition.getDomainOfValidity();
         this.scope                       = definition.getScope();
-        this.transform                   = transform;
+        this.transform                   = definition.getMathTransform();
     }
 
     /**
