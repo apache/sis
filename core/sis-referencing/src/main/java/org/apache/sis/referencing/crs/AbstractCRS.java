@@ -47,9 +47,17 @@ import java.util.Objects;
 
 
 /**
- * Abstract coordinate reference system, usually defined by a coordinate system and a datum.
- * {@code AbstractCRS} can have an arbitrary number of dimensions. The actual dimension of a
- * given instance can be determined as below:
+ * Coordinate reference system, defined by a {@linkplain AbstractCS coordinate system}
+ * and (usually) a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}.
+ * A coordinate reference system (CRS) consists of an ordered sequence of
+ * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes}
+ * that are related to the earth through the datum.
+ * Most coordinate reference system do not move relative to the earth, except for
+ * {@linkplain DefaultEngineeringCRS engineering coordinate reference systems}
+ * defined on moving platforms such as cars, ships, aircraft, and spacecraft.
+ *
+ * <p>Coordinate reference systems can have an arbitrary number of dimensions.
+ * The actual dimension of a given instance can be determined as below:</p>
  *
  * {@preformat java
  *   int dimension = crs.getCoordinateSystem().getDimension();
@@ -80,6 +88,7 @@ import java.util.Objects;
 @XmlType(name="AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
+    DefaultProjectedCRS.class,
     DefaultGeodeticCRS.class,
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,

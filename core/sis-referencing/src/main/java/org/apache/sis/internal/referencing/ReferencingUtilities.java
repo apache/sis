@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Collection;
 import java.util.logging.Logger;
 import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
@@ -36,6 +37,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.internal.util.Numerics.epsilonEqual;
@@ -103,6 +105,32 @@ public final class ReferencingUtilities extends Static {
         } else {
             return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());
         }
+    }
+
+    /**
+     * Returns the angular unit of the specified coordinate system.
+     * The preference will be given to the longitude axis, if found.
+     *
+     * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
+     * @return The angular unit, of {@link NonSI#DEGREE_ANGLE} if no angular unit was found.
+     *
+     * @since 0.6
+     */
+    public static Unit<Angle> getAngularUnit(final CoordinateSystem cs) {
+        Unit<Angle> unit = NonSI.DEGREE_ANGLE;
+        if (cs != null) {
+            for (int i = cs.getDimension(); --i>=0;) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final Unit<?> candidate = axis.getUnit();
+                if (Units.isAngular(candidate)) {
+                    unit = candidate.asType(Angle.class);
+                    if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
+                        break; // Found the longitude axis.
+                    }
+                }
+            }
+        }
+        return unit;
     }
 
     /**
