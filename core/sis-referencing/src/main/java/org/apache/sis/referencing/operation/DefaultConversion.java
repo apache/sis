@@ -149,6 +149,52 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     *
+     * @see #castOrCopy(Conversion)
+     */
+    protected DefaultConversion(final Conversion operation) {
+        super(operation);
+    }
+
+    /**
+     * Returns a SIS coordinate operation implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is an instance of
+     *       {@link org.opengis.referencing.operation.Conversion},
+     *       {@link org.opengis.referencing.operation.Projection},
+     *       {@link org.opengis.referencing.operation.CylindricalProjection},
+     *       {@link org.opengis.referencing.operation.ConicProjection} or
+     *       {@link org.opengis.referencing.operation.PlanarProjection},
+     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
+     *       Note that if the given object implements more than one of the above-cited interfaces,
+     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultConversion}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultConversion} instance is created using the
+     *       {@linkplain #DefaultConversion(Conversion) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       properties contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultConversion castOrCopy(final Conversion object) {
+        return SubTypes.forConversion(object);
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The default implementation returns {@code Conversion.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
