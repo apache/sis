@@ -238,7 +238,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Used by JAXB only (invoked by reflection).
      */
     private void setCoordinateSystem(final TimeCS cs) {
-        super.setCoordinateSystem("timeCS", cs);
+        setCoordinateSystem("timeCS", cs);
     }
 
     /**
