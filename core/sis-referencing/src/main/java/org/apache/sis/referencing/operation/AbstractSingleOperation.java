@@ -19,13 +19,17 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
@@ -75,15 +79,140 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("method",    method);
         ArgumentChecks.ensureNonNull("transform", transform);
+        checkDimensions(method, transform, properties);
         this.method = method;
         /*
-         * Undocumented property. We do not document it because parameters are usually either inferred from
-         * the MathTransform, or specified explicitely in a DefiningConversion. However there is a few cases,
-         * for example the Molodenski transform, where none of the above can apply, because the operation is
-         * implemented by a concatenation of math transforms, and concatenations do not have ParameterValueGroup.
+         * Undocumented property, because SIS usually infers the parameters from the MathTransform.
+         * However there is a few cases, for example the Molodenski transform, where we can not infer the
+         * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
         parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
         // No clone since this is a SIS internal property and SIS does not modify those values after construction.
+    }
+
+    /**
+     * Creates a defining conversion. This is for {@link DefaultConversion} constructor only.
+     */
+    AbstractSingleOperation(final Map<String,?>   properties,
+                            final OperationMethod method,
+                            final MathTransform   transform)
+    {
+        super(properties, null, null, null, transform);
+        ArgumentChecks.ensureNonNull("method",    method);
+        ArgumentChecks.ensureNonNull("transform", transform);
+        checkDimensions(method, transform, properties);
+        this.method = method;
+        parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
+    }
+
+    /**
+     * Constructs a new operation with the same values than the specified one, together with the
+     * specified source and target CRS. While the source operation can be an arbitrary one, it is
+     * typically a defining conversion.
+     */
+    AbstractSingleOperation(final SingleOperation           definition,
+                            final CoordinateReferenceSystem sourceCRS,
+                            final CoordinateReferenceSystem targetCRS)
+    {
+        super(definition, sourceCRS, targetCRS);
+        method = definition.getMethod();
+        parameters = (definition instanceof AbstractSingleOperation) ?
+                ((AbstractSingleOperation) definition).parameters : definition.getParameterValues();
+    }
+
+    /**
+     * Checks if an operation method and a math transform have a compatible number of source and target dimensions.
+     * In the particular case of a {@linkplain PassThroughTransform pass through transform} with more dimensions
+     * than what we would expect from the given method, the check will rather be performed against the
+     * {@linkplain PassThroughTransform#getSubTransform() sub transform}.
+     *
+     * <p>The intend is to allow creation of a three-dimensional {@code ProjectedCRS} with a two-dimensional
+     * {@code OperationMethod}, where the third-dimension just pass through. This is not a recommended approach
+     * and we do not document that as a supported feature, but we do not prevent it neither.</p>
+     *
+     * <p>This method tries to locates what seems to be the "core" of the given math transform. The definition
+     * of "core" is imprecise and may be adjusted in future SIS versions. The current algorithm is as below:</p>
+     *
+     * <ul>
+     *   <li>If the given transform can be decomposed in {@linkplain MathTransforms#getSteps(MathTransform) steps},
+     *       then the steps for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis
+     *       swapping and scaling} are ignored.</li>
+     *   <li>If the given transform or its non-ignorable step is a {@link PassThroughTransform}, then its sub-transform
+     *       is taken. Only one non-ignorable step may exist, otherwise we do not try to select any of them.</li>
+     * </ul>
+     *
+     * @param  method     The operation method to compare to the math transform.
+     * @param  transform  The math transform to compare to the operation method.
+     * @param  properties Properties of the caller object being constructed, used only for formatting error message.
+     * @throws IllegalArgumentException if the number of dimensions are incompatible.
+     */
+    static void checkDimensions(final OperationMethod method, MathTransform transform,
+            final Map<String,?> properties) throws IllegalArgumentException
+    {
+        int actual = transform.getSourceDimensions();
+        Integer expected = method.getSourceDimensions();
+        if (expected != null && actual > expected) {
+            /*
+             * The given MathTransform use more dimensions than the OperationMethod.
+             * Try to locate one and only one sub-transform, ignoring axis swapping and scaling.
+             */
+            MathTransform subTransform = null;
+            for (final MathTransform step : MathTransforms.getSteps(transform)) {
+                if (!isIgnorable(step)) {
+                    if (subTransform == null && step instanceof PassThroughTransform) {
+                        subTransform = ((PassThroughTransform) step).getSubTransform();
+                    } else {
+                        subTransform = null;
+                        break;
+                    }
+                }
+            }
+            if (subTransform != null) {
+                transform = subTransform;
+                actual = transform.getSourceDimensions();
+            }
+        }
+        /*
+         * Now verify if the MathTransform dimensions are equal to the OperationMethod ones,
+         * ignoring null java.lang.Integer instances.
+         */
+        byte isTarget = 0; // false: wrong dimension is the source one.
+        if (expected == null || actual == expected) {
+            actual = transform.getTargetDimensions();
+            expected = method.getTargetDimensions();
+            if (expected == null || actual == expected) {
+                return;
+            }
+            isTarget = 1; // true: wrong dimension is the target one.
+        }
+        throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+    }
+
+    /**
+     * Returns {@code true} if the specified transform is likely to exists only for axis swapping
+     * and/or unit conversions. The heuristic rule checks if the transform is backed by a square
+     * matrix with exactly one non-null value in each row and each column.
+     */
+    private static boolean isIgnorable(final MathTransform transform) {
+        final Matrix matrix = MathTransforms.getMatrix(transform);
+        if (matrix != null) {
+            final int size = matrix.getNumRow();
+            if (matrix.getNumCol() == size) {
+                for (int j=0; j<size; j++) {
+                    int n1=0, n2=0;
+                    for (int i=0; i<size; i++) {
+                        if (matrix.getElement(j,i) != 0) n1++;
+                        if (matrix.getElement(i,j) != 0) n2++;
+                    }
+                    if (n1 != 1 || n2 != 1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

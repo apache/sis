@@ -16,7 +16,7 @@
  */
 
 /**
- * Relationship between any two {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems}.
+ * Relationship between any two {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS).
  * An explanation for this package is provided in the {@linkplain org.opengis.referencing.operation OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the Apache SIS implementation.
  *

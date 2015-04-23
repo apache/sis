@@ -34,6 +34,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * {@linkplain #getMathTransform() math transform}. Subclasses may have to override the {@link #getParameterValues()}
  * method if they need to provide a different set of parameters.</p>
  *
+ * <div class="section">Defining conversions</div>
+ * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
+ * and {@linkplain #getTargetCRS() target CRS}. But {@code Conversion} instances without those information may exist
+ * temporarily while creating a {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
+ * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
+ * Those <cite>defining conversions</cite> have no source and target CRS since those elements are created by the
+ * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
+ * MathTransform) constructor} for such defining conversions.
+ *
  * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
@@ -100,6 +109,43 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                              final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+    }
+
+    /**
+     * Creates a defining conversion from the given transform.
+     * This conversion has no source and target CRS since those elements will be created by the
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
+     *
+     * <p>The properties given in argument follow the same rules than for the
+     * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) super-class constructor}.</p>
+     *
+     * @param properties The properties to be given to the identified object.
+     * @param method     The operation method.
+     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     */
+    public DefaultConversion(final Map<String,?>   properties,
+                             final OperationMethod method,
+                             final MathTransform   transform)
+    {
+        super(properties, method, transform);
+    }
+
+    /**
+     * Constructs a new conversion with the same values than the specified one, together with the
+     * specified source and target CRS. While the source conversion can be an arbitrary one, it is
+     * typically a defining conversion.
+     *
+     * @param definition The defining conversion.
+     * @param sourceCRS  The source CRS.
+     * @param targetCRS  The target CRS.
+     */
+    DefaultConversion(final Conversion                definition,
+                      final CoordinateReferenceSystem sourceCRS,
+                      final CoordinateReferenceSystem targetCRS)
+    {
+        super(definition, sourceCRS, targetCRS);
     }
 
     /**
