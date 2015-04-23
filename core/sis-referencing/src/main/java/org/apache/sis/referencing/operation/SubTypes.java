@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
-import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.*;
 
 
 /**
@@ -47,7 +47,16 @@ final class SubTypes {
      * @see AbstractCoordinateOperation#castOrCopy(CoordinateOperation)
      */
     static AbstractCoordinateOperation castOrCopy(final CoordinateOperation object) {
-        // TODO: subclasses to be tested here.
+        if (object instanceof Transformation) {
+            return DefaultTransformation.castOrCopy((Transformation) object);
+        }
+        if (object instanceof Conversion) {
+            return forConversion((Conversion) object);
+        }
+        if (object instanceof SingleOperation) {
+            return (object instanceof AbstractSingleOperation) ? (AbstractSingleOperation) object
+                   : new AbstractSingleOperation((SingleOperation) object);
+        }
         /*
          * Intentionally check for AbstractCoordinateOperation after the interfaces because user may have defined
          * his own subclass implementing the same interface.  If we were checking for AbstractCoordinateOperation
@@ -58,5 +67,33 @@ final class SubTypes {
             return (AbstractCoordinateOperation) object;
         }
         return new AbstractCoordinateOperation(object);
+    }
+
+    /**
+     * Returns a SIS implementation for the given conversion.
+     *
+     * @see DefaultConversion#castOrCopy(Conversion)
+     */
+    static DefaultConversion forConversion(final Conversion object) {
+        if (object instanceof CylindricalProjection) {
+            return (object instanceof DefaultCylindricalProjection) ? ((DefaultCylindricalProjection) object)
+                   : new DefaultCylindricalProjection((CylindricalProjection) object);
+        }
+        if (object instanceof ConicProjection) {
+            return (object instanceof DefaultConicProjection) ? ((DefaultConicProjection) object)
+                   : new DefaultConicProjection((ConicProjection) object);
+        }
+        if (object instanceof PlanarProjection) {
+            return (object instanceof DefaultPlanarProjection) ? ((DefaultPlanarProjection) object)
+                   : new DefaultPlanarProjection((PlanarProjection) object);
+        }
+        if (object instanceof Projection) {
+            return (object instanceof DefaultProjection) ? ((DefaultProjection) object)
+                   : new DefaultProjection((Projection) object);
+        }
+        if (object == null || object instanceof DefaultConversion) {
+            return (DefaultConversion) object;
+        }
+        return new DefaultConversion(object);
     }
 }

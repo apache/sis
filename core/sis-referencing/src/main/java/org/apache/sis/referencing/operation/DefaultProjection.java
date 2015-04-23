@@ -67,6 +67,19 @@ class DefaultProjection extends DefaultConversion implements Projection {
     }
 
     /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     */
+    protected DefaultProjection(final Projection operation) {
+        super(operation);
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The default implementation returns {@code Projection.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.

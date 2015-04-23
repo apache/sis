@@ -24,6 +24,7 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.referencing.crs.AbstractCRS;
@@ -33,6 +34,7 @@ import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
@@ -82,6 +84,9 @@ final class SubTypes {
         }
         if (object instanceof PrimeMeridian) {
             return DefaultPrimeMeridian.castOrCopy((PrimeMeridian) object);
+        }
+        if (object instanceof CoordinateOperation) {
+            return AbstractCoordinateOperation.castOrCopy((CoordinateOperation) object);
         }
         if (object instanceof OperationMethod) {
             return DefaultOperationMethod.castOrCopy((OperationMethod) object);

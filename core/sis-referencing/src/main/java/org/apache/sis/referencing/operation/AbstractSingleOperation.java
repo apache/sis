@@ -121,6 +121,22 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     */
+    protected AbstractSingleOperation(final SingleOperation operation) {
+        super(operation);
+        method = operation.getMethod();
+        parameters = (operation instanceof AbstractSingleOperation) ?
+                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
+    }
+
+    /**
      * Checks if an operation method and a math transform have a compatible number of source and target dimensions.
      * In the particular case of a {@linkplain PassThroughTransform pass through transform} with more dimensions
      * than what we would expect from the given method, the check will rather be performed against the

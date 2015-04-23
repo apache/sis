@@ -55,6 +55,19 @@ final class DefaultConicProjection extends DefaultProjection implements ConicPro
     }
 
     /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     */
+    protected DefaultConicProjection(final ConicProjection operation) {
+        super(operation);
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ConicProjection.class}.
      *

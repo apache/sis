@@ -156,6 +156,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         this.domainOfValidity            = definition.getDomainOfValidity();
         this.scope                       = definition.getScope();
         this.transform                   = definition.getMathTransform();
+        checkDimensions();
     }
 
     /**
@@ -268,9 +269,14 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
             coordinateOperationAccuracy = (value == null) ? null :
                     Collections.singleton((PositionalAccuracy) value);
         }
-        /*
-         * Verifiy arguments consistency.
-         */
+        checkDimensions();
+    }
+
+    /**
+     * Ensures that {@link #sourceCRS}, {@link #targetCRS} and {@link #interpolationCRS} dimensions
+     * are consistent with {@link #transform} input and output dimensions.
+     */
+    private void checkDimensions() {
         if (transform != null) {
             int sourceDim = transform.getSourceDimensions();
             int targetDim = transform.getTargetDimensions();
