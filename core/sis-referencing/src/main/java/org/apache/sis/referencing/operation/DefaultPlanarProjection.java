@@ -1,0 +1,67 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.referencing.operation;
+
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.PlanarProjection;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+
+/**
+ * Azimuthal (or planar) map projections.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.6
+ * @version 0.6
+ * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
+ * @see <a href="http://mathworld.wolfram.com/AzimuthalProjection.html">Azimuthal projection on MathWorld</a>
+ */
+final class DefaultPlanarProjection extends DefaultProjection implements PlanarProjection {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = 8171256287775067736L;
+
+    /**
+     * Creates a new projection with the same values than the specified one, together with the
+     * specified source and target CRS. While the source conversion can be an arbitrary one, it
+     * is typically a defining conversion.
+     *
+     * @param definition The defining conversion.
+     * @param sourceCRS  The source CRS.
+     * @param targetCRS  The target CRS.
+     */
+    public DefaultPlanarProjection(final Conversion                definition,
+                                   final CoordinateReferenceSystem sourceCRS,
+                                   final CoordinateReferenceSystem targetCRS)
+    {
+        super(definition, sourceCRS, targetCRS);
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by this class.
+     * The SIS implementation returns {@code PlanarProjection.class}.
+     *
+     * @return {@code PlanarProjection.class}.
+     */
+    @Override
+    public Class<? extends PlanarProjection> getInterface() {
+        return PlanarProjection.class;
+    }
+}
