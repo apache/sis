@@ -215,6 +215,7 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
+        final Conversion conversionFromBase = getConversionFromBase();  // Gives to users a chance to override.
         MathTransform inverse = conversionFromBase.getMathTransform();
         try {
             inverse = inverse.inverse();

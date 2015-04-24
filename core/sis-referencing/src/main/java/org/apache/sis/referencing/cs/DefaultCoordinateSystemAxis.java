@@ -759,8 +759,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     @Override
     protected String formatTo(final Formatter formatter) {
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.majorVersion() == 1;
-        final boolean isInternal = (convention == Convention.INTERNAL);
+        final boolean    isWKT1     = (convention.majorVersion() == 1);
+        final boolean    isInternal = (convention == Convention.INTERNAL);
         String name = null;
         if (isWKT1 || isInternal || !omitName(formatter)) {
             name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
@@ -780,7 +780,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
          * special case of Geocentric axis, and disallows Greek letters.
          */
-        String a = abbreviation;
+        String a = getAbbreviation();
         if (!isWKT1 && (a != null) && !a.equals(name)) {
             if (!isInternal && a.length() == 1) {
                 switch (a.charAt(0)) {
@@ -829,7 +829,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * Format the axis direction, optionally followed by a MERIDIAN[…] element
          * if the direction is of the kind "South along 90°N" for instance.
          */
-        AxisDirection dir = direction;
+        AxisDirection dir = getDirection();
         DirectionAlongMeridian meridian = null;
         if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);
@@ -845,7 +845,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * to all axes (we do not verify).
          */
         if (!isWKT1 && !formatter.hasContextualUnit(1)) {
-            formatter.append(unit);
+            formatter.append(getUnit());
         }
         return "Axis";
     }

@@ -174,6 +174,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
         final Unit<?> unit    = getUnit();
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
+        final GeodeticDatum datum = getDatum();   // Gives to users a chance to override this property.
         formatter.newLine();
         formatter.append(toFormattable(datum));
         formatter.newLine();
@@ -181,7 +182,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         formatter.append(toFormattable(datum.getPrimeMeridian()));
         formatter.indent(isWKT1 ? 0 : -1);
         formatter.newLine();
-        CoordinateSystem cs = super.getCoordinateSystem();
+        CoordinateSystem cs = getCoordinateSystem();
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
             if (unit == null) {

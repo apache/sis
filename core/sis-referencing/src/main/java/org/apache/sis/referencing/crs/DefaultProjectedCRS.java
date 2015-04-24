@@ -298,7 +298,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
         formatter.removeContextualUnit(geoUnit);
         formatter.addContextualUnit(angularUnit);
         formatter.addContextualUnit(linearUnit);
-        formatter.newLine(); // For writing the Id[…] element on its own line.
+        formatter.newLine(); // For writing the ID[…] element on its own line.
         return "ProjCS";
     }
 }

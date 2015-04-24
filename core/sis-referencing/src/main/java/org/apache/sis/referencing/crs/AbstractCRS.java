@@ -467,7 +467,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     protected String formatTo(final Formatter formatter) {
         final String  keyword = super.formatTo(formatter);
-        final CoordinateSystem cs = coordinateSystem;
+        final CoordinateSystem cs = getCoordinateSystem();
         final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
         final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
