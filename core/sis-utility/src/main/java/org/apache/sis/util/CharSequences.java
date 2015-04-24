@@ -921,8 +921,14 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
      * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
      *
-     * <p>The current implementation replaces only the characters in the range {@code 00C0}
-     * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
+     * <p>The current implementation replaces the characters in the range {@code 00C0}
+     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * the replacement of Greek letters is a more complex task than what this method can do,
+     * since it depends on the context. For example if the Greek letters are abbreviations
+     * for coordinate system axes like φ and λ, then the replacements depend on the enclosing
+     * coordinate system. See {@link org.apache.sis.io.wkt.CharEncoding} for more information.</div>
      *
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
@@ -930,6 +936,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
+     * @see org.apache.sis.io.wkt.CharEncoding#filter(String)
      */
     public static CharSequence toASCII(final CharSequence text) {
         return StringBuilders.toASCII(text, null);

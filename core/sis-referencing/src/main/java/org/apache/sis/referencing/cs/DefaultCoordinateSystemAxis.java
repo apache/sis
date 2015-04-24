@@ -35,7 +35,9 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -50,6 +52,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.CharEncoding;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
@@ -735,6 +738,26 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
+     * Returns the enclosing coordinate system, or {@code null} if none. In ISO 19162 compliant WKT the coordinate
+     * <strong>reference</strong> system should be the first parent ({@code formatter.getEnclosingElement(1)}) and
+     * the coordinate system shall be obtained from that CRS (yes, this is convolved. This is because of historical
+     * reasons, since compatibility with WKT 1 was a requirement of WKT 2). But we nevertheless walk over all parents
+     * in case someone format unusual things.
+     */
+    private static CoordinateSystem getEnclosingCS(final Formatter formatter) {
+        int depth = 1;
+        for (Object e; (e = formatter.getEnclosingElement(depth)) != null; depth++) {
+            if (e instanceof CoordinateReferenceSystem) {   // This is what we expect in standard WKT.
+                return ((CoordinateReferenceSystem) e).getCoordinateSystem();
+            }
+            if (e instanceof CoordinateSystem) {    // In case someone formats something unusual.
+                return (CoordinateSystem) e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
      * <div class="section">Constraints for WKT validity</div>
@@ -753,6 +776,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *   <li>In {@link SphericalCS}, replace “φ” and “θ” abbreviations by <var>“U”</var> and <var>“V”</var> respectively.</li>
      *   <li>In {@link PolarCS}, replace “θ” abbreviation by <var>“U”</var>.</li>
      * </ul>
+     *
+     * The above-cited replacements of Greek letters can be modified by calls to
+     * {@link org.apache.sis.io.wkt.WKTFormat#setCharEncoding(CharEncoding)}.
      *
      * @return {@code "Axis"}.
      */
@@ -780,51 +806,19 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
          * special case of Geocentric axis, and disallows Greek letters.
          */
-        String a = getAbbreviation();
-        if (!isWKT1 && (a != null) && !a.equals(name)) {
-            if (!isInternal && a.length() == 1) {
-                switch (a.charAt(0)) {
-                    /*
-                     * ISO 19162 §7.5.3 recommendations:
-                     *
-                     *   a) For PolarCS using Greek letter θ for direction, the letter ‘U’ should be used in WKT.
-                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
-                     */
-                    case 'θ': {
-                        final Object e = formatter.getEnclosingElement(0);
-                        if  (e instanceof SphericalCS) a ="V";
-                        else if (e instanceof PolarCS) a ="U";
-                        break;
-                    }
-                    /*
-                     * ISO 19162 §7.5.3 requirement (ii) and recommendation (b):
-                     *
-                     *  ii) Greek letters φ and λ for geodetic latitude and longitude must be replaced by Latin char.
-                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
-                     */
-                    case 'φ': {
-                        if (formatter.getEnclosingElement(0) instanceof SphericalCS) {
-                            a = "U";
-                        } else if ("Latitude".equalsIgnoreCase(name)) {
-                            a = "B";    // From German "Breite", used in academic texts worldwide.
-                        }
-                        break;
-                    }
-                    case 'λ': {
-                        if ("Longitude".equalsIgnoreCase(name)) {
-                            a = "L";    // From German "Länge", used in academic texts worldwide.
-                        }
-                        break;
-                    }
+        if (!isWKT1) {
+            final String a = formatter.getCharEncoding().getAbbreviation(getEnclosingCS(formatter), this);
+            if (a != null && !a.equals(name)) {
+                final StringBuilder buffer = new StringBuilder();
+                if (name != null) {
+                    buffer.append(name).append(' ');
                 }
+                name = buffer.append('(').append(a).append(')').toString();
             }
-            final StringBuilder buffer = new StringBuilder();
-            if (name != null) {
-                buffer.append(name).append(' ');
-            }
-            name = buffer.append('(').append(a).append(')').toString();
         }
-        formatter.append(name, ElementKind.AXIS);
+        if (name != null) {
+            formatter.append(name, ElementKind.AXIS);
+        }
         /*
          * Format the axis direction, optionally followed by a MERIDIAN[…] element
          * if the direction is of the kind "South along 90°N" for instance.
