@@ -827,6 +827,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        final ParameterDescriptor<T> descriptor = getDescriptor();  // Gives to users a chance to override this property.
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
         final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
         final Convention convention = formatter.getConvention();
@@ -836,6 +837,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
          * If this parameter value does not use the same unit, then we must convert it.
          * Otherwise we can write the value as-is.
          */
+        final Unit<?> unit = getUnit();  // Gives to users a chance to override this property.
         if (isWKT1 && targetUnit != null) {
             double convertedValue;
             try {
@@ -848,6 +850,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             }
             formatter.append(convertedValue);
         } else {
+            final T value = getValue();  // Gives to users a chance to override this property.
             if (!isWKT1 && (unit == null) && (value instanceof URI || value instanceof URL
                     || value instanceof File || value instanceof Path))
             {

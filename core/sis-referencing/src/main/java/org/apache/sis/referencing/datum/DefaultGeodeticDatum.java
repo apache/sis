@@ -536,7 +536,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
-        formatter.append(toFormattable(ellipsoid));
+        formatter.append(toFormattable(getEllipsoid()));
         if (formatter.getConvention().majorVersion() == 1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),
