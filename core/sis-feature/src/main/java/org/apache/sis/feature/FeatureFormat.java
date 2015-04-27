@@ -24,6 +24,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicReference;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
@@ -31,10 +32,13 @@ import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -157,6 +161,9 @@ public class FeatureFormat extends TabularFormat<Object> {
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
+        /*
+         * Separate the Feature (optional) and the FeatureType (mandatory) instances.
+         */
         final FeatureType featureType;
         final Feature feature;
         if (object instanceof Feature) {
@@ -169,11 +176,25 @@ public class FeatureFormat extends TabularFormat<Object> {
             throw new IllegalArgumentException(Errors.getResources(displayLocale)
                     .getString(Errors.Keys.UnsupportedType_1, object.getClass()));
         }
+        /*
+         * Check if at least one attribute has at least one characteritic. In many cases there is none.
+         * In none we will ommit the "characteristics" column, which is the last column.
+         */
+        boolean hasCharacteristics = false;
+        for (final PropertyType propertyType : featureType.getProperties(true)) {
+            if (propertyType instanceof AttributeType<?>) {
+                if (!((AttributeType<?>) propertyType).characteristics().isEmpty()) {
+                    hasCharacteristics = true;
+                    break;
+                }
+            }
+        }
+        /*
+         * Format the column header.
+         */
         toAppendTo.append(toString(featureType.getName())).append(getLineSeparator());
-        final StringBuffer  buffer    = new StringBuffer();
-        final FieldPosition dummyFP   = new FieldPosition(-1);
-        final Vocabulary    resources = Vocabulary.getResources(displayLocale);
-        final TableAppender table     = new TableAppender(toAppendTo, columnSeparator);
+        final Vocabulary resources = Vocabulary.getResources(displayLocale);
+        final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);
         table.nextLine('─');
 header: for (int i=0; ; i++) {
@@ -183,6 +204,15 @@ header: for (int i=0; ; i++) {
                 case 1:  nextColumn(table); key = Vocabulary.Keys.Type; break;
                 case 2:  nextColumn(table); key = Vocabulary.Keys.Cardinality; break;
                 case 3:  nextColumn(table); key = (feature != null) ? Vocabulary.Keys.Value : Vocabulary.Keys.DefaultValue; break;
+                case 4: {
+                    if (hasCharacteristics) {
+                        nextColumn(table);
+                        key = Vocabulary.Keys.Characteristics;
+                        break;
+                    } else {
+                        break header;
+                    }
+                }
                 default: break header;
             }
             table.append(resources.getString(key));
@@ -193,6 +223,8 @@ header: for (int i=0; ; i++) {
          * Done writing the header. Now write all property rows.
          * Rows without value will be skipped only if optional.
          */
+        final StringBuffer  buffer  = new StringBuffer();
+        final FieldPosition dummyFP = new FieldPosition(-1);
         for (final PropertyType propertyType : featureType.getProperties(true)) {
             Object value;
             if (feature != null) {
@@ -201,12 +233,12 @@ header: for (int i=0; ; i++) {
                     if (propertyType instanceof AttributeType &&
                             ((AttributeType) propertyType).getMinimumOccurs() == 0)
                     {
-                        continue; // If no value, skip the full row.
+                        continue;   // If no value, skip the full row.
                     }
                     if (propertyType instanceof FeatureAssociationRole &&
                             ((FeatureAssociationRole) propertyType).getMinimumOccurs() == 0)
                     {
-                        continue; // If no value, skip the full row.
+                        continue;   // If no value, skip the full row.
                     }
                 }
             } else if (propertyType instanceof AttributeType<?>) {
@@ -272,8 +304,6 @@ header: for (int i=0; ; i++) {
                 final Format format = getFormat(valueClass);
                 if (format != null) {
                     value = format.format(value, buffer, dummyFP);
-                } else if (value instanceof InternationalString) {
-                    value = ((InternationalString) value).toString(displayLocale);
                 } else if (value instanceof Feature && propertyType instanceof FeatureAssociationRole) {
                     final String p = DefaultAssociationRole.getTitleProperty((FeatureAssociationRole) propertyType);
                     if (p != null) {
@@ -281,9 +311,32 @@ header: for (int i=0; ; i++) {
                     }
                 }
                 if (value != null) {
-                    table.append(value.toString());
+                    table.append(formatValue(value));
                 }
                 buffer.setLength(0);
+            }
+            /*
+             * Column 4 - Characteristics.
+             */
+            if (hasCharacteristics) {
+                nextColumn(table);
+                if (propertyType instanceof AttributeType<?>) {
+                    String separator = "";
+                    for (final AttributeType<?> attribute : ((AttributeType<?>) propertyType).characteristics().values()) {
+                        table.append(separator).append(toString(attribute.getName()));
+                        Object c = attribute.getDefaultValue();
+                        if (feature != null) {
+                            final Property p = feature.getProperty(propertyType.getName().toString());
+                            if (p instanceof Attribute<?>) {  // Should always be true, but we are paranoiac.
+                                c = ((Attribute<?>) p).characteristics().get(attribute.getName().toString());
+                            }
+                        }
+                        if (c != null) {
+                            table.append(" = ").append(formatValue(c));
+                        }
+                        separator = ", ";
+                    }
+                }
             }
             table.nextLine();
         }
@@ -306,6 +359,22 @@ header: for (int i=0; ; i++) {
             }
         }
         return name.toString();
+    }
+
+    /**
+     * Formats the given attribute value.
+     */
+    private String formatValue(final Object value) {
+        if (value instanceof InternationalString) {
+            return ((InternationalString) value).toString(displayLocale);
+        } else if (value instanceof GenericName) {
+            return toString((GenericName) value);
+        } else if (value instanceof IdentifiedType) {
+            return toString(((IdentifiedType) value).getName());
+        } else if (value instanceof IdentifiedObject) {
+            return IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
+        }
+        return value.toString();
     }
 
     /**
