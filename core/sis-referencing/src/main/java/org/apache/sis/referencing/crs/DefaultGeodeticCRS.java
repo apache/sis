@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,9 +28,12 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -174,14 +178,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
         final Unit<?> unit    = getUnit();
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
-        final GeodeticDatum datum = getDatum();   // Gives to users a chance to override this property.
-        formatter.newLine();
-        formatter.append(toFormattable(datum));
-        formatter.newLine();
-        formatter.indent(isWKT1 ? 0 : +1);
-        formatter.append(toFormattable(datum.getPrimeMeridian()));
-        formatter.indent(isWKT1 ? 0 : -1);
-        formatter.newLine();
+        formatTo(isWKT1, getDatum(), formatter);
         CoordinateSystem cs = getCoordinateSystem();
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
@@ -202,7 +199,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
                 }
             }
         } else {
-            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
@@ -229,5 +226,28 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * is a sufficient criterion.
          */
         return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
+    }
+
+    /**
+     * Formats the given geodetic datum to the given formatter. This is part of the WKT formatting
+     * for a geodetic CRS, either standalone or as part of a projected CRS.
+     *
+     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     * @param datum     The datum to format.
+     * @param formatter Where to format the datum.
+     */
+    static void formatTo(final boolean isWKT1, final GeodeticDatum datum, final Formatter formatter) {
+        formatter.newLine();
+        formatter.append(toFormattable(datum));
+        formatter.newLine();
+        formatter.indent(isWKT1 ? 0 : +1);
+        final PrimeMeridian pm = datum.getPrimeMeridian();
+        if (formatter.getConvention() != Convention.WKT2_SIMPLIFIED ||
+                ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
+        {
+            formatter.append(toFormattable(pm));
+        }
+        formatter.indent(isWKT1 ? 0 : -1);
+        formatter.newLine();
     }
 }

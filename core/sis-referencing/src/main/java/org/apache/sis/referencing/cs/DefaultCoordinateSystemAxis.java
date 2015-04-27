@@ -872,7 +872,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         /**
          * Creates a new {@code ORDER[…]} element for the given axis in the given coordinate system.
          * If this method does not found exactly one instance of the given axis in the given coordinate system,
-         * then returns {@code null}. It will be caller's responsibility to declare the WKT as invalid.
+         * then returns {@code null}. In the later case, it is caller's responsibility to declare the WKT as invalid.
+         *
+         * <p>This method is a little bit inefficient since the enclosing {@link AbstractCS#formatTo(Formatter)}
+         * method already know this axis index. But there is currently no API in {@link Formatter} for carrying
+         * this information, and we are a little bit reluctant to introduce such API since it would force us to
+         * introduce lists in a model which is, for everything else, purely based on trees.</p>
+         *
+         * @se <a href="https://issues.apache.org/jira/browse/SIS-163">SIS-163</a>
          */
         static Order create(final CoordinateSystem cs, final DefaultCoordinateSystemAxis axis) {
             Order order = null;
