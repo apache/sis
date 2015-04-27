@@ -162,8 +162,8 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Longitude (L)”, east],\n" +
-                "    Axis[“Latitude (B)”, north],\n" +
+                "    Axis[“Longitude (L)”, east, Order[1]],\n" +
+                "    Axis[“Latitude (B)”, north, Order[2]],\n" +
                 "    AngleUnit[“degree”, 0.017453292519943295],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
