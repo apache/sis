@@ -53,6 +53,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.CharEncoding;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
@@ -806,8 +807,12 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
          * special case of Geocentric axis, and disallows Greek letters.
          */
-        if (!isWKT1) {
-            final String a = formatter.getCharEncoding().getAbbreviation(getEnclosingCS(formatter), this);
+        final CoordinateSystem cs;
+        if (isWKT1) {
+            cs = null;
+        } else {
+            cs = getEnclosingCS(formatter);
+            final String a = formatter.getCharEncoding().getAbbreviation(cs, this);
             if (a != null && !a.equals(name)) {
                 final StringBuilder buffer = new StringBuilder();
                 if (name != null) {
@@ -838,9 +843,66 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * If the enclosing CRS provided a contextual unit, then it is assumed to apply
          * to all axes (we do not verify).
          */
-        if (!isWKT1 && !formatter.hasContextualUnit(1)) {
-            formatter.append(getUnit());
+        if (!isWKT1) {
+            if (convention == Convention.WKT2 && cs != null) {
+                final Order order = Order.create(cs, this);
+                if (order != null) {
+                    formatter.append(order);
+                } else {
+                    formatter.setInvalidWKT(cs, null);
+                }
+            }
+            if (!formatter.hasContextualUnit(1)) {
+                formatter.append(getUnit());
+            }
         }
         return "Axis";
+    }
+
+    /**
+     * The {@code ORDER[…]} element to be formatted inside {@code AXIS[…]} element.
+     * This is an element of WKT 2 only.
+     */
+    private static final class Order extends FormattableObject {
+        /**
+         * The sequence number to format inside the {@code ORDER[…]} element.
+         */
+        private final int index;
+
+        /**
+         * Creates a new {@code ORDER[…]} element for the given axis in the given coordinate system.
+         * If this method does not found exactly one instance of the given axis in the given coordinate system,
+         * then returns {@code null}. It will be caller's responsibility to declare the WKT as invalid.
+         */
+        static Order create(final CoordinateSystem cs, final DefaultCoordinateSystemAxis axis) {
+            Order order = null;
+            final int dimension = cs.getDimension();
+            for (int i=0; i<dimension;) {
+                if (cs.getAxis(i++) == axis) {
+                    if (order == null) {
+                        order = new Order(i);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            return order;
+        }
+
+        /**
+         * Creates new {@code ORDER[…]} element for the given sequential number.
+         */
+        private Order(final int index) {
+            this.index = index;
+        }
+
+        /**
+         * Formats the {@code ORDER[…]} element.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(index);
+            return "Order";
+        }
     }
 }

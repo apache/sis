@@ -181,18 +181,18 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "    CS[“ellipsoidal”, 2],\n" +
-                "      Axis[“Longitude (L)”, east],\n" +
-                "      Axis[“Latitude (B)”, north],\n" +
+                "      Axis[“Longitude (L)”, east, Order[1]],\n" +
+                "      Axis[“Latitude (B)”, north, Order[2]],\n" +
                 "      AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  VerticalCRS[“Gravity-related height”,\n" +
                 "    VerticalDatum[“Mean Sea Level”],\n" +
                 "    CS[“vertical”, 1],\n" +
-                "      Axis[“Gravity-related height (H)”, up],\n" +
+                "      Axis[“Gravity-related height (H)”, up, Order[1]],\n" +
                 "      LengthUnit[“metre”, 1]],\n" +
                 "  TimeCRS[“Time”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
                 "    CS[“temporal”, 1],\n" +
-                "      Axis[“Time (t)”, future],\n" +
+                "      Axis[“Time (t)”, future, Order[1]],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",

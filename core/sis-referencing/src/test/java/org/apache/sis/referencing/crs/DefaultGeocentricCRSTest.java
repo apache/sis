@@ -71,9 +71,9 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  CS[“Cartesian”, 3],\n" +
-                "    Axis[“(X)”, geocentricX],\n" +
-                "    Axis[“(Y)”, geocentricY],\n" +
-                "    Axis[“(Z)”, geocentricZ],\n" +
+                "    Axis[“(X)”, geocentricX, Order[1]],\n" +
+                "    Axis[“(Y)”, geocentricY, Order[2]],\n" +
+                "    Axis[“(Z)”, geocentricZ, Order[3]],\n" +
                 "    LengthUnit[“metre”, 1]]",
                 HardCodedCRS.GEOCENTRIC);
     }
