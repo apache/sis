@@ -71,6 +71,7 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
+     *   <li>{@code PrimeMeridian} element omitted if the meridian is Greenwich.</li>
      *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
      *   <li>{@code VerticalExtent} element omits the {@code LengthUnit} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>

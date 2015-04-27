@@ -39,7 +39,9 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
@@ -202,7 +204,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * Used by JAXB only (invoked by reflection).
      */
     private void setDatum(final GeodeticDatum datum) {
-        // TODO
+        throw new UnsupportedOperationException(); // TODO
     }
 
     /**
@@ -244,23 +246,39 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     /**
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      *
-     * @return {@code "ProjCS"} (WKT 1).
+     * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final Conversion    conversion  = getConversionFromBase();
-        final GeographicCRS baseCRS     = getBaseCRS();
-        final Ellipsoid     ellipsoid   = getDatum().getEllipsoid();
-        final Unit<?>       unit        = ReferencingUtilities.getUnit(getCoordinateSystem());
-        final Unit<Angle>   geoUnit     = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
-        final Unit<?>       linearUnit  = formatter.addContextualUnit(unit);
-        final Unit<Angle>   angularUnit = formatter.addContextualUnit(geoUnit);
-        final Unit<Length>  axisUnit    = ellipsoid.getAxisUnit();
+        final Convention    convention     = formatter.getConvention();
+        final boolean       isWKT1         = (convention.majorVersion() == 1);
+        final Conversion    conversion     = getConversionFromBase();
+        final GeographicCRS baseCRS        = getBaseCRS();
+        final Ellipsoid     ellipsoid      = getDatum().getEllipsoid();
+        final CartesianCS   cs             = getCoordinateSystem();
+        final Unit<?>       linearUnit     = ReferencingUtilities.getUnit(cs);
+        final Unit<Angle>   angularUnit    = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
+        final Unit<?>       oldLinearUnit  = formatter.addContextualUnit(linearUnit);
+        final Unit<Angle>   oldAngularUnit = formatter.addContextualUnit(angularUnit);
+        final Unit<Length>  axisUnit       = ellipsoid.getAxisUnit();
         formatter.newLine();
-        formatter.append(toFormattable(baseCRS));
+        if (isWKT1) {
+            formatter.append(toFormattable(baseCRS));
+        } else {
+            /*
+             * WKT 1 (above case) formatted a full GeographicCRS while WKT 2 (this case) formats
+             * only the datum and the prime meridian.  It does not format the coordinate system,
+             * and uses a different keyword ("BaseGeodCRS" instead of "GeogCS").
+             *
+             * Note that we format the unit in "simplified" mode, not in verbose mode. This looks
+             * like the opposite of what we would expect, but this is because formatting the unit
+             * here allow us to avoid repeating the unit in many projection parameters.
+             */
+            formatter.append(new BaseCRS(baseCRS, isWKT1, convention.isSimplified() ? angularUnit : null));
+        }
         formatter.newLine();
-        formatter.append(DefaultOperationMethod.castOrCopy(conversion));
+        formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
         formatter.newLine();
         for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
             final GeneralParameterDescriptor desc = param.getDescriptor();
@@ -284,21 +302,50 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
             }
             WKTUtilities.append(param, formatter);
         }
-        formatter.append(unit);
-        final CartesianCS cs = getCoordinateSystem();
+        formatter.append(linearUnit);
         final int dimension = cs.getDimension();
         for (int i=0; i<dimension; i++) {
             formatter.newLine();
             formatter.append(toFormattable(cs.getAxis(i)));
         }
-        if (unit == null) {
+        if (linearUnit == null) {
             formatter.setInvalidWKT(this, null);
         }
-        formatter.removeContextualUnit(unit);
-        formatter.removeContextualUnit(geoUnit);
-        formatter.addContextualUnit(angularUnit);
-        formatter.addContextualUnit(linearUnit);
+        formatter.removeContextualUnit(linearUnit);
+        formatter.removeContextualUnit(angularUnit);
+        formatter.addContextualUnit(oldAngularUnit);
+        formatter.addContextualUnit(oldLinearUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "ProjCS";
+        return isWKT1 ? "ProjCS" : "ProjectedCRS";
+    }
+
+    /**
+     * Temporary object use for formatting the {@code BaseGeodCRS} element inside a {@code ProjectedCRS} element.
+     */
+    private static final class BaseCRS extends FormattableObject {
+        /** The base CRS. */
+        private final GeographicCRS baseCRS;
+
+        /** {@code true} for WKT 1 formatting, or {@code false} for WKT 2. */
+        private final boolean isWKT1;
+
+        /** Coordinate axis units. */
+        private final Unit<Angle> angularUnit;
+
+        /** Creates a new temporary {@code BaseGeodCRS} element. */
+        BaseCRS(final GeographicCRS baseCRS, final boolean isWKT1, final Unit<Angle> angularUnit) {
+            this.baseCRS     = baseCRS;
+            this.isWKT1      = isWKT1;
+            this.angularUnit = angularUnit;
+        }
+
+        /** Formats this {@code BaseGeodCRS} element. */
+        @Override protected String formatTo(final Formatter formatter) {
+            WKTUtilities.appendName(baseCRS, formatter, null);
+            DefaultGeodeticCRS.formatTo(isWKT1, baseCRS.getDatum(), formatter);
+            formatter.append(angularUnit);  // May be null.
+            formatter.newLine();
+            return "BaseGeodCRS";
+        }
     }
 }

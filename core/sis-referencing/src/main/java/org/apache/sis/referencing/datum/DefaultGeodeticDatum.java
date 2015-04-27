@@ -530,6 +530,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * }
      * </div>
      *
+     * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
+     * as a separated element after the geodetic datum (for compatibility with WKT 1).
+     *
      * @return {@code "Datum"}.
      */
     @Override
@@ -552,6 +555,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 }
             }
         }
+        // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
         formatter.newLine(); // For writing the ID[…] element on its own line.
         return "Datum";
     }
