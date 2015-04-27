@@ -129,20 +129,25 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * {@link InternationalString} and an arbitrary amount of universities.
      */
     static DefaultFeatureType worldMetropolis() {
-        return worldMetropolis(metropolis(), universityCity(), InternationalString.class);
+        return worldMetropolis(metropolis(), universityCity(), CharacteristicTypeMapTest.temperature(), InternationalString.class);
     }
 
     /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
-     * The given type should be {@link InternationalString}, but we allow other type for testing argument checks.
+     * The given type should be {@link InternationalString}, but we allow other types for testing argument checks.
      */
     private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis,
-            final DefaultFeatureType universityCity, final Class<?> regionType)
+            final DefaultFeatureType universityCity, final DefaultAttributeType<?> temperature, final Class<?> regionType)
     {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
-                new DefaultFeatureType[] {metropolis, universityCity},
-                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
-                        regionType, 1, 1, null));
+                new DefaultFeatureType[] {
+                    metropolis,
+                    universityCity
+                },
+                new DefaultAttributeType<?>[] {
+                    new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"), regionType, 1, 1, null),
+                    temperature
+                });
 
     }
 
@@ -390,25 +395,26 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     public void testPropertyOverride() {
         final DefaultFeatureType metropolis     = metropolis();
         final DefaultFeatureType universityCity = universityCity();
+        final DefaultAttributeType<?> temperature = CharacteristicTypeMapTest.temperature();
         try {
-            worldMetropolis(metropolis, universityCity, Integer.class);
+            worldMetropolis(metropolis, universityCity, temperature, Integer.class);
             fail("Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("region"));
             assertTrue(message, message.contains("Metropolis"));
         }
-        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, InternationalString.class);
+        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, temperature, InternationalString.class);
         assertUnmodifiable(worldMetropolis);
         assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
         assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertFalse      ("isSparse",        worldMetropolis.isSparse());
         assertFalse      ("isSimple",        worldMetropolis.isSimple()); // Because of the arbitrary amount of universities.
-        assertEquals     ("instanceSize", 5, worldMetropolis.indices().size());
+        assertEquals     ("instanceSize", 6, worldMetropolis.indices().size());
 
-        assertPropertiesEquals(worldMetropolis, false, "region");
-        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities");
+        assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
+        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
         assertEquals("property(“region”).valueClass", InternationalString.class,
                 ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
 
