@@ -23,7 +23,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -56,7 +59,9 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
                 .setParameter("Scale factor at natural origin", 0.99987742, Unit.ONE)
                 .setParameter("False easting",                      600000, SI.METRE)
                 .setParameter("False northing",                    2200000, SI.METRE)
+                .setCodeSpace(Citations.EPSG, Constants.EPSG)
                 .addName("NTF (Paris) / Lambert zone II")
+                .addIdentifier("27572")
                 .createProjectedCRS(HardCodedCRS.NTF, HardCodedCS.PROJECTED);
     }
 
@@ -73,18 +78,48 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
                 "  GEOGCS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "    PRIMEM[“Paris”, 2.33722917],\n" +
+                "    PRIMEM[“Paris”, 2.33722917],\n" +                      // Note the conversion from 2.5969213 grades.
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +
                 "  PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],\n" +
-                "  PARAMETER[“latitude_of_origin”, 46.8],\n" +
+                "  PARAMETER[“latitude_of_origin”, 46.8],\n" +              // Note the conversion from 52 grades.
                 "  PARAMETER[“scale_factor”, 0.99987742],\n" +
                 "  PARAMETER[“false_easting”, 600000.0],\n" +
                 "  PARAMETER[“false_northing”, 2200000.0],\n" +
                 "  UNIT[“metre”, 1],\n" +
                 "  AXIS[“Easting”, EAST],\n" +
-                "  AXIS[“Northing”, NORTH]]",
+                "  AXIS[“Northing”, NORTH],\n" +
+                "  AUTHORITY[“EPSG”, “27572”]]",
+                crs);
+    }
+
+    /**
+     * Tests WKT 2 formatting.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT2() throws FactoryException {
+        final ProjectedCRS crs = create();
+        assertWktEquals(Convention.WKT2,
+                "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "    Datum[“Nouvelle Triangulation Francaise”,\n" +
+                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],\n" +
+                "  Conversion[“Lambert zone II”,\n" +
+                "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801, Citation[“IOGP”]]],\n" +
+                "    Parameter[“Latitude of natural origin”, 46.8, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8801]],\n" +
+                "    Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],\n" +
+                "    Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],\n" +
+                "    Parameter[“False northing”, 2200000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8807]]],\n" +
+                "  CS[“Cartesian”, 2],\n" +
+                "    Axis[“Easting (E)”, east, Order[1]],\n" +
+                "    Axis[“Northing (N)”, north, Order[2]],\n" +
+                "    LengthUnit[“metre”, 1],\n" +
+                "  Id[“EPSG”, 27572, Citation[“IOGP”], URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
     }
 }

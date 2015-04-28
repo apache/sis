@@ -1127,7 +1127,9 @@ public class Formatter implements Localized {
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-            if (NonSI.DEGREE_ANGLE.equals(unit)) {
+            if (Unit.ONE.equals(unit)) {
+                buffer.append("unity");
+            } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
                 buffer.append(convention.usesCommonUnits() ? "meter" : "metre");

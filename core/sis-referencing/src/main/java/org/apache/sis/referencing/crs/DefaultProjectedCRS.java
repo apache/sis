@@ -251,17 +251,11 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final Convention    convention     = formatter.getConvention();
-        final boolean       isWKT1         = (convention.majorVersion() == 1);
-        final Conversion    conversion     = getConversionFromBase();
-        final GeographicCRS baseCRS        = getBaseCRS();
-        final Ellipsoid     ellipsoid      = getDatum().getEllipsoid();
-        final CartesianCS   cs             = getCoordinateSystem();
-        final Unit<?>       linearUnit     = ReferencingUtilities.getUnit(cs);
-        final Unit<Angle>   angularUnit    = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
-        final Unit<?>       oldLinearUnit  = formatter.addContextualUnit(linearUnit);
-        final Unit<Angle>   oldAngularUnit = formatter.addContextualUnit(angularUnit);
-        final Unit<Length>  axisUnit       = ellipsoid.getAxisUnit();
+        final Convention    convention = formatter.getConvention();
+        final boolean       isWKT1     = (convention.majorVersion() == 1);
+        final GeographicCRS baseCRS    = getBaseCRS();
+        final Unit<Angle>   unit       = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
+        final Unit<Angle>   oldUnit    = formatter.addContextualUnit(unit);
         formatter.newLine();
         if (isWKT1) {
             formatter.append(toFormattable(baseCRS));
@@ -275,52 +269,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
              * like the opposite of what we would expect, but this is because formatting the unit
              * here allow us to avoid repeating the unit in many projection parameters.
              */
-            formatter.append(new BaseCRS(baseCRS, isWKT1, convention.isSimplified() ? angularUnit : null));
+            formatter.append(new BaseCRS(baseCRS, isWKT1, convention.isSimplified() ? unit : null));
         }
         formatter.newLine();
-        formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
-        formatter.newLine();
-        for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
-            final GeneralParameterDescriptor desc = param.getDescriptor();
-            String name;
-            if (IdentifiedObjects.isHeuristicMatchForName(desc, name = Constants.SEMI_MAJOR) ||
-                IdentifiedObjects.isHeuristicMatchForName(desc, name = Constants.SEMI_MINOR))
-            {
-                /*
-                 * Do not format semi-major and semi-minor axis length in most cases,  since those
-                 * informations are provided in the ellipsoid. An exception to this rule occurs if
-                 * the lengths are different from the ones declared in the datum.
-                 */
-                if (param instanceof ParameterValue<?>) {
-                    final double value = ((ParameterValue<?>) param).doubleValue(axisUnit);
-                    final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
-                            ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
-                    if (value == expected) {
-                        continue;
-                    }
-                }
-            }
-            WKTUtilities.append(param, formatter);
+        final Parameters p = new Parameters(this);
+        if (isWKT1) {
+            p.append(formatter);    // Format outside of any "Conversion" element.
+        } else {
+            formatter.append(p);    // Format inside a "Conversion" element.
         }
-        formatter.append(linearUnit);
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(toFormattable(cs.getAxis(i)));
-        }
-        if (linearUnit == null) {
-            formatter.setInvalidWKT(this, null);
-        }
-        formatter.removeContextualUnit(linearUnit);
-        formatter.removeContextualUnit(angularUnit);
-        formatter.addContextualUnit(oldAngularUnit);
-        formatter.addContextualUnit(oldLinearUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        formatCS(formatter, getCoordinateSystem(), isWKT1);
+        formatter.removeContextualUnit(unit);
+        formatter.addContextualUnit(oldUnit);
         return isWKT1 ? "ProjCS" : "ProjectedCRS";
     }
 
     /**
-     * Temporary object use for formatting the {@code BaseGeodCRS} element inside a {@code ProjectedCRS} element.
+     * Temporary object for formatting the {@code BaseGeodCRS} element inside a {@code ProjectedCRS} element.
      */
     private static final class BaseCRS extends FormattableObject {
         /** The base CRS. */
@@ -342,10 +307,64 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
         /** Formats this {@code BaseGeodCRS} element. */
         @Override protected String formatTo(final Formatter formatter) {
             WKTUtilities.appendName(baseCRS, formatter, null);
-            DefaultGeodeticCRS.formatTo(isWKT1, baseCRS.getDatum(), formatter);
+            DefaultGeodeticCRS.formatDatum(formatter, baseCRS.getDatum(), isWKT1);
             formatter.append(angularUnit);  // May be null.
             formatter.newLine();
             return "BaseGeodCRS";
+        }
+    }
+
+    /**
+     * Temporary object for formatting the projection method and parameters inside a {@code Conversion} element.
+     */
+    private static final class Parameters extends FormattableObject {
+        /** The conversion which specify the operation method and parameters. */
+        private final Conversion conversion;
+
+        /** Semi-major and semi-minor axis lengths. */
+        private final Ellipsoid ellipsoid;
+
+        /** Creates a new temporary {@code Conversion} elements for the parameters of the given CRS. */
+        Parameters(final DefaultProjectedCRS crs) {
+            conversion = crs.getConversionFromBase();
+            ellipsoid = crs.getDatum().getEllipsoid();
+        }
+
+        /** Formats this {@code Conversion} element. */
+        @Override protected String formatTo(final Formatter formatter) {
+            WKTUtilities.appendName(conversion, formatter, null);
+            formatter.newLine();
+            append(formatter);
+            return "Conversion";
+        }
+
+        /** Formats this {@code Conversion} element without the conversion name. */
+        void append(final Formatter formatter) {
+            final Unit<Length> axisUnit = ellipsoid.getAxisUnit();
+            formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
+            formatter.newLine();
+            for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
+                final GeneralParameterDescriptor desc = param.getDescriptor();
+                String name;
+                if (IdentifiedObjects.isHeuristicMatchForName(desc, name = Constants.SEMI_MAJOR) ||
+                    IdentifiedObjects.isHeuristicMatchForName(desc, name = Constants.SEMI_MINOR))
+                {
+                    /*
+                     * Do not format semi-major and semi-minor axis length in most cases,  since those
+                     * informations are provided in the ellipsoid. An exception to this rule occurs if
+                     * the lengths are different from the ones declared in the datum.
+                     */
+                    if (param instanceof ParameterValue<?>) {
+                        final double value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
+                                ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
+                        if (value == expected) {
+                            continue;
+                        }
+                    }
+                }
+                WKTUtilities.append(param, formatter);
+            }
         }
     }
 }
