@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
 import java.text.Format;
+import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
@@ -707,6 +708,9 @@ public class ParameterFormat extends TabularFormat<Object> {
                          */
                         final Format format = getFormat(value.getClass());
                         if (format != null) {
+                            if (format instanceof NumberFormat && value instanceof Number) {
+                                configure((NumberFormat) format, Math.abs(((Number) value).doubleValue()));
+                            }
                             value = format.format(value, buffer, dummyFP);
                         }
                         table.append(value.toString());
@@ -751,6 +755,42 @@ public class ParameterFormat extends TabularFormat<Object> {
                 }
                 out.append(lineSeparator);
                 format(name + '/' + descriptor.getName().getCode(), descriptor, value, out);
+            }
+        }
+    }
+
+    /**
+     * Configures the number pattern to use for the given value. The main intend of this method is to ensure that
+     * the map projection scale factor (a value close to 1) is formatted with a sufficient number of fraction digits.
+     * A common default NumberFormat precision is 3 digits, which is not sufficient. For example the scale factor of
+     * Transverse Mercator projections is 0.9996 (4 digits), and the scale factor of "NTF (Paris) / Lambert zone II"
+     * projection is 0.99987742 (8 digits).
+     *
+     * @param format The format to configure.
+     * @param m The absolute value (magnitude) of the value to write.
+     */
+    private static void configure(final NumberFormat format, final double m) {
+        if (format.getMaximumFractionDigits() <= 9) {
+            /*
+             * If the maximum fraction digits is higher than 9, then that value has not been set by this class.
+             * Maybe the user overrides the createFormat(Class<?>) method in his own subclass, in which case we
+             * will respect his wish and not set a lower value here.
+             */
+            final int n;
+            if (m < 10) {
+                n = 9;
+            } else if (m < 1000) {  // No real use case for this threshold yet, but added for more progressive behavior.
+                n = 6;
+            } else {
+                n = 3;
+            }
+            /*
+             * The minimum fraction digits is usually 0. But if we find a higher value (for example because the
+             * user overrides the createFormat(Class<?>) method), then we will respect user's wish and not set
+             * a lower value.
+             */
+            if (n >= format.getMinimumFractionDigits()) {
+                format.setMaximumFractionDigits(n);
             }
         }
     }

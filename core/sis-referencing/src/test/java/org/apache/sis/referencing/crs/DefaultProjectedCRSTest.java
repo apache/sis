@@ -52,7 +52,6 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
      * @see HardCodedCRS#NTF
      *
      * @todo Move this kind of code in a helper class.
-     * @todo Accuracy problem in formatting of scale factor in DefaultParameterValueGroup.toString().
      */
     private static DefaultProjectedCRS create() throws FactoryException {
         final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
