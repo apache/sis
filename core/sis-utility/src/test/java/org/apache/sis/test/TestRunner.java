@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Comparator;
-import net.jcip.annotations.NotThreadSafe;
+import java.io.PrintWriter;
 
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -51,16 +51,20 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <li>Support of the {@link DependsOn} and {@link DependsOnMethod} annotations.</li>
  * </ul>
  *
- * This runner is not designed for parallel execution of tests.
+ * This runner is <strong>not</strong> designed for parallel execution of tests.
  *
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
- * @version 0.3
+ * @version 0.5
  * @module
  */
-@NotThreadSafe
 public final class TestRunner extends BlockJUnit4ClassRunner {
+    /**
+     * {@code true} if ignoring a test should cause its dependencies to be skipped as well.
+     */
+    static final boolean TRANSITIVE_IGNORE = false;
+
     /**
      * The test methods to be executed, sorted according their dependencies.
      * This array is created by {@link #getFilteredChildren()} when first needed.
@@ -69,6 +73,11 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
 
     /**
      * The dependency methods that failed. This set will be created only when first needed.
+     * Values are method names.
+     *
+     * <div class="note"><b>Note:</b>
+     * There is no need to prefix the method names by classnames because a new instance of {@code TestRunner}
+     * will be created for each test class, even if the the test classes are aggregated in a {@link TestSuite}.</div>
      *
      * @see #addDependencyFailure(String)
      */
@@ -104,14 +113,16 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         }
 
         /**
-         * Prints output only in verbose mode.
-         * Otherwise silently discard the output.
+         * Prints output only in verbose mode. Otherwise silently discard the output.
+         * This method is invoked on failure as well as on success. In case of test
+         * failure, this method is invoked after {@link #testFailure(Failure)}.
          */
         @Override
         public void testFinished(final Description description) {
             if (TestCase.verbose) {
                 TestCase.flushOutput();
             }
+            TestCase.randomSeed = 0;
         }
 
         /**
@@ -119,10 +130,26 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testFailure(final Failure failure) {
-            addDependencyFailure(failure.getDescription().getMethodName());
+            final Description description = failure.getDescription();
+            final String methodName = description.getMethodName();
+            addDependencyFailure(methodName);
+            final long seed = TestCase.randomSeed;
+            if (seed != 0) {
+                final String className = description.getClassName();
+                final PrintWriter out = TestCase.out;
+                out.print("Random number generator for ");
+                out.print(className.substring(className.lastIndexOf('.') + 1));
+                out.print('.');
+                out.print(methodName);
+                out.print("() was created with seed ");
+                out.print(seed);
+                out.println('.');
+                // Seed we be cleared by testFinished(…).
+            }
             if (!TestCase.verbose) {
                 TestCase.flushOutput();
             }
+            // In verbose mode, the flush will be done by testFinished(…).
         }
 
         /**
@@ -130,7 +157,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testAssumptionFailure(final Failure failure) {
-            addDependencyFailure(failure.getDescription().getMethodName());
+            if (TRANSITIVE_IGNORE) {
+                addDependencyFailure(failure.getDescription().getMethodName());
+            }
         }
 
         /**
@@ -138,7 +167,9 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testIgnored(final Description description) {
-            addDependencyFailure(description.getMethodName());
+            if (TRANSITIVE_IGNORE) {
+                addDependencyFailure(description.getMethodName());
+            }
         }
     };
 
@@ -267,8 +298,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     public void filter(final Filter filter) throws NoTestsRemainException {
         int count = 0;
         FrameworkMethod[] children = getFilteredChildren();
-        for (int i=0; i<children.length; i++) {
-            final FrameworkMethod method = children[i];
+        for (final FrameworkMethod method : children) {
             if (filter.shouldRun(describeChild(method))) {
                 try {
                     filter.apply(method);
@@ -337,8 +367,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * Declares that the given method failed. Other methods depending on this method
-     * will be ignored.
+     * Declares that the given method failed.
+     * Other methods depending on this method will be ignored.
      *
      * @param methodName The name of the method that failed.
      */

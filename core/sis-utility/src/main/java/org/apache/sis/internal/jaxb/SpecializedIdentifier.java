@@ -20,15 +20,18 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import java.io.Serializable;
+import java.util.logging.Level;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.xml.ValueConverter;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -40,7 +43,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @param  <T> The value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -51,7 +54,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     private static final long serialVersionUID = -1699757455535495848L;
 
     /**
-     * The authority, typically as a {@link NonMarshalledAuthority) instance.
+     * The authority, typically as a {@link NonMarshalledAuthority} instance.
      * Null value is not recommended, but this {@code SpecializedIdentifier}
      * is tolerant to such cases.
      *
@@ -89,41 +92,40 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * plain {@link IdentifierMapEntry} is created.
      *
      * @param authority The authority, typically as one of the {@link IdentifierSpace} constants.
-     * @param code The identifier code to parse.
+     * @param code      The identifier code to parse.
      *
      * @see IdentifierMapAdapter#put(Citation, String)
      */
     static Identifier parse(final Citation authority, final String code) {
         if (authority instanceof NonMarshalledAuthority) {
-            switch (((NonMarshalledAuthority) authority).ordinal) {
+            final int ordinal = ((NonMarshalledAuthority) authority).ordinal;
+            switch (ordinal) {
                 case NonMarshalledAuthority.ID: {
                     return new SpecializedIdentifier<String>(IdentifierSpace.ID, code);
                 }
                 case NonMarshalledAuthority.UUID: {
+                    final Context context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
                     try {
-                        return new SpecializedIdentifier<UUID>(IdentifierSpace.UUID, UUID.fromString(code));
+                        return new SpecializedIdentifier<UUID>(IdentifierSpace.UUID, converter.toUUID(context, code));
                     } catch (IllegalArgumentException e) {
-                        parseFailure(e);
+                        parseFailure(context, code, UUID.class, e);
                         break;
                     }
                 }
-                case NonMarshalledAuthority.HREF: {
-                    final URI href;
-                    try {
-                        href = new URI(code);
-                    } catch (URISyntaxException e) {
-                        parseFailure(e);
-                        break;
-                    }
-                    return new SpecializedIdentifier<URI>(IdentifierSpace.HREF, href);
-                }
+                case NonMarshalledAuthority.HREF:
                 case NonMarshalledAuthority.XLINK: {
+                    final Context context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
                     final URI href;
                     try {
-                        href = new URI(code);
+                        href = converter.toURI(context, code);
                     } catch (URISyntaxException e) {
-                        parseFailure(e);
+                        parseFailure(context, code, URI.class, e);
                         break;
+                    }
+                    if (ordinal == NonMarshalledAuthority.HREF) {
+                        return new SpecializedIdentifier<URI>(IdentifierSpace.HREF, href);
                     }
                     final XLink xlink = new XLink();
                     xlink.setHRef(href);
@@ -138,14 +140,24 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * Invoked by {@link #parse(Citation,String)} when a string can not be parsed.
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
+     *
+     * <p>This method assumes that {@link IdentifierMap#put(Object, Object)} is
+     * the public API by which this method has been invoked.</p>
+     *
+     * @param context The marshalling context, or {@code null} if none.
+     * @param value   The value that we failed to parse.
+     * @param type    The target type of the parsing process.
+     * @param cause   The exception that occurred during the parsing process.
      */
-    static void parseFailure(final Exception e) {
-        // IdentifierMap.put(Citation,String) is the public facade.
-        Logging.recoverableException(IdentifierMap.class, "put", e);
+    static void parseFailure(final Context context, final String value, final Class<?> type, final Exception cause) {
+        Context.warningOccured(context, Context.LOGGER, Level.WARNING, IdentifierMap.class, "put", cause,
+                Messages.class, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
     }
 
     /**
      * Returns the authority specified at construction time.
+     *
+     * @return The identifier authority.
      */
     @Override
     public Citation getAuthority() {
@@ -165,6 +177,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     /**
      * Returns a string representation of the {@linkplain #getValue() identifier value},
      * or {@code null} if none.
+     *
+     * @return The identifier value.
      */
     @Override
     public String getCode() {
@@ -201,6 +215,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      *
      * @see IdentifierMapAdapter#toString()
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60).append("Identifier[");
@@ -212,7 +227,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * Formats the given (authority, code) par value in the given buffer.
      */
     static void format(final StringBuilder buffer, final Citation authority, final String code) {
-        buffer.append(Citations.getIdentifier(authority)).append('=');
+        buffer.append(Citations.getIdentifier(authority, false)).append('=');
         final boolean quote = (code != null) && (code.indexOf('[') < 0);
         if (quote) buffer.append('“');
         buffer.append(code);

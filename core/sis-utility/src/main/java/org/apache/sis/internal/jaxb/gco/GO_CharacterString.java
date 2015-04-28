@@ -19,29 +19,75 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
-
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
-import org.apache.sis.internal.jaxb.gmd.LanguageCode;
-import org.apache.sis.internal.jaxb.gmd.Country;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.jaxb.gmx.FileName;
+import org.apache.sis.internal.jaxb.gmx.MimeFileType;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
- * JAXB wrapper for string value in a {@code <gco:CharacterString>} or {@code <gmx:Anchor>} element,
- * for ISO-19139 compliance.
+ * JAXB wrapper for string value in a {@code <gco:CharacterString>}, {@code <gmx:Anchor>},
+ * {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} element, for ISO-19139 compliance.
+ *
+ * <p>{@code FileName} and {@code MimeFileType} are possible substitutions for {@code CharacterString}.
+ * They make sense only in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic} or
+ * other classes using URI, but the XML schema does not prevent their usage in place of other strings.
+ * Consequently we unconditionally accept {@code FileName} and {@code MimeFileType} at unmarshalling time.
+ * However marshalling will use the appropriate element for the kind of property to marshal.</p>
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
  */
 @XmlType(name = "CharacterString_PropertyType")
-@XmlSeeAlso({PT_FreeText.class, LanguageCode.class, Country.class})
+@XmlSeeAlso({
+    org.apache.sis.internal.jaxb.gmd.PT_FreeText.class,
+    org.apache.sis.internal.jaxb.gmd.LanguageCode.class,
+    org.apache.sis.internal.jaxb.gmd.Country.class
+})
 public class GO_CharacterString {
+    /*
+     * Numerical values below are ordered: if two or more values are defined (thoerically not legal,
+     * but we try to be robust), the value associated to the highest constant has precedence.
+     */
+    /**
+     * Value assigned to {@link #type} if the character string
+     * shall be marshalled as a {@code <gmx:MimeFileType>} element.
+     */
+    public static final byte MIME_TYPE = 1;
+
+    /**
+     * Value assigned to {@link #type} if the character string
+     * shall be marshalled as a {@code <gmx:FileName>} element.
+     */
+    public static final byte FILENAME = 2;
+
+    /**
+     * Value assigned to {@link #type} if the current {@link #text}
+     * has been found in a {@code <gco:CharacterString>} element.
+     */
+    private static final byte ANCHOR = 3;
+
+    /**
+     * The XML element names for each possible {@link #type} values.
+     * Used for formatting error messages.
+     */
+    private static String nameOf(final byte type) {
+        switch (type) {
+            case 0:         return "CharacterString";
+            case MIME_TYPE: return "MimeFileType";
+            case FILENAME:  return "FileName";
+            case ANCHOR:    return "Anchor";
+            default:        throw new AssertionError(type);
+        }
+    }
+
     /**
      * The text or anchor value, or {@code null} if none. May be an instance
      * of {@link Anchor}, which needs to be handled in a special way.
@@ -49,13 +95,22 @@ public class GO_CharacterString {
     private CharSequence text;
 
     /**
+     * 0 if the text shall be marshalled as a {@code <gco:CharacterString>} or an anchor,
+     * or one of the static constants in this class otherwise.
+     *
+     * @see #FILENAME
+     * @see #MIME_TYPE
+     */
+    public byte type;
+
+    /**
      * Empty constructor for JAXB and subclasses.
      */
-    protected GO_CharacterString() {
+    public GO_CharacterString() {
     }
 
     /**
-     * Builds an wrapper for the given text.
+     * Builds a wrapper for the given text.
      *
      * @param text The string to marshal, or {@code null} if none.
      */
@@ -64,38 +119,113 @@ public class GO_CharacterString {
     }
 
     /**
-     * Builds an wrapper as a copy of the given one.
+     * Sets the {@link #text} field to the given value.
+     * If the given value overwrites a previous one, a warning is emitted.
      *
-     * @param text The wrapper to copy, or {@code null} if none.
+     * @param value    The value to set.
+     * @param property 0 or one of the {@link #MIME_TYPE}, {@link #FILENAME} or {@link #ANCHOR} constants.
      */
-    protected GO_CharacterString(final GO_CharacterString text) {
-        if (text != null) {
-            this.text = text.text;
+    private void setText(final CharSequence value, byte property) {
+        if (text != null && !value.equals(text)) {
+            /*
+             * The given value overwrite a previous one. Determine which value will be discarded
+             * using the 'type' value as a criterion, then emit a warning.
+             */
+            byte discarded = type;
+            boolean noset = false;
+            if (discarded > property) {
+                discarded = property;
+                property  = type;
+                noset     = true;
+            }
+            Context.warningOccured(Context.current(), Context.LOGGER, getClass(), "setText", Messages.class,
+                    Messages.Keys.DiscardedExclusiveProperty_2, nameOf(discarded), nameOf(property));
+            if (noset) {
+                return;
+            }
         }
+        text = value;
+        type = property;
     }
 
     /**
-     * Returns the text. This method is called by JAXB at marshalling time.
+     * Returns the text in a {@code <gco:CharacterString>} element, or {@code null} if none.
      *
      * @return The text, or {@code null}.
      */
     @XmlElement(name = "CharacterString")
     public final String getCharacterString() {
-        final CharSequence text = this.text;
-        return (text == null || text instanceof Anchor) ? null : text.toString();
+        if (type == 0) {
+            final CharSequence text = this.text;
+            if (text != null && !(text instanceof Anchor)) {
+                return text.toString();
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the value to the given string. This method is called by JAXB at unmarshalling time.
      *
-     * @param text The new text.
+     * @param value The new text.
      */
-    public final void setCharacterString(String text) {
-        text = CharSequences.trimWhitespaces(text);
-        if (text != null && text.isEmpty()) {
-            text = null;
+    public final void setCharacterString(String value) {
+        value = CharSequences.trimWhitespaces(value);
+        if (value != null && !value.isEmpty()) {
+            setText(value, (byte) 0);
         }
-        this.text = text;
+    }
+
+    /**
+     * Returns the text in a {@code <gmx:FileName>} element, or {@code null} if none.
+     */
+    @XmlElement(name = "FileName", namespace = Namespaces.GMX)
+    final FileName getFileName() {
+        if (type == FILENAME) {
+            final CharSequence text = this.text;
+            if (text != null && !(text instanceof Anchor)) {
+                return new FileName(text.toString());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the filename.
+     */
+    final void setFileName(final FileName file) {
+        if (file != null) {
+            final String value = CharSequences.trimWhitespaces(file.toString());
+            if (value != null && !value.isEmpty()) {
+                setText(value, FILENAME);
+            }
+        }
+    }
+
+    /**
+     * Returns the text in a {@code <gmx:MimeFileType>} element, or {@code null} if none.
+     */
+    @XmlElement(name = "MimeFileType", namespace = Namespaces.GMX)
+    final MimeFileType getMimeFileType() {
+        if (type == MIME_TYPE) {
+            final CharSequence text = this.text;
+            if (text != null && !(text instanceof Anchor)) {
+                return new MimeFileType(text.toString());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the MIME type.
+     */
+    final void setMimeFileType(final MimeFileType type) {
+        if (type != null) {
+            final String value = CharSequences.trimWhitespaces(type.toString());
+            if (value != null && !value.isEmpty()) {
+                setText(value, MIME_TYPE);
+            }
+        }
     }
 
     /**
@@ -117,7 +247,7 @@ public class GO_CharacterString {
      * @param anchor The new anchor.
      */
     public final void setAnchor(final Anchor anchor) {
-        this.text = anchor;
+        setText(anchor, ANCHOR);
     }
 
     /**
@@ -139,9 +269,12 @@ public class GO_CharacterString {
      * Returns the text as a string, or {@code null} if none.
      * The null value is expected by various {@code PT_FreeText}.
      *
-     * {@note Returning <code>null</code> is unusual and not a recommended practice.
-     * But precedents exist (for example Swing <code>DefaultMutableTreeNode</code>)
-     * and this class is not for public usage.}
+     * <div class="note"><b>Note:</b>
+     * Returning {@code null} is unusual and not a recommended practice.
+     * But precedents exist (for example {@link javax.swing.tree.DefaultMutableTreeNode})
+     * and this class is not for public usage.</div>
+     *
+     * @return The text as a string (may be null).
      */
     @Override
     public final String toString() {

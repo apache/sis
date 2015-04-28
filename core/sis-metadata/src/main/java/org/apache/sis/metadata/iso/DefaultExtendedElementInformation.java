@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -27,16 +28,33 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * New metadata element, not found in ISO 19115, which is required to describe geographic data.
+ * Metadata elements are contained in a {@linkplain DefaultMetadataExtensionInformation metadata extension information}.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_ExtendedElementInformation_Type", propOrder = {
@@ -71,6 +89,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Short form suitable for use in an implementation method such as XML or SGML.
      */
+    @Deprecated
     private String shortName;
 
     /**
@@ -78,6 +97,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Non-null only if the {@linkplain #getDataType() data type}
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
      */
+    @Deprecated
     private Integer domainCode;
 
     /**
@@ -180,30 +200,40 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ExtendedElementInformation)
      */
+    @SuppressWarnings("deprecation")
     public DefaultExtendedElementInformation(final ExtendedElementInformation object) {
         super(object);
-        name              = object.getName();
-        shortName         = object.getShortName();
-        domainCode        = object.getDomainCode();
-        definition        = object.getDefinition();
-        obligation        = object.getObligation();
-        condition         = object.getCondition();
-        dataType          = object.getDataType();
-        maximumOccurrence = object.getMaximumOccurrence();
-        domainValue       = object.getDomainValue();
-        parentEntity      = copyCollection(object.getParentEntity(), String.class);
-        rule              = object.getRule();
-        rationales        = copyCollection(object.getRationales(), InternationalString.class);
-        sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+        if (object != null) {
+            name              = object.getName();
+            shortName         = object.getShortName();
+            domainCode        = object.getDomainCode();
+            definition        = object.getDefinition();
+            obligation        = object.getObligation();
+            condition         = object.getCondition();
+            dataType          = object.getDataType();
+            maximumOccurrence = object.getMaximumOccurrence();
+            domainValue       = object.getDomainValue();
+            parentEntity      = copyCollection(object.getParentEntity(), String.class);
+            rule              = object.getRule();
+            rationales        = copyCollection(object.getRationales(), InternationalString.class);
+            sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -228,6 +258,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Name of the extended metadata element.
+     *
+     * @return Name of the extended metadata element, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", required = true)
@@ -247,8 +279,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Short form suitable for use in an implementation method such as XML or SGML.
+     *
+     * @return Short form suitable for use in an implementation method such as XML or SGML, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "shortName")
     public String getShortName()  {
         return shortName;
@@ -258,7 +295,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a short form suitable for use in an implementation method such as XML or SGML.
      *
      * @param newValue The new short name.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setShortName(final String newValue)  {
         checkWritePermission();
         shortName = newValue;
@@ -268,8 +308,13 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Three digit code assigned to the extended element.
      * Returns a non-null value only if the {@linkplain #getDataType() data type}
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
+     *
+     * @return Three digit code assigned to the extended element, or {@code null}.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "domainCode")
     public Integer getDomainCode() {
         return domainCode;
@@ -279,7 +324,10 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Sets a three digit code assigned to the extended element.
      *
      * @param newValue The new domain code.
+     *
+     * @deprecated Removed as of ISO 19115:2014.
      */
+    @Deprecated
     public void setDomainCode(final Integer newValue) {
         checkWritePermission();
         domainCode = newValue;
@@ -287,6 +335,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Definition of the extended element.
+     *
+     * @return Definition of the extended element, or {@code null}.
      */
     @Override
     @XmlElement(name = "definition", required = true)
@@ -306,6 +356,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Obligation of the extended element.
+     *
+     * @return Obligation of the extended element, or {@code null}.
      */
     @Override
     @XmlElement(name = "obligation")
@@ -327,6 +379,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * Condition under which the extended element is mandatory.
      * Returns a non-null value only if the {@linkplain #getObligation() obligation}
      * is {@linkplain Obligation#CONDITIONAL conditional}.
+     *
+     * @return The condition under which the extended element is mandatory, or {@code null}.
      */
     @Override
     @XmlElement(name = "condition")
@@ -346,6 +400,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Code which identifies the kind of value provided in the extended element.
+     *
+     * @return The kind of value provided in the extended element, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataType", required = true)
@@ -369,9 +425,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * {@linkplain #getDataType() data type} is {@linkplain Datatype#ENUMERATION enumeration},
      * {@linkplain Datatype#CODE_LIST code list} or {@linkplain Datatype#CODE_LIST_ELEMENT
      * code list element}.
+     *
+     * @return Maximum occurrence of the extended element, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "maximumOccurrence")
     public Integer getMaximumOccurrence() {
         return maximumOccurrence;
@@ -380,10 +438,14 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Sets the maximum occurrence of the extended element.
      *
-     * @param newValue The new maximum occurrence.
+     * @param newValue The new maximum occurrence, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setMaximumOccurrence(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultExtendedElementInformation.class, "maximumOccurrence", false, newValue);
+        }
         maximumOccurrence = newValue;
     }
 
@@ -393,6 +455,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * {@linkplain #getDataType() data type} is {@linkplain Datatype#ENUMERATION enumeration},
      * {@linkplain Datatype#CODE_LIST code list} or {@linkplain Datatype#CODE_LIST_ELEMENT
      * code list element}.
+     *
+     * @return Valid values that can be assigned to the extended element, or {@code null}.
      */
     @Override
     @XmlElement(name = "domainValue")
@@ -413,6 +477,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Name of the metadata entity(s) under which this extended metadata element may appear.
      * The name(s) may be standard metadata element(s) or other extended metadata element(s).
+     *
+     * @return Name of the metadata entity(s) under which this extended metadata element may appear.
      */
     @Override
     @XmlElement(name = "parentEntity", required = true)
@@ -431,6 +497,8 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Specifies how the extended element relates to other existing elements and entities.
+     *
+     * @return How the extended element relates to other existing elements and entities, or {@code null}.
      */
     @Override
     @XmlElement(name = "rule", required = true)
@@ -449,25 +517,60 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     }
 
     /**
-     * Reason for creating the extended element.
+     * Returns the reason for creating the extended element.
+     *
+     * @return Reason for creating the extended element, or {@code null}.
+     *
+     * @since 0.5
+     */
+    @UML(identifier="rationale", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getRationale() {
+        return LegacyPropertyAdapter.getSingleton(rationales, InternationalString.class, null,
+                DefaultExtendedElementInformation.class, "getRationale");
+    }
+
+    /**
+     * Sets the reason for creating the extended element.
+     *
+     * @param newValue The new rationale.
+     *
+     * @since 0.5
+     */
+    public void setRationale(final InternationalString newValue) {
+        rationales = writeCollection(LegacyPropertyAdapter.asCollection(newValue), rationales, InternationalString.class);
+    }
+
+    /**
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getRationale()}.
+     *
+     * @return Reason for creating the extended element.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "rationale")
     public Collection<InternationalString> getRationales() {
         return rationales = nonNullCollection(rationales, InternationalString.class);
     }
 
     /**
-     * Sets the reason for creating the extended element.
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setRationale(InternationalString)}.
      *
      * @param newValues The new rationales.
      */
+    @Deprecated
     public void setRationales(final Collection<? extends InternationalString> newValues) {
         rationales = writeCollection(newValues, rationales, InternationalString.class);
     }
 
     /**
      * Name of the person or organization creating the extended element.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Name of the person or organization creating the extended element.
      */
     @Override
     @XmlElement(name = "source", required = true)
@@ -477,6 +580,11 @@ public class DefaultExtendedElementInformation extends ISOMetadata
 
     /**
      * Sets the name of the person or organization creating the extended element.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new sources.
      */

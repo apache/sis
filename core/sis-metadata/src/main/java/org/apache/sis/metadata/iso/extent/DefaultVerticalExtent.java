@@ -19,11 +19,13 @@ package org.apache.sis.metadata.iso.extent;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -35,10 +37,19 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
  *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -80,16 +91,16 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Creates a vertical extent initialized to the specified values.
      *
-     * @param minimumValue The lowest vertical extent contained in the dataset.
-     * @param maximumValue The highest vertical extent contained in the dataset.
+     * @param minimumValue The lowest vertical extent contained in the dataset, or {@link Double#NaN} if none.
+     * @param maximumValue The highest vertical extent contained in the dataset, or {@link Double#NaN} if none.
      * @param verticalCRS  The information about the vertical coordinate reference system, or {@code null}.
      */
     public DefaultVerticalExtent(final double minimumValue,
                                  final double maximumValue,
                                  final VerticalCRS verticalCRS)
     {
-        this.minimumValue = minimumValue;
-        this.maximumValue = maximumValue;
+        if (!Double.isNaN(minimumValue)) this.minimumValue = minimumValue;
+        if (!Double.isNaN(maximumValue)) this.maximumValue = maximumValue;
         this.verticalCRS  = verticalCRS;
     }
 
@@ -98,20 +109,22 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(VerticalExtent)
      */
     public DefaultVerticalExtent(final VerticalExtent object) {
         super(object);
-        minimumValue = object.getMinimumValue();
-        maximumValue = object.getMaximumValue();
-        verticalCRS  = object.getVerticalCRS();
+        if (object != null) {
+            minimumValue = object.getMinimumValue();
+            maximumValue = object.getMaximumValue();
+            verticalCRS  = object.getVerticalCRS();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -136,9 +149,12 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the lowest vertical extent contained in the dataset.
+     *
+     * @return The lowest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMinimumValue() {
         return minimumValue;
     }
@@ -155,9 +171,12 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the highest vertical extent contained in the dataset.
+     *
+     * @return The highest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMaximumValue() {
         return maximumValue;
     }
@@ -174,8 +193,10 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Provides information about the vertical coordinate reference system to
-     * which the maximum and minimum elevation values are measured. The CRS
-     * identification includes unit of measure.
+     * which the maximum and minimum elevation values are measured.
+     * The CRS identification includes unit of measure.
+     *
+     * @return The vertical CRS, or {@code null}.
      */
     @Override
     @XmlElement(name = "verticalCRS", required = true)
@@ -199,11 +220,11 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
      * envelope CRS} must have a vertical component.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this vertical extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can't be transformed to a vertical extent.
+     * @throws TransformException if the envelope can not be transformed to a vertical extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)

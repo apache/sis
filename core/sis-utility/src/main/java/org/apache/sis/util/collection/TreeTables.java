@@ -36,13 +36,14 @@ import org.apache.sis.util.ArgumentChecks;
  * <p>The remaining of this class javadoc contains example codes placed in public domain.
  * Developers can copy and adapt those examples as they see fit.</p>
  *
- * {@section Example 1: Reduce the depth of a tree}
+ * <div class="section">Example 1: Reduce the depth of a tree</div>
  * For every branch containing exactly one child, the following method concatenates in-place
  * that branch and its child together. This method can be used for simplifying depth trees into
  * something less verbose. For example given the tree on the left side, this method transforms
  * it into the tree on the right side:
  *
  * <table class="sis">
+ * <caption>Example of tree depth reduction</caption>
  * <tr><th>Before</th><th class="sep">After</th></tr>
  * <tr><td>
  * {@preformat text
@@ -66,7 +67,7 @@ import org.apache.sis.util.ArgumentChecks;
  * There is no pre-defined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
  * kind of objects to merge, name separator, <i>etc.</i>). In the following code snippet,
- * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
+ * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
  * has no value (for avoiding data lost when the node is discarded) and use the system file
  * separator as name separator:
  *

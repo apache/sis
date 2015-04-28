@@ -26,15 +26,18 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
-import net.jcip.annotations.ThreadSafe;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -45,12 +48,17 @@ import org.apache.sis.internal.jdk7.Objects;
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
+ * <div class="section">Thread safety</div>
+ * Instances of {@code DefaultInternationalString} are thread-safe. While those instances are not strictly immutable,
+ * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see Types#toInternationalString(Map, String)
  */
-@ThreadSafe
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -98,6 +106,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * will not be reflected into this international string.
      *
      * @param strings The strings in various locales, or {@code null} if none.
+     *
+     * @see Types#toInternationalString(Map, String)
      */
     public DefaultInternationalString(final Map<Locale,String> strings) {
         if (isNullOrEmpty(strings)) {
@@ -124,8 +134,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *
      * @param  locale The locale for the {@code string} value.
      * @param  string The localized string.
-     * @throws IllegalArgumentException if a different string value was already set for
-     *         the given locale.
+     * @throws IllegalArgumentException if a different string value was already set for the given locale.
      */
     public synchronized void add(final Locale locale, final String string) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("locale", locale);
@@ -154,6 +163,32 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                     Errors.Keys.ValueAlreadyDefined_1, locale));
         }
         defaultValue = null; // Will be recomputed when first needed.
+    }
+
+    /**
+     * Adds the given character sequence. If the given sequence is an other {@link InternationalString} instance,
+     * then only the string for the given locale is added. This method is for {@link Types} internal usage only.
+     *
+     * @param  locale The locale for the {@code string} value.
+     * @param  string The character sequence to add.
+     * @throws IllegalArgumentException if a different string value was already set for the given locale.
+     */
+    final void add(final Locale locale, final CharSequence string) throws IllegalArgumentException {
+        final boolean i18n = (string instanceof InternationalString);
+        add(locale, i18n ? ((InternationalString) string).toString(locale) : string.toString());
+        if (i18n && !(string instanceof SimpleInternationalString)) {
+            /*
+             * If the string may have more than one locale, log a warning telling that some locales
+             * may have been ignored. We declare Types.toInternationalString(…) as the source since
+             * it is the public facade invoking this method. We declare the source class using only
+             * its name rather than Types.class in order to avoid unnecessary real dependency.
+             */
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            record.setSourceClassName("org.apache.sis.util.iso.Types");
+            record.setSourceMethodName("toInternationalString");
+            record.setLoggerName("org.apache.sis.util.iso");
+            Logging.getLogger("org.apache.sis.util.iso").log(record);
+        }
     }
 
     /**
@@ -216,7 +251,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * was requested but not found, then this method looks for the {@code "fr"} locale.
      * The {@linkplain Locale#ROOT root locale} is tried last.
      *
-     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * <div class="section">Handling of {@code Locale.ROOT} argument value</div>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
      * typically some programmatic values like enumerations or identifiers.
      * While identifiers often look like English words, {@code Locale.ROOT} is not considered
@@ -237,7 +272,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       an arbitrary string.</li>
      * </ul>
      *
-     * {@section Handling of <code>null</code> argument value}
+     * <div class="section">Handling of {@code null} argument value</div>
      * In the default implementation, the {@code null} locale is handled as a synonymous of
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.
@@ -372,6 +407,10 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * Canonicalize the locales after deserialization.
+     *
+     * @param  in The input stream from which to deserialize an international string.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -387,8 +426,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             localeMap = Collections.singletonMap(Locales.unique(entry.getKey()), entry.getValue());
         } else {
             localeMap.clear();
-            for (int i=0; i<entries.length; i++) {
-                final Map.Entry<Locale,String> entry = entries[i];
+            for (final Map.Entry<Locale,String> entry : entries) {
                 localeMap.put(Locales.unique(entry.getKey()), entry.getValue());
             }
         }

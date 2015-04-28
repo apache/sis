@@ -24,15 +24,26 @@ import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Number of objects, listed by geometric object type, used in the dataset.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_GeometricObjects_Type", propOrder = {
@@ -77,19 +88,28 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeometricObjects)
      */
     public DefaultGeometricObjects(final GeometricObjects object) {
         super(object);
-        geometricObjectType  = object.getGeometricObjectType();
-        geometricObjectCount = object.getGeometricObjectCount();
+        if (object != null) {
+            geometricObjectType  = object.getGeometricObjectType();
+            geometricObjectCount = object.getGeometricObjectCount();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -114,6 +134,8 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
 
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
+     *
+     * @return Name of spatial objects used to locate spatial locations in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjectType", required = true)
@@ -133,9 +155,11 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
 
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
+     *
+     * @return Total number of the point or vector object type, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 1)
     @XmlElement(name = "geometricObjectCount")
     public Integer getGeometricObjectCount() {
         return geometricObjectCount;
@@ -144,10 +168,14 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Sets the total number of the point or vector object type occurring in the dataset.
      *
-     * @param newValue The geometric object count.
+     * @param newValue The geometric object count, or {@code null}.
+     * @throws IllegalArgumentException if the given value is zero or negative.
      */
     public void setGeometricObjectCount(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue <= 0) {
+            warnNonPositiveArgument(DefaultGeometricObjects.class, "geometricObjectCount", true, newValue);
+        }
         geometricObjectCount = newValue;
     }
 }

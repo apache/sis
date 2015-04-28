@@ -22,7 +22,6 @@ import java.util.List;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -73,13 +72,12 @@ import org.apache.sis.internal.jdk7.JDK7;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
  */
-@Decorator(Appendable.class)
 public class TableAppender extends Appender implements Flushable {
     /**
      * A possible value for cell alignment. This specifies that the text is aligned
@@ -143,7 +141,7 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * List of {@link Cell} objects, from left to right and top to bottom.
      * By convention, a {@code null} value or a {@link Cell} object with
-     * <code>{@link Cell#text} == null</code> means that we need to move
+     * <code>{@linkplain Cell#text} == null</code> means that we need to move
      * to the next line.
      */
     private final List<Cell> cells = new ArrayList<Cell>();
@@ -285,9 +283,9 @@ public class TableAppender extends Appender implements Flushable {
          */
         int boxCount = 0;
         final char[][] box = new char[BOX.length][];
-        for (int i=0; i<BOX.length; i++) {
-            if (BOX[i][9] == horizontalChar) {
-                box[boxCount++] = BOX[i];
+        for (final char[] row : BOX) {
+            if (row[9] == horizontalChar) {
+                box[boxCount++] = row;
             }
         }
         /*
@@ -421,6 +419,7 @@ public class TableAppender extends Appender implements Flushable {
      * </ul>
      *
      * @param  c Character to write.
+     * @return {@code this}.
      */
     @Override
     public TableAppender append(final char c) {
@@ -470,6 +469,7 @@ public class TableAppender extends Appender implements Flushable {
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
+     * @return {@code this}.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -526,7 +526,7 @@ public class TableAppender extends Appender implements Flushable {
     /**
      * Writes an horizontal separator.
      */
-    public void writeHorizontalSeparator() {
+    public void appendHorizontalSeparator() {
         if (currentColumn != 0 || buffer.length() != 0) {
             nextLine();
         }
@@ -644,7 +644,7 @@ public class TableAppender extends Appender implements Flushable {
      *       indirectly a wrapper around a {@code CharSequence}, returns its {@code toString()}
      *       representation. The string will contain this table content only if {@link #flush()}
      *       has been invoked prior this {@code toString()} method.</li>
-     *   <li>Otherwise returns the localized "<cite>Unavailable content</cite>" string.</li>
+     *   <li>Otherwise returns the localized <cite>"Unavailable content"</cite> string.</li>
      * </ul>
      */
     @Override
@@ -820,7 +820,7 @@ public class TableAppender extends Appender implements Flushable {
     }
 
     /**
-     * Repeats a character. The {@code count} value may be negative,
+     * Repeats a character. The {@code count} value may be negative,
      * which is handled as if it was zero.
      *
      * @param out   The stream or buffer where to repeat the character.
@@ -838,7 +838,7 @@ public class TableAppender extends Appender implements Flushable {
      * This class if for internal use only.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */

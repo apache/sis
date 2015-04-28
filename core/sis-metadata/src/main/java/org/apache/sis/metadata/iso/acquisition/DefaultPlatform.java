@@ -33,9 +33,18 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 /**
  * Designation of the platform used to acquire the dataset.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -84,22 +93,24 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Platform)
      */
     public DefaultPlatform(final Platform object) {
         super(object);
-        citation    = object.getCitation();
-        identifiers = singleton(object.getIdentifier(), Identifier.class); // TODO
-        description = object.getDescription();
-        sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
-        instruments = copyCollection(object.getInstruments(), Instrument.class);
+        if (object != null) {
+            citation    = object.getCitation();
+            identifiers = singleton(object.getIdentifier(), Identifier.class);
+            description = object.getDescription();
+            sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
+            instruments = copyCollection(object.getInstruments(), Instrument.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -123,8 +134,9 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     }
 
     /**
-     * Returns the source where information about the platform is described. {@code null}
-     * if unspecified.
+     * Returns the source where information about the platform is described. {@code null} if unspecified.
+     *
+     * @return Source where information about the platform is described, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -144,6 +156,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the unique identification of the platform.
+     *
+     * @return Unique identification of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -164,6 +178,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the narrative description of the platform supporting the instrument.
+     *
+     * @return Narrative description of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -183,6 +199,13 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the organization responsible for building, launch, or operation of the platform.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Organization responsible for building, launch, or operation of the platform.
      */
     @Override
     @XmlElement(name = "sponsor")
@@ -193,6 +216,11 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Sets the organization responsible for building, launch, or operation of the platform.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new sponsors values;
      */
     public void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
@@ -201,6 +229,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the instrument(s) mounted on a platform.
+     *
+     * @return Instrument(s) mounted on a platform.
      */
     @Override
     @XmlElement(name = "instrument", required = true)

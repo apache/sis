@@ -29,9 +29,18 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
  * Accuracy of quantitative attributes and the correctness of non-quantitative attributes
  * and of the classifications of features and their relationships.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -59,7 +68,7 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ThematicAccuracy)
      */
@@ -69,11 +78,11 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link QuantitativeAttributeAccuracy},
+     *   <li>Otherwise if the given object is an instance of {@link QuantitativeAttributeAccuracy},
      *       {@link NonQuantitativeAttributeAccuracy} or {@link ThematicClassificationCorrectness},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding
      *       SIS subclass. Note that if the given object implements more than one of the above-cited

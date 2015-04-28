@@ -16,39 +16,42 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Arrays;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * A limited set of color and font attributes assignable to characters at formatting time.
  * Those attributes are used by SIS formatters for providing some syntax coloring,
- * for example in the <code>org.apache.sis.io.wkt</code> package.
+ * for example in the {@link org.apache.sis.io.wkt} package.
  *
  * <p>This enumeration is restricted to a subset of the <cite>ANSI escape codes</cite> (a.k.a.
  * ECMA-48, ISO/IEC 6429 and X3.64 standards) because SIS uses them mostly for syntax coloring in
  * console outputs. However those attributes can also occasionally be used for HTML rendering.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  *
- * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape codes</a>
+ * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
  * @see org.apache.sis.io.wkt.Colors
  */
 public enum X364 {
-    /** Reset all attributes to their default value. */ RESET               ((byte)  0),
-    /** Normal intensity (not {@link #BOLD}).        */ NORMAL              ((byte) 22),
-    /** Bold intensity.                              */ BOLD                ((byte)  1),
-    /** Faint intensity.                             */ FAINT               ((byte)  2),
-    /** Red foreground color, normal intensity.      */ FOREGROUND_RED      ((byte) 31),
-    /** Green foreground color, normal intensity.    */ FOREGROUND_GREEN    ((byte) 32),
-    /** Yellow foreground color, normal intensity.   */ FOREGROUND_YELLOW   ((byte) 33),
-    /** Blue foreground color, normal intensity.     */ FOREGROUND_BLUE     ((byte) 34),
-    /** Magenta foreground color, normal intensity.  */ FOREGROUND_MAGENTA  ((byte) 35),
-    /** Cyan foreground color, normal intensity.     */ FOREGROUND_CYAN     ((byte) 36),
-    /** Gray foreground color, normal intensity.     */ FOREGROUND_GRAY     ((byte) 37),
-    /** Reset the foreground color.                  */ FOREGROUND_DEFAULT  ((byte) 39),
+    /** Reset all attributes to their default value. */ RESET               ((byte)  0, null),
+    /** Normal intensity (not {@link #BOLD}).        */ NORMAL              ((byte) 22, null),
+    /** Bold intensity.                              */ BOLD                ((byte)  1, null),
+    /** Faint intensity.                             */ FAINT               ((byte)  2, null),
+    /** Red foreground color, normal intensity.      */ FOREGROUND_RED      ((byte) 31, "red"),
+    /** Green foreground color, normal intensity.    */ FOREGROUND_GREEN    ((byte) 32, "green"),
+    /** Yellow foreground color, normal intensity.   */ FOREGROUND_YELLOW   ((byte) 33, "yellow"),
+    /** Blue foreground color, normal intensity.     */ FOREGROUND_BLUE     ((byte) 34, "blue"),
+    /** Magenta foreground color, normal intensity.  */ FOREGROUND_MAGENTA  ((byte) 35, "magenta"),
+    /** Cyan foreground color, normal intensity.     */ FOREGROUND_CYAN     ((byte) 36, "cyan"),
+    /** Gray foreground color, normal intensity.     */ FOREGROUND_GRAY     ((byte) 37, "gray"),
+    /** Reset the foreground color.                  */ FOREGROUND_DEFAULT  ((byte) 39, null),
     /** Red background color, normal intensity.      */ BACKGROUND_RED      (FOREGROUND_RED),
     /** Green background color, normal intensity.    */ BACKGROUND_GREEN    (FOREGROUND_GREEN),
     /** Yellow background color, normal intensity.   */ BACKGROUND_YELLOW   (FOREGROUND_YELLOW),
@@ -57,6 +60,17 @@ public enum X364 {
     /** Cyan background color, normal intensity.     */ BACKGROUND_CYAN     (FOREGROUND_CYAN),
     /** Gray background color, normal intensity.     */ BACKGROUND_GRAY     (FOREGROUND_GRAY),
     /** Reset the background color.                  */ BACKGROUND_DEFAULT  (FOREGROUND_DEFAULT);
+
+    /**
+     * The list of codes having a non-null {@linkplain #color} name.
+     * They are the codes in the range 31 to 37 inclusive.
+     *
+     * @see #forColorName(String)
+     */
+    private static final X364[] NAMED;
+    static {
+        NAMED = Arrays.copyOfRange(values(), 4, 11);
+    }
 
     /**
      * The first character of the {@link #START} escape string.
@@ -75,7 +89,7 @@ public enum X364 {
     private static final String START = "\u001B[";
 
     /**
-     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
+     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
      * of letters actually exists for different operations.
      */
     private static final char END = 'm';
@@ -96,12 +110,19 @@ public enum X364 {
     private transient X364 foreground, background;
 
     /**
+     * The color name, or {@code null} if none.
+     */
+    public final String color;
+
+    /**
      * Creates a new code.
      *
-     * @param code The X.364 code.
+     * @param code  The X.364 numerical code.
+     * @param color The color name, or {@code null} if none.
      */
-    private X364(final byte code) {
+    private X364(final byte code, final String color) {
         this.code  = code;
+        this.color = color;
         foreground = this;
         background = this;
     }
@@ -109,10 +130,10 @@ public enum X364 {
     /**
      * Creates a new background code.
      *
-     * @param code The X.364 code.
+     * @param foreground The X.364 code for a foreground color.
      */
     private X364(final X364 foreground) {
-        this((byte) (foreground.code + 10));
+        this((byte) (foreground.code + 10), foreground.color);
         this.foreground = foreground;
         this.background = foreground.background = this;
     }
@@ -187,7 +208,7 @@ search:     do {
                 return buffer.append(text, fromIndex, toIndex);
             }
         }
-        return text;
+        return text.subSequence(fromIndex, toIndex);
     }
 
     /**
@@ -227,6 +248,25 @@ search: do {
         length += CharSequences.codePointCount(text, last, toIndex);
         assert CharSequences.codePointCount(plain(text, fromIndex, toIndex)) == length : text.subSequence(fromIndex, toIndex);
         return length;
+    }
+
+    /**
+     * Returns the enumeration value for the given color name.
+     * The search is case-insensitive.
+     *
+     * @param  color The color name.
+     * @return The code for the given color name.
+     * @throws IllegalArgumentException If no code has been found for the given color name.
+     */
+    public static X364 forColorName(String color) throws IllegalArgumentException {
+        color = CharSequences.trimWhitespaces(color);
+        ArgumentChecks.ensureNonEmpty("color", color);
+        for (final X364 code : NAMED) {
+            if (color.equalsIgnoreCase(code.color)) {
+                return code;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "color", color));
     }
 
     /**

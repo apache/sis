@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
@@ -30,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * Handles conversions from {@link java.lang.Number} to other kind of numbers.
  * This class supports only the type supported by {@link Numbers}.
  *
- * {@section Performance note}
+ * <div class="section">Performance note</div>
  * We provide a single class for all supported kinds of {@code Number} and delegate the actual
  * work to the {@code Numbers} static methods. This is not a very efficient way to do the work.
  * For example it may be more efficient to provide specialized subclasses for each target class,
@@ -41,15 +40,17 @@ import org.apache.sis.util.resources.Errors;
  * If nevertheless performance appears to be a problem, consider reverting to revision 1455255
  * of this class, which was using one subclass per target type as described above.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @param <S> The source number type.
  * @param <T> The target number type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class NumberConverter<S extends Number, T extends Number> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
@@ -107,13 +108,28 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      * subclass for each number type. See class javadoc for more details.
      */
     @Override
-    public T convert(final S source) {
-        final T target = Numbers.cast(source, targetClass);
-        if (target.longValue() != source.longValue() ||
-                Double.doubleToLongBits(target.doubleValue()) !=
-                Double.doubleToLongBits(source.doubleValue()))
-        {
-            throw new UnconvertibleObjectException(formatErrorMessage(source));
+    public T apply(final S source) {
+        final double sourceValue = source.doubleValue();
+        T target = Numbers.cast(source, targetClass);
+        final double targetValue = target.doubleValue();
+        if (Double.doubleToLongBits(targetValue) != Double.doubleToLongBits(sourceValue)) {
+            /*
+             * Casted value is not equal to the source value. Maybe we just lost the fraction digits
+             * in a (double → long) cast, in which case the difference should be smaller than 1.
+             */
+            final double delta = Math.abs(targetValue - sourceValue);
+            if (!(delta < 0.5)) { // Use '!' for catching NaN.
+                if (delta < 1) {
+                    target = Numbers.cast(Math.round(sourceValue), targetClass);
+                } else {
+                    /*
+                     * The delta may be greater than 1 in a (BigInteger/BigDecimal → long) cast if the
+                     * BigInteger/BigDecimal has more significant digits than what the double type can
+                     * hold.
+                     */
+                    throw new UnconvertibleObjectException(formatErrorMessage(source));
+                }
+            }
         }
         return target;
     }
@@ -122,7 +138,6 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      * Converter from numbers to comparables. This special case exists because {@link Number}
      * does not implement {@link java.lang.Comparable} directly, but all known subclasses do.
      */
-    @Immutable
     static final class Comparable<S extends Number> extends SystemConverter<S, java.lang.Comparable<?>> {
         /**
          * For cross-version compatibility.
@@ -153,7 +168,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
          * Converts the given number to a {@code Comparable} if its type is different.
          */
         @Override
-        public java.lang.Comparable<?> convert(final Number source) {
+        public java.lang.Comparable<?> apply(final Number source) {
             if (source == null || source instanceof java.lang.Comparable<?>) {
                 return (java.lang.Comparable<?>) source;
             }

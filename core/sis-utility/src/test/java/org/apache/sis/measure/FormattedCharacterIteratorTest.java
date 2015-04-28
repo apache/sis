@@ -109,7 +109,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     /**
      * Returns all expected attribute keys for the tests in this class.
      *
-     * @param withNumberFields {@code true} for including the keys for {@code NumberFormat} fields.
+     * @param withNumberFields {@code true} for including the keys for {@code NumberFormat} fields.
      */
     private static Set<Attribute> getAllAttributeKeys(final boolean withNumberFields) {
         final Set<Attribute> keys = new HashSet<Attribute>(8);

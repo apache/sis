@@ -31,7 +31,7 @@ import org.opengis.annotation.UML;
  * {@code UML_IDENTIFIER} usually stay singular no matter the property cardinality.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -47,7 +47,7 @@ public enum KeyNamePolicy {
 
     /**
      * The keys in the map are the Javabeans property names. This is the method name with
-     * the {@code get} or {@code is} prefix removed, and the first letter made lower-case.
+     * the {@code get} or {@code is} prefix removed, and the first letter made lower-case.
      *
      * <p>This is the default type of names returned by {@link AbstractMetadata#asMap()}.</p>
      */

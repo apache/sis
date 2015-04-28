@@ -26,7 +26,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * {@link InternationalStringAdapter}, this converter doesn't wrap the string in a new object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -58,6 +58,6 @@ public final class InternationalStringConverter extends XmlAdapter<String,Intern
      */
     @Override
     public String marshal(final InternationalString value) {
-        return (value != null) ? value.toString() : null;
+        return StringAdapter.toString(value);
     }
 }

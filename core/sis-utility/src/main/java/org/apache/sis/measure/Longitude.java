@@ -16,22 +16,28 @@
  */
 package org.apache.sis.measure;
 
-import net.jcip.annotations.Immutable;
-
 
 /**
  * A longitude angle in decimal degrees.
  * Positive longitudes are East, while negative longitudes are West.
+ * The longitude symbol is the Greek lower-case letter lambda (λ).
+ *
+ * <p>Longitudes are not necessarily relative to the Greenwich meridian. The
+ * {@linkplain org.apache.sis.referencing.datum.DefaultPrimeMeridian prime meridian}
+ * depends on the context, typically specified through the geodetic datum of a
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.</p>
+ *
+ * <div class="section">Immutability and thread safety</div>
+ * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see Latitude
  * @see AngleFormat
  */
-@Immutable
 public final class Longitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.
@@ -54,6 +60,7 @@ public final class Longitude extends Angle {
 
     /**
      * Construct a new longitude with the specified angular value.
+     * This constructor does <strong>not</strong> {@linkplain #normalize(double) normalize} the given value.
      *
      * @param λ Longitude value in decimal degrees.
      */
@@ -68,12 +75,12 @@ public final class Longitude extends Angle {
      * The hemisphere (E or W) is optional (default to East).
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to a {@code Longitude}.
      * @throws NumberFormatException if the string does not contain a parsable angle,
-     *         or represents a latitude angle.
+     *         or represents a longitude angle.
      *
      * @see AngleFormat#parse(String)
      */
@@ -88,5 +95,29 @@ public final class Longitude extends Angle {
     @Override
     final char hemisphere(final boolean negative) {
         return negative ? 'W' : 'E';
+    }
+
+    /**
+     * Returns the given longitude value normalized to the [{@linkplain #MIN_VALUE -180} … {@linkplain #MAX_VALUE 180})°
+     * range (upper value is exclusive). If the given value is outside the longitude range, then this method adds or
+     * subtracts a multiple of 360° in order to bring back the value to that range.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>{@linkplain Double#NaN NaN} values are returned unchanged</li>
+     *   <li>±∞ are mapped to NaN</li>
+     *   <li>±180° are both mapped to -180° (i.e. the range is from -180° inclusive to +180° <em>exclusive</em>)</li>
+     *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
+     * </ul>
+     *
+     * @param  λ The longitude value in decimal degrees.
+     * @return The given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
+     *
+     * @see Latitude#clamp(double)
+     *
+     * @since 0.4
+     */
+    public static double normalize(final double λ) {
+        return λ - Math.floor((λ - MIN_VALUE) / (MAX_VALUE - MIN_VALUE)) * (MAX_VALUE - MIN_VALUE);
     }
 }

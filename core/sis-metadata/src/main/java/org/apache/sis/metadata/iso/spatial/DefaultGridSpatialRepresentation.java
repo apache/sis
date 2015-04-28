@@ -28,15 +28,26 @@ import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.apache.sis.measure.ValueRange;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Basic information required to uniquely identify a resource or resources.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_GridSpatialRepresentation_Type", propOrder = {
@@ -104,27 +115,36 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GridSpatialRepresentation)
      */
     public DefaultGridSpatialRepresentation(final GridSpatialRepresentation object) {
         super(object);
-        numberOfDimensions      = object.getNumberOfDimensions();
-        axisDimensionProperties = copyList(object.getAxisDimensionProperties(), Dimension.class);
-        cellGeometry            = object.getCellGeometry();
-        if (object.isTransformationParameterAvailable()) {
-            booleans = TRANSFORMATION_MASK;
+        if (object != null) {
+            numberOfDimensions      = object.getNumberOfDimensions();
+            axisDimensionProperties = copyList(object.getAxisDimensionProperties(), Dimension.class);
+            cellGeometry            = object.getCellGeometry();
+            if (object.isTransformationParameterAvailable()) {
+                booleans = TRANSFORMATION_MASK;
+            }
         }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link Georectified} or
+     *   <li>Otherwise if the given object is an instance of {@link Georectified} or
      *       {@link Georeferenceable}, then this method delegates to the {@code castOrCopy(…)}
      *       method of the corresponding SIS subclass. Note that if the given object implements
      *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method
@@ -157,9 +177,11 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the number of independent spatial-temporal axes.
+     *
+     * @return Number of independent spatial-temporal axes, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "numberOfDimensions", required = true)
     public Integer getNumberOfDimensions() {
         return numberOfDimensions;
@@ -168,15 +190,21 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Sets the number of independent spatial-temporal axes.
      *
-     * @param newValue The new number of dimension.
+     * @param newValue The new number of dimension, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setNumberOfDimensions(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue);
+        }
         numberOfDimensions = newValue;
     }
 
     /**
      * Returns information about spatial-temporal axis properties.
+     *
+     * @return Information about spatial-temporal axis properties.
      */
     @Override
     @XmlElement(name = "axisDimensionProperties", required = true)
@@ -197,6 +225,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the identification of grid data as point or cell.
+     *
+     * @return Identification of grid data as point or cell, or {@code null}.
      */
     @Override
     @XmlElement(name = "cellGeometry", required = true)
@@ -216,6 +246,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns indication of whether or not parameters for transformation exists.
+     *
+     * @return Whether or not parameters for transformation exists.
      */
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)

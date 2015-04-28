@@ -18,9 +18,9 @@ package org.apache.sis.internal.converter;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -39,18 +39,20 @@ import org.apache.sis.util.resources.Errors;
  * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
  * initialized with default converters is provided by the {@link SystemRegistry#INSTANCE} constant.</p>
  *
- * {@section Note about conversions from interfaces}
- * {@code ConverterRegistry} is primarily designed for handling converters from classes to
- * other classes. Handling of interfaces are not prohibited (and actually sometime supported),
- * but their behavior may be more ambiguous than in the case of classes because of
- * multi-inheritance in interface hierarchy.
+ * <div class="section">Note about conversions from interfaces</div>
+ * {@code ConverterRegistry} is primarily designed for handling converters from classes to other classes.
+ * Handling of interfaces are not prohibited (and actually sometime supported), but their behavior may be
+ * more ambiguous than in the case of classes because of multi-inheritance in interface hierarchy.
+ *
+ * <div class="section">Thread safety</div>
+ * This base class is thread-safe. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public class ConverterRegistry {
     /**
      * The map of converters of any kind. For any key of type {@code ClassPair<S,T>},
@@ -63,7 +65,7 @@ public class ConverterRegistry {
      * then the key and the value may be the same instance (in order to save object
      * allocations).</p>
      *
-     * {@section Synchronization note}
+     * <div class="section">Synchronization note</div>
      * Synchronization if performed by {@code synchronized(converters)} statements. We tried
      * {@code ReadWriteLock}, but this is not very convenient because read operations may be
      * followed by write operations at any time if the requested converter is not in the cache.
@@ -150,14 +152,14 @@ public class ConverterRegistry {
     }
 
     /**
-     * If {@code existing} or one of its children is equals to the given {@code converter},
+     * If {@code existing} or one of its children is equals to the given {@code converter},
      * returns it. Otherwise returns {@code null}.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
      * @param  converter The converter to replace by an existing converter, if possible.
      * @param  existing Existing converter to test.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     private static <S,T> ObjectConverter<S,T> findEquals(ObjectConverter<S,T> converter,
@@ -178,12 +180,12 @@ public class ConverterRegistry {
     }
 
     /**
-     * Returns a converter equals to the given {@code converter}, or {@code null} if none.
+     * Returns a converter equals to the given {@code converter}, or {@code null} if none.
      *
-     * @param  <S> The {@code converter} source class.
-     * @param  <T> The {@code converter} target class.
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
      * @param  converter The converter to replace by an existing converter, if possible.
-     * @return A converter equals to {@code converter}, or {@code null} if none.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
      */
     @SuppressWarnings("unchecked")
     final <S,T> ObjectConverter<S,T> findEquals(final SystemConverter<S,T> converter) {
@@ -209,7 +211,7 @@ public class ConverterRegistry {
      * For example a converter producing {@link Double} can be used for clients that just ask
      * for a {@link Number}.</p>
      *
-     * {@section Which super-classes of the target class are registered}
+     * <div class="section">Which super-classes of the target class are registered</div>
      * Consider a converter from class {@code S} to class {@code T} where the two classes
      * are related in a hierarchy as below:
      *
@@ -232,7 +234,7 @@ public class ConverterRegistry {
      * No {@code S} → {@code C2} or {@code S} → {@code C1} converter will be registered,
      * because an identity converter would be sufficient for those cases.
      *
-     * {@section Which sub-classes of the source class are registered}
+     * <div class="section">Which sub-classes of the source class are registered</div>
      * Sub-classes of the source class will be registered on a case-by-case basis when the
      * {@link #find(Class, Class)} is invoked, because we can not know the set of all
      * sub-classes in advance (and would not necessarily want to register all of them anyway).
@@ -241,6 +243,7 @@ public class ConverterRegistry {
      * @param <T> The class of target (converted) values.
      * @param converter The converter to register.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         /*
@@ -478,6 +481,21 @@ public class ConverterRegistry {
             if (converter != null) {
                 put(key, converter);
                 return converter;
+            }
+            /*
+             * Still no converter found. If the source and target classes are array classes,
+             * search a converter for their components.
+             */
+            final Class<?> sourceComponent = sourceClass.getComponentType();
+            if (sourceComponent != null) {
+                final Class<?> targetComponent = targetClass.getComponentType();
+                if (targetComponent != null) {
+                    converter = new ArrayConverter<S,T>(sourceClass, targetClass, find(
+                            Numbers.primitiveToWrapper(sourceComponent),
+                            Numbers.primitiveToWrapper(targetComponent)));
+                    put(key, converter);
+                    return converter;
+                }
             }
         }
         throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, sourceClass, targetClass));

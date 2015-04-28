@@ -18,7 +18,6 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import java.io.CharConversionException;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
@@ -38,10 +37,10 @@ import org.apache.sis.internal.jdk7.JDK7;
  *   <li>No synchronization is performed.</li>
  * </ul>
  *
- * If needed, this {@code Appender} can be viewed as a synchronized
+ * If needed, this {@code Appender} can be viewed as a synchronized
  * {@link java.io.Writer} by invoking the {@link IO#asWriter(Appendable)} method.
  *
- * {@section Flushing and closing the stream}
+ * <div class="section">Flushing and closing the stream</div>
  * Subclasses implement the {@link java.io.Flushable} interface only if they
  * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
  * This is the case of {@link TableAppender} and {@link LineAppender} for instance.
@@ -55,7 +54,6 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @see java.io.FilterWriter
  */
-@Decorator(Appendable.class)
 abstract class Appender implements Appendable {
     /**
      * The underlying character output stream or buffer.
@@ -81,7 +79,7 @@ abstract class Appender implements Appendable {
     /**
      * Finds the line separator used in the given character sequence portion, or returns
      * {@code null} if unknown. This method is designed for invocation at the beginning
-     * of {@code append(CharSequence, ...), before the characters are effectively read.
+     * of {@code append(CharSequence, ...)}, before the characters are effectively read.
      */
     final String lineSeparator(final CharSequence sequence, int start, final int end) {
         if (isHighSurrogate()) {
@@ -190,7 +188,7 @@ abstract class Appender implements Appendable {
 
     /**
      * Returns the content of this {@code Appendable} as a string if possible,
-     * or the localized "<cite>Unavailable content</cite>" string otherwise.
+     * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
      * @return The content of this {@code Appendable}, or a localized message for unavailable content.
      *

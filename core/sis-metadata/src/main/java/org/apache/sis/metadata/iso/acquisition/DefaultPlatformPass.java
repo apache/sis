@@ -31,9 +31,18 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 /**
  * Identification of collection coverage.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -70,20 +79,22 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PlatformPass)
      */
     public DefaultPlatformPass(final PlatformPass object) {
         super(object);
-        identifiers   = singleton(object.getIdentifier(), Identifier.class); // TODO
-        extent        = object.getExtent();
-        relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        if (object != null) {
+            identifiers   = singleton(object.getIdentifier(), Identifier.class);
+            extent        = object.getExtent();
+            relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -108,6 +119,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the unique name of the pass.
+     *
+     * @return Unique name of the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -129,7 +142,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the area covered by the pass. {@code null} if unspecified.
      *
-     * @todo annotate an implementation of {@link Geometry} in order to annotate this method.
+     * @return Area covered by the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")
@@ -149,6 +162,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the occurrence of one or more events for a pass.
+     *
+     * @return Occurrence of one or more events for a pass.
      */
     @Override
     @XmlElement(name = "relatedEvent")

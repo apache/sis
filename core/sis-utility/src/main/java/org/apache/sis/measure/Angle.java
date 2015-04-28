@@ -23,7 +23,6 @@ import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.internal.util.Utilities;
 
 import static java.lang.Double.doubleToLongBits;
@@ -31,18 +30,34 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 
 
 /**
- * An angle in decimal degrees. An angle is the amount of rotation needed to bring one line or
- * plane into coincidence with another, generally measured in degrees, sexagesimal degrees or
- * grads.
+ * An angle in decimal degrees. An angle is the amount of rotation needed to bring one line or plane
+ * into coincidence with another. Various kind of angles are used in geographic information systems,
+ * some of them having a specialized class in Apache SIS:
  *
- * {@section Formatting angles}
+ * <ul>
+ *   <li>{@linkplain Latitude} is an angle ranging from 0° at the equator to 90° at the poles.</li>
+ *   <li>{@linkplain Longitude} is an angle measured east-west from a prime meridian (usually Greenwich, but not necessarily).</li>
+ *   <li><cite>Azimuth</cite> is a direction given by an angle between 0° and 360° measured clockwise from North.</li>
+ *   <li><cite>Bearing</cite> is a direction given by an angle between 0° and 90° in a quadrant defined by a cardinal direction.</li>
+ *   <li><cite>Bearing</cite> is also sometime used in navigation for an angle relative to the vessel forward direction.</li>
+ *   <li><cite>Deflection angle</cite> is the angle between a line and the prolongation of a preceding line.</li>
+ *   <li><cite>Interior angle</cite> is an angle measured between two lines of sight.</li>
+ *   <li>{@linkplain ElevationAngle Elevation angle} is the angular height from the horizontal plane to an object above the horizon.</li>
+ * </ul>
+ *
+ * <div class="section">Formatting angles</div>
  * The recommended way to format angles is to instantiate an {@link AngleFormat} once, then to
  * reuse it many times. As a convenience, {@code Angle} objects can also be formatted by the
  * {@code "%s"} conversion specifier of {@link Formatter}, but this is less efficient for this
  * class.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class and the {@link Latitude} / {@link Longitude} subclasses are immutable, and thus
+ * inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice
+ * (see {@link java.lang.Number} for an example of a similar in purpose class having mutable subclasses).
+ *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -50,7 +65,6 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * @see Longitude
  * @see AngleFormat
  */
-@Immutable
 public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -86,7 +100,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * degrees (e.g. 45.5°) or degrees with minutes and seconds (e.g. 45°30').
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to an {@code Angle}.
@@ -194,7 +208,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Returns a string representation of this {@code Angle} object.
      * This is a convenience method mostly for debugging purpose, since it uses a fixed locale.
-     * Developers should consider using {@link AngleFormat} for end-user applications instead
+     * Developers should consider using {@link AngleFormat} for end-user applications instead
      * than this method.
      *
      * @see AngleFormat#format(double)
@@ -241,7 +255,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     private static Format getAngleFormat() {
         assert Thread.holdsLock(Angle.class);
         if (format == null) {
-            format = AngleFormat.getInstance(Locale.ROOT);
+            format = new AngleFormat(Locale.ROOT);
         }
         return format;
     }

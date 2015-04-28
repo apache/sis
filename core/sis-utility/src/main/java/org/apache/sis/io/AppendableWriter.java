@@ -139,7 +139,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Flushable}, or is a {@link Appender} wrapper
+     * If {@link #out} implements {@link Flushable}, or is a {@link Appender} wrapper
      * around a flushable object, delegates to that object. Otherwise do nothing.
      */
     @Override
@@ -150,7 +150,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Closeable}, or is a {@link Appender} wrapper
+     * If {@link #out} implements {@link Closeable}, or is a {@link Appender} wrapper
      * around a closeable object, delegates to that object. Otherwise just flush (if possible).
      */
     @Override
@@ -162,7 +162,7 @@ final class AppendableWriter extends Writer {
 
     /**
      * Returns the content of the underlying {@link Appendable} as a string if possible,
-     * or the localized "<cite>Unavailable content</cite>" string otherwise.
+     * or the localized <cite>"Unavailable content"</cite> string otherwise.
      *
      * @return The content of the underlying {@code Appendable},
      *         or a localized message for unavailable content.

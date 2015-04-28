@@ -26,6 +26,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.toTreeStructure;
+import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 
 
 /**
@@ -34,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(TreeNodeTest.class)
@@ -47,36 +49,40 @@ public final strictfp class TreeTableViewTest extends TestCase {
     }
 
     /**
-     * Asserts that the given metadata object has the expected string representation.
+     * The expected string representation of the tree created by {@link #create(ValueExistencePolicy)}
+     * with {@link ValueExistencePolicy#NON_EMPTY}.
      */
-    private static void assertExpectedString(final TreeTableView metadata) {
-        assertMultilinesEquals("toString()",
-                "DefaultCitation\n" +
-                "  ├─Title…………………………………………………………………………………… Some title\n" +
-                "  ├─Alternate title (1 of 2)………………………………… First alternate title\n" +
-                "  ├─Alternate title (2 of 2)………………………………… Second alternate title\n" +
-                "  ├─Edition……………………………………………………………………………… Some edition\n" +
-                "  ├─Cited responsible party (1 of 2)\n" +
-                "  │   ├─Organisation name………………………………………… Some organisation\n" +
-                "  │   └─Role…………………………………………………………………………… Distributor\n" +
-                "  ├─Cited responsible party (2 of 2)\n" +
-                "  │   ├─Individual name……………………………………………… Some person of contact\n" +
-                "  │   ├─Contact info\n" +
-                "  │   │   └─Address\n" +
-                "  │   │       └─Electronic mail address…… Some email\n" +
-                "  │   └─Role…………………………………………………………………………… Point of contact\n" +
-                "  ├─Presentation form (1 of 2)…………………………… Map digital\n" +
-                "  ├─Presentation form (2 of 2)…………………………… Map hardcopy\n" +
-                "  └─Other citation details……………………………………… Some other details\n",
-                metadata.toString());
-    }
+    private static final String EXPECTED =
+            "Citation\n" +
+            "  ├─Title……………………………………………………………………………………………… Some title\n" +
+            "  ├─Alternate title (1 of 2)…………………………………………… First alternate title\n" +
+            "  ├─Alternate title (2 of 2)…………………………………………… Second alternate title\n" +
+            "  ├─Edition………………………………………………………………………………………… Some edition\n" +
+            "  ├─Cited responsible party (1 of 2)\n" +
+            "  │   ├─Role……………………………………………………………………………………… Distributor\n" +
+            "  │   └─Party\n" +
+            "  │       └─Name…………………………………………………………………………… Some organisation\n" +
+            "  ├─Cited responsible party (2 of 2)\n" +
+            "  │   ├─Role……………………………………………………………………………………… Point of contact\n" +
+            "  │   └─Party\n" +
+            "  │       ├─Name…………………………………………………………………………… Some person of contact\n" +
+            "  │       └─Contact info\n" +
+            "  │           └─Address\n" +
+            "  │               └─Electronic mail address…… Some email\n" +
+            "  ├─Presentation form (1 of 2)……………………………………… Map digital\n" +
+            "  ├─Presentation form (2 of 2)……………………………………… Map hardcopy\n" +
+            "  └─Other citation details………………………………………………… Some other details\n";
 
     /**
      * Tests {@link TreeTableView#toString()}.
+     * Since the result is locale-dependant, we can not compare against an exact string.
+     * We will only compare the beginning of each line.
      */
     @Test
     public void testToString() {
-        assertExpectedString(create(ValueExistencePolicy.NON_EMPTY));
+        final TreeTableView metadata = create(ValueExistencePolicy.NON_EMPTY);
+        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata)); // Locale-independent
+        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString())); // Locale-dependent.
     }
 
     /**
@@ -104,6 +110,6 @@ public final strictfp class TreeTableViewTest extends TestCase {
         } finally {
             in.close();
         }
-        assertExpectedString((TreeTableView) deserialized);
+        assertMultilinesEquals(EXPECTED, formatNameAndValue((TreeTableView) deserialized));
     }
 }

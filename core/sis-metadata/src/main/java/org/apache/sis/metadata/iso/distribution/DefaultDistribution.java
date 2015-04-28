@@ -20,21 +20,35 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
+
 
 /**
  * Information about the distributor of and options for obtaining the resource.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Distribution_Type", propOrder = {
@@ -48,6 +62,11 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1331353255189686369L;
+
+    /**
+     * Brief description of a set of distribution options.
+     */
+    private InternationalString description;
 
     /**
      * Provides a description of the format of the data to be distributed.
@@ -76,20 +95,25 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distribution)
      */
     public DefaultDistribution(final Distribution object) {
         super(object);
-        distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
-        distributors        = copyCollection(object.getDistributors(), Distributor.class);
-        transferOptions     = copyCollection(object.getTransferOptions(), DigitalTransferOptions.class);
+        if (object != null) {
+            distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
+            distributors        = copyCollection(object.getDistributors(), Distributor.class);
+            transferOptions     = copyCollection(object.getTransferOptions(), DigitalTransferOptions.class);
+            if (object instanceof DefaultDistribution) {
+                description = ((DefaultDistribution) object).getDescription();
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -113,7 +137,33 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     }
 
     /**
+     * Returns a brief description of a set of distribution options.
+     *
+     * @return Brief description of a set of distribution options.
+     *
+     * @since 0.5
+     */
+    @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets a brief description of a set of distribution options.
+     *
+     * @param newValue The new description.
+     *
+     * @since 0.5
+     */
+    public void setDescription(final InternationalString newValue) {
+        checkWritePermission();
+        description = newValue;
+    }
+
+    /**
      * Provides a description of the format of the data to be distributed.
+     *
+     * @return Description of the format of the data to be distributed.
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -132,6 +182,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
 
     /**
      * Provides information about the distributor.
+     *
+     * @return Information about the distributor.
      */
     @Override
     @XmlElement(name = "distributor")
@@ -149,8 +201,9 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     }
 
     /**
-     * Provides information about technical means and media by which a resource is obtained
-     * from the distributor.
+     * Provides information about technical means and media by which a resource is obtained from the distributor.
+     *
+     * @return Technical means and media by which a resource is obtained from the distributor.
      */
     @Override
     @XmlElement(name = "transferOptions")

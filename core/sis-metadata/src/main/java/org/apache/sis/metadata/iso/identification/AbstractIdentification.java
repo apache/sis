@@ -16,43 +16,77 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.metadata.identification.Keywords;
 import org.opengis.metadata.identification.Progress;
+import org.opengis.metadata.identification.Resolution;
+import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.Usage;
+import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Basic information required to uniquely identify a resource or resources.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
-    "citation", "abstract", "purpose", "credits", "status", "pointOfContacts",
-    "resourceMaintenances", "graphicOverviews", "resourceFormats", "descriptiveKeywords",
-    "resourceSpecificUsages", "resourceConstraints", "aggregationInfo"
+    "citation",
+    "abstract",
+    "purpose",
+    "credits",
+    "status",
+    "pointOfContacts",
+    "resourceMaintenances",
+    "graphicOverviews",
+    "resourceFormats",
+    "descriptiveKeywords",
+    "resourceSpecificUsages",
+    "resourceConstraints",
+    "aggregationInfo",
+    "spatialRepresentationTypes", // After 'pointOfContact' according ISO 19115:2014, but here for ISO 19115:2003 compatibility.
+    "spatialResolutions"          // Shall be kept next to 'spatialRepresentationTypes'
 })
 @XmlRootElement(name = "MD_Identification")
 @XmlSeeAlso({
@@ -63,15 +97,15 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -6512101909569333306L;
+    private static final long serialVersionUID = 157053637951213015L;
 
     /**
-     * Citation data for the resource(s).
+     * Citation for the resource(s).
      */
     private Citation citation;
 
     /**
-     * Brief narrative summary of the content of the resource(s).
+     * Brief narrative summary of the resource(s).
      */
     private InternationalString abstracts;
 
@@ -95,6 +129,36 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * associated with the resource(s).
      */
     private Collection<ResponsibleParty> pointOfContacts;
+
+    /**
+     * Methods used to spatially represent geographic information.
+     */
+    private Collection<SpatialRepresentationType> spatialRepresentationTypes;
+
+    /**
+     * Factor which provides a general understanding of the density of spatial data in the resource(s).
+     */
+    private Collection<Resolution> spatialResolutions;
+
+    /**
+     * Main theme(s) of the resource.
+     */
+    private Collection<TopicCategory> topicCategories;
+
+    /**
+     * Spatial and temporal extent of the resource.
+     */
+    private Collection<Extent> extents;
+
+    /**
+     * Other documentation associated with the resource.
+     */
+    private Collection<Citation> additionalDocumentations;
+
+    /**
+     * Code that identifies the level of processing in the producers coding system of a resource.
+     */
+    private Identifier processingLevel;
 
     /**
      * Provides information about the frequency of resource updates, and the scope of those updates.
@@ -130,7 +194,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides aggregate dataset information.
      */
-    private Collection<AggregateInformation> aggregationInfo;
+    private Collection<DefaultAssociatedResource> associatedResources;
 
     /**
      * Constructs an initially empty identification.
@@ -154,34 +218,47 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Identification)
      */
     public AbstractIdentification(final Identification object) {
         super(object);
-        citation               = object.getCitation();
-        abstracts              = object.getAbstract();
-        purpose                = object.getPurpose();
-        credits                = copyCollection(object.getCredits(), String.class);
-        status                 = copyCollection(object.getStatus(), Progress.class);
-        pointOfContacts        = copyCollection(object.getPointOfContacts(), ResponsibleParty.class);
-        resourceMaintenances   = copyCollection(object.getResourceMaintenances(), MaintenanceInformation.class);
-        graphicOverviews       = copyCollection(object.getGraphicOverviews(), BrowseGraphic.class);
-        resourceFormats        = copyCollection(object.getResourceFormats(), Format.class);
-        descriptiveKeywords    = copyCollection(object.getDescriptiveKeywords(), Keywords.class);
-        resourceSpecificUsages = copyCollection(object.getResourceSpecificUsages(), Usage.class);
-        resourceConstraints    = copyCollection(object.getResourceConstraints(), Constraints.class);
-        aggregationInfo        = copyCollection(object.getAggregationInfo(), AggregateInformation.class);
+        if (object != null) {
+            citation                   = object.getCitation();
+            abstracts                  = object.getAbstract();
+            purpose                    = object.getPurpose();
+            credits                    = copyCollection(object.getCredits(), String.class);
+            status                     = copyCollection(object.getStatus(), Progress.class);
+            pointOfContacts            = copyCollection(object.getPointOfContacts(), ResponsibleParty.class);
+            resourceMaintenances       = copyCollection(object.getResourceMaintenances(), MaintenanceInformation.class);
+            graphicOverviews           = copyCollection(object.getGraphicOverviews(), BrowseGraphic.class);
+            resourceFormats            = copyCollection(object.getResourceFormats(), Format.class);
+            descriptiveKeywords        = copyCollection(object.getDescriptiveKeywords(), Keywords.class);
+            resourceSpecificUsages     = copyCollection(object.getResourceSpecificUsages(), Usage.class);
+            resourceConstraints        = copyCollection(object.getResourceConstraints(), Constraints.class);
+            if (object instanceof AbstractIdentification) {
+                final AbstractIdentification c = (AbstractIdentification) object;
+                spatialRepresentationTypes = copyCollection(c.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
+                spatialResolutions         = copyCollection(c.getSpatialResolutions(), Resolution.class);
+                topicCategories            = copyCollection(c.getTopicCategories(), TopicCategory.class);
+                extents                    = copyCollection(c.getExtents(), Extent.class);
+                additionalDocumentations   = copyCollection(c.getAdditionalDocumentations(), Citation.class);
+                processingLevel            = c.getProcessingLevel();
+                associatedResources        = copyCollection(c.getAssociatedResources(), DefaultAssociatedResource.class);
+            } else {
+                setAggregationInfo(object.getAggregationInfo());
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link DataIdentification} or
+     *   <li>Otherwise if the given object is an instance of {@link DataIdentification} or
      *       {@link ServiceIdentification}, then this method delegates to the {@code castOrCopy(…)}
      *       method of the corresponding SIS subclass. Note that if the given object implements
      *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method
@@ -213,7 +290,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
-     * Returns the citation data for the resource(s).
+     * Returns the citation for the resource(s).
+     *
+     * @return Citation for the resource(s).
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -222,7 +301,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
-     * Sets the citation data for the resource(s).
+     * Sets the citation for the resource(s).
      *
      * @param newValue The new citation.
      */
@@ -232,7 +311,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
-     * Returns a brief narrative summary of the content of the resource(s).
+     * Returns a brief narrative summary of the resource(s).
+     *
+     * @return Brief narrative summary of the resource(s).
      */
     @Override
     @XmlElement(name = "abstract", required = true)
@@ -241,9 +322,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
-     * Sets a brief narrative summary of the content of the resource(s).
+     * Sets a brief narrative summary of the resource(s).
      *
-     * @param newValue The new abstract.
+     * @param newValue The new summary of resource(s).
      */
     public void setAbstract(final InternationalString newValue) {
         checkWritePermission();
@@ -252,6 +333,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns a summary of the intentions with which the resource(s) was developed.
+     *
+     * @return The intentions with which the resource(s) was developed, or {@code null}.
      */
     @Override
     @XmlElement(name = "purpose")
@@ -262,7 +345,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets a summary of the intentions with which the resource(s) was developed.
      *
-     * @param newValue The new purpose.
+     * @param newValue The new summary of intention.
      */
     public void setPurpose(final InternationalString newValue) {
         checkWritePermission();
@@ -271,6 +354,12 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the recognition of those who contributed to the resource(s).
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Recognition of those who contributed to the resource(s).
      */
     @Override
     @XmlElement(name = "credit")
@@ -281,6 +370,10 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Sets the recognition of those who contributed to the resource(s).
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type may be changed to the {@code InternationalString} interface in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new credits.
      */
     public void setCredits(final Collection<? extends String> newValues) {
@@ -289,6 +382,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the status of the resource(s).
+     *
+     * @return Status of the resource(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "status")
@@ -308,6 +403,15 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the identification of, and means of communication with, person(s) and organizations(s)
      * associated with the resource(s).
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Means of communication with person(s) and organizations(s) associated with the resource(s).
+     *
+     * @see org.apache.sis.metadata.iso.DefaultMetadata#getContacts()
      */
     @Override
     @XmlElement(name = "pointOfContact")
@@ -316,7 +420,12 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
-     * Sets the point of contacts.
+     * Sets the means of communication with persons(s) and organizations(s) associated with the resource(s).
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new points of contacts.
      */
@@ -325,7 +434,155 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
+     * Returns the methods used to spatially represent geographic information.
+     *
+     * @return Methods used to spatially represent geographic information.
+     *
+     * @since 0.5
+     */
+    @XmlElement(name = "spatialRepresentationType")
+    @UML(identifier="spatialRepresentationType", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
+        return spatialRepresentationTypes = nonNullCollection(spatialRepresentationTypes, SpatialRepresentationType.class);
+    }
+
+    /**
+     * Sets the method used to spatially represent geographic information.
+     *
+     * @param newValues The new spatial representation types.
+     *
+     * @since 0.5
+     */
+    public void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
+        spatialRepresentationTypes = writeCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
+    }
+
+    /**
+     * Returns the factor which provides a general understanding of the density of spatial data in the resource(s).
+     * This element should be repeated when describing upper and lower range.
+     *
+     * @return Factor which provides a general understanding of the density of spatial data.
+     *
+     * @since 0.5
+     */
+    @XmlElement(name = "spatialResolution")
+    @UML(identifier="spatialResolution", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Resolution> getSpatialResolutions() {
+        return spatialResolutions = nonNullCollection(spatialResolutions, Resolution.class);
+    }
+
+    /**
+     * Sets the factor which provides a general understanding of the density of spatial data in the resource(s).
+     *
+     * @param newValues The new spatial resolutions.
+     *
+     * @since 0.5
+     */
+    public void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
+        spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
+    }
+
+    /**
+     * Returns the main theme(s) of the resource.
+     *
+     * @return Main theme(s).
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "topicCategory")
+    @UML(identifier="topicCategory", obligation=CONDITIONAL, specification=ISO_19115)
+    public Collection<TopicCategory> getTopicCategories()  {
+        return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
+    }
+
+    /**
+     * Sets the main theme(s) of the resource.
+     *
+     * @param newValues The new topic categories.
+     *
+     * @since 0.5
+     */
+    public void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
+        topicCategories = writeCollection(newValues, topicCategories, TopicCategory.class);
+    }
+
+    /**
+     * Returns the spatial and temporal extent of the resource.
+     *
+     * @return Spatial and temporal extent of the resource.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "extent")
+    @UML(identifier="extent", obligation=CONDITIONAL, specification=ISO_19115)
+    public Collection<Extent> getExtents() {
+        return extents = nonNullCollection(extents, Extent.class);
+    }
+
+    /**
+     * Sets the spatial and temporal extent of the resource.
+     *
+     * @param newValues The new extents
+     *
+     * @since 0.5
+     */
+    public void setExtents(final Collection<? extends Extent> newValues) {
+        extents = writeCollection(newValues, extents, Extent.class);
+    }
+
+    /**
+     * Returns other documentation associated with the resource.
+     *
+     * @return Other documentation associated with the resource.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "additionalDocumentation")
+    @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Citation> getAdditionalDocumentations() {
+        return additionalDocumentations = nonNullCollection(additionalDocumentations, Citation.class);
+    }
+
+    /**
+     * Sets other documentation associated with the resource.
+     *
+     * @param newValues The documentation to associate with the resource.
+     *
+     * @since 0.5
+     */
+    public void setAdditionalDocumentations(final Collection<? extends Citation> newValues) {
+        additionalDocumentations = writeCollection(newValues, additionalDocumentations, Citation.class);
+    }
+
+    /**
+     * Returns code(s) that identifies the level of processing in the producers coding system of a resource.
+     *
+     * @return Code(s) that identifies the level of processing in the producers coding system of a resource.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "processingLevel")
+    @UML(identifier="processingLevel", obligation=OPTIONAL, specification=ISO_19115)
+    public Identifier getProcessingLevel() {
+        return processingLevel;
+    }
+
+    /**
+     * Sets code that identifies the level of processing in the producers coding system of a resource.
+     *
+     * @param newValue New code that identifies the level of processing.
+     *
+     * @since 0.5
+     */
+    public void setProcessingLevel(final Identifier newValue) {
+        checkWritePermission();
+        processingLevel = newValue;
+    }
+
+    /**
      * Provides information about the frequency of resource updates, and the scope of those updates.
+     *
+     * @return Frequency and scope of resource updates.
      */
     @Override
     @XmlElement(name = "resourceMaintenance")
@@ -344,6 +601,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides a graphic that illustrates the resource(s) (should include a legend for the graphic).
+     *
+     * @return A graphic that illustrates the resource(s).
      */
     @Override
     @XmlElement(name = "graphicOverview")
@@ -362,6 +621,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides a description of the format of the resource(s).
+     *
+     * @return Description of the format.
      */
     @Override
     @XmlElement(name = "resourceFormat")
@@ -380,6 +641,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides category keywords, their type, and reference source.
+     *
+     * @return Category keywords, their type, and reference source.
      */
     @Override
     @XmlElement(name = "descriptiveKeywords")
@@ -399,6 +662,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides basic information about specific application(s) for which the resource(s)
      * has/have been or is being used by different users.
+     *
+     * @return Information about specific application(s) for which the resource(s)
+     *         has/have been or is being used.
      */
     @Override
     @XmlElement(name = "resourceSpecificUsage")
@@ -417,6 +683,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides information about constraints which apply to the resource(s).
+     *
+     * @return Constraints which apply to the resource(s).
      */
     @Override
     @XmlElement(name = "resourceConstraints")
@@ -434,20 +702,91 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
+     * Provides associated resource information.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code AssociatedResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @return Associated resource information.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "associatedResource")
+    @UML(identifier="associatedResource", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<DefaultAssociatedResource> getAssociatedResources() {
+        return associatedResources = nonNullCollection(associatedResources, DefaultAssociatedResource.class);
+    }
+
+    /**
+     * Sets associated resource information.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * The element type will be changed to the {@code AssociatedResource} interface
+     * when GeoAPI will provide it (tentatively in GeoAPI 3.1).
+     * </div>
+     *
+     * @param newValues The new associated resources.
+     *
+     * @since 0.5
+     */
+    public void setAssociatedResources(final Collection<? extends DefaultAssociatedResource> newValues) {
+        associatedResources = writeCollection(newValues, associatedResources, DefaultAssociatedResource.class);
+    }
+
+    /**
      * Provides aggregate dataset information.
+     *
+     * @return Aggregate dataset information.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "aggregationInfo")
     public Collection<AggregateInformation> getAggregationInfo() {
-        return aggregationInfo = nonNullCollection(aggregationInfo, AggregateInformation.class);
+        return new LegacyPropertyAdapter<AggregateInformation,DefaultAssociatedResource>(getAssociatedResources()) {
+            @Override protected DefaultAssociatedResource wrap(final AggregateInformation value) {
+                return DefaultAssociatedResource.castOrCopy(value);
+            }
+
+            @Override protected AggregateInformation unwrap(final DefaultAssociatedResource container) {
+                if (container instanceof AggregateInformation) {
+                    return (AggregateInformation) container;
+                } else {
+                    return new DefaultAggregateInformation(container);
+                }
+            }
+
+            @Override protected boolean update(final DefaultAssociatedResource container, final AggregateInformation value) {
+                return container == value;
+            }
+        }.validOrNull();
     }
 
     /**
      * Sets aggregate dataset information.
      *
      * @param newValues The new aggregation info.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by {@link #setAssociatedResources(Collection)}.
      */
+    @Deprecated
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
-        aggregationInfo = writeCollection(newValues, aggregationInfo, AggregateInformation.class);
+        checkWritePermission();
+        /*
+         * We can not invoke getAggregationInfo().setValues(newValues) because this method
+         * is invoked by the constructor, which is itself invoked at JAXB marshalling time,
+         * in which case getAggregationInfo() may return null.
+         */
+        List<DefaultAssociatedResource> r = null;
+        if (newValues != null) {
+            r = new ArrayList<DefaultAssociatedResource>(newValues.size());
+            for (final AggregateInformation value : newValues) {
+                r.add(DefaultAssociatedResource.castOrCopy(value));
+            }
+        }
+        setAssociatedResources(r);
     }
 }

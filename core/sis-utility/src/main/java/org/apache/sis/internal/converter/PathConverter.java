@@ -23,7 +23,6 @@ import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -32,12 +31,14 @@ import org.apache.sis.util.UnconvertibleObjectException;
 /**
  * Handles conversions between {@link Path}, {@link File}, {@link URI} and {@link URL} objects.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.01)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
@@ -69,7 +70,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * @throws UnconvertibleObjectException If an error occurred during the conversion.
      */
     @Override
-    public final T convert(final S source) throws UnconvertibleObjectException {
+    public final T apply(final S source) throws UnconvertibleObjectException {
         if (source == null) {
             return null;
         }
@@ -81,7 +82,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Invoked by {@link #convert(S)} for converting the given path to the target
+     * Invoked by {@link #apply(Object)} for converting the given path to the target
      * type of this converter.
      *
      * @param  source The path to convert, guaranteed to be non-null.

@@ -25,7 +25,7 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.math.MathFunctions;
 
 
@@ -37,7 +37,7 @@ import org.apache.sis.math.MathFunctions;
  * @param <E> The type of elements in the collection.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -95,9 +95,10 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      */
     static <E> int count(final WeakEntry<E>[] table) {
         int n = 0;
-        for (int i=0; i<table.length; i++) {
-            for (WeakEntry<E> e=table[i]; e!=null; e=e.next) {
+        for (WeakEntry<E> e : table) {
+            while (e != null) {
                 n++;
+                e = e.next;
             }
         }
         return n;
@@ -159,8 +160,8 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         final Class<?> entryType = oldTable.getClass().getComponentType();
         @SuppressWarnings("unchecked")
         final WeakEntry<E>[] table = (WeakEntry<E>[]) Array.newInstance(entryType, capacity);
-        for (int i=0; i<oldTable.length; i++) {
-            for (WeakEntry<E> next=oldTable[i]; next!=null;) {
+        for (WeakEntry<E> next : oldTable) {
+            while (next != null) {
                 final WeakEntry<E> e = next;
                 next = next.next; // We keep 'next' right now because its value will change.
                 final int index = e.hash % table.length;

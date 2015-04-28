@@ -39,9 +39,18 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Identification of a significant collection point within an operation.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -80,7 +89,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Time the event occurred, or {@link Long#MIN_VALUE} if none.
      */
-    private long time;
+    private long time = Long.MIN_VALUE;
 
     /**
      * Objective or objectives satisfied by an event.
@@ -101,7 +110,6 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * Constructs an initially empty acquisition information.
      */
     public DefaultEvent() {
-        time = Long.MIN_VALUE;
     }
 
     /**
@@ -109,25 +117,27 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Event)
      */
     public DefaultEvent(final Event object) {
         super(object);
-        identifiers        = singleton(object.getIdentifier(), Identifier.class); // TODO
-        trigger            = object.getTrigger();
-        context            = object.getContext();
-        sequence           = object.getSequence();
-        time               = toMilliseconds(object.getTime());
-        expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
-        relatedPass        = object.getRelatedPass();
-        relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
+        if (object != null) {
+            identifiers        = singleton(object.getIdentifier(), Identifier.class);
+            trigger            = object.getTrigger();
+            context            = object.getContext();
+            sequence           = object.getSequence();
+            time               = toMilliseconds(object.getTime());
+            expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
+            relatedPass        = object.getRelatedPass();
+            relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -152,6 +162,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the event name or number.
+     *
+     * @return Event name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -172,6 +184,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the initiator of the event.
+     *
+     * @return Initiator of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "trigger", required = true)
@@ -191,6 +205,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Meaning of the event.
+     *
+     * @return Meaning of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "context", required = true)
@@ -210,6 +226,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the relative time ordering of the event.
+     *
+     * @return Relative time ordering, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequence", required = true)
@@ -229,6 +247,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the time the event occurred.
+     *
+     * @return Time the event occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "time", required = true)
@@ -248,6 +268,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the objective or objectives satisfied by an event.
+     *
+     * @return Objectives satisfied by an event.
      */
     @Override
     @XmlElement(name = "expectedObjective")
@@ -266,6 +288,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the pass during which an event occurs. {@code null} if unspecified.
+     *
+     * @return Pass during which an event occurs, or {@code null}.
      */
     @Override
     @XmlElement(name = "relatedPass")
@@ -284,6 +308,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the instrument or instruments for which the event is meaningful.
+     *
+     * @return Instruments for which the event is meaningful.
      */
     @Override
     @XmlElement(name = "relatedSensor")

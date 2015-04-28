@@ -32,7 +32,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * to avoid creating new clones as much as possible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -101,11 +101,15 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 // Do not use the SIS Checked* classes since
                 // we don't need type checking anymore.
                 if (isSet) {
-                    collection = CollectionsExt.immutableSet(array);
+                    collection = CollectionsExt.immutableSet(false, array);
                 } else {
                     // Conservatively assumes a List if we are not sure to have a Set,
                     // since the list is less destructive (no removal of duplicated).
-                    collection = Containers.unmodifiableList(array);
+                    switch (array.length) {
+                        case 0:  collection = Collections.EMPTY_LIST; break; // Redundant with isEmpty(), but we are paranoiac.
+                        case 1:  collection = Collections.singletonList(array[0]); break;
+                        default: collection = Containers.unmodifiableList(array); break;
+                    }
                 }
             }
             return collection;

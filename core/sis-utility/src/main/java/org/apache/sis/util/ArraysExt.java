@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.reflect.Array;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -31,28 +31,29 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <ul>
  *   <li>The {@link #resize(Object[], int) resize} methods, which are very similar to the
- *       {@link Arrays#copyOf(Object[], int) Arrays.copyOf} methods except that they accept
+ *       {@link Arrays#copyOf(Object[], int) Arrays.copyOf(…)} methods except that they accept
  *       {@code null} arrays and do not copy anything if the given array already has the
  *       requested length.</li>
  *   <li>The {@link #insert(Object[], int, Object[], int, int) insert} and {@link #remove(Object[],
- *       int, int) remove} methods for adding and removing elements in the middle of an array.</li>
+ *       int, int) remove} methods for adding and removing elements in the middle of an array.</li>
  *   <li>The {@link #isSorted(Object[], Comparator, boolean) isSorted} methods for verifying
  *       if an array is sorted, strictly or not.</li>
  * </ul>
  *
- * {@section Handling of null values}
+ * <div class="section">Handling of null values</div>
  * Many (but not all) methods in this class are tolerant to null parameter values,
  * sometime under certain conditions. See the method javadoc for details.
  *
  * <p>All methods in this class are tolerant to null elements in arrays.
  * Null and {@linkplain Double#NaN NaN} elements are ignored.</p>
  *
- * {@section Performance consideration}
+ * <div class="section">Performance consideration</div>
  * The methods listed below are provided as convenience for <strong>casual</strong> use on
  * <strong>small</strong> arrays. For large arrays or for frequent use, consider using the
  * Java collection framework instead.
  *
  * <table class="sis">
+ * <caption>Convenience methods for casual use on small arrays</caption>
  * <tr><th>Method</th>                                             <th class="sep">Alternative</th></tr>
  * <tr><td>{@link #resize(Object[], int)}</td>                     <td class="sep">{@link java.util.ArrayList}</td></tr>
  * <tr><td>{@link #append(Object[], Object)}</td>                  <td class="sep">{@link java.util.ArrayList}</td></tr>
@@ -68,8 +69,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see Arrays
@@ -136,12 +137,12 @@ public final class ArraysExt extends Static {
      * <ul>
      *   <li>If the given {@code length} is longer than the length of the given {@code array},
      *       then the returned array will contain all the elements of {@code array} at index
-     *       <var>i</var> {@literal <} {@code array.length}. Elements at index
-     *       <var>i</var> {@literal >=} {@code array.length} are initialized to {@code null}.</li>
+     *       <var>i</var> {@literal <} {@code array.length}. Elements at index
+     *       <var>i</var> {@literal >=} {@code array.length} are initialized to {@code null}.</li>
      *
      *   <li>If the given {@code length} is shorter than the length of the given {@code array},
      *       then the returned array will contain only the elements of {@code array} at index
-     *       <var>i</var> {@literal <} {@code length}. Remaining elements are not copied.</li>
+     *       <var>i</var> {@literal <} {@code length}. Remaining elements are not copied.</li>
      *
      *   <li>If the given {@code length} is equal to the length of the given {@code array},
      *       then {@code array} is returned unchanged. <strong>No copy</strong> is performed.
@@ -149,7 +150,7 @@ public final class ArraysExt extends Static {
      * </ul>
      *
      * Note that if the given array is {@code null}, then this method unconditionally returns
-     * {@code null} no matter the value of the {@code length} argument.
+     * {@code null} no matter the value of the {@code length} argument.
      *
      * @param  <E> The array elements.
      * @param  array  Array to resize, or {@code null}.
@@ -384,7 +385,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array.
      * In every cases, the given array is never modified.</p>
      *
@@ -396,7 +397,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      */
     private static <T> T doRemove(final T array, final int first, final int length)
             throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
@@ -418,7 +419,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns
+     * <p>If the {@code length} argument is 0, then this method returns
      * the {@code array} reference unchanged (except if empty). Otherwise this method
      * creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -430,7 +431,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(Object[], int, int)
      */
@@ -444,7 +445,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_DOUBLE empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -455,7 +456,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(double[], int, int)
      */
@@ -470,7 +471,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_FLOAT empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -481,7 +482,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(float[], int, int)
      */
@@ -496,7 +497,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_LONG empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -507,7 +508,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(long[], int, int)
      */
@@ -522,7 +523,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_INT empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -533,7 +534,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(int[], int, int)
      */
@@ -548,7 +549,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_SHORT empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -559,7 +560,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(short[], int, int)
      */
@@ -574,7 +575,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_BYTE empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -585,7 +586,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(byte[], int, int)
      */
@@ -600,7 +601,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_CHAR empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -611,7 +612,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(char[], int, int)
      */
@@ -626,7 +627,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array except for
      * the given range.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_BOOLEAN empty} arrays. Otherwise
      * this method creates a new array. In every cases, the given array is never modified.</p>
      *
@@ -637,7 +638,7 @@ public final class ArraysExt extends Static {
      *                removed elements, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(boolean[], int, int)
      */
@@ -652,7 +653,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -665,7 +666,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      */
     private static <T> T doInsert(final T array, final int first, final int length)
             throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
@@ -687,7 +688,7 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -700,7 +701,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(Object[], int, Object[], int, int)
      * @see #remove(Object[], int, int)
@@ -716,7 +717,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -728,7 +729,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(double[], int, double[], int, int)
      * @see #remove(double[], int, int)
@@ -744,7 +745,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -756,7 +757,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(float[], int, float[], int, int)
      * @see #remove(float[], int, int)
@@ -772,7 +773,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -784,7 +785,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(long[], int, long[], int, int)
      * @see #remove(long[], int, int)
@@ -800,7 +801,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -812,7 +813,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(int[], int, int[], int, int)
      * @see #remove(int[], int, int)
@@ -828,7 +829,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -840,7 +841,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(short[], int, short[], int, int)
      * @see #remove(short[], int, int)
@@ -856,7 +857,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -868,7 +869,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(byte[], int, byte[], int, int)
      * @see #remove(byte[], int, int)
@@ -884,7 +885,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -896,7 +897,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(char[], int, char[], int, int)
      * @see #remove(char[], int, int)
@@ -912,7 +913,7 @@ public final class ArraysExt extends Static {
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to {@code false}.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given array is never modified.</p>
      *
@@ -924,7 +925,7 @@ public final class ArraysExt extends Static {
      *                inserted, or {@code array} (which may be null) if {@code length} is 0.
      * @throws NullArgumentException     If {@code array} is null and {@code length} is different than 0.
      * @throws IllegalArgumentException  If {@code length} is negative.
-     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
+     * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      *
      * @see #insert(boolean[], int, boolean[], int, int)
      * @see #remove(boolean[], int, int)
@@ -939,16 +940,16 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param <T>     The arrays type.
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -983,16 +984,16 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param <E>     The type of array elements.
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1018,15 +1019,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1052,15 +1053,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1086,15 +1087,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1120,15 +1121,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1154,15 +1155,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1188,15 +1189,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1222,15 +1223,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1256,15 +1257,15 @@ public final class ArraysExt extends Static {
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
      *
-     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
      * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param srcOff  Index of the first element of {@code src} to insert into {@code dst}.
      * @param dst     Array in which to insert {@code src} data.
-     *                Can be null only if {@code length} is 0.
+     *                Can be null only if {@code length} is 0.
      * @param dstOff  Index of the first element in {@code dst} where to insert {@code src} data.
      *                All elements of {@code dst} whose index is equal to or greater than
      *                {@code dstOff} will be moved forward.
@@ -1325,13 +1326,14 @@ public final class ArraysExt extends Static {
      *     array = resize(array, removeDuplicated(array));
      * }
      *
-     * {@note This method return type is not an array in order to make obvious that the given
-     *        array will be modified in-place. This behavior is different than the behavior of
-     *        many other methods in this class, which do not modify the given source array.}
+     * <div class="note"><b>API note:</b>
+     * This method return type is not an array in order to make obvious that the given array will be modified in-place.
+     * This behavior is different than the behavior of many other methods in this class, which do not modify the given
+     * source array.</div>
      *
      * @param  array Array from which to remove duplicated elements, or {@code null}.
      * @return The number of remaining elements in the given array, or 0 if the given
-     *         {@code array} was null.
+     *         {@code array} was null.
      */
     public static int removeDuplicated(final Object[] array) {
         if (array == null) {
@@ -1387,39 +1389,6 @@ public final class ArraysExt extends Static {
                 values[j++] = tmp;
             }
         }
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been casted to the {@code float} type.
-     *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values casted to the {@code float} type, or
-     *         {@code null} if the given array was null.
-     */
-    public static float[] copyAsFloats(final double[] data) {
-        if (data == null) return null;
-        final float[] result = new float[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (float) data[i];
-        }
-        return result;
-    }
-
-    /**
-     * Returns a copy of the given array where each value has been
-     * {@linkplain Math#round(double) rounded} to the {@code int} type.
-     *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values rounded to the {@code int} type, or
-     *         {@code null} if the given array was null.
-     */
-    public static int[] copyAsInts(final double[] data) {
-        if (data == null) return null;
-        final int[] result = new int[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (int) Math.round(data[i]);
-        }
-        return result;
     }
 
     /**
@@ -1717,6 +1686,138 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Swaps the elements at the given indices in the given array of {@code Object} values.
+     *
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final Object[] data, final int i0, final int i1) {
+        final Object t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code double} values.
+     *
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final double[] data, final int i0, final int i1) {
+        final double t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code float} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final float[] data, final int i0, final int i1) {
+        final float t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code long} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final long[] data, final int i0, final int i1) {
+        final long t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code int} values.
+     *
+     * <div class="note"><b>Note:</b>
+     * While trivial, this method is provided because its need occurs relatively often
+     * and the availability of a {@code swap} method makes the code easier to read.</div>
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final int[] data, final int i0, final int i1) {
+        final int t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code short} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final short[] data, final int i0, final int i1) {
+        final short t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code byte} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final byte[] data, final int i0, final int i1) {
+        final byte t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code char} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final char[] data, final int i0, final int i1) {
+        final char t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
      * Returns {@code true} if all values in the specified array are equal to the specified
      * value, which may be {@link Double#NaN}.
      *
@@ -1903,7 +2004,7 @@ public final class ArraysExt extends Static {
      *
      * <ul>
      *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
-     *       elements, then this method returns {@code null}.</li>
+     *       elements, then this method returns {@code null}.</li>
      *   <li>Otherwise if the {@code arrays} argument contains exactly one non-null array with
      *       a length greater than zero, then that array is returned. It is not copied.</li>
      *   <li>Otherwise a new array with a length equals to the sum of the length of every
@@ -1951,7 +2052,7 @@ public final class ArraysExt extends Static {
      * increasing order. The output array is the union of the input arrays without duplicated
      * values, with elements sorted in strictly increasing order.
      *
-     * {@section Recommended assertions}
+     * <div class="section">Recommended assertions</div>
      * Callers are encouraged to place the following assertions before calls to this method,
      * using the {@link #isSorted(int[], boolean)} and {@link Arrays#toString(int[])} methods:
      *

@@ -18,7 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlType;
 
@@ -33,6 +33,7 @@ import org.opengis.annotation.Obligation;
  *
  * <p>This comparator uses the following criterion, in priority order:</p>
  * <ol>
+ *   <li>Deprecated properties are last.</li>
  *   <li>If the property order is specified by a {@link XmlType} annotation,
  *       then this comparator complies to that order.</li>
  *   <li>Otherwise this comparator sorts mandatory methods first, followed by
@@ -42,8 +43,8 @@ import org.opengis.annotation.Obligation;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 final class PropertyComparator implements Comparator<Method> {
@@ -63,29 +64,87 @@ final class PropertyComparator implements Comparator<Method> {
     static final String SET = "set";
 
     /**
-     * Methods specified in the {@link XmlType} annotation, or {@code null} if none.
+     * Methods and property names specified in the {@link XmlType} annotation.
+     * Entries description:
+     *
+     * <ul>
+     *   <li>Keys in this map are either {@link String} or {@link Method} instances:
+     *     <ul>
+     *       <li>{@code String} keys property names as given by {@link XmlType#propOrder()}.
+     *           They are computed at construction time and do not change after construction.</li>
+     *       <li>{@code Method} keys will be added after construction, only as needed.</li>
+     *     </ul>
+     *   </li>
+     *
+     *   <li>Key is associated to an index that specify its position in descending order.
+     *       For example the property associated to integer 0 shall be sorted last.
+     *       This descending order is only an implementation convenience.</li>
+     * </ul>
      */
-    private final String[] order;
+    private final Map<Object,Integer> order;
 
     /**
-     * Indices of methods in the {@link #order} array, created when first needed.
+     * The implementation class, or the interface is the implementation class is unknown.
      */
-    private Map<Method,Integer> indices;
+    private final Class<?> implementation;
 
     /**
      * Creates a new comparator for the given implementation class.
      *
-     * @param implementation The implementation class, or {@code null} if unknown.
+     * @param implementation The implementation class, or the interface if the implementation class is unknown.
      */
-    PropertyComparator(final Class<?> implementation) {
-        if (implementation != null) {
+    PropertyComparator(Class<?> implementation) {
+        this.implementation = implementation;
+        order = new HashMap<Object,Integer>();
+        do {
             final XmlType xml = implementation.getAnnotation(XmlType.class);
             if (xml != null) {
-                order = xml.propOrder();
-                return;
+                final String[] propOrder = xml.propOrder();
+                for (int i=propOrder.length; --i>=0;) {
+                    /*
+                     * Add the entries in reverse order because we are iterating from the child class to
+                     * the parent class, and we want the properties in the parent class to be sorted first.
+                     * If duplicated properties are found, keep the first occurence (i.e. sort the property
+                     * with the most specialized child that declared it).
+                     */
+                    final Integer old = order.put(propOrder[i], order.size());
+                    if (old != null) {
+                        order.put(propOrder[i], old);
+                    }
+                }
             }
+            implementation = implementation.getSuperclass();
+        } while (implementation != null);
+    }
+
+    /**
+     * Returns {@code true} if the given method is deprecated, either in the interface that declare the method
+     * or in the implementation class. A method may be deprecated in the implementation but not in the interface
+     * when the implementation has been updated for a new standard, while the interface is still reflecting the
+     * old standard.
+     *
+     * @param  implementation The implementation class, or the interface is the implementation class is unknown.
+     * @param  method The method to check for deprecation.
+     * @return {@code true} if the method is deprecated.
+     */
+    static boolean isDeprecated(final Class<?> implementation, Method method) {
+        if (!MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
+            return method.isAnnotationPresent(Deprecated.class);
         }
-        order = null;
+        if (method.isAnnotationPresent(Deprecated.class)) {
+            return true;
+        }
+        if (method.getDeclaringClass() == implementation) {
+            return false;
+        }
+        try {
+            method = implementation.getMethod(method.getName(), (Class[]) null);
+        } catch (NoSuchMethodException e) {
+            // Should never happen since the implementation is supposed to implement
+            // the interface that declare the method given in argument.
+            throw new AssertionError(e);
+        }
+        return method.isAnnotationPresent(Deprecated.class);
     }
 
     /**
@@ -93,7 +152,11 @@ final class PropertyComparator implements Comparator<Method> {
      */
     @Override
     public int compare(final Method m1, final Method m2) {
-        int c = indexOf(m1) - indexOf(m2);
+        final boolean deprecated = isDeprecated(implementation, m1);
+        if (deprecated != isDeprecated(implementation, m2)) {
+            return deprecated ? +1 : -1;
+        }
+        int c = indexOf(m2) - indexOf(m1); // indexOf(…) are sorted in descending order.
         if (c == 0) {
             final UML a1 = m1.getAnnotation(UML.class);
             final UML a2 = m2.getAnnotation(UML.class);
@@ -131,30 +194,39 @@ final class PropertyComparator implements Comparator<Method> {
     }
 
     /**
-     * Returns the index of the given method, or {@code order.length} if the method is not found.
+     * Returns the index of the given method, or -1 if the method is not found.
+     * If positive, the index returned by this method correspond to a sorting in descending order.
      */
     private int indexOf(final Method method) {
-        int i = 0;
-        if (order != null) {
-            if (indices == null) {
-                indices = new IdentityHashMap<Method,Integer>();
-            } else {
-                Integer index = indices.get(method);
-                if (index != null) {
-                    return index;
-                }
-            }
+        /*
+         * Check the cached value computed by previous call to 'indexOf(…)'.
+         * Example: "getExtents"
+         */
+        Integer index = order.get(method);
+        if (index == null) {
+            /*
+             * Check the value computed from @XmlType.propOrder() value.
+             * Inferred from the method name, so name is often plural.
+             * Example: "extents"
+             */
             String name = method.getName();
             name = toPropertyName(name, prefix(name).length());
-            while (i < order.length) {
-                if (name.equals(order[i])) {
-                    break;
+            index = order.get(name);
+            if (index == null) {
+                /*
+                 * Do not happen, except when we have private methods or deprecated public methods
+                 * used as bridge between legacy and more recent standards (e.g. ISO 19115:2003 to
+                 * ISO 19115:2014), especially when cardinality changed between the two standards.
+                 * Example: "extent"
+                 */
+                final UML uml = method.getAnnotation(UML.class);
+                if (uml == null || (index = order.get(uml.identifier())) == null) {
+                    index = -1;
                 }
-                i++;
             }
-            indices.put(method, i);
+            order.put(method, index);
         }
-        return i;
+        return index;
     }
 
     /**

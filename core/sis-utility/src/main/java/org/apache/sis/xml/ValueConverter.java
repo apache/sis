@@ -23,6 +23,8 @@ import java.net.MalformedURLException;
 import java.util.MissingResourceException;
 import java.util.Locale;
 import java.util.UUID;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
@@ -62,8 +64,8 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@code ValueConverter} to a (un)marshaller.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public class ValueConverter {
@@ -111,13 +113,13 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a language code. For strict ISO 19139 compliance, the language
-     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Language()}.
+     * Converts the given locale to a language code. For better ISO 19139 compliance, the language code
+     * should be a 3-letters ISO 639-2 code (e.g. {@code "jpn"} for {@linkplain Locale#JAPANESE Japanese}).
      * However those codes may not be available for every locales.
      *
-     * <p>The default implementation performs the following step:</p>
+     * <p>The default implementation performs the following steps:</p>
      * <ul>
-     *   <li>Try {@code value.getISO3Language()}:<ul>
+     *   <li>Try {@link Locale#getISO3Language()}:<ul>
      *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
      *     <li>If an exception has been thrown, then:<ul>
      *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
@@ -130,9 +132,8 @@ public class ValueConverter {
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The locale to convert to a language code, or {@code null}.
-     * @return The language code, or {@code null} if the given value was null or does not contains
-     *         a language code.
-     * @throws MissingResourceException If there is no ISO 3-letters language code for the given locale.
+     * @return The language code, or {@code null} if the given value was null or does not contains a language code.
+     * @throws MissingResourceException If no language code can be found for the given locale.
      *
      * @see Locale#getISO3Language()
      * @see Locale#getLanguage()
@@ -156,46 +157,88 @@ public class ValueConverter {
     }
 
     /**
-     * Converts the given locale to a country code. For strict ISO 19139 compliance, the country
-     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Country()}.
-     * However those codes may not be available for every locales.
+     * Converts the given locale to a country code. For better ISO 19139 compliance, the country code
+     * should be a 2-letters ISO 3166 code (e.g. {@code "JP"} for {@linkplain Locale#JAPAN Japan}).
      *
-     * <p>The default implementation performs the following step:</p>
-     * <ul>
-     *   <li>Try {@code value.getISO3Country()}:<ul>
-     *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
-     *     <li>If an exception has been thrown, then:<ul>
-     *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
-     *           returns {@code value.getCountry()} if non-empty or {@code null} otherwise.</li>
-     *       <li>If {@code exceptionOccured(…)} returned {@code false} (which is the default
-     *           behavior), then let the exception propagate.</li>
-     *     </ul></li>
-     *   </ul></li>
-     * </ul>
+     * <p>The default implementation returns {@link Locale#getCountry()} if non-empty, or {@code null} otherwise.</p>
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The locale to convert to a country code, or {@code null}.
-     * @return The country code, or {@code null} if the given value was null or does not contains
-     *         a country code.
-     * @throws MissingResourceException If there is no ISO 3-letters country code for the given locale.
+     * @return The country code, or {@code null} if the given value was null or does not contains a country code.
+     * @throws MissingResourceException If no country code can be found for the given locale.
      *
      * @see Locale#getISO3Country()
      * @see Locale#getCountry()
      */
     public String toCountryCode(final MarshalContext context, final Locale value) throws MissingResourceException {
         if (value != null) {
-            String code;
-            try {
-                code = value.getISO3Country();
-            } catch (MissingResourceException e) {
-                if (!exceptionOccured(context, value, Locale.class, String.class, e)) {
-                    throw e;
-                }
-                code = value.getCountry();
-            }
+            String code = value.getCountry();
             if (!code.isEmpty()) {
                 return code;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the given character set to a code.
+     *
+     * <p>The default implementation first invokes {@link Charset#name()}. Then if marshalling to ISO 19139:2007,
+     * this method converts the <a href="http://www.iana.org/assignments/character-sets">IANA</a> name to a
+     * ISO 19115:2003 {@code MD_CharacterSetCode} using the following equivalence table:</p>
+     *
+     * <table class="sis">
+     *   <caption>IANA to ISO 19115:2003 character set code</caption>
+     *   <tr>
+     *     <td><table class="compact" summary="IANA to ISO 19115:2003">
+     *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
+     *       <tr><td>{@code ISO-8859-1}</td>  <td>{@code 8859part1}</td></tr>
+     *       <tr><td>{@code ISO-8859-2}</td>  <td>{@code 8859part2}</td></tr>
+     *       <tr><td>{@code ISO-8859-3}</td>  <td>{@code 8859part3}</td></tr>
+     *       <tr><td>{@code ISO-8859-4}</td>  <td>{@code 8859part4}</td></tr>
+     *       <tr><td>{@code ISO-8859-5}</td>  <td>{@code 8859part5}</td></tr>
+     *       <tr><td>{@code ISO-8859-6}</td>  <td>{@code 8859part6}</td></tr>
+     *       <tr><td>{@code ISO-8859-7}</td>  <td>{@code 8859part7}</td></tr>
+     *       <tr><td>{@code ISO-8859-8}</td>  <td>{@code 8859part8}</td></tr>
+     *       <tr><td>{@code ISO-8859-9}</td>  <td>{@code 8859part9}</td></tr>
+     *       <tr><td>{@code ISO-8859-10}</td> <td>{@code 8859part10}</td></tr>
+     *       <tr><td>{@code ISO-8859-11}</td> <td>{@code 8859part11}</td></tr>
+     *       <tr><td>{@code ISO-8859-12}</td> <td>{@code 8859part12}</td></tr>
+     *       <tr><td>{@code ISO-8859-13}</td> <td>{@code 8859part13}</td></tr>
+     *       <tr><td>{@code ISO-8859-14}</td> <td>{@code 8859part14}</td></tr>
+     *       <tr><td>{@code ISO-8859-15}</td> <td>{@code 8859part15}</td></tr>
+     *       <tr><td>{@code ISO-8859-16}</td> <td>{@code 8859part16}</td></tr>
+     *     </table></td>
+     *     <td class="sep"><table class="compact" summary="IANA to ISO 19115:2003">
+     *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
+     *       <tr><td>{@code UCS-2}</td>     <td>{@code ucs2}</td></tr>
+     *       <tr><td>{@code UCS-4}</td>     <td>{@code ucs4}</td></tr>
+     *       <tr><td>{@code UTF-7}</td>     <td>{@code utf7}</td></tr>
+     *       <tr><td>{@code UTF-8}</td>     <td>{@code utf8}</td></tr>
+     *       <tr><td>{@code UTF-16}</td>    <td>{@code utf16}</td></tr>
+     *       <tr><td>{@code JIS_X0201}</td> <td>{@code jis}</td></tr>
+     *       <tr><td>{@code Shift_JIS}</td> <td>{@code shiftJIS}</td></tr>
+     *       <tr><td>{@code EUC-JP}</td>    <td>{@code eucJP}</td></tr>
+     *       <tr><td>{@code US-ASCII}</td>  <td>{@code usAscii}</td></tr>
+     *       <tr><td>{@code EBCDIC}</td>    <td>{@code ebcdic}</td></tr>
+     *       <tr><td>{@code EUC-KR}</td>    <td>{@code eucKR}</td></tr>
+     *       <tr><td>{@code Big5}</td>      <td>{@code big5}</td></tr>
+     *       <tr><td>{@code GB2312}</td>    <td>{@code GB2312}</td></tr>
+     *     </table></td>
+     *   </tr>
+     * </table>
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The locale to convert to a character set code, or {@code null}.
+     * @return The country code, or {@code null} if the given value was null.
+     *
+     * @see Charset#name()
+     *
+     * @since 0.5
+     */
+    public String toCharsetCode(final MarshalContext context, final Charset value) {
+        if (value != null) {
+            return LegacyCodes.fromIANA(value.name());
         }
         return null;
     }
@@ -210,15 +253,48 @@ public class ValueConverter {
      * @param  value The string to convert to a locale, or {@code null}.
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException If the given string can not be converted to a locale.
+     * @throws RuntimeException If the given string can not be converted to a locale
+     *         ({@code IllformedLocaleException} on the JDK7 branch).
+     *
+     * @see Locales#parse(String)
      */
-    public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
+    public Locale toLocale(final MarshalContext context, String value) {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Locales.parse(value);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the given string to a character set. The string can be either a
+     * <a href="http://www.iana.org/assignments/character-sets">IANA</a> identifier,
+     * or one of the ISO 19115:2003 {@code MD_CharacterSetCode} identifier.
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The string to convert to a character set, or {@code null}.
+     * @return The converted character set, or {@code null} if the given value was null or empty, or
+     *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
+     * @throws IllegalCharsetNameException If the given string can not be converted to a character set.
+     *
+     * @see Charset#forName(String)
+     *
+     * @since 0.5
+     */
+    public Charset toCharset(final MarshalContext context, String value) throws IllegalCharsetNameException {
+        value = trimWhitespaces(value);
+        if (value != null && !value.isEmpty()) {
+            value = LegacyCodes.toIANA(value);
+            try {
+                return Charset.forName(value);
+            } catch (IllegalCharsetNameException e) {
+                if (!exceptionOccured(context, value, String.class, Charset.class, e)) {
+                    throw e;
+                }
             }
         }
         return null;

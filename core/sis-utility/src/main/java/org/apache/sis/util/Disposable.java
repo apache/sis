@@ -23,7 +23,7 @@ package org.apache.sis.util;
  * object to be released. The result of calling any other method subsequent to a call to
  * this method is undefined.
  *
- * {@section Relationship with <code>Closeable</code>}
+ * <div class="section">Relationship with {@code Closeable}</div>
  * Some SIS classes may implement both the {@code Disposeable} and {@link java.io.Closeable}
  * interfaces. While very similar, those two interfaces serve slightly different purposes.
  * The {@code Closeable} interface closes a stream or a connection, but some classes can be
@@ -32,7 +32,7 @@ package org.apache.sis.util;
  * format. However once an object has been disposed, it can not be used anymore.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.3
  * @module
  *

@@ -20,8 +20,10 @@ import java.util.Map;
 import java.util.Collection;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -44,8 +46,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see MetadataStandardTest#testValueMap()
@@ -74,10 +76,11 @@ public final strictfp class ValueMapTest extends TestCase {
      *
      * {@preformat text
      *     Citation
-     *     ├───Title…………………………………………………… Undercurrent
-     *     ├───Cited Responsible Parties
-     *     │   └───Individual Name……………… Testsuya Toyoda
-     *     └───ISBN……………………………………………………… 9782505004509
+     *       ├─Title…………………………………………………… Undercurrent
+     *       ├─Edition……………………………………………… <nil:unknown>
+     *       ├─Cited Responsible Parties
+     *       │   └─Individual Name……………… Testsuya Toyoda
+     *       └─ISBN……………………………………………………… 9782505004509
      * }
      *
      * The citation instance is stored in the {@link #citation} field.
@@ -89,9 +92,10 @@ public final strictfp class ValueMapTest extends TestCase {
         title    = new SimpleInternationalString("Undercurrent");
         author   = new DefaultResponsibleParty();
         citation = new DefaultCitation(title);
-        author.setIndividualName("Testsuya Toyoda");
-        citation.getCitedResponsibleParties().add(author);
+        author.setParties(singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
+        citation.setCitedResponsibleParties(singleton(author));
         citation.setISBN("9782505004509");
+        citation.setEdition(NilReason.UNKNOWN.createNilObject(InternationalString.class));
         return MetadataStandard.ISO_19115.asValueMap(citation, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
     }
 
@@ -101,9 +105,10 @@ public final strictfp class ValueMapTest extends TestCase {
     @Test
     public void testGet() {
         final Map<String,Object> map = createCitation();
-        assertEquals("Undercurrent",        map.get("title").toString());
-        assertEquals(singletonList(author), map.get("citedResponsibleParties"));
-        assertEquals("9782505004509",       map.get("ISBN"));
+        assertEquals("Undercurrent",                 map.get("title").toString());
+        assertEquals(singletonList(author),          map.get("citedResponsibleParties"));
+        assertEquals("9782505004509",                map.get("ISBN"));
+        assertNull  ("NilObject shall be excluded.", map.get("edition"));
         /*
          * The ISBN shall also be visible as an identifier.
          */
@@ -116,15 +121,15 @@ public final strictfp class ValueMapTest extends TestCase {
 
     /**
      * Tests the {@link ValueMap#entrySet()} method.
-     * The metadata to be tested is:
+     * The expected metadata is:
      *
      * {@preformat text
      *     Citation
-     *     ├───Title…………………………………………………… Undercurrent
-     *     ├───Identifiers…………………………………… 9782505004509
-     *     ├───Cited Responsible Parties
-     *     │   └───Individual Name……………… Testsuya Toyoda
-     *     └───ISBN……………………………………………………… 9782505004509
+     *       ├─Title…………………………………………………… Undercurrent
+     *       ├─Identifiers…………………………………… 9782505004509
+     *       ├─Cited Responsible Parties
+     *       │   └─Individual Name……………… Testsuya Toyoda
+     *       └─ISBN……………………………………………………… 9782505004509
      * }
      *
      * Note that this test is intentionally sensitive to iteration order.
@@ -145,18 +150,20 @@ public final strictfp class ValueMapTest extends TestCase {
 
     /**
      * Tests the {@link ValueMap#entrySet()} method for the same metadata than {@link #testEntrySet()},
-     * but asking for all non-null entries including the empty collections.
+     * but asking for all non-null and non-nil entries including the empty collections.
      */
     @Test
     @DependsOnMethod("testEntrySet")
-    public void testEntrySetForNonNull() {
+    public void testEntrySetForNonNil() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
-                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NULL);
-        assertFalse("Null values should be excluded.", map.containsKey("alternateTitles"));
-        assertTrue ("Null values should be included.", all.containsKey("alternateTitles"));
-        assertTrue ("'all' should be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));
-        assertFalse("'all' should be a larger map than 'map'.", map.entrySet().containsAll(all.entrySet()));
+                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NIL);
+        assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
+        assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
+        assertFalse("Nil objects shall be excluded.", map.containsKey("edition"));
+        assertFalse("Nil objects shall be excluded.", all.containsKey("edition"));
+        assertTrue ("'all' shall be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));
+        assertFalse("'all' shall be a larger map than 'map'.", map.entrySet().containsAll(all.entrySet()));
         assertArrayEquals(new SimpleEntry<?,?>[] {
             new SimpleEntry<String,Object>("title",                   title),
             new SimpleEntry<String,Object>("alternateTitles",         emptyList()),
@@ -164,7 +171,39 @@ public final strictfp class ValueMapTest extends TestCase {
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
-            new SimpleEntry<String,Object>("ISBN",                    "9782505004509")
+            new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
+        }, all.entrySet().toArray());
+    }
+
+    /**
+     * Tests the {@link ValueMap#entrySet()} method for the same metadata than {@link #testEntrySet()},
+     * but asking for all non-null entries including nil objects and the empty collections.
+     */
+    @Test
+    @DependsOnMethod("testEntrySet")
+    public void testEntrySetForNonNull() {
+        final Map<String,Object> map = createCitation();
+        final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
+                KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_NULL);
+        assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
+        assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
+        assertFalse("Nil objects shall be excluded.", map.containsKey("edition"));
+        assertTrue ("Nil objects shall be included.", all.containsKey("edition"));
+        assertTrue ("'all' shall be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));
+        assertFalse("'all' shall be a larger map than 'map'.", map.entrySet().containsAll(all.entrySet()));
+        assertArrayEquals(new SimpleEntry<?,?>[] {
+            new SimpleEntry<String,Object>("title",                   title),
+            new SimpleEntry<String,Object>("alternateTitles",         emptyList()),
+            new SimpleEntry<String,Object>("dates",                   emptyList()),
+            new SimpleEntry<String,Object>("edition",                 NilReason.UNKNOWN.createNilObject(InternationalString.class)),
+            new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
+            new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
+            new SimpleEntry<String,Object>("presentationForms",       emptySet()),
+            new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -178,24 +217,26 @@ public final strictfp class ValueMapTest extends TestCase {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.ALL);
-        assertFalse("Null values should be excluded.", map.containsKey("alternateTitles"));
-        assertTrue ("Null values should be included.", all.containsKey("alternateTitles"));
-        assertTrue ("'all' should be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));
-        assertFalse("'all' should be a larger map than 'map'.", map.entrySet().containsAll(all.entrySet()));
+        assertFalse("Null values shall be excluded.", map.containsKey("alternateTitles"));
+        assertTrue ("Null values shall be included.", all.containsKey("alternateTitles"));
+        assertTrue ("'all' shall be a larger map than 'map'.", all.entrySet().containsAll(map.entrySet()));
+        assertFalse("'all' shall be a larger map than 'map'.", map.entrySet().containsAll(all.entrySet()));
         assertArrayEquals(new SimpleEntry<?,?>[] {
             new SimpleEntry<String,Object>("title",                   title),
             new SimpleEntry<String,Object>("alternateTitles",         emptyList()),
             new SimpleEntry<String,Object>("dates",                   emptyList()),
-            new SimpleEntry<String,Object>("edition",                 null),
+            new SimpleEntry<String,Object>("edition",                 NilReason.UNKNOWN.createNilObject(InternationalString.class)),
             new SimpleEntry<String,Object>("editionDate",             null),
             new SimpleEntry<String,Object>("identifiers",             citation.getIdentifiers()),
             new SimpleEntry<String,Object>("citedResponsibleParties", singletonList(author)),
             new SimpleEntry<String,Object>("presentationForms",       emptySet()),
             new SimpleEntry<String,Object>("series",                  null),
             new SimpleEntry<String,Object>("otherCitationDetails",    null),
-            new SimpleEntry<String,Object>("collectiveTitle",         null),
+//          new SimpleEntry<String,Object>("collectiveTitle",         null),  -- deprecated as of ISO 19115:2014.
             new SimpleEntry<String,Object>("ISBN",                    "9782505004509"),
-            new SimpleEntry<String,Object>("ISSN",                    null)
+            new SimpleEntry<String,Object>("ISSN",                    null),
+            new SimpleEntry<String,Object>("graphics",                emptyList()),
+            new SimpleEntry<String,Object>("onlineResources",         emptyList())
         }, all.entrySet().toArray());
     }
 
@@ -212,9 +253,9 @@ public final strictfp class ValueMapTest extends TestCase {
          * Remove the ISBN value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * └───Cited Responsible Parties
-         *     └───Individual Name……………… Testsuya Toyoda
+         *   ├─Title…………………………………………………… Undercurrent
+         *   └─Cited Responsible Parties
+         *       └─Individual Name……………… Testsuya Toyoda
          */
         assertEquals("9782505004509", map.remove("ISBN"));
         assertNull("ISBN shall have been removed.", citation.getISBN());
@@ -227,10 +268,10 @@ public final strictfp class ValueMapTest extends TestCase {
          * Add a value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * ├───Cited Responsible Parties
-         * │   └───Individual Name……………… Testsuya Toyoda
-         * └───Presentation Forms………………… document hardcopy
+         *   ├─Title…………………………………………………… Undercurrent
+         *   ├─Cited Responsible Parties
+         *   │   └─Individual Name……………… Testsuya Toyoda
+         *   └─Presentation Forms………………… document hardcopy
          */
         assertNull(map.put("presentationForm", DOCUMENT_HARDCOPY));
         assertEquals(DOCUMENT_HARDCOPY, getSingleton(citation.getPresentationForms()));
@@ -243,12 +284,12 @@ public final strictfp class ValueMapTest extends TestCase {
          * Add back the ISBN value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * ├───Identifiers…………………………………… 9782505004509
-         * ├───Cited Responsible Parties
-         * │   └───Individual Name……………… Testsuya Toyoda
-         * ├───Presentation Forms………………… document hardcopy
-         * └───ISBN……………………………………………………… 9782505004509
+         *   ├─Title…………………………………………………… Undercurrent
+         *   ├─Identifiers…………………………………… 9782505004509
+         *   ├─Cited Responsible Parties
+         *   │   └─Individual Name……………… Testsuya Toyoda
+         *   ├─Presentation Forms………………… document hardcopy
+         *   └─ISBN……………………………………………………… 9782505004509
          */
         assertNull(map.put("ISBN", "9782505004509"));
         assertEquals("9782505004509", citation.getISBN());

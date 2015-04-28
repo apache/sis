@@ -16,22 +16,43 @@
  */
 package org.apache.sis.measure;
 
-import net.jcip.annotations.Immutable;
-
 
 /**
  * A latitude angle in decimal degrees.
  * Positive latitudes are North, while negative latitudes are South.
+ * The latitude symbol is the Greek lower-case letter phi (φ).
+ *
+ * <p>Because the Earth is not a perfect sphere, there is small differences in the latitude values of a point
+ * depending on how the latitude is defined:</p>
+ *
+ * <ul>
+ *   <li><cite>Geodetic latitude</cite> is the angle between the equatorial plane and a line perpendicular
+ *       to the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} surface.</li>
+ *   <li><cite>Geocentric latitude</cite> is the angle between the equatorial plane and a line going from
+ *       the Earth center. It differs from geodetic latitude by less than 11 angular minutes.</li>
+ *   <li><cite>Astronomical latitude</cite> is the angle between the equatorial plane and a line given
+ *       by the direction of a plumb line (the "true vertical").</li>
+ *   <li>Above list is not exhaustive. There is also <cite>geomagnetic latitude</cite>, <i>etc.</i></li>
+ * </ul>
+ *
+ * The kind of latitude is unspecified by this {@code Latitude} class, and rather depends on the context:
+ * the latitude is <cite>geodetic</cite> if the coordinate reference system is
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic},
+ * or <cite>geocentric</cite> if the coordinate reference system is
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric}.
+ * If the context is unknown, then geodetic latitude can usually be assumed.
+ *
+ * <div class="section">Immutability and thread safety</div>
+ * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see Longitude
  * @see AngleFormat
  */
-@Immutable
 public final class Latitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.
@@ -68,7 +89,7 @@ public final class Latitude extends Angle {
      * The hemisphere (N or S) is optional (default to North).
      *
      * <p>This is a convenience constructor mostly for testing purpose, since it uses a fixed
-     * locale. Developers should consider using {@link AngleFormat} for end-user applications
+     * locale. Developers should consider using {@link AngleFormat} for end-user applications
      * instead than this constructor.</p>
      *
      * @param  string A string to be converted to a {@code Latitude}.
@@ -97,5 +118,30 @@ public final class Latitude extends Angle {
     @Override
     final double maximum() {
         return 90;
+    }
+
+    /**
+     * Returns the given latitude value clamped to the [{@linkplain #MIN_VALUE -90} … {@linkplain #MAX_VALUE 90}]° range.
+     * If the given value is outside the latitude range, then this method replaces it by ±90° with the same sign than the
+     * given φ value.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>{@linkplain Double#NaN NaN} values are returned unchanged</li>
+     *   <li>±∞ are mapped to ±90° (with the same sign)</li>
+     *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
+     * </ul>
+     *
+     * @param  φ The latitude value in decimal degrees.
+     * @return The given value clamped to the [-90 … 90]° range, or NaN if the given value was NaN.
+     *
+     * @see Longitude#normalize(double)
+     *
+     * @since 0.4
+     */
+    public static double clamp(final double φ) {
+        if (φ < MIN_VALUE) return MIN_VALUE;
+        if (φ > MAX_VALUE) return MAX_VALUE;
+        return φ;
     }
 }

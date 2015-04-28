@@ -24,68 +24,45 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.Schemas;
 
 
 /**
  * Stores information about {@link CodeList}, in order to handle format defined in ISO-19139
  * about the {@code CodeList} tags. This object is wrapped by {@link CodeListAdapter} or, in
- * the spacial case of {@link Locale} type, by {@link CodeListLocaleAdapter}. It provides the
- * {@link #codeList} and {@link #codeListValue} attribute to be marshalled.
+ * the spacial case of {@link Locale} type, by {@link LanguageCode} or {@link Country}. This
+ * class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see CodeListAdapter
- * @see CodeListLocaleAdapter
  */
-@XmlType(name = "CodeList", propOrder = { "codeSpace", "codeListValue", "codeList" })
+@XmlType(name = "CodeList", propOrder = { "codeList", "codeListValue", "codeSpace" })
 public final class CodeListProxy {
     /**
-     * Returns the URL to given code list in the given XML file.
-     *
-     * @param  context    The current (un)marshalling context, or {@code null} if none.
-     * @param  file       The XML file, either {@code "gmxCodelists.xml"} or {@code "ML_gmxCodelists.xml"}.
-     * @param  identifier The UML identifier of the code list.
-     * @return The URL to the given code list in the given schema.
-     */
-    private static String schema(final Context context, final String file, final String identifier) {
-        return schema(Context.schema(context, "gmd", "http://schemas.opengis.net/iso/19139/20070417/"),
-                "resources/Codelist", file, identifier);
-    }
-
-    /**
-     * Returns the URL to a given code list in the given XML file. This method concatenates
-     * the base schema URL with the given directory, file and identifier.
+     * Returns the URL to a given code list in the given XML file.
+     * This method concatenates the base schema URL with the given identifier.
      * Some examples of strings returned by this method are:
      *
      * <ul>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
      * </ul>
      *
-     * @param  schema     The schema, typically as a result of a call to
-     *                    {@link Context#schema(Context, String, String)}.
-     * @param  directory  The directory to concatenate, for example {@code "resources/uom"}
-     *                    or {@code "resources/Codelist"} (<strong>no trailing {@code '/'}</strong>).
-     * @param  file       The XML file, for example {@code "gmxUom.xml"}, {@code "gmxCodelists.xml"}
-     *                    or {@code "ML_gmxCodelists.xml"} (<strong>no trailing {@code '#'}</strong>).
+     * @param  context    The current (un)marshalling context, or {@code null} if none.
      * @param  identifier The UML identifier of the code list.
      * @return The URL to the given code list in the given schema.
      */
-    private static String schema(final String schema, final String directory, final String file, final String identifier) {
-        final StringBuilder buffer = new StringBuilder(128);
-        buffer.append(schema);
-        final int length = buffer.length();
-        if (length != 0 && buffer.charAt(length - 1) != '/') {
-            buffer.append('/');
-        }
-        return buffer.append(directory).append('/').append(file).append('#').append(identifier).toString();
+    private static String schema(final Context context, final String identifier) {
+        return Context.schema(context, "gmd", Schemas.METADATA_ROOT)
+                .append(Schemas.CODELISTS_PATH) // Future SIS version may switch between localized/unlocalized file.
+                .append('#').append(identifier).toString();
     }
 
     /**
@@ -126,40 +103,25 @@ public final class CodeListProxy {
     }
 
     /**
-     * Creates a new code list for the given enum.
-     *
-     * @param value The ISO 19115 identifier of the enum.
-     *
-     * @todo Replace the argument type by {@link Enum} if we fix the type of ISO 19115
-     *       code lists which are supposed to be enum.
-     *
-     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
-     */
-    CodeListProxy(final String value) {
-        this.value = value;
-    }
-
-    /**
-     * Builds a {@link CodeList} as defined in ISO-19139 standard.
+     * Builds a code list with the given attributes.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
-     * @param catalog       The file which defines the code list (for example {@code "ML_gmxCodelists.xml"}), without its path.
-     * @param codeList      The {@code codeList} attribute, to be concatenated after the catalog name and the {@code "#"} symbol.
-     * @param codeListValue The {@code codeListValue} attribute, to be declared in the attribute.
+     * @param codeList      The {@code codeList} attribute, to be concatenated after the {@code "#"} symbol.
+     * @param codeListValue The {@code codeListValue} attribute, to be declared in the XML element.
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    CodeListProxy(final Context context, final String catalog,
-            final String codeList, final String codeListValue, final String codeSpace, final String value)
+    public CodeListProxy(final Context context, final String codeList, final String codeListValue,
+            final String codeSpace, final String value)
     {
-        this.codeList      = schema(context, catalog, codeList);
+        this.codeList      = schema(context, codeList);
         this.codeListValue = codeListValue;
         this.codeSpace     = codeSpace;
         this.value         = value;
     }
 
     /**
-     * Builds a proxy instance of {@link CodeList}.
+     * Builds a value for {@link CodeListAdapter} elements.
      * This constructors stores the values that will be used for marshalling.
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
@@ -168,7 +130,7 @@ public final class CodeListProxy {
     CodeListProxy(final Context context, final CodeList<?> code) {
         final String classID = Types.getListName(code);
         final String fieldID = Types.getCodeName(code);
-        codeList = schema(context, "gmxCodelists.xml", classID);
+        codeList = schema(context, classID);
         /*
          * Get the localized name of the field identifier, if possible.
          * This code partially duplicates Types.getCodeTitle(CodeList).
@@ -183,7 +145,7 @@ public final class CodeListProxy {
                 value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
                         locale, CodeList.class.getClassLoader()).getString(key);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(CodeListAdapter.class, "marshal", e);
+                Context.warningOccured(context, CodeListAdapter.class, "marshal", e, false);
             }
         }
         if (value != null) {

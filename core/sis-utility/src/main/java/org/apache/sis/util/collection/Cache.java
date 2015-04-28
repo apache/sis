@@ -28,15 +28,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.DelayedRunnable;
-import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
-import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
+import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Supplier;
 
 
 /**
@@ -105,7 +106,7 @@ import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
  * }
  *
  *
- * {@section Eviction of eldest values}
+ * <div class="section">Eviction of eldest values</div>
  *
  * <ul>
  *   <li>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
@@ -124,7 +125,7 @@ import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
  * overridden, then the total cost is the maximal amount of values to keep by strong references.
  *
  *
- * {@section Circular dependencies}
+ * <div class="section">Circular dependencies</div>
  *
  * This implementation assumes that there is no circular dependencies (or cyclic graph) between
  * the values in the cache. For example if creating <var>A</var> implies creating <var>B</var>,
@@ -135,16 +136,15 @@ import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
  * @param <V> The type of value objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
-@ThreadSafe
 public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * The map that contains the cached values. If a value is under the process of being
      * calculated, then the value will be a temporary instance of {@link Handler}. The
-     * value may also be weak of soft {@link Reference} objects.
+     * value may also be weak or soft {@link Reference} objects.
      */
     private final ConcurrentMap<K,Object> map;
 
@@ -156,14 +156,12 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      *
      * <p>Entries in this map are ordered from least-recently accessed to most-recently accessed.</p>
      */
-    @GuardedBy("costs")
     private final Map<K,Integer> costs;
 
     /**
      * The sum of all values in the {@link #costs} map. This field must be used in the
      * same thread than {@link #costs}.
      */
-    @GuardedBy("costs")
     private long totalCost;
 
     /**
@@ -173,7 +171,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     private final long costLimit;
 
     /**
-     * If {@code true}, use {@link SoftReference) instead of {@link WeakReference}.
+     * If {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     private final boolean soft;
 
@@ -189,7 +187,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * A view over the entries in the cache.
      */
-    private transient Set<Entry<K,V>> entries;
+    private volatile transient Set<Entry<K,V>> entries;
 
     /**
      * Creates a new cache with a default initial capacity and cost limit of 100.
@@ -257,6 +255,9 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns {@code true} if this map contains the specified key.
+     *
+     * @param  key The key to check for existence.
+     * @return {@code true} if the given key still exist in this cache.
      */
     @Override
     public boolean containsKey(final Object key) {
@@ -280,22 +281,11 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             return ((Reference<V>) value).get();
         }
         if (value instanceof Handler<?>) {
-            final Handler<V> handler = (Handler<V>) value;
-            final ReentrantLock lock = (ReentrantLock) value;
+            return ((Supplier<V>) value).get();
             /*
              * A ClassCastException on the above line would be a bug in this class.
-             * See the comment in Cache.lock(K) method for more explanations.  The
-             * remainder of this block is an adaptation of Cache.Work.get().
+             * See the comment in Cache.lock(K) method for more explanations.
              */
-            if (lock.isHeldByCurrentThread()) {
-                return null;
-            }
-            lock.lock();
-            try {
-                return handler.peek();
-            } finally {
-                lock.unlock();
-            }
         }
         return (V) value;
     }
@@ -449,6 +439,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     public Handler<V> lock(final K key) {
         final Work handler = new Work(key);
+        boolean unlock = true;
         handler.lock.lock();
         Object value;
         try {
@@ -462,15 +453,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                     /*
                      * We succeed in adding the handler in the map (we know that because all our
                      * map.put(...) or map.replace(...) operations are guaranteed to put non-null
-                     * values). We are done. But before to leave, lock again for canceling the
-                     * effect of unlock in the finally clause (we want the lock to still active).
+                     * values). We are done. But before to leave, declare that we do not want to
+                     * unlock in the finally clause (we want the lock to still active).
                      */
-                    handler.lock.lock();
+                    unlock = false;
                     return handler;
                 }
                 /*
-                 * If the value is a valid reference (strong, soft or weak), stop the loop and
-                 * release the lock. We will process that value after the finally block.
+                 * If the value is a strong reference or other handler, stop the loop and release the lock.
+                 * We will process that value after the finally block.
                  */
                 if (!(value instanceof Reference<?>)) {
                     break;
@@ -498,13 +489,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                  * handler.
                  */
                 if (map.replace(key, ref, handler)) {
-                    handler.lock.lock();
+                    unlock = false;
                     return handler;
                 }
                 // The map content changed. Try again.
             } while (true);
         } finally {
-            handler.lock.unlock();
+            if (unlock) {
+                handler.lock.unlock();
+            }
         }
         /*
          * From this point, we abandon our handler.
@@ -569,7 +562,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * @param <V> The type of value objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.00)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -627,9 +620,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         /**
          * Do nothing (except checking for programming error), since we don't hold any lock.
          *
-         * {@note An alternative would have been to store the result in the map anyway.
-         *        But doing so is unsafe because we have no lock; we have no guarantee that
-         *        nothing has happened in an other thread between peek and putAndUnlock.}
+         * <div class="note"><b>Implementation note:</b>
+         * An alternative would have been to store the result in the map anyway.
+         * But doing so is unsafe because we have no lock; we have no guarantee that nothing
+         * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -643,7 +637,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * A handler implementation used for telling to other threads that the current thread is
      * computing a value.
      */
-    final class Work extends DelayedRunnable.Immediate implements Handler<V> {
+    final class Work extends DelayedRunnable.Immediate implements Handler<V>, Supplier<V> {
         /**
          * The synchronization lock.
          */
@@ -672,9 +666,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * Waits for the completion of the value computation and returns this result. This
          * method should be invoked only from an other thread than the one doing the calculation.
          */
-        final V get() {
+        @Override
+        public V get() {
             if (lock.isHeldByCurrentThread()) {
-                throw new IllegalStateException();
+                return null;
             }
             final V v;
             lock.lock();
@@ -738,13 +733,14 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             /**
              * Do nothing (except checking for programming error), since we don't hold any lock.
              *
-             * {@note An alternative would have been to store the result in the map anyway.
-             *        But doing so is unsafe because we have no lock; we have no guarantee and
-             *        nothing has happened in an other thread between peek and putAndUnlock.}
+             * <div class="note"><b>Implementation note:</b>
+             * An alternative would have been to store the result in the map anyway.
+             * But doing so is unsafe because we have no lock; we have no guarantee that nothing
+             * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {
-                if (result != get() && !isKeyCollisionAllowed()) {
+                if (result != null && !isKeyCollisionAllowed() && result != get()) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.KeyCollision_1, key));
                 }
             }
@@ -771,7 +767,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     final void adjustReferences(final K key, final V value) {
         int cost = cost(value);
-        synchronized (costs) {
+        synchronized (costs) { // Should not be needed, but done as a safety.
             final Integer old = costs.put(key, cost);
             if (old != null) {
                 cost -= old;
@@ -855,6 +851,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the set of keys in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#keySet()} method.
+     *
+     * @return The set of keys in this cache.
      */
     @Override
     public Set<K> keySet() {
@@ -866,6 +864,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * than the ones documented in the {@link ConcurrentHashMap#entrySet()} method, except that
      * it doesn't support removal of elements (including through the {@link Iterator#remove}
      * method call).
+     *
+     * @return A view of the entries contained in this map.
      */
     @Override
     public Set<Entry<K,V>> entrySet() {
@@ -897,7 +897,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * values to their callers.</p>
      *
      * <p>This property can also be set in order to allow some recursivity. If during the creation
-     * of an object, the program asks to this {@code Cache} for the same object (using the same key),
+     * of an object, the program asks to this {@code Cache} for the same object (using the same key),
      * then the default {@code Cache} implementation will consider this situation as a key collision
      * unless this property has been set to {@code true}.</p>
      *

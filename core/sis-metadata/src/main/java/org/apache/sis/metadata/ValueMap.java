@@ -20,13 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.util.AbstractMapEntry;
 
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
-
-// Related to JDK7
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -34,7 +31,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * are the value returned by the {@code getFoo()} method using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -176,11 +173,11 @@ final class ValueMap extends PropertyMap<Object> {
      * A map entry for a given property.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */
-    final class Property implements Map.Entry<String,Object> {
+    final class Property extends AbstractMapEntry<String,Object> {
         /**
          * The property index.
          */
@@ -228,40 +225,6 @@ final class ValueMap extends PropertyMap<Object> {
         public Object setValue(final Object value) {
             return accessor.set(index, metadata, value, RETURN_PREVIOUS);
         }
-
-        /**
-         * Compares the specified object with this entry for equality.
-         * Criterion are specified by the {@link Map.Entry} contract.
-         */
-        @Override
-        public boolean equals(final Object object) {
-            if (object instanceof Map.Entry<?,?>) {
-                final Map.Entry<?,?> entry = (Map.Entry<?,?>) object;
-                return Objects.equals(getKey(),   entry.getKey()) &&
-                       Objects.equals(getValue(), entry.getValue());
-            }
-            return false;
-        }
-
-        /**
-         * Returns the hash code value for this map entry. The
-         * formula is specified by the {@link Map.Entry} contract.
-         */
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
-        }
-
-        /**
-         * Returns a string representation of this entry.
-         * This method is mostly for debugging purpose.
-         */
-        @Override
-        public String toString() {
-            String value = String.valueOf(getValue());
-            value = value.substring(0, CharSequences.indexOfLineStart(value, 1, 0));
-            return getKey() + '=' + value;
-        }
     }
 
 
@@ -271,7 +234,7 @@ final class ValueMap extends PropertyMap<Object> {
      * The iterator over the {@link Property} elements contained in an {@link Entries} set.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -349,7 +312,7 @@ final class ValueMap extends PropertyMap<Object> {
      * View of the entries contained in the map.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */

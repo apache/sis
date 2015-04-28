@@ -23,14 +23,12 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
-import net.jcip.annotations.ThreadSafe;
-
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -45,25 +43,26 @@ import org.apache.sis.internal.jdk7.Objects;
  * (Source: <a href="http://www.w3.org/TR/xlink/">W3C</a>):
  *
  * <table class="sis">
+ * <caption>XLink attribute usage patterns</caption>
  * <tr>
  *   <th> </th>
- *   <th width="14%">{@link XLink.Type#SIMPLE simple}</th>
- *   <th width="14%">{@link XLink.Type#EXTENDED extended}</th>
- *   <th width="14%">{@link XLink.Type#LOCATOR locator}</th>
- *   <th width="14%">{@link XLink.Type#ARC arc}</th>
- *   <th width="14%">{@link XLink.Type#RESOURCE resource}</th>
- *   <th width="14%">{@link XLink.Type#TITLE title}</th>
+ *   <th style="width: 14%">{@link XLink.Type#SIMPLE simple}</th>
+ *   <th style="width: 14%">{@link XLink.Type#EXTENDED extended}</th>
+ *   <th style="width: 14%">{@link XLink.Type#LOCATOR locator}</th>
+ *   <th style="width: 14%">{@link XLink.Type#ARC arc}</th>
+ *   <th style="width: 14%">{@link XLink.Type#RESOURCE resource}</th>
+ *   <th style="width: 14%">{@link XLink.Type#TITLE title}</th>
  * </tr>
- *   <tr align="center"><td><b>{@link #getType() type}</b></td>       <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
- *   <tr align="center"><td><b>{@link #getHRef() href}</b></td>       <td>O</td><td> </td><td>R</td><td> </td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getRole() role}</b></td>       <td>O</td><td>O</td><td>O</td><td> </td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getArcRole() arcrole}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getTitle() title}</b></td>     <td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getShow() show}</b></td>       <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getActuate() actuate}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getLabel() label}</b></td>     <td> </td><td> </td><td>O</td><td> </td><td>O</td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getFrom() from}</b></td>       <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- *   <tr align="center"><td><b>{@link #getTo() to}</b></td>           <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getType() type}</b></td>       <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getHRef() href}</b></td>       <td>O</td><td> </td><td>R</td><td> </td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getRole() role}</b></td>       <td>O</td><td>O</td><td>O</td><td> </td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getArcRole() arcrole}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getTitle() title}</b></td>     <td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getShow() show}</b></td>       <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getActuate() actuate}</b></td> <td>O</td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getLabel() label}</b></td>     <td> </td><td> </td><td>O</td><td> </td><td>O</td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getFrom() from}</b></td>       <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
+ *   <tr align="center"><td align="left"><b>{@link #getTo() to}</b></td>           <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
  * </table>
  *
  * When {@code xlink} attributes are found at unmarshalling time instead of an object definition,
@@ -73,14 +72,13 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
  */
-@ThreadSafe
 @XmlTransient
 public class XLink implements Serializable {
     /**
@@ -209,7 +207,7 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -235,7 +233,7 @@ public class XLink implements Serializable {
         /**
          * A pointer to an external resource. Allows the {@link XLink#getHRef() href},
          * {@link XLink#getRole() role}, {@link #getTitle() title} and {@link XLink#getLabel()
-         * label} attributes, where {@code href} is mandatory and all other are optional.
+         * label} attributes, where {@code href} is mandatory and all other are optional.
          */
         @XmlEnumValue("locator")
         LOCATOR(0x1 | 0x2 | 0x4 | 0x10 | 0x80, 0x1 | 0x2),
@@ -343,7 +341,7 @@ public class XLink implements Serializable {
      * @return The type of link, or {@code null}.
      */
     @XmlAttribute(name = "type", namespace = Namespaces.XLINK, required = true)
-    public synchronized Type getType() {
+    public Type getType() {
         if (type != Type.AUTO) {
             return type;
         }
@@ -377,11 +375,11 @@ public class XLink implements Serializable {
     /**
      * Sets the type of link. Any value different than {@link org.apache.sis.xml.XLink.Type#AUTO
      * Type.AUTO} (including {@code null}) will overwrite the value inferred automatically by
-     * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
+     * {@link #getType()}. A {@code AUTO} value will enable automatic type detection.
      *
-     * @param type The new type of link, or {@code null} if none.
+     * @param type The new type of link, or {@code null} if none.
      */
-    public synchronized void setType(final Type type) {
+    public void setType(final Type type) {
         canWrite(0x1, "type", "type"); // We want a non-null value in all cases.
         if (type != null && (fieldMask() & ~type.fieldMask) != 0) {
             throw new IllegalStateException(Errors.format(Errors.Keys.InconsistentAttribute_2, "type", type.identifier()));
@@ -420,30 +418,30 @@ public class XLink implements Serializable {
      * Returns a URN to an external resources, or to an other part of a XML document, or an
      * identifier.
      *
-     * {@note This serves a role similar to <code>idref</code>. The <code>idref</code>
-     *        attribute allows an XML element to refer to another XML element that has
-     *        a corresponding <code>id</code> attribute.}
+     * <div class="note"><b>Note:</b>
+     * This serves a role similar to {@code idref}. The {@code idref} attribute allows an XML element
+     * to refer to another XML element that has a corresponding {@code id} attribute.</div>
      *
-     * @return A URN to a resources, or {@code null} if none.
+     * @return A URN to a resources, or {@code null} if none.
      *
      * @category locator
      */
     @XmlAttribute(name = "href", namespace = Namespaces.XLINK)
-    public synchronized URI getHRef() {
+    public URI getHRef() {
         return href;
     }
 
     /**
      * Sets the URN to a resources.
      *
-     * @param  href A URN to a resources, or {@code null} if none.
+     * @param  href A URN to a resources, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "href"} attribute.
      *
      * @category locator
      */
-    public synchronized void setHRef(final URI href) throws IllegalStateException {
+    public void setHRef(final URI href) throws IllegalStateException {
         canWrite(0x2, "href", href);
         this.href = href;
     }
@@ -451,26 +449,26 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return A URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
     @XmlAttribute(name = "role", namespace = Namespaces.XLINK)
-    public synchronized URI getRole() {
+    public URI getRole() {
         return role;
     }
 
     /**
      * Sets the URI reference for some description of the arc role.
      *
-     * @param  role A URI reference for some description of the arc role, or {@code null} if none.
+     * @param  role A URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "role"} attribute.
      *
      * @category semantic
      */
-    public synchronized void setRole(final URI role) throws IllegalStateException {
+    public void setRole(final URI role) throws IllegalStateException {
         canWrite(0x4, "role", role);
         this.role = role;
     }
@@ -478,26 +476,26 @@ public class XLink implements Serializable {
     /**
      * Returns a URI reference for some description of the arc role.
      *
-     * @return A URI reference for some description of the arc role, or {@code null} if none.
+     * @return A URI reference for some description of the arc role, or {@code null} if none.
      *
      * @category semantic
      */
     @XmlAttribute(name = "arcrole", namespace = Namespaces.XLINK)
-    public synchronized URI getArcRole() {
+    public URI getArcRole() {
         return arcrole;
     }
 
     /**
      * Sets a URI reference for some description of the arc role.
      *
-     * @param  arcrole A URI reference for some description of the arc role, or {@code null} if none.
+     * @param  arcrole A URI reference for some description of the arc role, or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "arcrole"} attribute.
      *
      * @category semantic
      */
-    public synchronized void setArcRole(final URI arcrole) throws IllegalStateException {
+    public void setArcRole(final URI arcrole) throws IllegalStateException {
         canWrite(0x8, "arcrole", arcrole);
         this.arcrole = arcrole;
     }
@@ -505,12 +503,12 @@ public class XLink implements Serializable {
     /**
      * Returns a human-readable string with a short description for the arc.
      *
-     * @return A human-readable string with a short description for the arc, or {@code null} if none.
+     * @return A human-readable string with a short description for the arc, or {@code null} if none.
      *
      * @category semantic
      */
     @XmlAttribute(name = "title", namespace = Namespaces.XLINK)
-    public synchronized InternationalString getTitle() {
+    public InternationalString getTitle() {
         return title;
     }
 
@@ -518,14 +516,14 @@ public class XLink implements Serializable {
      * Sets a human-readable string with a short description for the arc.
      *
      * @param  title A human-readable string with a short description for the arc,
-     *         or {@code null} if none.
+     *         or {@code null} if none.
      * @throws UnsupportedOperationException If this {@code xlink} is unmodifiable.
      * @throws IllegalStateException If the link type {@linkplain #setType has been explicitely set}.
      *         and that type does not allow the {@code "title"} attribute.
      *
      * @category semantic
      */
-    public synchronized void setTitle(final InternationalString title) throws IllegalStateException {
+    public void setTitle(final InternationalString title) throws IllegalStateException {
         canWrite(0x10, "title", title);
         this.title = title;
     }
@@ -535,7 +533,7 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -586,7 +584,7 @@ public class XLink implements Serializable {
      * @category behavior
      */
     @XmlAttribute(name = "show", namespace = Namespaces.XLINK)
-    public synchronized Show getShow() {
+    public Show getShow() {
         return show;
     }
 
@@ -600,7 +598,7 @@ public class XLink implements Serializable {
      *
      * @category behavior
      */
-    public synchronized void setShow(final Show show) throws IllegalStateException {
+    public void setShow(final Show show) throws IllegalStateException {
         canWrite(0x20, "show", show);
         this.show = show;
     }
@@ -610,7 +608,7 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      *
@@ -657,7 +655,7 @@ public class XLink implements Serializable {
      * @category behavior
      */
     @XmlAttribute(name = "actuate", namespace = Namespaces.XLINK)
-    public synchronized Actuate getActuate() {
+    public Actuate getActuate() {
         return actuate;
     }
 
@@ -672,7 +670,7 @@ public class XLink implements Serializable {
      *
      * @category behavior
      */
-    public synchronized void setActuate(final Actuate actuate) throws IllegalStateException {
+    public void setActuate(final Actuate actuate) throws IllegalStateException {
         canWrite(0x40, "actuate", actuate);
         this.actuate = actuate;
     }
@@ -684,7 +682,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getLabel() {
+    public String getLabel() {
         return label;
     }
 
@@ -698,7 +696,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setLabel(final String label) throws IllegalStateException {
+    public void setLabel(final String label) throws IllegalStateException {
         canWrite(0x80, "label", label);
         this.label = label;
     }
@@ -711,7 +709,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getFrom() {
+    public String getFrom() {
         return from;
     }
 
@@ -726,7 +724,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setFrom(final String from) throws IllegalStateException {
+    public void setFrom(final String from) throws IllegalStateException {
         canWrite(0x100, "from", from);
         this.from = from;
     }
@@ -739,7 +737,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized String getTo() {
+    public String getTo() {
         return to;
     }
 
@@ -754,7 +752,7 @@ public class XLink implements Serializable {
      *
      * @category traversal
      */
-    public synchronized void setTo(final String to) throws IllegalStateException {
+    public void setTo(final String to) throws IllegalStateException {
         canWrite(0x200, "to", to);
         this.to = to;
     }
@@ -765,7 +763,7 @@ public class XLink implements Serializable {
      *
      * <p>After the first call to this method, any subsequent calls have no effect.</p>
      */
-    public synchronized void freeze() {
+    public void freeze() {
         if (hashCode == 0) {
             hashCode = hash();
         }
@@ -777,7 +775,7 @@ public class XLink implements Serializable {
      * @param object The object to compare with this XLink.
      */
     @Override
-    public synchronized boolean equals(final Object object) {
+    public boolean equals(final Object object) {
         if (object == this) {
             return true;
         }
@@ -808,7 +806,7 @@ public class XLink implements Serializable {
      * Returns a hash code value for this XLink.
      */
     @Override
-    public synchronized int hashCode() {
+    public int hashCode() {
         int hash = hashCode;
         if (hash == 0) {
             hash = hash();
@@ -838,7 +836,7 @@ public class XLink implements Serializable {
      * }
      */
     @Override
-    public synchronized String toString() {
+    public String toString() {
         final StringBuilder buffer = new StringBuilder(64);
         buffer.append(Classes.getShortClassName(this)).append('[');
         append(buffer, "type",    getType());

@@ -20,10 +20,11 @@ import java.util.Locale;
 
 
 /**
- * Interface of localized services (parser, formatter, codes, …).
+ * Interface of classes for which each instance is configured for a particular locale.
+ * Those classes are often parsers or formatters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.05)
+ * @since   0.3
  * @version 0.3
  * @module
  */

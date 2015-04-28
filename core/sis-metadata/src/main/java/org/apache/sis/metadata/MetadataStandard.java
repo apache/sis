@@ -18,27 +18,36 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
-import net.jcip.annotations.ThreadSafe;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
+
+// Branch-specific imports
+import org.apache.sis.internal.jdk8.JDK8;
+import org.apache.sis.internal.jdk8.BiFunction;
 
 
 /**
@@ -67,7 +76,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
  * can also be used for other standards.
  *
- * {@section Defining new <code>MetadataStandard</code> instances}
+ * <div class="section">Defining new {@code MetadataStandard} instances</div>
  * Users should use the pre-defined constants when applicable.
  * However if new instances need to be defined, then there is a choice:
  *
@@ -76,20 +85,39 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *       Only getter methods will be used and all operations that modify the metadata properties
  *       will throw an {@link UnmodifiableMetadataException}.</li>
  *   <li>For <em>read/write</em> metadata, the {@link #getImplementation(Class)}
- *       method must be overridden in a {@code MetadataStandard} subclass.</li>
+ *       method must be overridden in a {@code MetadataStandard} subclass.</li>
  * </ul>
  *
+ * <div class="section">Thread safety</div>
+ * The same {@code MetadataStandard} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads, because the same {@code MetadataStandard} instances are typically referenced
+ * by a large amount of {@link ModifiableMetadata}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
+ *
+ * @see AbstractMetadata
  */
-@ThreadSafe
 public class MetadataStandard implements Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7549790450195184843L;
+
+    /**
+     * {@code true} if implementations can alter the API defined in the interfaces by
+     * adding or removing properties. If {@code true}, then {@link PropertyAccessor}
+     * will check for {@link Deprecated} and {@link org.opengis.annotation.UML}
+     * annotations in the implementation classes in addition to the interfaces.
+     *
+     * <p>A value of {@code true} is useful when Apache SIS implements a newer standard
+     * than GeoAPI, but have a slight performance cost at construction time. Performance
+     * after construction should be the same.</p>
+     */
+    static final boolean IMPLEMENTATION_CAN_ALTER_API = true;
 
     /**
      * Metadata instances defined in this class. The current implementation does not yet
@@ -111,12 +139,6 @@ public class MetadataStandard implements Serializable {
     public static final MetadataStandard ISO_19115;
 
     /**
-     * An instance working on ISO 19119 standard as defined by GeoAPI interfaces
-     * in the {@link org.opengis.service} package and sub-packages.
-     */
-    public static final MetadataStandard ISO_19119;
-
-    /**
      * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
      * in the {@link org.opengis.coverage} package and sub-packages.
      */
@@ -126,17 +148,15 @@ public class MetadataStandard implements Serializable {
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
 
         // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
-        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
-        ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
-        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.");
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null, null);
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms, new MetadataStandard[] {ISO_19115});
+        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.", new MetadataStandard[] {ISO_19111});
         INSTANCES = new MetadataStandard[] {
             ISO_19111,
             ISO_19115,
-            ISO_19119,
             ISO_19123
         };
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.METADATA) {
             @Override protected void classpathChanged() {
                 clearCache();
             }
@@ -151,37 +171,54 @@ public class MetadataStandard implements Serializable {
     final Citation citation;
 
     /**
-     * The root packages for metadata interfaces. Must have a trailing {@code '.'}.
+     * The root package for metadata interfaces. Must have a trailing {@code '.'}.
      */
     final String interfacePackage;
 
     /**
-     * Accessors for the specified implementations.
+     * The dependencies, or {@code null} if none.
+     *
+     * Note: the {@code null} value is for serialization compatibility.
+     */
+    private final MetadataStandard[] dependencies;
+
+    /**
+     * Accessors for the specified implementation classes.
      * The only legal value types are:
      *
      * <ul>
-     *   <li>{@link Class} if we have determined the standard interface for a given type
-     *       but did not yet created the {@link PropertyAccessor} for it.</li>
+     *   <li>{@link MetadataStandard} if type is handled by {@linkplain #dependencies} rather than this standard.</li>
+     *   <li>{@link Class} if we found the interface for the type but did not yet created the {@link PropertyAccessor}.</li>
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
      */
-    private final transient Map<Class<?>, Object> accessors; // written by reflection on deserialization.
+    private final transient ConcurrentMap<Class<?>, Object> accessors; // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
      *
-     * <p><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
-     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</p>
+     * <div class="note"><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
+     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</div>
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
+     * @param dependencies     The dependencies to other metadata standards.
      */
-    public MetadataStandard(final Citation citation, final Package interfacePackage) {
-        ensureNonNull("citation", citation);
+    public MetadataStandard(final Citation citation, final Package interfacePackage, MetadataStandard... dependencies) {
+        ensureNonNull("citation",         citation);
         ensureNonNull("interfacePackage", interfacePackage);
+        ensureNonNull("dependencies",     dependencies);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new IdentityHashMap<Class<?>,Object>(); // Also defined in readObject(…)
+        this.accessors        = new ConcurrentHashMap<Class<?>,Object>(); // Also defined in readObject(…)
+        if (dependencies.length == 0) {
+            this.dependencies = null;
+        } else {
+            this.dependencies = dependencies = dependencies.clone();
+            for (int i=0; i<dependencies.length; i++) {
+                ensureNonNullElement("dependencies", i, dependencies[i]);
+            }
+        }
     }
 
     /**
@@ -190,11 +227,25 @@ public class MetadataStandard implements Serializable {
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
+     * @param dependencies     The dependencies to other metadata standards, or {@code null} if none.
      */
-    MetadataStandard(final String citation, final String interfacePackage) {
+    MetadataStandard(final String citation, final String interfacePackage, final MetadataStandard[] dependencies) {
         this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
-        this.accessors        = new IdentityHashMap<Class<?>,Object>();
+        this.accessors        = new ConcurrentHashMap<Class<?>,Object>();
+        this.dependencies     = dependencies; // No clone, since this constructor is for internal use only.
+    }
+
+    /**
+     * Returns {@code true} if class or interface of the given name is supported by this standard.
+     * This method verifies if the class is a member of the package given at construction time or
+     * a sub-package. This method does not verify if the type is supported by a dependency.
+     *
+     * @param  classname The name of the type to verify.
+     * @return {@code true} if the given type is supported by this standard.
+     */
+    final boolean isSupported(final String classname) {
+        return classname.startsWith(interfacePackage);
     }
 
     /**
@@ -210,16 +261,16 @@ public class MetadataStandard implements Serializable {
      * @return The metadata standard for the given type, or {@code null} if not found.
      */
     public static MetadataStandard forClass(final Class<?> type) {
-        String name = type.getName();
+        String classname = type.getName();
         for (final MetadataStandard candidate : INSTANCES) {
-            if (name.startsWith(candidate.interfacePackage)) {
+            if (candidate.isSupported(classname)) {
                 return candidate;
             }
         }
         for (final Class<?> interf : Classes.getAllInterfaces(type)) {
-            name = interf.getName();
+            classname = interf.getName();
             for (final MetadataStandard candidate : INSTANCES) {
-                if (name.startsWith(candidate.interfacePackage)) {
+                if (candidate.isSupported(classname)) {
                     return candidate;
                 }
             }
@@ -233,9 +284,7 @@ public class MetadataStandard implements Serializable {
      */
     static void clearCache() {
         for (final MetadataStandard standard : INSTANCES) {
-            synchronized (standard.accessors) {
-                standard.accessors.clear();
-            }
+            standard.accessors.clear();
         }
     }
 
@@ -266,39 +315,73 @@ public class MetadataStandard implements Serializable {
      *         not implement a metadata interface of the expected package and {@code mandatory}
      *         is {@code false}.
      * @throws ClassCastException if the specified class does not implement a metadata interface
-     *         of the expected package and {@code mandatory} is {@code true}.
+     *         of the expected package and {@code mandatory} is {@code true}.
      */
     final PropertyAccessor getAccessor(final Class<?> implementation, final boolean mandatory) {
-        synchronized (accessors) {
-            // Check for previously created accessors.
-            final Object value = accessors.get(implementation);
-            if (value instanceof PropertyAccessor) {
-                return (PropertyAccessor) value;
-            }
-            // Check if we started some computation that we can finish.
-            final Class<?> type;
-            if (value != null) {
-                type = (Class<?>) value;
-            } else {
-                // Nothing were computed. Try to compute now.
-                type = findInterface(implementation);
-                if (type == null) {
-                    if (mandatory) {
-                        throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, implementation));
-                    }
-                    return null;
-                }
-            }
-            final PropertyAccessor accessor = new PropertyAccessor(citation, type, implementation);
-            accessors.put(implementation, accessor);
-            return accessor;
+        /*
+         * Check for accessors created by previous calls to this method.
+         * Values are added to this cache but never cleared.
+         */
+        final Object value = accessors.get(implementation);
+        if (value instanceof PropertyAccessor) {
+            return (PropertyAccessor) value;
         }
+        /*
+         * Check if we started some computation that we can finish. A partial computation exists
+         * when we already found the Class<?> for the interface, but didn't created the accessor.
+         */
+        final Class<?> type;
+        if (value instanceof Class<?>) {
+            type = (Class<?>) value; // Stored result of previous call to findInterface(…).
+            assert type == findInterface(implementation) : implementation;
+        } else {
+            /*
+             * Nothing was computed, we need to start from scratch. The first step is to find
+             * the interface implemented by the given class. If we can not find an interface,
+             * we will delegate to the dependencies and store the result for avoiding redoing
+             * this search next time.
+             */
+            type = findInterface(implementation);
+            if (type == null) {
+                if (dependencies != null) {
+                    for (final MetadataStandard dependency : dependencies) {
+                        final PropertyAccessor accessor = dependency.getAccessor(implementation, false);
+                        if (accessor != null) {
+                            accessors.put(implementation, accessor); // Ok to overwrite existing instance here.
+                            return accessor;
+                        }
+                    }
+                }
+                if (mandatory) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, implementation));
+                }
+                return null;
+            }
+        }
+        /*
+         * Found the interface for which to create an accessor. Creates the accessor now, unless an accessor
+         * has been created concurrently in another thread in which case the later will be returned.
+         */
+        return (PropertyAccessor) JDK8.compute(accessors, implementation, new BiFunction<Class<?>, Object, Object>() {
+            @Override public Object apply(final Class<?> k, final Object v) {
+                if (v instanceof PropertyAccessor) {
+                    return v;
+                }
+                final PropertyAccessor accessor;
+                if (SpecialCases.isSpecialCase(type)) {
+                    accessor = new SpecialCases(citation, type, implementation);
+                } else {
+                    accessor = new PropertyAccessor(citation, type, implementation);
+                }
+                return accessor;
+            }
+        });
     }
 
     /**
-     * Returns {@code true} if the given type is assignable to a type from this standard.
-     * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is
-     * guaranteed to succeed without throwing an exception.
+     * Returns {@code true} if the given type is assignable to a type from this standard or one of its dependencies.
+     * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is guaranteed to succeed
+     * without throwing an exception.
      *
      * @param  type The implementation class (can be {@code null}).
      * @return {@code true} if the given class is an interface of this standard,
@@ -306,17 +389,40 @@ public class MetadataStandard implements Serializable {
      */
     public boolean isMetadata(final Class<?> type) {
         if (type != null) {
-            synchronized (accessors) {
-                if (accessors.containsKey(type)) {
-                    return true;
-                }
-                final Class<?> standard = findInterface(type);
-                if (standard != null) {
-                    accessors.put(type, standard);
-                    return true;
+            if (accessors.containsKey(type)) {
+                return true;
+            }
+            if (dependencies != null) {
+                for (final MetadataStandard dependency : dependencies) {
+                    if (dependency.isMetadata(type)) {
+                        accessors.putIfAbsent(type, dependency);
+                        return true;
+                    }
                 }
             }
+            /*
+             * At this point, all cached values (including those in dependencies) have been checked.
+             * Performs the 'findInterface' computation only in last resort. Current implementation
+             * does not store negative results in order to avoid filling the cache with unrelated classes.
+             */
+            final Class<?> standardType = findInterface(type);
+            if (standardType != null) {
+                accessors.putIfAbsent(type, standardType);
+                return true;
+            }
         }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the given implementation class, normally rejected by {@link #findInterface(Class)},
+     * should be accepted as a pseudo-interface. We use this undocumented feature when Apache SIS experiments a new
+     * API which is not yet published in GeoAPI. This happen for example when upgrading Apache SIS public API from
+     * the ISO 19115:2003 standard to the ISO 19115:2014 version, but GeoAPI interfaces are still the old version.
+     * In such case, API that would normally be present in GeoAPI interfaces are temporarily available only in
+     * Apache SIS implementation classes.
+     */
+    boolean isPendingAPI(final Class<?> type) {
         return false;
     }
 
@@ -325,13 +431,15 @@ public class MetadataStandard implements Serializable {
      * Only one metadata interface can be implemented. If the given type is already
      * an interface from the standard, then it is returned directly.
      *
+     * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
+     *
      * @param  type The standard interface or the implementation class.
      * @return The single interface, or {@code null} if none where found.
      */
-    private Class<?> findInterface(Class<?> type) {
+    private Class<?> findInterface(final Class<?> type) {
         if (type != null) {
             if (type.isInterface()) {
-                if (type.getName().startsWith(interfacePackage)) {
+                if (isSupported(type.getName())) {
                     return type;
                 }
             } else {
@@ -340,10 +448,9 @@ public class MetadataStandard implements Serializable {
                  * including the ones declared in the super-class.
                  */
                 final Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
-                do {
-                    getInterfaces(type, interfaces);
-                    type = type.getSuperclass();
-                } while (type != null);
+                for (Class<?> t=type; t!=null; t=t.getSuperclass()) {
+                    getInterfaces(t, interfaces);
+                }
                 /*
                  * If we found more than one interface, removes the
                  * ones that are sub-interfaces of the other.
@@ -365,6 +472,17 @@ public class MetadataStandard implements Serializable {
                     }
                     // Found more than one interface; we don't know which one to pick.
                     // Returns 'null' for now; the caller will thrown an exception.
+                } else if (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(type)) {
+                    /*
+                     * Found no interface. According to our method contract we should return null.
+                     * However we make an exception if the implementation class has a UML annotation.
+                     * The reason is that when upgrading  API  from ISO 19115:2003 to ISO 19115:2014,
+                     * implementations are provided in Apache SIS before the corresponding interfaces
+                     * are published on GeoAPI. The reason why GeoAPI is slower to upgrade is that we
+                     * have to go through a voting process inside the Open Geospatial Consortium (OGC).
+                     * So we use those implementation classes as a temporary substitute for the interfaces.
+                     */
+                    return type;
                 }
             }
         }
@@ -379,7 +497,7 @@ public class MetadataStandard implements Serializable {
      */
     private void getInterfaces(final Class<?> type, final Collection<Class<?>> interfaces) {
         for (final Class<?> candidate : type.getInterfaces()) {
-            if (candidate.getName().startsWith(interfacePackage)) {
+            if (isSupported(candidate.getName())) {
                 interfaces.add(candidate);
             }
             getInterfaces(candidate, interfaces);
@@ -391,11 +509,13 @@ public class MetadataStandard implements Serializable {
      * If the given type is already an interface from this standard, then it is returned
      * unchanged.
      *
-     * {@note The word "interface" may be taken in a looser sense than the usual Java sense
-     *        because if the given type is defined in this standard package, then it is returned
-     *        unchanged. The standard package is usually made of interfaces and code lists only,
-     *        but this is not verified by this method.}
+     * <div class="note"><b>Note:</b>
+     * The word "interface" may be taken in a looser sense than the usual Java sense because
+     * if the given type is defined in this standard package, then it is returned unchanged.
+     * The standard package is usually made of interfaces and code lists only, but this is
+     * not verified by this method.</div>
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The implementation class.
      * @return The interface implemented by the given implementation class.
      * @throws ClassCastException if the specified implementation class does
@@ -403,34 +523,47 @@ public class MetadataStandard implements Serializable {
      *
      * @see AbstractMetadata#getInterface()
      */
-    public Class<?> getInterface(final Class<?> type) throws ClassCastException {
+    @SuppressWarnings("unchecked")
+    public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
         ensureNonNull("type", type);
-        synchronized (accessors) {
-            final Object value = accessors.get(type);
-            if (value != null) {
-                if (value instanceof PropertyAccessor) {
-                    return ((PropertyAccessor) value).type;
+        final Class<?> interf;
+        final Object value = accessors.get(type);
+        if (value instanceof PropertyAccessor) {
+            interf = ((PropertyAccessor) value).type;
+        } else if (value instanceof Class<?>) {
+            interf = (Class<?>) value;
+        } else if (value instanceof MetadataStandard) {
+            interf = ((MetadataStandard) value).getInterface(type);
+        } else {
+            interf = findInterface(type);
+            if (interf != null) {
+                accessors.putIfAbsent(type, interf);
+            } else {
+                if (dependencies != null) {
+                    for (final MetadataStandard dependency : dependencies) {
+                        if (dependency.isMetadata(type)) {
+                            accessors.putIfAbsent(type, dependency);
+                            return dependency.getInterface(type);
+                        }
+                    }
                 }
-                return (Class<?>) value;
-            }
-            final Class<?> standard = findInterface(type);
-            if (standard == null) {
                 throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
             }
-            accessors.put(type, standard);
-            return standard;
         }
+        assert interf.isAssignableFrom(type) : type;
+        return (Class<? super T>) interf;
     }
 
     /**
-     * Returns the implementation class for the given interface, or {@code null} if none.
+     * Returns the implementation class for the given interface, or {@code null} if none.
      * The default implementation returns {@code null} if every cases. Subclasses shall
      * override this method in order to map GeoAPI interfaces to their implementation.
      *
+     * @param  <T>  The compile-time {@code type}.
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
-    protected Class<?> getImplementation(final Class<?> type) {
+    public <T> Class<? extends T> getImplementation(final Class<T> type) {
         return null;
     }
 
@@ -442,7 +575,8 @@ public class MetadataStandard implements Serializable {
      * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
      * sentences} (usually in English).
      *
-     * <p><b>Example:</b> the following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
+     * <div class="note"><b>Example:</b>
+     * The following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):
      *
      * {@preformat java
      *   MetadataStandard standard = MetadataStandard.ISO_19115;
@@ -450,6 +584,7 @@ public class MetadataStandard implements Serializable {
      *   String value = names.get("alternateTitle");
      *   System.out.println(value); // alternateTitles
      * }
+     * </div>
      *
      * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
      * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
@@ -525,9 +660,9 @@ public class MetadataStandard implements Serializable {
      * <ul>
      *   <li>{@link ReferenceIdentifier} with the following properties:
      *     <ul>
-     *       <li>The {@linkplain ReferenceIdentifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
+     *       <li>The {@linkplain Identifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
      *       <li>The {@linkplain ReferenceIdentifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
-     *       <li>The {@linkplain ReferenceIdentifier#getCode() code} is the standard name of the property.</li>
+     *       <li>The {@linkplain Identifier#getCode() code} is the standard name of the property.</li>
      *     </ul>
      *   </li>
      *   <li>{@link CheckedContainer} with the following properties:
@@ -538,10 +673,10 @@ public class MetadataStandard implements Serializable {
      *   </li>
      * </ul>
      *
-     * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
-     * <code>ExtendedElementInformation</code> instance as the set of all possible values for
-     * the property. If the information had a <code>contains(E)</code> method, it would return
-     * <code>true</code> if the given value is valid for that property.}
+     * <div class="note"><b>Note:</b>
+     * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
+     * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
+     * it would return {@code true} if the given value is valid for that property.</div>
      *
      * In addition, for each map entry the value returned by {@link ExtendedElementInformation#getDomainValue()}
      * may optionally be an instance of any of the following classes:
@@ -575,26 +710,26 @@ public class MetadataStandard implements Serializable {
      * The map is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the map and conversely.
      *
-     * <p>The map content is determined by the arguments: {@code metadata} determines the set of
+     * <p>The map content is determined by the arguments: {@code metadata} determines the set of
      * keys, {@code keyPolicy} determines their {@code String} representations of those keys and
-     * {@code valuePolicy} determines whether entries having a null value or an empty collection
+     * {@code valuePolicy} determines whether entries having a null value or an empty collection
      * shall be included in the map.</p>
      *
-     * {@section Supported operations}
+     * <div class="section">Supported operations</div>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      * Note that whether the entry appears as effectively removed from the map or just cleared
      * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * {@section Keys and values}
+     * <div class="section">Keys and values</div>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * {@section Multi-values entries}
+     * <div class="section">Multi-values entries</div>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -628,37 +763,38 @@ public class MetadataStandard implements Serializable {
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
      * <p>The returned {@code TreeTable} instance contains the following columns:</p>
-     * <ul>
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     * <ul class="verbose">
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
-     *       there is a node having the {@code "title"} identifier.</p></li>
+     *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.</p>
+     *       for the first element and an other node with index 1 for the second element.
      *
-     *       {@note The <code>(IDENTIFIER, INDEX)</code> pair can be used as a primary key for uniquely identifying
-     *              a node in a list of children. That uniqueness is guaranteed only for the children of a given
-     *              node; the same keys may appear in the children of any other nodes.}</li>
+     *       <div class="note"><b>Note:</b>
+     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
+     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
+     *       the same keys may appear in the children of any other nodes.</div></li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
-     *       may be localizable.</p></li>
+     *       may be localizable.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
-     *       The base type of the value (usually an interface).</p></li>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
-     *       metadata class have a setter method for the property represented by the node.</p></li>
+     *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
-     * {@section Write operations}
+     * <div class="section">Write operations</div>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -712,7 +848,7 @@ public class MetadataStandard implements Serializable {
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
      * arguments do not need to be the same implementation class.
      *
-     * {@section Shallow or deep comparisons}
+     * <div class="section">Shallow or deep comparisons</div>
      * This method implements a <cite>shallow</cite> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
      * to this {@code standard.equals(…)} method for children metadata. However the comparison will
@@ -738,11 +874,51 @@ public class MetadataStandard implements Serializable {
         if (metadata1 == null || metadata2 == null) {
             return false;
         }
-        final PropertyAccessor accessor = getAccessor(metadata1.getClass(), true);
-        if (accessor.type != findInterface(metadata2.getClass())) {
+        final Class<?> type1 = metadata1.getClass();
+        final Class<?> type2 = metadata2.getClass();
+        if (type1 != type2 && mode == ComparisonMode.STRICT) {
             return false;
         }
-        return accessor.equals(metadata1, metadata2, mode);
+        final PropertyAccessor accessor = getAccessor(type1, true);
+        if (type1 != type2 && (!accessor.type.isAssignableFrom(type2) || accessor.type != getAccessor(type2, false).type)) {
+            /*
+             * Note: the check for (accessor.type != getAccessor(…).type) would have been enough, but checking
+             * for isAssignableFrom(…) first can avoid the (relatively costly) creation of new PropertyAccessor.
+             */
+            return false;
+        }
+        /*
+         * At this point, we have to perform the actual property-by-property comparison.
+         * Cycle may exist in metadata tree, so we have to keep trace of pair in process
+         * of being compared for avoiding infinite recursivity.
+         */
+        final ObjectPair pair = new ObjectPair(metadata1, metadata2);
+        final Set<ObjectPair> inProgress = ObjectPair.CURRENT.get();
+        if (inProgress.add(pair)) {
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            try {
+                return accessor.equals(metadata1, metadata2, mode);
+            } finally {
+                inProgress.remove(pair);
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
+            }
+        } else {
+            /*
+             * If we get here, a cycle has been found. Returns 'true' in order to allow the caller to continue
+             * comparing other properties. It is okay because someone else is comparing those two same objects,
+             * and that later comparison will do the actual check for property values.
+             */
+            return true;
+        }
     }
 
     /**
@@ -752,34 +928,57 @@ public class MetadataStandard implements Serializable {
      * and ensures that the hash code value is insensitive to the ordering of properties.
      *
      * @param  metadata The metadata object to compute hash code.
-     * @return A hash code value for the specified metadata.
+     * @return A hash code value for the specified metadata, or 0 if the given metadata is null.
      * @throws ClassCastException if the metadata object doesn't implement a metadata
      *         interface of the expected package.
      *
      * @see AbstractMetadata#hashCode()
      */
     public int hashCode(final Object metadata) throws ClassCastException {
-        return getAccessor(metadata.getClass(), true).hashCode(metadata);
+        if (metadata != null) {
+            final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
+            if (inProgress.put(metadata, Boolean.TRUE) == null) {
+                // See comment in 'equals(…) about NULL_COLLECTION semaphore purpose.
+                final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+                try {
+                    return getAccessor(metadata.getClass(), true).hashCode(metadata);
+                } finally {
+                    inProgress.remove(metadata);
+                    if (!allowNull) {
+                        Semaphores.clear(Semaphores.NULL_COLLECTION);
+                    }
+                }
+            }
+            /*
+             * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
+             * However it should not be a problem since this metadata is part of a bigger metadata object, and
+             * that enclosing object has other properties for computing its hash code. We just need the result
+             * to be consistent, wich should be the case if properties ordering is always the same.
+             */
+        }
+        return 0;
     }
 
     /**
      * Returns a string representation of this metadata standard.
      * This is for debugging purpose only and may change in any future version.
      */
+    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
     }
 
     /**
-     * Assigns an {@link IdentityHashMap} instance to the given field.
+     * Assigns an {@link ConcurrentMap} instance to the given field.
      * Used on deserialization only.
      */
+    @SuppressWarnings("rawtypes")
     final void setMapForField(final Class<?> classe, final String name) {
         try {
             final Field field = classe.getDeclaredField(name);
             field.setAccessible(true);
-            field.set(this, new IdentityHashMap());
+            field.set(this, new ConcurrentHashMap());
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
             throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
         }
@@ -787,6 +986,10 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Invoked during deserialization for restoring the transient fields.
+     *
+     * @param  in The input stream from which to deserialize a metadata standard.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

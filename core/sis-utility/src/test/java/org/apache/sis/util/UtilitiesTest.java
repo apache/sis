@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Utilities} static methods.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  */

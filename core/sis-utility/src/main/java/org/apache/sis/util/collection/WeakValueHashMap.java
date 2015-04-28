@@ -24,8 +24,6 @@ import java.util.Iterator;
 import java.util.Arrays;
 import java.lang.reflect.Array;
 import java.lang.ref.WeakReference;
-import net.jcip.annotations.ThreadSafe;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
@@ -35,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -43,8 +41,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * A hashtable-based map implementation that uses {@linkplain WeakReference weak references},
  * leaving memory when an entry is not used anymore. An entry in a {@code WeakValueHashMap}
  * will automatically be removed when its value is no longer in ordinary use. This class is
- * similar to the standard {@link java.util.WeakHashMap} class provided in J2SE, except that
- * weak references are hold on values instead of keys.
+ * similar to the standard {@link java.util.WeakHashMap} class, except that weak references
+ * apply to values rather than keys.
+ *
+ * <p>Note that this class is <strong>not</strong> a cache, because the entries are discarded
+ * as soon as the garbage collector determines that they are no longer in use. If caching
+ * service are wanted, or if concurrency are wanted, consider using {@link Cache} instead.</p>
  *
  * <p>This class is convenient for avoiding the creation of duplicated elements, as in the
  * example below:</p>
@@ -61,28 +63,48 @@ import org.apache.sis.internal.jdk7.Objects;
  *     }
  * }
  *
- * The calculation of a new value should be fast, because it is performed inside a synchronized
- * statement blocking all other access to the map. This is okay if that particular map instance
+ * In the above example, the calculation of a new value needs to be fast because it is performed inside a synchronized
+ * statement blocking all other access to the map. This is okay if that particular {@code WeakValueHashMap} instance
  * is not expected to be used in a highly concurrent environment.
  *
- * <p>Note that this class is <strong>not</strong> a cache, because the entries are discarded
- * as soon as the garbage collector determines that they are no longer in use. If caching
- * service are wanted, or if concurrency are wanted, consider using {@link Cache} instead.</p>
+ * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example arrays of {@code int[]} are
+ * compared using the {@link java.util.Arrays#equals(int[], int[])} method.</p>
+ *
+ * <div class="section">Thread safety</div>
+ * The same {@code WeakValueHashMap} instance can be safely used by many threads without synchronization on the part
+ * of the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
+ * then the caller can synchronize on {@code this}.
  *
  * @param <K> The class of key elements.
  * @param <V> The class of value elements.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see java.util.WeakHashMap
  * @see WeakHashSet
  * @see Cache
  */
-@ThreadSafe
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
+    /**
+     * Comparison mode for key objects. The standard mode is {@code EQUALS}, which means that keys are compared
+     * using their {@link Object#equals(Object)} method. But {@code WeakValueHashMap} will automatically select
+     * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the later case, comparisons will
+     * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
+     *
+     * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitely asks for this mode
+     * at construction time. This mode is provided because reference-equality semantic is sometime required, and
+     * hard to simulate if not supported natively by the hash map. See {@link java.util.IdentityHashMap} javadoc
+     * for some examples of cases where reference-equality semantic is useful.</p>
+     *
+     * @see #comparisonMode
+     * @see #keyEquals(Object, Object)
+     * @see #keyHashCode(Object)
+     */
+    private static final byte IDENTITY = 0, EQUALS = 1, DEEP_EQUALS = 2;
+
     /**
      * An entry in the {@link WeakValueHashMap}. This is a weak reference
      * to a value together with a strong reference to a key.
@@ -133,7 +155,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         }
 
         /**
-         * Invoked by {@link org.apache.sis.internal.util.ReferenceQueueConsumer}
+         * Invoked by {@link org.apache.sis.internal.system.ReferenceQueueConsumer}
          * for removing the reference from the enclosing collection.
          */
         @Override
@@ -185,10 +207,15 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private final Class<K> keyType;
 
     /**
-     * {@code true} if the keys in this map may be arrays. If the keys can not be
-     * arrays, then we can avoid the calls to the costly {@link Utilities} methods.
+     * Whether keys shall be compared by reference-equality ({@link #IDENTITY}), by shallow object-equality
+     * ({@link #EQUALS}) or by deep object-equality ({@link #DEEP_EQUALS}). The {@code DEEP_EQUALS} mode is
+     * selected only if the keys in this map may be arrays. If the keys can not be arrays, then we select the
+     * {@code EQUALS} mode for avoiding calls to the costly {@link Objects#deepEquals(Object, Object)} method.
+     *
+     * @see #keyEquals(Object, Object)
+     * @see #keyHashCode(Object)
      */
-    private final boolean mayContainArrays;
+    private final byte comparisonMode;
 
     /**
      * The set of entries, created only when first needed.
@@ -209,8 +236,27 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param keyType The type of keys in the map.
      */
     public WeakValueHashMap(final Class<K> keyType) {
-        this.keyType           = keyType;
-        mayContainArrays       = keyType.isArray() || keyType.equals(Object.class);
+        this(keyType, false);
+    }
+
+    /**
+     * Creates a new {@code WeakValueHashMap}, optionally using reference-equality in place of object-equality.
+     * If {@code identity} is {@code true}, then two keys {@code k1} and {@code k2} are considered equal if and
+     * only if {@code (k1 == k2)} instead than if {@code k1.equals(k2)}.
+     *
+     * <p>Reference-equality semantic is rarely used. See the {@link java.util.IdentityHashMap} class javadoc
+     * for a discussion about drawbacks and use cases when reference-equality semantic is useful.</p>
+     *
+     * @param keyType  The type of keys in the map.
+     * @param identity {@code true} if the map shall use reference-equality in place of object-equality
+     *                 when comparing keys, or {@code false} for the standard behavior.
+     *
+     * @since 0.4
+     */
+    public WeakValueHashMap(final Class<K> keyType, final boolean identity) {
+        this.keyType   = keyType;
+        comparisonMode = identity ? IDENTITY :
+                (keyType.isArray() || keyType.equals(Object.class)) ? DEEP_EQUALS : EQUALS;
         lastTimeNormalCapacity = System.nanoTime();
         /*
          * Workaround for the "generic array creation" compiler error.
@@ -247,22 +293,17 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
     /**
      * Checks if this {@code WeakValueHashMap} is valid. This method counts the number of elements
-     * and compares it to {@link #count}. If the check fails, the number of elements is corrected
-     * (if we didn't, an {@link AssertionError} would be thrown for every operations after the first
-     * error, which make debugging more difficult). The set is otherwise unchanged, which should
-     * help to get similar behavior as if assertions hasn't been turned on.
+     * and compares it to {@link #count}. This method is invoked in assertions only.
      */
     @Debug
     final boolean isValid() {
-        assert Thread.holdsLock(this);
-        assert count <= upperCapacityThreshold(table.length);
-        final int n = count(table);
-        if (n != count) {
-            count = n;
-            return false;
-        } else {
-            return true;
+        if (!Thread.holdsLock(this)) {
+            throw new AssertionError();
         }
+        if (count > upperCapacityThreshold(table.length)) {
+            throw new AssertionError(count);
+        }
+        return count(table) == count;
     }
 
     /**
@@ -278,16 +319,31 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
     /**
      * Returns the hash code value for the given key.
+     *
+     * @param key The key (can not be null).
      */
     final int keyHashCode(final Object key) {
-        return mayContainArrays ? Utilities.deepHashCode(key) : key.hashCode();
+        switch (comparisonMode) {
+            case IDENTITY:    return System.identityHashCode(key);
+            case EQUALS:      return key.hashCode();
+            case DEEP_EQUALS: return Utilities.deepHashCode(key);
+            default: throw new AssertionError(comparisonMode);
+        }
     }
 
     /**
      * Returns {@code true} if the two given keys are equal.
+     *
+     * @param k1 The first key (can not be null).
+     * @paral k2 The second key.
      */
     final boolean keyEquals(final Object k1, final Object k2) {
-        return mayContainArrays ? Objects.deepEquals(k1, k2) : k1.equals(k2);
+        switch (comparisonMode) {
+            case IDENTITY:    return k1 == k2;
+            case EQUALS:      return k1.equals(k2);
+            case DEEP_EQUALS: return Objects.deepEquals(k1, k2);
+            default: throw new AssertionError(comparisonMode);
+        }
     }
 
     /**
@@ -432,7 +488,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * The set of entries.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.13)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -459,12 +515,13 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 final Map.Entry<K,V>[] elements = new Map.Entry[size()];
                 int index = 0;
                 final Entry[] table = WeakValueHashMap.this.table;
-                for (int i=0; i<table.length; i++) {
-                    for (Entry el=table[i]; el!=null; el=(Entry) el.next) {
+                for (Entry el : table) {
+                    while (el != null) {
                         final Map.Entry<K,V> entry = new SimpleEntry<K,V>(el);
                         if (entry.getValue() != null) {
                             elements[index++] = entry;
                         }
+                        el= (Entry) el.next;
                     }
                 }
                 return ArraysExt.resize(elements, index);

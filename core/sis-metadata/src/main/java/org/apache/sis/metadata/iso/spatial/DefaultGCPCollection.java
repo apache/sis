@@ -30,9 +30,18 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Information about a control point collection.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -80,21 +89,23 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GCPCollection)
      */
     public DefaultGCPCollection(final GCPCollection object) {
         super(object);
-        collectionIdentification  = object.getCollectionIdentification();
-        collectionName            = object.getCollectionName();
-        coordinateReferenceSystem = object.getCoordinateReferenceSystem();
-        GCPs                      = copyCollection(object.getGCPs(), GCP.class);
+        if (object != null) {
+            collectionIdentification  = object.getCollectionIdentification();
+            collectionName            = object.getCollectionName();
+            coordinateReferenceSystem = object.getCoordinateReferenceSystem();
+            GCPs                      = copyCollection(object.getGCPs(), GCP.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -119,6 +130,8 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
 
     /**
      * Returns the identifier of the GCP collection.
+     *
+     * @return The identifier, or {@code null}.
      */
     @Override
     @XmlElement(name = "collectionIdentification", namespace = Namespaces.GMI, required = true)
@@ -138,6 +151,8 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
 
     /**
      * Returns the name of the GCP collection.
+     *
+     * @return Name of the GCP collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "collectionName", namespace = Namespaces.GMI, required = true)
@@ -157,6 +172,8 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
 
     /**
      * Returns the coordinate system in which the ground control points are defined.
+     *
+     * @return Coordinate system in which the ground control points are defined, or {@code null}.
      */
     @Override
     @XmlElement(name = "coordinateReferenceSystem", namespace = Namespaces.GMI, required = true)
@@ -176,6 +193,8 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
 
     /**
      * Returns the ground control point(s) used in the collection.
+     *
+     * @return Ground control point(s).
      */
     @Override
     @XmlElement(name = "gcp", namespace = Namespaces.GMI, required = true)

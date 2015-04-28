@@ -43,11 +43,11 @@ import static java.lang.Math.*;
  * in a tabular format using spaces as the column separator. This default configuration matches
  * the {@link Statistics#toString()} format.
  *
- * {@section Limitations}
+ * <div class="section">Limitations</div>
  * The current implementation can only format statistics - parsing is not yet implemented.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -121,10 +121,12 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Returns the kind of objects formatted by this class.
+     * Returns the type of objects formatted by this class.
+     *
+     * @return {@code Statistics.class}
      */
     @Override
-    public Class<Statistics> getValueType() {
+    public final Class<Statistics> getValueType() {
         return Statistics.class;
     }
 
@@ -184,6 +186,9 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
 
     /**
      * Not yet implemented.
+     *
+     * @return Currently never return.
+     * @throws ParseException Currently never thrown.
      */
     @Override
     public Statistics parse(CharSequence text, ParsePosition pos) throws ParseException {
@@ -224,7 +229,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -243,7 +248,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  stats       The statistics to format.
      * @param  toAppendTo  Where to format the statistics.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*
@@ -355,7 +360,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * switch statements inside the {@link #format(Statistics[], Appendable)} method
      * (we define this static field close to the format methods for this purpose).
      */
-    private static final int[] KEYS = {
+    private static final short[] KEYS = {
         Vocabulary.Keys.NumberOfValues,
         Vocabulary.Keys.NumberOfNaN,
         Vocabulary.Keys.MinimumValue,
@@ -398,7 +403,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             delta = max(delta/stats.count(), ulp(extremum)); // Mean delta for uniform distribution, not finer than 'double' accuracy.
             if (format instanceof NumberFormat) {
                 setFractionDigits((NumberFormat) format, max(0, ADDITIONAL_DIGITS
-                        + MathFunctions.fractionDigitsForDelta(delta, false)));
+                        + DecimalFunctions.fractionDigitsForDelta(delta, false)));
             } else {
                 // A future version could configure DateFormat here.
             }

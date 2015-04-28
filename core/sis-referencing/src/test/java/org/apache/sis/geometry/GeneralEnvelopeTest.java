@@ -18,17 +18,17 @@ package org.apache.sis.geometry;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.referencing.Assert.*;
-import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -39,21 +39,23 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
 public strictfp class GeneralEnvelopeTest extends TestCase {
     /**
-     * The comparison threshold for strict comparisons.
-     */
-    static final double STRICT = 0;
-
-    /**
      * Tolerance threshold for floating point comparisons.
      */
     private static final double EPS = 1E-4;
+
+    /**
+     * {@code false} if {@link #create(double, double, double, double)} can validate the envelope.
+     * This is set to {@code true} only when we intentionally want to create an invalid envelope,
+     * for example in order to test normalization.
+     */
+    boolean skipValidation = !PENDING_NEXT_GEOAPI_RELEASE;
 
     /**
      * Creates a new geographic envelope for the given ordinate values.
@@ -63,7 +65,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(2);
         envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
+        if (!skipValidation) {
             validate(envelope);
         }
         return envelope;
@@ -95,7 +97,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
             final double xLower, final double ymin, final double xUpper, final double ymax)
     {
         final double xmin, xmax;
-        if (isNegative(xUpper - xLower)) { // Check for anti-meridian spanning.
+        if (MathFunctions.isNegative(xUpper - xLower)) { // Check for anti-meridian spanning.
             xmin = -180;
             xmax = +180;
         } else {
@@ -219,7 +221,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#createIntersection(Rectangle2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testIntersection() {
         //  ┌─────────────┐
         //  │  ┌───────┐  │
@@ -284,7 +285,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#createUnion(Rectangle2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testUnion() {
         //  ┌─────────────┐
         //  │  ┌───────┐  │
@@ -349,7 +349,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * {@link Envelope2D#add(Point2D)} methods.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testAddPoint() {
         final double ymin=-20, ymax=30; // Will not change anymore
         final GeneralEnvelope  e = create(20, ymin,  80, ymax);
@@ -379,8 +378,8 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * Tests the {@link GeneralEnvelope#normalize()} method.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testNormalize() {
+        skipValidation = true;
         GeneralEnvelope e = create(-100, -100, +100, +100);
         assertTrue(e.normalize());
         assertEnvelopeEquals(e, -100, -90, +100, +90);
@@ -395,8 +394,8 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
         e = create(0, 10, 360, 20);
         assertTrue(e.normalize());
-        assertEquals("Expect positive zero", Double.doubleToLongBits(+0.0), Double.doubleToLongBits(e.getLower(0)));
-        assertEquals("Expect negative zero", Double.doubleToLongBits(-0.0), Double.doubleToLongBits(e.getUpper(0)));
+        assertTrue("Expect positive zero", MathFunctions.isPositiveZero(e.getLower(0)));
+        assertTrue("Expect negative zero", MathFunctions.isNegativeZero(e.getUpper(0)));
         verifyInvariants(e);
     }
 
@@ -405,7 +404,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * with an envelope having more then 360° of longitude.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testNormalizeWorld() {
         GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
         assertTrue(e.normalize());
@@ -417,7 +415,6 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * Tests the {@link GeneralEnvelope#simplify()}.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testSimplify() {
         // Normal envelope: no change expected.
         GeneralEnvelope e = create(-100, -10, +100, +10);
@@ -437,18 +434,108 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests {@link GeneralEnvelope#setEnvelope(double...)} with valid ranges,
+     * then with a range which is known to be invalid.
+     */
+    @Test
+    public void testSetEnvelope() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setEnvelope(3, -5, -8, 2);
+        try {
+            e.setEnvelope(1, -10, 2, -20);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalArgumentException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        // Verify that the envelope still have the old values.
+        assertEnvelopeEquals(e, 3, -5, -8, 2);
+        verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#setRange(int, double, double)} with a valid range,
+     * then with a range which is known to be invalid.
+     */
+    @Test
+    public void testSetRange() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setRange(1, -5, 2);
+        try {
+            e.setRange(1, -10, -20);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalArgumentException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        // Verify that the envelope still have the old values.
+        assertEnvelopeEquals(e, 2, -5, 3, 2);
+        verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
+     */
+    @Test
+    @DependsOnMethod("testSetRange")
+    public void testSetCoordinateReferenceSystem() {
+        final GeneralEnvelope e = create(2, -4, 3, -3);
+        e.setCoordinateReferenceSystem(null);
+        /*
+         * Set an invalid latitude range, but the Envelope can not known that fact without CRS.
+         * Only when we will specify the CRS, the envelope will realize that it contains an
+         * invalid range.
+         */
+        e.setRange(1, -10, -20);
+        try {
+            e.setCoordinateReferenceSystem(WGS84);
+            fail("Invalid range shall not be allowed.");
+        } catch (IllegalStateException ex) {
+            // This is the expected exception.
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("Geodetic latitude"));
+        }
+        /*
+         * Verify that the envelope values are unchanged.
+         * Then fix the range and try again to set the CRS.
+         */
+        assertEquals(  2, e.getLower(0), STRICT);
+        assertEquals(-10, e.getLower(1), STRICT);
+        assertEquals(  3, e.getUpper(0), STRICT);
+        assertEquals(-20, e.getUpper(1), STRICT);
+        e.setRange(1, -20, -10);
+        e.setCoordinateReferenceSystem(WGS84);
+        assertEnvelopeEquals(e, 2, -20, 3, -10);
+        verifyInvariants(e);
+    }
+
+    /**
      * Tests modifying the corner of an envelope.
      */
     @Test
     public void testCornerModifications() {
-        final GeneralEnvelope e = create(2, -2, 3, -3);
+        final GeneralEnvelope e = create(2, -4, 3, -3);
         e.getLowerCorner().setOrdinate(0,  1);
         e.getUpperCorner().setOrdinate(1, -1);
-        assertEquals( 1.0, e.getLower(0), 0.0);
-        assertEquals(-2.0, e.getLower(1), 0.0);
-        assertEquals( 3.0, e.getUpper(0), 0.0);
-        assertEquals(-1.0, e.getUpper(1), 0.0);
+        assertEquals( 1, e.getLower(0), STRICT);
+        assertEquals(-4, e.getLower(1), STRICT);
+        assertEquals( 3, e.getUpper(0), STRICT);
+        assertEquals(-1, e.getUpper(1), STRICT);
         verifyInvariants(e);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#translate(double...)}.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testTranslate() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
+        envelope.translate(2, -4);
+        assertEnvelopeEquals(envelope, 6, 1, 10, 3);
     }
 
     /**

@@ -35,8 +35,8 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.04)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -62,9 +62,11 @@ public final strictfp class NameMapTest extends TestCase {
             new SimpleEntry<String,String>("presentationForm",      "presentationForms"),
             new SimpleEntry<String,String>("series",                "series"),
             new SimpleEntry<String,String>("otherCitationDetails",  "otherCitationDetails"),
-            new SimpleEntry<String,String>("collectiveTitle",       "collectiveTitle"),
+//          new SimpleEntry<String,String>("collectiveTitle",       "collectiveTitle"),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<String,String>("ISBN",                  "ISBN"),
-            new SimpleEntry<String,String>("ISSN",                  "ISSN")
+            new SimpleEntry<String,String>("ISSN",                  "ISSN"),
+            new SimpleEntry<String,String>("graphic",               "graphics"),
+            new SimpleEntry<String,String>("onlineResource",        "onlineResources")
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));
@@ -90,7 +92,7 @@ public final strictfp class NameMapTest extends TestCase {
      * it would just consume more memory than needed. We want to intern those strings because they usually
      * match method names or field names, which are already interned by the JVM.
      *
-     * {@section Explicit calls to <code>String.intern()</code>}
+     * <div class="section">Explicit calls to {@code String.intern()}</div>
      * I though that annotation strings were interned like any other constants, but it does not
      * seem to be the case as of JDK7. To check if a future JDK release still needs explicit
      * call to {@link String#intern()}, try to remove the "{@code .intern()}" part in the

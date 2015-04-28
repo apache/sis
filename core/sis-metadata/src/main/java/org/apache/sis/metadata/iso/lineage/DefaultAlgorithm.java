@@ -29,10 +29,19 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Details of the methodology by which geographic information was derived from the instrument readings.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -68,19 +77,21 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Algorithm)
      */
     public DefaultAlgorithm(final Algorithm object) {
         super(object);
-        citation    = object.getCitation();
-        description = object.getDescription();
+        if (object != null) {
+            citation    = object.getCitation();
+            description = object.getDescription();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -105,6 +116,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information identifying the algorithm and version or date.
+     *
+     * @return Algorithm and version or date, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
@@ -124,6 +137,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information describing the algorithm used to generate the data.
+     *
+     * @return Algorithm used to generate the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)

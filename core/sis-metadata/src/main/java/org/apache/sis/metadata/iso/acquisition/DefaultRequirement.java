@@ -38,9 +38,18 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Requirement to be satisfied by the planned data acquisition.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -90,7 +99,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Date and time after which collection is no longer valid,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long expiryDate;
+    private long expiryDate = Long.MIN_VALUE;
 
     /**
      * Plan that identifies solution to satisfy the requirement.
@@ -101,7 +110,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Constructs an initially empty requirement.
      */
     public DefaultRequirement() {
-        expiryDate = Long.MIN_VALUE;
     }
 
     /**
@@ -109,25 +117,27 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Requirement)
      */
     public DefaultRequirement(final Requirement object) {
         super(object);
-        citation       = object.getCitation();
-        identifiers    = singleton(object.getIdentifier(), Identifier.class); // TODO
-        requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
-        recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
-        priority       = object.getPriority();
-        requestedDate  = object.getRequestedDate();
-        expiryDate     = toMilliseconds(object.getExpiryDate());
-        satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        if (object != null) {
+            citation       = object.getCitation();
+            identifiers    = singleton(object.getIdentifier(), Identifier.class);
+            requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
+            recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
+            priority       = object.getPriority();
+            requestedDate  = object.getRequestedDate();
+            expiryDate     = toMilliseconds(object.getExpiryDate());
+            satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -153,6 +163,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the identification of reference or guidance material for the requirement.
      * {@code null} if unspecified.
+     *
+     * @return Identification of reference or guidance material, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -172,6 +184,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the unique name, or code, for the requirement.
+     *
+     * @return Unique name or code, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -192,6 +206,13 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the origin of requirement.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Origin of requirement.
      */
     @Override
     @XmlElement(name = "requestor", required = true)
@@ -202,6 +223,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Sets the origin of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new requestors values.
      */
     public void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
@@ -210,6 +236,13 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the person(s), or body(ies), to receive results of requirement.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Person(s), or body(ies), to receive results.
      */
     @Override
     @XmlElement(name = "recipient", required = true)
@@ -220,6 +253,11 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Sets the Person(s), or body(ies), to receive results of requirement.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new recipients values.
      */
     public void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
@@ -228,6 +266,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the relative ordered importance, or urgency, of the requirement.
+     *
+     * @return Relative ordered importance, or urgency, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority", required = true)
@@ -247,6 +287,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the required or preferred acquisition date and time.
+     *
+     * @return Required or preferred acquisition date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "requestedDate", required = true)
@@ -266,6 +308,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the date and time after which collection is no longer valid.
+     *
+     * @return Date and time after which collection is no longer valid, or {@code null}.
      */
     @Override
     @XmlElement(name = "expiryDate", required = true)
@@ -285,6 +329,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the plan that identifies solution to satisfy the requirement.
+     *
+     * @return Plan that identifies solution to satisfy the requirement.
      */
     @Override
     @XmlElement(name = "satisfiedPlan")

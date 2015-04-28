@@ -19,15 +19,16 @@ package org.apache.sis.math;
 import java.util.Arrays;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToRawLongBits;
-import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
 
 /**
@@ -55,32 +56,35 @@ import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
  * {@link #nextPrimeNumber(int) nextPrimeNumber}.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
+ * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
  */
 public final class MathFunctions extends Static {
     /**
-     * The square root of 2, which is {@value}.
+     * The square root of 2, which is approximated by {@value}.
      *
      * @see Math#sqrt(double)
      */
     public static final double SQRT_2 = 1.4142135623730951;
 
     /**
-     * Table of some integer powers of 10. Used for faster computation in {@link #pow10(int)}.
+     * The logarithm of 2 in base 10, which is approximated by {@value}.
+     * This constant is useful for converting a power of 2 to a power of 10 as below:
      *
-     * @see #pow10(int)
+     * {@preformat java
+     *   double exp10 = exp2 * LOG10_2;
+     * }
+     *
+     * @see Math#log10(double)
+     * @see #getExponent(double)
+     *
+     * @since 0.4
      */
-    private static final double[] POW10 = {
-        1E+00, 1E+01, 1E+02, 1E+03, 1E+04, 1E+05, 1E+06, 1E+07, 1E+08, 1E+09,
-        1E+10, 1E+11, 1E+12, 1E+13, 1E+14, 1E+15, 1E+16, 1E+17, 1E+18, 1E+19,
-        1E+20, 1E+21, 1E+22
-        // Do not add more elements, unless we verified that 1/x is accurate.
-        // Last time we tried, it was not accurate anymore starting at 1E+23.
-    };
+    public static final double LOG10_2 = 0.3010299956639812;
 
     /**
      * The minimal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
@@ -103,9 +107,10 @@ public final class MathFunctions extends Static {
      * In the current implementation, this value is {@value}. However this limit may
      * change in any future Apache SIS version.
      *
-     * {@note The current value is the highest prime number representable as an unsigned 16 bits
-     *        integer. This is enough for current needs because 16 bits prime numbers are sufficient
-     *        for finding the divisors of any 32 bits integers.}
+     * <div class="note"><b>Note:</b>
+     * The current value is the highest prime number representable as an unsigned 16 bits integer.
+     * This is enough for current needs because 16 bits prime numbers are sufficient for finding
+     * the divisors of any 32 bits integers.</div>
      *
      * @see #nextPrimeNumber(int)
      */
@@ -155,7 +160,7 @@ public final class MathFunctions extends Static {
      *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
      * }
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * In the special case where only one element is different than zero, this method
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
      * without computing {@code sqrt(v²)}, in order to avoid rounding error. This special case
@@ -173,172 +178,137 @@ public final class MathFunctions extends Static {
         int i = vector.length;
 
         // If every elements in the array are zero, returns zero.
-        double sum;
+        double v1;
         do if (i == 0) return 0;
-        while ((sum = vector[--i]) == 0);
+        while ((v1 = vector[--i]) == 0);
 
         // We have found a non-zero element. If it is the only one, returns it directly.
-        double v;
-        do if (i == 0) return Math.abs(sum);
-        while ((v = vector[--i]) == 0);
-
-        // If there is exactly 2 elements, use Math.hypot which is more robust than our algorithm.
         double v2;
-        do if (i == 0) return Math.hypot(sum, v);
+        do if (i == 0) return Math.abs(v1);
         while ((v2 = vector[--i]) == 0);
 
-        // Usual magnitude computation.
-        sum = sum*sum + v*v + v2*v2;
+        // If there is exactly 2 elements, use Math.hypot which is more robust than our algorithm.
+        double v3;
+        do if (i == 0) return Math.hypot(v1, v2);
+        while ((v3 = vector[--i]) == 0);
+
+        // Usual magnitude computation, but using double-double arithmetic.
+        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble dot = new DoubleDouble();
+        sum.setToProduct(v1, v1);
+        dot.setToProduct(v2, v2); sum.add(dot);
+        dot.setToProduct(v3, v3); sum.add(dot);
         while (i != 0) {
-            v = vector[--i];
-            sum += v*v;
+            v1 = vector[--i];
+            dot.setToProduct(v1, v1);
+            sum.add(dot);
         }
-        return Math.sqrt(sum);
+        sum.sqrt();
+        return sum.value;
     }
 
     /**
-     * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
-     * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
-     * this method returns a value <var>n</var> such as the difference between adjacent numbers
-     * formatted in base 10 with <var>n</var> fraction digits will always be equal or smaller
-     * than {@code accuracy}. Examples:
+     * Returns the unbiased exponent used in the representation of a {@code double}, with correction for
+     * sub-normal numbers. This method is related to {@link Math#getExponent(double)} in the following ways:
      *
      * <ul>
-     *   <li>{@code fractionDigitsForDelta(0.001, true)} returns 3.</li>
-     *   <li>{@code fractionDigitsForDelta(0.009, true)} returns 3.</li>
-     *   <li>{@code fractionDigitsForDelta(0.010, true)} returns 2.</li>
-     *   <li>{@code fractionDigitsForDelta(0.099, true)} returns 3 (special case).</li>
+     *   <li>For NaN and all values equal or greater than {@link Double#MIN_NORMAL} in magnitude (including
+     *       infinities), this method returns results that are identical to {@code Math.getExponent(double)}.</li>
+     *   <li>For values smaller than {@link Double#MIN_NORMAL} in magnitude (including zero), the correction
+     *       for sub-normal numbers results in return values smaller than what {@code Math.getExponent(double)}
+     *       would return.</li>
      * </ul>
      *
-     * <p>Special cases:</p>
+     * Special cases:
      * <ul>
-     *   <li>If {@code accuracy} is 0, {@link Double#NaN NaN} or infinity,
-     *       then this method returns 0.</li>
-     *   <li>If {@code accuracy} is greater than 1, then this method returns
-     *       the number of "unnecessary" trailing zeros as a negative number.
-     *       For example {@code fractionDigitsForDelta(100, …)} returns -2.</li>
-     *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
-     *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
-     *       increases the number of needed fraction digits in order to prevent the rounded
-     *       number to be collapsed into the next integer value.
-     *
-     *       <blockquote><font size="-1"><b>Example:</b>
-     *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since the
-     *       rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
-     *       violation of this method contract since the difference between 0 and that formatted
-     *       value would be greater than the accuracy. Note that this is not an artificial rule;
-     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.
-     *       </font></blockquote></li>
+     *   <li>If the argument is NaN or infinite, then the result is {@link Double#MAX_EXPONENT} + 1.</li>
+     *   <li>If the argument is {@link Double#MAX_VALUE},  then the result is {@value java.lang.Double#MAX_EXPONENT}.</li>
+     *   <li>If the argument is {@link Double#MIN_NORMAL}, then the result is {@value java.lang.Double#MIN_EXPONENT}.</li>
+     *   <li>If the argument is {@link Double#MIN_VALUE},  then the result is -1074.</li>
+     *   <li>If the argument is zero, then the result is -1075.</li>
      * </ul>
      *
-     * <p>Invoking this method is equivalent to computing <code>(int)
-     * -{@linkplain Math#floor(double) floor}({@linkplain Math#log10(double) log10}(accuracy))</code>
-     * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.</p>
+     * <div class="section">Identities</div>
+     * For any <var>p</var> values in the [-1075 … 1024] range and <var>value</var> = 2<sup>p</sup>:
+     * <ul>
+     *   <li><code>getExponent(Math.scalb(1.0, p)) == p</code></li>
+     *   <li><code>Math.scalb(1.0, getExponent(value)) == value</code></li>
+     *   <li><code>Math.floor({@linkplain #LOG10_2} * getExponent(value)) == Math.floor(Math.log10(value))</code></li>
+     * </ul>
      *
-     * @param  accuracy The desired accuracy of numbers to format in base 10.
-     * @param  strict {@code true} for checking the {@code 0.…95} special case.
-     *         If {@code false}, then the difference between adjacent formatted numbers is not
-     *         guaranteed to be smaller than {@code accuracy} in every cases.
-     * @return Number of fraction digits needed for formatting numbers with the given accuracy.
-     *         May be negative.
+     * @param  value The value for which to get the exponent.
+     * @return The unbiased exponent, corrected for sub-normal numbers if needed.
+     *         Values will be in the [-1075 … 1024] range, inclusive.
      *
-     * @see java.text.NumberFormat#setMaximumFractionDigits(int)
+     * @see Math#getExponent(double)
+     * @see Math#scalb(double, int)
+     *
+     * @since 0.4
      */
-    public static int fractionDigitsForDelta(double accuracy, final boolean strict) {
-        accuracy = Math.abs(accuracy);
-        final boolean isFraction = (accuracy < 1);
-        /*
-         * Compute (int) Math.log10(x) with opportunist use of the POW10 array.
-         * We use the POW10 array because accurate calculation of log10 is relatively costly,
-         * while we only want the integer part. A micro-benchmarking on JDK7 suggested that a
-         * binary search on POW10 is about 30% faster than invoking (int) Math.log10(x).
-         */
-        int i = Arrays.binarySearch(POW10, isFraction ? 1/accuracy : accuracy);
-        if (i >= 0) {
-            return isFraction ? i : -i;
+    public static int getExponent(final double value) {
+        final long bits = doubleToRawLongBits(value);
+        int exponent = (int) ((bits >>> SIGNIFICAND_SIZE) & 0x7FFL);
+        if (exponent == 0) {
+            /*
+             * Number is sub-normal: there is no implicit 1 bit before the significand.
+             * We need to search for the position of the first real 1 bit, and fix the
+             * exponent accordingly.  Note that numberOfLeadingZeros(…) is relative to
+             * 64 bits while the significand size is only 52 bits. The last term below
+             * is for fixing this difference.
+             */
+            exponent -= Long.numberOfLeadingZeros(bits & ((1L << SIGNIFICAND_SIZE) - 1)) - (Long.SIZE - SIGNIFICAND_SIZE);
         }
-        i = ~i;
-        double scale;
-        if (i < POW10.length) {
-            scale = POW10[i];
-            if (!isFraction) {
-                i = -(i-1);
-                scale = 10 / scale;
-            }
-        } else { // 'x' is out of range or NaN.
-            final double y = Math.log10(accuracy);
-            if (Double.isInfinite(y)) {
-                return 0;
-            }
-            i = -((int) Math.floor(y));
-            scale = pow10(i);
-        }
-        while ((accuracy *= scale) >= 9.5) {
-            i++; // The 0.…95 special case.
-            accuracy -= Math.floor(accuracy);
-            scale = 10;
-        }
-        return i;
+        return exponent - Double.MAX_EXPONENT;
     }
 
     /**
-     * Computes 10 raised to the power of <var>x</var>. This method delegates to
-     * <code>{@linkplain #pow10(int) pow10}((int) x)</code> if <var>x</var> is an
-     * integer, or to <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>
-     * otherwise.
+     * Computes 10 raised to the power of <var>x</var>. Invoking this method is equivalent to invoking
+     * <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>, but is slightly more accurate
+     * in the special case where the given argument is an integer.
      *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
      *
      * @see #pow10(int)
      * @see Math#pow(double, double)
+     * @see Math#log10(double)
      */
     public static double pow10(final double x) {
         final int ix = (int) x;
         if (ix == x) {
-            return pow10(ix);
+            return DecimalFunctions.pow10(ix);
         } else {
             return Math.pow(10, x);
         }
     }
 
     /**
-     * Computes 10 raised to the power of <var>x</var>. This method tries to be slightly more
-     * accurate than <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>,
-     * sometime at the cost of performance.
+     * Computes 10 raised to the power of <var>x</var>. This method is faster and slightly more accurate
+     * than invoking <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>.
      *
-     * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
-     *        method does not always return the closest IEEE floating point representation.
-     *        Slight departures (1 or 2 ULP) are often allowed in math functions for performance
-     *        reasons. The most accurate calculations are usually not necessary, but the base 10
-     *        is a special case since it is used for scaling axes or formatting human-readable
-     *        output.}
+     * <div class="note"><b>Note:</b>
+     * This method has been defined because the standard {@code Math.pow(10, x)} method does not always return
+     * the closest IEEE floating point representation. Slight departures (1 or 2 ULP) are often allowed in math
+     * functions for performance reasons. The most accurate calculations are usually not necessary, but the base
+     * 10 is a special case since it is used for scaling axes or formatting human-readable output.</div>
+     *
+     * Special cases:
+     * <ul>
+     *   <li>If <var>x</var> is equals or lower than -324, then the result is 0.</li>
+     *   <li>If <var>x</var> is equals or greater than 309, then the result is {@linkplain Double#POSITIVE_INFINITY positive infinity}.</li>
+     *   <li>If <var>x</var> is in the [0 … 18] range inclusive, then the result is exact.</li>
+     *   <li>For all other <var>x</var> values, the result is the closest IEEE 754 approximation.</li>
+     * </ul>
      *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
+     *
+     * @see #pow10(double)
+     * @see #LOG10_2
+     * @see DecimalFunctions
      */
-    @Workaround(library="JDK", version="1.4")
     public static double pow10(final int x) {
-        if (x >= 0) {
-            if (x < POW10.length) {
-                return POW10[x];
-            }
-        } else if (x != Integer.MIN_VALUE) {
-            final int nx = -x;
-            if (nx < POW10.length) {
-                return 1 / POW10[nx];
-            }
-        }
-        try {
-            /*
-             * Double.parseDouble("1E"+x) gives as good or better numbers than Math.pow(10,x)
-             * for ALL integer powers, but is slower. We hope that the current workaround is only
-             * temporary. See http://developer.java.sun.com/developer/bugParade/bugs/4358794.html
-             */
-            return Double.parseDouble("1E" + x);
-        } catch (NumberFormatException exception) {
-            return StrictMath.pow(10, x);
-        }
+        return DecimalFunctions.pow10(x);
     }
 
     /**
@@ -382,9 +352,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is positive, excluding negative zero.
+     *
+     * @see #isPositiveZero(double)
+     * @see #isNegative(double)
      */
     public static boolean isPositive(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) == 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the positive zero ({@code +0.0}).
+     * This method returns {@code false} for the negative zero ({@code -0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isPositive(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is +0.0 (not -0.0).
+     *
+     * @see #isPositive(double)
+     * @see #isNegativeZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isPositiveZero(final double value) {
+        return doubleToRawLongBits(value) == 0L;
     }
 
     /**
@@ -403,9 +397,33 @@ public final class MathFunctions extends Static {
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is negative, including negative zero.
+     *
+     * @see #isNegativeZero(double)
+     * @see #isPositive(double)
      */
     public static boolean isNegative(final double value) {
         return (doubleToRawLongBits(value) & SIGN_BIT_MASK) != 0 && !Double.isNaN(value);
+    }
+
+    /**
+     * Returns {@code true} if the given value is the negative zero ({@code -0.0}).
+     * This method returns {@code false} for the positive zero ({@code +0.0}).
+     * This method is equivalent to the following code, but potentially faster:
+     *
+     * {@preformat java
+     *   return (value == 0) && isNegative(value);
+     * }
+     *
+     * @param  value The value to test.
+     * @return {@code true} if the given value is -0.0 (not +0.0).
+     *
+     * @see #isNegative(double)
+     * @see #isPositiveZero(double)
+     *
+     * @since 0.4
+     */
+    public static boolean isNegativeZero(final double value) {
+        return doubleToRawLongBits(value) == SIGN_BIT_MASK;
     }
 
     /**
@@ -447,100 +465,6 @@ public final class MathFunctions extends Static {
     public static double xorSign(final double value, final double sign) {
         return longBitsToDouble(doubleToRawLongBits(value) ^
                 (doubleToRawLongBits(sign) & SIGN_BIT_MASK));
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero or {@code NaN} and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     *
-     * @see Math#signum(double)
-     */
-    public static int sgn(final double x) {
-        if (x > 0) return +1;
-        if (x < 0) return -1;
-        else       return  0;
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero or {@code NaN} and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     *
-     * @see Math#signum(float)
-     */
-    public static int sgn(final float x) {
-        if (x > 0) return +1;
-        if (x < 0) return -1;
-        else       return  0;
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     */
-    public static int sgn(long x) {
-        if (x > 0) return +1;
-        if (x < 0) return -1;
-        else       return  0;
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     */
-    public static int sgn(int x) {
-        if (x > 0) return +1;
-        if (x < 0) return -1;
-        else       return  0;
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     */
-    public static short sgn(short x) {
-        if (x > 0) return (short) +1;
-        if (x < 0) return (short) -1;
-        else       return (short)  0;
-    }
-
-    /**
-     * Returns the sign of <var>x</var>. This method returns
-     *    -1 if <var>x</var> is negative,
-     *     0 if <var>x</var> is zero and
-     *    +1 if <var>x</var> is positive.
-     *
-     * @param x The number from which to get the sign.
-     * @return {@code +1} if <var>x</var> is positive, {@code -1} if negative, or 0 otherwise.
-     */
-    public static byte sgn(byte x) {
-        if (x > 0) return (byte) +1;
-        if (x < 0) return (byte) -1;
-        else       return (byte)  0;
     }
 
     /**
@@ -629,7 +553,7 @@ public final class MathFunctions extends Static {
         if (ordinal >= MIN_NAN_ORDINAL && ordinal <= MAX_NAN_ORDINAL) {
             return ordinal;
         }
-        final int resourceKey;
+        final short resourceKey;
         final Object obj;
         if (Float.isNaN(value)) {
             resourceKey = Errors.Keys.IllegalBitsPattern_1;

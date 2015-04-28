@@ -19,9 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import net.jcip.annotations.Immutable;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -32,7 +30,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
-
 /**
  * A composite of a {@linkplain DefaultNameSpace name space} (as a {@linkplain DefaultLocalName local name})
  * and a {@linkplain AbstractName generic name} valid in that name space.
@@ -40,17 +37,32 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * <p>{@code DefaultScopedName} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 2 or more</li>
- *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with at least one separator</li>
+ *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 2 or more.</li>
+ *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with at least one occurrence of the separator in the path.</li>
+ *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and all {@link CharSequence}
+ * elements in the arguments given to the constructor are also immutable. Subclasses shall make sure that any
+ * overridden methods remain safe to call from multiple threads and do not change any public {@code LocalName}
+ * state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultLocalName
  */
-@Immutable
-@XmlRootElement(name = "ScopedName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and LocalName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlTransient
 public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
@@ -80,14 +92,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             case 1:  return names.get(0);
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "names"));
         }
-    }
-
-    /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
-     * the {@link #parsedNames} field will be set by JAXB during unmarshalling.
-     */
-    private DefaultScopedName() {
-        parsedNames = null;
     }
 
     /**
@@ -179,7 +183,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         final LocalName lastName  = locals[index-1];
         final NameSpace lastScope = lastName.scope();
         final NameSpace tailScope = name.scope();
-        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent == lastScope) {
+        if (tailScope instanceof DefaultNameSpace && ((DefaultNameSpace) tailScope).parent() == lastScope) {
             /*
              * If the tail is actually the tip (a LocalName), remember the tail so we
              * don't need to create it again later. Then copy the tail after the path.
@@ -247,8 +251,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every elements of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every elements in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #head() head}.
+     *
+     * @return All elements except the first one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName tail() {
@@ -265,8 +271,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every element of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every element in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #tip() tip}.
+     *
+     * @return All elements except the last one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName path() {
@@ -286,7 +294,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Returns the sequence of local name for this generic name.
      */
     @Override
-    @XmlElement(name = "parsedName", required = true)
     public List<? extends LocalName> getParsedNames() {
         return parsedNames;
     }

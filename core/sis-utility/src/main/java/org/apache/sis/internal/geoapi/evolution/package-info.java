@@ -1,0 +1,36 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Provides a transition path for new GeoAPI elements not yet published in a formal release.
+ * We try to avoid putting a copy of those new elements in Apache SIS, since it would break
+ * compatibility when they would be removed in favor of GeoAPI elements. The approach taken
+ * is rather to use in the new API the most immediate parent available in a GeoAPI release.
+ * For example for new code list classes, this is {@code CodeList<?>}. The Javadoc for such
+ * API shall contain a warning. See {@code warning-templates.txt} for some proposals.
+ *
+ * <p><STRONG>Do not use!</STRONG></p>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.5
+ * @version 0.5
+ * @module
+ */
+package org.apache.sis.internal.geoapi.evolution;

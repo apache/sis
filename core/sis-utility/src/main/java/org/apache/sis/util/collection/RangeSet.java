@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -29,7 +28,6 @@ import java.util.SortedSet;
 import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.ArraysExt;
@@ -56,18 +54,19 @@ import static org.apache.sis.util.Numbers.*;
  *       ranges may in some circumstances <strong>increase</strong> the size of this set.</li>
  * </ul>
  *
- * {@section Inclusive or exclusive endpoints}
+ * <div class="section">Inclusive or exclusive endpoints</div>
  * {@code RangeSet} requires that {@link Range#isMinIncluded()} and {@link Range#isMaxIncluded()}
  * return the same values for all instances added to this set. Those values need to be specified
  * at construction time. If a user needs to store mixed kind of ranges, then he needs to subclass
  * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
  * {@link #newRange(Comparable, Comparable)} methods.
  *
- * {@note Current implementation does not yet support open intervals. The ranges shall be either
- * closed intervals, or half-open. This limitation exists because supporting open intervals implies
- * that the internal array shall support duplicated values.}
+ * <div class="note"><b>Note:</b>
+ * Current implementation does not yet support open intervals. The ranges shall be either closed intervals,
+ * or half-open. This limitation exists because supporting open intervals implies that the internal array
+ * shall support duplicated values.</div>
  *
- * {@section Extensions to <code>SortedSet</code> API}
+ * <div class="section">Extensions to <code>SortedSet</code> API</div>
  * This class contains some methods not found in standard {@link SortedSet} API.
  * Some of those methods look like {@link java.util.List} API, in that they work
  * with the index of a {@code Range} instance in the sequence of ranges returned
@@ -88,27 +87,27 @@ import static org.apache.sis.util.Numbers.*;
  *   <li>{@link #trimToSize()} frees unused space.</li>
  * </ul>
  *
- * {@section Implementation note}
+ * <div class="section">Implementation note</div>
  * For efficiency reasons, this set stores the range values in a Java array of primitive type if
  * possible. The {@code Range} instances given in argument to the {@link #add(Range)} method are
  * not retained by this class. Ranges are recreated during iterations by calls to the
  * {@link #newRange(Comparable, Comparable)} method. Subclasses can override that method if they
  * need to customize the range objects to be created.
  *
- * <p>While it is possible to create {@code RangeSet<Date>} instances, is is more efficient to
+ * <p>While it is possible to create {@code RangeSet<Date>} instances, it is more efficient to
  * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
  * use {@code long[]} arrays in the later case.</p>
  *
  * @param <E> The type of range elements.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see Range
  */
-@NotThreadSafe
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
 {
@@ -131,7 +130,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param <E> The type of range elements.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -187,7 +186,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         /**
          * Returns the singleton instance on deserialization.
          */
-        Object readResolve() throws ObjectStreamException {
+        Object readResolve() {
             return INSTANCE;
         }
     };
@@ -231,9 +230,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * are minimal values, and all elements at odd indices are maximal values. Elements in this
      * array must be strictly increasing without duplicated values.
      *
-     * {@note The restriction against duplicated values will need to be removed in a future
-     * version if we want to support open intervals. All binary searches in this class will
-     * need to take in account the possibility for duplicated values.}
+     * <div class="note"><b>Note:</b>
+     * The restriction against duplicated values will need to be removed in a future version
+     * if we want to support open intervals. All binary searches in this class will need to
+     * take in account the possibility for duplicated values.</div>
      */
     private Object array;
 
@@ -249,7 +249,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The amount of modifications applied on the range {@linkplain #array}.
      * Used for checking concurrent modifications.
      */
-    private transient int modCount;
+     private transient int modCount;
 
     /**
      * Constructs an initially empty set of ranges.
@@ -408,6 +408,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @SuppressWarnings("unchecked")
     private boolean isSorted() {
+        if (array == null) {
+            return true;
+        }
         final boolean strict = isMinIncluded | isMaxIncluded;
         switch (elementCode) {
             case DOUBLE:    return ArraysExt.isSorted((double[]) array, strict);
@@ -439,7 +442,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, ((Short)     ((Comparable) value)).shortValue ());
             case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, ((Byte)      ((Comparable) value)).byteValue  ());
             case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, ((Character) ((Comparable) value)).charValue  ());
-            default:        return Arrays.binarySearch((Object[]) array, lower, upper,              value);
+            default:        return Arrays.binarySearch((Object[]) array, lower, upper,             value);
         }
     }
 
@@ -594,6 +597,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * <p>The {@code isMinIncluded} and {@code isMaxIncluded} properties of the given range
      * shall be the complement of the ones given to the constructor of this {@code RangeSet}:</p>
      * <table class="sis">
+     *   <caption>Expected bounds inclusion</caption>
      *   <tr><th>{@code add(…)} values</th> <th>{@code remove(…)} values</th></tr>
      *   <tr><td>{@code [min … max]}</td>   <td>{@code (min … max)}</td></tr>
      *   <tr><td>{@code (min … max)}</td>   <td>{@code [min … max]}</td></tr>
@@ -639,7 +643,119 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
     public boolean remove(final E minValue, final E maxValue) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ArgumentChecks.ensureNonNull("minValue", minValue);
+        ArgumentChecks.ensureNonNull("maxValue", maxValue);
+        if (length == 0) return false; // Nothing to do if no data.
+        ensureOrdered(minValue, maxValue);
+
+        // Search insertion index.
+        int i0 = binarySearch(minValue, 0, length);
+        int i1 = binarySearch(maxValue, (i0 >= 0) ? i0 : ~i0, length);
+        if (i0 < 0) i0 = ~i0;
+        if (i1 < 0) i1 = ~i1;
+        if ((i0 & 1) == 0) {
+            if ((i1 & 1) == 0) {
+                /*
+                 * i0 & i1 are even.
+                 * Case where min and max value are outside any existing range.
+                 *
+                 *   index :      A0    B0       A1       B1        An      Bn     A(n+1)   B(n+1)
+                 *   range :      ███████        ██████████   ◾◾◾   ██████████     ██████████
+                 *                          |-----------------------------------|
+                 *   values :            minValue (i0)                      maxValue (i1)
+                 *
+                 * In this case delete all ranges between minValue and maxValue ([(A1, B1); (An, Bn)]).
+                 */
+                removeAt(i0, i1);
+            } else {
+                /*
+                 * i0 is even and i1 is odd.
+                 * Case where minValue is outside any existing range and maxValue is inside a specific range.
+                 *
+                 *   index :      A0    B0       A1       B1        An      Bn     A(n+1)   B(n+1)
+                 *   range :      ███████        ██████████   ◾◾◾   ██████████     ██████████
+                 *                          |----------------------------|
+                 *   values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 * - delete all ranges between minValue and maxValue ([(A1, B1); (A(n-1), B(n-1))]).
+                 * - and replace range (An; Bn) by new range (MaxValue; Bn).
+                 *
+                 * Result :
+                 * index :      A0    B0       i1  Bn     A(n+1)   B(n+1)
+                 * range :      ███████        █████      ██████████  ◾◾◾
+                 */
+                removeAt(i0, i1 & ~1); // equivalent to (i0, i1 - 1)
+                Array.set(array, i0, maxValue);
+            }
+        } else {
+            if ((i1 & 1) == 0) {
+                /*
+                 * i0 is odd and i1 is even.
+                 * Case where minValue is inside a specific range and maxValue is outside any range.
+                 *
+                 *  index :      A0    B0     A1       B1        An      Bn        A(n+1)   B(n+1)
+                 *  range :      ███████      ██████████   ◾◾◾   ██████████        ██████████
+                 *                                 |----------------------------|
+                 *  values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 *  - delete all ranges between minValue and maxValue ([(A2, B2); (An, Bn)]).
+                 *  - and replace range (A1; B1) by new range (A1; i0).
+                 *
+                 * Result :
+                 *  index :      A0    B0       A1  i0     A(n+1)   B(n+1)
+                 *  range :      ███████        █████      ██████████   ◾◾◾
+                 */
+                removeAt(i0 + 1, i1);
+                Array.set(array, i0, minValue);
+            } else {
+                /*
+                 * i0 and i1 are odd.
+                 * Case where minValue and maxValue are inside any specific range.
+                 *
+                 *  index :      A0    B0     A1       B1         An      Bn       A(n+1)   B(n+1)
+                 *  range :      ███████      ██████████   ◾◾◾    ██████████       ██████████
+                 *                                 |-------------------|
+                 *  values :            minValue (i0)               maxValue (i1)
+                 *
+                 * In this case :
+                 *  - delete all ranges between minValue and maxValue ([(A2, B2); (A(n-1), B(n-1))]).
+                 *  - and replace range (A1; B1) by new range (A1; i0).
+                 *
+                 * Result :
+                 *  index  :      A0    B0       A1  i0    i1  Bn     A(n+1)   B(n+1)
+                 *  range  :      ███████        █████  ◾◾◾    █████      ██████████
+                 *
+                 * A particularity case exist if i0 equal i1, which means minValue
+                 * and maxValue are inside the same specific range.
+                 *
+                 *  index  :      A0    B0     A1                  B1         An      Bn
+                 *  range  :      ███████      █████████████████████   ◾◾◾    ██████████
+                 *                                |-------------|
+                 *  values :            minValue (i0)      maxValue (i1)
+                 * In this case total range number will be increase by one.
+                 *
+                 * Result  :
+                 *  index  :      A0    B0       A1  i0    i1  B1     An   Bn
+                 *  range  :      ███████        █████     █████   ◾◾◾   █████
+                 */
+                if (i0 == i1) {
+                    // Above-cited special case
+                    insertAt(i1 + 1, maxValue, getValue(i1));
+                    Array.set(array, i0, minValue);
+                } else {
+                    final int di = i1 - i0;
+                    assert di >= 2 : di;
+                    if (di > 2) {
+                        removeAt(i0 + 1, i1 & ~1); // equivalent to (i0 + 1, i1 - 1)
+                    }
+                    Array.set(array, i0,     minValue);
+                    Array.set(array, i0 + 1, maxValue);
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -796,8 +912,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *           upper.minValue, !upper.isMinIncluded));
      * }
      *
-     * {@note This method takes the minimal value of the <code>upper</code> argument
-     *        rater than the maximal value because the upper endpoint is exclusive.}
+     * <div class="note"><b>API note:</b>
+     * This method takes the minimal value of the {@code upper} argument instead
+     * than the maximal value because the upper endpoint is exclusive.</div>
      *
      * @param  lower Low endpoint (inclusive) of the sub set.
      * @param  upper High endpoint (exclusive) of the sub set.
@@ -967,7 +1084,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         @Override
         public int size() {
             updateBounds();
-            return (upper - lower) / 2;
+            return (upper - lower) >> 1;
         }
 
         /**
@@ -1183,7 +1300,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-2.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -1481,6 +1598,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Invoked before serialization. Trims the internal array to the minimal size
      * in order to reduce the size of the object to be serialized.
+     *
+     * @param  out The output stream where to serialize this range set.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();
@@ -1489,6 +1609,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Invoked after deserialization. Initializes the transient fields.
+     *
+     * @param  in The input stream from which to deserialize a range set.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

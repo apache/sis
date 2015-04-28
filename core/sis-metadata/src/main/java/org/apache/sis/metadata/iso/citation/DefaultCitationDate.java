@@ -31,9 +31,18 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 /**
  * Reference date and event used to describe it.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -52,7 +61,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * Reference date for the cited resource in milliseconds elapsed sine January 1st, 1970,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long date;
+    private long date = Long.MIN_VALUE;
 
     /**
      * Event used for reference date.
@@ -63,7 +72,6 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * Constructs an initially empty citation date.
      */
     public DefaultCitationDate() {
-        date = Long.MIN_VALUE;
     }
 
     /**
@@ -82,19 +90,21 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CitationDate)
      */
     public DefaultCitationDate(final CitationDate object) {
         super(object);
-        date     = toMilliseconds(object.getDate());
-        dateType = object.getDateType();
+        if (object != null) {
+            date     = toMilliseconds(object.getDate());
+            dateType = object.getDateType();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -119,6 +129,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
 
     /**
      * Returns the reference date for the cited resource.
+     *
+     * @return Reference date for the cited resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -138,6 +150,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
 
     /**
      * Returns the event used for reference date.
+     *
+     * @return Event used for reference date, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateType", required = true)

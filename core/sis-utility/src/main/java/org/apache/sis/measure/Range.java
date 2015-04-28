@@ -21,13 +21,13 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -47,7 +47,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
  * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
- * {@section Type and value of range elements}
+ * <div class="section">Type and value of range elements</div>
  * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
  * {@link Comparable} interface. All argument values given to the methods of this class shall be
  * or contain instances of that {@code <E>} type. The type is enforced by parameterized type,
@@ -56,7 +56,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * may throw an {@link IllegalArgumentException} if a given argument does not meet some constraint
  * beyond the type.
  *
- * {@section Relationship with ISO 19123 definition of range}
+ * <div class="section">Relationship with ISO 19123 definition of range</div>
  * The ISO 19123 standard (<cite>Coverage geometry and functions</cite>) defines the range as the set
  * (either finite or {@linkplain org.opengis.geometry.TransfiniteSet transfinite}) of feature attribute
  * values associated by a function (the {@linkplain org.opengis.coverage.Coverage coverage}) with the
@@ -74,6 +74,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
  * continuous coverages}.</p>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
+ * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
+ * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
+ *
  * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
@@ -86,8 +91,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  */
-@Immutable
-public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -122,11 +126,16 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         isMinIncluded = range.isMinIncluded;
         maxValue      = range.maxValue;
         isMaxIncluded = range.isMaxIncluded;
-        assert validate();
+        assert validate() : elementType;
     }
 
     /**
      * Creates a new range bounded by the given endpoint values.
+     *
+     * <div class="note"><b>Assertion:</b>
+     * This constructor verifies the {@code minValue} and {@code maxValue} arguments type if Java assertions
+     * are enabled. This verification is not performed in normal execution because theoretically unnecessary
+     * unless Java generic types have been tricked.</div>
      *
      * @param elementType    The base type of the range elements.
      * @param minValue       The minimal value, or {@code null} if none.
@@ -148,18 +157,18 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;
         this.isMaxIncluded = isMaxIncluded && (maxValue != null);
-        assert validate();
+        assert validate() : elementType;
     }
 
     /**
      * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      *
-     * {@note This method is invoked by all operations (union, intersection, <i>etc.</i>) that may
-     * create a new range. But despite this fact, the return type of those methods are nailed down
-     * to <code>Range</code> (i.e. subclasses shall not override the above-cited operations with
-     * covariant return type) because those operations may return the given argument directly,
-     * and we have no guarantees on the type of those arguments.}
+     * <div class="note"><b>API note:</b>
+     * This method is invoked by all operations (union, intersection, <i>etc.</i>) that may create a new range.
+     * But despite this fact, the return type of those methods are nailed down to {@code Range} (i.e. subclasses
+     * shall not override the above-cited operations with covariant return type) because those operations may return
+     * the given argument directly, and we have no guarantees on the type of those arguments.</div>
      */
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
@@ -182,6 +191,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * To be overridden by {@link MeasurementRange} only.
+     *
+     * @return The unit of measurement, or {@code null}.
      */
     Unit<?> unit() {
         return null;
@@ -257,11 +268,13 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
      * at least one of them is exclusive.
      *
-     * {@note This method is final because often used by the internal implementation.
-     *        Making the method final ensures that the other methods behave consistently.}
+     * <div class="note"><b>API note:</b>
+     * This method is final because often used by the internal implementation.
+     * Making the method final ensures that the other methods behave consistently.</div>
      *
      * @return {@code true} if this range is empty.
      */
+    @Override
     public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
             return false; // Unbounded: can't be empty.
@@ -593,6 +606,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * only one digit. This method assumes that we have verified that the element type
      * is an integer type before to invoke this method.
      */
+    @SuppressWarnings("unchecked")
     private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
         if (value == null) {
             return ifNull;
@@ -653,6 +667,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
+            // No need to check if we should omit the space because Unit.toString()
+            // uses UCUM format, so we will never have symbol like the ° one.
             buffer.append(' ').append(unit);
         }
         return buffer.toString();

@@ -17,7 +17,6 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Set;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
@@ -26,12 +25,15 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * Handles conversions between {@link Angle} and {@link Double}.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe.
+ * The same {@link #INSTANCE} can be passed between threads without synchronization.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 public final class AngleConverter extends SystemConverter<Angle,Double> {
     /** For cross-version compatibility. */
     private static final long serialVersionUID = -5124032874967170238L;
@@ -60,15 +62,17 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
     }
 
     /** Converts the given angle. */
-    @Override public Double convert(final Angle object) {
+    @Override public Double apply(final Angle object) {
         return object.degrees();
     }
 
 
     /**
      * The inverse of {@link AngleConverter}.
+     *
+     * <div class="section">Thread safety</div>
+     * This class is immutable, and thus inherently thread-safe.
      */
-    @Immutable
     public static final class Inverse extends SystemConverter<Double,Angle> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1736966474591258159L;
@@ -97,7 +101,7 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
         }
 
         /** Converts the given angle. */
-        @Override public Angle convert(final Double object) {
+        @Override public Angle apply(final Double object) {
             return new Angle(object);
         }
     }

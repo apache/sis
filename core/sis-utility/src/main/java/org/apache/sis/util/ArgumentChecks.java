@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Map; // For javadoc
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
@@ -30,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * Every methods in this class can throw one of the following exceptions:
  *
  * <table class="sis">
+ * <caption>Exceptions thrown on illegal argument</caption>
  * <tr>
  *   <th>Exception</th>
  *   <th class="sep">Thrown by</th>
@@ -71,15 +73,15 @@ import org.apache.sis.util.resources.Errors;
  *       {@link org.apache.sis.measure.Units#ensureScale    ensureScale}.</li>
  * </ul>
  *
- * {@section Method Arguments}
+ * <div class="section">Method Arguments</div>
  * By convention, the value to check is always the last parameter given to every methods
  * in this class. The other parameters may include the programmatic name of the argument
  * being checked. This programmatic name is used for building an error message localized
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
- * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class ArgumentChecks extends Static {
@@ -108,25 +110,41 @@ public final class ArgumentChecks extends Static {
     /**
      * Makes sure that an array element is non-null. If {@code element} is null, then a
      * {@link NullArgumentException} is thrown with a localized message containing the
-     * given name and index.
+     * given name and index. The name and index are formatted as below:
+     *
+     * <ul>
+     *   <li>If the {@code name} contains the {@code "[#]"} sequence of characters, then the {@code '#'} character
+     *       is replaced by the {@code index} value. For example if {@code name} is {@code "axes[#].unit"} and the
+     *       index is 2, then the formatted message will contain {@code "axes[2].unit"}.</li>
+     *   <li>If the {@code name} does not contain the {@code "[#]"} sequence of characters, then {@code index} value
+     *       is appended between square brackets. For example if {@code name} is {@code "axes"} and the index is 2,
+     *       then the formatted message will contain {@code "axes[2]"}.</li>
+     * </ul>
      *
      * @param  name    The name of the argument to be checked. Used only if an exception is thrown.
      * @param  index   The Index of the element to check in an array or a list. Used only if an exception is thrown.
-     * @param  element The array or list element to check against null null.
+     * @param  element The array or list element to check against null value.
      * @throws NullArgumentException if {@code element} is null.
      */
     public static void ensureNonNullElement(final String name, final int index, final Object element)
             throws NullArgumentException
     {
         if (element == null) {
-            throw new NullArgumentException(Errors.format(
-                    Errors.Keys.NullArgument_1, name + '[' + index + ']'));
+            final StringBuilder buffer = new StringBuilder(name);
+            final int s = name.indexOf("[#]");
+            if (s >= 0) {
+                buffer.setLength(s + 1);
+                buffer.append(index).append(name, s + 2, name.length());
+            } else {
+                buffer.append('[').append(index).append(']');
+            }
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, buffer.toString()));
         }
     }
 
     /**
      * Makes sure that a character sequence is non-null and non-empty. If the given {@code text} is
-     * null, then a {@link NullArgumentException} is thrown. Otherwise if the given {@code text} has
+     * null, then a {@link NullArgumentException} is thrown. Otherwise if the given {@code text} has
      * a {@linkplain CharSequence#length() length} equals to 0, then an {@link IllegalArgumentException}
      * is thrown.
      *
@@ -155,8 +173,9 @@ public final class ArgumentChecks extends Static {
      *         Can be {@code null} if the name is unknown.
      * @param  expectedType the expected type (class or interface).
      * @param  value The value to check, or {@code null}.
-     * @throws IllegalArgumentException if {@code value} is non-null and is not assignable
-     *         to the given type.
+     * @throws IllegalArgumentException if {@code value} is non-null and is not assignable to the given type.
+     *
+     * @see org.apache.sis.util.collection.Containers#property(Map, Object, Class)
      */
     public static void ensureCanCast(final String name, final Class<?> expectedType, final Object value)
             throws IllegalArgumentException
@@ -164,7 +183,7 @@ public final class ArgumentChecks extends Static {
         if (value != null) {
             final Class<?> valueClass = value.getClass();
             if (!expectedType.isAssignableFrom(valueClass)) {
-                final int key;
+                final short key;
                 final Object[] args;
                 if (name != null) {
                     key = Errors.Keys.IllegalArgumentClass_3;
@@ -534,13 +553,30 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that the given integer is a valid Unicode code point. The range of valid code points goes
+     * from {@link Character#MIN_CODE_POINT U+0000} to {@link Character#MAX_CODE_POINT U+10FFFF} inclusive.
+     *
+     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  code The Unicode code point to verify.
+     * @throws IllegalArgumentException if the given value is not a valid Unicode code point.
+     *
+     * @since 0.4
+     */
+    public static void ensureValidUnicodeCodePoint(final String name, final int code) throws IllegalArgumentException {
+        if (!Character.isValidCodePoint(code)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnicodeCodePoint_2, name,
+                    (code < Character.MIN_CODE_POINT) ? code : "U+" + Integer.toHexString(code).toUpperCase()));
+        }
+    }
+
+    /**
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate reference system is null.
      *
      * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
      * @param  expected The expected number of dimensions.
      * @param  crs      The coordinate reference system to check for its dimension, or {@code null}.
-     * @throws MismatchedDimensionException If the given coordinate reference system is non-null
+     * @throws MismatchedDimensionException if the given coordinate reference system is non-null
      *         and does not have the expected number of dimensions.
      */
     public static void ensureDimensionMatches(final String name, final int expected,

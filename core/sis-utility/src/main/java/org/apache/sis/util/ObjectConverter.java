@@ -19,18 +19,21 @@ package org.apache.sis.util;
 import java.util.Set;
 import org.apache.sis.math.FunctionProperty;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Function;
+
 
 /**
  * A function which converts instances of <var>source</var> type to instances of <var>target</var> type.
  * The source and target types may be the same, in which case the {@code ObjectConverter} actually converts
  * the values rather than the type.
  *
- * <p>The main method of this interface is {@link #convert(Object)}, which receives an object of type
+ * <p>The main method of this interface is {@link #apply(Object)}, which receives an object of type
  * <var>S</var> and returns an object of type <var>T</var>. The set of all <var>S</var> values for which
- * {@code convert(S)} does not throw {@link UnconvertibleObjectException} is called the <cite>domain</cite>
- * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
+ * {@code apply(S)} does not throw {@link UnconvertibleObjectException} is called the <cite>domain</cite>
+ * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
  *
- * {@section Function properties}
+ * <div class="section">Function properties</div>
  * Some characteristics about the <var>S</var> to <var>T</var> mapping are given by the
  * {@link #properties()} enumeration, together with the {@link #getSourceClass()} and
  * {@link #getTargetClass()} methods. Some possible function properties are:
@@ -51,13 +54,20 @@ import org.apache.sis.math.FunctionProperty;
  *       a sequence of decreasing <var>T</var> values.</li>
  * </ul>
  *
+ * <div class="note"><b>Example:</b>
+ * The function properties regarding order is important when converting {@link org.apache.sis.measure.Range} objects.
+ * For example if the converter reverses the value ordering (e.g. reverses the sign of numerical values), then the
+ * minimum and maximum values in each {@code Range} instance need to be interchanged. If the ordering is not preserved
+ * at all (neither directly or reversed), as for example in the conversion from {@link Number} to {@link String}, then
+ * we can not convert ranges at all.</div>
+ *
  * Below are some guidelines about the function properties that a converter can declare:
  *
  * <ul>
- *   <li>If {@code convert(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
+ *   <li>If {@code apply(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
  *       can not be declared injective because more than one <var>S</var> value can produce the same
  *       <var>T</var> value (namely {@code null}).</li>
- *   <li>If {@code convert(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
+ *   <li>If {@code apply(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
  *       can be declared as an injective function if the other values meet the criteria.
  * </ul>
  *
@@ -68,8 +78,10 @@ import org.apache.sis.math.FunctionProperty;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see ObjectConverters
  */
-public interface ObjectConverter<S,T> {
+public interface ObjectConverter<S,T> extends Function<S,T> {
     /**
      * Returns the manner in which source values (<var>S</var>) are mapped to target values
      * (<var>T</var>). Some possible function properties are:
@@ -90,7 +102,7 @@ public interface ObjectConverter<S,T> {
      *       a sequence of decreasing <var>T</var> values.</li>
      * </ul>
      *
-     * Note that if the {@link #convert(Object)} method returns {@code null} for any non-convertible
+     * Note that if the {@link #apply(Object)} method returns {@code null} for any non-convertible
      * source value, then this properties set can not contain the {@link FunctionProperty#INJECTIVE}
      * value. See class javadoc for more discussion.
      *
@@ -123,7 +135,8 @@ public interface ObjectConverter<S,T> {
      * @return The converted object, or {@code null}.
      * @throws UnconvertibleObjectException If the given object is not an element of the function domain.
      */
-    T convert(S object) throws UnconvertibleObjectException;
+    @Override
+    T apply(S object) throws UnconvertibleObjectException;
 
     /**
      * Returns a converter capable to convert instances of <var>T</var> back to instances of

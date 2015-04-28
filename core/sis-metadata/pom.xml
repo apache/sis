@@ -28,13 +28,14 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <version>0.6-android-SNAPSHOT</version>
   </parent>
 
 
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-metadata</artifactId>
   <packaging>jar</packaging>
   <name>Apache SIS metadata</name>
@@ -107,22 +108,14 @@ Implementations of metadata derived from ISO 19115. This module provides both an
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
     </dependency>
 
     <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>

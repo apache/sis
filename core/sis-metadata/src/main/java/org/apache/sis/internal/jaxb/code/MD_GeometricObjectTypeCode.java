@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.GeometricObjectType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -28,20 +28,13 @@ import org.opengis.metadata.spatial.GeometricObjectType;
  * handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class MD_GeometricObjectTypeCode
         extends CodeListAdapter<MD_GeometricObjectTypeCode, GeometricObjectType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(GeometricObjectType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -57,6 +50,8 @@ public final class MD_GeometricObjectTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_GeometricObjectTypeCode wrap(CodeListProxy proxy) {
@@ -65,6 +60,8 @@ public final class MD_GeometricObjectTypeCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<GeometricObjectType> getCodeListClass() {

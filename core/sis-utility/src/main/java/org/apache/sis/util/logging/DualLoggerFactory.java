@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  * than picking an arbitrary logger.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -44,6 +44,14 @@ final class DualLoggerFactory extends LoggerFactory<DualLogger> {
         super(DualLogger.class);
         this.first  = first;
         this.second = second;
+    }
+
+    /**
+     * Returns a comma-separated list of the logging frameworks.
+     */
+    @Override
+    public String getName() {
+        return first.getName() + ", " + second.getName();
     }
 
     /**

@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
@@ -9,29 +27,43 @@
                 <root id="src.android.dir" name="Android application"/>
                 <root id="src.android.gen" name="Android generated resources"/>
                 <root id="src.webapp.dir" name="Web application"/>
-                <root id="src.app.dir" name="Application"/>
+                <root id="src.console.dir" name="Console"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
+                <root id="src.shapefile.dir" name="Shapefile"/>
+                <root id="src.storage.dir" name="Storage"/>
+                <root id="src.feature.dir" name="Feature"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
+                <root id="src.fra-profile.dir" name="French profile"/>
             </source-roots>
             <test-roots>
-                <root id="test.netcdf.dir" name="NetCDF tests"/>
-                <root id="test.referencing.dir" name="Referencing tests"/>
-                <root id="test.metadata.dir" name="Metadata tests"/>
-                <root id="test.utility.dir" name="Utility tests"/>
+                <root id="test.console.dir" name="Test Console"/>
+                <root id="test.netcdf.dir" name="Test NetCDF"/>
+                <root id="test.shapefile.dir" name="Test Shapefile"/>
+                <root id="test.storage.dir" name="Test Storage"/>
+                <root id="test.feature.dir" name="Test Feature"/>
+                <root id="test.referencing.dir" name="Test Referencing"/>
+                <root id="test.metadata.dir" name="Test Metadata"/>
+                <root id="test.utility.dir" name="Test Utility"/>
+                <root id="test.fra-profile.dir" name="Test French profile"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>accessor</word>
             <word>bitmask</word>
             <word>classname</word>
             <word>classnames</word>
             <word>classpath</word>
             <word>deserialization</word>
             <word>deserialized</word>
+            <word>endianness</word>
+            <word>geoidal</word>
+            <word>hectopascals</word>
             <word>initially</word>
             <word>javadoc</word>
             <word>loggings</word>
+            <word>maintainance</word>
             <word>marshallable</word>
             <word>marshalled</word>
             <word>marshaller</word>
@@ -41,12 +73,16 @@
             <word>monospaced</word>
             <word>namespace</word>
             <word>namespaces</word>
+            <word>orthodromic</word>
+            <word>parsable</word>
             <word>timezone</word>
             <word>Unicode</word>
+            <word>uninstall</word>
             <word>unmarshal</word>
             <word>unmarshaller</word>
             <word>unmarshallers</word>
             <word>unmarshalling</word>
+            <word>unparsable</word>
             <word>whitespaces</word>
         </spellchecker-wordlist>
     </configuration>

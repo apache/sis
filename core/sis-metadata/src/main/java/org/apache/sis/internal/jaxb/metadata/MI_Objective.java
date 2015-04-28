@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -43,6 +43,8 @@ public final class MI_Objective extends PropertyType<MI_Objective, Objective> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Objective.class}
      */
     @Override
     protected Class<Objective> getBoundType() {
@@ -77,7 +79,7 @@ public final class MI_Objective extends PropertyType<MI_Objective, Objective> {
      */
     @XmlElementRef
     public DefaultObjective getElement() {
-        return skip() ? null : DefaultObjective.castOrCopy(metadata);
+        return DefaultObjective.castOrCopy(metadata);
     }
 
     /**

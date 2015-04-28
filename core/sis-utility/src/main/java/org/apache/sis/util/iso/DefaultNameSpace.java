@@ -21,19 +21,18 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -47,12 +46,22 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link DefaultNameFactory#createNameSpace(GenericName, Map)}</li>
  * </ul>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
+ * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
+ * remain safe to call from multiple threads and do not change any public {@code NameSpace} state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see DefaultScopedName
+ * @see DefaultLocalName
+ * @see DefaultTypeName
+ * @see DefaultMemberName
+ * @see DefaultNameFactory
  */
-@Immutable
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * For cross-version compatibility.
@@ -60,8 +69,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     private static final long serialVersionUID = 8272640747799127007L;
 
     /**
-     * The default separator, which is {@value}. The separator is inserted between the
-     * namespace and any {@linkplain GenericName generic name} in that namespace.
+     * The default separator, which is {@code ':'}. The separator is inserted between
+     * the namespace and any {@linkplain GenericName generic name} in that namespace.
      */
     public static final char DEFAULT_SEPARATOR = ':';
 
@@ -75,8 +84,10 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * We don't use direct reference to {@code GLOBAL} because {@code null} is used as a sentinel
      * value for stopping iterative searches (using GLOBAL would have higher risk of never-ending
      * loops in case of bug), and in order to reduce the stream size during serialization.
+     *
+     * @see #parent()
      */
-    final DefaultNameSpace parent;
+    private final DefaultNameSpace parent;
 
     /**
      * The name of this namespace, usually as a {@link String} or an {@link InternationalString}.
@@ -113,14 +124,13 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * However we can (in an opportunist way) handles local names as well. In case of conflict,
      * the namespace will have precedence.
      *
-     * <p>This field is initialized soon after {@code DefaultNameSpace} and should be treated
-     * like a final field from that point.</p>
+     * <p>This field is initialized by {@link #init()} soon after {@code DefaultNameSpace} creation
+     * and shall be treated like a final field from that point.</p>
      */
     private transient WeakValueHashMap<String,Object> childs;
 
     /**
-     * Creates the global namespace. This constructor can be invoked by {@link GlobalNameSpace}
-     * only.
+     * Creates the global namespace. This constructor can be invoked by {@link GlobalNameSpace} only.
      */
     DefaultNameSpace() {
         this.parent        = null;
@@ -148,7 +158,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     protected DefaultNameSpace(final DefaultNameSpace parent, CharSequence name,
                                final String headSeparator, final String separator)
     {
-        this.parent = parent;
+        this.parent = (parent != GlobalNameSpace.GLOBAL) ? parent : null;
         ensureNonNull("name",          name);
         ensureNonNull("headSeparator", headSeparator);
         ensureNonNull("separator",     separator);
@@ -245,6 +255,13 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     }
 
     /**
+     * Returns the parent namespace, replacing null parent by {@link GlobalNameSpace#GLOBAL}.
+     */
+    final DefaultNameSpace parent() {
+        return (parent != null) ? parent : GlobalNameSpace.GLOBAL;
+    }
+
+    /**
      * Returns the depth of the given namespace.
      *
      * @param ns The namespace for which to get the depth, or {@code null}.
@@ -337,7 +354,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     }
 
     /**
-     * Returns a key to be used in the {@linkplain #pool} from the given name.
+     * Returns a key to be used in the {@linkplain #childs} pool from the given name.
      * The key must be the unlocalized version of the given string.
      *
      * @param name The name.
@@ -371,6 +388,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         if (name == null) {
             name = key;
         }
+        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -394,7 +412,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 }
             }
         }
-        assert child.parent == this;
+        assert child.parent() == this;
         return child;
     }
 
@@ -411,6 +429,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     final DefaultLocalName local(final CharSequence name, final DefaultLocalName candidate) {
         ensureNonNull("name", name);
         final String key = name.toString();
+        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
         DefaultLocalName child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -437,13 +456,34 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     }
 
     /**
-     * Returns a string representation of this namespace.
+     * Returns a JCR-like lexical form representation of this namespace.
+     * Following the <cite>Java Content Repository</cite> (JCR) convention,
+     * this method returns the string representation of {@linkplain #name()} between curly brackets.
      *
-     * @return A string representation of this namespace.
+     * <div class="note"><b>Example:</b> if the name of this namespace is “<code>org.apache.sis</code>”,
+     * then this method returns “<code>{org.apache.sis}</code>”.</div>
+     *
+     * <div class="section">Usage</div>
+     * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name
+     * (except for escaping of illegal characters) with a simple concatenation as in the following code example:
+     *
+     * {@preformat java
+     *     GenericName name = ...; // A name
+     *     println("Expanded form = " + name.scope() + name);
+     * }
+     *
+     * However the convention followed by this {@code DefaultNameSpace} implementation is not specified in the
+     * {@link NameSpace} contract. This implementation follows the JCR convention for debugging convenience,
+     * but applications needing better guarantees should use {@link Names#toExpandedString(GenericName)} instead.
+     *
+     * @return A JCR-like lexical form of this namespace.
+     *
+     * @see Names#toExpandedString(GenericName)
      */
+    @Debug
     @Override
     public String toString() {
-        return "NameSpace[\"" + name() + "\"]";
+        return new StringBuilder(name.length() + 2).append('{').append(name).append('}').toString();
     }
 
     /**
@@ -490,10 +530,9 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * behavior since we don't want to replace an instance of a user-defined class.</p>
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
-    Object readResolve() throws ObjectStreamException {
-        final DefaultNameSpace p = (parent != null) ? parent : GlobalNameSpace.GLOBAL;
+    Object readResolve() {
+        final DefaultNameSpace p = parent();
         final String key = key(name);
         final WeakValueHashMap<String,Object> pool = p.childs;
         synchronized (pool) {

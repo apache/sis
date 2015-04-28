@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.CharacterSet;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -28,18 +28,11 @@ import org.opengis.metadata.identification.CharacterSet;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCode, CharacterSet> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(CharacterSet.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

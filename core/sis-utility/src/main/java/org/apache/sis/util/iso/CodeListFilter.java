@@ -25,7 +25,7 @@ import org.apache.sis.util.Characters.Filter;
  * The filters used by {@link Types#forCodeName(Class, String, boolean)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -61,11 +61,20 @@ final class CodeListFilter implements CodeList.Filter {
      */
     @Override
     public boolean accept(final CodeList<?> code) {
-        for (final String name : code.names()) {
-            if (CharSequences.equalsFiltered(name, codename, Filter.LETTERS_AND_DIGITS, true)) {
+        for (final String candidate : code.names()) {
+            if (accept(candidate, codename)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the given names matches the name we are looking for.
+     * This is defined in a separated method in order to ensure that all code paths
+     * use the same criterion.
+     */
+    static boolean accept(final String candidate, final String codename) {
+        return CharSequences.equalsFiltered(candidate, codename, Filter.LETTERS_AND_DIGITS, true);
     }
 }

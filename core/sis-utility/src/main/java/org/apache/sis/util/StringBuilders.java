@@ -27,13 +27,13 @@ import static java.lang.Character.*;
  * modify directly the content of the provided {@code StringBuilder} instead than creating
  * new objects.
  *
- * {@section Unicode support}
+ * <div class="section">Unicode support</div>
  * Every methods defined in this class work on <cite>code points</cite> instead than characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -86,7 +86,7 @@ public final class StringBuilders extends Static {
      * @throws IllegalArgumentException If the {@code toSearch} argument is empty.
      *
      * @see String#replace(char, char)
-     * @see String#replace(CharSequence, CharSequence)
+     * @see CharSequences#replace(CharSequence, CharSequence, CharSequence)
      * @see StringBuilder#replace(int, int, String)
      */
     public static void replace(final StringBuilder buffer, final String toSearch, final String replaceBy) {
@@ -164,15 +164,15 @@ public final class StringBuilders extends Static {
      *
      * <p>More specifically if the given buffer ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are removed. Otherwise this
-     * method does nothing. This is a "<cite>all or nothing</cite>" method: either the fractional
+     * method does nothing. This is a <cite>"all or nothing"</cite> method: either the fractional
      * part is completely removed, or either it is left unchanged.</p>
      *
-     * {@section Use case}
+     * <div class="section">Use case</div>
      * This method is useful after a {@linkplain StringBuilder#append(double) double value has
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *
      * @param buffer The buffer to trim if possible.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @throws NullArgumentException If the given {@code buffer} is null.
      *
      * @see CharSequences#trimFractionalPart(CharSequence)
      */
@@ -198,7 +198,7 @@ public final class StringBuilders extends Static {
      * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
      *
      * @param  buffer The text to scan for Unicode characters to replace by ASCII characters.
-     * @throws NullArgumentException If the given {@code buffer} is null.
+     * @throws NullArgumentException If the given {@code buffer} is null.
      *
      * @see CharSequences#toASCII(CharSequence)
      */
@@ -212,21 +212,38 @@ public final class StringBuilders extends Static {
      */
     static CharSequence toASCII(CharSequence text, StringBuilder buffer) {
         if (text != null) {
-            final int length = text.length();
-            for (int i=0; i<length;) {
-                final int c = codePointAt(text, i);
+            /*
+             * Scan the buffer in reverse order because we may suppress some characters.
+             */
+            int i = text.length();
+            while (i > 0) {
+                final int c = codePointBefore(text, i);
+                final int n = charCount(c);
                 final int r = c - 0xC0;
-                if (r >= 0 && r<ASCII.length()) {
-                    final char ac = ASCII.charAt(r);
+                i -= n; // After this line, 'i' is the index of character 'c'.
+                if (r >= 0) {
+                    final char cr; // The character replacement.
+                    if (r < ASCII.length()) {
+                        cr = ASCII.charAt(r);
+                    } else {
+                        switch (getType(c)) {
+                            case SPACE_SEPARATOR: cr = ' '; break;
+                            case PARAGRAPH_SEPARATOR: // Fall through
+                            case LINE_SEPARATOR: cr = '\n'; break;
+                            default: continue;
+                        }
+                    }
                     if (buffer == null) {
-                        buffer = new StringBuilder(text);
+                        buffer = new StringBuilder(text.length()).append(text);
                         text = buffer;
                     }
-                    // Nothing special do to about codepoint here, since 'c' is
-                    // in the basic plane (verified by the r<ASCII.length() check).
-                    buffer.setCharAt(i, ac);
+                    if (n == 2) {
+                        buffer.deleteCharAt(i + 1); // Remove the low surrogate of a surrogate pair.
+                    }
+                    // Nothing special to do about codepoint here, since 'c' is in
+                    // the basic plane (verified by the r < ASCII.length() check).
+                    buffer.setCharAt(i, cr);
                 }
-                i += charCount(c);
             }
         }
         return text;

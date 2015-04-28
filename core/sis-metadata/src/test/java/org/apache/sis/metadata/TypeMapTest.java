@@ -22,11 +22,13 @@ import java.util.Date;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicDescription;
+import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.AbstractGeographicExtent;
@@ -45,8 +47,8 @@ import static java.util.AbstractMap.SimpleEntry;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -72,9 +74,11 @@ public final strictfp class TypeMapTest extends TestCase {
             new SimpleEntry<String,Class<?>>("presentationForm",      PresentationForm.class),
             new SimpleEntry<String,Class<?>>("series",                Series.class),
             new SimpleEntry<String,Class<?>>("otherCitationDetails",  InternationalString.class),
-            new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),
+//          new SimpleEntry<String,Class<?>>("collectiveTitle",       InternationalString.class),  -- deprecated as of ISO 19115:2014
             new SimpleEntry<String,Class<?>>("ISBN",                  String.class),
-            new SimpleEntry<String,Class<?>>("ISSN",                  String.class)
+            new SimpleEntry<String,Class<?>>("ISSN",                  String.class),
+            new SimpleEntry<String,Class<?>>("graphic",               BrowseGraphic.class),
+            new SimpleEntry<String,Class<?>>("onlineResource",        OnlineResource.class)
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));

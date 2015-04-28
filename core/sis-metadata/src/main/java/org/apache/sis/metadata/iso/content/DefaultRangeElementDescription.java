@@ -30,9 +30,18 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Description of specific range elements.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -74,20 +83,22 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RangeElementDescription)
      */
     public DefaultRangeElementDescription(final RangeElementDescription object) {
         super(object);
-        name          = object.getName();
-        definition    = object.getDefinition();
-        rangeElements = copyCollection(object.getRangeElements(), Record.class);
+        if (object != null) {
+            name          = object.getName();
+            definition    = object.getDefinition();
+            rangeElements = copyCollection(object.getRangeElements(), Record.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -112,6 +123,8 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
 
     /**
      * Returns the designation associated with a set of range elements.
+     *
+     * @return Designation associated with a set of range elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
@@ -131,6 +144,8 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
 
     /**
      * Returns the description of a set of specific range elements.
+     *
+     * @return Description of a set of specific range elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "definition", namespace = Namespaces.GMI, required = true)
@@ -151,6 +166,8 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
     /**
      * Returns the specific range elements, i.e. range elements associated with a name
      * and their definition.
+     *
+     * @return Specific range elements.
      *
      * @todo implements {@link Record} in order to use the annotation.
      */

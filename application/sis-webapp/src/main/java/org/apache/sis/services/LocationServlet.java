@@ -52,14 +52,14 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
-import org.apache.sis.core.LatLonRect;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.DistanceUtils;
-import org.apache.sis.storage.GeoRSSData;
-import org.apache.sis.storage.QuadTree;
-import org.apache.sis.storage.QuadTreeData;
-import org.apache.sis.storage.QuadTreeReader;
-import org.apache.sis.storage.QuadTreeWriter;
+import org.apache.sis.index.tree.GeoRSSData;
+import org.apache.sis.index.tree.QuadTree;
+import org.apache.sis.index.tree.QuadTreeData;
+import org.apache.sis.index.tree.QuadTreeReader;
+import org.apache.sis.index.tree.QuadTreeWriter;
 
 //ROME imports
 import com.sun.syndication.feed.WireFeed;
@@ -70,11 +70,11 @@ import com.sun.syndication.io.WireFeedInput;
 import com.sun.syndication.io.XmlReader;
 
 /**
- * 
+ *
  * A location web service that loads data from GeoRSS format (configured via a
  * provided config.xml file), and then loads up a {@link QuadTree} with this
  * information, making it queryable for callers.
- * 
+ *
  */
 public class LocationServlet extends HttpServlet {
 
@@ -88,7 +88,7 @@ public class LocationServlet extends HttpServlet {
   /**
    * Read GeoRSS data (location information provide sis-location-config.xml )
    * and build quad-tree.
-   * 
+   *
    * @param config
    *          Servlet configuration file
    * @exception ServletException
@@ -195,15 +195,15 @@ public class LocationServlet extends HttpServlet {
                 else
                   filename = cleanStr(item.getLink()) + ".txt";
 
-                GeoRSSData data = new GeoRSSData(filename, new LatLon(
-                    geoRSSModule.getPosition().getLatitude(), geoRSSModule
-                        .getPosition().getLongitude()));
+                GeoRSSData data = new GeoRSSData(filename, new DirectPosition2D(
+                    geoRSSModule.getPosition().getLongitude(),
+                    geoRSSModule.getPosition().getLatitude()));
                 if (this.tree.insert(data)) {
                   data.saveToFile(item, geoRSSModule, georssStoragePath);
                 } else {
                   System.out.println("[INFO] Unable to store data at location "
-                      + data.getLatLon().getLat() + ", "
-                      + data.getLatLon().getLon() + " under filename "
+                      + data.getLatLon().y + ", "
+                      + data.getLatLon().x + " under filename "
                       + data.getFileName());
                 }
               }
@@ -233,7 +233,7 @@ public class LocationServlet extends HttpServlet {
   /**
    * Provide GET requests for Bounding-box and Point-radius search queries.
    * Return search results to client in xml format.
-   * 
+   *
    * @param request
    *          Http Servlet Request
    * @param response
@@ -264,26 +264,22 @@ public class LocationServlet extends HttpServlet {
 
       if (llLat != null && llLon != null && urLat != null && urLon != null) {
         try {
-          LatLonRect bbox = new LatLonRect(new LatLon(
-              Double.parseDouble(llLat), Double.parseDouble(llLon)),
-              new LatLon(Double.parseDouble(urLat), Double.parseDouble(urLon)));
+          Envelope2D bbox = new Envelope2D(new DirectPosition2D(
+              Double.parseDouble(llLon), Double.parseDouble(llLat)),
+              new DirectPosition2D(Double.parseDouble(urLon), Double.parseDouble(urLat)));
 
           beforeTime = System.currentTimeMillis();
           results = tree.queryByBoundingBox(bbox);
           afterTime = System.currentTimeMillis();
           // get the polygon that approximates the region
-          Rectangle2D[] rects = bbox.getJavaRectangles();
+          Rectangle2D[] rects = bbox.toRectangles();
           for (int i = 0; i < rects.length; i++) {
-            String regionStr = (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMinX() - 180) + ",";
-            regionStr += (rects[i].getMaxY() - 90) + ","
-                + (rects[i].getMinX() - 180) + ",";
-            regionStr += (rects[i].getMaxY() - 90) + ","
-                + (rects[i].getMaxX() - 180) + ",";
-            regionStr += (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMaxX() - 180) + ",";
-            regionStr += (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMinX() - 180);
+            final Rectangle2D r = rects[i];
+            String regionStr = (r.getMinY()) + "," + (r.getMinX()) + ",";
+            regionStr += (r.getMaxY()) + "," + (r.getMinX()) + ",";
+            regionStr += (r.getMaxY()) + "," + (r.getMaxX()) + ",";
+            regionStr += (r.getMinY()) + "," + (r.getMaxX()) + ",";
+            regionStr += (r.getMinY()) + "," + (r.getMinX());
             regions.add(regionStr);
           }
         } catch (NumberFormatException ex) {
@@ -299,9 +295,9 @@ public class LocationServlet extends HttpServlet {
 
       if (radius != null && lat != null && lon != null) {
 
-        LatLon point = null;
+        DirectPosition2D point = null;
         try {
-          point = new LatLon(Double.parseDouble(lat), Double.parseDouble(lon));
+          point = new DirectPosition2D(Double.parseDouble(lon), Double.parseDouble(lat));
         } catch (NumberFormatException ex) {
           System.out
               .println("{ERROR] Input parameters were not valid latitudes and longitudes");
@@ -312,13 +308,11 @@ public class LocationServlet extends HttpServlet {
         String regionStr = "";
 
         for (int i = 0; i < 360; i += 10) {
-          LatLon pt = DistanceUtils.getPointOnGreatCircle(point.getLat(), point
-              .getLon(), radiusKM, i);
-          regionStr += pt.toString() + ",";
+          DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, i);
+          regionStr += pt.y + "," + pt.x + ",";
         }
-        LatLon pt = DistanceUtils.getPointOnGreatCircle(point.getLat(), point
-            .getLon(), radiusKM, 0);
-        regionStr += pt.toString() + ",";
+        DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, 0);
+        regionStr += pt.y + "," + pt.x + ",";
         regions.add(regionStr.substring(0, regionStr.length() - 1));
 
         beforeTime = System.currentTimeMillis();
@@ -335,7 +329,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Provide Post requests for build GeoRSS data html file.
-   * 
+   *
    * @param request
    *          Http Servlet Request
    * @param response
@@ -386,7 +380,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Builds the XML file to return to client.
-   * 
+   *
    * @param filterList
    *          list of QuadTreeData that are within the search region
    * @param regions
@@ -414,14 +408,12 @@ public class LocationServlet extends HttpServlet {
         item.appendChild(id);
 
         Element lat = doc.createElement("lat");
-        Text latText = doc.createTextNode(Double.toString(geo.getLatLon()
-            .getLat()));
+        Text latText = doc.createTextNode(Double.toString(geo.getLatLon().y));
         lat.appendChild(latText);
         item.appendChild(lat);
 
         Element lon = doc.createElement("lon");
-        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon()
-            .getLon()));
+        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon().x));
         lon.appendChild(lonText);
         item.appendChild(lon);
 
@@ -474,8 +466,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Replace all non-alphanumeric characters with empty strings.
-   * 
-   * @param id
+   *
    * @return String without any non-alphanumeric characters
    */
   private static String cleanStr(String id) {

@@ -23,14 +23,14 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * {@section Note on serialization}
+ * <div class="section">Note on serialization</div>
  * Developers should avoid putting serializable classes in this package as much as possible,
  * since the serialization forms may be considered as a kind of API contract (depending how
  * much strict we want to be regarding compatibility). This is not always practical however,
  * so some serialized classes still exist in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

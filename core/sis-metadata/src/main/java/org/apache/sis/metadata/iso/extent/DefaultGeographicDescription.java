@@ -28,18 +28,25 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 /**
  * Description of the geographic area using identifiers.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")
-public class DefaultGeographicDescription extends AbstractGeographicExtent
-        implements GeographicDescription
-{
+public class DefaultGeographicDescription extends AbstractGeographicExtent implements GeographicDescription {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -75,18 +82,20 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicDescription)
      */
     public DefaultGeographicDescription(final GeographicDescription object) {
         super(object);
-        geographicIdentifier = object.getGeographicIdentifier();
+        if (object != null) {
+            geographicIdentifier = object.getGeographicIdentifier();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -111,6 +120,8 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
 
     /**
      * Returns the identifier used to represent a geographic area.
+     *
+     * @return The identifier used to represent a geographic area, or {@code null}.
      */
     @Override
     @XmlElement(name = "geographicIdentifier", required = true)

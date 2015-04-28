@@ -31,25 +31,23 @@
  *   <li>the value string is compliant with the {@link java.text.MessageFormat} syntax.</li>
  * </ul>
  *
- * {@note <code>java.util.Formatter</code> is an alternative to <code>MessageFormat</code> providing
- *        similar functionalities with a C/C++ like syntax. However <code>MessageFormat</code> has two
- *        advantages: it provides a <code>choice</code> format type (useful for handling plural forms),
- *        and localizes properly objects of unspecified type (by contrast, the <code>Formatter</code>
- *        <code>"%s"</code> type always invoke <code>toString()</code>). The later advantage is
- *        important for messages in wich the same argument could receive <code>Number</code> or
- *        <code>Date</code> instances as well as <code>String</code>.
- *        Furthermore, the <code>java.util.logging</code> framework is designed for use with
- *        <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
+ * <div class="note"><b>Note:</b>
+ * {@link java.util.Formatter java.util.Formatter} is an alternative to {@link java.text.MessageFormat} providing
+ * similar functionalities with a C/C++ like syntax. However {@code MessageFormat} has two advantages: it provides
+ * a {@code choice} format type (useful for handling plural forms), and localizes properly objects of unspecified type
+ * (by contrast, the {@code Formatter} {@code "%s"} type always invoke {@code toString()}). The later advantage is
+ * important for messages in which the same argument could receive {@link java.lang.Number} or {@link java.util.Date}
+ * instances as well as {@link java.lang.String}. Furthermore, the {@link java.util.logging} framework is designed for
+ * use with {@code MessageFormat} (see the {@code Formatter.formatMessage(LogRecord)} method).</div>
  *
- * Apache SIS developers can add resources by editing the {@code *.properties} file
- * in the source code directory, then run the localized resources compiler provided in the
- * <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module.
+ * Apache SIS developers can add resources by editing the {@code *.properties} file in the source code directory,
+ * then run the localized resources compiler provided in the {@code sis-build-helper} module.
  * Developers shall <strong>not</strong> apply the {@code MessageFormat} rules for using quotes,
  * since the resources compiler will apply itself the <cite>doubled single quotes</cite> when
  * necessary. This avoid the unfortunate confusion documented in the warning section of
  * {@link java.text.MessageFormat} javadoc.
  *
- * {@section Usage}
+ * <div class="section">Usage</div>
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a
  * {@code getResources(Locale)} static method. It can be used for fetching localized strings
  * as below:
@@ -58,21 +56,35 @@
  *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
  * }
  *
- * For convenience, all {@code IndexedResourceBundle} subclasses provide also various
- * {@code format(int, …)} and {@code formatInternational(int, …)} static methods for
- * fetching localized texts in the {@linkplain java.util.Locale#getDefault() system
- * default locale}, or localizable texts:
+ * For convenience, all {@code IndexedResourceBundle} subclasses provide also various {@code format(int, …)} static
+ * methods for fetching localized texts in the {@linkplain java.util.Locale#getDefault() system default locale}:
  *
  * {@preformat java
- *     InternationalString i18n = TheBundle.formatInternational(key, optionalArguments);
- *     String text = i18n.toString(locale); // Equivalent to the above example.
- *
  *     text = TheBundle.format(key, optionalArguments); // Uses the default locale.
  * }
  *
+ * If the locale is not known at method invocation time, {@code formatInternational(int, …)} static methods
+ * returns a localizable string which can be localized later:
+ *
+ * {@preformat java
+ *     InternationalString i18n = TheBundle.formatInternational(key, optionalArguments);
+ *     String text = i18n.toString(locale); // Localize now.
+ * }
+ *
+ * If optional arguments are present, then the following types are handled in a special way
+ * (non exhaustive list):
+ *
+ * <ul>
+ *   <li>{@link java.lang.Number}, {@link java.util.Date}, {@link org.opengis.util.CodeList} and
+ *       {@link org.opengis.util.InternationalString} instances are localized using the current
+ *       {@code ResourceBundle} locale.</li>
+ *   <li>Long {@link java.lang.CharSequence} instances are shortened.</li>
+ *   <li>{@link java.lang.Class} and {@link java.lang.Throwable} instances are summarized.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see java.util.ResourceBundle

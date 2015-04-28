@@ -27,19 +27,20 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
+import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -56,7 +57,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * in {@link SubEnvelope}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -89,6 +90,11 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         this.ordinates = ordinates;
     }
 
+    /*
+     * Constructors below this point have public access because if we decided to make class
+     * ArrayEnvelope public, then we would probably want to make those constructors public too.
+     */
+
     /**
      * Constructs an envelope defined by two corners given as direct positions.
      * If at least one corner is associated to a CRS, then the new envelope will also
@@ -111,6 +117,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
             ordinates[i            ] = lowerCorner.getOrdinate(i);
             ordinates[i + dimension] = upperCorner.getOrdinate(i);
         }
+        verifyRanges(crs, ordinates);
     }
 
     /**
@@ -167,11 +174,14 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
             ordinates[i]           = lowerCorner.getOrdinate(i);
             ordinates[i+dimension] = upperCorner.getOrdinate(i);
         }
+        verifyRanges(crs, ordinates);
     }
 
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
+     * The coordinate reference system is set to the
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
      */
@@ -184,17 +194,13 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
             box.getNorthBoundLatitude()
         };
         if (Boolean.FALSE.equals(box.getInclusion())) {
-            swap(0);
+            ArraysExt.swap(ordinates, 0, ordinates.length >>> 1);
             if (!isPoleToPole(ordinates[1], ordinates[3])) {
-                swap(1);
+                ArraysExt.swap(ordinates, 1, (ordinates.length >>> 1) + 1);
             }
         }
-        try {
-            crs = CRS.forCode("CRS:84");
-        } catch (FactoryException e) {
-            // Should never happen since we asked for a CRS which should always be present.
-            throw new AssertionError(e);
-        }
+        crs = CommonCRS.defaultGeographic();
+        verifyRanges(crs, ordinates);
     }
 
     /**
@@ -315,13 +321,56 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Swaps two ordinate values.
+     * Verifies the validity of the range of ordinates values in the given array.
+     * If the given CRS is null, then this method conservatively does nothing.
+     * Otherwise this method performs the following verifications:
+     *
+     * <ul>
+     *   <li>{@code lower > upper} is allowed only for axes having {@link RangeMeaning#WRAPAROUND}.</li>
+     * </ul>
+     *
+     * This method does <strong>not</strong> verify if the ordinate values are between the axis minimum and
+     * maximum values. This is because out-of-range values exist in practice but do not impact the working
+     * of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods. This in contrast
+     * with the checks listed above, where failure to meet those conditions will cause the methods to
+     * behave in an unexpected way.
+     *
+     * <div class="section">Implementation consistency</div>
+     * The checks performed by this method shall be consistent with the checks performed by the following methods:
+     * <ul>
+     *   <li>{@link GeneralEnvelope#setCoordinateReferenceSystem(CoordinateReferenceSystem)}</li>
+     *   <li>{@link GeneralEnvelope#setRange(int, double, double)}</li>
+     *   <li>{@link SubEnvelope#setRange(int, double, double)}</li>
+     * </ul>
+     *
+     * @param crs The coordinate reference system, or {@code null}.
+     * @param ordinates The array of ordinate values to verify.
      */
-    private void swap(final int i) {
-        final int m = i + (ordinates.length >>> 1);
-        final double t = ordinates[i];
-        ordinates[i] = ordinates[m];
-        ordinates[m] = t;
+    static void verifyRanges(final CoordinateReferenceSystem crs, final double[] ordinates) {
+        if (crs != null) {
+            final int dimension = ordinates.length >>> 1;
+            for (int i=0; i<dimension; i++) {
+                final double lower = ordinates[i];
+                final double upper = ordinates[i + dimension];
+                if (lower > upper && !isWrapAround(crs, i)) {
+                    throw new IllegalArgumentException(illegalRange(crs, i, lower, upper));
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates an error message for an illegal ordinates range at the given dimension.
+     * This is used for formatting the exception message.
+     */
+    static String illegalRange(final CoordinateReferenceSystem crs,
+            final int dimension, final double lower, final double upper)
+    {
+        Object name = IdentifiedObjects.getName(getAxis(crs, dimension), null);
+        if (name == null) {
+            name = dimension; // Paranoiac fallback (name should never be null).
+        }
+        return Errors.format(Errors.Keys.IllegalOrdinateRange_3, lower, upper, name);
     }
 
     /**

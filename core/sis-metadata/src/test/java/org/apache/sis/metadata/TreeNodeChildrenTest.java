@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  * Tests the {@link TreeNodeChildren} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
- * {@section Test dependency}
+ * <div class="section">Test dependency</div>
  * This class uses the {@link TreeNode#getUserObject()} method for comparing the values.
  * We can hardly avoid to use some {@code TreeNode} methods because of the cross-dependencies.
  * However we try to use nothing else than {@code getUserObject()} because the purpose of this
@@ -47,7 +47,7 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
@@ -200,9 +200,9 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "Second alternate title",
             "Third alternate title",  // After addition
             "New edition", // After "addition" (actually change).
+            "PresentationForm[IMAGE_DIGITAL]", // After addition
             "PresentationForm[MAP_DIGITAL]",
             "PresentationForm[MAP_HARDCOPY]",
-            "PresentationForm[IMAGE_DIGITAL]", // After addition
             "Some other details"
         };
         toAdd.setValue(TableColumn.IDENTIFIER, "edition");
@@ -240,7 +240,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithoutCollections() {
         final DefaultCitation  citation = metadataWithoutCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithoutCollections"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
@@ -255,7 +255,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithSingletonInCollections"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
@@ -270,7 +270,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithMultiOccurrences"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
@@ -308,9 +308,11 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_HARDCOPY]",
             null, // series
             "Some other details",
-            null, // collective title
+//          null, // collective title  -- deprecated as of ISO 19115:2014.
             null, // ISBN
-            null  // ISSN
+            null, // ISSN
+            null, // onlineResources (collection)
+            null  // graphics (collection)
         };
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());

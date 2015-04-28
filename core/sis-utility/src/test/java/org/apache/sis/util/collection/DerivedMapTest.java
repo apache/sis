@@ -123,7 +123,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
      * @return The multiplied value, or {@code null}.
      */
     @Override
-    public Integer convert(final Integer value) {
+    public Integer apply(final Integer value) {
         if (value.intValue() == EXCLUDED) {
             return null;
         }
@@ -139,7 +139,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
             @Override public ObjectConverter<Integer,Integer> inverse() {return DerivedMapTest.this;}
             @Override public Class<Integer> getSourceClass()            {return Integer.class;}
             @Override public Class<Integer> getTargetClass()            {return Integer.class;}
-            @Override public Integer        convert(Integer value)      {return value / 100;}
+            @Override public Integer        apply(Integer value)        {return value / 100;}
             @Override public Set<FunctionProperty> properties() {
                 return EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.ORDER_PRESERVING);
             }

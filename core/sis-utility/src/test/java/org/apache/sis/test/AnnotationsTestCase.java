@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlType;
@@ -45,9 +46,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * <ul>
  *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
  *   <li>The name declared in the {@code XmlType} annotations matches the
- *       {@linkplain #getExpectedTypeForElement expected value}.</li>
+ *       {@link #getExpectedXmlTypeForElement expected value}.</li>
  *   <li>The name declared in the {@code XmlRootElement} (classes) or {@link XmlElement} (methods)
- *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.</li>
+ *       annotations matches the identifier declared in the {@link UML} annotation of the GeoAPI interfaces.
+ *       The UML - XML name mapping can be changed by overriding {@link #getExpectedXmlElementName(UML)} and
+ *       {@link #getExpectedXmlRootElementName(UML)}.</li>
  *   <li>The {@code XmlElement.required()} boolean is consistent with the UML {@linkplain Obligation obligation}.</li>
  *   <li>The namespace declared in the {@code XmlRootElement} or {@code XmlElement} annotations
  *       is not redundant with the {@link XmlSchema} annotation in the package.</li>
@@ -58,8 +61,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public abstract strictfp class AnnotationsTestCase extends TestCase {
@@ -69,7 +72,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     private static final String DEFAULT = "##default";
 
     /**
-     * The GeoAPI interfaces or {@link CodeList} types to test.
+     * The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected final Class<?>[] types;
 
@@ -90,7 +93,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     /**
      * Creates a new test suite for the given types.
      *
-     * @param types The GeoAPI interfaces or {@link CodeList} types to test.
+     * @param types The GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected AnnotationsTestCase(final Class<?>... types) {
         this.types = types;
@@ -102,7 +105,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * interface is the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      *
      * @param  <T>  The type represented by the {@code type} argument.
-     * @param  type The GeoAPI interface (never a {@link CodeList} type).
+     * @param  type The GeoAPI interface (never a {@link CodeList} or {@link Enum} type).
      * @return The SIS implementation for the given interface.
      */
     protected abstract <T> Class<? extends T> getImplementation(Class<T> type);
@@ -141,7 +144,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>In SIS implementation, most wrappers are also {@link javax.xml.bind.annotation.adapters.XmlAdapter}.
      * But this is not a requirement.</p>
      *
-     * @param  type The GeoAPI interface or {@link CodeList} type.
+     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
      * @return The wrapper for the given type, or {@code null} if none.
      * @throws ClassNotFoundException If a wrapper was expected but not found.
      */
@@ -165,7 +168,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Returns the value of {@link #getWrapperFor(Class)} for the given class, or for a parent
      * of the given class if {@code getWrapperFor(Class)} threw {@code ClassNotFoundException}.
      *
-     * @param  type The GeoAPI interface or {@link CodeList} type.
+     * @param  type The GeoAPI interface, {@link CodeList} or {@link Enum} type.
      * @return The wrapper for the given type. {@link WrapperClass#type} is {@code null} if
      *         no wrapper has been found.
      * @throws ClassNotFoundException If a wrapper was expected but not found in the
@@ -198,7 +201,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      *
      * @see #testImplementationAnnotations()
      */
-    protected abstract String getExpectedTypeForElement(Class<?> type, Class<?> impl);
+    protected abstract String getExpectedXmlTypeForElement(Class<?> type, Class<?> impl);
 
     /**
      * Returns the expected namespace for an element defined by the given specification.
@@ -215,7 +218,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <p>The prefix for the given namespace will be fetched by
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
-     * @param  impl The implementation class or {@link CodeList} type.
+     * @param  impl The implementation class, {@link CodeList} or {@link Enum} type.
      * @param  specification The specification that define the type, or {@code null} if unspecified.
      * @return The expected namespace.
      * @throws IllegalArgumentException If the given specification is unknown to this method.
@@ -228,6 +231,27 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             case ISO_19108:   return Namespaces.GMD;
             default: throw new IllegalArgumentException(specification.toString());
         }
+    }
+
+    /**
+     * Returns the name of the XML element for the given UML element.
+     * This method is invoked in two situations:
+     *
+     * <ul>
+     *   <li>For the root XML element name of an interface, in which case {@code enclosing} is {@code null}.</li>
+     *   <li>For the XML element name of a property (field or method) defined by an interface,
+     *       in which case {@code enclosing} is the interface containing the property.</li>
+     * </ul>
+     *
+     * The default implementation returns {@link UML#identifier()}. Subclasses shall override this method
+     * when mismatches are known to exist between the UML and XML element names.
+     *
+     * @param  enclosing The GeoAPI interface which contains the property, or {@code null} if none.
+     * @param  uml The UML element for which to get the corresponding XML element name.
+     * @return The XML element name for the given UML element.
+     */
+    protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
+        return uml.identifier();
     }
 
     /**
@@ -270,12 +294,16 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     break;
                 }
             }
-            assertTrue("Namespace is not declared in the package @XmlSchema.xmlns().", found);
+            if (!found) {
+                fail("Namespace for " + impl + " is not declared in the package @XmlSchema.xmlns().");
+            }
         } else {
             namespace = schemaNamespace;
         }
-        assertEquals("Wrong namespace for the ISO specification.",
-                getExpectedNamespace(impl, (uml != null) ? uml.specification() : null), namespace);
+        if (uml != null) {
+            assertEquals("Wrong namespace for the ISO specification.",
+                    getExpectedNamespace(impl, uml.specification()), namespace);
+        }
         return namespace;
     }
 
@@ -348,17 +376,23 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
 
     /**
      * Returns {@code true} if the given method should be ignored.
-     * This method returns {@code true} of deprecated methods and
-     * some standard methods from the JDK.
+     * This method returns {@code true} for some standard methods from the JDK.
      */
     private static boolean isIgnored(final Method method) {
-        if (method.isAnnotationPresent(Deprecated.class)) {
-            return true;
-        }
         final String name = method.getName();
-        if (name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue")) {
-            return true;
-        }
+        return name.equals("equals") || name.equals("hashCode") || name.equals("doubleValue");
+    }
+
+    /**
+     * Returns {@code true} if the given method is a non-standard extension.
+     * If {@code true}, then {@code method} does not need to have UML annotation.
+     *
+     * @param method The method to verify.
+     * @return {@code true} if the given method is an extension, or {@code false} otherwise.
+     *
+     * @since 0.5
+     */
+    protected boolean isExtension(final Method method) {
         return false;
     }
 
@@ -383,9 +417,11 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             if (!CodeList.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
                     testingMethod = method.getName();
-                    if (!isIgnored(method)) {
+                    if (!isIgnored(method) && !isExtension(method)) {
                         uml = method.getAnnotation(UML.class);
-                        assertNotNull("Missing @UML annotation.", uml);
+                        if (!method.isAnnotationPresent(Deprecated.class)) {
+                            assertNotNull("Missing @UML annotation.", uml);
+                        }
                     }
                 }
             }
@@ -434,7 +470,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * <ul>
      *   <li>All implementation classes have {@link XmlRootElement} and {@link XmlType} annotations.</li>
      *   <li>The name declared in the {@code XmlType} annotations matches the
-     *       {@linkplain #getExpectedTypeForElement expected value}.</li>
+     *       {@link #getExpectedXmlTypeForElement expected value}.</li>
      *   <li>The name declared in the {@code XmlRootElement} annotations matches the identifier declared
      *       in the {@link UML} annotation of the GeoAPI interfaces.</li>
      *   <li>The namespace declared in the {@code XmlRootElement} annotations is not redundant with
@@ -471,7 +507,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             assertNotNull("Missing @XmlRootElement annotation.", root);
             final UML uml = type.getAnnotation(UML.class);
             if (uml != null) {
-                assertEquals("Wrong @XmlRootElement.name().", uml.identifier(), root.name());
+                assertEquals("Wrong @XmlRootElement.name().", getExpectedXmlElementName(null, uml), root.name());
             }
             /*
              * Check that the namespace is the expected one (according subclass)
@@ -483,7 +519,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
              */
             final XmlType xmlType = impl.getAnnotation(XmlType.class);
             assertNotNull("Missing @XmlType annotation.", xmlType);
-            String expected = getExpectedTypeForElement(type, impl);
+            String expected = getExpectedXmlTypeForElement(type, impl);
             if (expected == null) {
                 expected = DEFAULT;
             }
@@ -543,7 +579,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", uml.identifier(), element.name());
+                    assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(type, uml), element.name());
                     assertEquals("Wrong @XmlElement.required().", uml.obligation() == Obligation.MANDATORY, element.required());
                 }
                 /*
@@ -594,22 +630,34 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
              * and verify that exactly one of @XmlElement or @XmlElementRef annotation is declared.
              */
             testingClass = wrapper.type.getCanonicalName();
-            final Method getter, setter;
-            try {
-                getter = wrapper.type.getMethod("getElement", (Class<?>[]) null);
-                setter = wrapper.type.getMethod("setElement", getter.getReturnType());
-            } catch (NoSuchMethodException e) {
-                fail(e.toString());
-                continue;
+            final XmlElement element;
+            if (type.isEnum()) {
+                final Field field;
+                try {
+                    field = wrapper.type.getDeclaredField("value");
+                } catch (NoSuchFieldException e) {
+                    fail(e.toString());
+                    continue;
+                }
+                element = field.getAnnotation(XmlElement.class);
+            } else {
+                final Method getter, setter;
+                try {
+                    getter = wrapper.type.getMethod("getElement", (Class<?>[]) null);
+                    setter = wrapper.type.getMethod("setElement", getter.getReturnType());
+                } catch (NoSuchMethodException e) {
+                    fail(e.toString());
+                    continue;
+                }
+                assertEquals("The setter method must be declared in the same class than the " +
+                             "getter method - not in a parent class, to avoid issues with JAXB.",
+                             getter.getDeclaringClass(), setter.getDeclaringClass());
+                assertEquals("The setter parameter type shall be the same than the getter return type.",
+                             getter.getReturnType(), getSingleton(setter.getParameterTypes()));
+                element = getter.getAnnotation(XmlElement.class);
+                assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
+                             getter.isAnnotationPresent(XmlElementRef.class));
             }
-            assertEquals("The setter method must be declared in the same class than the " +
-                         "getter method - not in a parent class, to avoid issues with JAXB.",
-                         getter.getDeclaringClass(), setter.getDeclaringClass());
-            assertEquals("The setter parameter type shall be the same than the getter return type.",
-                         getter.getReturnType(), getSingleton(setter.getParameterTypes()));
-            final XmlElement element = getter.getAnnotation(XmlElement.class);
-            assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
-                         getter.isAnnotationPresent(XmlElementRef.class));
             /*
              * If the annotation is @XmlElement, ensure that XmlElement.name() is equals to
              * the UML identifier. Then verify that the
@@ -636,7 +684,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Shall be invoked after every successful test in order
      * to disable the report of failed class or method.
      */
-    private void done() {
+    protected final void done() {
         testingClass  = null;
         testingMethod = null;
     }

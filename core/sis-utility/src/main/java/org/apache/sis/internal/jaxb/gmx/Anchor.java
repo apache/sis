@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -38,7 +38,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -96,6 +96,9 @@ public final class Anchor extends XLink implements InternationalString {
 
     /**
      * Returns the text as a string, or {@code null} if none.
+     *
+     * @param  locale Ignored in current implementation.
+     * @return The anchor text, or {@code null} if none.
      */
     @Override
     public String toString(final Locale locale) {
@@ -120,7 +123,7 @@ public final class Anchor extends XLink implements InternationalString {
 
     /**
      * Returns the sequence of characters in the given range of index.
-     * The returned object still an anchor with the same attribute values.
+     * The returned object is an anchor with the same attribute values.
      * It is caller responsibility to determine if those attributes are still
      * appropriate for the sub-sequence.
      */
@@ -131,7 +134,7 @@ public final class Anchor extends XLink implements InternationalString {
             original = "";
         }
         final String substring = original.substring(start, end);
-        if (substring == original) {
+        if (substring == original) { // Identity comparison is ok here.
             return this;
         }
         return new Anchor(this, substring);

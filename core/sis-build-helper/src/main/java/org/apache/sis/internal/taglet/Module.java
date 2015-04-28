@@ -19,8 +19,6 @@ package org.apache.sis.internal.taglet;
 import java.io.File;
 import java.util.Map;
 import com.sun.javadoc.Tag;
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ClassDoc;
 import com.sun.tools.doclets.Taglet;
 
 
@@ -28,16 +26,11 @@ import com.sun.tools.doclets.Taglet;
  * The <code>@module</code> tag. This tag expects no argument.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Module implements Taglet {
-    /**
-     * SIS version to be referenced by this taglet.
-     */
-    private static final String VERSION = "0.3-android-SNAPSHOT";
-
     /**
      * Register this taglet.
      *
@@ -47,18 +40,6 @@ public final class Module implements Taglet {
        final Module tag = new Module();
        tagletMap.put(tag.getName(), tag);
     }
-
-    /**
-     * The base URL for Maven reports, with a trailing slash.
-     */
-    private static final String MAVEN_REPORTS_BASE_URL = WebSite.URL + '/';
-
-    /**
-     * The base URL for Maven repository, with a trailing slash.
-     * See <a href="http://www.apache.org/dev/repository-faq.html">ASF Jar Repositories</a>
-     * for more information.
-     */
-    private static final String MAVEN_REPOSITORY_BASE_URL = "http://repository.apache.org/snapshots/";
 
     /**
      * The SIS module in which the <code>@module</code> taglet has been found.
@@ -179,12 +160,10 @@ public final class Module implements Taglet {
         }
         final StringBuilder buffer = new StringBuilder(128);
         buffer.append("\n<p><font size=\"-1\">");
-        for (int i=0; i<tags.length; i++) {
-            final Tag tag = tags[i];
+        for (final Tag tag : tags) {
             File file = tag.position().file();
             module = file.getName();
-            while (file != null) {
-                file = file.getParentFile();
+            while ((file = file.getParentFile()) != null) {
                 if (file.getName().equals("src")) {
                     file = file.getParentFile();
                     if (file != null) {
@@ -196,31 +175,7 @@ public final class Module implements Taglet {
             /*
              * Appends the module link.
              */
-            buffer.append("Defined in the <a href=\"").append(MAVEN_REPORTS_BASE_URL).append(module)
-                  .append("/index.html\">").append(module).append("</a> module");
-            /*
-             * Appends the "(download binary)" link.
-             */
-            buffer.append("\n<font size=\"-2\">(<a href=\"").append(MAVEN_REPOSITORY_BASE_URL)
-                  .append("org/apache/sis/").append(module).append('/').append(VERSION).append('/')
-                  .append("\">download</a>)</font>");
-            /*
-             * Appends the "View source code for this class" link.
-             */
-            final Doc holder = tag.holder();
-            if (holder instanceof ClassDoc) {
-                ClassDoc outer, doc = (ClassDoc) holder;
-                while ((outer = doc.containingClass()) != null) {
-                    doc = outer;
-                }
-                final String className = doc.qualifiedName();
-                buffer.append("<br><a href=\"");
-                for (int j=className.indexOf('.'); j>=0; j=className.indexOf('.', j+1)) {
-                    buffer.append("../");
-                }
-                buffer.append("../xref/").append(className.replace('.', '/'))
-                      .append(".html\">View source code for this class</a>");
-            }
+            buffer.append("Defined in the <code>").append(module).append("</code> module");
         }
         return buffer.append("</font></p>\n").toString();
     }

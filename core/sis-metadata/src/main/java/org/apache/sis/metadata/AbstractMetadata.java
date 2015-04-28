@@ -18,6 +18,9 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.xml.bind.annotation.XmlTransient;
+import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.TreeTable;
@@ -42,6 +45,7 @@ import org.apache.sis.util.logging.Logging;
  * metadata does not support the operation. Those methods are:
  *
  * <table class="sis">
+ * <caption>Metadata operations</caption>
  * <tr>
  *   <th>Read-only operations</th>
  *   <th class="sep">Read/write operations</th>
@@ -61,17 +65,21 @@ import org.apache.sis.util.logging.Logging;
  * </tr>
  * </table>
  *
+ * <div class="section">Thread safety</div>
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
  * are not necessarily the metadata instances. For example an other common approach is to
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
+ *
+ * @see MetadataStandard
  */
-public abstract class AbstractMetadata implements LenientComparable {
+@XmlTransient
+public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     /**
      * The logger for messages related to metadata implementations.
      */
@@ -88,8 +96,9 @@ public abstract class AbstractMetadata implements LenientComparable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
-     * {@note Implementation of this method shall not depend on the object state,
-     *        since this method may be indirectly invoked by copy constructors.}
+     * <div class="section">Note for implementors</div>
+     * Implementation of this method shall not depend on the object state,
+     * since this method may be indirectly invoked by copy constructors.
      *
      * @return The metadata standard implemented.
      */
@@ -110,20 +119,20 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
-     * Returns {@code true} if this metadata contains only {@code null} or empty properties.
-     * A property is considered empty in any of the following cases:
+     * Returns {@code true} if this metadata contains only {@code null},
+     * {@linkplain org.apache.sis.xml.NilObject nil} or empty properties.
+     * A non-null and non-nil property is considered empty in any of the following cases:
      *
      * <ul>
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
-     *   <li>A collection or array containing only {@code null} or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null} or empty properties.</li>
+     *   <li>A collection or array containing only {@code null}, nil or empty elements.</li>
+     *   <li>An other metadata object containing only {@code null}, nil or empty properties.</li>
      * </ul>
      *
-     * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
-     * method.
+     * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
      *
-     * {@section Note for implementors}
+     * <div class="section">Note for implementors</div>
      * The default implementation uses Java reflection indirectly, by iterating over all entries
      * returned by {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
@@ -134,8 +143,23 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      */
+    @Override
     public boolean isEmpty() {
-        return Pruner.isEmpty(this, false);
+        /*
+         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+         * for all unused properties. Users should not see behavioral difference, except if they override
+         * some getters with an implementation invoking other getters. However in such cases, users would
+         * have been exposed to null values at XML marshalling time anyway.
+         */
+        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+        try {
+            return Pruner.isEmpty(this, true, false);
+        } finally {
+            if (!allowNull) {
+                Semaphores.clear(Semaphores.NULL_COLLECTION);
+            }
+        }
     }
 
     /**
@@ -146,7 +170,15 @@ public abstract class AbstractMetadata implements LenientComparable {
      * @throws UnmodifiableMetadataException If this metadata is not modifiable.
      */
     public void prune() {
-        Pruner.isEmpty(this, true);
+        // See comment in 'isEmpty()' about NULL_COLLECTION semaphore purpose.
+        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+        try {
+            Pruner.isEmpty(this, true, true);
+        } finally {
+            if (!allowNull) {
+                Semaphores.clear(Semaphores.NULL_COLLECTION);
+            }
+        }
     }
 
     /**
@@ -154,19 +186,19 @@ public abstract class AbstractMetadata implements LenientComparable {
      * object, so changes in the underlying metadata object are immediately reflected in the map
      * and conversely.
      *
-     * {@section Supported operations}
+     * <div class="section">Supported operations</div>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      *
-     * {@section Keys and values}
+     * <div class="section">Keys and values</div>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * {@section Multi-values entries}
+     * <div class="section">Multi-values entries</div>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -175,7 +207,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
@@ -196,37 +228,38 @@ public abstract class AbstractMetadata implements LenientComparable {
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
      * <p>The returned {@code TreeTable} instance contains the following columns:</p>
-     * <ul>
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     * <ul class="verbose">
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
      *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
      *       or the Java Beans property name otherwise, of a metadata property. For example
      *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
-     *       there is a node having the {@code "title"} identifier.</p></li>
+     *       there is a node having the {@code "title"} identifier.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
      *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
-     *       for the first element and an other node with index 1 for the second element.</p>
+     *       for the first element and an other node with index 1 for the second element.
      *
-     *       {@note The <code>(IDENTIFIER, INDEX)</code> pair can be used as a primary key for uniquely identifying
-     *              a node in a list of children. That uniqueness is guaranteed only for the children of a given
-     *              node; the same keys may appear in the children of any other nodes.}</li>
+     *       <div class="note"><b>Note:</b>
+     *       The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying a node
+     *       in a list of children. That uniqueness is guaranteed only for the children of a given node;
+     *       the same keys may appear in the children of any other nodes.</div></li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.
      *       This is the column shown in the default {@link #toString()} implementation and
-     *       may be localizable.</p></li>
+     *       may be localizable.</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
-     *       The base type of the value (usually an interface).</p></li>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</li>
      *
-     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *   <li>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
      *       The metadata value for the node. Values in this column are writable if the underlying
-     *       metadata class have a setter method for the property represented by the node.</p></li>
+     *       metadata class have a setter method for the property represented by the node.</li>
      * </ul>
      *
-     * {@section Write operations}
+     * <div class="section">Write operations</div>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -242,7 +275,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
      *
-     * {@section Default implementation}
+     * <div class="section">Default implementation</div>
      * The default implementation is equivalent to the following method call:
      *
      * {@preformat java
@@ -269,24 +302,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true;
-        }
-        if (object == null) {
-            return false;
-        }
-        if (mode == ComparisonMode.STRICT) {
-            if (object.getClass() != getClass()) {
-                return false;
-            }
-        }
-        final MetadataStandard standard = getStandard();
-        if (mode != ComparisonMode.STRICT) {
-            if (!getInterface().isInstance(object)) {
-                return false;
-            }
-        }
-        return standard.equals(this, object, mode);
+        return getStandard().equals(this, object, mode);
     }
 
     /**
@@ -312,13 +328,15 @@ public abstract class AbstractMetadata implements LenientComparable {
 
     /**
      * Computes a hash code value for this metadata using Java reflection. The hash code
-     * is defined as the sum of hash code values of all non-empty properties. This is a
-     * similar contract than {@link java.util.Set#hashCode()} and ensures that the hash code
-     * value is insensitive to the ordering of properties.
+     * is defined as the sum of hash code values of all non-empty properties, excluding
+     * cyclic dependencies. For acyclic metadata, this method contract is compatible with
+     * the {@link java.util.Set#hashCode()} one and ensures that the hash code value is
+     * insensitive to the ordering of properties.
      *
-     * {@note This method does not cache the value because current implementation has no notification
-     *        mechanism for tracking changes in children properties. If this metadata is known to be
-     *        immutable, then subclasses may consider caching the hash code value at their choice.}
+     * <div class="note"><b>Implementation note:</b>
+     * This method does not cache the value because current implementation has no notification mechanism
+     * for tracking changes in children properties. If this metadata is known to be immutable,
+     * then subclasses may consider caching the hash code value if performance is important.</div>
      *
      * @see MetadataStandard#hashCode(Object)
      */

@@ -18,7 +18,6 @@ package org.apache.sis.io;
 
 import java.io.Flushable;
 import java.io.IOException;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -46,7 +45,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * In addition this class removes trailing {@linkplain Character#isWhitespace(int) whitespaces}
  * before end of lines.
  *
- * {@section How line lengths are calculated}
+ * <div class="section">How line lengths are calculated</div>
  * Line length are measured in unit of Unicode <cite>code points</cite>. This is usually the same
  * than the number of {@code char} primitive values, but not always. Combining characters are not
  * yet recognized by this class, but future versions may improve on that.
@@ -58,11 +57,10 @@ import org.apache.sis.internal.jdk7.JDK7;
  * {@link #setTabulationExpanded(boolean)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
-@Decorator(Appendable.class)
 public class LineAppender extends Appender implements Flushable {
     /**
      * The line separator, or {@code null} if not yet determined. If {@code null}, then the
@@ -563,6 +561,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     public void flush() throws IOException {
         out.append(buffer);
         buffer.setLength(0);
+        printableLength = 0;
         IO.flush(out);
     }
 

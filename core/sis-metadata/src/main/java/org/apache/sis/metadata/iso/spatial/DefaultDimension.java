@@ -20,27 +20,48 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.annotation.UML;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.metadata.iso.ISOMetadata;
-//import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.ArgumentChecks;
+
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
+// Branch-specific imports
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Axis properties.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Dimension_Type", propOrder = {
     "dimensionName",
     "dimensionSize",
-    "resolution"
+    "resolution",
+/// "dimensionTitle",
+/// "dimensionDescription"
 })
 @XmlRootElement(name = "MD_Dimension")
 public class DefaultDimension extends ISOMetadata implements Dimension {
@@ -65,6 +86,18 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     private Double resolution;
 
     /**
+     * Enhancement/ modifier of the dimension name.
+     * Example: dimensionName = "column",
+     *          dimensionTitle = "longitude"
+     */
+    private InternationalString dimensionTitle;
+
+    /**
+     * Description of the axis.
+     */
+    private InternationalString dimensionDescription;
+
+    /**
      * Constructs an initially empty dimension.
      */
     public DefaultDimension() {
@@ -73,10 +106,12 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Creates a dimension initialized to the given type and size.
      *
-     * @param dimensionName The name of the axis, or {@code null} if none, or {@code null} if none.
-     * @param dimensionSize The number of elements along the axis, or {@code null} if none.
+     * @param  dimensionName The name of the axis, or {@code null} if none, or {@code null} if none.
+     * @param  dimensionSize The number of elements along the axis, or {@code null} if none.
+     * @throws IllegalArgumentException if {@code dimensionSize} is negative.
      */
     public DefaultDimension(final DimensionNameType dimensionName, final int dimensionSize) {
+        ArgumentChecks.ensurePositive("dimensionSize", dimensionSize);
         this.dimensionName = dimensionName;
         this.dimensionSize = dimensionSize;
     }
@@ -86,20 +121,33 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Dimension)
      */
     public DefaultDimension(final Dimension object) {
         super(object);
-        dimensionName = object.getDimensionName();
-        dimensionSize = object.getDimensionSize();
-        resolution    = object.getResolution();
+        if (object != null) {
+            dimensionName        = object.getDimensionName();
+            dimensionSize        = object.getDimensionSize();
+            resolution           = object.getResolution();
+            if (object instanceof DefaultDimension) {
+                dimensionTitle       = ((DefaultDimension) object).getDimensionTitle();
+                dimensionDescription = ((DefaultDimension) object).getDimensionDescription();
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -124,6 +172,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
 
     /**
      * Returns the name of the axis.
+     *
+     * @return Name of the axis, or {@code null}.
      */
     @Override
     @XmlElement(name = "dimensionName", required = true)
@@ -143,9 +193,11 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
 
     /**
      * Returns the number of elements along the axis.
+     *
+     * @return Number of elements along the axis, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0)
+    @ValueRange(minimum = 0)
     @XmlElement(name = "dimensionSize", required = true)
     public Integer getDimensionSize() {
         return dimensionSize;
@@ -154,19 +206,25 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the number of elements along the axis.
      *
-     * @param newValue The new dimension size.
+     * @param newValue The new dimension size, or {@code null}.
+     * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDimensionSize(final Integer newValue) {
         checkWritePermission();
+        if (newValue != null && newValue < 0) {
+            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", false, newValue);
+        }
         dimensionSize = newValue;
     }
 
     /**
      * Returns the degree of detail in the grid dataset.
+     *
+     * @return Degree of detail in the grid dataset, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-//  @XmlJavaTypeAdapter(GO_Measure.class) // TODO
+    @XmlJavaTypeAdapter(GO_Measure.class)
     @XmlElement(name = "resolution")
     public Double getResolution() {
         return resolution;
@@ -175,10 +233,67 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Sets the degree of detail in the grid dataset.
      *
-     * @param newValue The new resolution.
+     * @param newValue The new resolution, or {@code null}.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setResolution(final Double newValue) {
         checkWritePermission();
+        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", true, newValue);
+        }
         resolution = newValue;
+    }
+
+    /**
+     * Returns the enhancement/ modifier of the dimension name.
+     *
+     * <div class="note"><b>Example:</b>
+     * dimensionName = "column", dimensionTitle = "longitude"</div>
+     *
+     * @return The enhancement/ modifier of the dimension name.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "dimensionTitle")
+    @UML(identifier="dimensionTitle", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getDimensionTitle() {
+        return dimensionTitle;
+    }
+
+    /**
+     * Sets the enhancement/ modifier of the dimension name.
+     *
+     * @param newValue The new enhancement/ modifier of the dimension name.
+     *
+     * @since 0.5
+     */
+    public void setDimensionTitle(final InternationalString newValue) {
+        checkWritePermission();
+        dimensionTitle = newValue;
+    }
+
+    /**
+     * Return the axis dimension description.
+     *
+     * @return The axis dimension description.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "dimensionDescription")
+    @UML(identifier="dimensionDescription", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getDimensionDescription() {
+        return dimensionDescription;
+    }
+
+    /**
+     * Sets the axis dimension description.
+     *
+     * @param newValue The new axis dimension description.
+     *
+     * @since 0.5
+     */
+    public void setDimensionDescription(final InternationalString newValue) {
+        checkWritePermission();
+        dimensionDescription = newValue;
     }
 }

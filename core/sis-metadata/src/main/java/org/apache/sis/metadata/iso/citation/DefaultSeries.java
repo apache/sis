@@ -28,9 +28,18 @@ import org.apache.sis.util.iso.Types;
 /**
  * Information about the series, or aggregate dataset, to which a dataset belongs.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -81,20 +90,22 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Series)
      */
     public DefaultSeries(final Series object) {
         super(object);
-        name                = object.getName();
-        issueIdentification = object.getIssueIdentification();
-        page                = object.getPage();
+        if (object != null) {
+            name                = object.getName();
+            issueIdentification = object.getIssueIdentification();
+            page                = object.getPage();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -119,6 +130,8 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns the name of the series, or aggregate dataset, of which the dataset is a part.
+     *
+     * @return The name of the series or aggregate dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -138,6 +151,13 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns information identifying the issue of the series.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Information identifying the issue of the series, or {@code null}.
      */
     @Override
     @XmlElement(name = "issueIdentification")
@@ -148,6 +168,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Sets information identifying the issue of the series.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValue The new issue identification, or {@code null} if none.
      */
     public void setIssueIdentification(final String newValue) {
@@ -157,6 +182,13 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns details on which pages of the publication the article was published.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Details on which pages of the publication the article was published, or {@code null}.
      */
     @Override
     @XmlElement(name = "page")
@@ -166,6 +198,11 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Sets details on which pages of the publication the article was published.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code String} is replaced by the {@link InternationalString} interface.
+     * This change will be tentatively applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new page, or {@code null} if none.
      */

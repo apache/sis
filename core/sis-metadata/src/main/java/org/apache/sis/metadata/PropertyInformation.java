@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.lang.reflect.Method;
-import net.jcip.annotations.Immutable;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
@@ -29,7 +28,7 @@ import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
@@ -43,25 +42,27 @@ import org.apache.sis.util.logging.Logging;
  * but other types are allowed), instances of {@code PropertyInformation} are obtained
  * indirectly by the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} method.
  *
- * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
- *        <code>ExtendedElementInformation</code> instance as the set of all possible values
- *        for the property. If the information had a <code>contains(E)</code> method, it would
- *        return <code>true</code> if the given value is valid for that property.}
+ * <div class="note"><b>API note:</b>
+ * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
+ * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
+ * it would return {@code true} if the given value is valid for that property.</div>
+ *
+ * <div class="section">Immutability and thread safety</div>
+ * This final class is immutable and thus thread-safe.
  *
  * @param <E> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.05)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  */
-@Immutable
-final class PropertyInformation<E> extends SimpleReferenceIdentifier
+final class PropertyInformation<E> extends SimpleIdentifier
         implements ExtendedElementInformation, CheckedContainer<E>
 {
     /**
@@ -113,15 +114,14 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     private Object domainValue;
 
     /**
-     * Creates a new {@code PropertyInformation} instance from the annotations on the given
-     * getter method.
+     * Creates a new {@code PropertyInformation} instance from the annotations on the given getter method.
      *
      * @param  standard    The international standard that define the property, or {@code null} if none.
      * @param  property    The property name as defined by the international {@code standard}.
      * @param  getter      The getter method defined in the interface.
      * @param  elementType The value type, either the method return type if not a collection,
      *                     or the type of elements in the collection otherwise.
-     * @param  valueRange  The range of valid values, or {@code null} if none. This information is associated to the
+     * @param  range       The range of valid values, or {@code null} if none. This information is associated to the
      *                     implementation method rather than the interface one, because it is specific to SIS.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -179,7 +179,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
@@ -191,7 +191,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Unconditionally returns {@code null}.
      *
      * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2013 edition.
+     *             but has been removed in the 2014 edition.
      */
     @Override
     @Deprecated
@@ -250,6 +250,8 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Returns the case type of values to be stored in the property.
      * If the property type is an array or a collection, then this method
      * returns the type of elements in the array or collection.
+     *
+     * @see TypeValuePolicy#ELEMENT_TYPE
      */
     @Override
     public Class<E> getElementType() {
@@ -317,9 +319,17 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
     }
 
     /**
+     * Unconditionally returns {@code null}.
+     */
+    public InternationalString getRationale() {
+        return null;
+    }
+
+    /**
      * Unconditionally returns an empty list.
      */
     @Override
+    @Deprecated
     public Collection<InternationalString> getRationales() {
         return Collections.emptyList();
     }
@@ -336,7 +346,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Compares the given object with this element information for equality.
      *
      * @param  obj The object to compare with this element information for equality.
-     * @return {@code true} if both objects are equal.
+     * @return {@code true} if both objects are equal.
      */
     @Override
     public boolean equals(final Object obj) {

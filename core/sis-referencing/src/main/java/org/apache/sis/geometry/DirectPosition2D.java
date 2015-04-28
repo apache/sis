@@ -21,18 +21,19 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Holds the coordinates for a two-dimensional position on top of {@link Point2D}.
+ * A two-dimensional position on top of {@link Point2D}.
  * This implementation is provided for inter-operability between Java2D and GeoAPI.
  *
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
@@ -42,11 +43,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
- * {@note The rational for avoiding axis orientation restriction is that other <code>DirectPosition</code>
- *        implementations do not have such restriction, and it would be hard to generalize.
- *        For example there is no clear "x" or "y" classification for North-East direction.}
+ * <div class="note"><b>Note:</b>
+ * The rational for avoiding axis orientation restriction is that other {@code DirectPosition} implementations
+ * do not have such restriction, and it would be hard to generalize. For example there is no clear "x" or "y"
+ * classification for North-East direction.</div>
  *
- * {@section Caution when used in collections}
+ * <div class="section">Caution when used in collections</div>
  * Do not mix instances of this class with ordinary {@link Point2D} instances
  * in a {@code HashSet} or as {@code HashMap} keys.
  * It is not possible to meet both {@link Point2D#hashCode()} and {@link DirectPosition#hashCode()}
@@ -59,7 +61,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -212,11 +214,10 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
-     * {@note This method is final for ensuring consistency with the <code>x</code>
-     *        and <code>y</code> fields, which are public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @return The coordinate.
      */
@@ -228,8 +229,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Returns the ordinate at the specified dimension.
      *
-     * {@note This method is final for ensuring consistency with the <code>x</code>
-     *        and <code>y</code> fields, which are public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @param  dimension The dimension in the range 0 to 1 inclusive.
      * @return The coordinate at the specified dimension.
@@ -302,14 +303,9 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public int hashCode() {
-        int code;
-        long bits;
-        bits = doubleToLongBits(x); code = 31      + (((int) bits) ^ (int) (bits >>> 32));
-        bits = doubleToLongBits(y); code = 31*code + (((int) bits) ^ (int) (bits >>> 32));
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
+        int code =  31 + Numerics.hashCode(doubleToLongBits(x));
+        code = code*31 + Numerics.hashCode(doubleToLongBits(y));
+        return code + Objects.hashCode(crs);
     }
 
     /**

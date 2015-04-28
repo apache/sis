@@ -46,11 +46,23 @@ import org.apache.sis.util.Classes;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Logging extends Static {
+    /**
+     * The threshold at which {@link #unexpectedException(Logger, String, String, Throwable, Level)} shall
+     * set the throwable in the {@link LogRecord}. For any record to be logged at a lower {@link Level},
+     * the {@link LogRecord#setThrown(Throwable)} method will not be invoked.
+     *
+     * <p>The default value is 600, which is the {@link PerformanceLevel#PERFORMANCE} value.
+     * This value is between {@link Level#FINE} (500) and {@link Level#CONFIG} (700).
+     * Consequently we will ignore the stack traces of recoverable failures, but will report
+     * stack traces that may impact performance, configuration, or correctness.</p>
+     */
+    private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
+
     /**
      * The factory for obtaining {@link Logger} instances, or {@code null} if none.
      * If {@code null} (the default), then the standard JDK logging framework will be used.
@@ -64,10 +76,10 @@ public final class Logging extends Static {
      * The factory found on the classpath is assigned to the {@link #factory} field. If more than one factory
      * is found, then the log messages will be sent to the logging frameworks managed by all those factories.
      *
-     * {@note A previous version was providing a <code>scanForPlugins()</code> method allowing developers to
-     *        refresh the object state when new <code>LoggerFactory</code> instances become available on the
-     *        classpath of a running JVM. However it usually doesn't work since loggers are typically stored
-     *        in static final fields.}
+     * <div class="note"><b>API note:</b>
+     * A previous version was providing a {@code scanForPlugins()} method allowing developers to refresh the
+     * object state when new {@link LoggerFactory} instances become available on the classpath of a running JVM.
+     * However it usually doesn't work since loggers are typically stored in static final fields.</div>
      *
      * @see #setLoggerFactory(LoggerFactory)
      */
@@ -95,7 +107,7 @@ public final class Logging extends Static {
      * If the given {@code factory} argument is {@code null} (the default),
      * then the standard Logging framework will be used.
      *
-     * {@section Limitation}
+     * <div class="section">Limitation</div>
      * SIS classes typically declare a logger constant like below:
      *
      * {@preformat java
@@ -166,13 +178,14 @@ public final class Logging extends Static {
      * This convenience method performs the following steps:
      *
      * <ul>
-     *   <li>Get the logger using {@link #getLogger(Class)};</li>
+     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class name}
+     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
+     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method name}
+     *       to the given value;</li>
+     *   <li>Get the logger for the {@linkplain LogRecord#getLoggerName() logger name} if specified,
+     *       or using {@link #getLogger(Class)} otherwise;</li>
      *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name} of the given record,
      *       if not already set;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class
-     *       name} to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method
-     *       name} to the given value;</li>
      *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
      * </ul>
      *
@@ -183,9 +196,13 @@ public final class Logging extends Static {
     public static void log(final Class<?> classe, final String method, final LogRecord record) {
         record.setSourceClassName(classe.getCanonicalName());
         record.setSourceMethodName(method);
-        final Logger logger = getLogger(classe);
-        if (record.getLoggerName() == null) {
+        final String loggerName = record.getLoggerName();
+        final Logger logger;
+        if (loggerName == null) {
+            logger = getLogger(classe);
             record.setLoggerName(logger.getName());
+        } else {
+            logger = getLogger(loggerName);
         }
         logger.log(record);
     }
@@ -204,7 +221,7 @@ public final class Logging extends Static {
      * @param  logger Where to log the error.
      * @param  error  The error that occurred.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      */
     public static boolean unexpectedException(final Logger logger, final Throwable error) {
         return unexpectedException(logger, null, null, error, Level.WARNING);
@@ -235,7 +252,7 @@ public final class Logging extends Static {
      * @param method  The method where the error occurred, or {@code null}.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      *
      * @see #recoverableException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -255,7 +272,7 @@ public final class Logging extends Static {
      * @param method  The method where the error occurred, or {@code null}.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      *
      * @see #recoverableException(Class, String, Throwable)
      */
@@ -296,14 +313,12 @@ public final class Logging extends Static {
          */
         if (logger==null || classe==null || method==null) {
             String paquet = (logger != null) ? logger.getName() : null;
-            final StackTraceElement[] elements = error.getStackTrace();
-            for (int i=0; i<elements.length; i++) {
+            for (final StackTraceElement element : error.getStackTrace()) {
                 /*
                  * Searches for the first stack trace element with a classname matching the
                  * expected one. We compare preferably against the name of the class given
                  * in argument, or against the logger name (taken as the package name) otherwise.
                  */
-                final StackTraceElement element = elements[i];
                 final String classname = element.getClassName();
                 if (classe != null) {
                     if (!classname.equals(classe)) {
@@ -383,12 +398,34 @@ public final class Logging extends Static {
         if (method != null) {
             record.setSourceMethodName(method);
         }
-        if (level.intValue() > 500) {
+        if (level.intValue() >= LEVEL_THRESHOLD_FOR_STACKTRACE) {
             record.setThrown(error);
         }
         record.setLoggerName(logger.getName());
         logger.log(record);
         return true;
+    }
+
+    /**
+     * Invoked when an unexpected error occurred while configuring the system. The error shall not
+     * prevent the application from working, but may change the behavior in some minor aspects.
+     *
+     * <div class="note"><b>Example:</b>
+     * If the {@code org.apache.sis.util.logging.MonolineFormatter.time} pattern declared in the
+     * {@code jre/lib/logging.properties} file is illegal, then {@link MonolineFormatter} will log
+     * this problem and use a default time pattern.</div>
+     *
+     * @param classe  The class where the error occurred.
+     * @param method  The method name where the error occurred.
+     * @param error   The error.
+     * @return {@code true} if the error has been logged, or {@code false} if the logger
+     *         doesn't log anything at {@link Level#CONFIG}.
+     *
+     * @see #unexpectedException(Class, String, Throwable)
+     */
+    static boolean configurationException(final Class<?> classe, final String method, final Throwable error) {
+        final String classname = (classe != null) ? classe.getName() : null;
+        return unexpectedException(null, classname, method, error, Level.CONFIG);
     }
 
     /**
@@ -400,13 +437,11 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#FINE FINE} level.
+     *         doesn't log anything at {@link Level#FINE}.
      *
      * @see #unexpectedException(Class, String, Throwable)
      */
-    public static boolean recoverableException(final Class<?> classe, final String method,
-                                               final Throwable error)
-    {
+    public static boolean recoverableException(final Class<?> classe, final String method, final Throwable error) {
         return recoverableException(null, classe, method, error);
     }
 
@@ -420,7 +455,7 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#FINE FINE} level.
+     *         doesn't log anything at {@link Level#FINE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -442,7 +477,7 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#SEVERE SEVERE} level.
+     *         doesn't log anything at {@link Level#SEVERE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #recoverableException(Logger, Class, String, Throwable)

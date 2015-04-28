@@ -16,12 +16,30 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Collection;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
+import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.gco.GO_Integer64;
+import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.measure.ValueRange;
+import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
 
 
 /**
@@ -33,15 +51,26 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>
  *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
+ *
+ * @see DefaultResolution#getEquivalentScale()
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
-public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction {
+public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -51,6 +80,12 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * The number below the line in a vulgar fraction, or 0 if undefined.
      */
     private long denominator;
+
+    /**
+     * All identifiers associated with this metadata, or {@code null} if none.
+     * This field is initialized to a non-null value when first needed.
+     */
+    private Collection<Identifier> identifiers;
 
     /**
      * Creates a uninitialized representative fraction.
@@ -64,9 +99,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Creates a new representative fraction from the specified denominator.
      *
      * @param  denominator The denominator as a positive number, or 0 if unspecified.
-     * @throws IllegalArgumentException If the given value is not a positive number or zero.
+     * @throws IllegalArgumentException If the given value is negative.
      */
-    public DefaultRepresentativeFraction(final long denominator) throws IllegalArgumentException {
+    public DefaultRepresentativeFraction(final long denominator) {
         ArgumentChecks.ensurePositive("denominator", denominator);
         this.denominator = denominator;
     }
@@ -74,13 +109,19 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Constructs a new representative fraction initialized to the value of the given object.
      *
-     * @param  object The representative fraction to copy.
-     * @throws IllegalArgumentException If the denominator of the given source is negative.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      */
-    public DefaultRepresentativeFraction(final RepresentativeFraction object) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("object", object);
-        denominator = object.getDenominator();
-        ArgumentChecks.ensurePositive("object", denominator);
+    public DefaultRepresentativeFraction(final RepresentativeFraction object) {
+        if (object != null) {
+            denominator = object.getDenominator();
+        }
     }
 
     /**
@@ -102,8 +143,12 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns the denominator of this representative fraction.
+     *
+     * @return The denominator.
      */
     @Override
+    @ValueRange(minimum = 0)
+    @XmlJavaTypeAdapter(value = GO_Integer64.class, type = long.class)
     @XmlElement(name = "denominator", required = true)
     public long getDenominator() {
         return denominator;
@@ -113,26 +158,35 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Sets the denominator value.
      *
      * @param  denominator The new denominator value, or 0 if none.
-     * @throws IllegalArgumentException If the given value is not a positive number or zero.
+     * @throws IllegalArgumentException if the given value is negative.
      */
-    public void setDenominator(final long denominator) throws IllegalArgumentException {
-        ArgumentChecks.ensurePositive("denominator", denominator);
+    public void setDenominator(final long denominator) {
+        if (denominator < 0) {
+            warnNonPositiveArgument(DefaultRepresentativeFraction.class, "denominator", false, denominator);
+        }
         this.denominator = denominator;
     }
 
     /**
-     * Sets the denominator from a scale in the [-1 … +1] range.
+     * Sets the denominator from a scale in the (0 … 1] range.
      * The denominator is computed by {@code round(1 / scale)}.
      *
-     * @param  scale The scale as a number between -1 and +1 inclusive, or NaN.
+     * <p>The equivalent of a {@code getScale()} method is {@link #doubleValue()}.</p>
+     *
+     * @param  scale The scale as a number between 0 exclusive and 1 inclusive, or NaN.
      * @throws IllegalArgumentException if the given scale is our of range.
      */
-    public void setScale(final double scale) throws IllegalArgumentException {
-        if (Math.abs(scale) > 1) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, "scale", -1, +1, scale));
+    public void setScale(final double scale) {
+        /*
+         * For the following argument check, we do not need to use a Metadatautility method because
+         * 'setScale' is never invoked at (un)marshalling time. Note also that we accept NaN values
+         * since round(NaN) == 0, which is the desired value.
+         */
+        if (scale <= 0 || scale > 1) {
+            throw new IllegalArgumentException((scale <= 0)
+                    ? Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, "scale", scale)
+                    : Errors.format(Errors.Keys.ValueOutOfRange_4, "scale", 0, 1, scale));
         }
-        // round(NaN) == 0, which is the desired value.
         setDenominator(Math.round(1.0 / scale));
     }
 
@@ -149,6 +203,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns the scale as a {@code float} type.
+     *
+     * @return The scale.
      */
     @Override
     public float floatValue() {
@@ -158,8 +214,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
      *
-     * {@note This method is defined that way because scales smaller than 1 can
-     *        only be casted to 0, and NaN values are also represented by 0.}
+     * <div class="note"><b>Rational:</b>
+     * This method is defined that way because scales smaller than 1 can
+     * only be casted to 0, and NaN values are also represented by 0.</div>
+     *
+     * @return 1 if the denominator is 1, or 0 otherwise.
      */
     @Override
     public long longValue() {
@@ -169,12 +228,35 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equals to 1, or 0 otherwise.
      *
-     * {@note This method is defined that way because scales smaller than 1 can
-     *        only be casted to 0, and NaN values are also represented by 0.}
+     * <div class="note"><b>Rational:</b>
+     * This method is defined that way because scales smaller than 1 can
+     * only be casted to 0, and NaN values are also represented by 0.</div>
+     *
+     * @return 1 if the denominator is 1, or 0 otherwise.
      */
     @Override
     public int intValue() {
         return (denominator == 1) ? 1 : 0;
+    }
+
+    /**
+     * Returns {@code true} if no scale is defined.
+     * The following relationship shall hold:
+     *
+     * {@preformat java
+     *   assert isEmpty() == Double.isNaN(doubleValue());
+     * }
+     *
+     * @return {@code true} if no scale is defined.
+     *
+     * @see #doubleValue()
+     * @see #floatValue()
+     *
+     * @since 0.6
+     */
+    @Override
+    public boolean isEmpty() {
+        return (denominator == 0);
     }
 
     /**
@@ -204,5 +286,90 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @Override
     public int hashCode() {
         return (int) denominator;
+    }
+
+    /**
+     * Returns a string representation of this scale, or {@code NaN} if undefined.
+     * If defined, the string representation uses the colon as in "1:20000".
+     *
+     * @return A string representation of this scale.
+     */
+    @Override
+    public String toString() {
+        return (denominator != 0) ? "1:" + denominator : "NaN";
+    }
+
+
+
+
+    // --------------------------------------------------------------------------------------
+    // Code below this point is basically a copy-and-paste of ISOMetadata, with some edition.
+    // The JAXB attributes defined here shall be the same than the ISOMetadata ones.
+    // --------------------------------------------------------------------------------------
+
+    /**
+     * Returns all identifiers associated to this object, or an empty collection if none.
+     * Those identifiers are marshalled in XML as {@code id} or {@code uuid} attributes.
+     */
+    @Override
+    public Collection<Identifier> getIdentifiers() {
+        if (identifiers == null) {
+            identifiers = new CheckedArrayList<Identifier>(Identifier.class);
+        }
+        return identifiers;
+    }
+
+    /**
+     * Returns a map view of the {@linkplain #getIdentifiers() identifiers} collection as (<var>authority</var>,
+     * <var>code</var>) entries. That map is <cite>live</cite>: changes in the identifiers list will be reflected
+     * in the map, and conversely.
+     */
+    @Override
+    public IdentifierMap getIdentifierMap() {
+        return new IdentifierMapWithSpecialCases(getIdentifiers());
+    }
+
+    /**
+     * Invoked by JAXB for fetching the unique identifier unique for the XML document.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#getID()
+     */
+    @XmlID
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+    }
+
+    /**
+     * Invoked by JAXB for specifying the unique identifier.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#setID(String)
+     */
+    private void setID(String id) {
+        id = CharSequences.trimWhitespaces(id);
+        if (id != null && !id.isEmpty()) {
+            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
+        }
+    }
+
+    /**
+     * Invoked by JAXB for fetching the unique identifier unique "worldwide".
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#getUUID()
+     */
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getUUID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
+    }
+
+    /**
+     * Invoked by JAXB for specifying the unique identifier.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#setUUID(String)
+     */
+    private void setUUID(final String id) {
+        getIdentifierMap().put(IdentifierSpace.UUID, id);
     }
 }

@@ -23,10 +23,11 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
-import net.jcip.annotations.NotThreadSafe;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.internal.util.CheckedArrayList;
 
 
 /**
@@ -35,12 +36,12 @@ import org.apache.sis.util.resources.Errors;
  * which must be final. Iterators traverse the elements in the order in which the
  * code list constants are declared.
  *
- * {@section Implementation note}
+ * <div class="section">Implementation note</div>
  * {@code CodeListSet} is implemented internally by bit vectors for compact and efficient storage.
  * All bulk operations ({@code addAll}, {@code removeAll}, {@code containsAll}) are very quick if
  * their argument is also a {@code CodeListSet} instance.
  *
- * {@section Usage example}
+ * <div class="section">Usage example</div>
  * The following example creates a set of {@link org.opengis.referencing.cs.AxisDirection}s
  * for a (<var>x</var>,<var>y</var>,<var>z</var>) coordinate system:
  *
@@ -53,12 +54,11 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see java.util.EnumSet
  */
-@NotThreadSafe
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable
 {
@@ -71,6 +71,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * A pool of code list arrays. When many {@code CodeListSet} instances are for the
      * same code list type, this allows those instances to share the same arrays.
      */
+    @SuppressWarnings("rawtypes")
     private static final WeakHashSet<CodeList[]> POOL = new WeakHashSet<CodeList[]>(CodeList[].class);
 
     /**
@@ -78,7 +79,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      *
      * @see #getElementType()
      */
-    private final Class<E>  elementType;
+    private final Class<E> elementType;
 
     /**
      * A bitmask of code list values present in this map.
@@ -90,10 +91,11 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * if none. This is very rarely needed, but we need this field in case a code list has
      * more than 64 elements.
      *
-     * {@note The standard <code>EnumSet</code> class uses different implementations depending on
-     *        whether the enumeration contains more or less than 64 elements. We can not apply the
-     *        same strategy for <code>CodeListSet</code>, because new code list elements can be created
-     *        at runtime. Consequently this implementation needs to be able to growth its capacity.}
+     * <div class="note"><b>Implementation note:</b>
+     * The standard {@link java.util.EnumSet} class uses different implementations depending on whether
+     * the enumeration contains more or less than 64 elements. We can not apply the same strategy for
+     * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently this
+     * implementation needs to be able to growth its capacity.</div>
      */
     private BitSet supplementary;
 
@@ -128,7 +130,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * those new elements will <em>not</em> be in this set.
      *
      * @param  elementType The type of code list elements to be included in this set.
-     * @param  fill {@code true} for filling the set with all known elements if the given type,
+     * @param  fill {@code true} for filling the set with all known elements of the given type,
      *         or {@code false} for leaving the set empty.
      * @throws IllegalArgumentException If the given class is not final.
      */
@@ -185,6 +187,8 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
 
     /**
      * Returns {@code true} if this set does not contains any element.
+     *
+     * @return {@code true} if this set is empty.
      */
     @Override
     public boolean isEmpty() {
@@ -215,6 +219,18 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      */
     @Override
     public boolean add(final E element) {
+        if (element == null) {
+            final String message = CheckedArrayList.illegalElement(this, element, elementType);
+            if (message == null) {
+                /*
+                 * If a unmarshalling process is under way, silently discard null element.
+                 * This case happen when a codeListValue attribute in a XML file is empty.
+                 * See https://issues.apache.org/jira/browse/SIS-157
+                 */
+                return false;
+            }
+            throw new NullArgumentException(message);
+        }
         int ordinal = element.ordinal();
         if (ordinal < Long.SIZE) {
             return values != (values |= (1L << ordinal));
@@ -524,7 +540,9 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
-     * Returns a clone of this set.
+     * Returns a new set of the same class containing the same elements than this set.
+     *
+     * @return A clone of this set.
      */
     @Override
     @SuppressWarnings("unchecked")

@@ -16,14 +16,20 @@
  */
 package org.apache.sis.metadata.iso.distribution;
 
+import java.util.Currency;
 import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
+import org.opengis.util.Record;
+import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
@@ -32,11 +38,20 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * Common ways in which the resource may be obtained or received, and related instructions
  * and fee information.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
@@ -59,10 +74,15 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     private InternationalString fees;
 
     /**
+     * The {@link #fees} currency, or {@code null} if unknown or unspecified.
+     */
+    private Currency currency;
+
+    /**
      * Date and time when the dataset will be available,
      * in milliseconds elapsed since January 1st, 1970.
      */
-    private long plannedAvailableDateTime;
+    private long plannedAvailableDateTime = Long.MIN_VALUE;
 
     /**
      * General instructions, terms and services provided by the distributor.
@@ -75,10 +95,19 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     private InternationalString turnaround;
 
     /**
+     * Description of the order options record.
+     */
+    private RecordType orderOptionType;
+
+    /**
+     * Request/purchase choices.
+     */
+    private Record orderOptions;
+
+    /**
      * Constructs an initially empty standard order process.
      */
     public DefaultStandardOrderProcess() {
-        plannedAvailableDateTime = Long.MIN_VALUE;
     }
 
     /**
@@ -86,21 +115,27 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(StandardOrderProcess)
      */
     public DefaultStandardOrderProcess(final StandardOrderProcess object) {
         super(object);
-        fees                     = object.getFees();
-        plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
-        orderingInstructions     = object.getOrderingInstructions();
-        turnaround               = object.getTurnaround();
+        if (object != null) {
+            fees                     = object.getFees();
+            plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
+            orderingInstructions     = object.getOrderingInstructions();
+            turnaround               = object.getTurnaround();
+            if (object instanceof DefaultStandardOrderProcess) {
+                orderOptionType = ((DefaultStandardOrderProcess) object).getOrderOptionType();
+                orderOptions    = ((DefaultStandardOrderProcess) object).getOrderOptions();
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -126,6 +161,11 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
+     * The monetary units may also be available with {@link #getCurrency()}.
+     *
+     * @return Fees and terms for retrieving the resource, or {@code null}.
+     *
+     * @see #getCurrency()
      */
     @Override
     @XmlElement(name = "fees")
@@ -138,6 +178,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Include monetary units (as specified in ISO 4217).
      *
      * @param newValue The new fees.
+     *
+     * @see #setCurrency(Currency)
      */
     public void setFees(final InternationalString newValue) {
         checkWritePermission();
@@ -145,7 +187,44 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     }
 
     /**
+     * Returns the monetary units of the {@link #getFees() fees} (as specified in ISO 4217).
+     *
+     * <p><b>Constraints:</b><br>
+     * For ISO 19115 compatibility reasons, this method is <strong>not</strong> required to return
+     * a non-null value even if the text returned by {@link #getFees()} contains a currency units.
+     * However if this method returns a non-null value, then that value is required to be consistent
+     * with the fees text.</p>
+     *
+     * @return The fees monetary units, or {@code null} if none or unknown.
+     *
+     * @since 0.5
+     *
+     * @see #getFees()
+     */
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    /**
+     * Sets the monetary units of the {@link #getFees() fees} (as specified in ISO 4217).
+     * Callers should ensure that the given currency is consistent with the currency
+     * in the {@linkplain #getFees() fees} text.
+     *
+     * @param newValue The new currency.
+     *
+     * @since 0.5
+     *
+     * @see #setFees(InternationalString)
+     */
+    public void setCurrency(final Currency newValue) {
+        checkWritePermission();
+        currency = newValue;
+    }
+
+    /**
      * Returns the date and time when the dataset will be available.
+     *
+     * @return Date and time when the dataset will be available, or {@code null}.
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
@@ -165,6 +244,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns general instructions, terms and services provided by the distributor.
+     *
+     * @return General instructions, terms and services provided by the distributor, or {@code null}.
      */
     @Override
     @XmlElement(name = "orderingInstructions")
@@ -184,6 +265,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns typical turnaround time for the filling of an order.
+     *
+     * @return Typical turnaround time for the filling of an order, or {@code null}.
      */
     @Override
     @XmlElement(name = "turnaround")
@@ -199,5 +282,61 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     public void setTurnaround(final InternationalString newValue) {
         checkWritePermission();
         turnaround = newValue;
+    }
+
+    /**
+     * Returns the description of the {@linkplain #getOrderOptions() order options} record.
+     *
+     * @return Description of the order options record, or {@code null} if none.
+     *
+     * @since 0.5
+     *
+     * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
+     */
+/// @XmlElement(name = "orderOptionType")
+    @UML(identifier="orderOptionType", obligation=OPTIONAL, specification=ISO_19115)
+    public RecordType getOrderOptionType() {
+        return orderOptionType;
+    }
+
+    /**
+     * Sets the description of the {@linkplain #getOrderOptions() order options} record.
+     *
+     * @param newValue New description of the order options record.
+     *
+     * @since 0.5
+     */
+    public void setOrderOptionType(final RecordType newValue) {
+        checkWritePermission();
+        orderOptionType = newValue;
+    }
+
+    /**
+     * Returns the request/purchase choices.
+     *
+     * @return Request/purchase choices.
+     *
+     * @since 0.5
+     *
+     * @todo We presume that this record is filled by the vendor for describing the options chosen by the client
+     *       when he ordered the resource. We presume that this is not a record to be filled by the user for new
+     *       orders, otherwise this method would need to be a factory rather than a getter.
+     */
+/// @XmlElement(name = "orderOptions")
+    @UML(identifier="orderOptions", obligation=OPTIONAL, specification=ISO_19115)
+    public Record getOrderOptions() {
+        return orderOptions;
+    }
+
+    /**
+     * Sets the request/purchase choices.
+     *
+     * @param newValue the new request/purchase choices.
+     *
+     * @since 0.5
+     */
+    public void setOrderOptions(final Record newValue) {
+        checkWritePermission();
+        orderOptions = newValue;
     }
 }

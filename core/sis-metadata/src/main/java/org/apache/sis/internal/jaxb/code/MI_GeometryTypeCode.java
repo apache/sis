@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.GeometryType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -29,18 +29,11 @@ import org.apache.sis.xml.Namespaces;
  * of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCode, GeometryType> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(GeometryType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -56,6 +49,8 @@ public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MI_GeometryTypeCode wrap(CodeListProxy proxy) {
@@ -64,6 +59,8 @@ public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCo
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<GeometryType> getCodeListClass() {

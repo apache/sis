@@ -45,7 +45,7 @@ import org.apache.sis.util.Debug;
  * don't work with {@link LogRecord}, and sometime provides nothing else than convenience methods
  * equivalent to {@link #severe(String) severe} … {@link #finest(String) finest}.</p>
  *
- * {@section Restrictions}
+ * <div class="section">Restrictions</div>
  * Because the configuration is expected to be fully controlled by the external logging
  * framework, every configuration methods inherited from {@link Logger} are disabled:
  *
@@ -70,15 +70,15 @@ import org.apache.sis.util.Debug;
  * The adapters can be created, garbage-collected and recreated again while preserving their
  * behavior since their configuration is entirely contained in the external logging framework.
  *
- * {@section Localization}
- * This logger is always created without resource bundles. Localizations must be performed through
+ * <div class="section">Localization</div>
+ * This logger is always created without resource bundles. Localizations shall be done through
  * explicit calls to {@code logrb} or {@link #log(LogRecord)} methods. This is sufficient for
  * SIS needs, which performs all localizations through the later. Note that those methods
  * will be slower in this {@code LoggerAdapter} than the default {@link Logger} because this
  * adapter localizes and formats records immediately instead of letting the {@linkplain Handler}
  * performs this work only if needed.
  *
- * {@section Logging levels}
+ * <div class="section">Logging levels</div>
  * If a log record {@linkplain Level level} is not one of the predefined ones, then this class
  * maps to the first level below the specified one. For example if a log record has some level
  * between {@link Level#FINE FINE} and {@link Level#FINER FINER}, then the {@link #finer finer}
@@ -86,8 +86,8 @@ import org.apache.sis.util.Debug;
  * of this rule.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see Logging
@@ -137,7 +137,8 @@ public abstract class LoggerAdapter extends Logger {
     public abstract Level getLevel();
 
     /**
-     * Returns the level for {@link #entering}, {@link #exiting} and {@link #throwing} methods.
+     * Returns the level for {@link #entering(String, String) entering(…)}, {@link #exiting(String, String) exiting(…)}
+     * and {@link #throwing(String, String, Throwable) throwing(…)} methods.
      * The default implementation returns {@link Level#FINER}, which is consistent with the
      * value used in the JDK logging framework. Subclasses should override this method if
      * a different debug level is wanted.
@@ -152,7 +153,7 @@ public abstract class LoggerAdapter extends Logger {
     /**
      * Returns {@code true} if the specified level is loggable.
      *
-     * {@section Implementation tip}
+     * <div class="section">Implementation tip</div>
      * Given that {@link Level#intValue} for all predefined levels are documented in the {@link Level}
      * specification and are multiple of 100, given that integer divisions are rounded toward zero and
      * given rule documented in this <a href="#skip-navbar_top">class javadoc</a>, then logging levels
@@ -351,8 +352,9 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a record. The default implementation delegates to
-     * {@link #logrb(Level,String,String,String,String,Object[]) logrb}.
+     * Logs a record. The default implementation delegates to one of the
+     * {@link #logrb(Level,String,String,ResourceBundle,String,Object[]) logrb} or
+     * {@link #logp(Level,String,String,String)} methods.
      *
      * @param record The log record to be published.
      */
@@ -368,37 +370,34 @@ public abstract class LoggerAdapter extends Logger {
         if (filter != null && !filter.isLoggable(record)) {
             return;
         }
-        Level     level        = record.getLevel();
-        String    sourceClass  = record.getSourceClassName();
-        String    sourceMethod = record.getSourceMethodName();
-        String    bundleName   = record.getResourceBundleName();
-        String    message      = record.getMessage();
-        Object[]  params       = record.getParameters();
-        Throwable thrown       = record.getThrown();
-        ResourceBundle bundle  = record.getResourceBundle();
-        boolean   localized    = false;
-        if (bundle != null) try {
-            message   = bundle.getString(message);
-            localized = true; // Sets only if the above succeed.
-        } catch (MissingResourceException e) {
-            // The default Formatter.messageFormat implementation ignores this exception
-            // and uses the bundle key as the message, so we mimic its behavior here.
-        }
+        final Level     level        = record.getLevel();
+        final String    sourceClass  = record.getSourceClassName();
+        final String    sourceMethod = record.getSourceMethodName();
+        final String    message      = record.getMessage();
+        final Object[]  params       = record.getParameters();
+        final Throwable thrown       = record.getThrown();
+        final ResourceBundle bundle  = record.getResourceBundle();
         final boolean useThrown = (thrown != null) && (params == null || params.length == 0);
-        if (localized) {
-            // The message is already localized.
+        if (bundle != null) {
             if (useThrown) {
-                logp(level, sourceClass, sourceMethod, message, thrown);
+                logrb(level, sourceClass, sourceMethod, bundle, message, thrown);
             } else {
-                logp(level, sourceClass, sourceMethod, message, params);
+                logrb(level, sourceClass, sourceMethod, bundle, message, params);
             }
         } else {
-            // The message needs to be localized. The bundle was null but maybe bundleName is not.
-            // Futhermore subclass may have overridden the 'logrb' methods.
-            if (useThrown) {
-                logrb(level, sourceClass, sourceMethod, bundleName, message, thrown);
+            final String bundleName = record.getResourceBundleName();
+            if (bundleName != null) {
+                if (useThrown) {
+                    logrb(level, sourceClass, sourceMethod, bundleName, message, thrown);
+                } else {
+                    logrb(level, sourceClass, sourceMethod, bundleName, message, params);
+                }
             } else {
-                logrb(level, sourceClass, sourceMethod, bundleName, message, params);
+                if (useThrown) {
+                    logp(level, sourceClass, sourceMethod, message, thrown);
+                } else {
+                    logp(level, sourceClass, sourceMethod, message, params);
+                }
             }
         }
     }
@@ -557,6 +556,46 @@ public abstract class LoggerAdapter extends Logger {
 
     /**
      * Logs a localizable record at the specified level. The default implementation localizes the
+     * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
+     * Object[]) logp}(level, sourceClass, sourceMethod, message, params)</code>.
+     *
+     * @param level        One of the message level identifiers.
+     * @param sourceClass  Name of class that issued the logging request.
+     * @param sourceMethod Name of the method.
+     * @param bundle       The resource bundle for localizing the message, or {@code null}.
+     * @param message      The message to log.
+     * @param params       Array of parameters to the method being entered.
+     *
+     * @since 0.5
+     */
+    public void logrb(final Level level, final String sourceClass, final String sourceMethod,
+                      final ResourceBundle bundle, final String message, final Object... params)
+    {
+        logp(level, sourceClass, sourceMethod, localize(bundle, message), params);
+    }
+
+    /**
+     * Logs a localizable record at the specified level. The default implementation localizes the
+     * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
+     * Throwable) logp}(level, sourceClass, sourceMethod, message, thrown)</code>.
+     *
+     * @param level        One of the message level identifiers.
+     * @param sourceClass  Name of class that issued the logging request.
+     * @param sourceMethod Name of the method.
+     * @param bundle       The resource bundle for localizing the message, or {@code null}.
+     * @param message      The message to log.
+     * @param thrown       Throwable associated with log message.
+     *
+     * @since 0.5
+     */
+    public void logrb(final Level level, final String sourceClass, final String sourceMethod,
+                      final ResourceBundle bundle, final String message, final Throwable thrown)
+    {
+        logp(level, sourceClass, sourceMethod, localize(bundle, message), thrown);
+    }
+
+    /**
+     * Logs a localizable record at the specified level. The default implementation localizes the
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String)
      * logp}(level, sourceClass, sourceMethod, message)</code>.
      *
@@ -565,8 +604,11 @@ public abstract class LoggerAdapter extends Logger {
      * @param sourceMethod Name of the method.
      * @param bundleName   Name of resource bundle to localize message, or {@code null}.
      * @param message      The message to log.
+     *
+     * @deprecated JDK 8 has deprecated this method.
      */
     @Override
+    @Deprecated
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
                       final String bundleName, final String message)
     {
@@ -584,8 +626,11 @@ public abstract class LoggerAdapter extends Logger {
      * @param bundleName   Name of resource bundle to localize message, or {@code null}.
      * @param message      The message to log.
      * @param thrown       Throwable associated with log message.
+     *
+     * @deprecated JDK 8 has deprecated this method.
      */
     @Override
+    @Deprecated
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
                       final String bundleName, final String message, final Throwable thrown)
     {
@@ -603,8 +648,11 @@ public abstract class LoggerAdapter extends Logger {
      * @param bundleName   Name of resource bundle to localize message, or {@code null}.
      * @param message      The message to log.
      * @param param        Parameter to the method being entered.
+     *
+     * @deprecated JDK 8 has deprecated this method.
      */
     @Override
+    @Deprecated
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
                       final String bundleName, final String message, final Object param)
     {
@@ -622,10 +670,13 @@ public abstract class LoggerAdapter extends Logger {
      * @param bundleName   Name of resource bundle to localize message, or {@code null}.
      * @param message      The message to log.
      * @param params       Array of parameters to the method being entered.
+     *
+     * @deprecated JDK 8 has deprecated this method.
      */
     @Override
+    @Deprecated
     public void logrb(final Level level, final String sourceClass, final String sourceMethod,
-                      final String bundleName, String message, final Object[] params)
+                      final String bundleName, final String message, final Object[] params)
     {
         logp(level, sourceClass, sourceMethod, localize(bundleName, message), params);
     }
@@ -717,6 +768,20 @@ public abstract class LoggerAdapter extends Logger {
     private static String localize(final String bundleName, String message) {
         if (bundleName != null) try {
             message = ResourceBundle.getBundle(bundleName).getString(message);
+        } catch (MissingResourceException e) {
+            // The default Formatter.messageFormat implementation ignores this exception
+            // and uses the bundle key as the message, so we mimic its behavior here.
+        }
+        return message;
+    }
+
+    /**
+     * Localizes the specified message. This is a helper method for
+     * {@code logrb(...)} methods that delegate their work to {@code logp(...)}
+     */
+    private static String localize(final ResourceBundle bundle, String message) {
+        if (bundle != null) try {
+            message = bundle.getString(message);
         } catch (MissingResourceException e) {
             // The default Formatter.messageFormat implementation ignores this exception
             // and uses the bundle key as the message, so we mimic its behavior here.

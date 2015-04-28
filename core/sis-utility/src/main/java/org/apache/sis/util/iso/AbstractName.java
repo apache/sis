@@ -19,44 +19,58 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Locale;
 import java.util.Iterator;
+import java.util.ConcurrentModificationException;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlType;
-import net.jcip.annotations.Immutable;
+import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
  * Base class for sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
- * Names are <em>immutable</em>. They may be {@linkplain #toFullyQualifiedName() fully qualified}
- * like {@code "org.opengis.util.Record"}, or they may be relative to a {@linkplain #scope() scope}
- * like {@code "util.Record"} in the {@code "org.opengis"} scope.
- * See the {@linkplain GenericName GeoAPI javadoc} for an illustration.
+ * Names shall be <em>immutable</em> and thread-safe. A name can be local to a namespace.
+ * See the {@linkplain org.apache.sis.util.iso package javadoc} for an illustration of name anatomy.
  *
- * <p>Subclasses need only to implement the following methods:</p>
+ * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, String, CharSequence)}
+ * convenience static method. That method supports the common case where the name is made only of a
+ * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names allows finer grain.
+ * For example the above-cited strings can both be split into smaller name components.
+ * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
+ *
+ * <div class="section">{@code Comparable} ordering</div>
+ * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
+ * See {@link #compareTo(GenericName)} for more information.
+ *
+ * <div class="section">Note for implemetors</div>
+ * Subclasses need only to implement the following methods:
  * <ul>
  *   <li>{@link #scope()}</li>
  *   <li>{@link #getParsedNames()}</li>
  * </ul>
  *
- * {@section <code>Comparable</code> ordering}
- * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
- * The natural ordering is case-insensitive and ignores the character separator between
- * name elements.
+ * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads
+ * and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
-@XmlType(name = "GenericName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including LocalName and ScopedName).
+ */
+@XmlTransient
 public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -89,6 +103,52 @@ public abstract class AbstractName implements GenericName, Serializable {
     }
 
     /**
+     * Returns a SIS name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is an instance of {@link LocalName}, then this
+     *       method delegates to {@link DefaultLocalName#castOrCopy(LocalName)}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code AbstractName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new instance of an {@code AbstractName} subclass is created using the
+     *       {@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} method.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractName castOrCopy(final GenericName object) {
+        if (object instanceof LocalName) {
+            return DefaultLocalName.castOrCopy((LocalName) object);
+        }
+        if (object == null || object instanceof AbstractName) {
+            return (AbstractName) object;
+        }
+        /*
+         * Recreates a new name for the given name in order to get
+         * a SIS implementation from an arbitrary implementation.
+         */
+        final List<? extends LocalName> parsedNames = object.getParsedNames();
+        final CharSequence[] names = new CharSequence[parsedNames.size()];
+        int i=0;
+        for (final LocalName component : parsedNames) {
+            names[i++] = component.toInternationalString();
+        }
+        if (i != names.length) {
+            throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
+        }
+        /*
+         * Following cast should be safe because DefaultFactories.forBuildin(Class) filters the factories in
+         * order to return the Apache SIS implementation, which is known to create AbstractName instances.
+         */
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        return (AbstractName) factory.createGenericName(object.scope(), names);
+    }
+
+    /**
      * Returns the scope (name space) in which this name is local. For example if a
      * {@linkplain #toFullyQualifiedName() fully qualified name} is {@code "org.opengis.util.Record"}
      * and if this instance is the {@code "util.Record"} part, then its scope is
@@ -98,6 +158,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * no scope. If this method is invoked on such name, then the SIS implementation returns a
      * global scope instance (i.e. an instance for which {@link DefaultNameSpace#isGlobal()}
      * returns {@code true}) which is unique and named {@code "global"}.</p>
+     *
+     * @return The scope of this name.
      */
     @Override
     public abstract NameSpace scope();
@@ -105,6 +167,8 @@ public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Indicates the number of levels specified by this name. The default implementation returns
      * the size of the list returned by the {@link #getParsedNames()} method.
+     *
+     * @return The depth of this name.
      */
     @Override
     public int depth() {
@@ -124,6 +188,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the sequence of {@linkplain DefaultLocalName local names} making this generic name.
      * The length of this sequence is the {@linkplain #depth() depth}. It does not include the
      * {@linkplain #scope() scope}.
+     *
+     * @return The local names making this generic name, without the {@linkplain #scope() scope}.
+     *         Shall never be {@code null} neither empty.
      */
     @Override
     public abstract List<? extends LocalName> getParsedNames();
@@ -132,9 +199,11 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <p><b>Example</b>:
-     * If {@code this} name is {@code "org.opengis.util.Record"} (no matter its
-     * {@linkplain #scope() scope}), then this method returns {@code "org"}.</p>
+     * <div class="note"><b>Example:</b>
+     * If {@code this} name is {@code "org.opengis.util.Record"}
+     * (no matter its scope, then this method returns {@code "org"}.</div>
+     *
+     * @return The first element in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public LocalName head() {
@@ -145,9 +214,11 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the last element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <p><b>Example</b>:
-     * If {@code this} name is {@code "org.opengis.util.Record"} (no matter its
-     * {@linkplain #scope() scope}), then this method returns {@code "Record"}.</p>
+     * <div class="note"><b>Example:</b>
+     * If {@code this} name is {@code "org.opengis.util.Record"}
+     * (no matter its scope, then this method returns {@code "Record"}.</div>
+     *
+     * @return The last element in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public LocalName tip() {
@@ -159,6 +230,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns a view of this name as a fully-qualified name. The {@linkplain #scope() scope}
      * of a fully qualified name is {@linkplain DefaultNameSpace#isGlobal() global}.
      * If the scope of this name is already global, then this method returns {@code this}.
+     *
+     * @return The fully-qualified name (never {@code null}).
      */
     @Override
     public synchronized GenericName toFullyQualifiedName() {
@@ -181,6 +254,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * {@code this} name is {@code "util.Record"} and the given {@code scope} argument is
      * {@code "org.opengis"}, then {@code this.push(scope)} shall return
      * {@code "org.opengis.util.Record"}.
+     *
+     * @param  scope The name to use as prefix.
+     * @return A concatenation of the given scope with this name.
      */
     @Override
     public ScopedName push(final GenericName scope) {
@@ -219,6 +295,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      *   <li><code>{@linkplain #tip()}.toString()</code> is guaranteed to not contain
      *       any scope.</li>
      * </ul>
+     *
+     * @return A local-independent string representation of this name.
      */
     @Override
     public synchronized String toString() {
@@ -246,6 +324,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * has been localized in the {@linkplain InternationalString#toString(Locale) specified locale}.
      * If no international string is available, then this method returns an implementation mapping
      * to {@link #toString()} for all locales.
+     *
+     * @return A localizable string representation of this name.
      */
     @Override
     public synchronized InternationalString toInternationalString() {
@@ -257,13 +337,13 @@ public abstract class AbstractName implements GenericName, Serializable {
 
     /**
      * An international string built from a snapshot of {@link GenericName}.
+     * This class is immutable is the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.1)
+     * @since   0.3
      * @version 0.3
      * @module
      */
-    @Immutable
     private static final class International extends SimpleInternationalString {
         /**
          * Serial number for inter-operability with different versions.
@@ -282,7 +362,7 @@ public abstract class AbstractName implements GenericName, Serializable {
          * @param asString The string representation of the enclosing abstract name.
          * @param parsedNames The value returned by {@link AbstractName#getParsedNames()}.
          */
-        public International(final String asString, final List<? extends LocalName> parsedNames) {
+        International(final String asString, final List<? extends LocalName> parsedNames) {
             super(asString);
             this.parsedNames = parsedNames;
         }
@@ -318,6 +398,14 @@ public abstract class AbstractName implements GenericName, Serializable {
             }
             return false;
         }
+
+        /**
+         * Returns a hash code value for this international text.
+         */
+        @Override
+        public int hashCode() {
+            return parsedNames.hashCode() ^ (int) serialVersionUID;
+        }
     }
 
     /**
@@ -351,7 +439,7 @@ public abstract class AbstractName implements GenericName, Serializable {
             final LocalName thatNext = thatNames.next();
             if (thisNext == this && thatNext == name) {
                 // Never-ending loop: usually an implementation error
-                throw new IllegalStateException(Errors.format(Errors.Keys.InfiniteRecursivity));
+                throw new IllegalStateException(Errors.format(Errors.Keys.CircularReference));
             }
             final int compare = thisNext.compareTo(thatNext);
             if (compare != 0) {

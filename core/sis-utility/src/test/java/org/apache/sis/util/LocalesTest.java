@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
  * Tests the {@link Locales} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.04)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(ArraysExtTest.class)
@@ -73,32 +73,43 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     @DependsOnMethod("testUnique")
     public void testParse() {
+        assertSame(Locale.ENGLISH,       Locales.parse("en"));
         assertSame(Locale.FRENCH,        Locales.parse("fr"));
         assertSame(Locale.FRENCH,        Locales.parse("fra"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CA"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CA"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fr_CAN"));
         assertSame(Locale.CANADA_FRENCH, Locales.parse("fra_CAN"));
-        assertSame(Locale.ENGLISH,       Locales.parse("en"));
+        assertSame(Locale.JAPAN,         Locales.parse("ja_JP"));
 
-        assertEquals(new Locale("de", "DE"),        Locales.parse("de_DE"));
-        assertEquals(new Locale("",   "GB"),        Locales.parse("_GB"));
-        assertEquals(new Locale("en", "US", "WIN"), Locales.parse("en_US_WIN"));
-        assertEquals(new Locale("de", "", "POSIX"), Locales.parse("de__POSIX"));
-        assertEquals(new Locale("fr", "", "MAC"),   Locales.parse("fr__MAC"));
+        assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
+        assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));
+        assertEquals(new Locale("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));
+        assertEquals(new Locale("de", "",   "POSIX"),   Locales.parse("de__POSIX"));
     }
 
     /**
-     * Tests the {@link Locales#parseSuffix(String, String)} method.
+     * Tests the {@link Locales#parse(String)} method with a IETF BCP 47 language tag string.
+     * This functionality is supported only on the JDK7 branch.
      */
     @Test
-    @DependsOnMethod("testParse")
-    public void testParseSuffix() {
-        assertSame(null,           Locales.parseSuffix("remarks", "remark"));
-        assertSame(Locale.ROOT,    Locales.parseSuffix("remarks", "remarks"));
-        assertSame(Locale.ENGLISH, Locales.parseSuffix("remarks", "remarks_en"));
-        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fr"));
-        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fra"));
-        assertSame(null,           Locales.parseSuffix("remarks", "remarks2_en"));
+    @org.junit.Ignore("Not supported on the JDK6 branch")
+    public void testParseIETF() {
+        assertEquals(Locale.JAPAN, Locales.parse("ja-JP"));
+        assertEquals(new Locale("en", "US", "POSIX"), Locales.parse("en-US-x-lvariant-POSIX"));
+    }
+
+    /**
+     * Tests that {@link Locales#parse(String)} throw an exception if given an invalid argument.
+     */
+    @Test
+    public void testParseInvalid() {
+        try {
+            Locales.parse("orange_APPLE");
+            fail("Shall not parse invalid locale.");
+        } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("APPLE"));
+        }
     }
 }

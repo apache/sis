@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -28,15 +29,15 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import net.jcip.annotations.ThreadSafe;
-
+import java.lang.reflect.Modifier;
+import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 
 // Related to JDK7
@@ -47,30 +48,51 @@ import org.apache.sis.internal.jdk7.JDK7;
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
  * Using integers allow implementations to avoid adding large string constants into their
  * {@code .class} files and runtime images. Developers still have meaningful labels in their
- * code (e.g. {@code DimensionMismatch}) through a set of constants defined in {@code Keys}
+ * code (e.g. {@code MismatchedDimension}) through a set of constants defined in {@code Keys}
  * inner classes, with the side-effect of compile-time safety. Because integer constants are
- * inlined right into class files at compile time, the declarative classes is never loaded at
- * run time.
+ * inlined right into class files at compile time, the declarative classes is not loaded at run time.
  *
- * <p>This class also provides facilities for string formatting using {@link MessageFormat}.</p>
+ * <p>Localized resources are fetched by calls to {@link #getString(short)}.
+ * Arguments can optionally be provided by calls to {@link #getString(short, Object) getString(short, Object, ...)}.
+ * If arguments are present, then the string will be formatted using {@link MessageFormat},
+ * completed by some special cases handled by this class. Roughly speaking:</p>
+ *
+ * <ul>
+ *   <li>{@link Number}, {@link java.util.Date}, {@link CodeList} and {@link InternationalString} instances
+ *       are localized using the current {@code ResourceBundle} locale.</li>
+ *   <li>Long {@link CharSequence} instances are shortened by {@link CharSequences#shortSentence(CharSequence, int)}.</li>
+ *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
+ * </ul>
+ *
+ * <div class="section">Thread safety</div>
+ * The same {@code IndexedResourceBundle} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call from
+ * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
  */
-@ThreadSafe
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
-     * Maximum string length for text inserted into another text. This parameter is used by
-     * {@link #summarize}. Resource strings are never cut to this length. However, text replacing
-     * {@code "{0}"} in a string like {@code "Parameter name is {0}"} will be cut to this length.
+     * Key used in properties map for localizing some aspects of the operation being executed.
+     * The {@code getResources(Map<?,?>)} methods defined in some sub-classes will look for this property.
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY
+     */
+    public static final String LOCALE_KEY = "locale";
+
+    /**
+     * Maximum string length for text inserted into another text. This parameter is used by {@link #toArray(Object)}.
+     * Resource strings are never cut to this length. However, text replacing {@code "{0}"} in a string like
+     * {@code "Parameter name is {0}"} will be cut to this length.
      */
     private static final int MAX_STRING_LENGTH = 200;
 
     /**
      * The path of the binary file containing resources, or {@code null} if there is no resources
-     * of if the resources have already been loaded. The resources may be a file or an entry in a
+     * or if the resources have already been loaded. The resources may be a file or an entry in a
      * JAR file.
      */
     private URL resources;
@@ -98,7 +120,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * knowing its key allows us to avoid invoking the costly {@link MessageFormat#applyPattern}
      * method.
      */
-    private transient int lastKey;
+    private transient short lastKey;
 
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
@@ -250,7 +272,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 /*
                  * If there is no explicit resources for this instance, inherit the resources
                  * from the parent. Note that this IndexedResourceBundle instance may still
-                 * differ from its parent in the way date and numbers are formatted.
+                 * differ from its parent in the way dates and numbers are formatted.
                  */
                 if (resources == null) {
                     // If we get a NullPointerException or ClassCastException here,
@@ -327,9 +349,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     protected final Object handleGetObject(final String key) {
         // Synchronization performed by 'ensureLoaded'
         final String[] values = ensureLoaded(key);
-        int keyID;
+        short keyID;
         try {
-            keyID = Integer.parseInt(key);
+            keyID = Short.parseShort(key);
         } catch (NumberFormatException exception) {
             /*
              * Maybe the full key name has been specified instead. We do that for localized
@@ -352,10 +374,13 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * placed in an array of length 1.
      *
      * <p>All the array elements will be checked for {@link CharSequence}, {@link InternationalString},
-     * {@link Throwable} or {@link Class} instances. All {@code InternationalString} instances will
-     * be localized according this resource bundle locale. Any characters sequences of length
-     * greater than {@link #MAX_STRING_LENGTH} will be reduced using the
-     * {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
+     * {@link CodeList}, {@link Throwable} or {@link Class} instances.
+     * All {@code InternationalString} instances will be localized according this resource bundle locale.
+     * Any characters sequences of length greater than {@link #MAX_STRING_LENGTH} will be shortened using
+     * the {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * If more cases are added, remember to update class and package javadoc.</div>
      *
      * @param  arguments The object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.
@@ -383,7 +408,9 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 }
                 replacement = message;
             } else if (element instanceof Class<?>) {
-                replacement = Classes.getShortName((Class<?>) element);
+                replacement = Classes.getShortName(getPublicType((Class<?>) element));
+            } else if (element instanceof CodeList<?>) {
+                replacement = Types.getCodeTitle((CodeList<?>) element).toString(getLocale());
             }
             // No need to check for Numbers or Dates instances, since they are
             // properly formatted in the ResourceBundle locale by MessageFormat.
@@ -398,6 +425,23 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     }
 
     /**
+     * If the given class is not public, returns the first public interface or the first public super-class.
+     * This is for avoiding confusing the user with private class in message like "Value can not be instance
+     * of XYZ". In the worst case (nothing public other than {@code Object}), returns {@code Object.class}.
+     */
+    private static Class<?> getPublicType(Class<?> c) {
+        while (!Modifier.isPublic(c.getModifiers())) {
+            for (final Class<?> type : c.getInterfaces()) {
+                if (Modifier.isPublic(type.getModifiers())) {
+                    return type;
+                }
+            }
+            c = c.getSuperclass();
+        }
+        return c;
+    }
+
+    /**
      * Gets a string for the given key and appends "…" to it.
      * This method is typically used for creating menu items.
      *
@@ -405,7 +449,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getMenuLabel(final int key) throws MissingResourceException {
+    public final String getMenuLabel(final short key) throws MissingResourceException {
         return getString(key) + '…';
     }
 
@@ -417,7 +461,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getLabel(final int key) throws MissingResourceException {
+    public final String getLabel(final short key) throws MissingResourceException {
         return getString(key) + ": ";
     }
 
@@ -428,7 +472,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int key) throws MissingResourceException {
+    public final String getString(final short key) throws MissingResourceException {
         return getString(String.valueOf(key));
     }
 
@@ -453,11 +497,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @throws MissingResourceException If no object for the given key can be found.
      *
      * @see #getString(String)
-     * @see #getString(int,Object,Object)
-     * @see #getString(int,Object,Object,Object)
+     * @see #getString(short,Object,Object)
+     * @see #getString(short,Object,Object,Object)
      * @see MessageFormat
      */
-    public final String getString(final int key, final Object arg0) throws MissingResourceException {
+    public final String getString(final short key, final Object arg0) throws MissingResourceException {
         final String pattern = getString(key);
         final Object[] arguments = toArray(arg0);
         synchronized (this) {
@@ -497,7 +541,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1) throws MissingResourceException
     {
@@ -515,7 +559,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2) throws MissingResourceException
@@ -535,7 +579,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2,
@@ -557,7 +601,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public final String getString(final int    key,
+    public final String getString(final short  key,
                                   final Object arg0,
                                   final Object arg1,
                                   final Object arg2,
@@ -574,7 +618,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  key   The resource key.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key) {
+    public final LogRecord getLogRecord(final Level level, final short key) {
         final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
         record.setResourceBundleName(getClass().getName());
         record.setResourceBundle(this);
@@ -589,7 +633,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg0  The parameter for the log message, which may be an array.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0)
     {
         final LogRecord record = getLogRecord(level, key);
@@ -606,7 +650,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg1  The second parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1)
     {
@@ -623,7 +667,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg2  The third parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1,
                                         final Object arg2)
@@ -642,13 +686,32 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  arg3  The fourth parameter.
      * @return The log record.
      */
-    public final LogRecord getLogRecord(final Level level, final int key,
+    public final LogRecord getLogRecord(final Level level, final short key,
                                         final Object arg0,
                                         final Object arg1,
                                         final Object arg2,
                                         final Object arg3)
     {
         return getLogRecord(level, key, new Object[] {arg0, arg1, arg2, arg3});
+    }
+
+    /**
+     * Returns the locale specified in the given map, or {@code null} if none.
+     * Value of unexpected type are ignored.
+     *
+     * @param  properties The map of properties, or {@code null} if none.
+     * @return The locale found in the given map, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    static Locale getLocale(final Map<?,?> properties) {
+        if (properties != null) {
+            final Object candidate = properties.get(LOCALE_KEY);
+            if (candidate instanceof Locale) {
+                return (Locale) candidate;
+            }
+        }
+        return null;
     }
 
     /**

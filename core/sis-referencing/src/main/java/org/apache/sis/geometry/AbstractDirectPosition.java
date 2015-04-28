@@ -32,17 +32,20 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
  * Base class for {@link DirectPosition} implementations.
+ * A direct position holds the coordinates for a position within some
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  * This base class provides default implementations for {@link #toString()},
  * {@link #equals(Object)} and {@link #hashCode()} methods.
  *
@@ -51,7 +54,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -65,6 +68,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     /**
      * Returns always {@code this}, the direct position for this
      * {@linkplain org.opengis.geometry.coordinate.Position position}.
+     *
+     * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {
@@ -142,6 +147,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *
      * @return {@code true} if this position has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
+     *
+     * @see GeneralEnvelope#normalize()
      */
     public boolean normalize() {
         boolean changed = false;
@@ -290,7 +297,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
             final char close = (c == '(') ? ')' : ']';
             final int pos = CharSequences.lastIndexOf(wkt, close, i, length);
             if (pos != --length) {
-                final int key;
+                final short key;
                 final Object[] args;
                 if (pos < 0) {
                     key  = Errors.Keys.NonEquilibratedParenthesis_2;
@@ -357,8 +364,7 @@ parse:  while (i < length) {
         final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            final long bits = doubleToLongBits(getOrdinate(i));
-            code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
+            code = code*31 + Numerics.hashCode(doubleToLongBits(getOrdinate(i)));
         }
         return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
@@ -385,7 +391,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (doubleToLongBits(getOrdinate(i)) != doubleToLongBits(that.getOrdinate(i))) {
+                    if (!Numerics.equals(getOrdinate(i), that.getOrdinate(i))) {
                         return false;
                     }
                 }

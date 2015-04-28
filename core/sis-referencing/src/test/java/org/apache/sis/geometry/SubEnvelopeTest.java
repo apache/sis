@@ -23,7 +23,7 @@ import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.geometry.GeneralEnvelopeTest.STRICT;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -32,7 +32,7 @@ import static org.apache.sis.geometry.GeneralEnvelopeTest.STRICT;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -46,11 +46,14 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
         final GeneralEnvelope envelope = new GeneralEnvelope(5);
         envelope.setEnvelope(1, 4, xmin, ymin, 5,
                              2, 7, xmax, ymax, 9);
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
+        if (!skipValidation) {
             validate(envelope);
         }
         final GeneralEnvelope sub = envelope.subEnvelope(2, 4);
         sub.setCoordinateReferenceSystem(WGS84);
+        if (!skipValidation) {
+            validate(sub);
+        }
         return sub;
     }
 

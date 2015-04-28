@@ -21,7 +21,8 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Collection;
-import org.opengis.metadata.spatial.PixelOrientation;
+import java.lang.annotation.ElementType;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.test.DependsOn;
@@ -38,8 +39,8 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
  * Conversion tests are the purpose of other test classes in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(ConverterRegistryTest.class)
@@ -48,7 +49,22 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * Tests the creation of {@link StringConverter}.
      */
     @Test
-    public void testStringFile() {
+    public void testStringAndInteger() {
+        final ObjectConverter<String,Integer> c1 = INSTANCE.findExact(String.class, Integer.class);
+        final ObjectConverter<Integer,String> c2 = INSTANCE.findExact(Integer.class, String.class);
+        assertInstanceOf("Integer ← String", StringConverter.Integer.class, c1);
+        assertInstanceOf("String ← Integer", ObjectToString.class, c2);
+        assertSame("inverse()", c2, c1.inverse());
+        assertSame("inverse()", c1, c2.inverse());
+        assertSame(c1, assertSerializedEquals(c1));
+        assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of {@link StringConverter}.
+     */
+    @Test
+    public void testStringAndFile() {
         final ObjectConverter<String,File> c1 = INSTANCE.findExact(String.class, File.class);
         final ObjectConverter<File,String> c2 = INSTANCE.findExact(File.class, String.class);
         assertInstanceOf("File ← String", StringConverter.File.class, c1);
@@ -63,11 +79,28 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * Tests the creation of code list converter.
      */
     @Test
-    public void testStringCodeList() {
-        final ObjectConverter<String, PixelOrientation> c1 = INSTANCE.findExact(String.class, PixelOrientation.class);
-        final ObjectConverter<PixelOrientation, String> c2 = INSTANCE.findExact(PixelOrientation.class, String.class);
-        assertInstanceOf("PixelOrientation ← String", StringConverter.CodeList.class, c1);
-        assertInstanceOf("String ← PixelOrientation", ObjectToString.CodeList.class,  c2);
+    public void testStringAndCodeList() {
+        final ObjectConverter<String, OnLineFunction> c1 = INSTANCE.findExact(String.class, OnLineFunction.class);
+        final ObjectConverter<OnLineFunction, String> c2 = INSTANCE.findExact(OnLineFunction.class, String.class);
+        assertInstanceOf("OnLineFunction ← String", StringConverter.CodeList.class, c1);
+        assertInstanceOf("String ← OnLineFunction", ObjectToString.CodeList.class,  c2);
+        assertSame("inverse()", c2, c1.inverse());
+        assertSame("inverse()", c1, c2.inverse());
+        assertSame(c1, assertSerializedEquals(c1));
+        assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of an enum converter.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testStringAndEnum() {
+        final ObjectConverter<String, ElementType> c1 = INSTANCE.findExact(String.class, ElementType.class);
+        final ObjectConverter<ElementType, String> c2 = INSTANCE.findExact(ElementType.class, String.class);
+        assertInstanceOf("ElementType ← String", StringConverter.Enum.class, c1);
+        assertInstanceOf("String ← ElementType", ObjectToString.Enum.class,  c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
@@ -78,7 +111,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * Tests the creation of {@link NumberConverter}.
      */
     @Test
-    public void testFloatDouble() {
+    public void testFloatAndDouble() {
         final ObjectConverter<Float,Double> c1 = INSTANCE.findExact(Float.class, Double.class);
         final ObjectConverter<Double,Float> c2 = INSTANCE.findExact(Double.class, Float.class);
         assertInstanceOf("Double ← Float", NumberConverter.class, c1);
@@ -93,7 +126,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * Tests the creation of {@link DateConverter}.
      */
     @Test
-    public void testDateLong() {
+    public void testDateAndLong() {
         final ObjectConverter<Date,Long> c1 = INSTANCE.findExact(Date.class, Long.class);
         final ObjectConverter<Long,Date> c2 = INSTANCE.findExact(Long.class, Date.class);
         assertInstanceOf("Long ← Date", DateConverter.Long.class, c1);
@@ -109,7 +142,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * to {@code java.sql.Date}. The inverse converter is an identity converter.
      */
     @Test
-    public void testDateSQL() {
+    public void testDateAndSQL() {
         final ObjectConverter<Date, java.sql.Date> c1 = INSTANCE.findExact(Date.class, java.sql.Date.class);
         final ObjectConverter<java.sql.Date, Date> c2 = INSTANCE.findExact(java.sql.Date.class, Date.class);
         assertInstanceOf("sql.Date ← Date", DateConverter.SQL.class, c1);
@@ -124,7 +157,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
      * Tests the creation of {@link PathConverter}.
      */
     @Test
-    public void testFileURI() {
+    public void testFileAndURI() {
         final ObjectConverter<File,URI> c1 = INSTANCE.findExact(File.class, URI.class);
         final ObjectConverter<URI,File> c2 = INSTANCE.findExact(URI.class, File.class);
         assertInstanceOf("URI ← File", PathConverter.FileURI.class, c1);

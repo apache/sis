@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
+import org.apache.sis.util.Debug;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.JDK7;
@@ -26,11 +27,11 @@ import org.apache.sis.internal.jdk7.JDK7;
 /**
  * A set of strings localized in different languages. This adapter represents the
  * {@code <gmd:textGroup>} element defined for embedded translations in ISO-19139
- * standard. See {@link FreeText} class javadoc for an example.
+ * standard. See {@link PT_FreeText} class javadoc for an example.
  *
  * <p>If a localized string has a {@code null} locale, then this string will not be
  * included in this text group because that string should be already included in
- * the {@code <gco:CharacterString>} element of the parent {@link FreeText}  (at
+ * the {@code <gco:CharacterString>} element of the parent {@link PT_FreeText}  (at
  * least in default behavior - actually the above may not be true anymore if the
  * marshaller {@link org.apache.sis.xml.XML#LOCALE} property has been set).</p>
  *
@@ -70,7 +71,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -115,7 +116,7 @@ final class TextGroup {
      * Returns a string representation of this text group for debugging purpose.
      * Example:
      *
-     * {@preformat
+     * {@preformat text
      *   TextGroup
      *   ├─ LocalisedCharacterString[#locale-eng, “A text”]
      *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]
@@ -123,6 +124,7 @@ final class TextGroup {
      *
      * @see LocalisedCharacterString#toString()
      */
+    @Debug
     @Override
     public String toString() {
         final String lineSeparator = JDK7.lineSeparator();

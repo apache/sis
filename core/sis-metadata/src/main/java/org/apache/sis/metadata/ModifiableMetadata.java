@@ -18,18 +18,24 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.List;
+import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Currency;
 import java.util.NoSuchElementException;
-import net.jcip.annotations.ThreadSafe;
+import java.lang.reflect.Modifier;
+import java.nio.charset.Charset;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.internal.system.Semaphores;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**
@@ -76,15 +82,15 @@ import static org.apache.sis.internal.jaxb.Context.isMarshalling;
  * {@link #freeze()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
-@ThreadSafe
+@XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
     /**
-     * Initial capacity of lists and sets. We use a small value because those
-     * collections will typically contain few elements (often just a singleton).
+     * Initial capacity of sets. We use a small value because collections will typically
+     * contain few elements (often just a singleton).
      */
     private static final int INITIAL_CAPACITY = 4;
 
@@ -122,6 +128,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns {@code true} if this metadata is modifiable. This method returns
      * {@code false} if {@link #freeze()} has been invoked on this object.
      *
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
+     *
      * @return {@code true} if this metadata is modifiable.
      *
      * @see #freeze()
@@ -158,6 +168,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
      *       {@linkplain #freeze() freeze} the clone before to return it.</li>
      * </ul>
+     *
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
      *
      * @return An unmodifiable copy of this metadata.
      */
@@ -197,18 +211,33 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * <p>Subclasses usually don't need to override this method since the default implementation
      * performs its work using Java reflection.</p>
      *
+     * <div class="warning"><b>Warning:</b>
+     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
+     * (modifiable, appendable, etc.).</div>
+     *
      * @see #isModifiable()
      * @see #checkWritePermission()
      */
     public void freeze() {
         if (isModifiable()) {
             ModifiableMetadata success = null;
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
             try {
                 unmodifiable = FREEZING;
                 getStandard().freeze(this);
                 success = this;
             } finally {
                 unmodifiable = success;
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
             }
         }
     }
@@ -239,7 +268,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link List}.</li>
+     *   <li>If {@code target} is null, creates a new {@link List}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
@@ -247,7 +276,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source list, or {@code null}.
      * @param  target      The target list, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the list.
-     * @return A list (possibly the {@code target} instance) containing the {@code source}
+     * @return A list (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
@@ -258,7 +287,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             List<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(...) for implementation notes.
+        // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (List<E>) source;
@@ -287,7 +316,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link Set}.</li>
+     *   <li>If {@code target} is null, creates a new {@link Set}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
@@ -295,7 +324,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source set, or {@code null}.
      * @param  target      The target set, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the set.
-     * @return A set (possibly the {@code target} instance) containing the {@code source}
+     * @return A set (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
@@ -306,7 +335,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             Set<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in writeCollection(...) for implementation notes.
+        // See the comments in writeCollection(…) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (Set<E>) source;
@@ -335,12 +364,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
-     *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
+     *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
      *       depending on the value returned by {@link #collectionType(Class)}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * {@section Choosing a collection type}
+     * <div class="section">Choosing a collection type</div>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
@@ -351,7 +380,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source collection, or {@code null}.
      * @param  target      The target collection, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the collection.
-     * @return A collection (possibly the {@code target} instance) containing the {@code source}
+     * @return A collection (possibly the {@code target} instance) containing the {@code source}
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
@@ -363,13 +392,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         /*
          * It is not worth to copy the content if the current and the new instance are the
          * same. This is safe only using the != operator, not the !equals(Object) method.
-         * This optimization is required for efficient working of PropertyAccessor.set(...).
+         * This optimization is required for efficient working of PropertyAccessor.set(…)
+         * and JAXB unmarshalling.
          */
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 /*
                  * freeze() method is under progress. The source collection is already
-                 * an unmodifiable instance created by unmodifiable(Object).
+                 * an unmodifiable instance created by Cloner.clone(Object).
                  */
                 assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
@@ -383,7 +413,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 } else {
                     final int capacity = source.size();
                     if (useSet(elementType)) {
-                        target = new CheckedHashSet<E>(elementType, capacity);
+                        target = createSet(elementType, capacity);
                     } else {
                         target = new CheckedArrayList<E>(elementType, capacity);
                     }
@@ -396,7 +426,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a list with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * @param  <E>         The type represented by the {@code Class} argument.
@@ -416,7 +446,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a set with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * @param  <E>         The type represented by the {@code Class} argument.
@@ -436,7 +466,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Creates a list or set with the content of the {@code source} collection,
-     * or returns {@code null} if the source is {@code null} or empty.
+     * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
      * <p>The collection type is selected as described in the
@@ -455,7 +485,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         final Collection<E> target;
         final int capacity = source.size();
         if (useSet(elementType)) {
-            target = new CheckedHashSet<E>(elementType, capacity);
+            target = createSet(elementType, capacity);
         } else {
             target = new CheckedArrayList<E>(elementType, capacity);
         }
@@ -482,12 +512,23 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         }
         final Collection<E> collection;
         if (useSet(elementType)) {
-            collection = new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+            collection = createSet(elementType, INITIAL_CAPACITY);
         } else {
-            collection = new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+            collection = new CheckedArrayList<E>(elementType, 1);
         }
         collection.add(value);
         return collection;
+    }
+
+    /**
+     * Returns {@code true} if empty collection should be returned as {@code null} value.
+     * This is usually not a behavior that we allow in public API. However this behavior
+     * is sometime desired internally, for example when marshalling with JAXB or when
+     * performing a {@code equals}, {@code isEmpty} or {@code prune} operation
+     * (for avoiding creating unnecessary collections).
+     */
+    private static boolean emptyCollectionAsNull() {
+        return Semaphores.query(Semaphores.NULL_COLLECTION);
     }
 
     /**
@@ -501,13 +542,20 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         if (c != null) {
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         if (isModifiable()) {
-            return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+            /*
+             * Do not specify an initial capacity, because the list will stay empty in a majority of cases
+             * (i.e. the users will want to iterate over the list elements more often than they will want
+             * to add elements). JDK implementation of ArrayList has a lazy instantiation mechanism for
+             * initially empty lists, but as of JDK8 this lazy instantiation works only for list having
+             * the default capacity.
+             */
+            return new CheckedArrayList<E>(elementType);
         }
         return Collections.emptyList();
     }
@@ -523,13 +571,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         if (c != null) {
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         if (isModifiable()) {
-            return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+            return createSet(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptySet();
     }
@@ -538,7 +586,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns the specified collection, or a new one if {@code c} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * {@section Choosing a collection type}
+     * <div class="section">Choosing a collection type</div>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet
      * nonNullSet(…)} instead than this method when the collection type is enforced by ISO
      * specification. When the type is not enforced by the specification, some freedom are
@@ -554,25 +602,41 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
         if (c != null) {
             assert collectionType(elementType).isInstance(c);
-            return c.isEmpty() && isMarshalling() ? null : c;
+            return c.isEmpty() && emptyCollectionAsNull() ? null : c;
         }
-        if (isMarshalling()) {
+        if (emptyCollectionAsNull()) {
             return null;
         }
         final boolean isModifiable = isModifiable();
         if (useSet(elementType)) {
             if (isModifiable) {
-                return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+                return createSet(elementType, INITIAL_CAPACITY);
             } else {
                 return Collections.emptySet();
             }
         } else {
             if (isModifiable) {
-                return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
+                // Do not specify an initial capacity for the reason explained in nonNullList(…).
+                return new CheckedArrayList<E>(elementType);
             } else {
                 return Collections.emptyList();
             }
         }
+    }
+
+    /**
+     * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
+     * {@link CodeListSet} or {@link java.util.LinkedHashSet} depending on the {@code elementType} argument.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private <E> Set<E> createSet(final Class<E> elementType, final int capacity) {
+        if (Enum.class.isAssignableFrom(elementType)) {
+            return EnumSet.noneOf((Class) elementType);
+        }
+        if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
+            return new CodeListSet(elementType);
+        }
+        return new CheckedHashSet<E>(elementType, capacity);
     }
 
     /**
@@ -581,12 +645,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     private <E> boolean useSet(final Class<E> elementType) {
         final Class<? extends Collection<E>> type = collectionType(elementType);
-        if (Set.class.isAssignableFrom(type)) {
-            return true;
-        }
-        if (List.class.isAssignableFrom(type)) {
-            return false;
-        }
+        if (Set .class == (Class) type) return true;
+        if (List.class == (Class) type) return false;
         throw new NoSuchElementException(Errors.format(Errors.Keys.UnsupportedType_1, type));
     }
 
@@ -597,8 +657,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * versions may accept other types.
      *
      * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element type
-     * is assignable to {@link Enum} or {@link CodeList}, and <code>{@linkplain List}.class</code>
-     * otherwise. Subclasses can override this method for choosing different kind of collections.
+     * is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset}, {@link Locale}
+     * or {@link Currency}, and <code>{@linkplain List}.class</code> otherwise.
+     * Subclasses can override this method for choosing different kind of collections.
      * <em>Note however that {@link Set} should be used only with immutable element types</em>,
      * for {@linkplain Object#hashCode() hash code} stability.</p>
      *
@@ -610,7 +671,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     @SuppressWarnings({"rawtypes","unchecked"})
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
         return (Class) (CodeList.class.isAssignableFrom(elementType) ||
-                            Enum.class.isAssignableFrom(elementType) ? Set.class : List.class);
+                            Enum.class.isAssignableFrom(elementType) ||
+                         Charset.class.isAssignableFrom(elementType) ||
+                          String.class ==               elementType  ||
+                          Locale.class ==               elementType  ||
+                        Currency.class ==               elementType
+                ? Set.class : List.class);
     }
 
     /**

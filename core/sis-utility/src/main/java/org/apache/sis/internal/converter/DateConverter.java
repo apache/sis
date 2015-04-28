@@ -19,7 +19,6 @@ package org.apache.sis.internal.converter;
 import java.util.Date;
 import java.util.Set;
 import java.util.EnumSet;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -27,20 +26,22 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * Handles conversions from {@link Date} to various objects.
  *
- * {@section String representation}
+ * <div class="section">String representation</div>
  * There is currently no converter between {@link String} and {@link java.util.Date} because the
  * date format is not yet defined (we are considering the ISO format for a future SIS version).
  *
- * {@section Special cases}
+ * <div class="section">Special cases</div>
  * The converter from dates to timestamps is not injective, because the same date could be mapped
  * to many timestamps since timestamps have an additional nanoseconds field.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class DateConverter<T> extends SystemConverter<Date,T> {
     /**
      * For cross-version compatibility.
@@ -106,7 +107,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             return inverse.properties();
         }
 
-        @Override public java.util.Date convert(final java.lang.Long target) {
+        @Override public java.util.Date apply(final java.lang.Long target) {
             return (target != null) ? new java.util.Date(target) : null;
         }
     }
@@ -126,7 +127,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             return bijective();
         }
 
-        @Override public java.lang.Long convert(final Date source) {
+        @Override public java.lang.Long apply(final Date source) {
             return (source != null) ? source.getTime() : null;
         }
     }
@@ -143,7 +144,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             inverse = new IdentityConverter<Date, java.sql.Date>(targetClass, Date.class, this); // <T,S> in reverse order.
         }
 
-        @Override public java.sql.Date convert(final Date source) {
+        @Override public java.sql.Date apply(final Date source) {
             if (source == null || source instanceof java.sql.Date) {
                 return (java.sql.Date) source;
             }
@@ -163,7 +164,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             inverse = new IdentityConverter<Date, java.sql.Timestamp>(targetClass, Date.class, this); // <T,S> in reverse order.
         }
 
-        @Override public java.sql.Timestamp convert(final Date source) {
+        @Override public java.sql.Timestamp apply(final Date source) {
             if (source == null || source instanceof java.sql.Timestamp) {
                 return (java.sql.Timestamp) source;
             }

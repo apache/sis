@@ -24,14 +24,25 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
+
 
 /**
  * Information about the environmental conditions during the acquisition.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MI_EnvironmentalRecord_Type", propOrder = {
@@ -78,21 +89,30 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(EnvironmentalRecord)
      */
     public DefaultEnvironmentalRecord(final EnvironmentalRecord object) {
         super(object);
-        averageAirTemperature    = object.getAverageAirTemperature();
-        maxRelativeHumidity      = object.getMaxRelativeHumidity();
-        maxAltitude              = object.getMaxAltitude();
-        meteorologicalConditions = object.getMeteorologicalConditions();
+        if (object != null) {
+            averageAirTemperature    = object.getAverageAirTemperature();
+            maxRelativeHumidity      = object.getMaxRelativeHumidity();
+            maxAltitude              = object.getMaxAltitude();
+            meteorologicalConditions = object.getMeteorologicalConditions();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -117,6 +137,8 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
 
     /**
      * Returns the average air temperature along the flight pass during the photo flight.
+     *
+     * @return Average air temperature along the flight pass during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "averageAirTemperature", required = true)
@@ -136,9 +158,11 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
 
     /**
      * Returns the maximum relative humidity along the flight pass during the photo flight.
+     *
+     * @return Maximum relative humidity along the flight pass during the photo flight, or {@code null}.
      */
     @Override
-    @ValueRange(minimum=0, maximum=100)
+    @ValueRange(minimum = 0, maximum = 100)
     @XmlElement(name = "maxRelativeHumidity", required = true)
     public Double getMaxRelativeHumidity() {
         return maxRelativeHumidity;
@@ -147,15 +171,21 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Sets the maximum relative humidity along the flight pass during the photo flight.
      *
-     * @param newValue The new maximum relative humidity.
+     * @param newValue The new maximum relative humidity, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
+        if (newValue != null && !(newValue >= 0 && newValue <= 100)) { // Use '!' for catching NaN.
+            warnOutOfRangeArgument(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue);
+        }
         maxRelativeHumidity = newValue;
     }
 
     /**
      * Returns the maximum altitude during the photo flight.
+     *
+     * @return Maximum altitude during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "maxAltitude", required = true)
@@ -174,8 +204,9 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     }
 
     /**
-     * Returns the meteorological conditions in the photo flight area, in particular clouds,
-     * snow and wind.
+     * Returns the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
+     *
+     * @return Meteorological conditions in the photo flight area, or {@code null}.
      */
     @Override
     @XmlElement(name = "meteorologicalConditions", required = true)
@@ -184,8 +215,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     }
 
     /**
-     * Sets the meteorological conditions in the photo flight area, in particular clouds,
-     * snow and wind.
+     * Sets the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      *
      * @param newValue The meteorological conditions value.
      */

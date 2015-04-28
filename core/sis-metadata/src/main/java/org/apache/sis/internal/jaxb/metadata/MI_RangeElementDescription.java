@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -45,6 +45,8 @@ public final class MI_RangeElementDescription extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code RangeElementDescription.class}
      */
     @Override
     protected Class<RangeElementDescription> getBoundType() {
@@ -79,7 +81,7 @@ public final class MI_RangeElementDescription extends
      */
     @XmlElementRef
     public DefaultRangeElementDescription getElement() {
-        return skip() ? null : DefaultRangeElementDescription.castOrCopy(metadata);
+        return DefaultRangeElementDescription.castOrCopy(metadata);
     }
 
     /**

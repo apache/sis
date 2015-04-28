@@ -17,7 +17,11 @@
 package org.apache.sis.internal.taglet;
 
 import com.sun.javadoc.Tag;
+import com.sun.javadoc.RootDoc;
+import com.sun.javadoc.SourcePosition;
 import com.sun.tools.doclets.Taglet;
+import com.sun.tools.doclets.internal.toolkit.Configuration;
+import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 
 /**
@@ -29,6 +33,34 @@ import com.sun.tools.doclets.Taglet;
  * @module
  */
 abstract class InlineTaglet implements Taglet {
+    /**
+     * The doclet configuration, created when first needed for reporting warnings.
+     */
+    private static Configuration configuration;
+
+    /**
+     * Returns the root document, or {@code null} if none.
+     */
+    private static synchronized RootDoc getRootDoc() {
+        if (configuration == null) {
+            /*
+             * Try to invoke ConfigurationImpl.getInstance(), which exists on JDK6 and JDK7 but not on JDK8.
+             * If we fail, fallback on direct instantiation of ConfigurationImpl(), which is possible only
+             * in JDK8 (because the constructor is private on JDK6 and JDK7).
+             */
+            try {
+                configuration = (Configuration) ConfigurationImpl.class.getMethod("getInstance").invoke(null);
+            } catch (Exception e) { // ReflectiveOperationException on the JDK7 branch
+                try {
+                    configuration = ConfigurationImpl.class.newInstance();
+                } catch (Exception e2) { // ReflectiveOperationException on the JDK7 branch
+                    return null; // Allowed by this method contract.
+                }
+            }
+        }
+        return configuration.root;
+    }
+
     /**
      * Constructs a default inline taglet.
      */
@@ -121,5 +153,29 @@ abstract class InlineTaglet implements Taglet {
             buffer.append(toString(tags[i]));
         }
         return buffer.toString();
+    }
+
+    /**
+     * Prints a warning message.
+     */
+    static void printWarning(final SourcePosition position, final String message) {
+        final RootDoc root = getRootDoc();
+        if (root != null) {
+            root.printWarning(position, message);
+        } else {
+            System.err.println(message);
+        }
+    }
+
+    /**
+     * Prints an error message.
+     */
+    static void printError(final SourcePosition position, final String message) {
+        final RootDoc root = getRootDoc();
+        if (root != null) {
+            root.printError(position, message);
+        } else {
+            System.err.println(message);
+        }
     }
 }

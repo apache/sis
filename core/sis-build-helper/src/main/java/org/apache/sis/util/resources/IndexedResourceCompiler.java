@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * the command-line in a future version if this happen to be useful.</p>
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -76,7 +76,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * The Java modifiers applies on the key constants to be generated.
      */
-    private static final String KEY_MODIFIERS = "public static final int ";
+    private static final String KEY_MODIFIERS = "public static final short ";
 
     /**
      * Margin to write before the {@link #KEY_MODIFIERS}.
@@ -346,7 +346,6 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
             if (argumentCount != expected) {
                 final String suffix = ARGUMENT_COUNT_PREFIX + expected;
                 warning(file, key, "Key name should ends with \"" + suffix + "\".", null);
-                continue;
             }
         }
         /*
@@ -391,8 +390,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                      */
                     if (i+2 < buffer.length()  &&  buffer.charAt(i+2) == '\'') {
                         switch (buffer.charAt(i+1)) {
-                            case '{': i += 2; continue search;
-                            case '}': i += 2; continue search;
+                            case '{': i += 2; continue;
+                            case '}': i += 2; continue;
                         }
                     }
                     if (level <= 0) {
@@ -400,7 +399,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                          * If we weren't between braces, we must double the quotes.
                          */
                         buffer.insert(i++, '\'');
-                        continue search;
+                        continue;
                     }
                     /*
                      * If we find ourselves between braces, we don't normally need to double
@@ -414,7 +413,6 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                         final int end = scan + choice.length();
                         if (end < buffer.length() && buffer.substring(scan, end).equalsIgnoreCase(choice)) {
                             buffer.insert(i++, '\'');
-                            continue search;
                         }
                     }
                 }

@@ -27,10 +27,19 @@ import org.opengis.metadata.constraint.SecurityConstraints;
 /**
  * Handling restrictions imposed on the resource for national security or similar security concerns.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -45,7 +54,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 621767670847345848L;;
+    private static final long serialVersionUID = 621767670847345848L;
 
     /**
      * Name of the handling restrictions on the resource.
@@ -75,6 +84,15 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     }
 
     /**
+     * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
+     *
+     * @param useLimitation The use limitation, or {@code null} if none.
+     */
+    public DefaultSecurityConstraints(final CharSequence useLimitation) {
+        super(useLimitation);
+    }
+
+    /**
      * Creates a security constraints initialized with the specified classification.
      *
      * @param classification The name of the handling restrictions on the resource, or {@code null}.
@@ -88,21 +106,23 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SecurityConstraints)
      */
     public DefaultSecurityConstraints(final SecurityConstraints object) {
         super(object);
-        classification       = object.getClassification();
-        userNote             = object.getUserNote();
-        classificationSystem = object.getClassificationSystem();
-        handlingDescription  = object.getHandlingDescription();
+        if (object != null) {
+            classification       = object.getClassification();
+            userNote             = object.getUserNote();
+            classificationSystem = object.getClassificationSystem();
+            handlingDescription  = object.getHandlingDescription();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -127,6 +147,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the handling restrictions on the resource.
+     *
+     * @return Name of the handling restrictions on the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "classification", required = true)
@@ -147,6 +169,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
+     *
+     * @return Explanation of the application of the legal constraints, or {@code null}.
      */
     @Override
     @XmlElement(name = "userNote")
@@ -167,6 +191,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the classification system.
+     *
+     * @return Name of the classification system, or {@code null}.
      */
     @Override
     @XmlElement(name = "classificationSystem")
@@ -186,6 +212,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the additional information about the restrictions on handling the resource.
+     *
+     * @return Additional information about the restrictions, or {@code null}.
      */
     @Override
     @XmlElement(name = "handlingDescription")

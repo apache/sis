@@ -29,10 +29,12 @@ package org.apache.sis.xml;
  *
  * <p>Nil objects appear most frequently in XML documents since if a mandatory ISO 19115 attribute
  * is absent, then the ISO 19139 standard requires us to said why it is so. The following example
- * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
+ * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
  * and an unknown {@code CI_Series} element on the right side:</p>
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Example of missing object</caption>
+ * <tr>
  *   <th>Normal {@code Series} element</th>
  *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>
@@ -59,7 +61,7 @@ package org.apache.sis.xml;
  * both the {@code Series} and the {@code NilObject} interfaces, and the {@link #getNilReason()} method
  * on that instance will return the {@link NilReason#UNKNOWN} constant.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * Instances of {@code NilObject} are created by first fetching the reason why the information
  * is missing, then invoking {@link NilReason#createNilObject(Class)}. The following example
  * instantiates a {@code Citation} object which is nil because the information are missing:
@@ -69,7 +71,7 @@ package org.apache.sis.xml;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -81,6 +83,8 @@ public interface NilObject {
      * Returns the reason why this object contains no information.
      *
      * @return The reason why this object contains no information.
+     *
+     * @see NilReason#forObject(Object)
      */
     NilReason getNilReason();
 }

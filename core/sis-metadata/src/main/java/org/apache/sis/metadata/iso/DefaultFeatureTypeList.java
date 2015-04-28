@@ -25,10 +25,19 @@ import org.opengis.metadata.FeatureTypeList;
 /**
  * List of names of feature types with the same spatial representation (same as spatial attributes).
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -75,19 +84,21 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureTypeList)
      */
     public DefaultFeatureTypeList(final FeatureTypeList object) {
         super(object);
-        spatialObject     = object.getSpatialObject();
-        spatialSchemaName = object.getSpatialSchemaName();
+        if (object != null) {
+            spatialObject     = object.getSpatialObject();
+            spatialSchemaName = object.getSpatialSchemaName();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -112,6 +123,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Instance of a type defined in the spatial schema.
+     *
+     * @return Instance of a type defined in the spatial schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialObject", required = true)
@@ -131,6 +144,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Name of the spatial schema used.
+     *
+     * @return Name of the spatial schema used, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialSchemaName", required = true)

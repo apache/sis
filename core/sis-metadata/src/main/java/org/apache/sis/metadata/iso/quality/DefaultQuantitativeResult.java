@@ -30,9 +30,18 @@ import org.opengis.util.RecordType;
 /**
  * Information about the value (or set of values) obtained from applying a data quality measure.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -79,21 +88,23 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(QuantitativeResult)
      */
     public DefaultQuantitativeResult(final QuantitativeResult object) {
         super(object);
-        valueType      = object.getValueType();
-        valueUnit      = object.getValueUnit();
-        errorStatistic = object.getErrorStatistic();
-        values         = copyList(object.getValues(), Record.class);
+        if (object != null) {
+            valueType      = object.getValueType();
+            valueUnit      = object.getValueUnit();
+            errorStatistic = object.getErrorStatistic();
+            values         = copyList(object.getValues(), Record.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -118,6 +129,8 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
 
     /**
      * Returns the quantitative value or values, content determined by the evaluation procedure used.
+     *
+     * @return Quantitative value or values.
      */
     @Override
 //  @XmlElement(name = "value", required = true) // TODO
@@ -135,7 +148,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Return the value type for reporting a data quality result, or {@code null} if none.
+     * Return the value type for reporting a data quality result.
+     *
+     * @return Value type for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueType")
@@ -144,7 +159,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Sets the value type for reporting a data quality result, or {@code null} if none.
+     * Sets the value type for reporting a data quality result.
      *
      * @param newValue The new value type.
      */
@@ -154,7 +169,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the value unit for reporting a data quality result, or {@code null} if none.
+     * Returns the value unit for reporting a data quality result.
+     *
+     * @return Value unit for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueUnit", required = true)
@@ -163,7 +180,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Sets the value unit for reporting a data quality result, or {@code null} if none.
+     * Sets the value unit for reporting a data quality result.
      *
      * @param newValue The new value unit.
      */
@@ -173,7 +190,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the statistical method used to determine the value, or {@code null} if none.
+     * Returns the statistical method used to determine the value.
+     *
+     * @return Statistical method used to determine the value, or {@code null}.
      */
     @Override
     @XmlElement(name = "errorStatistic")

@@ -22,7 +22,6 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.io.Serializable;
-import net.jcip.annotations.Immutable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -33,22 +32,20 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 
 /**
- * Immutable representation of an {@linkplain Envelope envelope}.
+ * An immutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
- * {@note While <code>ImmutableEnvelope</code> objects are immutable, they contain references to
- *        <code>CoordinateReferenceSystem</code> objects which are not guaranteed to be immutable.
- *        For better safety, factory codes are encouraged to pass only immutable instances of
- *        coordinate reference systems to the constructors.}
+ * <div class="section">Immutability and thread safety</div>
+ * This final class is immutable and thus inherently thread-safe if the {@link CoordinateReferenceSystem}
+ * instance given to the constructor is immutable. This is usually the case in Apache SIS.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 public final class ImmutableEnvelope extends ArrayEnvelope implements Serializable {
     /**
      * For cross-version compatibility.
@@ -89,7 +86,9 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
 
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
+     * The coordinate reference system is set to the
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
      */

@@ -21,16 +21,15 @@ import java.util.EnumSet;
 import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
-import net.jcip.annotations.Immutable;
-
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -43,27 +42,30 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * completely bijective because various path separators ({@code '/'} and {@code '\'})
  * produce the same {@code File} object.</p>
  *
- * {@section Special cases}
+ * <div class="section">Special cases</div>
  * Conversion table from {@link String} to {@link java.lang.Boolean}:
  *
- * <table>
- *    <tr><th>source</th>          <th>target</th></tr>
- *    <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
- *    <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
- *    <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ * <table class="sis">
+ *   <caption>Conversion table from strings</caption>
+ *   <tr><th>source</th>          <th>target</th></tr>
+ *   <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *   <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *   <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
  * </table>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
-@Immutable
 abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * For cross-version compatibility.
@@ -121,7 +123,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * @throws UnconvertibleObjectException If an error occurred during the conversion.
      */
     @Override
-    public final T convert(String source) throws UnconvertibleObjectException {
+    public final T apply(String source) throws UnconvertibleObjectException {
         source = CharSequences.trimWhitespaces(source);
         if (source == null || source.isEmpty()) {
             return null;
@@ -136,7 +138,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     }
 
     /**
-     * Invoked by {@link #convert(String)} for converting the given string to the target
+     * Invoked by {@link #apply(String)} for converting the given string to the target
      * type of this converter.
      *
      * @param  source The string to convert, guaranteed to be non-null and non-empty.
@@ -148,7 +150,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * Converter from {@link String} to various kinds of {@link java.lang.Number}.
      */
-    @Immutable
     public static final class Number extends StringConverter<java.lang.Number> {
         private static final long serialVersionUID = 8356246549731207392L;
         public Number() {super(java.lang.Number.class);} // Instantiated by ServiceLoader.
@@ -248,7 +249,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         private static final long serialVersionUID = -794933131690043494L;
         public Locale() {super(java.util.Locale.class);} // Instantiated by ServiceLoader.
 
-        @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
+        @Override java.util.Locale doConvert(String source) {
             return Locales.parse(source);
         }
     }
@@ -289,6 +290,16 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
     }
 
+    public static final class Unit extends StringConverter<javax.measure.unit.Unit<?>> {
+        private static final long serialVersionUID = -1809497218136016210L;
+        @SuppressWarnings("unchecked")
+        public Unit() {super((Class) javax.measure.unit.Unit.class);} // Instantiated by ServiceLoader.
+
+        @Override javax.measure.unit.Unit<?> doConvert(String source) throws IllegalArgumentException {
+            return Units.valueOf(source);
+        }
+    }
+
     public static final class Angle extends StringConverter<org.apache.sis.measure.Angle> {
         private static final long serialVersionUID = -6937967772504961327L;
         public Angle() {super(org.apache.sis.measure.Angle.class);} // Instantiated by ServiceLoader.
@@ -320,7 +331,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * <p>Instances of this class are created by
      * {@link SystemRegistry#createConverter(Class, Class)}.</p>
      */
-    @Immutable
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */
         private static final long serialVersionUID = -6351669842222010105L;
@@ -331,7 +341,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
 
         /** Converts the given string to the target type of this converter. */
-        @Override T doConvert(String source) {
+        @Override T doConvert(final String source) {
             final T code = Types.forCodeName(targetClass, source, false);
             if (code == null) {
                 throw new UnconvertibleObjectException(formatErrorMessage(source));
@@ -342,6 +352,38 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         /** Invoked by the constructor for creating the inverse converter. */
         @Override ObjectConverter<T, String> createInverse() {
             return new ObjectToString.CodeList<T>(targetClass, this);
+        }
+    }
+
+    /**
+     * Converter from {@link String} to {@link java.lang.Enum}.
+     * This converter is particular in that it requires the target class in argument
+     * to the constructor.
+     *
+     * <p>Instances of this class are created by
+     * {@link SystemRegistry#createConverter(Class, Class)}.</p>
+     */
+    static final class Enum<T extends java.lang.Enum<T>> extends StringConverter<T> {
+        /** For cross-version compatibility on serialization. */
+        private static final long serialVersionUID = -4124617013044304640L;
+
+        /** Creates a new converter for the given enumeration. */
+        Enum(final Class<T> targetClass) {
+            super(targetClass);
+        }
+
+        /** Converts the given string to the target type of this converter. */
+        @Override T doConvert(final String source) {
+            final T code = Types.forEnumName(targetClass, source);
+            if (code == null) {
+                throw new UnconvertibleObjectException(formatErrorMessage(source));
+            }
+            return code;
+        }
+
+        /** Invoked by the constructor for creating the inverse converter. */
+        @Override ObjectConverter<T, String> createInverse() {
+            return new ObjectToString.Enum<T>(targetClass, this);
         }
     }
 }

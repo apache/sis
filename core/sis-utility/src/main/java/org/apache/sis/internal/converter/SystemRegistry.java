@@ -19,11 +19,11 @@ package org.apache.sis.internal.converter;
 import java.util.Date;
 import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -31,26 +31,28 @@ import org.apache.sis.internal.util.SystemListener;
  * This class serves two purposes:
  *
  * <ul>
- *   <li><p>Fetch the list of converters from the content of all
+ *   <li>Fetch the list of converters from the content of all
  *       {@code META-INF/services/org.apache.sis.util.converter.ObjectConverter} files found on the classpath.
- *       The intend is to allow other modules to register their own converters.</p></li>
+ *       The intend is to allow other modules to register their own converters.</li>
  *
- *   <li><p>Apply heuristic rules in addition to the explicitly registered converters.
+ *   <li>Apply heuristic rules in addition to the explicitly registered converters.
  *       Those heuristic rules are provided in a separated class in order to keep the
  *       {@link ConverterRegistry} class a little bit more "pure", and concentrate
- *       most arbitrary decisions in this single class.</p></li>
+ *       most arbitrary decisions in this single class.</li>
  * </ul>
  *
  * When using {@code SystemRegistry}, new converters may "automagically" appear as a consequence
  * of the above-cited heuristic rules. This differs from the {@link ConverterRegistry} behavior,
  * where only registered converters are used.
  *
+ * <div class="section">Thread safety</div>
+ * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public final class SystemRegistry extends ConverterRegistry {
     /**
      * The default system-wide instance. This register is initialized with conversions between
@@ -72,7 +74,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * then those converters are lost. This is of concern only for applications using
          * a modularization framework like OSGi. See package javadoc for more information.
          */
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
                 INSTANCE.clear();
             }
@@ -131,13 +133,16 @@ public final class SystemRegistry extends ConverterRegistry {
      * <p>Some (not all) special cases are:</p>
      * <ul>
      *   <li>If the source class is {@link CharSequence}, tries to delegate to an other
-     *       converter accepting {@link String} sources.</li>
+     *       converter accepting {@link String} sources.</li>
      *   <li>If the source and target types are numbers, generates a {@link NumberConverter}
      *       on the fly.</li>
      *   <li>If the target type is a code list, generate the converter on-the-fly.
      *       We do not register every code lists in advance because there is too
      *       many of them, and a generic code is available for all of them.</li>
      * </ul>
+     *
+     * @return A newly generated converter from the specified source class to the target class,
+     *         or {@code null} if none.
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -179,12 +184,16 @@ public final class SystemRegistry extends ConverterRegistry {
                     targetClass, find(String.class, targetClass));
         }
         /*
-         * From String to CodeList.
+         * From String to CodeList or Enum.
          */
         if (sourceClass == String.class) {
             if (CodeList.class.isAssignableFrom(targetClass)) {
                 return (ObjectConverter<S,T>) new StringConverter.CodeList( // More checks in JDK7 branch.
                         targetClass.asSubclass(CodeList.class));
+            }
+            if (targetClass.isEnum()) {
+                return (ObjectConverter<S,T>) new StringConverter.Enum( // More checks in JDK7 branch.
+                        targetClass.asSubclass(Enum.class));
             }
         }
         /*

@@ -21,11 +21,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-import net.jcip.annotations.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -34,17 +33,21 @@ import org.apache.sis.internal.jdk7.Objects;
  * For such a particular case, this implementation is more effective than
  * other implementations provided in this package.
  *
- * {@section Instantiation}
+ * <div class="section">Instantiation</div>
  * If the characters sequence to wrap is known to be a {@code String} instance, then
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
  * the {@link Types#toInternationalString(CharSequence)} method.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe.
+ * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * encouraged to make sure that subclasses remain immutable for more predictable behavior.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -74,7 +77,8 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Returns the same string for all locales. This is the string given to the constructor.
      *
-     * @param locale Ignored in the {@code SampleInternationalString} implementation.
+     * @param  locale Ignored in the {@code SimpleInternationalString} implementation.
+     * @return The international string as a {@code String}.
      */
     @Override
     public String toString(final Locale locale) {
@@ -108,6 +112,9 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Writes the string. This is required since {@link #defaultValue} is not serialized.
+     *
+     * @param  out The output stream where to serialize this international string.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -116,6 +123,10 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Reads the string. This is required since {@link #defaultValue} is not serialized.
+     *
+     * @param  in The input stream from which to deserialize an international string.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

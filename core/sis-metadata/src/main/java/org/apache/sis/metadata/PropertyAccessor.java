@@ -21,12 +21,10 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Collection;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import net.jcip.annotations.ThreadSafe;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -50,7 +48,7 @@ import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.internal.util.Numerics.floatEpsilonEqual;
 import static org.apache.sis.internal.util.CollectionsExt.snapshot;
 import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -67,8 +65,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #equals(Object, Object, ComparisonMode, boolean)} and
- *       {@link #freeze(Object)}.</li>
+ *       except {@link #equals(Object, Object, ComparisonMode)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
@@ -76,27 +73,18 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *       XML marshalling.</li>
  * </ul>
  *
+ * <div class="section">Thread safety</div>
+ * The same {@code PropertyAccessor} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
+ * from multiple threads, because the same {@code PropertyAccessor} instances are typically used by many
+ * {@link ModifiableMetadata} instances.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
-@ThreadSafe
-final class PropertyAccessor {
-    /**
-     * Getters shared between many instances of this class. Two different implementations
-     * may share the same getters but different setters.
-     *
-     * {@note In the particular case of <code>Class</code> keys, <code>IdentityHashMap</code> and
-     *        <code>HashMap</code> have identical behavior since <code>Class</code> is final and
-     *        does not override the <code>equals(Object)</code> and <code>hashCode()</code> methods.
-     *        The <code>IdentityHashMap</code> Javadoc claims that it is faster than the regular
-     *        <code>HashMap</code>. But maybe the most interesting property is that it allocates
-     *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
-     *        of objects created by <code>HashMap</code>.}
-     */
-    private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<Class<?>, Method[]>();
-
+class PropertyAccessor {
     /**
      * Enumeration constants for the {@code mode} argument in the
      * {@link #count(Object, ValueExistencePolicy, int)} method.
@@ -143,18 +131,37 @@ final class PropertyAccessor {
      * {@preformat java
      *     type.isAssignableFrom(implementation);
      * }
+     *
+     * <div class="note"><b>Design note:</b>
+     * We could enforce the above-cited restriction with type parameter: if the {@link #type} field is declared
+     * as {@code Class<T>}, then this {@code implementation} field would be declared as {@code Class<? extends T>}.
+     * However this is not useful for this internal class because the {@code <T>} type is never known; we have the
+     * {@code <?>} type everywhere except in tests, which result in compiler warnings at {@code PropertyAccessor}
+     * construction.</div>
      */
     final Class<?> implementation;
 
     /**
-     * Number of {@link #getters} methods to use. This is either {@code getters.length}
-     * or {@code getters.length-1}, depending on whether the {@link #EXTRA_GETTER} method
-     * needs to be skipped or not.
+     * Number of {@link #getters} methods that can be used, regardless of whether the methods are visible
+     * or hidden to the user. This is either {@code getters.length} or {@code getters.length-1}, depending
+     * on whether the {@link #EXTRA_GETTER} method needs to be skipped or not.
      */
-    private final int standardCount, allCount;
+    private final int allCount;
 
     /**
-     * The getter methods. This array should not contain any null element.
+     * Numbers of methods to shown to the user. This is always equal or lower than {@link #allCount}.
+     * This count may be lower than {@code allCount} for two reasons:
+     *
+     * <ul>
+     *   <li>The {@link #EXTRA_GETTER} method is not part of the international standard.</li>
+     *   <li>The interface contains deprecated methods from an older international standard.
+     *       Example: changes caused by the upgrade from ISO 19115:2003 to ISO 19115:2014.</li>
+     * </ul>
+     */
+    private final int standardCount;
+
+    /**
+     * The public getter methods. This array should not contain any null element.
      * They are the methods defined in the interface, not the implementation class.
      *
      * <p>This array shall not contains any {@code null} elements.</p>
@@ -203,7 +210,7 @@ final class PropertyAccessor {
      * annotations. Consequently the map may contain many entries for the same value if some
      * method names are different than the UML identifiers.</p>
      *
-     * @see #indexOf(String)
+     * @see #indexOf(String, boolean)
      */
     private final Map<String,Integer> mapping;
 
@@ -229,9 +236,8 @@ final class PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard The standard which define the {@code type} interface.
-     * @param  type The interface implemented by the metadata, which must be
-     *         the value returned by {@link #getStandardType(Class, String)}.
+     * @param  standard       The standard which define the {@code type} interface.
+     * @param  type           The interface implemented by the metadata class.
      * @param  implementation The class of metadata implementations, or {@code type} if none.
      */
     PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
@@ -245,6 +251,12 @@ final class PropertyAccessor {
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
             if (!EXTRA_GETTER.getDeclaringClass().isAssignableFrom(implementation)) {
                 allCount--; // The extra getter method does not exist.
+            }
+            standardCount--;
+        }
+        while (standardCount != 0) { // Skip deprecated methods.
+            if (!isDeprecated(standardCount - 1)) {
+                break;
             }
             standardCount--;
         }
@@ -356,8 +368,18 @@ final class PropertyAccessor {
         if (!name.isEmpty()) {
             final Integer old = mapping.put(name, index);
             if (old != null && !old.equals(index)) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
-                        Classes.getShortName(type) + '.' + name));
+                /*
+                 * Same identifier for two different properties. If one is deprecated while the
+                 * other is not, then the non-deprecated identifier overwrite the deprecated one.
+                 */
+                final boolean deprecated = isDeprecated(index);
+                if (deprecated == isDeprecated(old)) {
+                    throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedIdentifier_1,
+                            Classes.getShortName(type) + '.' + name));
+                }
+                if (deprecated) {
+                    mapping.put(name, old); // Restore the undeprecated method.
+                }
             }
         }
     }
@@ -368,7 +390,7 @@ final class PropertyAccessor {
     private void addMappingWithLowerCase(final String name, final Integer index) {
         addMapping(name, index);
         final String lower = name.toLowerCase(Locale.ROOT);
-        if (lower != name) { // Identity comparison is okay here.
+        if (!lower.equals(name)) {
             addMapping(lower, index);
         }
     }
@@ -378,73 +400,88 @@ final class PropertyAccessor {
      * since it may be shared among many instances of {@code PropertyAccessor}.
      *
      * @param  type The metadata interface.
-     * @param  implementation The class of metadata implementations.
+     * @param  implementation The class of metadata implementations, or {@code type} if none.
      * @return The getters declared in the given interface (never {@code null}).
      */
     private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
-        synchronized (SHARED_GETTERS) {
-            Method[] getters = SHARED_GETTERS.get(type);
-            if (getters == null) {
-                getters = type.getMethods();
-                // Following is similar in purpose to the PropertyAccessor.mapping field,
-                // but index values are different because of the call to Arrays.sort(...).
-                final Map<String,Integer> mapping = new HashMap<String,Integer>(hashMapCapacity(getters.length));
-                boolean hasExtraGetter = false;
-                int count = 0;
-                for (final Method candidate : getters) {
-                    if (Classes.isPossibleGetter(candidate)) {
-                        final String name = candidate.getName();
-                        if (name.startsWith(SET)) { // Paranoiac check.
-                            continue;
+        /*
+         * Indices map is used for choosing what to do in case of name collision.
+         */
+        Method[] getters = (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API ? implementation : type).getMethods();
+        final Map<String,Integer> indices = new HashMap<String,Integer>(hashMapCapacity(getters.length));
+        boolean hasExtraGetter = false;
+        int count = 0;
+        for (Method candidate : getters) {
+            if (Classes.isPossibleGetter(candidate)) {
+                final String name = candidate.getName();
+                if (name.startsWith(SET)) { // Paranoiac check.
+                    continue;
+                }
+                /*
+                 * The candidate method should be declared in the interface. If not, then we require it to have
+                 * a @UML annotation. The later case happen when the Apache SIS implementation contains methods
+                 * for a new international standard not yet reflected in the GeoAPI interfaces.
+                 */
+                if (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) {
+                    if (type == implementation) {
+                        if (!type.isInterface() && !candidate.isAnnotationPresent(UML.class)) {
+                            continue; // @UML considered optional only for interfaces.
                         }
-                        /*
-                         * At this point, we are ready to accept the method. Before doing so,
-                         * check if the method override an other method defined in a parent
-                         * class with a covariant return type. The JVM considers such cases
-                         * as two different methods, while from a Java developer point of
-                         * view this is the same method (GEOTK-205).
-                         */
-                        final Integer pi = mapping.put(name, count);
-                        if (pi != null) {
-                            final Class<?> pt = getters[pi].getReturnType();
-                            final Class<?> ct = candidate  .getReturnType();
-                            if (ct.isAssignableFrom(pt)) {
-                                continue; // Previous type was more accurate.
-                            }
-                            if (pt.isAssignableFrom(ct)) {
-                                getters[pi] = candidate;
-                                continue;
-                            }
-                            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
-                                    Classes.getShortName(type) + '.' + name, ct, pt));
-                        }
-                        getters[count++] = candidate;
-                        if (!hasExtraGetter) {
-                            hasExtraGetter = name.equals(EXTRA_GETTER.getName());
+                    } else try {
+                        candidate = type.getMethod(name, (Class[]) null);
+                    } catch (NoSuchMethodException e) {
+                        if (!candidate.isAnnotationPresent(UML.class)) {
+                            continue; // Not a method from an interface, and no @UML in implementation.
                         }
                     }
                 }
                 /*
-                 * Sort the standard methods before to add the extra methods (if any) in order to
-                 * keep the extra methods last. The code checking for the extra methods require
-                 * them to be last.
+                 * At this point, we are ready to accept the method. Before doing so,
+                 * check if the method override an other method defined in a parent
+                 * class with a covariant return type. The JVM considers such cases
+                 * as two different methods, while from a Java developer point of
+                 * view this is the same method (GEOTK-205).
                  */
-                Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
-                if (!hasExtraGetter) {
-                    if (getters.length == count) {
-                        getters = Arrays.copyOf(getters, count+1);
+                final Integer pi = indices.put(name, count);
+                if (pi != null) {
+                    final Class<?> pt = getters[pi].getReturnType();
+                    final Class<?> ct = candidate  .getReturnType();
+                    if (ct.isAssignableFrom(pt)) {
+                        continue; // Previous type was more accurate.
                     }
-                    getters[count++] = EXTRA_GETTER;
+                    if (pt.isAssignableFrom(ct)) {
+                        getters[pi] = candidate;
+                        continue;
+                    }
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
+                            Classes.getShortName(type) + '.' + name, ct, pt));
                 }
-                getters = ArraysExt.resize(getters, count);
-                SHARED_GETTERS.put(type, getters);
+                getters[count++] = candidate;
+                if (!hasExtraGetter) {
+                    hasExtraGetter = name.equals(EXTRA_GETTER.getName());
+                }
             }
-            return getters;
         }
+        /*
+         * Sort the standard methods before to add the extra methods (if any) in order to
+         * keep the extra methods last. The code checking for the extra methods require
+         * them to be last.
+         */
+        Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
+        if (!hasExtraGetter) {
+            if (getters.length == count) {
+                getters = Arrays.copyOf(getters, count+1);
+            }
+            getters[count++] = EXTRA_GETTER;
+        }
+        getters = ArraysExt.resize(getters, count);
+        return getters;
     }
 
     /**
      * Returns the number of properties that can be read.
+     * This is the properties to show in map or tree, <strong>not</strong> including
+     * hidden properties like deprecated methods or {@link #EXTRA_GETTER} method.
      *
      * @see #count(Object, ValueExistencePolicy, int)
      */
@@ -470,12 +507,13 @@ final class PropertyAccessor {
              * most of the time the key name will have exactly the expected case and using
              * directly the given String instance allow usage of its cached hash code value.
              */
-            final String key = CharSequences.trimWhitespaces(name.replace(" ", "").toLowerCase(Locale.ROOT));
+            final String key = CharSequences.trimWhitespaces(
+                    CharSequences.replace(name, " ", "").toString().toLowerCase(Locale.ROOT));
             if (key == name || (index = mapping.get(key)) == null) { // Identity comparison is okay here.
                 if (!mandatory) {
                     return -1;
                 }
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NoSuchProperty_2, name, type));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, type, name));
             }
         }
         return index;
@@ -486,8 +524,7 @@ final class PropertyAccessor {
      *
      * @param  index The index of the property for which to get the name.
      * @param  keyPolicy The kind of name to return.
-     * @return The name of the given kind at the given index,
-     *         or {@code null} if the index is out of bounds.
+     * @return The name of the given kind at the given index, or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
     @Workaround(library="JDK", version="1.7") // Actually apply to String.intern() below.
@@ -535,8 +572,8 @@ final class PropertyAccessor {
      * @param  policy The kind of type to return.
      * @return The type of property values, or {@code null} if unknown.
      */
-    final Class<?> type(final int index, final TypeValuePolicy policy) {
-        if (index >= 0 && index < standardCount) {
+    Class<?> type(final int index, final TypeValuePolicy policy) {
+        if (index >= 0 && index < allCount) {
             switch (policy) {
                 case ELEMENT_TYPE: {
                     return elementTypes[index];
@@ -567,10 +604,20 @@ final class PropertyAccessor {
      * Returns {@code true} if the type at the given index is {@link Collection}.
      */
     final boolean isCollection(final int index) {
-        if (index >= 0 && index < standardCount) {
+        if (index >= 0 && index < allCount) {
             return Collection.class.isAssignableFrom(getters[index].getReturnType());
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the property at the given index is deprecated, either in the interface that
+     * declare the method or in the implementation class. A method may be deprecated in the implementation
+     * but not in the interface when the implementation has been updated for a new standard
+     * while the interface is still reflecting the old standard.
+     */
+    private boolean isDeprecated(final int index) {
+        return PropertyComparator.isDeprecated(implementation, getters[index]);
     }
 
     /**
@@ -578,8 +625,7 @@ final class PropertyAccessor {
      * The information are created when first needed.
      *
      * @param  index The index of the property for which to get the information.
-     * @return The information for the property at the given index,
-     *         or {@code null} if the index is out of bounds.
+     * @return The information for the property at the given index, or {@code null} if the index is out of bounds.
      *
      * @see PropertyInformation
      */
@@ -597,17 +643,13 @@ final class PropertyAccessor {
             final Class<?> elementType = elementTypes[index];
             final String   name        = name(index, KeyNamePolicy.UML_IDENTIFIER);
             final Method   getter      = getters[index];
-            ValueRange range = null;
-            if (implementation != type) {
-                final int e = Numbers.getEnumConstant(elementType);
-                if (e >= Numbers.BYTE && e <= Numbers.DOUBLE) try {
-                    range = implementation.getMethod(getter.getName(), (Class<?>[]) null)
-                            .getAnnotation(ValueRange.class);
-                } catch (NoSuchMethodException error) {
-                    // Should never happen, since the implementation class
-                    // implements the interface where the getter come from.
-                    throw new AssertionError(error);
-                }
+            final ValueRange range;
+            try {
+                range = implementation.getMethod(getter.getName(), (Class<?>[]) null).getAnnotation(ValueRange.class);
+            } catch (NoSuchMethodException error) {
+                // Should never happen, since the implementation class
+                // implements the interface where the getter come from.
+                throw new AssertionError(error);
             }
             information = new PropertyInformation(standard, name, getter, elementType, range);
             informations[index] = information;
@@ -619,7 +661,7 @@ final class PropertyAccessor {
      * Returns {@code true} if the property at the given index is writable.
      */
     final boolean isWritable(final int index) {
-        return (index >= 0) && (index < standardCount) && (setters != null) && (setters[index] != null);
+        return (index >= 0) && (index < allCount) && (setters != null) && (setters[index] != null);
     }
 
     /**
@@ -633,8 +675,8 @@ final class PropertyAccessor {
      * @return The value, or {@code null} if none or if the given is out of bounds.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    final Object get(final int index, final Object metadata) throws BackingStoreException {
-        return (index >= 0 && index < standardCount) ? get(getters[index], metadata) : null;
+    Object get(final int index, final Object metadata) throws BackingStoreException {
+        return (index >= 0 && index < allCount) ? get(getters[index], metadata) : null;
     }
 
     /**
@@ -680,7 +722,7 @@ final class PropertyAccessor {
      *                        new collection in their existing instance.</li>
      *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
      *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
-     *                        {@code Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                        {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
      *                        value can not be set because an other value already exists.</li>
      * </ul>
      *
@@ -704,10 +746,10 @@ final class PropertyAccessor {
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
-    final Object set(final int index, final Object metadata, final Object value, final int mode)
+    Object set(final int index, final Object metadata, final Object value, final int mode)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
-        if (index < 0 || index >= standardCount) {
+        if (index < 0 || index >= allCount) {
             return null;
         }
         if (setters != null) {
@@ -814,7 +856,7 @@ final class PropertyAccessor {
      * of a single argument and return value because an array will be needed anyway for invoking
      * the {@link #convert(Object[], Class)} and {@link Method#invoke(Object, Object[])} methods.
      *
-     * {@section The collection special case}
+     * <div class="section">The collection special case</div>
      * If the metadata property is a collection, then there is a choice:
      *
      * <ul>
@@ -884,9 +926,7 @@ final class PropertyAccessor {
                 // Other cases: let the collection unchanged. It is likely to
                 // cause an exception later. The message should be appropriate.
             }
-            // Getter type (targetType) shall be the same than the setter type (elementType).
-            assert elementType == Numbers.primitiveToWrapper(targetType) : elementType;
-            targetType = elementType; // Ensure that we use primitive wrapper.
+            targetType = Numbers.primitiveToWrapper(targetType);
         } else {
             /*
              * We expect a collection. Collections are handled in one of the two ways below:
@@ -981,7 +1021,7 @@ final class PropertyAccessor {
                         converter = ObjectConverters.find(sourceType, targetType);
                         hasNewConverter = true;
                     }
-                    elements[i] = ((ObjectConverter) converter).convert(value);
+                    elements[i] = ((ObjectConverter) converter).apply(value);
                 } catch (UnconvertibleObjectException cause) {
                     final ClassCastException e = new ClassCastException(Errors.format(
                             Errors.Keys.IllegalClass_2, targetType, sourceType));
@@ -1021,7 +1061,7 @@ final class PropertyAccessor {
             return count();
         }
         int count = 0;
-        for (int i=0; i<standardCount; i++) {
+        for (int i=0; i<standardCount; i++) { // Use 'standardCount' instead of 'allCount' for ignoring deprecated methods.
             final Object value = get(getters[i], metadata);
             if (!valuePolicy.isSkipped(value)) {
                 switch (mode) {
@@ -1063,9 +1103,7 @@ final class PropertyAccessor {
     {
         assert type.isInstance(metadata1) : metadata1;
         assert type.isInstance(metadata2) : metadata2;
-        final int count = (mode == ComparisonMode.STRICT &&
-                EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) ? allCount : standardCount;
-        for (int i=0; i<count; i++) {
+        for (int i=0; i<standardCount; i++) {
             final Method method = getters[i];
             final Object value1 = get(method, metadata1);
             final Object value2 = get(method, metadata2);
@@ -1081,48 +1119,17 @@ final class PropertyAccessor {
                 return false;
             }
         }
-        return true;
-    }
-
-    /**
-     * Appends all non-empty metadata from source to target. The source can be any implementation
-     * of the metadata interface, but the target must be the implementation expected by this class.
-     *
-     * <p>If the source contains any null or empty properties, then those properties will
-     * not overwrite the corresponding properties in the destination metadata.</p>
-     *
-     * @param  source The metadata to copy.
-     * @param  target The target metadata where to append.
-     * @return {@code true} in case of success, or {@code false} if at least
-     *         one setter method was not found.
-     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable.
-     * @throws BackingStoreException If the implementation threw a checked exception.
-     */
-    public boolean append(final Object source, final Object target)
-            throws UnmodifiableMetadataException, BackingStoreException
-    {
-        // Because this PropertyAccesssor is designed for the target, we must
-        // check if the extra methods are suitable for the source object.
-        assert type.isInstance(source) : Classes.getClass(source);
-        boolean success = true;
-        final Object[] arguments = new Object[1];
-        for (int i=0; i<standardCount; i++) {
-            final Method getter = getters[i];
-            arguments[0] = get(getter, source);
-            if (!isNullOrEmpty(arguments[0])) {
-                if (setters == null) {
-                    return false;
-                }
-                final Method setter = setters[i];
-                if (setter != null) {
-                    convert(getter, target, null, arguments, elementTypes[i], true);
-                    set(setter, target, arguments);
-                } else {
-                    success = false;
-                }
+        /*
+         * One final check for the IdentifiedObjects.getIdentifiers() collection.
+         */
+        if (mode == ComparisonMode.STRICT && EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) {
+            final Object value1 = get(EXTRA_GETTER, metadata1);
+            final Object value2 = get(EXTRA_GETTER, metadata2);
+            if (!isNullOrEmpty(value1) || !isNullOrEmpty(value2)) {
+                return Utilities.deepEquals(value1, value2, mode);
             }
         }
-        return success;
+        return true;
     }
 
     /**
@@ -1139,6 +1146,19 @@ final class PropertyAccessor {
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null) {
+                    if (setter.isAnnotationPresent(Deprecated.class)) {
+                        /*
+                         * We need to skip deprecated setter methods, because those methods may delegate
+                         * their work to other setter methods in different objects and those objects may
+                         * have been made unmodifiable by previous iteration in this loop.  If we do not
+                         * skip them, we get an UnmodifiableMetadataException in the call to set(…).
+                         *
+                         * Note that in some cases, only the setter method is deprecated, not the getter.
+                         * This happen when Apache SIS classes represent a more recent ISO standard than
+                         * the GeoAPI interfaces.
+                         */
+                        continue;
+                    }
                     final Method getter = getters[i];
                     final Object source = get(getter, metadata);
                     final Object target = cloner.clone(source);
@@ -1146,7 +1166,7 @@ final class PropertyAccessor {
                         arguments[0] = target;
                         set(setter, metadata, arguments);
                         /*
-                         * We invoke the set(...) method which do not perform type conversion
+                         * We invoke the set(…) method variant that do not perform type conversion
                          * because we don't want it to replace the immutable collection created
                          * by ModifiableMetadata.unmodifiable(source). Conversion should not be
                          * required anyway because the getter method should have returned a value
@@ -1211,6 +1231,6 @@ final class PropertyAccessor {
         if (type != implementation) {
             buffer.append(':').append(Classes.getShortName(type));
         }
-        return buffer.append(" from “").append(Citations.getIdentifier(standard)).append("”]").toString();
+        return buffer.append(" from “").append(Citations.getIdentifier(standard, false)).append("”]").toString();
     }
 }

@@ -21,24 +21,38 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.identification.Usage;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.identification.Usage;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
- * Brief description of ways in which the resource(s) is/are currently used.
+ * Brief description of ways in which the resource(s) is/are currently or has been used.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Usage_Type", propOrder = {
@@ -64,7 +78,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Values are milliseconds elapsed since January 1st, 1970,
      * or {@link Long#MIN_VALUE} if this value is not set.
      */
-    private long usageDate;
+    private long usageDate = Long.MIN_VALUE;
 
     /**
      * Applications, determined by the user for which the resource and/or resource series
@@ -79,10 +93,25 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     private Collection<ResponsibleParty> userContactInfo;
 
     /**
+     * Responses to the user-determined limitations.
+     */
+    private Collection<InternationalString> responses;
+
+    /**
+     * Publication that describe usage of data.
+     */
+    private Collection<Citation> additionalDocumentation;
+
+    /**
+     * Citation of a description of known issues associated with the resource
+     * along with proposed solutions if available.
+     */
+    private Collection<Citation> identifiedIssues;
+
+    /**
      * Constructs an initially empty usage.
      */
     public DefaultUsage() {
-        usageDate = Long.MIN_VALUE;
     }
 
     /**
@@ -94,7 +123,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     public DefaultUsage(final CharSequence specificUsage,
                         final ResponsibleParty userContactInfo)
     {
-        this(); // Initialize the date field.
         this.specificUsage   = Types.toInternationalString(specificUsage);
         this.userContactInfo = singleton(userContactInfo, ResponsibleParty.class);
     }
@@ -104,21 +132,29 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Usage)
      */
     public DefaultUsage(final Usage object) {
         super(object);
-        specificUsage             = object.getSpecificUsage();
-        usageDate                 = toMilliseconds(object.getUsageDate());
-        userDeterminedLimitations = object.getUserDeterminedLimitations();
-        userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
+        if (object != null) {
+            specificUsage             = object.getSpecificUsage();
+            usageDate                 = toMilliseconds(object.getUsageDate());
+            userDeterminedLimitations = object.getUserDeterminedLimitations();
+            userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
+            if (object instanceof DefaultUsage) {
+                final DefaultUsage c = (DefaultUsage) object;
+                responses                 = copyCollection(c.getResponses(), InternationalString.class);
+                additionalDocumentation   = copyCollection(c.getAdditionalDocumentation(), Citation.class);
+                identifiedIssues          = copyCollection(c.getIdentifiedIssues(), Citation.class);
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -143,6 +179,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
 
     /**
      * Returns a brief description of the resource and/or resource series usage.
+     *
+     * @return Description of the resource usage, or {@code null}.
      */
     @Override
     @XmlElement(name = "specificUsage", required = true)
@@ -161,8 +199,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Returns the date and time of the first use or range of uses
-     * of the resource and/or resource series.
+     * Returns the date and time of the first use or range of uses of the resource and/or resource series.
+     *
+     * @return Date of the first use of the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "usageDateTime")
@@ -181,8 +220,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Returns applications, determined by the user for which the resource and/or resource series
-     * is not suitable.
+     * Returns applications, determined by the user for which the resource and/or resource series is not suitable.
+     *
+     * @return Applications for which the resource and/or resource series is not suitable, or {@code null}.
      */
     @Override
     @XmlElement(name = "userDeterminedLimitations")
@@ -191,8 +231,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Sets applications, determined by the user for which the resource and/or resource series
-     * is not suitable.
+     * Sets applications, determined by the user for which the resource and/or resource series is not suitable.
      *
      * @param newValue The new user determined limitations.
      */
@@ -202,8 +241,14 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Returns identification of and means of communicating with person(s) and organization(s)
-     * using the resource(s).
+     * Returns identification of and means of communicating with person(s) and organization(s) using the resource(s).
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Means of communicating with person(s) and organization(s) using the resource(s).
      */
     @Override
     @XmlElement(name = "userContactInfo", required = true)
@@ -212,12 +257,90 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     }
 
     /**
-     * Sets identification of and means of communicating with person(s) and organization(s)
-     * using the resource(s).
+     * Sets identification of and means of communicating with person(s) and organization(s) using the resource(s).
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValues The new user contact info.
      */
     public void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
         userContactInfo = writeCollection(newValues, userContactInfo, ResponsibleParty.class);
+    }
+
+    /**
+     * Responses to the user-determined limitations.
+     *
+     * @return Response to the user-determined limitations.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "response")
+    @UML(identifier="response", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<? extends InternationalString> getResponses() {
+        return responses = nonNullCollection(responses, InternationalString.class);
+    }
+
+    /**
+     * Sets a new response to the user-determined limitations.
+     *
+     * @param newValues The new response to the user-determined limitations.
+     *
+     * @since 0.5
+     */
+    public void setResponses(final Collection<? extends InternationalString> newValues) {
+        responses = writeCollection(newValues, responses, InternationalString.class);
+    }
+
+    /**
+     * Publications that describe usage of data.
+     *
+     * @return Publications that describe usage of data.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "additionalDocumentation")
+    @UML(identifier="additionalDocumentation", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Citation> getAdditionalDocumentation() {
+        return additionalDocumentation = nonNullCollection(additionalDocumentation, Citation.class);
+    }
+
+    /**
+     * Sets the publications that describe usage of data.
+     *
+     * @param newValues The new publications.
+     *
+     * @since 0.5
+     */
+    public void setAdditionalDocumentation(final Collection<? extends Citation> newValues) {
+        additionalDocumentation = writeCollection(newValues, additionalDocumentation, Citation.class);
+    }
+
+    /**
+     * Citation of a description of known issues associated with the resource
+     * along with proposed solutions if available.
+     *
+     * @return Citation of a description of known issues associated with the resource.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "identifiedIssues")
+    @UML(identifier="identifiedIssues", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<? extends Citation> getIdentifiedIssues() {
+        return identifiedIssues = nonNullCollection(identifiedIssues, Citation.class);
+    }
+
+    /**
+     * Sets a new citation of a description of known issues associated with the resource
+     * along with proposed solutions if available.
+     *
+     * @param newValues The new citation of a description.
+     *
+     * @since 0.5
+     */
+    public void setIdentifiedIssues(final Collection<? extends Citation> newValues) {
+        identifiedIssues = writeCollection(newValues, identifiedIssues, Citation.class);
     }
 }

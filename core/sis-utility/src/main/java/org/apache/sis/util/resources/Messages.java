@@ -19,6 +19,7 @@ package org.apache.sis.util.resources;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 
 
@@ -26,8 +27,8 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for miscellaneous (often logging) messages.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Messages extends IndexedResourceBundle {
@@ -38,10 +39,10 @@ public final class Messages extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.2)
-     * @version 0.3
+     * @since   0.3
      * @module
      */
+    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -55,30 +56,69 @@ public final class Messages extends IndexedResourceBundle {
         }
 
         /**
+         * {0} “{1}” is already registered. The second instance will be ignored.
+         */
+        public static final short AlreadyRegistered_2 = 0;
+
+        /**
          * Changed the container capacity from {0} to {1} elements.
          */
-        public static final int ChangedContainerCapacity_2 = 0;
+        public static final short ChangedContainerCapacity_2 = 1;
+
+        /**
+         * This result indicates if a datum shift method has been applied.
+         */
+        public static final short ConformanceMeansDatumShift = 8;
+
+        /**
+         * This parameter is shown for completeness, but should never have a value different than {0}
+         * for this projection.
+         */
+        public static final short ConstantProjParameterValue_1 = 11;
 
         /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
-        public static final int DiscardedExclusiveProperty_2 = 4;
+        public static final short DiscardedExclusiveProperty_2 = 2;
+
+        /**
+         * Ignored properties after the first occurrence of ‘{0}’.
+         */
+        public static final short IgnoredPropertiesAfterFirst_1 = 6;
+
+        /**
+         * Ignored property associated to ‘{0}’.
+         */
+        public static final short IgnoredPropertyAssociatedTo_1 = 7;
 
         /**
          * Text were discarded for some locales.
          */
-        public static final int LocalesDiscarded = 2;
+        public static final short LocalesDiscarded = 3;
+
+        /**
+         * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
+         * not match the definition of the “{0}” ellipsoid.
+         */
+        public static final short MismatchedEllipsoidAxisLength_3 = 9;
+
+        /**
+         * This parameter borrowed from the “{0}” projection is not formally a parameter of this
+         * projection.
+         */
+        public static final short NotFormalProjectionParameter_1 = 10;
 
         /**
          * Property “{0}” is hidden by “{1}”.
          */
-        public static final int PropertyHiddenBy_2 = 3;
+        public static final short PropertyHiddenBy_2 = 4;
 
         /**
-         * Unavailable content.
+         * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
+         * will be ignored by some processing.
          */
-        public static final int UnavailableContent = 1;
+        public static final short UnparsableValueStoredAsText_2 = 5;
     }
 
     /**
@@ -117,7 +157,7 @@ public final class Messages extends IndexedResourceBundle {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int key) throws MissingResourceException {
+    public static String format(final short key) throws MissingResourceException {
         return getResources(null).getString(key);
     }
 
@@ -130,7 +170,7 @@ public final class Messages extends IndexedResourceBundle {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int    key,
+    public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
         return getResources(null).getString(key, arg0);
@@ -146,7 +186,7 @@ public final class Messages extends IndexedResourceBundle {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int    key,
+    public static String format(final short  key,
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
@@ -164,7 +204,7 @@ public final class Messages extends IndexedResourceBundle {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int    key,
+    public static String format(final short  key,
                                 final Object arg0,
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
@@ -184,7 +224,7 @@ public final class Messages extends IndexedResourceBundle {
      * @return The formatted string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int    key,
+    public static String format(final short  key,
                                 final Object arg0,
                                 final Object arg1,
                                 final Object arg2,
@@ -199,8 +239,8 @@ public final class Messages extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = 4553487496835099424L;
 
-        International(int key)                   {super(key);}
-        International(int key, Object args)      {super(key, args);}
+        International(short key)                 {super(key);}
+        International(short key, Object args)    {super(key, args);}
         @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
@@ -215,7 +255,7 @@ public final class Messages extends IndexedResourceBundle {
      * @param  key The key for the desired string.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key) {
+    public static InternationalString formatInternational(final short key) {
         return new International(key);
     }
 
@@ -224,15 +264,16 @@ public final class Messages extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * {@note This method is redundant with the one expecting <code>Object...</code>, but avoid
-     *        the creation of a temporary array. There is no risk of confusion since the two
-     *        methods delegate their work to the same <code>format</code> method anyway.}
+     * <div class="note"><b>API note:</b>
+     * This method is redundant with the one expecting {@code Object...}, but avoid the creation
+     * of a temporary array. There is no risk of confusion since the two methods delegate their
+     * work to the same {@code format} method anyway.</div>
      *
      * @param  key The key for the desired string.
      * @param  arg Values to substitute to "{0}".
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object arg) {
+    public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
     }
 
@@ -245,7 +286,7 @@ public final class Messages extends IndexedResourceBundle {
      * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object... args) {
+    public static InternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);
     }
 }

@@ -54,9 +54,9 @@ public final class LocalizedParseException extends ParseException implements Loc
     private final Locale locale;
 
     /**
-     * The resources key as one of the {@link Errors.Keys} constant.
+     * The resources key as one of the {@code Errors.Keys} constant.
      */
-    private final int key;
+    private final short key;
 
     /**
      * The arguments for the localization message.
@@ -68,11 +68,11 @@ public final class LocalizedParseException extends ParseException implements Loc
      * and message arguments. This is the most generic constructor.
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
-     * @param key         The resource key as one of the {@link Errors.Keys} constant.
-     * @param arguments   The value of {@link #arguments(String, ParsePosition)}.
+     * @param key         The resource key as one of the {@code Errors.Keys} constant.
+     * @param arguments   The values to be given to {@link Errors#getString(short, Object)}.
      * @param errorOffset The position where the error is found while parsing.
      */
-    public LocalizedParseException(final Locale locale, final int key, final Object[] arguments, final int errorOffset) {
+    public LocalizedParseException(final Locale locale, final short key, final Object[] arguments, final int errorOffset) {
         super(Errors.format(key, arguments), errorOffset);
         this.locale    = locale;
         this.arguments = arguments;
@@ -81,22 +81,22 @@ public final class LocalizedParseException extends ParseException implements Loc
 
     /**
      * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and unparseable string. This convenience constructor fetches the word starting at the error
+     * and unparsable string. This convenience constructor fetches the word starting at the error
      * index, and uses that word as the single argument associated to the resource key.
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
-     * @param key         The resource key as one of the {@link Errors.Keys} constant.
+     * @param key         The resource key as one of the {@code Errors.Keys} constant.
      * @param text        The full text that {@code Format} failed to parse.
      * @param errorOffset The position where the error is found while parsing.
      */
-    public LocalizedParseException(final Locale locale, final int key, final CharSequence text, final int errorOffset) {
+    public LocalizedParseException(final Locale locale, final short key, final CharSequence text, final int errorOffset) {
         this(locale, key, new Object[] {CharSequences.token(text, errorOffset)}, errorOffset);
     }
 
     /**
      * Creates a {@link ParseException} with a localized message built from the given parsing
-     * information. This convenience constructor creates a message of the kind "<cite>Can not
-     * parse string "text" as an object of type 'type'</cite>".
+     * information. This convenience constructor creates a message of the kind <cite>"Can not
+     * parse string "text" as an object of type 'type'"</cite>.
      *
      * @param  locale The locale for {@link #getLocalizedMessage()}.
      * @param  type   The type of objects parsed by the {@link java.text.Format}.
@@ -157,8 +157,8 @@ public final class LocalizedParseException extends ParseException implements Loc
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static int key(final Object[] arguments) {
-        final int key;
+    private static short key(final Object[] arguments) {
+        final short key;
         switch (arguments.length) {
             case 1: key = Errors.Keys.UnexpectedEndOfString_1;    break;
             case 2: key = Errors.Keys.UnparsableStringForClass_2; break;

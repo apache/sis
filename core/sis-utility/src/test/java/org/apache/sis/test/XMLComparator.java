@@ -16,8 +16,10 @@
  */
 package org.apache.sis.test;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.net.URI;
@@ -30,18 +32,16 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
-
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.StrictMath.*;
@@ -60,20 +60,53 @@ import org.apache.sis.internal.jdk7.JDK7;
  * protected methods defined in this class, which can be overridden.
  *
  * <p>By default, this comparator expects the documents to contain the same elements and
- * the same attributes (but the order of attributes may be different). However it is
- * possible to:</p>
+ * the same attributes (but the order of attributes may be different).
+ * However it is possible to:</p>
  *
  * <ul>
+ *   <li>Specify whether comments shall be ignored (see {@link #ignoreComments})</li>
  *   <li>Specify attributes to ignore in comparisons (see {@link #ignoredAttributes})</li>
+ *   <li>Specify nodes to ignore, including children (see {@link #ignoredNodes})</li>
+ *   <li>Specify a tolerance threshold for comparisons of numerical values (see {@link #tolerance})</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @author  Guilhem Legal (Geomatys)
+ * @since   0.3
+ * @version 0.4
  * @module
+ *
+ * @see XMLTestCase
+ * @see Assert#assertXmlEquals(Object, Object, String[])
  */
 public strictfp class XMLComparator {
+    /**
+     * Commonly used prefixes for namespaces. Used as shorthands for calls to
+     * {@link Assert#assertXmlEquals(Object, Object, String[])}.
+     *
+     * @see #substitutePrefix(String)
+     */
+    private static final Map<String, String> PREFIX_URL = new HashMap<String, String>(16);
+    static {
+        final Map<String,String> map = PREFIX_URL;
+        map.put("xmlns", "http://www.w3.org/2000/xmlns"); // No trailing slash.
+        map.put("xlink", Namespaces.XLINK);
+        map.put("xsi",   Namespaces.XSI);
+        map.put("gml",   Namespaces.GML);
+        map.put("gmd",   Namespaces.GMD);
+        map.put("gmx",   Namespaces.GMX);
+        map.put("gmi",   Namespaces.GMI);
+        map.put("gco",   Namespaces.GCO);
+    }
+
+    /**
+     * The DOM factory, created when first needed.
+     *
+     * @see #newDocumentBuilder()
+     */
+    private static DocumentBuilderFactory factory;
+
     /**
      * The expected document.
      */
@@ -90,20 +123,42 @@ public strictfp class XMLComparator {
     public boolean ignoreComments;
 
     /**
-     * The fully-qualified name of attributes to ignore in comparisons. The name shall be in
-     * the form {@code "namespace:name"}, or only {@code "name"} if there is no namespace.
-     * In order to ignore everything in a namespace, use {@code "namespace:*"}.
+     * The fully-qualified name of attributes to ignore in comparisons.
+     * This collection is initially empty. Users can add or remove elements in this collection as they wish.
+     * The content of this collection will be honored by the default {@link #compareAttributes(Node, Node)}
+     * implementation.
+     *
+     * <p>The elements shall be names in the form {@code "namespace:name"}, or only {@code "name"} if there
+     * is no namespace. In order to ignore everything in a namespace, use {@code "namespace:*"}.</p>
+     *
+     * <p>Whether the namespace is the full URL or only the prefix depends on whether
+     * {@link DocumentBuilderFactory#setNamespaceAware(boolean)} was set to {@code true}
+     * or {@code false} respectively before the XML document has been built.
+     * For example in order to ignore the standard {@code "schemaLocation"} attribute:</p>
+     *
+     * <ul>
+     *   <li>If {@code NamespaceAware} is {@code true}, then this {@code ignoredAttributes} collection
+     *       shall contains {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.</li>
+     *   <li>If {@code NamespaceAware} is {@code false}, then this {@code ignoredAttributes} collection
+     *       shall contains {@code "xsi:schemaLocation"}, assuming that {@code "xsi"} is the prefix for
+     *       {@code "http://www.w3.org/2001/XMLSchema-instance"}.</li>
+     * </ul>
+     *
+     * <p>{@code XMLComparator} is namespace aware. The second case in the above-cited choice may happen only
+     * if the user provided {@link Node} instances to the constructor. In such case, {@code XMLComparator} has
+     * no control on whether the nodes contain namespaces or not.</p>
      *
      * <p>For example in order to ignore the namespace, type and schema location declaration,
      * the following strings can be added in this set:</p>
      *
      * {@preformat text
-     *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
+     *   "http://www.w3.org/2000/xmlns:*",
+     *   "http://www.w3.org/2001/XMLSchema-instance:schemaLocation",
+     *   "http://www.w3.org/2001/XMLSchema-instance:type"
      * }
      *
-     * This set is initially empty. Users can add or remove elements in this set as they wish.
-     * The content of this set will be honored by the default {@link #compareAttributes(Node, Node)}
-     * implementation.
+     * Note that for convenience, the {@link Assert#assertXmlEquals(Object, Object, String[])} method
+     * automatically replaces some widely used prefixes by their full URL.
      */
     public final Set<String> ignoredAttributes;
 
@@ -129,31 +184,13 @@ public strictfp class XMLComparator {
     public double tolerance;
 
     /**
-     * Creates a new comparator for the given root nodes.
-     *
-     * @param expected The root node of the expected XML document.
-     * @param actual   The root node of the XML document to compare.
-     */
-    public XMLComparator(final Node expected, final Node actual) {
-        ArgumentChecks.ensureNonNull("expected", expected);
-        ArgumentChecks.ensureNonNull("actual",   actual);
-        expectedDoc       = expected;
-        actualDoc         = actual;
-        ignoredAttributes = new HashSet<String>();
-        ignoredNodes      = new HashSet<String>();
-    }
-
-    /**
      * Creates a new comparator for the given inputs.
      * The inputs can be any of the following types:
      *
      * <ul>
      *   <li>{@link Node}; used directly without further processing.</li>
-     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed
-     *       as a XML document.</li>
-     *   <li>{@link String}: The string content is parsed directly as a XML document.
-     *       Encoding <strong>must</strong> be UTF-8 (no other encoding is supported
-     *       by current implementation of this method).</li>
+     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
+     *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
      * @param  expected  The expected XML document.
@@ -165,27 +202,46 @@ public strictfp class XMLComparator {
     public XMLComparator(final Object expected, final Object actual)
             throws IOException, ParserConfigurationException, SAXException
     {
-        this((expected instanceof Node) ? (Node) expected : read(expected),
-               (actual instanceof Node) ? (Node) actual   : read(actual));
+        ArgumentChecks.ensureNonNull("expected", expected);
+        ArgumentChecks.ensureNonNull("actual",   actual);
+        DocumentBuilder builder = null;
+        if (expected instanceof Node) {
+            expectedDoc = (Node) expected;
+        } else {
+            builder = newDocumentBuilder();
+            final InputStream stream = toInputStream(expected);
+            try {
+                expectedDoc = builder.parse(stream);
+            } finally {
+                stream.close();
+            }
+        }
+        if (actual instanceof Node) {
+            actualDoc = (Node) actual;
+        } else {
+            if (builder == null) {
+                builder = newDocumentBuilder();
+            }
+            final InputStream stream = toInputStream(actual);
+            try {
+                actualDoc = builder.parse(stream);
+            } finally {
+                stream.close();
+            }
+        }
+        ignoredAttributes = new HashSet<String>();
+        ignoredNodes      = new HashSet<String>();
     }
 
     /**
-     * Convenience method to acquire a DOM document from an input. This convenience method
-     * uses the default JRE classes, so it may not be the fastest parsing method.
+     * Creates a new document builder.
      */
-    private static Document read(final Object input)
-            throws IOException, ParserConfigurationException, SAXException
-    {
-        final Document document;
-        final InputStream stream = toInputStream(input);
-        try {
-            final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            final DocumentBuilder constructeur = factory.newDocumentBuilder();
-            document = constructeur.parse(stream);
-        } finally {
-            stream.close();
+    private synchronized static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
+        if (factory == null) {
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
         }
-        return document;
+        return factory.newDocumentBuilder();
     }
 
     /**
@@ -199,6 +255,21 @@ public strictfp class XMLComparator {
         if (input instanceof URL)         return ((URL) input).openStream();
         if (input instanceof String)      return new ByteArrayInputStream(input.toString().getBytes("UTF-8"));
         throw new IOException("Can not handle input type: " + (input != null ? input.getClass() : input));
+    }
+
+    /**
+     * If the given attribute name begins with one of the well known prefixes,
+     * substitutes the prefix by the full URL. Otherwise returns the name unchanged.
+     */
+    static String substitutePrefix(final String attribute) {
+        final int s = attribute.lastIndexOf(':');
+        if (s >= 0) {
+            final String url = PREFIX_URL.get(attribute.substring(0, s));
+            if (url != null) {
+                return url.concat(attribute.substring(s));
+            }
+        }
+        return attribute;
     }
 
     /**
@@ -232,6 +303,7 @@ public strictfp class XMLComparator {
     protected void compareNode(final Node expected, final Node actual) {
         if (expected == null || actual == null) {
             fail(formatErrorMessage(expected, actual));
+            return;
         }
         /*
          * Check text value for types:
@@ -376,7 +448,13 @@ public strictfp class XMLComparator {
      */
     protected void compareNames(final Node expected, final Node actual) {
         assertPropertyEquals("namespace", expected.getNamespaceURI(), actual.getNamespaceURI(), expected, actual);
-        assertPropertyEquals("name",      expected.getNodeName(),     actual.getNodeName(),     expected, actual);
+        String expectedName = expected.getLocalName();
+        String actualName   = actual.getLocalName();
+        if (expectedName == null || actualName == null) {
+            expectedName = expected.getNodeName();
+            actualName   = actual.getNodeName();
+        }
+        assertPropertyEquals("name", expectedName, actualName, expected, actual);
     }
 
     /**
@@ -392,6 +470,7 @@ public strictfp class XMLComparator {
      * @param expected The node having the expected attributes.
      * @param actual The node to compare.
      */
+    @SuppressWarnings("null")
     protected void compareAttributes(final Node expected, final Node actual) {
         final NamedNodeMap expectedAttributes = expected.getAttributes();
         final NamedNodeMap actualAttributes   = actual.getAttributes();
@@ -403,7 +482,28 @@ public strictfp class XMLComparator {
         for (int i=0; i<n; i++) {
             final Node expAttr = expectedAttributes.item(i);
             final String ns    = expAttr.getNamespaceURI();
-            final String name  = expAttr.getNodeName();
+            String name        = expAttr.getLocalName();
+            if (name == null) {
+                /*
+                 * The above variables may be null if the node has been built from a DOM Level 1 API,
+                 * or if the DocumentBuilder was not namespace-aware. In the following table, the first
+                 * column shows the usual case for "http://www.w3.org/2000/xmlns/gml". The second column
+                 * shows the case if the DocumentBuilder was not aware of namespaces. The last column is
+                 * a case sometime observed.
+                 *
+                 * ┌───────────────────┬─────────────────────────────────┬──────────────┬─────────────┐
+                 * │ Node method       │ Namespace (NS) aware            │ Non NS-aware │ Other case  │
+                 * ├───────────────────┼─────────────────────────────────┼──────────────┼─────────────┤
+                 * │ getNamespaceURI() │ "http://www.w3.org/2000/xmlns/" │  null        │ "xmlns"     │
+                 * │ getLocalName()    │ "gml"                           │  null        │ "gml"       │
+                 * │ getNodeName()     │ "xmlns:gml"                     │ "xmlns:gml"  │             │
+                 * └───────────────────┴─────────────────────────────────┴──────────────┴─────────────┘
+                 *
+                 * By default, this block is not be executed. However if the user gave us Nodes that are
+                 * not namespace aware, then the 'isIgnored(…)' method will try to parse the node name.
+                 */
+                name = expAttr.getNodeName();
+            }
             if (!isIgnored(ignoredAttributes, ns, name)) {
                 final Node actAttr;
                 if (ns == null) {
@@ -426,19 +526,46 @@ public strictfp class XMLComparator {
      */
     private static boolean isIgnored(final Set<String> ignored, String ns, final String name) {
         if (!ignored.isEmpty()) {
-            if (ignored.contains((ns != null) ? ns + ':' + name : name)) {
-                // Ignore a specific node (for example "xsi:schemaLocation")
-                return true;
-            }
             if (ns == null) {
-                final int s = name.indexOf(':');
-                if (s >= 1) {
-                    ns = name.substring(0, s);
+                /*
+                 * If there is no namespace, then the 'name' argument should be the qualified name
+                 * (with a prefix). Example: "xsi:schemaLocation". We will look first for an exact
+                 * name match, then for a match after replacing the local name by "*".
+                 */
+                if (ignored.contains(name)) {
+                    return true;
                 }
-            }
-            if (ns != null && ignored.contains(ns + ":*")) {
-                // Ignore a full namespace (typically "xmlns:*")
-                return true;
+                final int s = name.indexOf(':');
+                if (s >= 1 && ignored.contains(name.substring(0, s+1) + '*')) {
+                    return true;
+                }
+            } else {
+                /*
+                 * If there is a namespace (which is the usual case), perform the concatenation
+                 * with the name before to check in the collection of ignored attributes.
+                 */
+                final StringBuilder buffer = new StringBuilder(ns);
+                int length = buffer.length();
+                if (length != 0 && buffer.charAt(length - 1) == '/') {
+                    buffer.setLength(--length);
+                }
+                /*
+                 * Check if the fully qualified attribute name is one of the attributes to ignore.
+                 * Typical example: "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"
+                 */
+                buffer.append(':').append(name, name.indexOf(':') + 1, name.length());
+                if (ignored.contains(buffer.toString())) {
+                    return true;
+                }
+                /*
+                 * The given attribute does not appear explicitely in the set of attributes to ignore.
+                 * But maybe the user asked to ignore all attributes in the namespace.
+                 * Typical example: "http://www.w3.org/2000/xmlns:*"
+                 */
+                buffer.setLength(length + 1);
+                if (ignored.contains(buffer.append('*').toString())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -510,7 +637,7 @@ public strictfp class XMLComparator {
         actual   = trim(actual);
         if ((expected != actual) && (expected == null || !expected.equals(actual))) {
             // Before to declare a test failure, compares again as numerical values if possible.
-            if (tolerance > 0 && abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
+            if (abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
                 return;
             }
             final String lineSeparator = JDK7.lineSeparator();
@@ -537,6 +664,7 @@ public strictfp class XMLComparator {
      * returns {@code NaN}. This is used only if a {@linkplain #tolerance} threshold greater
      * than zero has been provided.
      */
+    @SuppressWarnings("unchecked")
     private static double doubleValue(final Comparable<?> property) {
         if (property instanceof Number) {
             return ((Number) property).doubleValue();
@@ -623,6 +751,7 @@ public strictfp class XMLComparator {
      * @param node          The node to format.
      * @param lineSeparator The platform-specific line separator.
      */
+    @SuppressWarnings("null")
     private static void formatNode(final StringBuilder buffer, final Node node, final String lineSeparator) {
         if (node == null) {
             buffer.append("(no node)").append(lineSeparator);

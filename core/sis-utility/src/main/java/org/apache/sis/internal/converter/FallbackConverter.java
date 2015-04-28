@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
@@ -48,15 +47,18 @@ import org.apache.sis.util.Debug;
  * It is invoked when a new converter is {@linkplain ConverterRegistry#register(ObjectConverter)
  * registered} for the same source and target class than an existing converter.</p>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable, and thus inherently thread-safe,
+ * if the converters given to the static factory method are also immutable.
+ *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
@@ -93,7 +95,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                               final ObjectConverter<S, ? extends T> fallback)
     {
         super(sourceClass, targetClass);
-        if (swap(primary, fallback.getClass())) {
+        if (needSwap(primary, fallback.getClass())) {
             this.primary  = fallback;
             this.fallback = primary;
         } else {
@@ -110,11 +112,11 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  fallbackClass The target class of the fallback converter to test.
      * @return {@code true} if the given primary and fallback converters should be interchanged.
      */
-    private static <S> boolean swap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
+    private static <S> boolean needSwap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
         if (primary instanceof FallbackConverter<?,?>) {
             final FallbackConverter<S,?> candidate = (FallbackConverter<S,?>) primary;
-            return swap(candidate.primary,  fallbackClass) &&
-                   swap(candidate.fallback, fallbackClass);
+            return needSwap(candidate.primary,  fallbackClass) &&
+                   needSwap(candidate.fallback, fallbackClass);
         } else {
             final Class<?> targetClass = primary.getTargetClass();
             return fallbackClass.isAssignableFrom(targetClass) && // This condition is more likely to fail first.
@@ -148,7 +150,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  primary The first converter, which may be a {@code Fallback} tree.
      * @param  fallback A new fallback to insert in the converters tree.
      * @return A tree of converters which contains the given {@code converter}. May be either
-     *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
+     *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
      */
     public static <S,T> ObjectConverter<S, ? extends T> merge(
                   final ObjectConverter<S, ? extends T> primary,
@@ -200,7 +202,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Merges if the {@code converter} target class of is a subtype of the {@code branch}
+     * Merges if the {@code converter} target class of is a subtype of the {@code branch}
      * target class. Otherwise returns {@code null}.
      *
      * <p>The {@code branch} can be either an arbitrary {@code ObjectConverter}, or a previously
@@ -253,7 +255,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * Merge {@code this} with an other converter whose target class is a subtype of
      * this {@link #targetClass}. If either {@link #fallback} or {@link #primary} are
-     * other {@code FallbackConverter} instances, then this method will follow those
+     * other {@code FallbackConverter} instances, then this method will follow those
      * branches.
      *
      * @param  converter The converter to merge with {@code this}.
@@ -311,12 +313,12 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Converts the given object, using the fallback if needed.
      */
     @Override
-    public T convert(final S source) throws UnconvertibleObjectException {
+    public T apply(final S source) throws UnconvertibleObjectException {
         try {
-            return primary.convert(source);
+            return primary.apply(source);
         } catch (UnconvertibleObjectException exception) {
             try {
-                return fallback.convert(source);
+                return fallback.apply(source);
             } catch (UnconvertibleObjectException failure) {
                 // addSuppressed(failure) on the JDK7 branch.
                 throw exception;

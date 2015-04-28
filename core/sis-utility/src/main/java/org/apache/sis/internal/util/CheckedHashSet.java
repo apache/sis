@@ -19,7 +19,7 @@ package org.apache.sis.internal.util;
 import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.CheckedContainer;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -40,8 +40,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @param <E> The type of elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see Collections#checkedSet(Set, Class)
@@ -97,12 +97,23 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
      */
     @Override
     public boolean add(final E element) throws IllegalArgumentException {
-        if (!type.isInstance(element)) {
-            ensureNonNull("element", element);
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
+        if (type.isInstance(element)) {
+            return super.add(element);
         }
-        return super.add(element);
+        final String message = CheckedArrayList.illegalElement(this, element, type);
+        if (message == null) {
+            /*
+             * If a unmarshalling process is under way, silently discard null element.
+             * This case happen when a XML element for a collection contains no child.
+             * See https://issues.apache.org/jira/browse/SIS-139
+             */
+            return false;
+        }
+        if (element == null) {
+            throw new NullArgumentException(message);
+        } else {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /*

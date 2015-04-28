@@ -17,7 +17,6 @@
 package org.apache.sis.util.collection;
 
 import java.util.Iterator;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
 
 
@@ -30,11 +29,10 @@ import org.apache.sis.util.ObjectConverter;
  * @param <E> The type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Decorator(Iterator.class)
 final class DerivedIterator<S,E> implements Iterator<E> {
     /**
      * The original iterator to wrap.
@@ -69,7 +67,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
             if (!iterator.hasNext()) {
                 return false;
             }
-            next = converter.convert(iterator.next());
+            next = converter.apply(iterator.next());
         }
         return true;
     }
@@ -82,7 +80,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
         E value = next;
         next = null;
         while (value == null) {
-            value = converter.convert(iterator.next());
+            value = converter.apply(iterator.next());
         }
         return value;
     }
@@ -90,8 +88,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
     /**
      * Removes from the underlying set the last element returned by the iterator.
      *
-     * @throws UnsupportedOperationException if the underlying collection doesn't supports the
-     * {@code remove} operation.
+     * @throws UnsupportedOperationException if the underlying collection doesn't supports the {@code remove} operation.
      */
     @Override
     public void remove() {

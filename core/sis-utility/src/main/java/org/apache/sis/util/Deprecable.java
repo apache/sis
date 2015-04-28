@@ -20,8 +20,17 @@ import org.opengis.util.InternationalString;
 
 
 /**
- * Interface of classes for which deprecated instances may exist. Deprecated instances exist in some
- * {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
+ * Interface of classes for which deprecated instances may exist. Despite the name, the entities deprecated
+ * by this interface are unrelated to the entities deprecated by the Java {@link Deprecated} annotation.
+ * This interface is for identifying deprecated <em>data</em> rather than language constructs.
+ *
+ * <div class="note"><b>Example:</b>
+ * When an error is discovered in the definition of a Coordinate Reference System (CRS) in the EPSG database,
+ * the EPSG maintainers do not change the data. Instead, they deprecate the erroneous definition and create a
+ * new one with a new EPSG code. The {@link #isDeprecated()} method in this interface allows users to identify
+ * CRS instances created from such deprecated database records, for example in order to log a warning when data
+ * are projected to a deprecated CRS.</div>
+ *
  * Some examples of deprecated instances are:
  *
  * <ul>
@@ -32,13 +41,14 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public interface Deprecable {
     /**
      * Returns {@code true} if this instance is deprecated.
+     * In such case, the {@linkplain #getRemarks() remarks} may contain information about the new object to use.
      *
      * @return {@code true} if this instance is deprecated.
      */
@@ -47,6 +57,8 @@ public interface Deprecable {
     /**
      * If this instance is deprecated, the reason or the alternative to use.
      * Otherwise, an optional free text.
+     *
+     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
      * @return Comments about this instance, or {@code null} if none. Shall be the
      *         reason for deprecation or the alternative to use if this instance

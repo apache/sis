@@ -16,22 +16,26 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation} implementation.
+ * Reference to the data or service (citation, responsible party, contact information).
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.citation OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * <div class="section">Overview</div>
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual   Individual}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOrganisation Organisation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
@@ -42,35 +46,31 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.citation.OnLineFunction   Online function}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.citation.Role             Role}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                         {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation         Citation}<br>
  * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate     Citation date}<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.DateType                       Date type} «code list»<br>
- * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
- * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
- * {@code  │   │   ├─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
- * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
- * {@code  │   │       └─} {@linkplain org.opengis.metadata.citation.OnLineFunction                 Online function} «code list»<br>
+ * {@code  ├─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibility   Responsibility}<br>
+ * {@code  │   ├─}         {@linkplain org.apache.sis.metadata.iso.citation.AbstractParty           Party}<br>
+ * {@code  │   │   └─}     {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact          Contact}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone        Telephone}<br>
+ * {@code  │   │       ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress          Address}<br>
+ * {@code  │   │       └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource   Online resource}<br>
+ * {@code  │   │           └─} {@linkplain org.opengis.metadata.citation.OnLineFunction             Online function} «code list»<br>
  * {@code  │   └─}         {@linkplain org.opengis.metadata.citation.Role                           Role} «code list»<br>
  * {@code  ├─}             {@linkplain org.opengis.metadata.citation.PresentationForm               Presentation form} «code list»<br>
  * {@code  └─}             {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries           Series}<br>
  * </td></tr></table>
  *
- * {@section Unified identifiers view}
+ * <div class="section">Unified identifiers view</div>
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} and
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISSN() ISSN} codes,
  * except at XML marshalling time (for ISO 19139 compliance).
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
- * {@section Automatic properties}
- * Some properties provide default value based on the value of other properties.
- * See the <a href="../doc-files/auto-properties.html">list of automatic properties</a>
- * page for more information.
- *
- * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * <div class="section">Null values, nil objects and collections</div>
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -86,8 +86,8 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
@@ -103,16 +103,18 @@
     @XmlJavaTypeAdapter(CI_DateTypeCode.class),
     @XmlJavaTypeAdapter(CI_OnLineFunctionCode.class),
     @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_Party.class),
     @XmlJavaTypeAdapter(CI_PresentationFormCode.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(CI_RoleCode.class),
     @XmlJavaTypeAdapter(CI_Series.class),
     @XmlJavaTypeAdapter(CI_Telephone.class),
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling
-//    @XmlJavaTypeAdapter(GO_URL.class), // TODO
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_URL.class),
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })

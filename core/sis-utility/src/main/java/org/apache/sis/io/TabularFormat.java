@@ -21,7 +21,6 @@ import java.util.TimeZone;
 import java.text.ParsePosition;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -41,15 +40,13 @@ import org.apache.sis.internal.jdk7.JDK7;
  *   <li>{@link #setColumnSeparatorPattern(String)}</li>
  * </ul>
  *
- * For implementors, this base class takes care of splitting a column separator pattern into
- * its components ({@link #beforeFill}, {@link #fillCharacter} and {@link #columnSeparator})
- * for easier usage in {@code format(…)} method implementations. Subclasses can use those fields
- * like below:
+ * <div class="section">Note for subclass implementions</div>
+ * This base class takes care of splitting a column separator pattern into its components
+ * ({@link #beforeFill}, {@link #fillCharacter} and {@link #columnSeparator})
+ * for easier usage in {@code format(…)} method implementations.
+ * Subclasses can use those fields like below:
  *
- * <table class="sis"><tr>
- *   <th>Table with no border</th>
- *   <th>Table with a border</th>
- * </tr><tr><td>
+ * <p><b>Formatting table without border:</b></p>
  * {@preformat java
  *     TableAppender table = new TableAppender(out, "");
  *     // ... do some work, then add a column separator:
@@ -57,14 +54,14 @@ import org.apache.sis.internal.jdk7.JDK7;
  *     table.nextColumn(fillCharacter);
  *     table.append(columnSeparator);
  * }
- * </td><td>
+ *
+ * <p><b>Formatting table with a border:</b></p>
  * {@preformat java
  *     TableAppender table = new TableAppender(out, columnSeparator);
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
  * }
- * </td></tr></table>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -75,7 +72,6 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @see TableAppender
  */
-@NotThreadSafe
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.
@@ -103,7 +99,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * This is the character between the "{@code [ ]}" pair of brackets in the pattern given
      * to the {@link #setColumnSeparatorPattern(String)} method.
      *
-     * Subclasses will typically use this value in calls to {@link TableAppender#nextColumn(char)}.
+     * <p>Subclasses will typically use this value in calls to {@link TableAppender#nextColumn(char)}.</p>
      */
     protected char fillCharacter;
 
@@ -206,6 +202,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * Other characters are appended <cite>as-is</cite> between the columns.</p>
      *
      * <table class="sis">
+     *   <caption>Reserved characters</caption>
      *   <tr><th>Character(s)</th> <th>Meaning</th></tr>
      *   <tr><td>{@code '?'}</td>  <td>Omit the column separator for trailing null values.</td></tr>
      *   <tr><td>{@code "[ ]"}</td><td>Repeat the character between bracket as needed.</td></tr>
@@ -213,20 +210,21 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *   <tr><td>{@code '\\'}</td> <td>Escape any of the characters listed in this table.</td></tr>
      * </table>
      *
-     * {@section Restrictions}
+     * <div class="section">Restrictions</div>
      * <ul>
      *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
      *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>
      *   <li>In the current implementation, the repeated character must be in the
      *       {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</li>
-     *   <li>If {@code '/'} is present, anything on its right must be compliant
+     *   <li>If {@code '/'} is present, anything on its right side shall be compliant
      *       with the {@link Pattern} syntax.</li>
      * </ul>
      *
-     * {@section Example}
-     * The {@code "?……[…] "} pattern means "<cite>If the next value is non-null, then insert the
+     * <div class="note"><b>Example:</b>
+     * The {@code "?……[…] "} pattern means <cite>"If the next value is non-null, then insert the
      * {@code "……"} string, repeat the {@code '…'} character as many time as needed (may be zero),
-     * then insert a space</cite>".
+     * then insert a space"</cite>.
+     * </div>
      *
      * @param  pattern The pattern of the new column separator.
      * @throws IllegalArgumentException If the given pattern is illegal.

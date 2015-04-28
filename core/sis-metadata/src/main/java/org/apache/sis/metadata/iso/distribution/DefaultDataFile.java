@@ -30,9 +30,18 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Description of a transfer data file.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -71,19 +80,21 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataFile)
      */
     public DefaultDataFile(final DataFile object) {
         super(object);
-        featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
-        fileFormat   = object.getFileFormat();
+        if (object != null) {
+            featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
+            fileFormat   = object.getFileFormat();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -111,6 +122,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * the transfer choices, a data file may contain data related to one or many feature types.
      * This attribute may be omitted when the dataset is composed of a single file and/or the
      * data does not relate to a feature catalogue.
+     *
+     * @return List of features types concerned by the transfer data file.
      */
     @Override
     @XmlElement(name = "featureType", namespace = Namespaces.GMX)
@@ -129,6 +142,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
 
     /**
      * Returns the format of the transfer data file.
+     *
+     * @return Format of the transfer data file, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileFormat", namespace = Namespaces.GMX, required = true)

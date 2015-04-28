@@ -18,12 +18,15 @@
 package org.apache.sis.distance;
 
 // SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 
 /**
  * Class to calculate distances on earth surface. Actual calculation code very
  * similar to Apache SIS but refractor to allow use of custom classes.
  *
+ * <div class="warning"><b>Warning:</b> This class may change in a future SIS version. Current implementation
+ * performs computations on a sphere of hard-coded radius. A future implementation should perform computations
+ * on a given ellipsoid.</div>
  */
 public class DistanceUtils {
 
@@ -43,7 +46,7 @@ public class DistanceUtils {
    *          the great circle bearing
    * @return a coordinate at the specified bearing
    */
-  public static LatLon getPointOnGreatCircle(double latitude, double longitude,
+  public static DirectPosition2D getPointOnGreatCircle(double latitude, double longitude,
       double d, double bearing) {
     double angularDistance = d / EARTH_RADIUS;
 
@@ -62,7 +65,7 @@ public class DistanceUtils {
         + Math.atan2(Math.sin(brng) * sinD * cosLat, cosD - sinLat
             * Math.sin(lat2));
 
-    return new LatLon(Math.toDegrees(lat2), Math.toDegrees(lon2));
+    return new DirectPosition2D(Math.toDegrees(lat2), Math.toDegrees(lon2));
   }
 
   /**

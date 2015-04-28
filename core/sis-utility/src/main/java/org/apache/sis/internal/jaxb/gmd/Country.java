@@ -19,12 +19,11 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-
-import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -44,14 +43,14 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "Country_PropertyType")
 public final class Country extends GO_CharacterString {
     /**
-     * The country using a {@link CodeList}-like format.
+     * The country using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "Country")
     private CodeListProxy proxy;
@@ -63,16 +62,16 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Builds a {@code <gco:CharacterString>} element.
+     * Builds a {@code <gco:Country>} element.
      * For private use by {@link #create(Context, Locale)} only.
      */
-    private Country(final GO_CharacterString code) {
+    private Country(final CharSequence code) {
         super(code);
     }
 
     /**
      * Builds a {@code <Country>} element.
-     * For private use by {@link #create(Context, Locale, CharSequenceAdapter)} only.
+     * For private use by {@link #create(Context, Locale)} only.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param codeListValue The {@code codeListValue} attribute in the XML element.
@@ -80,7 +79,7 @@ public final class Country extends GO_CharacterString {
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
-        proxy = new CodeListProxy(context, "ML_gmxCodelists.xml", "Country", codeListValue, codeSpace, value);
+        proxy = new CodeListProxy(context, "Country", codeListValue, codeSpace, value);
     }
 
     /**
@@ -91,30 +90,25 @@ public final class Country extends GO_CharacterString {
      * @return The country to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getCountry()} attribute is the empty string.
      */
-    static Country create(final Context context, final Locale locale) {
-        if (locale != null) {
-            final String codeListValue = Context.converter(context).toCountryCode(context, locale);
+    public static Country create(final Context context, final Locale locale) {
+        final String codeListValue = Context.converter(context).toCountryCode(context, locale);
+        if (codeListValue != null) {
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_COUNTRY)) {
                 /*
                  * Marshal the locale as a <gco:CharacterString> instead than <Country>,
                  * using the user-supplied anchors if any.
                  */
-                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
+                final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);
                 if (string != null) {
                     return new Country(string);
                 }
             }
-            String codeSpace = null;
-            String value = null;
-            if (context != null) {
-                final Locale marshalLocale = context.getLocale();
-                if (marshalLocale != null) {
-                    codeSpace = Context.converter(context).toLanguageCode(context, locale);
-                    value = locale.getDisplayCountry(marshalLocale);
-                    if (value.isEmpty()) {
-                        value = null;
-                    }
-                }
+            final Locale marshalLocale = LanguageCode.marshalLocale(context);
+            String codeSpace = Context.converter(context).toLanguageCode(context, marshalLocale);
+            String value = locale.getDisplayCountry(marshalLocale);
+            if (value.isEmpty()) {
+                codeSpace = null;
+                value = null;
             }
             if (!codeListValue.isEmpty() || value != null) {
                 return new Country(context, codeListValue, codeSpace, value);
@@ -124,29 +118,42 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Returns the locale for the given country (which may be null), or {@code null} if none.
+     * Returns the locale for the given language and country (which may be null), or {@code null} if none.
      *
-     * @param value The wrapper for this metadata value.
-     * @return A locale which represents the metadata value.
-     *
-     * @see LanguageCode#getLocale(Context, LanguageCode, boolean)
+     * @param  context  The current (un)marshalling context, or {@code null} if none.
+     * @param  language The wrapper for the language value.
+     * @param  country  The wrapper for the country value.
+     * @param  caller   The class which is invoking this method, used only in case of warning.
+     * @return A locale which represents the language and country value.
      */
-    static Locale getLocale(final Country value) {
-        if (value != null) {
-            String code = null;
-            if (value.proxy != null) {
-                code = value.proxy.codeListValue;
-            }
-            // If the country was not specified as a code list,
-            // look for a simple character string declaration.
-            if (code == null) {
-                code = value.toString();
-            }
-            code = CharSequences.trimWhitespaces(code);
-            if (code != null && !code.isEmpty()) {
-                return Locales.unique(new Locale("", code));
+    public static Locale getLocale(final Context context, final LanguageCode language, final Country country,
+            final Class<?> caller)
+    {
+        String code = null;
+        if (language != null) {
+            code = language.getLanguage();
+        }
+        if (country != null) {
+            final CodeListProxy proxy = country.proxy;
+            final String c = CharSequences.trimWhitespaces(proxy != null ? proxy.identifier() : country.toString());
+            if (c != null && !c.isEmpty()) {
+                if (code == null) {
+                    code = "";
+                }
+                int i = code.indexOf('_');
+                if (i < 0) {
+                    code = code + '_' + c;
+                } else {
+                    final int length = code.length();
+                    if (++i == code.length() || code.charAt(i) == '_') {
+                        code = new StringBuilder().append(code, 0, i).append(c).append(code, i, length).toString();
+                    } else if (!c.equals(CharSequences.token(code, i))) {
+                        Context.warningOccured(context, Context.LOGGER, caller, "unmarshal", Errors.class,
+                                Errors.Keys.IncompatiblePropertyValue_1, "country");
+                    }
+                }
             }
         }
-        return null;
+        return Context.converter(context).toLocale(context, code);
     }
 }

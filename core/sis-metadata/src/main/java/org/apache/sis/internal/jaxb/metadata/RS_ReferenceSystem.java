@@ -16,11 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 
 
 /**
@@ -28,11 +27,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
-public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {
+public final class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, ReferenceSystem> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -43,6 +42,8 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ReferenceSystem.class}
      */
     @Override
     protected Class<ReferenceSystem> getBoundType() {
@@ -50,9 +51,11 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     }
 
     /**
-     * Constructor for the {@link #wrap} method only.
+     * Wraps a Reference System value in a {@code MD_ReferenceSystem} element at marshalling-time.
+     *
+     * @param metadata The metadata value to marshal.
      */
-    RS_ReferenceSystem(final ReferenceSystem metadata) {
+    protected RS_ReferenceSystem(final ReferenceSystem metadata) {
         super(metadata);
     }
 
@@ -77,9 +80,10 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
      */
     @XmlElementRef
     public ReferenceSystemMetadata getElement() {
-        if (skip()) return null;
         final ReferenceSystem metadata = this.metadata;
-        if (metadata instanceof ReferenceSystemMetadata) {
+        if (metadata == null) {
+            return null;
+        } else if (metadata instanceof ReferenceSystemMetadata) {
             return (ReferenceSystemMetadata) metadata;
         } else {
             return new ReferenceSystemMetadata(metadata);
@@ -92,48 +96,6 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
      * @param metadata The unmarshalled metadata.
      */
     public void setElement(final ReferenceSystemMetadata metadata) {
-        this.metadata = metadata;
-    }
-
-    /**
-     * A hook for the French profile.
-     *
-     * @return The metadata to be marshalled.
-     *
-     * @todo We need a better plugin mechanism.
-     */
-    @XmlElement(name = "FRA_DirectReferenceSystem", namespace = Namespaces.FRA)
-    public ReferenceSystemMetadata getDirectReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Setter method for the French profile hook.
-     *
-     * @param metadata The unmarshalled metadata.
-     */
-    public void setDirectReferenceSystem(final ReferenceSystemMetadata metadata) {
-        this.metadata = metadata;
-    }
-
-    /**
-     * A hook for the French profile.
-     *
-     * @return The metadata to be marshalled.
-     *
-     * @todo We need a better plugin mechanism.
-     */
-    @XmlElement(name = "FRA_IndirectReferenceSystem", namespace = Namespaces.FRA)
-    public ReferenceSystemMetadata getIndirectReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Setter method for the French profile hook.
-     *
-     * @param metadata The unmarshalled metadata.
-     */
-    public void setIndirectReferenceSystem(final ReferenceSystemMetadata metadata) {
         this.metadata = metadata;
     }
 }

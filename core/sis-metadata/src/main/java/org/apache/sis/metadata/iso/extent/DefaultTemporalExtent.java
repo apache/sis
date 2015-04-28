@@ -29,6 +29,7 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -39,13 +40,23 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * <ul>
  *   <li>{@link #getStartTime()} for fetching the start time from the temporal primitive.</li>
  *   <li>{@link #getEndTime()} for fetching the end time from the temporal primitive.</li>
+ *   <li>{@link #setBounds(Date, Date)} for setting the extent from the given start and end time.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
+ * </ul>
+ *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -74,22 +85,24 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(TemporalExtent)
      */
     public DefaultTemporalExtent(final TemporalExtent object) {
         super(object);
-        extent = object.getExtent();
+        if (object != null) {
+            extent = object.getExtent();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link SpatialTemporalExtent},
+     *   <li>Otherwise if the given object is an instance of {@link SpatialTemporalExtent},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding
      *       SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
@@ -121,7 +134,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * then this method will build an extent from the {@linkplain #getStartTime() start
      * time} and {@linkplain #getEndTime() end time} if any.
      *
-     * @return The content date.
+     * @return The date and time for the content, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent", required = true)
@@ -146,8 +159,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *              or {@code false} for the end time.
      * @return The requested time as a Java date, or {@code null} if none.
      */
-    private Date getTime(final boolean begin) {
-        final TemporalPrimitive extent = this.extent;
+    static Date getTime(final TemporalPrimitive extent, final boolean begin) {
         final Instant instant;
         if (extent instanceof Instant) {
             instant = (Instant) extent;
@@ -156,7 +168,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
         } else {
             return null;
         }
-        return instant.getPosition().getDate();
+        return instant.getDate();
     }
 
     /**
@@ -166,7 +178,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return The start time, or {@code null} if none.
      */
     public Date getStartTime() {
-        return getTime(true);
+        return getTime(extent, true);
     }
 
     /**
@@ -176,19 +188,46 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return The end time, or {@code null} if none.
      */
     public Date getEndTime() {
-        return getTime(false);
+        return getTime(extent, false);
     }
 
     /**
-     * Sets this temporal extent to values inferred from the specified envelope. The envelope can
-     * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
-     * envelope CRS} must have a temporal component.
+     * Sets the temporal extent to the specified values. This convenience method creates a temporal
+     * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the {@code sis-temporal} module is available on the classpath,
+     * or any other module providing an implementation of the {@link org.opengis.temporal.TemporalFactory} interface.</p>
+     *
+     * @param  startTime The start date and time for the content of the dataset, or {@code null} if none.
+     * @param  endTime   The end date and time for the content of the dataset, or {@code null} if none.
+     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
+     *         on the classpath.
+     */
+    public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
+        TemporalPrimitive value = null;
+        if (startTime != null || endTime != null) {
+            if (endTime == null || endTime.equals(startTime)) {
+                value = TemporalUtilities.createInstant(startTime);
+            } else if (startTime == null) {
+                value = TemporalUtilities.createInstant(endTime);
+            } else {
+                value = TemporalUtilities.createPeriod(startTime, endTime);
+            }
+        }
+        setExtent(value);
+    }
+
+    /**
+     * Sets this temporal extent to values inferred from the specified envelope.
+     * The given envelope must have a {@linkplain Envelope#getCoordinateReferenceSystem() CRS},
+     * and at least one dimension of that CRS shall be assignable to a property of this extent.
+     *
+     * <p><b>Note:</b> this method is available only if the {@code sis-referencing} module is
+     * available on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this temporal extent.
-     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can't be transformed to a temporal extent.
+     * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the classpath.
+     * @throws TransformException if the envelope can not be transformed to a temporal extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)

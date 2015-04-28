@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.lang.reflect.Array;
-import net.jcip.annotations.ThreadSafe;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
@@ -31,7 +29,7 @@ import org.apache.sis.util.NullArgumentException;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -47,7 +45,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * the static {@code hashCode(a)} and {@code equals(a1, a2)} methods defined in the {@link Arrays}
  * class.</p>
  *
- * {@section Optimizing memory use in factory implementations}
+ * <div class="section">Optimizing memory use in factory implementations</div>
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the
  * {@link java.util.Set} interface. This {@code get} method retrieves an entry from this set
  * that is equals to the supplied object. The {@link #unique(Object)} method combines a
@@ -64,19 +62,22 @@ import org.apache.sis.internal.jdk7.Objects;
  *     }
  * }
  *
- * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate
- * immutable objects.
+ * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
+ *
+ * <div class="section">Thread safety</div>
+ * The same {@code WeakHashSet} instance can be safely used by many threads without synchronization on the part of
+ * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
+ * then the caller can synchronize on {@code this}.
  *
  * @param <E> The type of elements in the set.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see java.util.WeakHashMap
  */
-@ThreadSafe
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**
      * A weak reference to an element. This is an element in a linked list.
@@ -91,7 +92,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
         }
 
         /**
-         * Invoked by {@link org.apache.sis.internal.util.ReferenceQueueConsumer}
+         * Invoked by {@link org.apache.sis.internal.system.ReferenceQueueConsumer}
          * for removing the reference from the enclosing collection.
          */
         @Override
@@ -181,22 +182,17 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
 
     /**
      * Checks if this {@code WeakHashSet} is valid. This method counts the number of elements and
-     * compares it to {@link #count}. If the check fails, the number of elements is corrected (if
-     * we didn't, an {@link AssertionError} would be thrown for every operations after the first
-     * error, which make debugging more difficult). The set is otherwise unchanged, which should
-     * help to get similar behavior as if assertions hasn't been turned on.
+     * compares it to {@link #count}. This method is invoked in assertions only.
      */
     @Debug
     private boolean isValid() {
-        assert Thread.holdsLock(this);
-        assert count <= upperCapacityThreshold(table.length);
-        final int n = count(table);
-        if (n != count) {
-            count = n;
-            return false;
-        } else {
-            return true;
+        if (!Thread.holdsLock(this)) {
+            throw new AssertionError();
         }
+        if (count > upperCapacityThreshold(table.length)) {
+            throw new AssertionError(count);
+        }
+        return count(table) == count;
     }
 
     /**
@@ -302,7 +298,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
 
     /**
      * Implementation of the {@link #add(Object)}, {@link #remove(Object)}, {@link #get(Object)},
-     * {@link #contains(Object)} and {@link #intern(Object)} methods.
+     * {@link #contains(Object)} and {@link #unique(Object)} methods.
      */
     private E intern(final Object obj, final int operation) {
         assert isValid();
@@ -369,12 +365,12 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
         @SuppressWarnings("unchecked")
         final E[] elements = (E[]) Array.newInstance(elementType, count);
         int index = 0;
-        final Entry[] table = this.table;
-        for (int i=0; i<table.length; i++) {
-            for (Entry el=table[i]; el!=null; el=(Entry) el.next) {
+        for (Entry el : table) {
+            while (el != null) {
                 if ((elements[index] = el.get()) != null) {
                     index++;
                 }
+                el = (Entry) el.next;
             }
         }
         return ArraysExt.resize(elements, index);

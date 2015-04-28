@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -43,11 +43,12 @@ import org.apache.sis.internal.jdk7.Objects;
  * definition were found for a XML element identified by {@code xlink} or {@code uuidref}
  * attributes.
  *
- * {@note The same handler could be used for every proxy having the same XLink.
- *        For now, it doesn't seem worth to cache the handlers.}
+ * <div class="note"><b>Implementation note:</b>
+ * The same handler could be used for every proxy having the same XLink.
+ * For now, it doesn't seem worth to cache the handlers.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  */

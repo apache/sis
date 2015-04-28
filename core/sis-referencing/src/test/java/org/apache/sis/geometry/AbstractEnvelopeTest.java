@@ -20,14 +20,15 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.referencing.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -35,8 +36,8 @@ import static org.apache.sis.referencing.Assert.*;
  * Various implementations are used for each test.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.20)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
@@ -44,7 +45,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for strict floating point comparisons.
      */
-    private static final double STRICT = 0;
+    static final double STRICT = 0;
 
     /**
      * Enumeration of implementations to be tested.
@@ -54,10 +55,8 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
 
     /**
      * The coordinate reference system used for the tests.
-     *
-     * @todo Need to be assigned when we will have ported the CRS implementations.
      */
-    static final GeographicCRS WGS84 = null;
+    static final GeographicCRS WGS84 = CommonCRS.WGS84.normalizedGeographic();
 
     /**
      * Creates an envelope of the given type. The type shall be one of the
@@ -86,14 +85,15 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 break;
             }
             case SUBENVELOPE: {
-                final GeneralEnvelope ge = new GeneralEnvelope(5);
-                ge.setCoordinateReferenceSystem(WGS84);
+                GeneralEnvelope ge = new GeneralEnvelope(5);
                 ge.setRange(1, xmin, xmax);
                 ge.setRange(2, ymin, ymax);
                 ge.setRange(0, 2, 3); // Following values will be verified in verifyInvariants(…)
                 ge.setRange(3, 4, 6);
                 ge.setRange(4, 8, 9);
-                envelope = ge.subEnvelope(1, 3);
+                ge = ge.subEnvelope(1, 3);
+                ge.setCoordinateReferenceSystem(WGS84);
+                envelope = ge;
                 break;
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
@@ -189,7 +189,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * }
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridian() {
         final DirectPosition2D inside  = new DirectPosition2D(18, 32);
         final DirectPosition2D outside = new DirectPosition2D( 3, 32);
@@ -252,7 +251,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * }
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridianTwice() {
         final DirectPosition2D inside  = new DirectPosition2D(18, 32);
         final DirectPosition2D outside = new DirectPosition2D( 3, 32);
@@ -308,7 +306,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * on the left and right sides.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testCrossingAntiMeridianThreeTimes() {
         final DirectPosition2D wasInside = new DirectPosition2D(18, 32);
         final DirectPosition2D outside   = new DirectPosition2D( 3, 32);
@@ -414,7 +411,6 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * Tests a case crossing the anti-meridian crossing, from 0° to -0°.
      */
     @Test
-    @Ignore("The tested envelope needs to be associated to CRS:84")
     public void testRange360() {
         final DirectPosition2D inside     = new DirectPosition2D(18, 32);
         final DirectPosition2D wasOutside = new DirectPosition2D( 3, 32);
@@ -457,6 +453,72 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 }
             }
             verifyInvariants(type, envelope);
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on an empty envelope.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testToSimpleEnvelopesOnEmptyEnvelope() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 0, 0, 0, 0);
+                assertEquals(0, envelope.toSimpleEnvelopes().length);
+            }
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
+    public void testToSimpleEnvelopesOnSimpleEnvelope() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, -20, 30, -10, 15);
+                final Envelope[] simples = envelope.toSimpleEnvelopes();
+                assertEquals(1, simples.length);
+                assertSame(envelope, simples[0]);
+            }
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
+    public void testToSimpleEnvelopesOverAntiMeridian() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 155, -150, 0, 50);
+                final Envelope[] simples = envelope.toSimpleEnvelopes();
+                assertEquals(2, simples.length);
+                final AbstractEnvelope e0 = (AbstractEnvelope) simples[0];
+                final AbstractEnvelope e1 = (AbstractEnvelope) simples[1];
+
+                assertEquals( 155.0, e0.getLower(0), STRICT);
+                assertEquals(   0.0, e0.getLower(1), STRICT);
+                assertEquals( 180.0, e0.getUpper(0), STRICT);
+                assertEquals(  50.0, e0.getUpper(1), STRICT);
+                assertEquals(  25.0, e0.getSpan (0), STRICT);
+                assertEquals(  50.0, e0.getSpan (1), STRICT);
+
+                assertEquals(-180.0, e1.getLower(0), STRICT);
+                assertEquals(   0.0, e1.getLower(1), STRICT);
+                assertEquals(-150.0, e1.getUpper(0), STRICT);
+                assertEquals(  50.0, e1.getUpper(1), STRICT);
+                assertEquals(  30.0, e1.getSpan (0), STRICT);
+                assertEquals(  50.0, e1.getSpan (1), STRICT);
+            }
         }
     }
 }

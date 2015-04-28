@@ -35,7 +35,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * This collection holds a reference to the metadata object at creation time;
  * it does not track changes in {@code parent.getUserObject()}.
  *
- * {@section Note on value existence policy}
+ * <div class="section">Note on value existence policy</div>
  * It is better to use this class with {@link ValueExistencePolicy#NON_EMPTY} in order
  * to avoid code complication and surprising behavior of {@link Iter#remove()} operation.
  * If the policy is set to another value, we need to keep the following aspects in mind:
@@ -128,7 +128,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * value policy. To check if the element shall be considered as removed (for example
      * in order to update index), invoke {@code isSkipped(value)} after this method.</p>
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * This method sets the property to {@code null}. This is not strictly correct for collections,
      * since we should rather set the property to an empty collection. However this approach would
      * force us to check if the expected collection type is actually a list, a set or any other type.
@@ -157,12 +157,12 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong>
      * to this collection.
      *
-     * {@note We do not test <code>(value instanceof Collection)</code> because the value
-     *        could be any user's implementation. Nothing prevent users from implementing
-     *        the collection interface even for singleton elements if they wish.}
+     * <div class="note"><b>Implementation note:</b>
+     * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
+     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.</div>
      *
      * @param  index The index in the accessor (<em>not</em> the index in this collection).
-     * @return {@code true} if the value at the given index is a collection.
+     * @return {@code true} if the value at the given index is a collection.
      */
     final boolean isCollection(final int index) {
         return accessor.isCollection(index);
@@ -270,7 +270,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Each element is identified by its index in the {@link PropertyAccessor}, together with
      * its position in its sub-iterator when the metadata property is a collection.
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * It could be cheaper to not take an iterator for the properties that are collections,
      * and instead just increment a "sub-index" from 0 to the collection size.  It would be
      * cheaper because we don't really need to extract the values of those collections (i.e.
@@ -306,9 +306,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * ahead of time by {@link #hasNext()} since we need that information in order to determine
          * if the value needs to be skipped or not.
          *
-         * {@note Actually we don't really need to keep this value, since it is not used outside the
-         *        <code>hasNext()</code> method. But we keep it for allowing the <code>next()</code>
-         *        method to opportunistically update the <code>TreeNode.cachedValue</code> field.}
+         * <div class="note"><b>Note:</b>
+         * Actually we don't really need to keep this value, since it is not used outside the {@link #hasNext()}
+         * method. But we keep it for allowing the {@link #next()} method to opportunistically update the
+         * {@link TreeNode#cachedValue} field.</div>
          */
         private Object nextValue;
 
@@ -331,9 +332,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * The value of {@link TreeNodeChildren#modCount} at construction time or after
          * the last change done by this iterator. Used for concurrent modification checks.
          *
-         * {@note Actually this iterator should be robust to most concurrent modifications.
-         *        But we check anyway in order to prevent concurrent modifications in user
-         *        code, in case a future SIS version become more sensitive to such changes.}
+         * <div class="note"><b>Note:</b>
+         * Actually this iterator should be robust to most concurrent modifications.
+         * But we check anyway in order to prevent concurrent modifications in user
+         * code, in case a future SIS version become more sensitive to such changes.</div>
          */
         private int modCountCheck;
 
@@ -476,7 +478,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * are ignored.
      *
      * <p>If the identified property is a collection, then this method adds the value to that collection.
-     * Otherwise the new value will be set only if the previous value is null or empty.</p>
+     * Otherwise the new value will be set only if the previous value is null,
+     * {@linkplain org.apache.sis.xml.NilObject nil} or empty.</p>
      *
      * <p>This method does not iterate explicitly through the children list, because adding a metadata
      * object implicitly adds all its children.</p>

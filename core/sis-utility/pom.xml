@@ -28,13 +28,14 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <version>0.6-android-SNAPSHOT</version>
   </parent>
 
 
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
   <packaging>jar</packaging>
   <name>Apache SIS utilities</name>
@@ -115,6 +116,7 @@ Miscellaneous utilities.
 
       <!-- Delete the "com/sun/xml/..." directory after compilation. -->
       <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -133,15 +135,13 @@ Miscellaneous utilities.
 
       <!-- Compile properties files into resources UTF files. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
           <execution>
             <goals>
               <goal>compile-resources</goal>
-              <!-- The "collect-jars" goal declared in the JDK7 branch is omitted
-                   in the JDK6 branch, because much more costly on JDK6 platforms. -->
             </goals>
           </execution>
         </executions>
@@ -154,17 +154,14 @@ Miscellaneous utilities.
            Dependencies
        =========================================================== -->
   <dependencies>
+    <!-- Optional dependencies (provided scope) -->
     <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
     </dependency>
   </dependencies>
 

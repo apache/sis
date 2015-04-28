@@ -29,12 +29,24 @@ import static org.apache.sis.internal.util.X364.*;
  * Tests the {@link X364} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final strictfp class X364Test extends TestCase {
+    /**
+     * Tests {@link X364#forColorName(String)}.
+     */
+    @Test
+    public void testForColorName() {
+        for (final X364 value : X364.values()) {
+            if (value.color != null) {
+                assertSame(value.color, value.foreground(), X364.forColorName(value.color));
+            }
+        }
+    }
+
     /**
      * Tests the {@link X364#plain(String)} method.
      */

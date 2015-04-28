@@ -18,7 +18,7 @@ package org.apache.sis.util.iso;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collection;
+import java.util.SortedMap;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -30,16 +30,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
-import org.opengis.util.NameFactory;
-import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.DefaultFactories;
 
 
 /**
@@ -47,8 +45,6 @@ import org.apache.sis.internal.util.DefaultFactories;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #toInternationalString(CharSequence)} and {@link #toGenericName(Object, NameFactory)}
- *       for creating name-related objects from various objects.</li>
  *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
  *       for fetching ISO names if possible.</li>
  *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
@@ -58,17 +54,22 @@ import org.apache.sis.internal.util.DefaultFactories;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.19)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public final class Types extends Static {
+    /**
+     * The separator character between class name and attribute name in resource files.
+     */
+    private static final char SEPARATOR = '.';
+
     /**
      * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
      * are either class names as {@link String} objects, or the {@link Class} instances.
      * This map will be built only when first needed.
      *
-     * @see #forName(String)
+     * @see #forStandardName(String)
      */
     private static Map<Object,Object> typeForNames;
 
@@ -81,14 +82,15 @@ public final class Types extends Static {
     /**
      * Returns the ISO name for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
      *       (an interface) returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
      *       (a code list) returns {@code "CS_AxisDirection"}.</li>
      * </ul>
+     * </div>
      *
      * This method looks for the {@link UML} annotation on the given type. It does not search for
      * parent classes or interfaces if the given type is not directly annotated (i.e. {@code @UML}
@@ -120,16 +122,18 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the ISO classname (if available) or the Java classname (as a fallback)
-     * of the given code. This method uses the {@link UML} annotation if it exists, or
+     * Returns the ISO classname (if available) or the Java classname (as a fallback) of the given
+     * enumeration or code list value. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getListName(AxisDirection.NORTH)} returns {@code "CS_AxisDirection"}.</li>
-     *   <li>{@code getListName(CharacterSet.UTF_8)} returns {@code "MD_CharacterSetCode"}.</li>
+     *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
+     *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
+     *   <li>{@code getListName(CharacterSet.UTF_8)}             returns {@code "MD_CharacterSetCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the class name, or {@code null}.
      * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
@@ -144,15 +148,17 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the ISO name (if available) or the Java name (as a fallback) of the given code.
-     * If the code has no {@link UML} identifier, then the programmatic name is used as a fallback.
-     * Examples:
+     * Returns the ISO name (if available) or the Java name (as a fallback) of the given enumeration or code list
+     * value. If the value has no {@link UML} identifier, then the programmatic name is used as a fallback.
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
-     *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
-     *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
+     *   <li>{@code getCodeName(ParameterDirection.IN_OUT)}      returns {@code "in/out"}.</li>
+     *   <li>{@code getCodeName(AxisDirection.NORTH)}            returns {@code "north"}.</li>
+     *   <li>{@code getCodeName(CharacterSet.UTF_8)}             returns {@code "utf8"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code for which to get the name, or {@code null}.
      * @return The UML identifiers or programmatic name for the given code,
@@ -172,21 +178,22 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns a unlocalized title for the given code.
+     * Returns a unlocalized title for the given enumeration or code list value.
      * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
      * {@link #getCodeTitle(CodeList)} instead.
      *
-     * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all
-     * code names}, selects the longest one excluding the {@linkplain CodeList#name() field name}
-     * if possible, then {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence}
-     * from that name. Examples:</p>
+     * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
+     * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
+     * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.</p>
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
      *   <li>{@code getCodeLabel(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
      *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
+     * </div>
      *
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
@@ -213,7 +220,7 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the title of the given code. Title are usually much shorter than descriptions.
+     * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
      * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
      *
      * @param  code The code for which to get the title, or {@code null}.
@@ -226,7 +233,7 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the description of the given code, or {@code null} if none.
+     * Returns the description of the given enumeration or code list value, or {@code null} if none.
      * For a description of the code list as a whole instead than a particular code,
      * see {@link Types#getDescription(Class)}.
      *
@@ -240,7 +247,7 @@ public final class Types extends Static {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
-                return new Description(resources, getListName(code) + '.' + getCodeName(code));
+                return new Description(resources, resourceKey(code));
             }
         }
         return null;
@@ -282,7 +289,7 @@ public final class Types extends Static {
             if (name != null) {
                 final String resources = getResources(type.getName());
                 if (resources != null) {
-                    return new Description(resources, name + '.' + property);
+                    return new Description(resources, name + SEPARATOR + property);
                 }
             }
         }
@@ -346,7 +353,7 @@ public final class Types extends Static {
          * Returns a fallback if no resource is found.
          */
         String fallback() {
-            return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf('.') + 1)).toString();
+            return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf(SEPARATOR) + 1)).toString();
         }
     }
 
@@ -379,7 +386,7 @@ public final class Types extends Static {
          * @param code The code list for which to create a title.
          */
         CodeTitle(final CodeList<?> code) {
-            super("org.opengis.metadata.CodeLists", getListName(code) + '.' + getCodeName(code));
+            super("org.opengis.metadata.CodeLists", resourceKey(code));
             this.code = code;
         }
 
@@ -408,6 +415,17 @@ public final class Types extends Static {
     }
 
     /**
+     * Returns the resource key for the given code list.
+     */
+    static String resourceKey(final CodeList<?> code) {
+        String key = getCodeName(code);
+        if (key.indexOf(SEPARATOR) < 0) {
+            key = getListName(code) + SEPARATOR + key;
+        }
+        return key;
+    }
+
+    /**
      * Returns all known values for the given type of code list.
      * Note that the size of the returned array may growth between different invocations of this method,
      * since users can add their own codes to an existing list.
@@ -415,6 +433,8 @@ public final class Types extends Static {
      * @param <T> The compile-time type given as the {@code codeType} parameter.
      * @param codeType The type of code list.
      * @return The list of values for the given code list, or an empty array if none.
+     *
+     * @see Class#getEnumConstants()
      */
     @SuppressWarnings("unchecked")
     public static <T extends CodeList<?>> T[] getCodeValues(final Class<T> codeType) {
@@ -442,12 +462,13 @@ public final class Types extends Static {
      * Returns the GeoAPI interface for the given ISO name, or {@code null} if none.
      * The identifier argument shall be the value documented in the {@link UML#identifier()}
      * annotation associated with the GeoAPI interface.
-     * Examples:
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
      *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
+     * </div>
      *
      * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
      * the identifiers for the {@code geoapi-pending} module.
@@ -491,10 +512,9 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the code of the given type that matches the given name, or optionally returns a new
-     * one if none match it. This method performs the same work than the GeoAPI {@code valueOf(…)}
-     * method, except that this method is more tolerant on string comparisons when looking for an
-     * existing code:
+     * Returns the enumeration value of the given type that matches the given name, or {@code null} if none.
+     * This method is similar to the standard {@code Enum.valueOf(…)} method, except that this method is more
+     * tolerant on string comparisons:
      *
      * <ul>
      *   <li>Name comparisons are case-insensitive.</li>
@@ -502,8 +522,50 @@ public final class Types extends Static {
      *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
      * </ul>
      *
-     * If no match is found, then a new code is created only if the {@code canCreate} argument is
-     * {@code true}. Otherwise this method returns {@code null}.
+     * If there is no match, this method returns {@code null} — it does not thrown an exception,
+     * unless the given class is not an enumeration.
+     *
+     * @param <T>      The compile-time type given as the {@code enumType} parameter.
+     * @param enumType The type of enumeration.
+     * @param name     The name of the enumeration value to obtain, or {@code null}.
+     * @return A value matching the given name, or {@code null} if the name is null
+     *         or if no matching enumeration is found.
+     *
+     * @see Enum#valueOf(Class, String)
+     *
+     * @since 0.5
+     */
+    public static <T extends Enum<T>> T forEnumName(final Class<T> enumType, String name) {
+        name = CharSequences.trimWhitespaces(name);
+        if (name != null && !name.isEmpty()) try {
+            return Enum.valueOf(enumType, name);
+        } catch (IllegalArgumentException e) {
+            final T[] values = enumType.getEnumConstants();
+            if (values == null) {
+                throw e;
+            }
+            for (final Enum<?> code : values) {
+                if (CodeListFilter.accept(code.name(), name)) {
+                    return enumType.cast(code);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the code of the given type that matches the given name, or optionally returns a new one if none
+     * match the name. This method performs the same work than the GeoAPI {@code CodeList.valueOf(…)} method,
+     * except that this method is more tolerant on string comparisons when looking for an existing code:
+     *
+     * <ul>
+     *   <li>Name comparisons are case-insensitive.</li>
+     *   <li>Only {@linkplain Character#isLetterOrDigit(int) letter and digit} characters are compared.
+     *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
+     * </ul>
+     *
+     * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
+     * Otherwise this method returns {@code null}.
      *
      * @param <T>        The compile-time type given as the {@code codeType} parameter.
      * @param codeType   The type of code list.
@@ -519,6 +581,7 @@ public final class Types extends Static {
         if (name == null || name.isEmpty()) {
             return null;
         }
+        // -------- Begin workaround for GeoAPI 3.0 (TODO: remove after upgrade to GeoAPI 3.1) ------------
         final String typeName = codeType.getName();
         try {
             // Forces initialization of the given class in order
@@ -527,7 +590,116 @@ public final class Types extends Static {
         } catch (ClassNotFoundException e) {
             throw new TypeNotPresentException(typeName, e); // Should never happen.
         }
+        // -------- End workaround ------------------------------------------------------------------------
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
+    }
+
+    /**
+     * Returns an international string for the values in the given properties map, or {@code null} if none.
+     * This method is used when a property in a {@link java.util.Map} may have many localized variants.
+     * For example the given map may contains a {@code "remarks"} property defined by values associated to
+     * the {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
+     *
+     * <p>If the given map is {@code null}, then this method returns {@code null}.
+     * Otherwise this method iterates over the entries having a key that starts with the specified prefix,
+     * followed by the {@code '_'} character. For each such key:</p>
+     *
+     * <ul>
+     *   <li>If the key is exactly equals to {@code prefix}, selects {@link Locale#ROOT}.</li>
+     *   <li>Otherwise the characters after {@code '_'} are parsed as an ISO language and country code
+     *       by the {@link Locales#parse(String, int)} method. Note that 3-letters codes are replaced
+     *       by their 2-letters counterparts on a <cite>best effort</cite> basis.</li>
+     *   <li>The value for the decoded locale is added in the international string to be returned.</li>
+     * </ul>
+     *
+     * @param  properties The map from which to get the string values for an international string, or {@code null}.
+     * @param  prefix     The prefix of keys to use for creating the international string.
+     * @return The international string, or {@code null} if the given map is null or does not contain values
+     *         associated to keys starting with the given prefix.
+     * @throws IllegalArgumentException If a key starts by the given prefix and:
+     *         <ul>
+     *           <li>The key suffix is an illegal {@link Locale} code,</li>
+     *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
+     *         </ul>
+     *
+     * @see Locales#parse(String, int)
+     * @see DefaultInternationalString#DefaultInternationalString(Map)
+     *
+     * @since 0.4
+     */
+    public static InternationalString toInternationalString(Map<String,?> properties, final String prefix)
+            throws IllegalArgumentException
+    {
+        ArgumentChecks.ensureNonEmpty("prefix", prefix);
+        if (properties == null) {
+            return null;
+        }
+        /*
+         * If the given map is an instance of SortedMap using the natural ordering of keys,
+         * we can skip all keys that lexicographically precedes the given prefix.
+         */
+        boolean isSorted = false;
+        if (properties instanceof SortedMap<?,?>) {
+            final SortedMap<String,?> sorted = (SortedMap<String,?>) properties;
+            if (sorted.comparator() == null) { // We want natural ordering.
+                properties = sorted.tailMap(prefix);
+                isSorted = true;
+            }
+        }
+        /*
+         * Now iterates over the map entry and lazily create the InternationalString
+         * only when first needed. In most cases, we have 0 or 1 matching entry.
+         */
+        CharSequence i18n = null;
+        Locale firstLocale = null;
+        DefaultInternationalString dis = null;
+        final int offset = prefix.length();
+        for (final Map.Entry<String,?> entry : properties.entrySet()) {
+            final String key = entry.getKey();
+            if (key == null) {
+                continue; // Tolerance for Map that accept null keys.
+            }
+            if (!key.startsWith(prefix)) {
+                if (isSorted) break; // If the map is sorted, there is no need to check next entries.
+                continue;
+            }
+            final Locale locale;
+            if (key.length() == offset) {
+                locale = Locale.ROOT;
+            } else {
+                final char c = key.charAt(offset);
+                if (c != '_') {
+                    if (isSorted && c > '_') break;
+                    continue;
+                }
+                final int s = offset + 1;
+                try {
+                    locale = Locales.parse(key, s);
+                } catch (RuntimeException e) { // IllformedLocaleException on the JDK7 branch.
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                            Errors.Keys.IllegalLanguageCode_1, '(' + key.substring(0, s) + '）' + key.substring(s), e));
+                }
+            }
+            final Object value = entry.getValue();
+            if (value != null) {
+                if (!(value instanceof CharSequence)) {
+                    throw new IllegalArgumentException(Errors.getResources(properties)
+                            .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                }
+                if (i18n == null) {
+                    i18n = (CharSequence) value;
+                    firstLocale = locale;
+                } else {
+                    if (dis == null) {
+                        dis = new DefaultInternationalString();
+                        dis.add(firstLocale, i18n);
+                        i18n = dis;
+                    }
+                    dis.add(locale, (CharSequence) value);
+                }
+            }
+        }
+        return toInternationalString(i18n);
     }
 
     /**
@@ -554,7 +726,7 @@ public final class Types extends Static {
      * If the given array is null or an instance of {@code InternationalString[]}, then this method
      * returns it unchanged. Otherwise a new array of type {@code InternationalString[]} is created
      * and every elements from the given array is copied or
-     * {@linkplain #toInternationalString(CharSequence) converted} in the new array.
+     * {@linkplain #toInternationalString(CharSequence) casted} in the new array.
      *
      * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
      * if the returned array is the same instance than the one given in argument to this method.</p>
@@ -572,95 +744,5 @@ public final class Types extends Static {
             copy[i] = toInternationalString(strings[i]);
         }
         return copy;
-    }
-
-    /**
-     * Converts the given value to an array of generic names. If the given value is an instance of
-     * {@link GenericName}, {@link String} or any other type enumerated below, then it is converted
-     * and returned in an array of length 1. If the given value is an array or a collection, then an
-     * array of same length is returned where each element has been converted.
-     *
-     * <p>Allowed types or element types are:</p>
-     * <ul>
-     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
-     *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
-     *       to be parsed as a generic name using the
-     *       {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
-     *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
-     * </ul>
-     *
-     * If {@code value} is an array or a collection containing {@code null} elements,
-     * then the corresponding element in the returned array will also be {@code null}.
-     *
-     * @param  value The object to cast into an array of generic names, or {@code null}.
-     * @param  factory The factory to use for creating names, or {@code null} for the default.
-     * @return The generic names, or {@code null} if the given {@code value} was null.
-     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
-     * @throws ClassCastException if {@code value} can't be casted.
-     */
-    public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
-        if (value == null) {
-            return null;
-        }
-        if (factory == null) {
-            factory = DefaultFactories.NAMES;
-        }
-        GenericName name = toGenericName(value, factory);
-        if (name != null) {
-            return new GenericName[] {
-                name
-            };
-        }
-        /*
-         * Above code checked for a singleton. Now check for a collection or an array.
-         */
-        final Object[] values;
-        if (value instanceof Object[]) {
-            values = (Object[]) value;
-            if (values instanceof GenericName[]) {
-                return (GenericName[]) values;
-            }
-        } else if (value instanceof Collection<?>) {
-            values = ((Collection<?>) value).toArray();
-        } else {
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                    "value", value.getClass()));
-        }
-        final GenericName[] names = new GenericName[values.length];
-        for (int i=0; i<values.length; i++) {
-            value = values[i];
-            if (value != null) {
-                name = toGenericName(value, factory);
-                if (name == null) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
-                            "value[" + i + ']', value.getClass()));
-                }
-                names[i] = name;
-            }
-        }
-        return names;
-    }
-
-    /**
-     * Creates a generic name from the given value. The value may be an instance of
-     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
-     * object is not recognized, then this method returns {@code null}.
-     *
-     * @param  value The object to convert.
-     * @param  factory The factory to use for creating names.
-     * @return The converted object, or {@code null} if {@code value} is not convertible.
-     */
-    private static GenericName toGenericName(final Object value, final NameFactory factory) {
-        if (value instanceof GenericName) {
-            return (GenericName) value;
-        }
-        if (value instanceof Identifier) {
-            return factory.parseGenericName(null, ((Identifier) value).getCode());
-        }
-        if (value instanceof CharSequence) {
-            return factory.parseGenericName(null, (CharSequence) value);
-        }
-        return null;
     }
 }

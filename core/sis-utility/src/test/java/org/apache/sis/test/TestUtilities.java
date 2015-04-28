@@ -28,8 +28,13 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.X364;
 
 import static org.junit.Assert.*;
@@ -39,8 +44,8 @@ import static org.junit.Assert.*;
  * Miscellaneous utility methods for test cases.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.16)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -69,6 +74,12 @@ public final strictfp class TestUtilities extends Static {
     };
 
     /**
+     * The {@link TreeTableFormat} to use for unlocalized string representations.
+     * Created when first needed.
+     */
+    private static Format tableFormat;
+
+    /**
      * The thread group for every threads created for testing purpose.
      */
     public static final ThreadGroup THREADS = new ThreadGroup("SIS-Tests");
@@ -77,6 +88,17 @@ public final strictfp class TestUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {
+    }
+
+    /**
+     * Prints and clear the current content of {@link TestCase#out}, regardless of whether
+     * {@link TestCase#verbose} is {@code true} or {@code false}. This method should rarely
+     * be needed.
+     *
+     * @since 0.4
+     */
+    public static void forceFlushOutput() {
+        TestCase.flushOutput();
     }
 
     /**
@@ -117,8 +139,13 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Returns a new random number generator with a random seed. This method logs the seed value
-     * to the {@link TestCase#out} stream, in order to allow reproducing a test in case of failure.
+     * Returns a new random number generator with a random seed.
+     * If the test succeed, nothing else will happen. But if the test fails, then the seed value will
+     * be logged to the {@link TestCase#out} stream in order to allow the developer to reproduce the
+     * test failure.
+     *
+     * <p>This method shall be invoked only in the body of a test method - the random number generator
+     * is not valid anymore after the test finished.</p>
      *
      * <p>This method doesn't need to be used in every cases. For example test cases using
      * {@link Random#nextGaussian()} should create their own random numbers generator with
@@ -134,17 +161,38 @@ public final strictfp class TestUtilities extends Static {
      * the developer to reproduce the test with the exact same sequence of numbers.
      * Using this method, the seed can be retrieved in the messages sent to the output stream.</p>
      *
-     * @param  testMethod The name of the method which need a random number generator.
      * @return A new random number generator initialized with a random seed.
      */
-    public static Random createRandomNumberGenerator(final String testMethod) {
-        final long seed = Math.round(Math.random() * (1L << 48));
-        final PrintWriter out = TestCase.out;
-        out.print("Random number generator for ");
-        out.print(testMethod);
-        out.print(" created with seed ");
-        out.print(seed);
-        out.println('.');
+    public static Random createRandomNumberGenerator() {
+        long seed;
+        do seed = StrictMath.round(StrictMath.random() * (1L << 48));
+        while (seed == 0); // 0 is a sentinal value for "no generator".
+        TestCase.randomSeed = seed;
+        return new Random(seed);
+    }
+
+    /**
+     * Returns a new random number generator with the given seed. This method is used only for debugging a test failure.
+     * The seed given in argument is the value printed by the test runner. This argument shall be removed after the test
+     * has been fixed.
+     *
+     * <p>The work flow is as below:</p>
+     * <ul>
+     *   <li>Uses {@link #createRandomNumberGenerator()} (without argument} in tests.</li>
+     *   <li>If a test fail, find the seed value printed by the test runner, then insert that value in argument
+     *       to {@code createRandomNumberGenerator(…)}.</li>
+     *   <li>Debug the test.</li>
+     *   <li>Once the test has been fixed, remove the argument from the {@code createRandomNumberGenerator()} call.</li>
+     * </ul>
+     *
+     * @param  seed The random generator seed.
+     * @return A new random number generator initialized with the given seed.
+     *
+     * @since 0.5
+     */
+    @Debug
+    public static Random createRandomNumberGenerator(final long seed) {
+        TestCase.randomSeed = seed;
         return new Random(seed);
     }
 
@@ -197,6 +245,69 @@ public final strictfp class TestUtilities extends Static {
         }
         assertEquals("Parsed text not equal to the original value", value, parsed);
         return text;
+    }
+
+    /**
+     * Returns a unlocalized string representation of {@code NAME} and {@code VALUE} columns of the given tree table.
+     * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
+     * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
+     *
+     * @param  table The table for which to get a string representation.
+     * @return A unlocalized string representation of the given tree table.
+     */
+    public static String formatNameAndValue(final TreeTable table) {
+        synchronized (TestUtilities.class) {
+            if (tableFormat == null) {
+                final TreeTableFormat f = new TreeTableFormat(null, null);
+                f.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                tableFormat = f;
+            }
+            return tableFormat.format(table);
+        }
+    }
+
+    /**
+     * Returns the tree structure of the given string representation, without the localized text.
+     * For example given the following string:
+     *
+     * {@preformat text
+     *   Citation
+     *     ├─Title…………………………………………………… Some title
+     *     └─Cited responsible party
+     *         └─Individual name……………… Some person of contact
+     * }
+     *
+     * this method returns an array containing the following elements:
+     *
+     * {@preformat text
+     *   "",
+     *   "  ├─",
+     *   "  └─",
+     *   "      └─"
+     * }
+     *
+     * This method is used for comparing two tree having string representation in different locales.
+     * In such case, we can not compare the actual text content. The best we can do is to compare
+     * the tree structure.
+     *
+     * @param  tree The string representation of a tree.
+     * @return The structure of the given tree, without text.
+     */
+    public static CharSequence[] toTreeStructure(final CharSequence tree) {
+        final CharSequence[] lines = CharSequences.split(tree, '\n');
+        for (int i=0; i<lines.length; i++) {
+            final CharSequence line = lines[i];
+            final int length = line.length();
+            for (int j=0; j<length;) {
+                final int c = Character.codePointAt(line, j);
+                if (Character.isLetterOrDigit(c)) {
+                    lines[i] = line.subSequence(0, j);
+                    break;
+                }
+                j += Character.charCount(c);
+            }
+        }
+        return lines;
     }
 
     /**

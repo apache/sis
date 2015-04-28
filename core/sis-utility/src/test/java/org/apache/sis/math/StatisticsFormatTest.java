@@ -25,17 +25,17 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link StatisticsFormat}.
+ * Tests the {@link StatisticsFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final strictfp class StatisticsFormatTest extends TestCase {
     /**
      * Tests the formatting of {@code Statistics} without column headers.
-     * We instantiate the {@link StatisticsFormat} directly in order to fix the locale
+     * We instantiate the {@link StatisticsFormat} directly in order to fix the locale
      * to a hard-coded value. But except for the localization, the result should be
      * nearly identical to a call to the {@link Statistics#toString()} method.
      */

@@ -18,18 +18,19 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Deque;
-import java.util.Collections;
+import java.util.ServiceLoader;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.DelayedExecutor;
-import org.apache.sis.internal.util.DelayedRunnable;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
+import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -44,19 +45,29 @@ import org.apache.sis.internal.jaxb.AdapterReplacement;
  *     pool.recycle(marshaller);
  * }
  *
- * {@section Configuring (un)marshallers}
+ * <div class="section">Configuring (un)marshallers</div>
  * The (un)marshallers created by this class can optionally by configured with the SIS-specific
  * properties defined in the {@link XML} class, in addition to JAXB standard properties.
  *
+ * <div class="section">Thread safety</div>
+ * The same {@code MarshallerPool} instance can be safely used by many threads without synchronization
+ * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
+ * from multiple threads.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see XML
+ * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
  */
-@ThreadSafe
 public class MarshallerPool {
+    /**
+     * The indentation string, fixed to 2 spaces instead of 4 because ISO/OGC XML are very verbose.
+     */
+    private static final String INDENTATION = "  ";
+
     /**
      * Amount of nanoseconds to wait before to remove unused (un)marshallers.
      * This is a very approximative value: actual timeout will not be shorter,
@@ -68,12 +79,6 @@ public class MarshallerPool {
      * Kind of JAXB implementations.
      */
     private static final byte INTERNAL = 0, ENDORSED = 1, OTHER = 2;
-
-    /**
-     * The key to be used in the map given to the constructors for specifying the default namespace.
-     * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
-     */
-    public static final String DEFAULT_NAMESPACE_KEY = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * The JAXB context to use for creating marshaller and unmarshaller.
@@ -91,6 +96,23 @@ public class MarshallerPool {
      * The mapper between namespaces and prefix.
      */
     private final Object mapper;
+
+    /**
+     * The provider of {@code AdapterReplacement} instances.
+     * <strong>Every usage of this service loader must be synchronized.</strong>
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * Each {@code MarshallerPool} has its own service loader instance rather than using a system-wide instance
+     * because the {@link ClassLoader} used by the service loader is the <cite>context class loader</cite>,
+     * which depends on the thread that created the pool. So two pools in two different applications could have
+     * two different set of replacements.</div>
+     */
+    private final ServiceLoader<AdapterReplacement> replacements;
+
+    /**
+     * The {@link PooledTemplate} to use for initializing recycled (un)marshaller.
+     */
+    private final PooledTemplate template;
 
     /**
      * The pool of marshaller. This pool is initially empty and will be filled with elements as needed.
@@ -127,69 +149,41 @@ public class MarshallerPool {
     private final AtomicBoolean isRemovalScheduled;
 
     /**
-     * Creates a new factory for the given class to be bound, with a default empty namespace.
+     * Creates a new factory using the SIS default {@code JAXBContext} instance.
+     * The {@code properties} map is optional. If non-null, then the keys can be {@link XML} constants or the
+     * names of any other properties recognized by <em>both</em> {@code Marshaller} and {@code Unmarshaller}
+     * implementations.
      *
-     * @param  classesToBeBound The classes to be bound, for example {@code DefaultMetadata.class}.
-     * @throws JAXBException    If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Class<?>... classesToBeBound) throws JAXBException {
-        this(Collections.<String,String>emptyMap(), classesToBeBound);
-    }
-
-    /**
-     * Creates a new factory for the given class to be bound. The keys in the {@code properties} map
-     * shall be one or many of the constants defined in this class like {@link #DEFAULT_NAMESPACE_KEY}.
+     * <p><b>Tip:</b> if the properties for the {@code Marshaller} differ from the properties
+     * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
+     * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  properties       The set of properties to be given to the pool.
-     * @param  classesToBeBound The classes to be bound, for example {@code DefaultMetadata.class}.
-     * @throws JAXBException    If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Map<String,String> properties, final Class<?>... classesToBeBound) throws JAXBException {
-        this(properties, JAXBContext.newInstance(classesToBeBound));
-    }
-
-    /**
-     * Creates a new factory for the given packages, with a default empty namespace.
-     * The separator character for the packages is the colon. Example:
-     *
-     * {@preformat text
-     *     "org.apache.sis.metadata.iso:org.apache.sis.metadata.iso.citation"
-     * }
-     *
-     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
+     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
      * @throws JAXBException If the JAXB context can not be created.
      */
-    public MarshallerPool(final String packages) throws JAXBException {
-        this(Collections.<String,String>emptyMap(), packages);
+    public MarshallerPool(final Map<String,?> properties) throws JAXBException {
+        this(TypeRegistration.getSharedContext(), properties);
     }
 
     /**
-     * Creates a new factory for the given packages. The separator character for the packages is the
-     * colon. The keys in the {@code properties} map shall be one or many of the constants defined
-     * in this class like {@link #DEFAULT_NAMESPACE_KEY}.
+     * Creates a new factory using the given JAXB context.
+     * The {@code properties} map is optional. If non-null, then the keys can be {@link XML} constants or the
+     * names of any other properties recognized by <em>both</em> {@code Marshaller} and {@code Unmarshaller}
+     * implementations.
      *
-     * @param  properties    The set of properties to be given to the pool.
-     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
-     * @throws JAXBException If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Map<String,String> properties, final String packages) throws JAXBException {
-        this(properties, JAXBContext.newInstance(packages));
-    }
-
-    /**
-     * Creates a new factory for the given packages.
+     * <p><b>Tip:</b> if the properties for the {@code Marshaller} differ from the properties
+     * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
+     * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  properties    The set of properties to be given to the pool.
-     * @param  context       The JAXB context.
-     * @throws JAXBException If the OGC namespace prefix mapper can not be created.
+     * @param  context The JAXB context.
+     * @param  properties The properties to be given to the (un)marshaller, or {@code null} if none.
+     * @throws JAXBException If the marshaller pool can not be created.
      */
     @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
-    private MarshallerPool(final Map<String,String> properties, final JAXBContext context) throws JAXBException {
+    public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
+        ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        String rootNamespace = properties.get(DEFAULT_NAMESPACE_KEY);
-        if (rootNamespace == null) {
-            rootNamespace = "";
-        }
+        replacements = ServiceLoader.load(AdapterReplacement.class);
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
          * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
@@ -209,6 +203,12 @@ public class MarshallerPool {
             classname = null;
             implementation = OTHER;
         }
+        /*
+         * Prepares a copy of the property map (if any), then removes the
+         * properties which are handled especially by this constructor.
+         */
+        template = new PooledTemplate(properties, implementation == INTERNAL);
+        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
          * we just detected. Note that we may get NoClassDefFoundError instead than the
@@ -232,14 +232,14 @@ public class MarshallerPool {
      * This method:
      *
      * <ul>
-     *   <li>{@link Pooled#reset() Resets} the (un)marshaller to its initial state.</li>
+     *   <li>{@link Pooled#reset(Pooled) Resets} the (un)marshaller to its initial state.</li>
      *   <li>{@linkplain Deque#push(Object) Pushes} the (un)marshaller in the given queue.</li>
      *   <li>Registers a delayed task for disposing expired (un)marshallers after the timeout.</li>
      * </ul>
      */
     private <T> void recycle(final Deque<T> queue, final T marshaller) {
         try {
-            ((Pooled) marshaller).reset();
+            ((Pooled) marshaller).reset(template);
         } catch (JAXBException exception) {
             // Not expected to happen because we are supposed
             // to reset the properties to their initial values.
@@ -337,7 +337,7 @@ public class MarshallerPool {
     public Marshaller acquireMarshaller() throws JAXBException {
         Marshaller marshaller = marshallers.poll();
         if (marshaller == null) {
-            marshaller = new PooledMarshaller(createMarshaller(), implementation == INTERNAL);
+            marshaller = new PooledMarshaller(createMarshaller(), template);
         }
         return marshaller;
     }
@@ -363,18 +363,28 @@ public class MarshallerPool {
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
-            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), implementation == INTERNAL);
+            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), template);
         }
         return unmarshaller;
     }
 
     /**
      * Declares a marshaller as available for reuse.
-     * The caller should not use anymore the given marshaller after this method call.
+     * The caller should not use anymore the given marshaller after this method call,
+     * since the marshaller may be re-used by another thread at any time after recycle.
      *
-     * <p>Do not invoke this method if the marshaller threw an exception, since the
-     * marshaller may be in an invalid state. In particular, this method should not
-     * be invoked in a {@code finally} block.</p>
+     * <div class="section">Cautions</div>
+     * <ul>
+     *   <li>Do not invoke this method if the marshaller threw an exception, since the
+     *       marshaller may be in an invalid state. In particular, this method should not
+     *       be invoked in a {@code finally} block.</li>
+     *   <li>Do not invoke this method twice for the same marshaller, unless the marshaller
+     *       has been obtained by a new call to {@link #acquireMarshaller()}.
+     *       In case of doubt, it is better to not recycle the marshaller at all.</li>
+     * </ul>
+     *
+     * Note that this method does not close any output stream.
+     * Closing the marshaller stream is caller's or JAXB responsibility.
      *
      * @param marshaller The marshaller to return to the pool.
      */
@@ -384,11 +394,21 @@ public class MarshallerPool {
 
     /**
      * Declares a unmarshaller as available for reuse.
-     * The caller should not use anymore the given unmarshaller after this method call.
+     * The caller should not use anymore the given unmarshaller after this method call,
+     * since the unmarshaller may be re-used by another thread at any time after recycle.
      *
-     * <p>Do not invoke this method if the marshaller threw an exception, since the
-     * marshaller may be in an invalid state. In particular, this method should not
-     * be invoked in a {@code finally} block.</p>
+     * <div class="section">Cautions</div>
+     * <ul>
+     *   <li>Do not invoke this method if the unmarshaller threw an exception, since the
+     *       unmarshaller may be in an invalid state. In particular, this method should not
+     *       be invoked in a {@code finally} block.</li>
+     *   <li>Do not invoke this method twice for the same unmarshaller, unless the unmarshaller
+     *       has been obtained by a new call to {@link #acquireUnmarshaller()}.
+     *       In case of doubt, it is better to not recycle the unmarshaller at all.</li>
+     * </ul>
+     *
+     * Note that this method does not close any input stream.
+     * Closing the unmarshaller stream is caller's or JAXB responsibility.
      *
      * @param unmarshaller The unmarshaller to return to the pool.
      */
@@ -397,7 +417,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB marshaller.
+     * Creates an configures a new JAXB marshaller.
      * This method is invoked only when no existing marshaller is available in the pool.
      * Subclasses can override this method if they need to change the marshaller configuration.
      *
@@ -411,16 +431,18 @@ public class MarshallerPool {
         switch (implementation) {
             case INTERNAL: {
                 marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", mapper);
+                marshaller.setProperty("com.sun.xml.internal.bind.indentString", INDENTATION);
                 break;
             }
             case ENDORSED: {
                 marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
+                marshaller.setProperty("com.sun.xml.bind.indentString", INDENTATION);
                 break;
             }
             // Do nothing for the OTHER case.
         }
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(marshaller);
             }
         }
@@ -428,7 +450,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB unmarshaller.
+     * Creates an configures a new JAXB unmarshaller.
      * This method is invoked only when no existing unmarshaller is available in the pool.
      * Subclasses can override this method if they need to change the unmarshaller configuration.
      *
@@ -437,8 +459,8 @@ public class MarshallerPool {
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(unmarshaller);
             }
         }

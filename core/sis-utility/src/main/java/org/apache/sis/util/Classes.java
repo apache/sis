@@ -50,15 +50,16 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public final class Classes extends Static {
     /**
      * An empty array of classes.
      */
-    private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static final Class<Object>[] EMPTY_ARRAY = new Class[0];
 
     /**
      * Methods to be rejected by {@link #isPossibleGetter(Method)}. They are mostly methods inherited
@@ -80,7 +81,7 @@ public final class Classes extends Static {
 
     /**
      * Changes the array dimension by the given amount. The given class can be a primitive type,
-     * a Java object, or an array of the above. If the given {@code dimension} is positive, then
+     * a Java object, or an array of the above. If the given {@code dimension} is positive, then
      * the array dimension will be increased by that amount. For example a change of dimension 1
      * will change a {@code int} class into {@code int[]}, and a {@code String[]} class into
      * {@code String[][]}. A change of dimension 2 is like applying a change of dimension 1 two
@@ -210,6 +211,11 @@ public final class Classes extends Static {
                  * At this point we are not going to continue the loop anymore.
                  * Check if we have an array, then check the (component) class.
                  */
+                if (type instanceof ParameterizedType) {
+                    // Example: replace ParameterDescriptor<?> by ParameterDescriptor
+                    // before we test if (type instanceof Class<?>).
+                    type = ((ParameterizedType) type).getRawType();
+                }
                 int dimension = 0;
                 while (type instanceof GenericArrayType) {
                     type = ((GenericArrayType) type).getGenericComponentType();
@@ -293,7 +299,7 @@ public final class Classes extends Static {
      * <ul>
      *   <li>Consistency with other methods ({@link #getLeafInterfaces(Class, Class)},
      *       {@link Class#getInterfaces()}).</li>
-     *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
+     *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
      *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
      *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
@@ -321,8 +327,7 @@ public final class Classes extends Static {
      */
     private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
         final Class<?>[] interfaces = type.getInterfaces();
-        for (int i=0; i<interfaces.length; i++) {
-            final Class<?> candidate = interfaces[i];
+        for (final Class<?> candidate : interfaces) {
             if (addTo == null) {
                 addTo = new LinkedHashSet<Class<?>>(hashMapCapacity(interfaces.length));
             }
@@ -340,7 +345,7 @@ public final class Classes extends Static {
      * implements both the {@link Set} and {@link Collection} interfaces, then the returned
      * array contains only the {@code Set} interface.
      *
-     * {@section Example}
+     * <div class="section">Example</div>
      * {@code getLeafInterfaces(ArrayList.class, Collection.class)} returns an array of length 1
      * containing {@code List.class}.
      *
@@ -569,6 +574,7 @@ cmp:    for (final Class<?> c : c1) {
      * <p>The following table compares the various kind of names for some examples:</p>
      *
      * <table class="sis">
+     *   <caption>Class name comparisons</caption>
      *   <tr>
      *     <th>Class</th>
      *     <th>{@code getName()}</th>
@@ -695,7 +701,6 @@ cmp:    for (final Class<?> c : c1) {
      *       {@link Object#hashCode() hashCode}, {@link Object#toString() toString} or
      *       {@link org.opengis.referencing.IdentifiedObject#toWKT() toWKT}.</li>
      *   <li>The method is not {@linkplain Method#isSynthetic() synthetic}.</li>
-     *   <li>The method is not {@linkplain Deprecated deprecated}.</li>
      * </ul>
      *
      * <p>Those conditions may be updated in any future SIS version.</p>
@@ -707,7 +712,6 @@ cmp:    for (final Class<?> c : c1) {
         return method.getReturnType() != Void.TYPE &&
                method.getParameterTypes().length == 0 &&
               !method.isSynthetic() &&
-              !method.isAnnotationPresent(Deprecated.class) &&
               !ArraysExt.contains(EXCLUDES, method.getName());
     }
 }

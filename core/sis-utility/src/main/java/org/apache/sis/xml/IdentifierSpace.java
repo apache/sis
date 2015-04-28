@@ -45,7 +45,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @param <T> The type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -99,7 +99,7 @@ public interface IdentifierSpace<T> extends Citation {
     /**
      * Any XML attributes defined by OGC in the
      * <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">xlink</a> schema.
-     * Note that the above {@link #HREF} identifier space is a special case of this
+     * Note that the above {@link #HREF} identifier space is a special case of this
      * {@code xlink} identifier space.
      *
      * @see XLink

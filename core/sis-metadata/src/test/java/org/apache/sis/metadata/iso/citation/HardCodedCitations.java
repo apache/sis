@@ -16,15 +16,16 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Collection;
-import org.opengis.metadata.Identifier;
+import java.net.URI;
+import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
-import static org.opengis.test.Assert.*;
 import static java.util.Collections.singleton;
 
 
@@ -36,8 +37,8 @@ import static java.util.Collections.singleton;
  * above-cited public constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {
@@ -50,9 +51,9 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation OGC;
     static {
         final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.OGC)));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("OGC"));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
         c.freeze();
         OGC = c;
     }
@@ -67,7 +68,7 @@ public final strictfp class HardCodedCitations extends Static {
         final DefaultCitation c = new DefaultCitation("International Organization for Standardization");
         c.setAlternateTitles(singleton(new SimpleInternationalString("ISO")));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("ISO"));
+        c.setIdentifiers(singleton(new DefaultIdentifier("ISO")));
         c.freeze();
         ISO = c;
     }
@@ -84,17 +85,58 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
+     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas Producers</a> organization.
+     * This organization is responsible for maintainance of {@link #EPSG} database.
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "IOGP"
+     * (according ISO 19115, alternate titles often contain abbreviations).
+     */
+    public static final DefaultCitation IOGP;
+    static {
+        final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
+        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.IOGP)));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.IOGP)));
+        c.freeze();
+        IOGP = c;
+    }
+
+    /**
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is
-     * "EPSG" (according ISO 19115, alternate titles often contain abbreviations). In
-     * addition, this citation contains the "EPSG" {@linkplain Citation#getIdentifiers identifier}.
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "EPSG"
+     * (according ISO 19115, alternate titles often contain abbreviations). In addition,
+     * this citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
+     *
+     * <p>String representation:</p>
+     *
+     * {@preformat text
+     *   Citation
+     *     ├─Title………………………………………………………… European Petroleum Survey Group
+     *     ├─Alternate title……………………………… EPSG
+     *     ├─Identifier
+     *     │   └─Code………………………………………………… EPSG
+     *     ├─Cited responsible party
+     *     │   ├─Party
+     *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
+     *     │   │   └─Contact info
+     *     │   │       └─Online resource
+     *     │   │           ├─Linkage………… http://www.epsg.org
+     *     │   │           └─Function……… Information
+     *     │   └─Role………………………………………………… Principal investigator
+     *     └─Presentation form………………………… Table digital
+     * }
      */
     public static final DefaultCitation EPSG;
     static {
+        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("http://www.epsg.org"));
+        r.setFunction(OnLineFunction.INFORMATION);
+
+        final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
+        p.setParties(singleton(new DefaultOrganisation(IOGP.getTitle(), null, null, new DefaultContact(r))));
+
         final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
-        c.getIdentifiers().add(new DefaultIdentifier("EPSG"));
+        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.EPSG)));
+        c.setCitedResponsibleParties(singleton(p));
         c.freeze();
         EPSG = c;
     }
@@ -111,27 +153,18 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * Do not allow instantiation of this class.
+     * The <a href="http://sis.apache.org">Apache SIS</a> project.
      */
-    private HardCodedCitations() {
+    public static final DefaultCitation SIS;
+    static {
+        final DefaultCitation c = new DefaultCitation(Constants.SIS);
+        c.freeze();
+        SIS = c;
     }
 
     /**
-     * Asserts that the given {@linkplain Identifier#getCode() identifier code}
-     * is found in the collection of identifiers.
-     *
-     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
-     * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
+     * Do not allow instantiation of this class.
      */
-    public static void assertIdentifiersFor(final String expected, final Collection<?> identifiers) {
-        assertNotNull("identifiers", identifiers);
-        int count = 0;
-        for (final Object id : identifiers) {
-            assertInstanceOf("identifier", Identifier.class, id);
-            if (((Identifier) id).getCode().equals(expected)) {
-                count++;
-            }
-        }
-        assertEquals("Unexpected amount of identifiers.", 1, count);
+    private HardCodedCitations() {
     }
 }

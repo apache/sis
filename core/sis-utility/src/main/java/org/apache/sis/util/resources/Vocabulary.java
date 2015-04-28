@@ -19,6 +19,7 @@ package org.apache.sis.util.resources;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import javax.annotation.Generated;
 import org.opengis.util.InternationalString;
 
 
@@ -26,8 +27,8 @@ import org.opengis.util.InternationalString;
  * Locale-dependent resources for single words or short sentences.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Vocabulary extends IndexedResourceBundle {
@@ -38,10 +39,10 @@ public final class Vocabulary extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.2)
-     * @version 0.3
+     * @since   0.3
      * @module
      */
+    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -55,229 +56,429 @@ public final class Vocabulary extends IndexedResourceBundle {
         }
 
         /**
+         * Aliases
+         */
+        public static final short Aliases = 74;
+
+        /**
          * Angle
          */
-        public static final int Angle = 9;
+        public static final short Angle = 0;
 
         /**
          * Degrees
          */
-        public static final int AngularDegrees = 10;
+        public static final short AngularDegrees = 1;
 
         /**
          * Minutes
          */
-        public static final int AngularMinutes = 11;
+        public static final short AngularMinutes = 2;
 
         /**
          * Seconds
          */
-        public static final int AngularSeconds = 12;
+        public static final short AngularSeconds = 3;
+
+        /**
+         * Attributes
+         */
+        public static final short Attributes = 4;
+
+        /**
+         * Barometric altitude
+         */
+        public static final short BarometricAltitude = 5;
+
+        /**
+         * Cardinality
+         */
+        public static final short Cardinality = 76;
 
         /**
          * Character encoding
          */
-        public static final int CharacterEncoding = 17;
+        public static final short CharacterEncoding = 6;
 
         /**
          * Classpath
          */
-        public static final int Classpath = 29;
+        public static final short Classpath = 7;
 
         /**
          * {0} code
          */
-        public static final int Code_1 = 21;
+        public static final short Code_1 = 8;
+
+        /**
+         * Commands
+         */
+        public static final short Commands = 9;
+
+        /**
+         * Constant pressure surface
+         */
+        public static final short ConstantPressureSurface = 19;
+
+        /**
+         * Correlation
+         */
+        public static final short Correlation = 83;
 
         /**
          * Current date and time
          */
-        public static final int CurrentDateTime = 25;
+        public static final short CurrentDateTime = 10;
 
         /**
          * Current directory
          */
-        public static final int CurrentDirectory = 33;
+        public static final short CurrentDirectory = 11;
+
+        /**
+         * Cycle omitted
+         */
+        public static final short CycleOmitted = 12;
 
         /**
          * Daylight time
          */
-        public static final int DaylightTime = 24;
+        public static final short DaylightTime = 13;
+
+        /**
+         * Default value
+         */
+        public static final short DefaultValue = 71;
+
+        /**
+         * Description
+         */
+        public static final short Description = 75;
 
         /**
          * Destination
          */
-        public static final int Destination = 38;
+        public static final short Destination = 14;
+
+        /**
+         * Dimensions
+         */
+        public static final short Dimensions = 15;
 
         /**
          * Directory
          */
-        public static final int Directory = 36;
+        public static final short Directory = 16;
+
+        /**
+         * ″
+         */
+        public static final short DittoMark = 82;
+
+        /**
+         * Dublin Julian
+         */
+        public static final short DublinJulian = 17;
+
+        /**
+         * Ellipsoid
+         */
+        public static final short Ellipsoid = 70;
+
+        /**
+         * Ellipsoidal height
+         */
+        public static final short EllipsoidalHeight = 18;
+
+        /**
+         * Height
+         */
+        public static final short Height = 69;
 
         /**
          * Identifier
          */
-        public static final int Identifier = 42;
+        public static final short Identifier = 20;
+
+        /**
+         * Implementation
+         */
+        public static final short Implementation = 21;
 
         /**
          * Index
          */
-        public static final int Index = 44;
+        public static final short Index = 22;
 
         /**
          * Java extensions
          */
-        public static final int JavaExtensions = 26;
+        public static final short JavaExtensions = 23;
 
         /**
          * Java home directory
          */
-        public static final int JavaHome = 30;
+        public static final short JavaHome = 24;
+
+        /**
+         * Julian
+         */
+        public static final short Julian = 25;
 
         /**
          * Latitude
          */
-        public static final int Latitude = 40;
+        public static final short Latitude = 26;
 
         /**
          * Libraries
          */
-        public static final int Libraries = 35;
+        public static final short Libraries = 27;
 
         /**
          * Local configuration
          */
-        public static final int LocalConfiguration = 14;
+        public static final short LocalConfiguration = 28;
 
         /**
          * Locale
          */
-        public static final int Locale = 18;
+        public static final short Locale = 29;
 
         /**
          * Localization
          */
-        public static final int Localization = 19;
+        public static final short Localization = 30;
+
+        /**
+         * Logging
+         */
+        public static final short Logging = 31;
 
         /**
          * Longitude
          */
-        public static final int Longitude = 41;
+        public static final short Longitude = 32;
+
+        /**
+         * Mandatory
+         */
+        public static final short Mandatory = 77;
 
         /**
          * Maximum value
          */
-        public static final int MaximumValue = 5;
+        public static final short MaximumValue = 33;
 
         /**
          * Mean value
          */
-        public static final int MeanValue = 6;
+        public static final short MeanValue = 34;
 
         /**
          * Minimum value
          */
-        public static final int MinimumValue = 4;
+        public static final short MinimumValue = 35;
+
+        /**
+         * Modified Julian
+         */
+        public static final short ModifiedJulian = 36;
 
         /**
          * Name
          */
-        public static final int Name = 0;
+        public static final short Name = 37;
 
         /**
          * Number of ‘NaN’
          */
-        public static final int NumberOfNaN = 3;
+        public static final short NumberOfNaN = 38;
 
         /**
          * Number of values
          */
-        public static final int NumberOfValues = 2;
+        public static final short NumberOfValues = 39;
+
+        /**
+         * Obligation
+         */
+        public static final short Obligation = 78;
 
         /**
          * {0} ({1} of {2})
          */
-        public static final int Of_3 = 43;
+        public static final short Of_3 = 40;
 
         /**
          * Offset
          */
-        public static final int Offset = 22;
+        public static final short Offset = 41;
 
         /**
          * Operating system
          */
-        public static final int OperatingSystem = 16;
+        public static final short OperatingSystem = 42;
+
+        /**
+         * Optional
+         */
+        public static final short Optional = 79;
+
+        /**
+         * Options
+         */
+        public static final short Options = 43;
+
+        /**
+         * Other surface
+         */
+        public static final short OtherSurface = 44;
 
         /**
          * Others
          */
-        public static final int Others = 34;
+        public static final short Others = 45;
 
         /**
          * Paths
          */
-        public static final int Paths = 27;
+        public static final short Paths = 46;
 
         /**
          * Root
          */
-        public static final int Root = 28;
+        public static final short Root = 47;
 
         /**
          * Root Mean Square
          */
-        public static final int RootMeanSquare = 7;
+        public static final short RootMeanSquare = 48;
 
         /**
          * Scale
          */
-        public static final int Scale = 23;
+        public static final short Scale = 49;
 
         /**
          * Source
          */
-        public static final int Source = 39;
+        public static final short Source = 50;
 
         /**
          * Standard deviation
          */
-        public static final int StandardDeviation = 8;
+        public static final short StandardDeviation = 51;
+
+        /**
+         * Superseded by {0}.
+         */
+        public static final short SupersededBy_1 = 84;
+
+        /**
+         * Temporal
+         */
+        public static final short Temporal = 66;
 
         /**
          * Temporary files
          */
-        public static final int TemporaryFiles = 31;
+        public static final short TemporaryFiles = 52;
+
+        /**
+         * Time
+         */
+        public static final short Time = 67;
+
+        /**
+         * {0} time
+         */
+        public static final short Time_1 = 53;
 
         /**
          * Timezone
          */
-        public static final int Timezone = 20;
+        public static final short Timezone = 54;
+
+        /**
+         * Transformation
+         */
+        public static final short Transformation = 80;
+
+        /**
+         * Transformation accuracy
+         */
+        public static final short TransformationAccuracy = 81;
+
+        /**
+         * Truncated Julian
+         */
+        public static final short TruncatedJulian = 55;
 
         /**
          * Type
          */
-        public static final int Type = 1;
+        public static final short Type = 56;
+
+        /**
+         * Unavailable content.
+         */
+        public static final short UnavailableContent = 57;
+
+        /**
+         * Units
+         */
+        public static final short Units = 72;
+
+        /**
+         * Unnamed
+         */
+        public static final short Unnamed = 65;
 
         /**
          * Untitled
          */
-        public static final int Untitled = 37;
+        public static final short Untitled = 58;
 
         /**
          * User home directory
          */
-        public static final int UserHome = 32;
+        public static final short UserHome = 59;
 
         /**
          * Value
          */
-        public static final int Value = 13;
+        public static final short Value = 60;
+
+        /**
+         * Value domain
+         */
+        public static final short ValueDomain = 73;
+
+        /**
+         * Variables
+         */
+        public static final short Variables = 61;
+
+        /**
+         * {0} version {1}
+         */
+        public static final short Version_2 = 62;
 
         /**
          * Versions
          */
-        public static final int Versions = 15;
+        public static final short Versions = 63;
+
+        /**
+         * Vertical
+         */
+        public static final short Vertical = 68;
+
+        /**
+         * World
+         */
+        public static final short World = 64;
     }
 
     /**
@@ -316,7 +517,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
-    public static String format(final int key) throws MissingResourceException {
+    public static String format(final short key) throws MissingResourceException {
         return getResources(null).getString(key);
     }
 
@@ -326,8 +527,8 @@ public final class Vocabulary extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = -5423999784169092823L;
 
-        International(int key)                   {super(key);}
-        International(int key, Object args)      {super(key, args);}
+        International(short key)                 {super(key);}
+        International(short key, Object args)    {super(key, args);}
         @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
@@ -342,7 +543,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @param  key The key for the desired string.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key) {
+    public static InternationalString formatInternational(final short key) {
         return new International(key);
     }
 
@@ -351,15 +552,16 @@ public final class Vocabulary extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * {@note This method is redundant with the one expecting <code>Object...</code>, but avoid
-     *        the creation of a temporary array. There is no risk of confusion since the two
-     *        methods delegate their work to the same <code>format</code> method anyway.}
+     * <div class="note"><b>API note:</b>
+     * This method is redundant with the one expecting {@code Object...}, but avoid the creation
+     * of a temporary array. There is no risk of confusion since the two methods delegate their
+     * work to the same {@code format} method anyway.</div>
      *
      * @param  key The key for the desired string.
      * @param  arg Values to substitute to "{0}".
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object arg) {
+    public static InternationalString formatInternational(final short key, final Object arg) {
         return new International(key, arg);
     }
 
@@ -372,7 +574,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
      * @return An international string for the given key.
      */
-    public static InternationalString formatInternational(final int key, final Object... args) {
+    public static InternationalString formatInternational(final short key, final Object... args) {
         return new International(key, args);
     }
 }

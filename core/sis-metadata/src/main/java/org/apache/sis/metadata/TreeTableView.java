@@ -17,6 +17,8 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.text.Format;
 import java.io.Serializable;
 import java.io.IOException;
@@ -26,11 +28,13 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.system.LocalizedStaticObject;
+import org.apache.sis.internal.system.Semaphores;
 
 
 /**
  * A tree table view over a metadata object.
- * The tree table is made of three columns:
+ * The tree table is made of the following columns:
  *
  * <ul>
  *   <li>{@link TableColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>
@@ -42,7 +46,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 final class TreeTableView implements TreeTable, Serializable {
@@ -64,8 +68,10 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * The {@link TreeTableFormat} to use for the {@link #toString()} method implementation.
-     * Created when first needed.
+     * Created when first needed. Would need to be reset to {@code null} on locale or timezone
+     * changes, but we do not yet have any listener for such information.
      */
+    @LocalizedStaticObject
     private static Format format;
 
     /**
@@ -127,16 +133,34 @@ final class TreeTableView implements TreeTable, Serializable {
     public String toString() {
         synchronized (TreeTableView.class) {
             if (format == null) {
-                final TreeTableFormat f = new TreeTableFormat(null, null);
+                final TreeTableFormat f = new TreeTableFormat(
+                        Locale.getDefault(), TimeZone.getDefault());
                 f.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 format = f;
             }
-            return format.format(this);
+            /*
+             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * (a consequence of lazy instantiation). The intend is to avoid creation of unnecessary objects
+             * for all unused properties. Users should not see behavioral difference, except if they override
+             * some getters with an implementation invoking other getters. However in such cases, users would
+             * have been exposed to null values at XML marshalling time anyway.
+             */
+            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            try {
+                return format.format(this);
+            } finally {
+                if (!allowNull) {
+                    Semaphores.clear(Semaphores.NULL_COLLECTION);
+                }
+            }
         }
     }
 
     /**
      * Invoked on serialization. Write the metadata object instead of the {@linkplain #root} node.
+     *
+     * @param  out The output stream where to serialize this object.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -145,6 +169,10 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * Invoked on deserialization. Recreate the {@linkplain #root} node from the metadata object.
+     *
+     * @param  in The input stream from which to deserialize an object.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

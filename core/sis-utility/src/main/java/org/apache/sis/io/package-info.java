@@ -24,23 +24,24 @@
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *
- * {@note One of the formatter classes defined in this package is a <code>java.text.Format</code>
- * subclass. While traditionally though as part of <code>text</code> packages, that {@code Format}
- * is defined in this I/O package because it can format to an <code>Appendable</code> and for
- * consistency with the <code>org.apache.sis.io.wkt</code> package.}
+ * <div class="note"><b>Note:</b>
+ * One of the formatter classes defined in this package is a {@link java.text.Format java.text.Format} subclass.
+ * While traditionally though as part of {@code text} packages, that {@code Format} is defined in this I/O package
+ * because it can format to an {@link java.lang.Appendable} and for consistency with the {@link org.apache.sis.io.wkt}
+ * package.</div>
  *
- * {@section Unicode characters}
+ * <div class="section">Unicode characters</div>
  * Some formatters in this package make extensive use of Unicode characters. This may produce
  * unexpected results in a Windows console, unless the underlying output stream uses the correct
  * encoding (e.g. {@code new OutputStreamWriter(System.out, "Cp437")}). To display the appropriate
  * code page for a Windows console, type {@code chcp} on the command line.
  *
- * {@section Supplementary Unicode characters}
+ * <div class="section">Supplementary Unicode characters</div>
  * This package can handle the {@linkplain java.lang.Character#isSupplementaryCodePoint(int)
  * Unicode supplementary characters}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

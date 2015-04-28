@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.EnumSet;
 import java.util.Set;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -33,12 +32,15 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * <p>The main purpose of this class is to support the conversion of
  * {@link org.opengis.util.InternationalString}.</p>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable, and thus inherently thread-safe,
+ * if the converter given to the constructor is also immutable.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * For cross-version compatibility.
@@ -65,17 +67,17 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
      * Converts an object to an object of the target type.
      */
     @Override
-    public T convert(final CharSequence source) throws UnconvertibleObjectException {
+    public T apply(final CharSequence source) throws UnconvertibleObjectException {
         if (targetClass.isInstance(source)) {
             return targetClass.cast(source);
         }
-        return next.convert(source != null ? source.toString() : null);
+        return next.apply(source != null ? source.toString() : null);
     }
 
     /**
      * Returns the properties of the converter given at construction time minus
      * {@link FunctionProperty#INJECTIVE}, because we don't know how many source
-     * {@code CharSequence}s can produce the same {@code String}.
+     * {@code CharSequence}s can produce the same {@code String}.
      */
     @Override
     public Set<FunctionProperty> properties() {

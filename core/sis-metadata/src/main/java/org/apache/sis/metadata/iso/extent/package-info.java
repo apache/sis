@@ -16,18 +16,19 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent Extent} implementation.
+ * Information about spatial, vertical, and temporal extent.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.extent OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * <div class="section">Overview</div>
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent                Extent}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent     Geographic extent} «abstract»<br>
@@ -37,7 +38,7 @@
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent        Vertical extent}<br>
  * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.extent.DefaultTemporalExtent        Temporal extent}<br>
  * {@code      └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent Spatial temporal extent}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent                Extent}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent     Geographic extent}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent        Vertical extent}<br>
@@ -51,45 +52,73 @@
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
- *   <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
- *       Extents.getGeographicBoundingBox(Extent)}
+ *   <li>{@link org.apache.sis.metadata.iso.extent.Extents}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
+ *       getGeographicBoundingBox(Extent)}
  *       for extracting a global geographic bounding box.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(double, double, double, double)
- *       DefaultGeographicBoundingBox.setBounds(double, double, double, double)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#intersection
+ *       intersection(GeographicBoundingBox, GeographicBoundingBox)}
+ *       for computing the intersection of two geographic bounding boxes.</li>
+ *
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#area
+ *       area(GeographicBoundingBox)}
+ *       for estimating the area of a geographic bounding box.</li>
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(double, double, double, double)
+ *       setBounds(double, double, double, double)}
  *       for setting the extent from (λ,φ) values.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.geometry.Envelope)
- *       DefaultGeographicBoundingBox.setBounds(Envelope)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.geometry.Envelope)
+ *       setBounds(Envelope)}
  *       for setting the extent from the given envelope.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
- *       DefaultGeographicBoundingBox.setBounds(GeographicBoundingBox)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
+ *       setBounds(GeographicBoundingBox)}
  *       for setting the extent from an other bounding box.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
- *       DefaultGeographicBoundingBox.add(GeographicBoundingBox)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
+ *       add(GeographicBoundingBox)}
  *       for expanding this extent to include an other bounding box.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
- *       DefaultGeographicBoundingBox.intersect(GeographicBoundingBox)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
+ *       intersect(GeographicBoundingBox)}
  *       for the intersection between the two bounding boxes.</li>
- *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent#setBounds
- *       DefaultVerticalExtent.setBounds(Envelope)}
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent#setBounds
+ *       setBounds(Envelope)}
  *       for setting the vertical element from the given envelope.</li>
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(java.util.Date, java.util.Date)
+ *       setBounds(Date, Date)}
+ *       for setting the temporal element from the start time and end time.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds
- *       DefaultTemporalExtent.setBounds(Envelope)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(org.opengis.geometry.Envelope)
+ *       setBounds(Envelope)}
  *       for setting the temporal element from the given envelope.</li>
- *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent#addElements
- *       DefaultExtent.addElements(Extent)}
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent#addElements
+ *       addElements(Extent)}
  *       for adding extent elements inferred from the given envelope.</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
- * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * <div class="section">Null values, nil objects and collections</div>
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -106,8 +135,8 @@
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
@@ -123,8 +152,8 @@
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
-//  @XmlJavaTypeAdapter(SC_VerticalCRS.class), // TODO
-//  @XmlJavaTypeAdapter(TM_Primitive.class),   // TODO
+    @XmlJavaTypeAdapter(SC_VerticalCRS.class),
+    @XmlJavaTypeAdapter(TM_Primitive.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
@@ -143,6 +172,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.gml.*;
 import org.apache.sis.internal.jaxb.metadata.*;
-// TODO import org.apache.sis.internal.jaxb.referencing.*;
 import org.apache.sis.internal.jaxb.geometry.GM_Object;

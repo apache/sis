@@ -17,8 +17,18 @@
 package org.apache.sis.internal.util;
 
 import java.util.*;
+import java.lang.reflect.Array;
+import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.util.resources.Errors;
+import org.opengis.parameter.InvalidParameterCardinalityException;
+
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.Function;
 
 
 /**
@@ -27,13 +37,12 @@ import org.apache.sis.util.collection.CodeListSet;
  * Some worthy methods are:
  *
  * <ul>
- *   <li>{@link #toCollection(Object) toCollection} for wrapping or copying arbitrary objects to
- *       list or collection.</li>
- *   <li>{@link #copy(Collection, boolean) copy} method for taking a snapshot of an arbitrary
- *       implementation into an unsynchronized, modifiable, in-memory object.</li>
- *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
- *       compact than the standard {@link Collections#unmodifiableSet(Set)} equivalent
- *       when the unmodifiable collection is not required to be a view over the original collection.</li>
+ *   <li>{@link #toCollection(Object)} for wrapping or copying arbitrary objects to list or collection.</li>
+ *   <li>{@link #modifiableCopy(Collection)} method for taking a snapshot of an arbitrary implementation
+ *       into an unsynchronized, modifiable, in-memory object.</li>
+ *   <li>{@link #unmodifiableOrCopy(Set)} methods, which may be slightly more compact than the standard
+ *       {@link Collections#unmodifiableSet(Set)} equivalent when the unmodifiable collection is not required
+ *       to be a view over the original collection.</li>
  * </ul>
  *
  * This class is not in public API because some functionality provided there are not really the
@@ -41,8 +50,8 @@ import org.apache.sis.util.collection.CodeListSet;
  * bit tedious to explain, which is an other indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -50,6 +59,24 @@ public final class CollectionsExt extends Static {
      * Do not allow instantiation of this class.
      */
     private CollectionsExt() {
+    }
+
+    /**
+     * Returns the first element of the given iterable, or {@code null} if none.
+     * This method is null-safe. Note that the first element may be null.
+     *
+     * @param  <T> The type of elements contained in the iterable.
+     * @param  collection The iterable from which to get the first element, or {@code null}.
+     * @return The first element, or {@code null} if the given iterable is null or empty.
+     */
+    public static <T> T first(final Iterable<T> collection) {
+        if (collection != null) {
+            final Iterator<T> it = collection.iterator();
+            if (it != null && it.hasNext()) { // This check for null is paranoiac.
+                return it.next();
+            }
+        }
+        return null;
     }
 
     /**
@@ -69,8 +96,9 @@ public final class CollectionsExt extends Static {
     /**
      * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
      *
-     * {@note This method exists only on the JDK6 and JDK7 branches. This method will
-     *        be removed from the JDK8 branch, since it has been added to the JDK.}
+     * <div class="note"><b>Note:</b>
+     * This method exists only on the JDK6 and JDK7 branches. This method will
+     * be removed from the JDK8 branch, since it has been added to the JDK.</div>
      *
      * @param <E> The type of elements in the empty collection.
      * @return An empty collection.
@@ -84,25 +112,180 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the given value as a singleton if non-null, or returns an empty set otherwise.
+     *
+     * @param  <E> The element type.
+     * @param  element The element to returns in a collection if non-null.
+     * @return A collection containing the given element if non-null, or an empty collection otherwise.
+     */
+    public static <E> Set<E> singletonOrEmpty(final E element) {
+        return (element != null) ? Collections.singleton(element) : Collections.<E>emptySet();
+    }
+
+    /**
+     * Returns the given array if non-empty, or {@code null} if the given array is null or empty.
+     * This method is generally not recommended, since public API should prefer empty array instead of null.
+     * However this method is occasionally useful for managing private fields.
+     *
+     * @param  <E> The type of elements in the array.
+     * @param  array The array, or {@code null}.
+     * @return The given array, or {@code null} if the given array was empty.
+     */
+    public static <E> E[] nonEmpty(final E[] array) {
+        return (array != null && array.length == 0) ? null : array;
+    }
+
+    /**
+     * Returns the given collection if non-empty, or {@code null} if the given collection is null or empty.
+     * This method is generally not recommended, since public API should prefer empty collection instead of null.
+     * However this method is occasionally useful for managing private fields, especially for inter-operability
+     * with frameworks that may expect or return null (e.g. if we want to exclude completely an empty collection
+     * from marshalling with JAXB).
+     *
+     * @param  <T> The type of the collection.
+     * @param  <E> The type of elements in the collection.
+     * @param  c   The collection, or {@code null}.
+     * @return The given collection, or {@code null} if the given collection was empty.
+     */
+    public static <T extends Collection<E>, E> T nonEmpty(final T c) {
+        return (c != null && c.isEmpty()) ? null : c;
+    }
+
+    /**
+     * Returns the given collection, or {@link Collections#EMPTY_SET} if the given collection is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set if the given collection was null.
+     */
+    public static <E> Collection<E> nonNull(final Collection<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
+     * Returns the given set, or {@link Collections#EMPTY_SET} if the given set is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set if the given collection was null.
+     */
+    public static <E> Set<E> nonNull(final Set<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
+     * Given a value which is either {@code null}, an instance of {@code <E>} or an array of {@code <E>},
+     * returns a non-null array containing all elements without null and without duplicated values.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If the given value is {@code null}, then this method returns {@code emptyArray}.</li>
+     *   <li>If the given value is an instance of {@code <E>}, then this method returns an array of length 1
+     *       which contain only {@code value}.</li>
+     *   <li>If the given value is an array of {@code <E>}, then this method returns copy of that array,
+     *       omitting {@code null} elements and duplicated elements.</li>
+     *   <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * It would be very easy to add support for {@code value} argument of type {@code Object[]} or collections.
+     * But we do not provide such support for now because this method is used mostly as a helper method for
+     * constructors of {@code AbstractIdentifiedObject} subclasses receiving a map of properties,
+     * and the contract of our constructors do not allow those other types for now.</div>
+     *
+     * @param  <E>        The type of elements in the array to be returned.
+     * @param  name       The parameter name, used only for formatting an error message in case of failure.
+     * @param  value      The value to return as an array, or {@code null}.
+     * @param  emptyArray An instance of {@code new E[0]}. This argument can not be null.
+     * @return The given value as an array of {@code <E>}. Never null.
+     * throws  IllegalArgumentException If the given value is not null, an instance of {@code <E>}
+     *         or an array of {@code <E>}.
+     *
+     * @since 0.4
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> E[] nonNullArraySet(final String name, final Object value, final E[] emptyArray)
+            throws IllegalArgumentException
+    {
+        assert emptyArray.length == 0;
+        if (value == null) {
+            return emptyArray;
+        }
+        Class<?> type = emptyArray.getClass();
+        final Class<?> valueType = value.getClass();
+        if (valueType.isArray()) {
+            if (type.isAssignableFrom(valueType)) {
+                final Set<E> set = new LinkedHashSet<E>(Arrays.asList((E[]) value));
+                set.remove(null);
+                return set.toArray(emptyArray);
+            }
+        } else {
+            type = type.getComponentType();
+            if (type.isAssignableFrom(valueType)) {
+                final E[] array = (E[]) Array.newInstance(type, 1);
+                array[0] = (E) value;
+                return array;
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, valueType));
+    }
+
+    /**
+     * Creates an initially empty set for elements of the given type.
+     * This method will creates specialized set for code lists and enumerations.
+     *
+     * @param  <E>   The type of elements in the set.
+     * @param  type  The type of elements in the set.
+     * @param  count The expected number of elements to put in the set.
+     * @return A new set for elements of the given type.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public static <E> Set<E> createSetForType(final Class<E> type, final int count) {
+        if (CodeList.class.isAssignableFrom(type)) {
+            return new CodeListSet((Class) type);
+        }
+        if (Enum.class.isAssignableFrom(type)) {
+            return EnumSet.noneOf((Class) type);
+        }
+        return new LinkedHashSet<E>(hashMapCapacity(count));
+    }
+
+    /**
      * Returns the specified array as an immutable set, or {@code null} if the array is null.
      * If the given array contains duplicated elements, i.e. elements that are equal in the
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
      * values will be included in the returned set.
      *
-     * @param  <E> The type of array elements.
-     * @param  array The array to copy in a set. May be {@code null}.
+     * @param  <E>         The type of array elements.
+     * @param  excludeNull {@code true} for excluding the {@code null} element from the returned set.
+     * @param  array       The array to copy in a set. May be {@code null} or contain null elements.
      * @return A set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
      */
-    public static <E> Set<E> immutableSet(final E... array) {
+    @SuppressWarnings("fallthrough")
+    public static <E> Set<E> immutableSet(final boolean excludeNull, final E... array) {
         if (array == null) {
             return null;
         }
         switch (array.length) {
-            case 0:  return Collections.emptySet();
-            case 1:  return Collections.singleton(array[0]);
-            default: return Collections.unmodifiableSet(new LinkedHashSet<E>(Arrays.asList(array)));
+            case 1: {
+                final E element = array[0];
+                if (element != null || !excludeNull) {
+                    return Collections.singleton(element);
+                }
+                // Fallthrough for an empty set.
+            }
+            case 0: {
+                return Collections.emptySet();
+            }
+            default: {
+                final Set<E> set = new LinkedHashSet<E>(Arrays.asList(array));
+                if (excludeNull) {
+                    set.remove(null);
+                }
+                return unmodifiableOrCopy(set);
+            }
         }
     }
 
@@ -186,6 +369,7 @@ public final class CollectionsExt extends Static {
      * applied by this method:
      *
      * <table class="sis">
+     * <caption>Implementations for types</caption>
      * <tr><th>Input type</th>                              <th class="sep">Output type</th></tr>
      * <tr><td>{@link SortedSet}</td>                       <td class="sep">{@link TreeSet}</td></tr>
      * <tr><td>{@link HashSet}</td>                         <td class="sep">{@link HashSet}</td></tr>
@@ -246,6 +430,7 @@ public final class CollectionsExt extends Static {
      * given in argument. The following table gives the types mapping applied by this method:
      *
      * <table class="sis">
+     * <caption>Implementations for types</caption>
      * <tr><th>Input type</th>                  <th class="sep">Output type</th></tr>
      * <tr><td>{@link SortedMap}</td>           <td class="sep">{@link TreeMap}</td></tr>
      * <tr><td>{@link HashMap}</td>             <td class="sep">{@link HashMap}</td></tr>
@@ -277,6 +462,28 @@ public final class CollectionsExt extends Static {
             return (Map<K,V>) ((HashMap<K,V>) map).clone();
         }
         return new LinkedHashMap<K,V>(map);
+    }
+
+    /**
+     * Returns a more compact representation of the given map. This method is similar to
+     * {@link #unmodifiableOrCopy(Map)} except that it does not wrap the map in an unmodifiable
+     * view. The intend is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the map is kept in a private field and never escape outside this class.
+     *
+     * @param  <K> The type of keys in the map.
+     * @param  <V> The type of values in the map.
+     * @param  map The map to compact, or {@code null}.
+     * @return A potentially compacted map, or {@code null} if the given map was null.
+     */
+    public static <K,V> Map<K,V> compact(final Map<K,V> map) {
+        if (map != null) {
+            switch (map.size()) {
+                case 0:  return Collections.emptyMap();
+                case 1:  final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                         return Collections.singletonMap(entry.getKey(), entry.getValue());
+            }
+        }
+        return map;
     }
 
     /**
@@ -380,5 +587,118 @@ public final class CollectionsExt extends Static {
             return (List<T>) collection;
         }
         return new ArrayList<T>(collection);
+    }
+
+    /**
+     * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
+     * The map can be initially empty - lists will be created as needed.
+     *
+     * @param  <K>   The type of key elements in the map.
+     * @param  <V>   The type of value elements in the lists.
+     * @param  map   The multi-values map where to add an element.
+     * @param  key   The key of the element to add. Can be null if the given map supports null keys.
+     * @param  value The value of the element to add. Can be null.
+     * @return The list where the given value has been added. May be unmodifiable.
+     */
+    public static <K,V> List<V> addToMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
+        final List<V> singleton = Collections.singletonList(value);
+        List<V> values = map.put(key, singleton);
+        if (values == null) {
+            return singleton;
+        }
+        if (values.size() <= 1) {
+            values = new ArrayList<V>(values);
+            if (map.put(key, values) != singleton) {
+                throw new ConcurrentModificationException();
+            }
+        }
+        values.add(value);
+        return values;
+    }
+
+    /**
+     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given collection of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * @param  <E>          The type of elements.
+     * @param  elements     The elements to store in the map, or {@code null} if none.
+     * @param  nameFunction The function for computing a name from an element.
+     * @param  namesLocale  The locale to use for creating the "all lower cases" names.
+     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException If the same name is used for more than one element.
+     */
+    public static <E> Map<String,E> toCaseInsensitiveNameMap(final Collection<? extends E> elements,
+            final Function<E,String> nameFunction, final Locale namesLocale)
+    {
+        if (elements == null) {
+            return Collections.emptyMap();
+        }
+        final Map<String,E> map = new HashMap<String,E>(hashMapCapacity(elements.size()));
+        Set<String> excludes = null;
+        for (final E e : elements) {
+            final String name = nameFunction.apply(e);
+            E old = map.put(name, e);
+            if (old != null) {
+                /*
+                 * If two elements use exactly the same name, this is considered an error. Otherwise the previous
+                 * mapping was using a lower case name version of its original name, so we can discard that lower
+                 * case version (the original name is still present in the map).
+                 */
+                final String oldName = nameFunction.apply(old);
+                if (Objects.equals(name, oldName)) {
+                    throw new InvalidParameterCardinalityException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, name), name);
+                }
+            }
+            /*
+             * Add lower-cases versions of the above element names, only if that name is not already used.
+             * If a name was already used, then the original mapping will have precedence.
+             */
+            final String lower = name.toLowerCase(namesLocale);
+            if (!name.equals(lower) && (excludes == null || !excludes.contains(lower))) {
+                old = map.put(lower, e);
+                if (old != null) {
+                    final String oldName = nameFunction.apply(old);
+                    if (lower.equals(oldName)) {
+                        /*
+                         * An entry already exists with a lower case name. Keep that previous entry unchanged.
+                         */
+                        map.put(oldName, old);
+                    } else {
+                        /*
+                         * Two entries having non-lower case names got the same name after conversion to
+                         * lower cases. Retains none of them, since doing so would introduce an ambiguity.
+                         * Remember that we can not use that lower cases name for any other entries.
+                         */
+                        map.remove(lower);
+                        if (excludes == null) {
+                            excludes = new HashSet<String>();
+                        }
+                        excludes.add(lower);
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Returns {@code true} if the next elements returned by the given iterators are the same.
+     * This method compares using the identity operation ({@code ==}), not {@code equals(Object)}.
+     *
+     * @param  it1 The first iterator.
+     * @param  it2 The second iterator.
+     * @return If both iterators return the same objects.
+     */
+    public static boolean identityEquals(final Iterator<?> it1, final Iterator<?> it2) {
+        while (it1.hasNext()) {
+            if (!it2.hasNext() || it1.next() != it2.next()) {
+                return false;
+            }
+        }
+        return !it2.hasNext();
     }
 }

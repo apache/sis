@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,6 +28,7 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
@@ -48,14 +48,25 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *   <li>{@link Extents#getGeographicBoundingBox(Extent)} for extracting a global geographic bounding box.</li>
  * </ul>
  *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see Extents#getGeographicBoundingBox(Extent)
+ * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
+ * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
  */
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",
@@ -71,35 +82,24 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     private static final long serialVersionUID = 2979058128422252800L;
 
     /**
-     * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
-     */
-    public static final Extent WORLD;
-    static {
-        final DefaultExtent world = new DefaultExtent();
-        world.setGeographicElements(Collections.singleton(DefaultGeographicBoundingBox.WORLD));
-        world.freeze();
-        WORLD = world;
-    }
-
-    /**
-     * Returns the spatial and temporal extent for the referring object.
+     * The spatial and temporal extent for the referring object.
      */
     private InternationalString description;
 
     /**
-     * Provides geographic component of the extent of the referring object
+     * Provides geographic component of the extent of the referring object.
      */
     private Collection<GeographicExtent> geographicElements;
 
     /**
-     * Provides temporal component of the extent of the referring object
-     */
-    private Collection<TemporalExtent> temporalElements;
-
-    /**
-     * Provides vertical component of the extent of the referring object
+     * Provides vertical component of the extent of the referring object.
      */
     private Collection<VerticalExtent> verticalElements;
+
+    /**
+     * Provides temporal component of the extent of the referring object.
+     */
+    private Collection<TemporalExtent> temporalElements;
 
     /**
      * Constructs an initially empty extent.
@@ -108,25 +108,49 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
+     * Constructs an extent initialized to the given description or components.
+     * Any argument given to this constructor can be {@code null}.
+     * While a valid {@code Extent} requires at least one component to be non-null,
+     * this constructor does not perform such verification.
+     *
+     * @param description        A description, or {@code null} if none.
+     * @param geographicElements A geographic component, or {@code null} if none.
+     * @param verticalElements   A vertical component, or {@code null} if none.
+     * @param temporalElements   A temporal component, or {@code null} if none.
+     */
+    public DefaultExtent(final CharSequence     description,
+                         final GeographicExtent geographicElements,
+                         final VerticalExtent   verticalElements,
+                         final TemporalExtent   temporalElements)
+    {
+        this.description        = Types.toInternationalString(description);
+        this.geographicElements = singleton(geographicElements, GeographicExtent.class);
+        this.verticalElements   = singleton(verticalElements,   VerticalExtent.class);
+        this.temporalElements   = singleton(temporalElements,   TemporalExtent.class);
+    }
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Extent)
      */
     public DefaultExtent(final Extent object) {
         super(object);
-        description        = object.getDescription();
-        geographicElements = copyCollection(object.getGeographicElements(), GeographicExtent.class);
-        temporalElements   = copyCollection(object.getTemporalElements(), TemporalExtent.class);
-        verticalElements   = copyCollection(object.getVerticalElements(), VerticalExtent.class);
+        if (object != null) {
+            description        = object.getDescription();
+            geographicElements = copyCollection(object.getGeographicElements(), GeographicExtent.class);
+            temporalElements   = copyCollection(object.getTemporalElements(),   TemporalExtent.class);
+            verticalElements   = copyCollection(object.getVerticalElements(),   VerticalExtent.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -151,6 +175,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Returns the spatial and temporal extent for the referring object.
+     *
+     * @return The spatial and temporal extent, or {@code null} in none.
      */
     @Override
     @XmlElement(name = "description")
@@ -170,6 +196,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Provides geographic component of the extent of the referring object
+     *
+     * @return The geographic extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "geographicElement")
@@ -187,25 +215,9 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
-     * Provides temporal component of the extent of the referring object.
-     */
-    @Override
-    @XmlElement(name = "temporalElement")
-    public Collection<TemporalExtent> getTemporalElements() {
-        return temporalElements = nonNullCollection(temporalElements, TemporalExtent.class);
-    }
-
-    /**
-     * Sets temporal component of the extent of the referring object.
-     *
-     * @param newValues The new temporal elements.
-     */
-    public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
-        temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
-    }
-
-    /**
      * Provides vertical component of the extent of the referring object.
+     *
+     * @return The vertical extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "verticalElement")
@@ -223,16 +235,36 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
+     * Provides temporal component of the extent of the referring object.
+     *
+     * @return The temporal extent, or an empty set if none.
+     */
+    @Override
+    @XmlElement(name = "temporalElement")
+    public Collection<TemporalExtent> getTemporalElements() {
+        return temporalElements = nonNullCollection(temporalElements, TemporalExtent.class);
+    }
+
+    /**
+     * Sets temporal component of the extent of the referring object.
+     *
+     * @param newValues The new temporal elements.
+     */
+    public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
+        temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
+    }
+
+    /**
      * Adds geographic, vertical or temporal extents inferred from the given envelope.
      * This method inspects the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}
      * and creates a {@link GeographicBoundingBox}, {@link VerticalExtent} or {@link TemporalExtent}
      * elements as needed.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> this method is available only if the referencing module is on the classpath.</p>
      *
      * @param  envelope The envelope to use for inferring the additional extents.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException If a coordinate transformation was required and failed.
+     * @throws TransformException if a coordinate transformation was required and failed.
      *
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
      * @see DefaultVerticalExtent#setBounds(Envelope)

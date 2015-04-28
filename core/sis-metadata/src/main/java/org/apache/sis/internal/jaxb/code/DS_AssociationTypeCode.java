@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.AssociationType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -28,18 +28,11 @@ import org.opengis.metadata.identification.AssociationType;
  * about the handling of CodeList in ISO-19139.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class DS_AssociationTypeCode extends CodeListAdapter<DS_AssociationTypeCode, AssociationType> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(AssociationType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -55,6 +48,8 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected DS_AssociationTypeCode wrap(CodeListProxy proxy) {
@@ -63,6 +58,8 @@ public final class DS_AssociationTypeCode extends CodeListAdapter<DS_Association
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<AssociationType> getCodeListClass() {

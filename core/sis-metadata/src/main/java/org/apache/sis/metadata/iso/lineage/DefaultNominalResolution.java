@@ -24,14 +24,25 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.Namespaces;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+
 
 /**
  * Distance between consistent parts of (centre, left side, right side) adjacent pixels.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "LE_NominalResolution_Type", propOrder = {
@@ -68,19 +79,28 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * <div class="note"><b>Note on properties validation:</b>
+     * This constructor does not verify the property values of the given metadata (e.g. whether it contains
+     * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
+     * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
+     * metadata instances can also be obtained by unmarshalling an invalid XML document.
+     * </div>
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(NominalResolution)
      */
     public DefaultNominalResolution(final NominalResolution object) {
         super(object);
-        scanningResolution = object.getScanningResolution();
-        groundResolution   = object.getGroundResolution();
+        if (object != null) {
+            scanningResolution = object.getScanningResolution();
+            groundResolution   = object.getGroundResolution();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -104,8 +124,23 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     }
 
     /**
+     * Ensures that the given property is greater than zero.
+     *
+     * @param  property The name of the property to verify.
+     * @param  value The property value, or {@code null}.
+     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
+     */
+    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
+        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
+            warnNonPositiveArgument(DefaultNominalResolution.class, property, true, value);
+        }
+    }
+
+    /**
      * Returns the distance between consistent parts of (centre, left side, right side)
      * adjacent pixels in the scan plane.
+     *
+     * @return Distance between consistent parts of adjacent pixels in the scan plane, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -119,15 +154,19 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * pixels in the scan plane.
      *
      * @param newValue The new scanning resolution value.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setScanningResolution(final Double newValue) {
         checkWritePermission();
+        ensurePositive("scanningResolution", newValue);
         scanningResolution = newValue;
     }
 
     /**
      * Returns the distance between consistent parts of (centre, left side, right side) adjacent
      * pixels in the object space.
+     *
+     * @return Distance between consistent parts of adjacent pixels in the object space, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -141,9 +180,11 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      * in the object space.
      *
      * @param newValue The new ground resolution value.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setGroundResolution(final Double newValue) {
         checkWritePermission();
+        ensurePositive("groundResolution", newValue);
         groundResolution = newValue;
     }
 }

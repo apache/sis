@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.io.Serializable;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -42,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>Subclasses need to define the {@link #setParentOf(TreeTable.Node, int)} method
  * because the way to set the parent is specific to the node implementation:</p>
  *
- * {@section Implementation note}
+ * <div class="section">Implementation note</div>
  * We do not extend {@link java.util.ArrayList} because:
  * <ul>
  *   <li>We want to use identity comparisons rather than {@link Object#equals(Object)}.</li>
@@ -53,16 +52,16 @@ import org.apache.sis.util.resources.Errors;
  *       to {@code TreeNodeList} (we need the slower path implemented in {@code AbstractList}).</li>
  * </ul>
  *
- * {@note Being serializable may seem contradictory with the non-cloneable requirement.
- *        But serializating {@code TreeNodeList} will also serialize the parent, thus
- *        creating new copy on deserialization. So the parents should not be mixed.}
+ * <div class="note"><b>Implementation note:</b>
+ * Being serializable may seem contradictory with the non-cloneable requirement.
+ * But serializing {@code TreeNodeList} will also serialize the parent, thus
+ * creating new copy on deserialization. So the parents should not be mixed.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         implements CheckedContainer<TreeTable.Node>, Serializable
 {
@@ -119,7 +118,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
 
     /**
      * Sets or clears the parent of the given node. This method doesn't need to care about the
-     * current node parent, since {@code TreeNodeList} will take care of removing the tree node
+     * current node parent, since {@code TreeNodeList} will take care of removing the tree node
      * from its previous parent before to invoke this method.
      *
      * <p>The {@code mode} argument specifies the parent value to set, as one of the following

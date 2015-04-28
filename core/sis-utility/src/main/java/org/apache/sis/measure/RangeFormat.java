@@ -16,6 +16,8 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -61,7 +63,7 @@ import org.apache.sis.util.resources.Errors;
  * If the range to format is an instance of {@link MeasurementRange}, then the
  * {@linkplain Unit unit of measurement} is appended except for empty ranges.
  *
- * {@section Lenient parsing}
+ * <div class="section">Lenient parsing</div>
  * At parsing time, the above formatting rules are relaxed as below:
  *
  * <ul>
@@ -71,7 +73,7 @@ import org.apache.sis.util.resources.Errors;
  *       as well as "{@code {value}}".</li>
  * </ul>
  *
- * {@section Range type and type of range elements}
+ * <div class="section">Range type and type of range elements</div>
  * The kind of ranges created by the {@link #parse(String) parse(…)} methods is determined
  * by the type of range elements:
  *
@@ -88,8 +90,8 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.06)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  *
  * @see Range#toString()
@@ -123,7 +125,7 @@ public class RangeFormat extends Format {
     private static final int UNIT_FIELD = 2;
 
     /**
-     * Defines constants that are used as attribute keys in the iterator returned from
+     * Constants that are used as attribute keys in the iterator returned from
      * {@link RangeFormat#formatToCharacterIterator(Object)}.
      *
      * @author  Martin Desruisseaux (Geomatys)
@@ -287,6 +289,13 @@ public class RangeFormat extends Format {
      * only if {@link #elementType} is assignable to {@link Number} but not to {@link Angle}.
      */
     protected final UnitFormat unitFormat;
+
+    /**
+     * Whether we should insert a space between the bracket and the unit symbol.
+     *
+     * @see #insertSpaceBeforeUnit(Unit)
+     */
+    private transient Map<Unit<?>,Boolean> insertSpaceBeforeUnit;
 
     /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
@@ -461,6 +470,23 @@ public class RangeFormat extends Format {
     }
 
     /**
+     * Returns whether we should insert a space between the bracket and the unit symbol.
+     * We cache the result because checking for this condition forces us to format the unit symbol twice.
+     */
+    private boolean insertSpaceBeforeUnit(final Unit<?> unit) {
+        if (insertSpaceBeforeUnit == null) {
+            insertSpaceBeforeUnit = new HashMap<Unit<?>,Boolean>();
+        }
+        Boolean value = insertSpaceBeforeUnit.get(unit);
+        if (value == null) {
+            final String symbol = unitFormat.format(unit);
+            value = !symbol.isEmpty() && Character.isLetterOrDigit(symbol.codePointAt(0));
+            insertSpaceBeforeUnit.put(unit, value);
+        }
+        return value;
+    }
+
+    /**
      * Returns the {@code *_FIELD} constant for the given field position, or -1 if none.
      */
     private static int getField(final FieldPosition position) {
@@ -574,7 +600,9 @@ public class RangeFormat extends Format {
             } else {
                 final Format format;
                 if (field == UNIT_FIELD) {
-                    startPosition = toAppendTo.append(' ').length();
+                    if (insertSpaceBeforeUnit((Unit) value)) {
+                        startPosition = toAppendTo.append(' ').length();
+                    }
                     format = unitFormat;
                 } else {
                     format = elementFormat;
@@ -743,6 +771,7 @@ public class RangeFormat extends Format {
      * need to be reset to -1.  In case of failure (including an exception being thrown), the
      * parse index is undetermined and need to be reset to its initial value.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     private Range<?> tryParse(final String source, final ParsePosition pos)
             throws UnconvertibleObjectException
     {
@@ -943,7 +972,6 @@ public class RangeFormat extends Format {
          * than a more specialized type, the finest suitable type will be determined.
          */
         if (Number.class.isAssignableFrom(elementType)) {
-            @SuppressWarnings({"unchecked","rawtypes"})
             Class<? extends Number> type = (Class) elementType;
             Number min = (Number) minValue;
             Number max = (Number) maxValue;
@@ -955,25 +983,16 @@ public class RangeFormat extends Format {
             if (min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
             if (max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
             if (unit != null) {
-                @SuppressWarnings({"unchecked","rawtypes"})
                 final MeasurementRange<?> range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
                 return range;
             }
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final NumberRange<?> range = new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
-            return range;
+            return new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
         } else if (Date.class.isAssignableFrom(elementType)) {
-            final Date min = (Date) minValue;
-            final Date max = (Date) maxValue;
-            return new Range<Date>(Date.class, min, isMinIncluded, max, isMaxIncluded);
+            return new Range(Date.class, (Date) minValue, isMinIncluded, (Date) maxValue, isMaxIncluded);
         } else {
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final Class<? extends Comparable<?>> type = (Class) elementType;
-            final Comparable<?> min = (Comparable<?>) minValue;
-            final Comparable<?> max = (Comparable<?>) maxValue;
-            @SuppressWarnings({"unchecked","rawtypes"})
-            final Range<?> range = new Range(type, min, isMinIncluded, max, isMaxIncluded);
-            return range;
+            return new Range(elementType,
+                    (Comparable<?>) minValue, isMinIncluded,
+                    (Comparable<?>) maxValue, isMaxIncluded);
         }
     }
 

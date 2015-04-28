@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 
 /**
- * Thrown when an object can not be {@linkplain ObjectConverter#convert converted}
+ * Thrown when an object can not be {@linkplain ObjectConverter#apply(Object) converted}
  * from the <cite>source</cite> type to the <cite>target</cite> type.
  *
  * <p>Some converters may attempt many strategies before to give up, resulting in more than
@@ -27,7 +27,7 @@ package org.apache.sis.util;
  * will be an arbitrary item of this list.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -47,28 +47,28 @@ public class UnconvertibleObjectException extends IllegalArgumentException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message The detail message, or {@code null} if none.
      */
-    public UnconvertibleObjectException(String message) {
+    public UnconvertibleObjectException(final String message) {
         super(message);
     }
 
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The detail message.
-     * @param cause The cause.
+     * @param message The detail message, or {@code null} if none.
+     * @param cause The cause, or {@code null} if none.
      */
-    public UnconvertibleObjectException(String message, Throwable cause) {
+    public UnconvertibleObjectException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
     /**
      * Constructs a new exception with the specified cause.
      *
-     * @param cause The cause.
+     * @param cause The cause, or {@code null} if none.
      */
-    public UnconvertibleObjectException(Throwable cause) {
+    public UnconvertibleObjectException(final Throwable cause) {
         super(cause);
     }
 }

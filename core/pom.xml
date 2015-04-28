@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <version>0.6-android-SNAPSHOT</version>
   </parent>
 
 
@@ -62,6 +62,14 @@
     <developer>
       <name>Joseph F. White</name>
       <id>jwhite</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
       <roles>
         <role>developer</role>
       </roles>
@@ -117,6 +125,46 @@
 
 
   <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
+  <build>
+    <plugins>
+
+      <!-- Collect JAR files in <root>/target/binaries directory. -->
+      <plugin>
+        <groupId>org.apache.sis.core</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${sis.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>collect-jars</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi</artifactId>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-conformance</artifactId>
+    </dependency>
+  </dependencies>
+
+
+  <!-- ===========================================================
            Sub-modules included in the build in dependency order
        =========================================================== -->
   <modules>
@@ -124,6 +172,7 @@
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-referencing</module>
+    <module>sis-feature</module>
   </modules>
 
 </project>

@@ -17,15 +17,14 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
-
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.SpecializedIdentifier;
 
 
@@ -40,34 +39,29 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * implementations in the public {@link org.apache.sis.metadata.iso} package and sub-packages.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see PropertyType
- * @see ObjectIdentification
+ * @see <a href="ObjectIdentification.html">ObjectIdentification</a>
  * @see <a href="http://schemas.opengis.net/iso/19139/20070417/gco/gcoBase.xsd">OGC schema</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-165">GEOTK-165</a>
  */
 final class ObjectReference {
     /**
-     * A URN to an external resources, or to an other part of a XML document, or an identifier.
+     * A unique identifier to an external resources, or to an other part of a XML document.
      * The {@code uuidref} attribute is used to refer to an XML element that has a corresponding
      * {@code uuid} attribute.
      *
      * @see <a href="http://www.schemacentral.com/sc/niem21/a-uuidref-1.html">Usage of uuidref</a>
      */
-    String anyUUID;
+    UUID uuid;
 
     /**
      * The {@code xlink} attributes, or {@code null} if none.
      */
     XLink xlink;
-
-    /**
-     * The parsed value of {@link #anyUUID}, computed when first needed.
-     */
-    private transient UUID uuid;
 
     /**
      * Creates an initially empty object reference.
@@ -77,23 +71,13 @@ final class ObjectReference {
 
     /**
      * Creates an object reference initialized to the given value.
-     */
-    ObjectReference(final UUID uuid, final String anyUUID, final XLink link) {
-        this.uuid    = uuid;
-        this.anyUUID = anyUUID;
-        this.xlink   = link;
-    }
-
-    /**
-     * Parses the given string as a UUID.
      *
-     * @param  context The marshalling context, or {@code null} if none.
-     * @param  anyUUID The string to parse, or {@code null}.
-     * @return The parsed UUID, or {@code null}.
-     * @throws IllegalArgumentException If {@code anyUUID} can not be parsed.
+     * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, UUID)
+     * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, XLink)
      */
-    static UUID toUUID(final Context context, final String anyUUID) throws IllegalArgumentException {
-        return (anyUUID != null) ? Context.converter(context).toUUID(context, anyUUID) : null;
+    ObjectReference(final UUID uuid, final XLink link) {
+        this.uuid  = uuid;
+        this.xlink = link;
     }
 
     /**
@@ -101,19 +85,15 @@ final class ObjectReference {
      * declared in this {@code ObjectReference}. If the given metadata object is non-null,
      * assigns to that object the identifiers declared in this {@code ObjectReference}.
      *
-     * <p>This method is invoked at unmarshalling time.</p>
+     * <p>This method is invoked at unmarshalling time by {@link PropertyType#resolve(Context)}.</p>
      *
      * @param  <T>       The compile-time type of the {@code type} argument.
      * @param  context   The marshalling context, or {@code null} if none.
      * @param  type      The expected type of the metadata object.
      * @param  metadata  The metadata object, or {@code null}.
      * @return A metadata object for the identifiers, or {@code null}
-     * @throws IllegalArgumentException If the {@link #anyUUID} field can not be parsed.
      */
-    final <T> T resolve(final Context context, final Class<T> type, T metadata) throws IllegalArgumentException {
-        if (uuid == null) {
-            uuid = toUUID(context, anyUUID);
-        }
+    final <T> T resolve(final Context context, final Class<T> type, T metadata) {
         if (metadata == null) {
             final ReferenceResolver resolver = Context.resolver(context);
             if ((uuid  == null || (metadata = resolver.resolve(context, type, uuid )) == null) &&
@@ -129,38 +109,49 @@ final class ObjectReference {
                 metadata = resolver.newIdentifiedObject(context, type, identifiers);
             }
         } else {
-            // If principle, the XML should contain a full metadata object OR a uuidref attribute.
+            // In principle, the XML should contain a full metadata object OR a uuidref attribute.
             // However if both are present, assign the identifiers to that instance.
             if (metadata instanceof IdentifiedObject) {
                 final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
-                if (uuid  != null) putInto(map, IdentifierSpace.UUID,  uuid);
-                if (xlink != null) putInto(map, IdentifierSpace.XLINK, xlink);
+                putInto(context, map, IdentifierSpace.UUID,  uuid);
+                putInto(context, map, IdentifierSpace.XLINK, xlink);
             }
         }
         return metadata;
     }
 
     /**
-     * Adds a new identifier into the given map. This method is a shortcut which bypass the check
-     * for previous values associated to same the authority. It is okay only when constructing
-     * new instances, for example at XML unmarshalling time.
+     * Adds a new identifier into the given map, if non null. No previous value should exist in normal situation.
+     * However a previous value may exit in unusual (probably not very valid) XML, as in the following example:
+     *
+     * {@preformat xml
+     *   <gmd:CI_Citation>
+     *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *         ...
+     *       </gmd:CI_Series>
+     *     </gmd:series>
+     *   </gmd:CI_Citation>
+     * }
+     *
+     * In such situation, this method is silent if the two identifiers are equal, or logs a warning and restores
+     * the previous value if they are not equal. The previous value is the "{@code uuid}" attribute, which is
+     * assumed more closely tied to the actual metadata than the {@code uuidref} attribute.
      *
      * @param map       The map in which to write the identifier.
      * @param authority The identifier authority.
      * @param value     The identifier value, or {@code null} if not yet defined.
      */
-    private static <T> void putInto(final IdentifierMap map, final IdentifierSpace<T> authority, final T value) {
-        if (map instanceof IdentifierMapAdapter) {
-            final SpecializedIdentifier<T> identifier = new SpecializedIdentifier<T>(authority, value);
-            /*
-             * If the following assert statement appears to fail in practice, then remove
-             * completly this method and use the public putSpecialized(…) method instead.
-             * Note: usage of 'put' is for having the compiler to check the key type.
-             */
-            assert map.put(authority, null) == null : identifier;
-            ((IdentifierMapAdapter) map).identifiers.add(identifier);
-        } else {
-            map.putSpecialized(authority, value);
+    private static <T> void putInto(final Context context, final IdentifierMap map,
+            final IdentifierSpace<T> authority, final T value)
+    {
+        if (value != null) {
+            final T previous = map.putSpecialized(authority, value);
+            if (previous != null && !previous.equals(value)) {
+                Context.warningOccured(context, Context.LOGGER, IdentifierMap.class, "putSpecialized",
+                        Errors.class, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
+                map.putSpecialized(authority, previous);
+            }
         }
     }
 }

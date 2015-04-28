@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -26,17 +25,19 @@ import org.apache.sis.math.FunctionProperty;
 /**
  * An object converter which returns the source unchanged.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe.
+ *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.01)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see org.apache.sis.util.ObjectConverters#identity(Class)
  */
-@Immutable
 public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T> {
     // JDK6 NOTE: Order of above <T> and <S> parameters is reversed compared to the
     // JDK7 branch, because the JDK6 compiler does not supports forward reference.
@@ -74,8 +75,9 @@ public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T
      * This method returns a new {@link EnumSet} instead than returning a constant, because
      * creating {@code EnumSet} is cheap and the standard JDK implementation has optimizations
      * for bulk operations between {@code EnumSet} instances. Those optimizations are lost (at
-     * least on JDK6) is we wrap the {@code EnumSet} in a {@code Collections.unmodifiableSet}
-     * view.
+     * least on JDK6) is we wrap the {@code EnumSet} in a {@code Collections.unmodifiableSet} view.
+     *
+     * @return The manners in which source values are mapped to target values.
      */
     @Override
     public Set<FunctionProperty> properties() {
@@ -88,6 +90,8 @@ public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T
 
     /**
      * Returns the inverse converter, if any.
+     *
+     * @return A converter for converting instances of <var>T</var> back to instances of <var>S</var>.
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
@@ -98,9 +102,10 @@ public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T
      * Returns the given object unchanged.
      *
      * @param source The value to convert.
+     * @return The given value unchanged.
      */
     @Override
-    public T convert(final S source) {
+    public T apply(final S source) {
         return source;
     }
 }

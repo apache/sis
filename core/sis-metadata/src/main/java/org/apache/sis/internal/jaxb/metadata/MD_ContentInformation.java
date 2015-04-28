@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.content.AbstractContentInformation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -49,6 +49,8 @@ public final class MD_ContentInformation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ContentInformation.class}
      */
     @Override
     protected Class<ContentInformation> getBoundType() {
@@ -83,7 +85,6 @@ public final class MD_ContentInformation extends
      */
     @XmlElementRef
     public AbstractContentInformation getElement() {
-        if (skip()) return null;
         final ContentInformation metadata = this.metadata;
         if (metadata instanceof ImageDescription) {
             return MI_ImageDescription.castOrCopy((ImageDescription) metadata);

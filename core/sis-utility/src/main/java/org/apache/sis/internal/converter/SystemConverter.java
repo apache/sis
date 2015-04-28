@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import java.io.ObjectStreamException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
@@ -26,8 +25,11 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Base class of all converters defined in the {@code org.apache.sis.internal} package.
- * Those converters are returned by system-wide {@link ConverterRegitry}, and cached for
- * reuse.
+ * Those converters are returned by system-wide {@link ConverterRegistry}, and cached for reuse.
+ *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
+ * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
@@ -92,7 +94,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * requires the two objects to be of the same class. We do that in order to differentiate the
      * "ordinary" converters from the {@link FallbackConverter}.
      *
-     * {@section Implementation note}
+     * <div class="section">Implementation note</div>
      * This is admittedly a little bit convolved. A cleaner approach would have been to not allow
      * the {@code ConverterRegister} hash map to contain anything else than {@code ClassPair} keys,
      * but the current strategy of using the same instance for keys and values reduces a little bit
@@ -111,6 +113,10 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      *       (as in {@link ConverterRegistry#find(Class, Class)}), the key shall be
      *       an instance of {@code ClassPair} instance (not a subclass).</li>
      * </ul>
+     *
+     * @param  other The object to compare with this {@code SystemConverter}.
+     * @return {@code true} if the given object is a {@code ClassPair} or a converter of the
+     *         same class than {@code this}, and both have the same source and target classes.
      */
     @Override
     public final boolean equals(final Object other) {
@@ -137,7 +143,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Returns the singleton instance on deserialization, if any. If no instance already exist
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
      */
-    protected final Object readResolve() throws ObjectStreamException {
+    protected final Object readResolve() {
         return unique();
     }
 

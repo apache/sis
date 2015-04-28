@@ -25,16 +25,20 @@ import java.io.Serializable;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
+
 
 /**
- * Holds the coordinates for a one-dimensional position within some coordinate reference system.
+ * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -143,11 +147,10 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinate</code> field,
-     *        which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
      *
      * @return The coordinates.
      */
@@ -159,8 +162,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Returns the ordinate at the specified dimension.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinate</code> field,
-     *        which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
      *
      * @param  dimension The dimension, which must be 0.
      * @return The {@linkplain #ordinate}.
@@ -224,6 +227,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
 
     /**
      * Returns a copy of this position.
+     *
+     * @return A copy of this position.
      */
     @Override
     public DirectPosition1D clone() {
@@ -240,11 +245,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public int hashCode() {
-        final long value = Double.doubleToLongBits(ordinate);
-        int code = 31 + (((int) value) ^ (int) (value >>> 32));
-        if (crs != null) {
-            code += crs.hashCode();
-        }
+        final int code = 31 + Numerics.hashCode(Double.doubleToLongBits(ordinate)) + Objects.hashCode(crs);
         assert code == super.hashCode();
         return code;
     }

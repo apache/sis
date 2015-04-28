@@ -29,12 +29,12 @@ import static org.apache.sis.util.CharSequences.*;
 
 
 /**
- * Tests {@link CharSequences} methods.
+ * Tests the {@link CharSequences} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -73,6 +73,8 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals(0, count(new StringBuilder("An ordinary sentence."),   '-'));
         assertEquals(4, count(new StringBuilder("- this one has -dashs--"), '-'));
         assertEquals(2, count(new StringBuilder("An ordinary sentence."),  "en"));
+        assertEquals(0, count("",   '-'));
+        assertEquals(0, count(null, '-'));
     }
 
     /**
@@ -97,6 +99,8 @@ public final strictfp class CharSequencesTest extends TestCase {
             assertEquals(12, indexOf(string, "sentence.", 0, length));
             assertEquals(-1, indexOf(string, "sentence;", 0, length));
         }
+        assertEquals(-1, indexOf("",   "An", 0, 0));
+        assertEquals(-1, indexOf(null, "An", 0, 0));
     }
 
     /**
@@ -130,6 +134,8 @@ public final strictfp class CharSequencesTest extends TestCase {
             assertEquals(13,           indexOf(string, 'e', 0, length));
             assertEquals(19,       lastIndexOf(string, 'e', 0, length));
         }
+        assertEquals(-1, indexOf("",   'A', 0, 0));
+        assertEquals(-1, indexOf(null, 'A', 0, 0));
     }
 
     /**
@@ -155,6 +161,8 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testSplit() {
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi \n mardi\r\n\nmercredi ", '\n'));
+        assertArrayEquals(new String[] {""}, split("",   ','));
+        assertArrayEquals(new String[] {},   split(null, ','));
     }
 
     /**
@@ -164,9 +172,9 @@ public final strictfp class CharSequencesTest extends TestCase {
     @DependsOnMethod("testIndexOfChar")
     public void testSplitOnEOL() {
         final CharSequence[] splitted = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
-        assertArrayEquals(new String[] {
-            "", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""
-        }, splitted);
+        assertArrayEquals(new String[] {"", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""}, splitted);
+        assertArrayEquals(new String[] {""}, splitOnEOL(""));
+        assertArrayEquals(new String[] {},   splitOnEOL(null));
     }
 
     /**
@@ -224,15 +232,6 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#toString(Iterable, String)} method.
-     */
-    @Test
-    public void testToString() {
-        assertEquals("4, 8, 12, 9", CharSequences.toString(Arrays.asList(4, 8, 12, 9), ", "));
-        assertSame  ("singleton",   CharSequences.toString(Arrays.asList("singleton"), ", "));
-    }
-
-    /**
      * Tests the {@link CharSequences#toASCII(CharSequence)} method.
      */
     @Test
@@ -240,6 +239,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         final String metre = "metre";
         assertSame  (metre, toASCII(metre));
         assertEquals(metre, toASCII("mètre").toString());
+        assertNull  (       toASCII(null));
     }
 
     /**
@@ -251,6 +251,8 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals("A text.", trimWhitespaces((CharSequence) "  A text. "));
         assertEquals("",        trimWhitespaces(               "          "));
         assertEquals("",        trimWhitespaces((CharSequence) "          "));
+        assertNull  (           trimWhitespaces((CharSequence) null));
+        assertNull  (           trimWhitespaces((String)       null));
     }
 
     /**
@@ -263,6 +265,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals("4",    trimFractionalPart("4.0"));
         assertEquals("4",    trimFractionalPart("4.00"));
         assertEquals("4.10", trimFractionalPart("4.10"));
+        assertNull  (        trimFractionalPart(null));
     }
 
     /**
@@ -272,6 +275,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testShortSentence() {
         assertEquals("This sentence given (…) in a short name.", String.valueOf(
                 shortSentence("This sentence given as an example is way too long to be included in a short name.", 40)));
+        assertNull(shortSentence(null, 40));
     }
 
     /**
@@ -279,8 +283,18 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testUpperCaseToSentence() {
-        final CharSequence convert = upperCaseToSentence("HALF_DOWN");
-        assertEquals("Half down", convert.toString());
+        assertEquals("Half down", upperCaseToSentence("HALF_DOWN").toString());
+        assertNull(upperCaseToSentence(null));
+    }
+
+    /**
+     * Tests the {@link CharSequences#camelCaseToSentence(CharSequence)} method.
+     */
+    @Test
+    @DependsOnMethod("testCamelCaseToWords")
+    public void testCamelCaseToSentence() {
+        assertEquals("Default locale", camelCaseToSentence("defaultLocale").toString());
+        assertNull(camelCaseToSentence(null));
     }
 
     /**
@@ -290,6 +304,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testCamelCaseToWords() {
         final CharSequence convert = camelCaseToWords("PixelInterleavedSampleModel", true);
         assertEquals("Pixel interleaved sample model", convert.toString());
+        assertNull(camelCaseToWords(null, true));
     }
 
     /**
@@ -303,6 +318,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals("NE",  camelCaseToAcronym("North-East").toString());
         assertEquals("NE",  camelCaseToAcronym("NORTH_EAST").toString());
         assertEquals("NE",  camelCaseToAcronym("northEast").toString());
+        assertNull(camelCaseToAcronym(null));
     }
 
     /**
@@ -311,21 +327,24 @@ public final strictfp class CharSequencesTest extends TestCase {
     @Test
     public void testIsAcronymForWords() {
         /*
-         * Following should be accepted as acronyms...
+         * Following shall be accepted as acronyms...
          */
         assertTrue(isAcronymForWords("OGC",                        "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("O.G.C.",                     "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("OpGeoCon",                   "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("Open Geospatial Consortium", "Open Geospatial Consortium"));
         assertTrue(isAcronymForWords("ogc",                        "Open Geospatial Consortium"));
+        assertTrue(isAcronymForWords("E",                          "EAST"));
+        assertTrue(isAcronymForWords("ENE",                        "EAST_NORTH_EAST"));
         /*
-         * Following should be rejected...
+         * Following shall be rejected...
          */
         assertFalse(isAcronymForWords("ORC",    "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("O.C.G.", "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("OGC2",   "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("OG",     "Open Geospatial Consortium"));
         assertFalse(isAcronymForWords("GC",     "Open Geospatial Consortium"));
+        assertFalse(isAcronymForWords("ENE",    "NORTH_EAST"));
         /*
          * Following are mapping of EPSG table names from MS-Access to ANSI SQL.
          * All those items must be recognized as acroynms - this is requred by DirectEpsgFactory.
@@ -351,8 +370,9 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertTrue(isAcronymForWords("versionhistory",            "[Version History]"));
         assertTrue(isAcronymForWords("change",                    "[Change]"));
         assertTrue(isAcronymForWords("deprecation",               "[Deprecation]"));
+        assertFalse(isAcronymForWords(null,                       "[Deprecation]"));
         /*
-         * It is important the the following is not recognized as an acronym,
+         * It is important the following is not recognized as an acronym,
          * otherwise it leads to a confusion in DirectEpsgFactory.
          */
         assertFalse(isAcronymForWords("coordoperation", "[Coordinate_Operation Method]"));
@@ -363,8 +383,28 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUnicodeIdentifier() {
+        assertFalse(        isUnicodeIdentifier(null));
         assertTrue ("A123", isUnicodeIdentifier("A123"));
         assertFalse("123A", isUnicodeIdentifier("123A"));
+        assertTrue ("A_1",  isUnicodeIdentifier("A_1"));
+        assertFalse("A-1",  isUnicodeIdentifier("A-1"));
+        assertFalse("A+1",  isUnicodeIdentifier("A+1"));
+        assertFalse("A/1",  isUnicodeIdentifier("A/1"));
+        assertFalse("A\\1", isUnicodeIdentifier("A\\1"));
+        assertFalse("A*1",  isUnicodeIdentifier("A*1"));
+        assertFalse("A.1",  isUnicodeIdentifier("A.1"));
+        assertFalse("A,1",  isUnicodeIdentifier("A,1"));
+        assertFalse("A:1",  isUnicodeIdentifier("A:1"));
+        assertFalse("A;1",  isUnicodeIdentifier("A;1"));
+        assertFalse("A#1",  isUnicodeIdentifier("A#1"));
+        assertFalse("A?1",  isUnicodeIdentifier("A?1"));
+        assertFalse("A!1",  isUnicodeIdentifier("A!1"));
+        assertFalse("A°1",  isUnicodeIdentifier("A°1"));  // Degree
+        assertTrue ("Aº1",  isUnicodeIdentifier("Aº1"));  // Masculine ordinal
+        assertFalse("A 1",  isUnicodeIdentifier("A 1"));  // Ordinary space
+        assertFalse("A 1",  isUnicodeIdentifier("A" + Characters.NO_BREAK_SPACE + "1"));
+        assertFalse("A‐1",  isUnicodeIdentifier("A" + Characters.HYPHEN         + "1"));
+        assertTrue ("A­1",  isUnicodeIdentifier("A" + Characters.SOFT_HYPHEN    + "1"));
     }
 
     /**
@@ -385,6 +425,8 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertTrue (equalsIgnoreCase("Test", "TEST"));
         assertTrue (equalsIgnoreCase("Test", new StringBuilder("TEST")));
         assertFalse(equalsIgnoreCase("Test1", "Test2"));
+        assertFalse(equalsIgnoreCase(null,    "Test2"));
+        assertFalse(equalsIgnoreCase("Test1", null));
     }
 
     /**
@@ -398,6 +440,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertFalse(equalsFiltered("UTF-8", " utf 16", Characters.Filter.LETTERS_AND_DIGITS, true));
         assertTrue (equalsFiltered("WGS84", "WGS_84",  Characters.Filter.LETTERS_AND_DIGITS, true));
         assertFalse(equalsFiltered("WGS84", "WGS_84",  Characters.Filter.UNICODE_IDENTIFIER, true));
+        assertFalse(equalsFiltered(null,    "WGS_84",  Characters.Filter.UNICODE_IDENTIFIER, true));
     }
 
     /**
@@ -407,15 +450,19 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testEquals() {
         assertTrue (CharSequences.equals("Test", new StringBuilder("Test")));
         assertFalse(CharSequences.equals("Test1", "Test2"));
+        assertFalse(CharSequences.equals(null,    "Test2"));
+        assertFalse(CharSequences.equals("Test1", null));
     }
 
     /**
-     * Tests the {@link CharSequences#regionMatches(CharSequence, int, CharSequence)} method.
+     * Tests the {@link CharSequences#regionMatches(CharSequence, int, CharSequence)} and
+     * {@link CharSequences#regionMatches(CharSequence, int, CharSequence, boolean)} methods.
      */
     @Test
     public void testRegionMatches() {
         assertTrue (regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sachant"));
         assertFalse(regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sacHant"));
+        assertTrue (regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sacHant", true));
     }
 
     /**
@@ -459,6 +506,18 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testToken() {
         assertEquals("Id4", token("..Id4  56B..", 2));
         assertEquals("56",  token("..Id4  56B..", 6));
+    }
+
+    /**
+     * Tests the {@link CharSequences#replace(CharSequence, CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testReplace() {
+        final String text = "One apple, two orange oranges";
+        assertSame(text, replace(text, "pineapple", "orange"));
+        assertEquals("One orange, two orange oranges", replace(text, "apple", "orange").toString());
+        assertEquals("One apple, two apple apples",    replace(text, "orange", "apple").toString());
+        assertNull(replace(null, "orange", "apple"));
     }
 
     /**

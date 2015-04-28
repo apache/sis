@@ -25,32 +25,19 @@
                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!--
-    This pom.xml uses the ${maven.version} property,
-    which has been introduced only in Maven 3.0.4.
-    (See http://jira.codehaus.org/browse/MNG-4112)
-
-    We should declare 3.0.4 below, but at the time of writing
-    Apache Jenkins is still using Maven 3.0.3. Users of Maven
-    versions older than 3.0.4 need to specify their version
-    on the command line, using the -D option like below:
-
-    -Dmaven.version=3.0.3
-  -->
-  <prerequisites>
-    <maven>3.0.3</maven>
-  </prerequisites>
-
+  <!-- Do not inherit from core/pom.xml because doing so would create a cyclic dependency. -->
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>core</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <artifactId>parent</artifactId>
+    <version>0.6-android-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
 
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-build-helper</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Apache SIS build helper</name>
@@ -81,7 +68,16 @@ Define Maven Mojos and Javadoc taglets for generating resource files
     </developer>
   </developers>
   <contributors>
-    <!-- To prevent inheritance from parent pom.xml -->
+    <contributor>
+      <name>Olivier Nouguier</name>
+      <email>olivier.nouguier@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
   </contributors>
 
 
@@ -92,7 +88,21 @@ Define Maven Mojos and Javadoc taglets for generating resource files
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-core</artifactId>
-      <version>${maven.version}</version>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+     <dependency>
+      <groupId>org.sonatype.plexus</groupId>
+      <artifactId>plexus-build-api</artifactId>
+      <version>0.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
     </dependency>
   </dependencies>
 
@@ -124,7 +134,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
          This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
          get fixed. -->
     <profile>
-      <id>jdk7-tools.jar</id>
+      <id>jdk6-tools.jar</id>
       <activation>
         <property>
           <name>java.vendor</name>

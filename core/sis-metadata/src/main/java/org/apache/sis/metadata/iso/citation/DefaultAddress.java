@@ -28,10 +28,19 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Location of the responsible individual or organization.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -91,23 +100,25 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Address)
      */
     public DefaultAddress(final Address object) {
         super(object);
-        deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
-        city                    = object.getCity();
-        administrativeArea      = object.getAdministrativeArea();
-        postalCode              = object.getPostalCode();
-        country                 = object.getCountry();
-        electronicMailAddresses = copyCollection(object.getElectronicMailAddresses(), String.class);
+        if (object != null) {
+            deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
+            city                    = object.getCity();
+            administrativeArea      = object.getAdministrativeArea();
+            postalCode              = object.getPostalCode();
+            country                 = object.getCountry();
+            electronicMailAddresses = copyCollection(object.getElectronicMailAddresses(), String.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -132,6 +143,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Return the state, province of the location.
+     *
+     * @return State, province of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "administrativeArea")
@@ -151,6 +164,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the city of the location.
+     *
+     * @return The city of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "city")
@@ -170,6 +185,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the country of the physical address.
+     *
+     * @return Country of the physical address, or {@code null}.
      */
     @Override
     @XmlElement(name = "country")
@@ -189,6 +206,13 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the address line for the location (as described in ISO 11180, Annex A).
+     *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Address line for the location.
      */
     @Override
     @XmlElement(name = "deliveryPoint")
@@ -199,6 +223,11 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Sets the address line for the location (as described in ISO 11180, Annex A).
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code Collection<String>} to
+     * {@code Collection<? extends InternationalString>} in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new delivery points, or {@code null} if none.
      */
     public void setDeliveryPoints(final Collection<? extends String> newValues) {
@@ -207,6 +236,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the address of the electronic mailbox of the responsible organization or individual.
+     *
+     * @return Address of the electronic mailbox of the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "electronicMailAddress")
@@ -225,6 +256,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns ZIP or other postal code.
+     *
+     * @return ZIP or other postal code, or {@code null}.
      */
     @Override
     @XmlElement(name = "postalCode")

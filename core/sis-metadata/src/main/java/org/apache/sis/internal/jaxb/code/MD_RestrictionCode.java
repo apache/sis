@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Restriction;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -28,18 +28,11 @@ import org.opengis.metadata.constraint.Restriction;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode, Restriction> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(Restriction.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -54,15 +47,27 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     }
 
     /**
-     * {@inheritDoc}
+     * Fix the spelling of words that changed between ISO 19115:2003 and ISO 19115:2014,
+     * then wraps the proxy value into an adapter.
+     *
+     * <p>The spelling of "license" was changed to "licence" in latest standard, but XML
+     * marshalling shall use the previous spelling until XML schema are updated.</p>
+     *
+     * @param proxy The proxy version of {@link CodeList}, to be marshalled.
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_RestrictionCode wrap(CodeListProxy proxy) {
+        if ("licence".equals(proxy.codeListValue)) {
+            proxy.codeListValue = "license";
+        }
         return new MD_RestrictionCode(proxy);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the class of code list wrapped by this adapter.
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<Restriction> getCodeListClass() {

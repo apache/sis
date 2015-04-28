@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -35,6 +34,9 @@ import org.apache.sis.math.FunctionProperty;
  *     ObjectConverter<S,String> c = StringConverter.getInstance(sourceClass).inverse();
  * }
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class and all inner classes are immutable, and thus inherently thread-safe.
+ *
  * @param <S> The source type.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +44,6 @@ import org.apache.sis.math.FunctionProperty;
  * @version 0.3
  * @module
  */
-@Immutable
 class ObjectToString<S> extends SystemConverter<S,String> {
     /**
      * For cross-version compatibility.
@@ -75,7 +76,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
      * Converts the given number to a string.
      */
     @Override
-    public String convert(final S source) {
+    public String apply(final S source) {
         return (source != null) ? source.toString() : null;
     }
 
@@ -120,7 +121,34 @@ class ObjectToString<S> extends SystemConverter<S,String> {
         }
 
         /** Returns the name of the given code list element. */
-        @Override public String convert(final S source) {
+        @Override public String apply(final S source) {
+            return (source != null) ? source.name() : null;
+        }
+    }
+
+
+    /**
+     * Specialized instance for {@link java.lang.Enum}.
+     * This class invokes {@link java.lang.Enum#name()} instead than {@code toString()}.
+     *
+     * @see org.apache.sis.internal.converter.StringConverter.Enum
+     */
+    static final class Enum<S extends java.lang.Enum<S>> extends ObjectToString<S> {
+        private static final long serialVersionUID = 5391817175838307542L;
+
+        /** Creates a new converter from the given type of enum to strings. */
+        Enum(final Class<S> sourceClass, final SystemConverter<String, S> inverse) {
+            super(sourceClass, inverse);
+        }
+
+        /** Function is bijective, because no duplicated enum name shall exist. */
+        @Override public Set<FunctionProperty> properties() {
+            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
+                    FunctionProperty.INVERTIBLE);
+        }
+
+        /** Returns the name of the given code list element. */
+        @Override public String apply(final S source) {
             return (source != null) ? source.name() : null;
         }
     }

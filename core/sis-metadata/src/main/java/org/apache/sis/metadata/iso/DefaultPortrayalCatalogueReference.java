@@ -27,10 +27,19 @@ import org.opengis.metadata.PortrayalCatalogueReference;
 /**
  * Information identifying the portrayal catalogue used.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -69,18 +78,20 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PortrayalCatalogueReference)
      */
     public DefaultPortrayalCatalogueReference(final PortrayalCatalogueReference object) {
         super(object);
-        portrayalCatalogueCitations = copyCollection(object.getPortrayalCatalogueCitations(), Citation.class);
+        if (object != null) {
+            portrayalCatalogueCitations = copyCollection(object.getPortrayalCatalogueCitations(), Citation.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -105,6 +116,8 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
 
     /**
      * Bibliographic reference to the portrayal catalogue cited.
+     *
+     * @return References to the portrayal catalogue cited.
      */
     @Override
     @XmlElement(name = "portrayalCatalogueCitation", required = true)

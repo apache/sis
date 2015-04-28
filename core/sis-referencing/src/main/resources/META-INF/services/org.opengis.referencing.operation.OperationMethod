@@ -1,0 +1,14 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
+# Heavier classes (e.g. having more dependencies) or classes less likely to be used, should be last.
+org.apache.sis.internal.referencing.provider.Affine
+org.apache.sis.internal.referencing.provider.LongitudeRotation
+org.apache.sis.internal.referencing.provider.Equirectangular
+org.apache.sis.internal.referencing.provider.Mercator1SP
+org.apache.sis.internal.referencing.provider.Mercator2SP
+org.apache.sis.internal.referencing.provider.MercatorSpherical
+org.apache.sis.internal.referencing.provider.PseudoMercator
+org.apache.sis.internal.referencing.provider.RegionalMercator
+org.apache.sis.internal.referencing.provider.MillerCylindrical
+org.apache.sis.internal.referencing.provider.LambertConformal1SP
+org.apache.sis.internal.referencing.provider.LambertConformal2SP
+org.apache.sis.internal.referencing.provider.LambertConformalBelgium

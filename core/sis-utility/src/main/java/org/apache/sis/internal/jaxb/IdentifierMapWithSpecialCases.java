@@ -22,9 +22,10 @@ import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.XLink;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -40,7 +41,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * handling is applied.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -63,8 +64,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      * If the given authority is a special case, returns its {@link NonMarshalledAuthority}
      * integer enum. Otherwise returns -1. See javadoc for more information about special cases.
      *
-     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
-     *        because the signature of some {@code Map} methods are that way.
+     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
+     *        because the signature of some {@code Map} methods are that way.
      */
     private static int specialCase(final Object authority) {
         if (authority == IdentifierSpace.HREF) return NonMarshalledAuthority.HREF;
@@ -92,7 +93,9 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * Sets the {@code xlink:href} value, which may be null. If an explicit {@code xlink:href}
      * identifier exists, it is removed before to set the new {@code href} in the {@link XLink}
-     * object.
+     * object. The intend is to give precedence to the {@link XLink#getHRef()} property in every
+     * cases where the {@code href} is parsable as a {@link URI}, and use the value associated
+     * to the {@code HREF} key only as a fallback when the string can not be parsed.
      */
     private URI setHRef(final URI href) {
         URI old = super.putSpecialized(IdentifierSpace.HREF, null);
@@ -175,35 +178,54 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
+     * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
+     * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
+     * <cite>as-is</cite> under the {@code HREF} key.</p>
      */
     @Override
     public String put(final Citation authority, final String code)
             throws UnsupportedOperationException
     {
+        final Context   context;
+        final Object    removed;
+        final Class<?>  type;
         final Exception exception;
         switch (specialCase(authority)) {
             default: {
                 return super.put(authority, code);
             }
             case NonMarshalledAuthority.HREF: {
-                URI id = null;
-                if (code != null) try {
-                    id = new URI(code);
-                } catch (URISyntaxException e) {
-                    exception = e;
-                    break;
+                URI uri = null;
+                if (code != null) {
+                    context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
+                    try {
+                        uri = converter.toURI(context, code);
+                    } catch (URISyntaxException e) {
+                        exception = e;
+                        removed = setHRef(null);
+                        type = URI.class;
+                        break;
+                    }
                 }
                 final String old = getUnspecialized(authority);
-                id = setHRef(id);
-                return (id != null) ? id.toString() : old;
+                uri = setHRef(uri);
+                return (uri != null) ? uri.toString() : old;
             }
         }
-        SpecializedIdentifier.parseFailure(exception);
-        return super.put(authority, code);
+        SpecializedIdentifier.parseFailure(context, code, type, exception);
+        final String old = super.put(authority, code);
+        return (old == null && removed != null) ? removed.toString() : old;
     }
 
     /**
      * {@inheritDoc}
+     *
+     * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
+     * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
+     * The previous {@code HREF} value, if any, is discarded.</p>
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -211,8 +233,12 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
             throws UnsupportedOperationException
     {
         switch (specialCase(authority)) {
-            default: return super.putSpecialized(authority, value);
-            case NonMarshalledAuthority.HREF: return (T) setHRef((URI)  value);
+            default: {
+                return super.putSpecialized(authority, value);
+            }
+            case NonMarshalledAuthority.HREF: {
+                return (T) setHRef((URI) value);
+            }
         }
     }
 }

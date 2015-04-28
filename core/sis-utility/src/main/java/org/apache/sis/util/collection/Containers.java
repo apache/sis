@@ -23,17 +23,18 @@ import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
  * Static methods working on {@link Collection} or {@link CheckedContainer} objects.
- * Unless otherwise noted in the javadoc, every collections except {@link Map} returned
- * by the methods in this class implement the {@code CheckedContainer} interface.
+ * Unless otherwise noted in the javadoc, every collections returned by the methods
+ * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Containers extends Static {
@@ -124,7 +125,7 @@ public final class Containers extends Static {
     /**
      * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
      * Consequently, any change in the original set is immediately visible in the derived set,
      * and conversely.
@@ -137,7 +138,7 @@ public final class Containers extends Static {
      *
      * <p>The derived set may contain fewer elements than the original set if some elements
      * are not convertible. Non-convertible elements are <var>S</var> values for which
-     * {@code converter.convert(S)} returns {@code null}. As a consequence of this sentinel
+     * {@code converter.apply(S)} returns {@code null}. As a consequence of this sentinel
      * value usage, the derived set can not contain {@code null} elements.</p>
      *
      * <p>The returned set can be serialized if the given set and converter are serializable.
@@ -165,7 +166,7 @@ public final class Containers extends Static {
     /**
      * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
      * Consequently, any change in the original map is immediately visible in the derived map,
      * and conversely.
@@ -177,12 +178,16 @@ public final class Containers extends Static {
      *
      * <p>The derived map may contain fewer entries than the original map if some keys
      * are not convertible. Non-convertible keys are <var>K</var> values for which
-     * {@code keyConverter.convert(K)} returns {@code null}. As a consequence of this sentinel
+     * {@code keyConverter.apply(K)} returns {@code null}. As a consequence of this sentinel
      * value usage, the derived map can not contain {@code null} keys.
      * It may contain {@code null} values however.</p>
      *
      * <p>The returned map can be serialized if the given map and converters are serializable.
      * The returned map is <strong>not</strong> thread-safe.</p>
+     *
+     * <p>The returned map does not implement the {@link CheckedContainer} interface since {@code Map}
+     * is not {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
+     * {@linkplain Map#entrySet() entry set} do.</p>
      *
      * @param <SK>         The type of keys   in the storage map.
      * @param <SV>         The type of values in the storage map.
@@ -208,6 +213,42 @@ public final class Containers extends Static {
             return null;
         }
         return DerivedMap.create(storage, keyConverter, valueConverter);
+    }
+
+    /**
+     * Returns the value mapped to the given key casted to the given type,
+     * or {@code null} if the map is null or does not contain a value for the key.
+     * If the mapped value is non-null but can not be casted to the given type, then this
+     * method throws an {@link IllegalArgumentException} with a message of the form
+     * <cite>"Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’."</cite>.
+     *
+     * <p>This is a helper method for processing a {@code Map} argument containing property values of various
+     * kinds, as in the {@link org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
+     * AbstractIdentifiedObject} constructor.</p>
+     *
+     * @param  <T>        The compile-time value of the {@code type} argument.
+     * @param  properties The map of properties from which to get a value, or {@code null} if none.
+     * @param  key        The key of the property value to return. Can be {@code null} if the map supports null key.
+     * @param  type       The expected type of the property value. Can not be null.
+     * @return The property value for the given key casted to the given type, or {@code null} if none.
+     * @throws IllegalArgumentException If a non-null property value exists for the given key but can
+     *         not be casted to the given type.
+     *
+     * @see ArgumentChecks#ensureCanCast(String, Class, Object)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T property(final Map<?,?> properties, final Object key, final Class<T> type)
+            throws IllegalArgumentException
+    {
+        if (properties == null) {
+            return null;
+        }
+        final Object value = properties.get(key);
+        if (value != null && !type.isInstance(value)) {
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+        }
+        return (T) value;
     }
 
     /**

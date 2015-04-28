@@ -32,9 +32,18 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 /**
  * Designations for the measuring instruments.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -83,22 +92,24 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Instrument)
      */
     public DefaultInstrument(final Instrument object) {
         super(object);
-        citations   = copyCollection(object.getCitations(), Citation.class);
-        identifiers = singleton(object.getIdentifier(), Identifier.class);
-        type        = object.getType();
-        description = object.getDescription();
-        mountedOn   = object.getMountedOn();
+        if (object != null) {
+            citations   = copyCollection(object.getCitations(), Citation.class);
+            identifiers = singleton(object.getIdentifier(), Identifier.class);
+            type        = object.getType();
+            description = object.getDescription();
+            mountedOn   = object.getMountedOn();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -123,6 +134,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the complete citation of the instrument.
+     *
+     * @return Complete citation of the instrument.
      */
     @Override
     @XmlElement(name = "citation")
@@ -141,6 +154,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the unique identification of the instrument.
+     *
+     * @return Unique identification of the instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -161,6 +176,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the name of the type of instrument. Examples: framing, line-scan, push-broom, pan-frame.
+     *
+     * @return Type of instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "type", required = true)
@@ -180,6 +197,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the textual description of the instrument. {@code null} if unspecified.
+     *
+     * @return Textual description, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -199,6 +218,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the platform on which the instrument is mounted. {@code null} if unspecified.
+     *
+     * @return Platform on which the instrument is mounted, or {@code null}.
      */
     @Override
     @XmlElement(name = "mountedOn")

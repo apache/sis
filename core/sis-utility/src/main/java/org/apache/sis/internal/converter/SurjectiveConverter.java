@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
@@ -41,8 +42,6 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.3
  * @version 0.3
  * @module
- *
- * @see InjectiveConverter
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**
@@ -73,6 +72,7 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**
      * Returns a string representation of this converter for debugging purpose.
      */
+    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' +

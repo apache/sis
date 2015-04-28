@@ -22,28 +22,44 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.lineage.ProcessStepReport;
-import org.opengis.metadata.lineage.Processing;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.lineage.Source;
-import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.quality.Scope;
+import org.opengis.metadata.lineage.Source;
+import org.opengis.metadata.lineage.Processing;
+import org.opengis.metadata.lineage.ProcessStep;
+import org.opengis.metadata.lineage.ProcessStepReport;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
- * Description of the event, including related parameters or tolerances.
+ * Information about an event or transformation in the life of a resource.
+ * Includes the process used to maintain the resource.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
@@ -79,13 +95,23 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * in milliseconds elapsed since January 1st, 1970. If there is no such date, then this
      * field is set to the special value {@link Long#MIN_VALUE}.
      */
-    private long date;
+    private long date = Long.MIN_VALUE;
 
     /**
      * Identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      */
     private Collection<ResponsibleParty> processors;
+
+    /**
+     * Process step documentation.
+     */
+    private Collection<Citation> references;
+
+    /**
+     * Type of resource and / or extent to which the process step applies.
+     */
+    private Scope scope;
 
     /**
      * Information about the source data used in creating the data specified by the scope.
@@ -113,7 +139,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Creates an initially empty process step.
      */
     public DefaultProcessStep() {
-        date = Long.MIN_VALUE;
     }
 
     /**
@@ -122,7 +147,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param description Description of the event, including related parameters or tolerances.
      */
     public DefaultProcessStep(final CharSequence description) {
-        this(); // Initialize the date field.
         this.description = Types.toInternationalString(description);
     }
 
@@ -131,25 +155,31 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStep)
      */
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
-        description           = object.getDescription();
-        rationale             = object.getRationale();
-        date                  = toMilliseconds(object.getDate());
-        processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
-        sources               = copyCollection(object.getSources(), Source.class);
-        outputs               = copyCollection(object.getOutputs(), Source.class);
-        processingInformation = object.getProcessingInformation();
-        reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+        if (object != null) {
+            description           = object.getDescription();
+            rationale             = object.getRationale();
+            date                  = toMilliseconds(object.getDate());
+            processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
+            sources               = copyCollection(object.getSources(), Source.class);
+            outputs               = copyCollection(object.getOutputs(), Source.class);
+            processingInformation = object.getProcessingInformation();
+            reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+            if (object instanceof DefaultProcessStep) {
+                references = copyCollection(((DefaultProcessStep) object).getReferences(), Citation.class);
+                scope      = ((DefaultProcessStep) object).getScope();
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -172,8 +202,10 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         return new DefaultProcessStep(object);
     }
 
-     /**
+    /**
      * Returns the description of the event, including related parameters or tolerances.
+     *
+     * @return Description of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -193,6 +225,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the requirement or purpose for the process step.
+     *
+     * @return Requirement or purpose for the process step, or {@code null}.
      */
     @Override
     @XmlElement(name = "rationale")
@@ -211,8 +245,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Returns the date and time or range of date and time on or over which
-     * the process step occurred.
+     * Returns the date and time or range of date and time on or over which the process step occurred.
+     *
+     * @return Date on or over which the process step occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateTime")
@@ -221,8 +256,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Sets the date and time or range of date and time on or over which the process
-     * step occurred.
+     * Sets the date and time or range of date and time on or over which the process step occurred.
      *
      * @param newValue The new date.
      */
@@ -234,6 +268,13 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Means of communication with person(s) and organization(s) associated with the process step.
      */
     @Override
     @XmlElement(name = "processor")
@@ -245,6 +286,11 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
      *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValues The new processors.
      */
     public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
@@ -252,8 +298,58 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Returns the information about the source data used in creating the data specified
-     * by the scope.
+     * Returns the process step documentation.
+     *
+     * @return Process step documentation.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "reference")
+    @UML(identifier="reference", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Citation> getReferences() {
+        return references = nonNullCollection(references, Citation.class);
+    }
+
+    /**
+     * Sets the process step documentation.
+     *
+     * @param newValues The new documentation.
+     *
+     * @since 0.5
+     */
+    public void setReferences(final Collection<? extends Citation> newValues){
+        references = writeCollection(newValues, references, Citation.class);
+    }
+
+    /**
+     * Returns the type of resource and / or extent to which the process step applies.
+     *
+     * @return Type of resource, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "scope")
+    @UML(identifier="scope", obligation=OPTIONAL, specification=ISO_19115)
+    public Scope getScope() {
+        return scope;
+    }
+
+    /**
+     * Sets the type of resource and / or extent to which the process step applies.
+     *
+     * @param newValue The new type of resource.
+     *
+     * @since 0.5
+     */
+    public void setScope(final Scope newValue) {
+        checkWritePermission();
+        scope = newValue;
+    }
+
+    /**
+     * Returns the information about the source data used in creating the data specified by the scope.
+     *
+     * @return Information about the source data used in creating the data.
      */
     @Override
     @XmlElement(name = "source")
@@ -272,6 +368,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the description of the product generated as a result of the process step.
+     *
+     * @return Product generated as a result of the process step.
      */
     @Override
     @XmlElement(name = "output", namespace = Namespaces.GMI)
@@ -291,7 +389,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the comprehensive information about the procedure by which the algorithm
      * was applied to derive geographic data from the raw instrument measurements, such
-     * as datasets, software used, and the processing environment. {@code null} if unspecified.
+     * as datasets, software used, and the processing environment.
+     *
+     * @return Procedure by which the algorithm was applied to derive geographic data, or {@code null}.
      */
     @Override
     @XmlElement(name = "processingInformation", namespace = Namespaces.GMI)
@@ -313,6 +413,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the report generated by the process step.
+     *
+     * @return Report generated by the process step.
      */
     @Override
     @XmlElement(name = "report", namespace = Namespaces.GMI)

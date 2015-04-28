@@ -16,21 +16,20 @@
  */
 package org.apache.sis.util.iso;
 
-import java.io.ObjectStreamException;
-import net.jcip.annotations.Immutable;
-
 
 /**
  * The global namespace. Only one instance of this class is allowed to exists. We do not expose
  * any global namespace in public API since ISO 19103 does not define them and users should not
  * need to handle them explicitely.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class GlobalNameSpace extends DefaultNameSpace {
     /**
      * For cross-version compatibility.
@@ -60,10 +59,9 @@ final class GlobalNameSpace extends DefaultNameSpace {
      * Returns the unique instance of global name space on deserialization.
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
     @Override
-    Object readResolve() throws ObjectStreamException {
+    Object readResolve() {
         return GLOBAL;
     }
 }

@@ -29,11 +29,20 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * (<var>x</var>,<var>y</var>) coordinates of the polygon.
  * The last point replicates first point.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -70,18 +79,20 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(BoundingPolygon)
      */
     public DefaultBoundingPolygon(final BoundingPolygon object) {
         super(object);
-        polygons = copyCollection(object.getPolygons(), Geometry.class);
+        if (object != null) {
+            polygons = copyCollection(object.getPolygons(), Geometry.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -105,7 +116,9 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     }
 
     /**
-     * Returns the sets of points defining the bounding polygon.
+     * Returns the sets of points defining the bounding polygon or other geometry.
+     *
+     * @return The sets of points defining the resource boundary.
      */
     @Override
     @XmlElement(name = "polygon", required = true)
@@ -114,9 +127,9 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     }
 
     /**
-     * Sets the sets of points defining the bounding polygon.
+     * Sets the sets of points defining the resource boundary.
      *
-     * @param newValues The new polygons.
+     * @param newValues The new boundaries.
      */
     public void setPolygons(final Collection<? extends Geometry> newValues) {
         polygons = writeCollection(newValues, polygons, Geometry.class);

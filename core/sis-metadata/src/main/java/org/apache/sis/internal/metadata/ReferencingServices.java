@@ -17,12 +17,18 @@
 package org.apache.sis.internal.metadata;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -31,22 +37,37 @@ import org.apache.sis.util.resources.Errors;
  * This class searches for the {@link org.apache.sis.internal.referencing.ServicesForMetadata}
  * implementation using Java reflection.
  *
+ * <p>This class also opportunistically defines some constants related to "referencing by coordinates"
+ * but needed by metadata.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
  */
 public abstract class ReferencingServices extends SystemListener {
     /**
+     * The length of one nautical mile, which is {@value} metres.
+     */
+    public static final double NAUTICAL_MILE = 1852;
+
+    /**
+     * The GRS80 {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius},
+     * which is {@value} metres.
+     */
+    public static final double AUTHALIC_RADIUS = 6371007;
+
+    /**
      * The services, fetched when first needed.
      */
-    private static ReferencingServices instance;
+    private static volatile ReferencingServices instance;
 
     /**
      * For subclass only. This constructor registers this instance as a {@link SystemListener}
      * in order to force a new {@code ReferencingServices} lookup if the classpath changes.
      */
     protected ReferencingServices() {
+        super(Modules.METADATA);
         SystemListener.add(this);
     }
 
@@ -60,7 +81,6 @@ public abstract class ReferencingServices extends SystemListener {
         synchronized (ReferencingServices.class) {
             instance = null;
         }
-        SystemListener.remove(this);
     }
 
     /**
@@ -70,23 +90,65 @@ public abstract class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException If the {@code "sis-referencing"} module has not
      *         been found on the classpath.
      */
-    public static synchronized ReferencingServices getInstance() throws UnsupportedOperationException {
-        if (instance == null) try {
-            instance = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
-        } catch (ClassNotFoundException exception) {
-            throw new UnsupportedOperationException(Errors.format(
-                    Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
-        } catch (Exception exception) { // (ReflectiveOperationException) on JDK7 branch.
-            // Should never happen if we didn't broke our helper class.
-            throw new AssertionError(exception);
+    public static ReferencingServices getInstance() throws UnsupportedOperationException {
+        ReferencingServices c = instance;
+        if (c == null) {
+            synchronized (ReferencingServices.class) {
+                c = instance;
+                if (c == null) try {
+                    instance = c = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
+                } catch (ClassNotFoundException exception) {
+                    throw new UnsupportedOperationException(Errors.format(
+                            Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
+                } catch (Exception exception) { // (ReflectiveOperationException) on JDK7 branch.
+                    // Should never happen if we didn't broke our helper class.
+                    throw new AssertionError(exception);
+                }
+            }
         }
-        return instance;
+        return c;
     }
 
     /**
-     * Initializes a geographic bounding box from the specified envelope. If the envelope contains
-     * a CRS, then the bounding box will be projected to a geographic CRS. Otherwise, the envelope
-     * is assumed already in appropriate CRS.
+     * Returns a fully implemented parameter descriptor.
+     *
+     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
+     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
+     *
+     * @since 0.5
+     */
+    public abstract ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter);
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance.
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
+     *
+     * @since 0.4
+     */
+    public abstract FormattableObject toFormattableObject(IdentifiedObject object);
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public abstract FormattableObject toFormattableObject(MathTransform object, boolean internal);
+
+    /**
+     * Sets a geographic bounding box from the specified envelope.
+     * If the envelope contains a CRS which is not geographic, then the bounding box will be transformed
+     * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
+     * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
      * @param  envelope The source envelope.
      * @param  target The target bounding box.
@@ -96,7 +158,7 @@ public abstract class ReferencingServices extends SystemListener {
             throws TransformException;
 
     /**
-     * Initializes a vertical extent with the value inferred from the given envelope.
+     * Sets a vertical extent with the value inferred from the given envelope.
      * Only the vertical ordinates are extracted; all other ordinates are ignored.
      *
      * @param  envelope The source envelope.
@@ -107,14 +169,35 @@ public abstract class ReferencingServices extends SystemListener {
             throws TransformException;
 
     /**
-     * Initializes a temporal extent with the value inferred from the given envelope.
-     * Only the vertical ordinates are extracted; all other ordinates are ignored.
+     * Sets a temporal extent with the value inferred from the given envelope.
+     * Only the temporal ordinates are extracted; all other ordinates are ignored.
      *
      * @param  envelope The source envelope.
      * @param  target The target temporal extent.
      * @throws TransformException If no temporal component can be extracted from the given envelope.
      */
     public abstract void setBounds(Envelope envelope, DefaultTemporalExtent target)
+            throws TransformException;
+
+    /**
+     * Sets the geographic, vertical and temporal extents with the values inferred from the given envelope.
+     * If the given {@code target} has more geographic or vertical extents than needed (0 or 1), then the
+     * extraneous extents are removed.
+     *
+     * <p>Behavior regarding missing dimensions:</p>
+     * <ul>
+     *   <li>If the given envelope has no horizontal component, then all geographic extents are removed
+     *       from the given {@code target}. Non-geographic extents (e.g. descriptions and polygons) are
+     *       left unchanged.</li>
+     *   <li>If the given envelope has no vertical component, then the vertical extent is set to {@code null}.</li>
+     *   <li>If the given envelope has no temporal component, then the temporal extent is set to {@code null}.</li>
+     * </ul>
+     *
+     * @param  envelope The source envelope.
+     * @param  target The target spatio-temporal extent.
+     * @throws TransformException If no temporal component can be extracted from the given envelope.
+     */
+    public abstract void setBounds(Envelope envelope, DefaultSpatialTemporalExtent target)
             throws TransformException;
 
     /**

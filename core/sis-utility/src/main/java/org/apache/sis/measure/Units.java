@@ -16,10 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -35,6 +31,9 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.XPaths;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -47,8 +46,8 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@link SI} and {@link NonSI} ones.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Units extends Static {
@@ -57,7 +56,7 @@ public final class Units extends Static {
      * Suffix at even index are for axes having the standard geometric direction,
      * while suffix at odd index are for axes having the reverse direction.
      */
-    private static final String[] DEGREE_SUFFIXES = {"east", "west", "north", "south"};
+    private static final String[] CARDINAL_DIRECTIONS = {"east", "west", "north", "south"};
 
     /**
      * Do not allows instantiation of this class.
@@ -71,45 +70,6 @@ public final class Units extends Static {
     public static final Unit<Duration> MILLISECOND = SI.MetricPrefix.MILLI(SI.SECOND);
 
     /**
-     * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
-     *
-     * <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
-     * fraction of seconds (any precision)</cite>.
-     *
-     * Using this unit is loosely equivalent to formatting decimal degrees with the
-     * {@code "D.MMSSs"} {@link AngleFormat} pattern.
-     *
-     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
-     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
-     * the EPSG database (code 9110).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
-     */
-    static final Unit<Angle> SEXAGESIMAL_DMS = NonSI.DEGREE_ANGLE.transform(
-            SexagesimalConverter.FRACTIONAL.inverse()).asType(Angle.class);//.alternate("D.MS");
-
-    /**
-     * Pseudo-unit for degree - minute - second.
-     * Numbers in this pseudo-unit have the following format:
-     *
-     * <cite>signed degrees (integer) - arc-minutes (integer) - arc-seconds
-     * (real, any precision)</cite>.
-     *
-     * Using this unit is loosely equivalent to formatting decimal degrees with the
-     * {@code "DMMSS.s"} {@link AngleFormat} pattern.
-     *
-     * <p>This unit is non-linear and not practical for computation. Consequently, it should be
-     * avoided as much as possible. This pseudo-unit is defined only because extensively used in
-     * EPSG database (code 9107).</p>
-     *
-     * <p>This unit does not have an easily readable symbol because of the
-     * <a href="http://kenai.com/jira/browse/JSR_275-41">JSR-275 bug</a>.</p>
-     */
-    static final Unit<Angle> DEGREE_MINUTE_SECOND = NonSI.DEGREE_ANGLE.transform(
-            SexagesimalConverter.INTEGER.inverse()).asType(Angle.class);//.alternate("DMS");
-
-    /**
      * Parts per million.
      *
      * <p>This unit does not have an easily readable symbol because of the
@@ -118,31 +78,15 @@ public final class Units extends Static {
     public static final Unit<Dimensionless> PPM = Unit.ONE.times(1E-6);//.alternate("ppm");
 
     /**
-     * A few units commonly used in GIS.
+     * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
+     * is sometime added to PSS-78 measurement. However this is officially discouraged.
      */
-    private static final Map<Unit<?>,Unit<?>> COMMONS = new HashMap<Unit<?>,Unit<?>>(48);
-    static {
-        COMMONS.put(PPM, PPM);
-        boolean nonSI = false;
-        do for (final Field field : (nonSI ? NonSI.class : SI.class).getFields()) {
-            final int modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                final Object value;
-                try {
-                    value = field.get(null);
-                } catch (Exception e) { // (ReflectiveOperationException) on JDK7
-                    // Should not happen since we asked only for public static constants.
-                    throw new AssertionError(e);
-                }
-                if (value instanceof Unit<?>) {
-                    final Unit<?> unit = (Unit<?>) value;
-                    if (isLinear(unit) || isAngular(unit) || isScale(unit)) {
-                        COMMONS.put(unit, unit);
-                    }
-                }
-            }
-        } while ((nonSI = !nonSI) == true);
-    }
+    static final Unit<Dimensionless> PSU = Unit.ONE.alternate("psu");
+
+    /**
+     * Sigma-level, used in oceanography. This is a way to measure a depth as a fraction of the sea floor depth.
+     */
+    static final Unit<Dimensionless> SIGMA = Unit.ONE.alternate("sigma");
 
     /**
      * Returns {@code true} if the given unit is a linear unit.
@@ -216,7 +160,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or an angular unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not an angular unit.
      *
@@ -234,7 +178,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a linear unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a linear unit.
      *
@@ -252,7 +196,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a temporal unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a temporal unit.
      *
@@ -270,7 +214,7 @@ public final class Units extends Static {
      * Makes sure that the specified unit is either null or a scale unit.
      * This method is used for argument checks in constructors and setter methods.
      *
-     * @param  unit The unit to check, or {@code null} if none.
+     * @param  unit The unit to check, or {@code null} if none.
      * @return The given {@code unit} argument, which may be null.
      * @throws IllegalArgumentException if {@code unit} is non-null and not a scale unit.
      *
@@ -327,23 +271,7 @@ public final class Units extends Static {
                 unit = unit.times(factor);
             }
         }
-        return canonicalize(unit);
-    }
-
-    /**
-     * Returns a unique instance of the given units if possible, or the units unchanged otherwise.
-     *
-     * @param  <A>    The quantity measured by the unit.
-     * @param  unit   The unit to canonicalize.
-     * @return A unit equivalents to the given unit, canonicalized if possible.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private static <A extends Quantity> Unit<A> canonicalize(final Unit<A> unit) {
-        final Unit<?> candidate = COMMONS.get(unit);
-        if (candidate != null) {
-            return (Unit) candidate;
-        }
-        return unit;
+        return UnitsMap.canonicalize(unit);
     }
 
     /**
@@ -378,8 +306,7 @@ public final class Units extends Static {
      *
      * The above is exact for {@linkplain javax.measure.converter.LinearConverter linear converters},
      * which is the case of the vast majority of unit converters in use. It may not be exact for a
-     * few unusual converter like the one from {@link #SEXAGESIMAL_DMS} to decimal degrees for
-     * example.
+     * few unusual converter like the one from sexagesimal degrees to decimal degrees for example.
      *
      * @param  converter The converter for which we want the derivative at a given point.
      * @param  value The point at which to compute the derivative.
@@ -395,12 +322,12 @@ public final class Units extends Static {
      * hands especially a few symbols found in WKT parsing or in XML files. The list of symbols
      * handled especially is implementation-dependent and may change in future SIS versions.
      *
-     * {@section Parsing authority codes}
+     * <div class="section">Parsing authority codes</div>
      * As a special case, if the given {@code uom} arguments is of the form {@code "EPSG:####"}
-     * (ignoring case and whitespaces), then {@code "####"} is parsed as an integer and forwarded
-     * to the {@link #valueOfEPSG(int)} method.
+     * or {@code "urn:ogc:def:uom:EPSG:####"} (ignoring case and whitespaces), then {@code "####"}
+     * is parsed as an integer and forwarded to the {@link #valueOfEPSG(int)} method.
      *
-     * {@section NetCDF unit symbols}
+     * <div class="section">NetCDF unit symbols</div>
      * The attributes in NetCDF files often merge the axis direction with the angular unit,
      * as in {@code "degrees_east"} or {@code "degrees_north"}. This {@code valueOf} method
      * ignores those suffixes and unconditionally returns {@link NonSI#DEGREE_ANGLE} for all
@@ -422,15 +349,23 @@ public final class Units extends Static {
          * Check for authority codes (currently only EPSG, but more could be added later).
          * If the unit is not an authority code (which is the most common case), then we
          * will check for hard-coded unit symbols.
+         *
+         * DefinitionURI.codeOf(…) returns 'uom' directly (provided that whitespaces were already trimmed)
+         * if no ':' character were found, in which case the string is assumed to be the code directly.
+         * This is the intended behavior for AuthorityFactory, but in the particular case of this method
+         * we want to try to parse as a xpointer before to give up.
          */
-        int s = uom.indexOf(':');
-        if (s >= 0) {
-            final String authority = (String) trimWhitespaces(uom, 0, s);
-            if (authority.equalsIgnoreCase("EPSG")) try {
-                return valueOfEPSG(Integer.parseInt((String) trimWhitespaces(uom, s+1, length)));
+        if (isURI(uom)) {
+            String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
+            if (code != null && code != uom) try { // Really identity check, see above comment.
+                return valueOfEPSG(Integer.parseInt(code));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.IllegalArgumentValue_2, "uom", uom), e);
+            }
+            code = XPaths.xpointer("uom", uom);
+            if (code != null) {
+                uom = code;
             }
         }
         /*
@@ -440,15 +375,21 @@ public final class Units extends Static {
          * Those suffixes are ignored.
          */
         if (uom.regionMatches(true, 0, "deg", 0, 3)) {
-            if (length == 3) {
-                return NonSI.DEGREE_ANGLE; // Exactly "deg"
+            switch (length) {
+                case 3: return NonSI.DEGREE_ANGLE; // Exactly "deg"
+                case 4: {
+                    if (uom.charAt(3) == 'K') {
+                        return SI.KELVIN; // Exactly "degK".
+                    }
+                    break;
+                }
             }
             String prefix = uom;
             boolean isTemperature = false;
-            s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
+            final int s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
             if (s >= 1) {
                 final String suffix = (String) trimWhitespaces(uom, s+1, length);
-                if (ArraysExt.containsIgnoreCase(DEGREE_SUFFIXES, suffix) || (isTemperature = isCelsius(suffix))) {
+                if (ArraysExt.containsIgnoreCase(CARDINAL_DIRECTIONS, suffix) || (isTemperature = isCelsius(suffix))) {
                     prefix = (String) trimWhitespaces(uom, 0, s); // Remove the suffix only if we recognized it.
                 }
             }
@@ -461,6 +402,7 @@ public final class Units extends Static {
              * with "deg", then the check should be put in the above block instead.
              */
             if (uom.equals("°")                      || equalsIgnorePlural(uom, "decimal_degree")) return NonSI.DEGREE_ANGLE;
+            if (uom.equalsIgnoreCase("arcsec"))                                                    return NonSI.SECOND_ANGLE;
             if (uom.equalsIgnoreCase("rad")          || equalsIgnorePlural(uom, "radian"))         return SI.RADIAN;
             if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return SI.KILOMETRE;
             if (equalsIgnorePlural(uom, "meter")     || equalsIgnorePlural(uom, "metre"))          return SI.METRE;
@@ -471,12 +413,10 @@ public final class Units extends Static {
             if (equalsIgnorePlural(uom, "second")) return SI   .SECOND;
             if (equalsIgnorePlural(uom, "pixel"))  return NonSI.PIXEL;
             if (isCelsius(uom))                    return SI.CELSIUS;
-            if (uom.isEmpty() ||
-                uom.equalsIgnoreCase("psu") ||   // Pratical Salinity Scale (oceanography)
-                uom.equalsIgnoreCase("level"))   // Sigma level (oceanography)
-            {
-                return Unit.ONE;
-            }
+            if (uom.isEmpty())                     return Unit.ONE;
+            if (uom.equalsIgnoreCase("ppm"))       return PPM;
+            if (uom.equalsIgnoreCase("psu"))       return PSU;
+            if (uom.equalsIgnoreCase("sigma"))     return SIGMA;
         }
         final Unit<?> unit;
         try {
@@ -485,7 +425,14 @@ public final class Units extends Static {
             // Provides a better error message than the default JSR-275 0.9.4 implementation.
             throw Exceptions.setMessage(e, Errors.format(Errors.Keys.IllegalArgumentValue_2, "uom", uom), true);
         }
-        return canonicalize(unit);
+        /*
+         * Special case: JSR-275 version 0.6.1 parses "1/s" and "s-1" as "Baud", which is not what
+         * we use in geoscience. Replace "Baud" by "Hertz" if the symbol was not explicitely "Bd".
+         */
+        if (unit.isCompatible(SI.HERTZ) && !uom.equals("Bd")) {
+            return SI.HERTZ;
+        }
+        return UnitsMap.canonicalize(unit);
     }
 
     /**
@@ -512,38 +459,56 @@ public final class Units extends Static {
     }
 
     /**
+     * Returns {@code true} if the given unit seems to be an URI. Example:
+     * <ul>
+     *   <li>{@code "urn:ogc:def:uom:EPSG::9001"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"}</li>
+     * </ul>
+     */
+    private static boolean isURI(final String uom) {
+        for (int i=uom.length(); --i>=0;) {
+            final char c = uom.charAt(i);
+            if (c == ':' || c == '#') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns a hard-coded unit from an EPSG code. The {@code code} argument given to this
      * method shall be a code identifying a record in the {@code "Unit of Measure"} table of
      * the EPSG database. If this method does not recognize the given code, then it returns
      * {@code null}.
      *
      * <p>The list of units recognized by this method is not exhaustive. This method recognizes
-     * the base units declared in the {@code [TARGET_UOM_CODE]} column of the above-cited table,
+     * the base units declared in the {@code TARGET_UOM_CODE} column of the above-cited table,
      * and some frequently-used units. The list of recognized units may be updated in any future
      * version of SIS.</p>
      *
      * <p>The {@link org.apache.sis.referencing.factory.epsg.DirectEpsgFactory} uses this method
      * for fetching the base units, and derives automatically other units from the information
-     * found in the EPSG database. This method is also used by other code not directly related
+     * found in the EPSG database. This method is also used by other classes not directly related
      * to the EPSG database, like {@link org.apache.sis.referencing.factory.web.AutoCRSFactory}
      * which uses EPSG code for identifying units.</p>
      *
-     * <p>The values currently recognized are:</p>
+     * <p>The currently recognized values are:</p>
      * <table class="sis">
+     *   <caption>EPSG codes for units</caption>
      *   <tr>
      *     <th>Linear units</th>
      *     <th class="sep">Angular units</th>
      *     <th class="sep">Scale units</th>
      *   </tr><tr>
-     *     <td><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td><table class="compact" summary="Linear units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9001</td><td>metre</td></tr>
      *       <tr><td>9002</td><td>foot</td></tr>
      *       <tr><td>9030</td><td>nautical mile</td></tr>
      *       <tr><td>9036</td><td>kilometre</td></tr>
      *     </table></td>
-     *     <td class="sep"><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td class="sep"><table class="compact" summary="Angular units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9101</td><td>radian</td></tr>
      *       <tr><td>9102</td><td>decimal degree</td></tr>
      *       <tr><td>9103</td><td>minute</td></tr>
@@ -556,14 +521,19 @@ public final class Units extends Static {
      *       <tr><td>9111</td><td>sexagesimal degree-minute</td></tr>
      *       <tr><td>9122</td><td>decimal degree</td></tr>
      *     </table></td>
-     *     <td class="sep"><table class="compact">
-     *       <tr><td width="40"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *     <td class="sep"><table class="compact" summary="Scale units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9201</td><td>one</td></tr>
      *       <tr><td>9202</td><td>part per million</td></tr>
      *       <tr><td>9203</td><td>one</td></tr>
      *     </table></td>
      *   </tr>
      * </table>
+     *
+     * <div class="note"><b>Note:</b>
+     * EPSG uses code 9102 (<cite>degree</cite>) for prime meridian and coordinate operation parameters,
+     * and code 9122 (<cite>degree (supplier to define representation)</cite>) for coordinate system axes.
+     * But Apache SIS considers those two codes as synonymous.</div>
      *
      * @param  code The EPSG code for a unit of measurement.
      * @return The unit, or {@code null} if the code is unrecognized.
@@ -580,15 +550,42 @@ public final class Units extends Static {
             case 9103: return NonSI.MINUTE_ANGLE;
             case 9104: return NonSI.SECOND_ANGLE;
             case 9105: return NonSI.GRADE;
-            case 9107: return Units.DEGREE_MINUTE_SECOND;
-            case 9108: return Units.DEGREE_MINUTE_SECOND;
+            case 9107: // Fall through
+            case 9108: return SexagesimalConverter.DMS_SCALED;
             case 9109: return SI.MetricPrefix.MICRO(SI.RADIAN);
-            case 9111: // Sexagesimal DM: use DMS.
-            case 9110: return Units.SEXAGESIMAL_DMS;
+            case 9111: return SexagesimalConverter.DM;
+            case 9110: return SexagesimalConverter.DMS;
             case 9203: // Fall through
             case 9201: return Unit .ONE;
             case 9202: return Units.PPM;
             default:   return null;
         }
+    }
+
+    /**
+     * Returns the EPSG code of the given units, or {@code null} if unknown.
+     * This method is the converse of {@link #valueOfEPSG(int)}.
+     *
+     * <p>The same unit may be represented by different EPSG codes depending on the context:</p>
+     * <ul>
+     *   <li>EPSG:9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
+     *   <li>EPSG:9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
+     * </ul>
+     *
+     * When such choice exists, the code to return is determined by the {@code inAxis} argument,
+     * which specifies whether the code will be used for axis definition or in other context.
+     *
+     * @param  unit The unit for which to get the EPSG code.
+     * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
+     * @return The EPSG code of the given units, or {@code null} if unknown.
+     *
+     * @since 0.4
+     */
+    public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
+        Integer code = UnitsMap.EPSG_CODES.get(unit);
+        if (inAxis && code != null && code == 9102) {
+            code = UnitsMap.I9122;
+        }
+        return code;
     }
 }

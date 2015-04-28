@@ -45,15 +45,13 @@
  *     of content, providing more efficient storage than what we would get with the general-purpose
  *     collection implementations.
  *   </li><li>
- *     {@link org.apache.sis.util.collection.DisjointSet},
- *     {@link org.apache.sis.util.collection.KeySortedList} and
  *     {@link org.apache.sis.util.collection.FrequencySortedSet} provides specialized ways to
- *     organize their elements.
+ *     organize its elements.
  *   </li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */

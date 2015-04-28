@@ -25,11 +25,12 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * A test method producing an object to be used by another test method.
- * Such methods are annotated with this {@code TestStep} annotation instead than the
- * JUnit {@link org.junit.Test} one. However in current implementation, those methods
- * must be explicitely invoked from another method. This is because JUnit 4 does not
- * support tests chaining, so this annotation is currently used only for documentation
- * purpose.
+ *
+ * <p>If this annotation was supported, we would annotate some methods with the {@code TestStep} annotation
+ * instead than the JUnit {@link org.junit.Test} one. However in current implementation, this functionality
+ * is not supported and the test step methods must be explicitely invoked from another method. Consequently
+ * this annotation is currently used only for documentation purpose, in case a future JUnit version would
+ * support tests chaining.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

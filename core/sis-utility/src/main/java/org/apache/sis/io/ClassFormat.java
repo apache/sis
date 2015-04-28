@@ -19,20 +19,21 @@ package org.apache.sis.io;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.io.InvalidObjectException;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Classes;
 
 
 /**
- * Used by {@link CompoundFormat} for formatting the names of object of type {@link Class}.
+ * Used by {@link CompoundFormat} for formatting the name of objects of type {@link Class}.
+ *
+ * <div class="section">Thread safety</div>
+ * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
+ * Note that this is specific to {@code ClassFormat} and generally not true for arbitrary {@code Format} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@ThreadSafe
 final class ClassFormat extends Format {
     /**
      * For cross-version compatibility.
@@ -70,7 +71,7 @@ final class ClassFormat extends Format {
     /**
      * Resolves to the singleton instance on deserialization.
      */
-    private Object readResolve() throws InvalidObjectException {
+    private Object readResolve() {
         return INSTANCE;
     }
 }

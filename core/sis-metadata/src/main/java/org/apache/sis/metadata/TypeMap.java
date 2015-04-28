@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * Map of property valuePolicy for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -69,11 +69,10 @@ final class TypeMap extends PropertyMap<Class<?>> {
         return new Iter() {
             @Override
             public Map.Entry<String,Class<?>> next() {
-                final Class<?> value = accessor.type(index, valuePolicy);
-                if (value == null) {
-                    // PropertyAccessor.type(int) never return null if the index is valid.
+                if (index >= accessor.count()) {
                     throw new NoSuchElementException();
                 }
+                final Class<?> value = accessor.type(index, valuePolicy);
                 return new SimpleImmutableEntry<String,Class<?>>(accessor.name(index++, keyPolicy), value);
             }
         };

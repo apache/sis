@@ -29,7 +29,7 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -44,6 +44,8 @@ public final class LI_Source extends PropertyType<LI_Source, Source> {
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Source.class}
      */
     @Override
     protected Class<Source> getBoundType() {
@@ -78,7 +80,7 @@ public final class LI_Source extends PropertyType<LI_Source, Source> {
      */
     @XmlElementRef
     public DefaultSource getElement() {
-        return skip() ? null : LE_Source.castOrCopy(metadata);
+        return LE_Source.castOrCopy(metadata);
     }
 
     /**

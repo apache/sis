@@ -16,30 +16,47 @@
  */
 package org.apache.sis.metadata.iso.content;
 
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.MemberName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Information on the range of each dimension of a cell measurement value.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @author  Rémi Maréchal (Geomatys)
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {
     "sequenceIdentifier",
-    "descriptor"
+    "descriptor",
+/// "names"
 })
 @XmlRootElement(name = "MD_RangeDimension")
 @XmlSeeAlso(DefaultBand.class)
@@ -47,17 +64,23 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8624244894762434804L;
+    private static final long serialVersionUID = 4517148689016920767L;
 
     /**
-     * Number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     * Unique name or number that identifies attributes included in the coverage.
      */
     private MemberName sequenceIdentifier;
 
     /**
-     * Description of the range of a cell measurement value.
+     * Description of the attribute.
      */
-    private InternationalString descriptor;
+    private InternationalString description;
+
+    /**
+     * Identifiers for each attribute included in the resource. These identifiers
+     * can be use to provide names for the attribute from a standard set of names.
+     */
+    private Collection<Identifier> names;
 
     /**
      * Constructs an initially empty range dimension.
@@ -70,23 +93,28 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RangeDimension)
      */
     public DefaultRangeDimension(final RangeDimension object) {
         super(object);
-        sequenceIdentifier = object.getSequenceIdentifier();
-        descriptor         = object.getDescriptor();
+        if (object != null) {
+            sequenceIdentifier = object.getSequenceIdentifier();
+            description        = object.getDescriptor();
+            if (object instanceof DefaultRangeDimension) {
+                names = copyCollection(((DefaultRangeDimension) object).getNames(), Identifier.class);
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link Band}, then this method
+     *   <li>Otherwise if the given object is an instance of {@link SampleDimension}, then this method
      *       delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultRangeDimension}, then it is returned unchanged.</li>
@@ -112,8 +140,9 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Returns the number that uniquely identifies instances of bands of wavelengths
-     * on which a sensor operates.
+     * Returns a unique name or number that identifies attributes included in the coverage.
+     *
+     * @return Unique name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequenceIdentifier")
@@ -122,8 +151,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Sets the number that uniquely identifies instances of bands of wavelengths
-     * on which a sensor operates.
+     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      *
      * @param newValue The new sequence identifier.
      */
@@ -133,21 +161,80 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
+     * Returns the description of the attribute.
+     *
+     * @return Description of the attribute, or {@code null}.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "description")
+    @UML(identifier="description", obligation=OPTIONAL, specification=ISO_19115)
+    public InternationalString getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the description of the attribute.
+     *
+     * @param newValue The new description.
+     *
+     * @since 0.5
+     */
+    public void setDescription(final InternationalString newValue) {
+        checkWritePermission();
+        description = newValue;
+    }
+
+    /**
      * Returns the description of the range of a cell measurement value.
+     * This method fetches the value from the {@linkplain #getDescription() description}.
+     *
+     * @return Description of the range of a cell measurement value, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, renamed {@link #getDescription()}.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "descriptor")
     public InternationalString getDescriptor() {
-        return descriptor;
+        return getDescription();
     }
 
     /**
      * Sets the description of the range of a cell measurement value.
+     * This method stores the value in the {@linkplain #setDescription(InternationalString) description}.
      *
      * @param newValue The new descriptor.
+     *
+     * @deprecated As of ISO 19115:2014, renamed {@link #setDescription(InternationalString)}.
      */
+    @Deprecated
     public void setDescriptor(final InternationalString newValue) {
-        checkWritePermission();
-        descriptor = newValue;
+        setDescription(newValue);
+    }
+
+    /**
+     * Returns the identifiers for each attribute included in the resource.
+     * These identifiers can be use to provide names for the attribute from a standard set of names.
+     *
+     * @return Identifiers for each attribute included in the resource.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "name")
+    @UML(identifier="name", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Identifier> getNames() {
+        return names = nonNullCollection(names, Identifier.class);
+    }
+
+    /**
+     * Sets the identifiers for each attribute included in the resource.
+     *
+     * @param newValues The new identifiers for each attribute.
+     *
+     * @since 0.5
+     */
+    public void setNames(final Collection<? extends Identifier> newValues) {
+        names = writeCollection(newValues, names, Identifier.class);
     }
 }

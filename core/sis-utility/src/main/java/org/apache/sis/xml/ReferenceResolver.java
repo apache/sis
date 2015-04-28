@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.UUID;
 import java.lang.reflect.Proxy;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
@@ -37,8 +38,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@code ReferenceResolver} to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public class ReferenceResolver {
@@ -60,7 +61,7 @@ public class ReferenceResolver {
      *
      * <ul>
      *   <li>Implements the given {@code type} interface.</li>
-     *   <li>Implements the {@link IdentifiedObject} interface.</li>
+     *   <li>Implements the {@link NilObject} and {@link IdentifiedObject} interfaces from this package.</li>
      *   <li>{@link IdentifiedObject#getIdentifiers()} will return the given identifiers.</li>
      *   <li>{@link IdentifiedObject#getIdentifierMap()} will return a {@link java.util.Map}
      *       view over the given identifiers.</li>
@@ -112,9 +113,8 @@ public class ReferenceResolver {
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  link The {@code xlink} attributes.
+     * @param  type    The type of object to be unmarshalled, often as an interface.
+     * @param  link    The {@code xlink} attributes.
      * @return An object of the given type for the given {@code xlink} attribute, or {@code null} if none.
      */
     public <T> T resolve(final MarshalContext context, final Class<T> type, final XLink link) {
@@ -130,21 +130,24 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.
-     * Subclasses can override this method if they know whether the receiver will be able
-     * to resolve such references.</p>
+     * <p>The default implementation returns {@code true} in the following cases:</p>
+     * <ul>
+     *   <li>If {@code object} implements {@link NilObject}.</li>
+     *   <li>If {@code object} implements {@link Emptiable} and its {@code isEmpty()} method returns {@code true}.</li>
+     * </ul>
+     *
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
+     * @param  type    The type of object to be unmarshalled, often as an interface.
      * @param  object  The object to be marshalled.
      * @param  uuid    The unique identifier of the object to be marshalled.
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
-        return false;
+        return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
     /**
@@ -154,9 +157,13 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.
-     * Subclasses can override this method if they know whether the receiver will be able
-     * to resolve such references.</p>
+     * <p>The default implementation returns {@code true} in the following cases:</p>
+     * <ul>
+     *   <li>If {@code object} implements {@link NilObject}.</li>
+     *   <li>If {@code object} implements {@link Emptiable} and its {@code isEmpty()} method returns {@code true}.</li>
+     * </ul>
+     *
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -168,7 +175,7 @@ public class ReferenceResolver {
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
-        return false;
+        return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
     /**
@@ -177,34 +184,33 @@ public class ReferenceResolver {
      * sequence. For example:
      *
      * <table class="sis">
+     * <caption>XML representations of string</caption>
      * <tr>
      *   <th>As {@code <gco:CharacterString>}</th>
      *   <th>As {@code <gmx:Anchor>}</th>
      * </tr><tr>
-     * <td>{@preformat xml
-     *   <gmd:country>
-     *     <gco:CharacterString>France</gco:CharacterString>
-     *   </gmd:country>
-     * }</td>
-     * <td>{@preformat xml
-     *   <gmd:country>
-     *     <gmx:Anchor xlink:href="SDN:C320:2:FR">France</gmx:Anchor>
-     *   </gmd:country>
-     * }</td>
-     * </tr>
+     * <td>
+     *   <pre> &lt;gmd:country&gt;
+     *     &lt;gco:CharacterString&gt;France&lt;/gco:CharacterString&gt;
+     * &lt;/gmd:country&gt;</pre>
+     * </td><td>
+     *   <pre> &lt;gmd:country&gt;
+     *     &lt;gmx:Anchor xlink:href="SDN:C320:2:FR"&gt;France&lt;/gmx:Anchor&gt;
+     * &lt;/gmd:country&gt;</pre>
+     * </td></tr>
      * </table>
      *
      * Subclasses can override this method if they can provide a mapping from some text
      * values to anchors.
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  object  The object for which an anchor is requested. Often same than {@code text},
-     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance
-     *                 for which {@code text} is a string representation.
-     * @param  text    The textual representation of the object for which to get the anchor.
+     * @param  value   The value for which an anchor is requested. Often the same instance than {@code text},
+     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
+     *                 {@code text} is a string representation.
+     * @param  text    The textual representation of the value for which to get the anchor.
      * @return The anchor for the given text, or {@code null} if none.
      */
-    public XLink anchor(final MarshalContext context, final Object object, final CharSequence text) {
+    public XLink anchor(final MarshalContext context, final Object value, final CharSequence text) {
         return (text instanceof Anchor) ? (Anchor) text : null;
     }
 }

@@ -16,18 +16,19 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition} implementation.
+ * Information about the measuring instruments, the platform carrying them, and the mission to which the data contributes.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.acquisition OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * <div class="section">Overview</div>
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective              Objective}<br>
@@ -48,7 +49,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Priority      Priority}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.GeometryType  Geometry type}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.acquisition.OperationType Operation type}<br>
- * </td><td class="sep" width="50%" nowrap>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
  * {@code  ├─}                 {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective              Objective}<br>
  * {@code  │   ├─}             {@linkplain org.opengis.metadata.acquisition.ObjectiveType                        Objective type} «code list»<br>
@@ -69,8 +70,8 @@
  * {@code  └─}                 {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord    Environmental record}<br>
  * </td></tr></table>
  *
- * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * <div class="section">Null values, nil objects and collections</div>
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -85,8 +86,8 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMI, xmlns = {
@@ -122,7 +123,7 @@
     @XmlJavaTypeAdapter(MI_TriggerCode.class),
 
     // Java types, primitive types and basic OGC types handling
-//  @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })

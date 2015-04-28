@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -43,6 +43,8 @@ public final class MD_Resolution extends PropertyType<MD_Resolution, Resolution>
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code Resolution.class}
      */
     @Override
     protected Class<Resolution> getBoundType() {
@@ -77,7 +79,7 @@ public final class MD_Resolution extends PropertyType<MD_Resolution, Resolution>
      */
     @XmlElementRef
     public DefaultResolution getElement() {
-        return skip() ? null : DefaultResolution.castOrCopy(metadata);
+        return DefaultResolution.castOrCopy(metadata);
     }
 
     /**

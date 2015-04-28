@@ -19,7 +19,6 @@ package org.apache.sis.geometry;
 import java.util.Arrays;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -31,7 +30,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * Tests the {@link GeneralDirectPosition} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -41,7 +40,6 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      * Tests the {@link GeneralDirectPosition#normalize()} method.
      */
     @Test
-    @Ignore("The tested position needs to be associated to CRS:84")
     public void testNormalize() {
         final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
         position.setCoordinate(300, -100);
@@ -84,8 +82,8 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message.contains("POINT(6 10 2"));
-            assertTrue(message.contains("‘)’"));
+            assertTrue(message, message.contains("POINT(6 10 2"));
+            assertTrue(message, message.contains("‘)’"));
         }
         try {
             new GeneralDirectPosition("POINT 6 10 2)");
@@ -99,8 +97,9 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message.contains("POINT(6 10 2) x"));
-            assertTrue(message.contains("“x”"));
+            assertTrue(message, message.contains("POINT(6 10 2) x"));
+            assertTrue(message, message.contains("“x”") ||  // English locale
+                                message.contains("« x »")); // French locale
         }
     }
 

@@ -28,8 +28,8 @@ import static org.apache.sis.util.Characters.*;
  * Tests the {@link Characters} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 public final strictfp class CharactersTest extends TestCase {
@@ -55,6 +55,36 @@ public final strictfp class CharactersTest extends TestCase {
         assertTrue (isLineOrParagraphSeparator('\n'));
         assertTrue (isLineOrParagraphSeparator(LINE_SEPARATOR));
         assertTrue (isLineOrParagraphSeparator(PARAGRAPH_SEPARATOR));
+    }
+
+    /**
+     * Tests the {@link Characters#isHexadecimal()} method.
+     *
+     * @since 0.5
+     */
+    @Test
+    public void testIsHexadecimal() {
+        assertTrue(isHexadecimal('0'));
+        assertTrue(isHexadecimal('5'));
+        assertTrue(isHexadecimal('9'));
+        assertTrue(isHexadecimal('A'));
+        assertTrue(isHexadecimal('C'));
+        assertTrue(isHexadecimal('F'));
+        assertTrue(isHexadecimal('a'));
+        assertTrue(isHexadecimal('c'));
+        assertTrue(isHexadecimal('f'));
+
+        assertFalse(isHexadecimal(' '));
+        assertFalse(isHexadecimal('_'));
+        assertFalse(isHexadecimal(':'));
+        assertFalse(isHexadecimal('/'));
+        assertFalse(isHexadecimal('>'));
+        assertFalse(isHexadecimal('@'));
+        assertFalse(isHexadecimal('`'));
+        assertFalse(isHexadecimal('G'));
+        assertFalse(isHexadecimal('Q'));
+        assertFalse(isHexadecimal('g'));
+        assertFalse(isHexadecimal('q'));
     }
 
     /**
@@ -118,8 +148,8 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Scans the full {@code char} range in order to check for
-     * {@link org.apache.sis.util.Characters.Filter} consistency.
+     * Scans the full {@code char} range in order to check for
+     * {@link org.apache.sis.util.Characters.Filter} consistency.
      */
     @Test
     public void scanCharacterRange() {

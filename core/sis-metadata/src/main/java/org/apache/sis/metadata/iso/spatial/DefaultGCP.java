@@ -30,9 +30,18 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Information on ground control point.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -68,19 +77,21 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GCP)
      */
     public DefaultGCP(final GCP object) {
         super(object);
-        accuracyReports       = copyCollection(object.getAccuracyReports(), Element.class);
-        geographicCoordinates = object.getGeographicCoordinates();
+        if (object != null) {
+            accuracyReports       = copyCollection(object.getAccuracyReports(), Element.class);
+            geographicCoordinates = object.getGeographicCoordinates();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -106,10 +117,12 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Returns the geographic or map position of the control point, in either two or three dimensions.
      *
+     * @return Geographic or map position of the control point, or {@code null}.
+     *
      * @todo finish the annotation on the referencing module before.
      */
     @Override
-    //@XmlElement(name = "geographicCoordinates")
+    //@XmlElement(name = "geographicCoordinates", required = true)
     public DirectPosition getGeographicCoordinates() {
         return geographicCoordinates;
     }
@@ -125,7 +138,9 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     }
 
     /**
-     * Get the accuracy of a ground control point.
+     * Returns the accuracy of a ground control point.
+     *
+     * @return Accuracy of a ground control point.
      */
     @Override
     @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)

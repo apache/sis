@@ -19,6 +19,12 @@ package org.apache.sis.internal.jaxb;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ServiceLoader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**
@@ -33,13 +39,27 @@ import java.util.ServiceLoader;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see org.apache.sis.xml.MarshallerPool
  */
 public abstract class TypeRegistration {
+    /**
+     * The JAXB context, or {@code null} if not yet created or if the classpath changed.
+     */
+    private static Reference<JAXBContext> context;
+    static {
+        SystemListener.add(new SystemListener(Modules.UTILITIES) {
+            @Override protected void classpathChanged() {
+                synchronized (TypeRegistration.class) {
+                    context = null;
+                }
+            }
+        });
+    }
+
     /**
      * For subclasses constructors.
      */
@@ -64,7 +84,7 @@ public abstract class TypeRegistration {
      *
      * @return The default set of classes to be bound to the {@code JAXBContext}.
      */
-    public static Class<?>[] defaultClassesToBeBound() {
+    private static Class<?>[] defaultClassesToBeBound() {
         /*
          * Implementation note: do not keep the ServiceLoader in static field because:
          *
@@ -76,5 +96,26 @@ public abstract class TypeRegistration {
             t.getTypes(types);
         }
         return types.toArray(new Class<?>[types.size()]);
+    }
+
+    /**
+     * Returns the shared {@code JAXBContext} for the set of {@link #defaultClassesToBeBound()}.
+     * Note that the {@code JAXBContext} class is thread safe, but the {@code Marshaller},
+     * {@code Unmarshaller}, and {@code Validator} classes are not thread safe.
+     *
+     * @return The shared JAXB context.
+     * @throws JAXBException If an error occurred while creating the JAXB context.
+     */
+    public static synchronized JAXBContext getSharedContext() throws JAXBException {
+        final Reference<JAXBContext> c = context;
+        if (c != null) {
+            final JAXBContext instance = c.get();
+            if (instance != null) {
+                return instance;
+            }
+        }
+        final JAXBContext instance = JAXBContext.newInstance(defaultClassesToBeBound());
+        context = new WeakReference<JAXBContext>(instance);
+        return instance;
     }
 }

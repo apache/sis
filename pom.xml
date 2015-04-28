@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>13</version>
+    <version>16</version>
   </parent>
 
 
@@ -39,16 +39,25 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.3-android-SNAPSHOT</version>
+  <version>0.6-android-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
-  <url>http://incubator.apache.org/sis/</url>
+  <url>http://sis.apache.org</url>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Apache SIS is a toolkit for describing location information, including points,
- bounding boxes, polygons, and for computing distances on that information.
+Apache SIS is a free software, Java language library for developing geospatial applications.
+ SIS provides data structures for geographic data and associated metadata along with methods
+ to manipulate those data structures. The SIS metadata module forms the base of the library
+ and enables the creation of metadata objects which comply with the ISO 19115 metadata model
+ and which can be read from or written to ISO 19139 compliant XML documents.
+ The SIS referencing module will enable the construction of geodetic data structures for
+ geospatial referencing based on the ISO 19111 model such as axis, projection and coordinate
+ reference system definitions, along with the associated operations which enable the mathematical
+ conversion of coordinates between different systems of reference.
+ The SIS storage modules will provide a common approach to the reading and writing of grid coverages
+ applicable to simple imagery as to many dimensional data structures.
   </description>
   <inceptionYear>2010</inceptionYear>
 
@@ -111,7 +120,7 @@ Apache SIS is a toolkit for describing location information, including points,
       <name>Adam Estrada</name>
       <id>aestrada</id>
       <roles>
-        <role>lead</role>
+        <role>chair</role>
       </roles>
     </developer>
     <developer>
@@ -122,7 +131,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -152,7 +160,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>AT&amp;T Interactive</organization>
       <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -165,7 +172,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -177,9 +183,16 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
+      <roles>
+        <role>developer</role>
       </roles>
     </developer>
     <developer>
@@ -189,7 +202,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -219,6 +231,12 @@ Apache SIS is a toolkit for describing location information, including points,
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Christina Hough</name>
+      <roles>
+        <role>translator</role>
       </roles>
     </contributor>
     <contributor>
@@ -299,7 +317,7 @@ Apache SIS is a toolkit for describing location information, including points,
   <dependencyManagement>
     <dependencies>
       <!-- Import all dependency management used by the GeAPI project.
-           This include JUnit, vecmath and units of measurement. -->
+           This include JUnit and units of measurement. -->
       <dependency>
         <groupId>org.opengis</groupId>
         <artifactId>geoapi-parent</artifactId>
@@ -321,20 +339,25 @@ Apache SIS is a toolkit for describing location information, including points,
 
       <!-- Libraries (language, XML, network) -->
       <dependency>
+        <groupId>com.esri.geometry</groupId>
+        <artifactId>esri-geometry-api</artifactId>
+        <version>1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>gov.nist.math</groupId>
+        <artifactId>jama</artifactId>
+        <version>1.0.3</version>
+      </dependency>
+      <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
         <version>6.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.geonames</groupId>
-        <artifactId>georss-rome</artifactId>
-        <version>0.9.8</version>
-      </dependency>
-      <dependency>
-        <groupId>net.jcip</groupId>
-        <artifactId>jcip-annotations</artifactId>
-        <version>1.0</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.9</version>
       </dependency>
 
       <!-- Optional dependencies -->
@@ -346,9 +369,15 @@ Apache SIS is a toolkit for describing location information, including points,
       </dependency>
       <dependency>
         <groupId>edu.ucar</groupId>
-        <artifactId>netcdf</artifactId>
+        <artifactId>cdm</artifactId>
         <version>${netcdf.version}</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>1.7.5</version> <!-- Must matches the version used by NetCDF. -->
+        <scope>runtime</scope> <!-- Should never be needed at compile time. -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -373,9 +402,7 @@ Apache SIS is a toolkit for describing location information, including points,
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <geoapi.version>3.0.0</geoapi.version>
-    <netcdf.version>4.3.16</netcdf.version>
-    <findbugs.version>2.5.2</findbugs.version>
+    <netcdf.version>4.4.2</netcdf.version> <!-- Last version compatible with JDK6. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -384,6 +411,7 @@ Apache SIS is a toolkit for describing location information, including points,
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
+    <geoapi.version>3.0.0</geoapi.version>
   </properties>
 
   <profiles>
@@ -393,6 +421,50 @@ Apache SIS is a toolkit for describing location information, including points,
         <maven.compiler.debug>false</maven.compiler.debug> <!-- For smaller JAR files size. -->
         <maven.compiler.optimize>true</maven.compiler.optimize>
       </properties>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalparam>
+                -Xdoclint:syntax -Xdoclint:html -Xdoclint:missing -Xdoclint:accessibility
+              </additionalparam>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <activation>
+        <property>
+          <name>bootclasspath</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerArgs>
+                <arg>-bootclasspath</arg>
+                <arg>${bootclasspath}</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <bootclasspath>${bootclasspath}</bootclasspath>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 
@@ -412,6 +484,21 @@ Apache SIS is a toolkit for describing location information, including points,
           <source>${maven.compile.source}</source>
           <target>${maven.compile.target}</target>
           <encoding>${project.build.sourceEncoding}</encoding>
+          <useIncrementalCompilation>false</useIncrementalCompilation> <!-- https://jira.codehaus.org/browse/MCOMPILER-209 -->
+          <compilerArgs>
+            <arg>-Xlint</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <!-- Execute test suites instead of individual test cases. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*TestSuite.java</include>
+          </includes>
         </configuration>
       </plugin>
 
@@ -419,16 +506,15 @@ Apache SIS is a toolkit for describing location information, including points,
            Note: <index> and <addClasspath> are mutually exclusive: when both are enabled,
            the META-INF/INDEX.LIST file has precedence over the "Class-Path" entry in the
            META-INF/MANIFEST.MF file,  thus causing java.lang.NoClassDefFoundError if the
-           INDEX.LIST file is incomplete (which seem to happen in practice).
-      -->
+           INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
             <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>org.apache.sis.util.About</mainClass>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
             <manifestEntries>
@@ -450,69 +536,146 @@ Apache SIS is a toolkit for describing location information, including points,
         </executions>
       </plugin>
 
-      <!-- Build XHTML pages from the DocBook files
-           See src/main/docbook/README.txt -->
+      <!-- Checkstype configuration
+           Legal note: Checkstyle is under LGPL license, but it is okay to use it only for
+           the build if it is downloaded by Maven (not included in Apache SIS distribution).
+           See http://www.apache.org/legal/resolved.html#prohibited
+      -->
       <plugin>
-        <groupId>com.agilejava.docbkx</groupId>
-        <artifactId>docbkx-maven-plugin</artifactId>
-        <version>2.0.14</version>
-        <inherited>false</inherited>
-        <dependencies>
-          <dependency> <!-- XHTML generation -->
-            <groupId>net.sf.docbook</groupId>
-            <artifactId>docbook-xml</artifactId>
-            <version>5.0-all</version>
-            <classifier>resources</classifier>
-            <type>zip</type>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency> <!-- Syntax highlighting -->
-            <groupId>net.sf.xslthl</groupId>
-            <artifactId>xslthl</artifactId>
-            <version>2.1.0</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/docbook</sourceDirectory>
-          <targetDirectory>${basedir}/target/site/book</targetDirectory>
-          <xhtmlCustomization>src/main/docbook/book.xsl</xhtmlCustomization>
-          <xincludeSupported>true</xincludeSupported>
-          <htmlStylesheet>book.css</htmlStylesheet>
-          <highlightSource>true</highlightSource>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.13</version>
         <executions>
           <execution>
             <goals>
-              <goal>generate-xhtml</goal>
+              <goal>check</goal>
             </goals>
-            <phase>pre-site</phase>
+            <configuration>
+              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <consoleOutput>true</consoleOutput>
+              <checkstyleRules>
+                <module name="Checker">
+                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
+<!--              <module name="NewlineAtEndOfFile"/>   <!-  Checks that there is a newline at the end of each file. ->
+                  <module name="TreeWalker">
+                    <module name="RedundantImport"/>    <!- Checks for redundant import statements. ->
+                    <module name="GenericWhitespace"/>  <!- Checks that the whitespace around the Generic tokens follow the typical convention. ->
+                  </module> -->
+                </module>
+              </checkstyleRules>
+            </configuration>
           </execution>
         </executions>
       </plugin>
 
-      <!-- Create web site -->
+      <!-- JavaDoc configuration. -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <configuration>
+          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
+          <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
+          <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
+          <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
+          <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
+          <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
+          <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
+          <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
+          <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
+          <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
+          <links>
+            <link>http://www.geoapi.org/3.0/javadoc</link>
+          </links>
+
+          <!-- Separates packages on the overview page into the groups specified. -->
+          <groups>
+            <group>
+              <title>Testing tools</title> <!-- Exists in test javadoc only. -->
+              <packages>org.apache.sis.test*</packages>
+            </group>
+            <group>
+              <title>Applications</title>
+              <packages>org.apache.sis.console*:org.apache.sis.services*</packages>
+            </group>
+            <group>
+              <title>Data storage</title>
+              <packages>org.apache.sis.storage*:org.apache.sis.index*</packages>
+            </group>
+            <group>
+              <title>Feature and Geometry</title>
+              <packages>org.apache.sis.feature*:org.apache.sis.geometry*</packages>
+            </group>
+            <group>
+              <title>Referencing</title>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+            </group>
+            <group>
+              <title>Metadata</title>
+              <packages>org.apache.sis.metadata*</packages>
+            </group>
+            <group>
+              <title>Utilities</title>
+              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io*:org.apache.sis.xml*:org.apache.sis.setup*</packages>
+            </group>
+            <group>
+              <title>Profiles</title>
+              <packages>org.apache.sis.profile*</packages>
+            </group>
+          </groups>
+
+          <!-- Internal packages to hide from javadoc. -->
+          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com:org.opengis</excludePackageNames>
+
+          <!-- Custom taglets, some of them implemented in Java. -->
+          <tags>
+            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
+            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
+            <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
+            <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
+          </tags>
+          <taglets>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Include</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+          </taglets>
+          <doclet>org.apache.sis.internal.doclet.Doclet</doclet>
+          <tagletArtifact>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+          </tagletArtifact>
+          <docletArtifact>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+          </docletArtifact>
+        </configuration>
+      </plugin>
+
+      <!-- Create web site. The Maven generated site is not deployed at the URL
+           declared in this pom.xml (namely http://sis.apache.org). Consequently,
+           we disable links relativization for avoiding confusing behavior. -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
         <configuration>
           <locales>${website.locale}</locales>
           <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
           <outputEncoding>${website.encoding}</outputEncoding>
+          <relativizeDecorationLinks>false</relativizeDecorationLinks>
         </configuration>
       </plugin>
 
-      <!-- Dependencies requires for the SIS FindBugs configuration file.
-           This dependency should be declared in the <reporting> section,
-           but Maven 3.0.4 does not support dependency declaration there.
-           Note that the version number is duplicated in the <reporting>
-           section, because <reporting> ignores <pluginManagement>. -->
+      <!-- Dependencies requires for the SIS FindBugs configuration file. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs.version}</version>
+        <version>2.5.3</version>
         <dependencies>
           <dependency>
-            <groupId>org.apache.sis</groupId>
+            <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-build-helper</artifactId>
             <version>${sis.plugin.version}</version>
           </dependency>
@@ -526,12 +689,12 @@ Apache SIS is a toolkit for describing location information, including points,
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.8</version>
+          <version>1.9.1</version>
         </plugin>
         <plugin>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.0.0.M2</version>
+          <version>8.1.14.v20131031</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -540,127 +703,9 @@ Apache SIS is a toolkit for describing location information, including points,
 
 
   <!-- ==============================================================
-         Reports configuration.
-       ============================================================== -->
-  <reporting>
-    <plugins>
-      <!-- Overwrite the configuration declared in the Apache parent pom.xml
-           in order to use version 2.5.1 instead than 2.5. This is necessary
-           for avoiding a NullPointerException (http://jira.codehaus.org/browse/MPIR-248) -->
-      <plugin>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
-      </plugin>
-
-      <!-- Produce JavaDoc -->
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
-          <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
-          <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
-          <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
-          <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
-          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
-          <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
-          <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
-          <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
-          <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
-          <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
-          <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
-          <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
-          <validateLinks>true</validateLinks>
-          <links>
-            <link>http://www.geoapi.org/3.0/javadoc</link>
-          </links>
-
-          <!-- Separates packages on the overview page into the groups specified. -->
-          <groups>
-            <group>
-              <title>Testing tools</title> <!-- Exists in test javadoc only. -->
-              <packages>org.apache.sis.test*</packages>
-            </group>
-            <group>
-              <title>Referencing</title>
-              <packages>org.apache.sis.core*:org.apache.sis.distance*:org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
-            </group>
-            <group>
-              <title>Metadata</title>
-              <packages>org.apache.sis.metadata*</packages>
-            </group>
-            <group>
-              <title>Utilities</title>
-              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io*:org.apache.sis.xml*</packages>
-            </group>
-          </groups>
-
-          <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:com</excludePackageNames>
-
-          <!-- Custom taglets, some of them implemented in Java. -->
-          <tags>
-            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
-            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
-            <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
-            <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
-          </tags>
-          <taglets>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.WebSite</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Note</tagletClass></taglet>
-            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
-          </taglets>
-          <tagletArtifact>
-            <groupId>org.apache.sis</groupId>
-            <artifactId>sis-build-helper</artifactId>
-            <version>${sis.plugin.version}</version>
-          </tagletArtifact>
-        </configuration>
-      </plugin>
-
-      <!-- Produce Source cross references -->
-      <plugin>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.3</version>
-      </plugin>
-
-      <!-- Unit tests report -->
-      <plugin>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.12.4</version>
-      </plugin>
-
-      <!-- "Release Audit" report (checks license headers etc.) -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>rat-maven-plugin</artifactId>
-        <version>1.0-alpha-3</version>
-      </plugin>
-
-      <!-- FindBugs Report. Checkstyle configuration instructions apply also to FindBugs:
-           http://maven.apache.org/plugins/maven-checkstyle-plugin/examples/multi-module-config.html
-      -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs.version}</version> <!-- See also the same plugin in the <build> section. -->
-        <configuration>
-          <threshold>Normal</threshold>
-          <effort>Default</effort>
-          <excludeFilterFile>org/apache/sis/findbugs-exclude.xml</excludeFilterFile>
-       </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
-
-
-
-  <!-- ==============================================================
          Additional repositories from which to download artifacts.
          The parent pom.xml already declares the apache.snapshots
-         repository for library artefacts. But we also need it for
+         repository for library artifacts. But we also need it for
          Maven plugins in order to download sis-build-helper when
          the user did not built it himself.
        ============================================================== -->
@@ -676,7 +721,6 @@ Apache SIS is a toolkit for describing location information, including points,
   </pluginRepositories>
 
 
-
   <!-- ==============================================================
          Group of modules to build in approximate dependency order.
        ============================================================== -->
@@ -684,6 +728,7 @@ Apache SIS is a toolkit for describing location information, including points,
     <module>core</module>
     <module>storage</module>
     <module>application</module>
+    <module>profiles</module>
   </modules>
 
 </project>

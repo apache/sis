@@ -35,7 +35,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * disabled by default, and enabling them imply enabling configuration logging too. This is
  * done that way because the configuration typically have a significant impact on performance.</p>
  *
- * {@section Enabling performance logging}
+ * <div class="section">Enabling performance logging</div>
  * Performance logging can be enabled in various ways. Among others:
  *
  * <ul>
@@ -44,12 +44,12 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  *   <li>The {@link Logger#setLevel(Level)} can be invoked, together with
  *       {@link java.util.logging.Handler#setLevel(Level)} on all relevant logging targets
  *       (console or file, <i>etc.</i>).</li>
- *   <li>The {@link MonolineFormatter#configureConsoleHandler(Logger, Level)} convenience
+ *   <li>The {@link MonolineFormatter#install(Logger, Level)} convenience
  *       method can be invoked.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.16)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -147,9 +147,10 @@ public final class PerformanceLevel extends Level {
      *       are also set to the given duration.</li>
      * </ul>
      *
-     * {@note The duration of the <code>PERFORMANCE</code> level can not be modified: it is
-     *        always zero. However invoking this method on the <code>PERFORMANCE</code> field will
-     *        ensure that every <code>SLOW*</code> levels will have at least the given duration.}
+     * <div class="note"><b>Usage note:</b>
+     * The duration of the {@link #PERFORMANCE} level can not be modified: it is always zero.
+     * However invoking this method on the {@code PERFORMANCE} field will ensure that every
+     * {@code SLOW*} levels will have at least the given duration.</div>
      *
      * @param  duration The minimal duration.
      * @param  unit The unit of the given duration value.

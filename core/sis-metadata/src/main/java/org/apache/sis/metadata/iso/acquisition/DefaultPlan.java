@@ -32,9 +32,18 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Designations for the planning information related to meeting the data acquisition requirements.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -88,22 +97,24 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Plan)
      */
     public DefaultPlan(final Plan object) {
         super(object);
-        type                  = object.getType();
-        status                = object.getStatus();
-        citation              = object.getCitation();
-        operations            = copyCollection(object.getOperations(), Operation.class);
-        satisfiedRequirements = copyCollection(object.getSatisfiedRequirements(), Requirement.class);
+        if (object != null) {
+            type                  = object.getType();
+            status                = object.getStatus();
+            citation              = object.getCitation();
+            operations            = copyCollection(object.getOperations(), Operation.class);
+            satisfiedRequirements = copyCollection(object.getSatisfiedRequirements(), Requirement.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -129,6 +140,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the manner of sampling geometry that the planner expects for collection of
      * objective data. {@code null} if unspecified.
+     *
+     * @return Manner of sampling geometry, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -149,6 +162,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the current status of the plan (pending, completed, etc.)
+     *
+     * @return Current status of the plan, or {@code null}.
      */
     @Override
     @XmlElement(name = "status", required = true)
@@ -168,6 +183,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the identification of authority requesting target collection.
+     *
+     * @return Identification of authority requesting target collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -187,6 +204,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the identification of the activity or activities that satisfy a plan.
+     *
+     * @return Identification of the activity or activities.
      */
     @Override
     @XmlElement(name = "operation")
@@ -205,6 +224,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the requirement satisfied by the plan.
+     *
+     * @return Requirement satisfied by the plan.
      */
     @Override
     @XmlElement(name = "satisfiedRequirement")

@@ -31,12 +31,14 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -44,7 +46,7 @@ import static org.apache.sis.math.MathFunctions.epsilonEqual;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -65,34 +67,35 @@ import org.apache.sis.internal.jdk7.Objects;
  * <p>All other methods, including {@link #toString()}, {@link #equals(Object)} and {@link #hashCode()},
  * are implemented on top of the above four methods.</p>
  *
- * {@section Spanning the anti-meridian of a Geographic CRS}
+ * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <table class="compact" align="center"><tr><td>
- *   <img src="doc-files/AntiMeridian.png">
- * </td><td>
+ * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
+ * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>
  *   <li>{@link #getMaximum(int)}</li>
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #getSpan(int)}</li>
+ *   <li>{@link #toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition)}</li>
- *   <li>{@link #contains(Envelope, boolean)}</li>
- *   <li>{@link #intersects(Envelope, boolean)}</li>
+ *   <li>{@link #contains(Envelope)}</li>
+ *   <li>{@link #intersects(Envelope)}</li>
  * </ul>
- * </td></tr></table>
+ * </td></tr></table></center>
  *
- * {@section Choosing the range of longitude values}
+ * <div class="section">Choosing the range of longitude values</div>
  * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
  * range is also occasionally used. Users of this class need to ensure that this envelope CRS is
  * associated to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum}
  * and {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
  *
- * {@section Note on positive and negative zeros}
+ * <div class="section">Note on positive and negative zeros</div>
  * The IEEE 754 standard defines two different values for positive zero and negative zero.
  * When used with SIS envelopes and keeping in mind the above discussion, those zeros have
  * different meanings:
@@ -104,11 +107,17 @@ import org.apache.sis.internal.jdk7.Objects;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
-public abstract class AbstractEnvelope implements Envelope {
+public abstract class AbstractEnvelope implements Envelope, Emptiable {
+    /**
+     * An empty array of envelopes, to be returned by {@link #toSimpleEnvelopes()}
+     * when en envelope is empty.
+     */
+    private static final Envelope[] EMPTY = new Envelope[0];
+
     /**
      * Constructs an envelope.
      */
@@ -246,13 +255,13 @@ public abstract class AbstractEnvelope implements Envelope {
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
-     * corner defines the edges region in the directions of <em>decreasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic minimum coordinates, but not
-     * always. For example, an envelope crossing the anti-meridian could have a lower corner
-     * longitude greater than the upper corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
+     * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * minimum coordinates, but not always. For example, an envelope crossing the anti-meridian could have a
+     * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
@@ -271,13 +280,13 @@ public abstract class AbstractEnvelope implements Envelope {
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
-     * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
-     * corner defines the edges region in the directions of <em>increasing</em> coordinate
-     * values in the envelope CRS. This is usually the algebraic maximum coordinates, but not
-     * always. For example, an envelope crossing the anti-meridian could have an upper corner
-     * longitude less than the lower corner longitude. Such extended interpretation applies
-     * mostly to axes having <code>WRAPAROUND</code> range meaning.}
+     * <div class="note"><b>Note:</b>
+     * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
+     * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
+     * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
+     * maximum coordinates, but not always. For example, an envelope crossing the anti-meridian could have an
+     * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
+     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
      * @return A view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
@@ -375,7 +384,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *     median = (getUpper(dimension) + getLower(dimension)) / 2;
      * }
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If <var>upper</var> &lt; <var>lower</var> and the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning} for the requested
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the median calculated
@@ -426,7 +435,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *     span = getUpper(dimension) - getLower(dimension);
      * }
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If <var>upper</var> &lt; <var>lower</var> and the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning} for the requested
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the span calculated
@@ -494,16 +503,131 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Determines whether or not this envelope is empty. An envelope is non-empty only if it has
-     * at least one {@linkplain #getDimension() dimension}, and the {@linkplain #getSpan(int) span}
-     * is greater than 0 along all dimensions. Note that {@link #isAllNaN()} always returns
-     * {@code false} for a non-empty envelope, but the converse is not always true.
+     * Returns this envelope as an array of simple (without wraparound) envelopes.
+     * The length of the returned array depends on the number of dimensions where a
+     * {@linkplain org.opengis.referencing.cs.RangeMeaning#WRAPAROUND wraparound} range is found.
+     * Typically, wraparound occurs only in the range of longitude values, when the range crosses
+     * the anti-meridian (a.k.a. date line). However this implementation will take in account any
+     * axis having wraparound {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning}.
+     *
+     * <p>Special cases:</p>
+     *
+     * <ul>
+     *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
+     *   <li>If this envelope does not have any wraparound behavior, then this method returns {@code this}
+     *       in an array of length 1. This envelope is <strong>not</strong> cloned.</li>
+     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *       then this method represents this envelope as two separated simple envelopes.
+     *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
+     *       wraparound range meaning. If wraparound occur along <var>n</var> axes, then this method
+     *       represents this envelope as 2ⁿ separated simple envelopes.
+     * </ul>
+     *
+     * @return A representation of this envelope as an array of non-empty envelope.
+     *
+     * @see Envelope2D#toRectangles()
+     * @see GeneralEnvelope#simplify()
+     *
+     * @since 0.4
+     */
+    public Envelope[] toSimpleEnvelopes() {
+        long isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
+        CoordinateReferenceSystem crs = null;
+        final int dimension = getDimension();
+        for (int i=0; i!=dimension; i++) {
+            final double span = getUpper(i) - getLower(i); // Do not use getSpan(i).
+            if (!(span > 0)) { // Use '!' for catching NaN.
+                if (!isNegative(span)) {
+                    return EMPTY; // Span is positive zero.
+                }
+                if (crs == null) {
+                    crs = getCoordinateReferenceSystem();
+                }
+                if (!isWrapAround(crs, i)) {
+                    return EMPTY;
+                }
+                if (i >= Long.SIZE) {
+                    // Actually the limit in our current implementation is not the number of axes, but the index of
+                    // axes where a wraparound has been found. However we consider that having more than 64 axes in
+                    // a CRS is unusual enough for not being worth to make the distinction in the error message.
+                    throw new IllegalStateException(Errors.format(Errors.Keys.ExcessiveListSize_2, "axis", dimension));
+                }
+                isWrapAround |= (1L << i);
+            }
+        }
+        /*
+         * The number of simple envelopes is 2ⁿ where n is the number of wraparound found. In most
+         * cases, isWrapAround == 0 so we have an array of length 1 containing only this envelope.
+         */
+        final int bitCount = Long.bitCount(isWrapAround);
+        if (bitCount >= Integer.SIZE - 1) {
+            // Should be very unusual, but let be paranoiac.
+            throw new IllegalStateException(Errors.format(Errors.Keys.ExcessiveListSize_2, "wraparound", bitCount));
+        }
+        final Envelope[] envelopes = new Envelope[1 << bitCount];
+        if (envelopes.length == 1) {
+            envelopes[0] = this;
+        } else {
+            /*
+             * Need to create at least 2 envelopes. Instantiate now all envelopes with ordinate values
+             * initialized to a copy of this envelope. We will write directly in their internal arrays later.
+             */
+            double[] c = new double[dimension * 2];
+            for (int i=0; i<dimension; i++) {
+                c[i            ] = getLower(i);
+                c[i + dimension] = getUpper(i);
+            }
+            final double[][] ordinates = new double[envelopes.length][];
+            for (int i=0; i<envelopes.length; i++) {
+                final GeneralEnvelope envelope = new GeneralEnvelope(i == 0 ? c : c.clone());
+                envelope.crs = crs;
+                envelopes[i] = envelope;
+                ordinates[i] = envelope.ordinates;
+            }
+            /*
+             * Assign the minimum and maximum ordinate values in the dimension where a wraparound has been found.
+             * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
+             */
+            int mask = 1; // For identifying whether we need to set the lower or the upper ordinate.
+            @SuppressWarnings("null")
+            final CoordinateSystem cs = crs.getCoordinateSystem(); // Should not be null at this point.
+            for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final double min = axis.getMinimumValue();
+                final double max = axis.getMaximumValue();
+                for (int j=0; j<ordinates.length; j++) {
+                    c = ordinates[j];
+                    if ((j & mask) == 0) {
+                        c[i + dimension] = max;
+                    } else {
+                        c[i] = min;
+                    }
+                }
+                mask <<= 1;
+            }
+        }
+        return envelopes;
+    }
+
+    /**
+     * Determines whether or not this envelope is empty. An envelope is empty if it has zero
+     * {@linkplain #getDimension() dimension}, or if the {@linkplain #getSpan(int) span} of
+     * at least one axis is negative, 0 or {@link Double#NaN NaN}.
+     *
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, there is an ambiguity if a span is {@code NaN} or if the envelope contains
+     * both 0 and infinite spans (since 0⋅∞ = {@code NaN}). In such cases, this method arbitrarily
+     * ignores the infinite values and returns {@code true}.</div>
+     *
+     * If {@code isEmpty()} returns {@code false}, then {@link #isAllNaN()} is guaranteed to
+     * also return {@code false}. However the converse is not always true.
      *
      * @return {@code true} if this envelope is empty.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      * @see java.awt.geom.Rectangle2D#isEmpty()
      */
+    @Override
     public boolean isEmpty() {
         final int dimension = getDimension();
         if (dimension == 0) {
@@ -520,10 +644,10 @@ public abstract class AbstractEnvelope implements Envelope {
 
     /**
      * Returns {@code false} if at least one ordinate value is not {@linkplain Double#NaN NaN}.
-     * This {@code isAllNaN()} check is a little bit different than the {@link #isEmpty()} check
-     * since it returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
-     * returns {@code false} only after all dimensions have been initialized. More specifically,
-     * the following rules apply:
+     * This {@code isAllNaN()} check is different than the {@link #isEmpty()} check since it
+     * returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
+     * returns {@code false} only after all dimensions have been initialized.
+     * More specifically, the following rules apply:
      *
      * <ul>
      *   <li>If {@code isAllNaN() == true}, then {@code isEmpty() == true}</li>
@@ -531,7 +655,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *   <li>The converse of the above-cited rules are not always true.</li>
      * </ul>
      *
-     * Note that a all-NaN envelope can still have a non-null
+     * Note that an all-NaN envelope can still have a non-null
      * {@linkplain #getCoordinateReferenceSystem() coordinate reference system}.
      *
      * @return {@code true} if this envelope has NaN values.
@@ -555,10 +679,11 @@ public abstract class AbstractEnvelope implements Envelope {
      * If it least one ordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * {@note This method assumes that the specified point uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified point uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
      * algorithm which is the opposite of the usual one: rather than testing if the given point is
      * inside the envelope interior, this method tests if the given point is <em>outside</em> the
@@ -602,28 +727,51 @@ public abstract class AbstractEnvelope implements Envelope {
 
     /**
      * Returns {@code true} if this envelope completely encloses the specified envelope.
+     *
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     *
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * For every cases illustrated below, the yellow box is considered completely enclosed
+     * in the blue envelope:
+     *
+     * <p><img src="doc-files/Contains.png" alt="Examples of envelope inclusions"></p>
+     *
+     * @param  envelope The envelope to test for inclusion.
+     * @return {@code true} if this envelope completely encloses the specified one.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
+     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see #intersects(Envelope)
+     * @see #equals(Envelope, double, boolean)
+     *
+     * @since 0.4
+     */
+    public boolean contains(final Envelope envelope) throws MismatchedDimensionException {
+        return contains(envelope, true);
+    }
+
+    /**
+     * Returns {@code true} if this envelope completely encloses the specified envelope.
      * If one or more edges from the specified envelope coincide with an edge from this
      * envelope, then this method returns {@code true} only if {@code edgesInclusive}
      * is {@code true}.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
+     * and handles envelopes spanning the anti-meridian in the same way.</p>
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
-     * For every cases illustrated below, the yellow box is considered completely enclosed
-     * in the blue envelope:
-     *
-     * <center><img src="doc-files/Contains.png"></center>
+     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
+     * For API stability, use the {@link #contains(Envelope)} method instead.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
      * @param  envelope The envelope to test for inclusion.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
      * @return {@code true} if this envelope completely encloses the specified one.
-     * @throws MismatchedDimensionException if the specified envelope doesn't have
-     *         the expected dimension.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
      * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
      *
      * @see #intersects(Envelope, boolean)
-     * @see #equals(Envelope, double, boolean)
      */
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
@@ -697,14 +845,39 @@ public abstract class AbstractEnvelope implements Envelope {
 
     /**
      * Returns {@code true} if this envelope intersects the specified envelope.
+     *
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     *
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * This method can handle envelopes spanning the anti-meridian.
+     *
+     * @param  envelope The envelope to test for intersection.
+     * @return {@code true} if this envelope intersects the specified one.
+     * @throws MismatchedDimensionException if the specified envelope doesn't have the expected dimension.
+     * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see #contains(Envelope, boolean)
+     * @see #equals(Envelope, double, boolean)
+     *
+     * @since 0.4
+     */
+    public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
+        return intersects(envelope, true);
+    }
+
+    /**
+     * Returns {@code true} if this envelope intersects the specified envelope.
      * If one or more edges from the specified envelope coincide with an edge from this envelope,
      * then this method returns {@code true} only if {@code edgesInclusive} is {@code true}.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <p>This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
+     * and handles envelopes spanning the anti-meridian in the same way.</p>
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
-     * This method can handle envelopes spanning the anti-meridian.
+     * <div class="warning"><b>Warning:</b> This method may change or be removed in a future SIS version.
+     * For API stability, use the {@link #intersects(Envelope)} method instead.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-172">SIS-172</a> for more information.</div>
      *
      * @param  envelope The envelope to test for intersection.
      * @param  edgesInclusive {@code true} if this envelope edges are inclusive.
@@ -804,12 +977,13 @@ public abstract class AbstractEnvelope implements Envelope {
      *       given dimension <var>i</var> is {@code eps}.</li>
      * </ul>
      *
-     * {@note Relative tolerance value (as opposed to absolute tolerance value) help to workaround
-     * the fact that tolerance value are CRS dependent. For example the tolerance value need to be
+     * <div class="note"><b>Note:</b>
+     * Relative tolerance values (as opposed to absolute tolerance values) help to workaround the
+     * fact that tolerance value are CRS dependent. For example the tolerance value need to be
      * smaller for geographic CRS than for UTM projections, because the former typically has a
-     * [-180…180]° range while the later can have a range of thousands of meters.}
+     * [-180…180]° range while the later can have a range of thousands of meters.</div>
      *
-     * {@section Coordinate Reference System}
+     * <div class="section">Coordinate Reference System</div>
      * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() dimension}
      * and their CRS must be {@linkplain org.apache.sis.util.Utilities#equalsIgnoreMetadata equals,
      * ignoring metadata}. If at least one envelope has a null CRS, then the CRS are ignored and the
@@ -821,8 +995,8 @@ public abstract class AbstractEnvelope implements Envelope {
      *         axis length, or {@code false} if it is an absolute value.
      * @return {@code true} if the given object is equal to this envelope up to the given tolerance value.
      *
-     * @see #contains(Envelope, boolean)
-     * @see #intersects(Envelope, boolean)
+     * @see #contains(Envelope)
+     * @see #intersects(Envelope)
      */
     public boolean equals(final Envelope other, final double eps, final boolean epsIsRelative) {
         ensureNonNull("other", other);
@@ -855,9 +1029,9 @@ public abstract class AbstractEnvelope implements Envelope {
      * Returns {@code true} if the specified object is an envelope of the same class
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
-     * {@note This implementation requires that the provided <code>object</code> argument
-     * is of the same class than this envelope. We do not relax this rule since not every
-     * implementations in the SIS code base follow the same contract.}
+     * <div class="note"><b>Implementation note:</b>
+     * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
+     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
      *
      * @param object The object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.
@@ -901,15 +1075,10 @@ public abstract class AbstractEnvelope implements Envelope {
         boolean p = true;
         do {
             for (int i=0; i<dimension; i++) {
-                final long bits = doubleToLongBits(p ? getLower(i) : getUpper(i));
-                code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
+                code = code*31 + Numerics.hashCode(doubleToLongBits(p ? getLower(i) : getUpper(i)));
             }
         } while ((p = !p) == false);
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
+        return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
 
     /**
@@ -919,15 +1088,16 @@ public abstract class AbstractEnvelope implements Envelope {
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
      *
-     * <p>Example:</p>
+     * <div class="note"><b>Example:</b>
+     *   <ul>
+     *     <li>{@code BOX(-90 -180, 90 180)}</li>
+     *     <li>{@code BOX3D(-90 -180 0, 90 180 1)}</li>
+     *   </ul>
+     * </div>
      *
-     * {@preformat wkt
-     *   BOX(-90 -180, 90 180)
-     *   BOX3D(-90 -180 0, 90 180 1)
-     * }
-     *
-     * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
-     *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
+     * <div class="note"><b>Note:</b>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However it is understood by many softwares, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
@@ -988,7 +1158,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-2.4)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -1057,7 +1227,7 @@ public abstract class AbstractEnvelope implements Envelope {
     /**
      * Invoked by {@link LowerCorner} and {@link UpperCorner} when a coordinate is modified.
      * The default implementation throws an {@link UnmodifiableGeometryException} in every cases.
-     * This method is overridden and made public by {@link GeneralGeometry}.
+     * This method is overridden and made public by {@link GeneralEnvelope}.
      *
      * <p>The declaration in this {@code AbstractEnvelope} class is not public on purpose,
      * since this class intentionally have no public setter methods. This is necessary for
@@ -1066,7 +1236,10 @@ public abstract class AbstractEnvelope implements Envelope {
      * @param  dimension The dimension to set.
      * @param  lower     The limit in the direction of decreasing ordinate values.
      * @param  upper     The limit in the direction of increasing ordinate values.
+     * @throws UnmodifiableGeometryException If this envelope is not modifiable.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @throws IllegalArgumentException If {@code lower > upper}, this envelope has a CRS
+     *         and the axis range meaning at the given dimension is not "wraparound".
      */
     void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException

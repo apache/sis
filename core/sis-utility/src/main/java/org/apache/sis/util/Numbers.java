@@ -27,6 +27,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
 
 import static java.lang.Double.doubleToLongBits;
@@ -36,7 +37,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -44,7 +45,7 @@ import static java.lang.Double.doubleToLongBits;
  */
 public final class Numbers extends Static {
     /**
-     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
+     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
             BIG_DECIMAL=10, BIG_INTEGER=9,
@@ -53,19 +54,18 @@ public final class Numbers extends Static {
     /**
      * Mapping between a primitive type and its wrapper, if any.
      *
-     * {@note In the particular case of <code>Class</code> keys, <code>IdentityHashMap</code> and
-     *        <code>HashMap</code> have identical behavior since <code>Class</code> is final and
-     *        does not override the <code>equals(Object)</code> and <code>hashCode()</code> methods.
-     *        The <code>IdentityHashMap</code> Javadoc claims that it is faster than the regular
-     *        <code>HashMap</code>. But maybe the most interesting property is that it allocates
-     *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
-     *        of objects created by <code>HashMap</code>.}
+     * <div class="note"><b>Implementation note:</b>
+     * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
+     * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
+     * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
+     * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
+     * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
      */
     private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<Class<?>,Numbers>(11);
     static {
         new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
         new Numbers(BigInteger.class, false, true, BIG_INTEGER);
-        new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Double   .valueOf(Double.NaN));
+        new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Numerics .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
         new Numbers(Integer  .TYPE, Integer  .class, false, true,  (byte) Integer  .SIZE, INTEGER,   'I', Integer  .valueOf(        0));
@@ -156,21 +156,6 @@ public final class Numbers extends Static {
     public static boolean isInteger(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
         return (mapping != null) && mapping.isInteger;
-    }
-
-    /**
-     * Returns {@code true} if the given {@code type} is an integer type. This method performs
-     * the same test than {@link #isPrimitiveInteger}, excluding {@link BigInteger}.
-     *
-     * @param  type The type to test (may be {@code null}).
-     * @return {@code true} if {@code type} is the primitive of wrapper class of
-     *         {@link Long}, {@link Integer}, {@link Short} or {@link Byte}.
-     *
-     * @see #isInteger(Class)
-     */
-    private static boolean isPrimitiveInteger(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) && mapping.isInteger && (mapping.internal != 'L');
     }
 
     /**
@@ -274,17 +259,16 @@ public final class Numbers extends Static {
                                                       final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == null) return c2;
+        if (c2 == null) return c1;
         final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null && c1 != null) {
+        if (m1 == null) {
             throw unknownType(c1);
         }
         final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null && c2 != null) {
+        if (m2 == null) {
             throw unknownType(c2);
         }
-        if (c1 == null) return c2;
-        if (c2 == null) return c1;
-        // At this point, m1 and m2 can not be null.
         return (m1.ordinal >= m2.ordinal) ? c1 : c2;
     }
 
@@ -336,17 +320,16 @@ public final class Numbers extends Static {
                                                          final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == null) return c2;
+        if (c2 == null) return c1;
         final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null && c1 != null) {
+        if (m1 == null) {
             throw unknownType(c1);
         }
         final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null && c2 != null) {
+        if (m2 == null) {
             throw unknownType(c2);
         }
-        if (c1 == null) return c2;
-        if (c2 == null) return c1;
-        // At this point, m1 and m2 can not be null.
         return (m1.ordinal < m2.ordinal) ? c1 : c2;
     }
 
@@ -426,8 +409,8 @@ public final class Numbers extends Static {
                 final float  floatValue  = (float) doubleValue;
                 isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
                 if (doubleValue != longValue) {
-                    candidate = isFloat ? ((Number) Float .valueOf(floatValue))
-                                        : ((Number) Double.valueOf(doubleValue));
+                    candidate = isFloat ? ((Number) Float   .valueOf(floatValue))
+                                        : ((Number) Numerics.valueOf(doubleValue));
                     break;
                 }
                 // Fall through everywhere.
@@ -483,15 +466,16 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Casts a number to the specified class. The class must by one of {@link Byte},
+     * Casts a number to the specified type. The target type can be one of {@link Byte},
      * {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link BigInteger} or {@link BigDecimal}.
      * This method makes the following choice:
      *
      * <ul>
-     *   <li>If the given type is {@code Double.class}, then this method returns
+     *   <li>If the given value is {@code null} or an instance of the given type, then it is returned unchanged.</li>
+     *   <li>Otherwise if the given type is {@code Double.class}, then this method returns
      *       <code>{@linkplain Double#valueOf(double) Double.valueOf}(number.doubleValue())</code>;</li>
-     *   <li>If the given type is {@code Float.class}, then this method returns
+     *   <li>Otherwise if the given type is {@code Float.class}, then this method returns
      *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(number.floatValue())</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
@@ -517,12 +501,12 @@ public final class Numbers extends Static {
             return (N) number;
         }
         switch (getEnumConstant(type)) {
-            case BYTE:    return (N) Byte   .valueOf(number.  byteValue());
-            case SHORT:   return (N) Short  .valueOf(number. shortValue());
-            case INTEGER: return (N) Integer.valueOf(number.   intValue());
-            case LONG:    return (N) Long   .valueOf(number.  longValue());
-            case FLOAT:   return (N) Float  .valueOf(number. floatValue());
-            case DOUBLE:  return (N) Double .valueOf(number.doubleValue());
+            case BYTE:    return (N) Byte    .valueOf(number.  byteValue());
+            case SHORT:   return (N) Short   .valueOf(number. shortValue());
+            case INTEGER: return (N) Integer .valueOf(number.   intValue());
+            case LONG:    return (N) Long    .valueOf(number.  longValue());
+            case FLOAT:   return (N) Float   .valueOf(number. floatValue());
+            case DOUBLE:  return (N) Numerics.valueOf(number.doubleValue());
             case BIG_INTEGER: {
                 final BigInteger c;
                 if (number instanceof BigInteger) {
@@ -561,7 +545,7 @@ public final class Numbers extends Static {
      * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
      * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
      * Furthermore, the given value shall be convertible to the given class without precision lost,
-     * otherwise an {@link IllegalArgumentException} will be thrown.
+     * otherwise an {@link IllegalArgumentException} will be thrown.
      *
      * @param  <N> The wrapper class.
      * @param  value The value to wrap.
@@ -582,7 +566,7 @@ public final class Numbers extends Static {
             case INTEGER:     number = (N) Integer   .valueOf((int)   value); break;
             case LONG:        number = (N) Long      .valueOf((long)  value); break;
             case FLOAT:       number = (N) Float     .valueOf((float) value); break;
-            case DOUBLE:      return   (N) Double    .valueOf(value); // No need to verify.
+            case DOUBLE:      return   (N) Numerics  .valueOf(value); // No need to verify.
             case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
             default: throw unknownType(type);
@@ -614,7 +598,7 @@ public final class Numbers extends Static {
      * @return The value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
      * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
-     *         string value is not parseable as a number of the specified type.
+     *         string value is not parsable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final String value, final Class<T> type)
@@ -651,8 +635,8 @@ public final class Numbers extends Static {
 
     /**
      * Returns a {@code NaN}, zero, empty or {@code null} value of the given type. This method
-     * tries to return the closest value that can be interpreted as "<cite>none</cite>", which
-     * is usually not the same than "<cite>zero</cite>". More specifically:
+     * tries to return the closest value that can be interpreted as <cite>"none"</cite>, which
+     * is usually not the same than <cite>"zero"</cite>. More specifically:
      *
      * <ul>
      *   <li>If the given type is a floating point <strong>primitive</strong> type ({@code float}

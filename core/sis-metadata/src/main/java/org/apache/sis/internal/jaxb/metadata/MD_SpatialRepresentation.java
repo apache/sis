@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -49,6 +49,8 @@ public final class MD_SpatialRepresentation extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code SpatialRepresentation.class}
      */
     @Override
     protected Class<SpatialRepresentation> getBoundType() {
@@ -83,7 +85,6 @@ public final class MD_SpatialRepresentation extends
      */
     @XmlElementRef
     public AbstractSpatialRepresentation getElement() {
-        if (skip()) return null;
         final SpatialRepresentation metadata = this.metadata;
         if (metadata instanceof Georectified) {
             return MI_Georectified.castOrCopy((Georectified) metadata);

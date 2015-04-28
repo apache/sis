@@ -38,20 +38,29 @@ import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**
  * Type of test applied to the data specified by a data quality scope.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -141,7 +150,6 @@ public class AbstractElement extends ISOMetadata implements Element {
 
         /**
          * Returns the type of elements in this list.
-         * @return
          */
         @Override
         public Class<Date> getElementType() {
@@ -297,7 +305,6 @@ public class AbstractElement extends ISOMetadata implements Element {
      *               acceptable conformance quality level.
      */
     public AbstractElement(final Result result) {
-        this(); // Initialize date fields.
         results = singleton(result, Result.class);
     }
 
@@ -306,29 +313,31 @@ public class AbstractElement extends ISOMetadata implements Element {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Element)
      */
     public AbstractElement(final Element object) {
         super(object);
-        namesOfMeasure              = copyCollection(object.getNamesOfMeasure(), InternationalString.class);
-        measureIdentification       = object.getMeasureIdentification();
-        measureDescription          = object.getMeasureDescription();
-        evaluationMethodType        = object.getEvaluationMethodType();
-        evaluationMethodDescription = object.getEvaluationMethodDescription();
-        evaluationProcedure         = object.getEvaluationProcedure();
-        results                     = copyCollection(object.getResults(), Result.class);
-        writeDates(object.getDates());
+        if (object != null) {
+            namesOfMeasure              = copyCollection(object.getNamesOfMeasure(), InternationalString.class);
+            measureIdentification       = object.getMeasureIdentification();
+            measureDescription          = object.getMeasureDescription();
+            evaluationMethodType        = object.getEvaluationMethodType();
+            evaluationMethodDescription = object.getEvaluationMethodDescription();
+            evaluationProcedure         = object.getEvaluationProcedure();
+            results                     = copyCollection(object.getResults(), Result.class);
+            writeDates(object.getDates());
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is is an instance of {@link PositionalAccuracy},
+     *   <li>Otherwise if the given object is an instance of {@link PositionalAccuracy},
      *       {@link TemporalAccuracy}, {@link ThematicAccuracy}, {@link LogicalConsistency},
      *       {@link Completeness} or {@link Usability}, then this method delegates to the
      *       {@code castOrCopy(…)} method of the corresponding SIS subclass.
@@ -374,6 +383,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Returns the name of the test applied to the data.
+     *
+     * @return Name of the test applied to the data.
      */
     @Override
     @XmlElement(name = "nameOfMeasure")
@@ -392,6 +403,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Returns the code identifying a registered standard procedure, or {@code null} if none.
+     *
+     * @return Code identifying a registered standard procedure, or {@code null}.
      */
     @Override
     @XmlElement(name = "measureIdentification")
@@ -411,6 +424,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Returns the description of the measure being determined.
+     *
+     * @return Description of the measure being determined, or {@code null}.
      */
     @Override
     @XmlElement(name = "measureDescription")
@@ -429,8 +444,9 @@ public class AbstractElement extends ISOMetadata implements Element {
     }
 
     /**
-     * Returns the type of method used to evaluate quality of the dataset,
-     * or {@code null} if unspecified.
+     * Returns the type of method used to evaluate quality of the dataset.
+     *
+     * @return Type of method used to evaluate quality, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationMethodType")
@@ -450,6 +466,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Returns the description of the evaluation method.
+     *
+     * @return Description of the evaluation method, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationMethodDescription")
@@ -469,6 +487,8 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Returns the reference to the procedure information, or {@code null} if none.
+     *
+     * @return Reference to the procedure information, or {@code null}.
      */
     @Override
     @XmlElement(name = "evaluationProcedure")
@@ -490,11 +510,13 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the date or range of dates on which a data quality measure was applied.
      * The collection size is 1 for a single date, or 2 for a range.
      * Returns an empty collection if this information is not available.
+     *
+     * @return Date or range of dates on which a data quality measure was applied.
      */
     @Override
     @XmlElement(name = "dateTime")
     public Collection<Date> getDates() {
-        if (isMarshalling()) {
+        if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
             return isNullOrEmpty(dates) ? null : dates;
         }
         if (dates == null) {
@@ -535,6 +557,8 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Returns the value (or set of values) obtained from applying a data quality measure or
      * the out come of evaluating the obtained value (or set of values) against a specified
      * acceptable conformance quality level.
+     *
+     * @return Set of values obtained from applying a data quality measure.
      */
     @Override
     @XmlElement(name = "result", required = true)

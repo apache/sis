@@ -28,10 +28,19 @@ import org.opengis.metadata.MetadataExtensionInformation;
 /**
  * Information describing metadata extensions.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -71,19 +80,21 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MetadataExtensionInformation)
      */
     public DefaultMetadataExtensionInformation(final MetadataExtensionInformation object) {
         super(object);
-        extensionOnLineResource    = object.getExtensionOnLineResource();
-        extendedElementInformation = copyCollection(object.getExtendedElementInformation(), ExtendedElementInformation.class);
+        if (object != null) {
+            extensionOnLineResource    = object.getExtensionOnLineResource();
+            extendedElementInformation = copyCollection(object.getExtendedElementInformation(), ExtendedElementInformation.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -108,7 +119,9 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
 
     /**
      * Information about on-line sources containing the community profile name and
-     * the extended metadata elements. Information for all new metadata elements.
+     * the extended metadata elements and information for all new metadata elements.
+     *
+     * @return Online sources to community profile name and extended metadata elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "extensionOnLineResource")
@@ -127,8 +140,10 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     }
 
     /**
-     * Provides information about a new metadata element, not found in ISO 19115, which is
-     * required to describe geographic data.
+     * Provides information about a new metadata element, not found in ISO 19115,
+     * which is required to describe resource.
+     *
+     * @return New metadata elements not found in ISO 19115.
      */
     @Override
     @XmlElement(name = "extendedElementInformation")

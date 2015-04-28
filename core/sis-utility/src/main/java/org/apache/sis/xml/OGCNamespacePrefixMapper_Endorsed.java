@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import net.jcip.annotations.Immutable;
 
 
 /**
@@ -27,12 +26,14 @@ import net.jcip.annotations.Immutable;
  * the package name of the parent {@code NamespacePrefixMapper} class does not have
  * the "{@code internal}" part.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This final class is immutable and thus inherently thread-safe.
+ *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
     /**
      * If non-null, this namespace will be the default namespace (the one without prefix).
@@ -41,6 +42,7 @@ final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
 
     /**
      * Creates a new prefix mapper.
+     * This constructor is invoked by reflection and needs to be public for that reason.
      *
      * @param defaultNamespace The namespace which doesn't need prefix, or {@code null} if none.
      */

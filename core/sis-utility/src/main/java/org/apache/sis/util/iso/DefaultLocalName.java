@@ -19,20 +19,20 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Collections;
 import java.util.Locale;
-import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
+import org.opengis.util.TypeName;
+import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -44,18 +44,35 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * <p>{@code DefaultLocalName} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}</li>
- *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1</li>
- *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} without separator</li>
+ *   <li>{@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}.</li>
+ *   <li>{@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} with an array of length 1.</li>
+ *   <li>{@link DefaultNameFactory#parseGenericName(NameSpace, CharSequence)} with no occurrence of the separator in the path.</li>
+ *   <li>Similar static convenience methods in {@link Names}.</li>
  * </ul>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace} and {@link CharSequence}
+ * arguments given to the constructor are also immutable. Subclasses shall make sure that any overridden methods
+ * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
+ *
+ * @see DefaultNameSpace
+ * @see DefaultScopedName
  */
-@Immutable
-@XmlRootElement(name = "LocalName")
+
+/*
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * since "CodeType" is used for various classes (including GenericName and ScopedName).
+ * (Un)marhalling of this class needs to be handled by a JAXB adapter.
+ */
+@XmlSeeAlso({
+    DefaultTypeName.class,
+    DefaultMemberName.class
+})
 public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.
@@ -72,6 +89,12 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * The name, either as a {@link String} or an {@link InternationalString}.
+     *
+     * <div class="section">Note on JAXB annotation</div>
+     * The {@link XmlElement} annotation applied here is appropriate for subclasses only ({@link DefaultTypeName}
+     * and {@link DefaultMemberName}). It is <strong>not</strong> appropriate when (un)marshalling directly this
+     * {@code DefaultLocalName} class. In this later case, we will rather rely on the {@link String} conversion
+     * performed by {@link org.apache.sis.internal.jaxb.gco.GO_GenericName}.
      */
     @XmlJavaTypeAdapter(CharSequenceAdapter.class)
     @XmlElement(name = "aName", namespace = Namespaces.GCO)
@@ -132,6 +155,43 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     }
 
     /**
+     * Returns a SIS local name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is an instance of {@link MemberName} or {@link TypeName},
+     *       then this method delegates to {@code castOrCopy(…)} method of the corresponding subclass.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultLocalName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultLocalName} instance is created
+     *       with the same values than the given name.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultLocalName castOrCopy(final LocalName object) {
+        if (object instanceof MemberName) {
+            return DefaultMemberName.castOrCopy((MemberName) object);
+        }
+        if (object instanceof TypeName) {
+            return DefaultTypeName.castOrCopy((TypeName) object);
+        }
+        if (object == null || object instanceof DefaultLocalName) {
+            return (DefaultLocalName) object;
+        }
+        final NameSpace scope = object.scope();
+        final InternationalString name = object.toInternationalString();
+        if (scope instanceof DefaultNameSpace) {
+            return ((DefaultNameSpace) scope).local(name, null); // May return a cached instance.
+        } else {
+            return new DefaultLocalName(scope, name);
+        }
+    }
+
+    /**
      * Returns the scope (name space) in which this name is local. This method returns a
      * non-null value in all cases, even when the scope given to the constructor was null.
      */
@@ -160,6 +220,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * Returns {@code this} since this object is already a local name.
+     *
+     * @return {@code this}.
      */
     @Override
     public final LocalName head() {
@@ -168,6 +230,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
 
     /**
      * Returns {@code this} since this object is already a local name.
+     *
+     * @return {@code this}.
      */
     @Override
     public final LocalName tip() {
@@ -178,6 +242,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Returns a locale-independent string representation of this local name.
      * This string does not include the scope, which is consistent with the
      * {@linkplain #getParsedNames() parsed names} definition.
+     *
+     * @return A local-independent string representation of this name.
      */
     @Override
     public synchronized String toString() {
@@ -207,7 +273,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Compares this name with the specified object for order. Returns a negative integer,
      * zero, or a positive integer as this name lexicographically precedes, is equal to,
-     * or follows the specified object. The comparison is case-insensitive.
+     * or follows the specified object.
      *
      * @param name The other name to compare with this name.
      * @return -1 if this name precedes the given one, +1 if it follows, 0 if equals.
@@ -215,7 +281,14 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     @Override
     public int compareTo(final GenericName name) {
         if (name instanceof LocalName) {
-            return toString().compareToIgnoreCase(name.toString());
+            /*
+             * Note: a previous version was using String.compareToIgnoreCase(String).
+             * However it is slightly slower than String.compareTo(String), increase
+             * the inconsistency with equals(Object), may be more suprising to the
+             * developer and result in unsatisfactory ordering for certain locales
+             * anyway (we are supposed to use Collator instead).
+             */
+            return toString().compareTo(name.toString());
         } else {
             return super.compareTo(name);
         }
@@ -244,7 +317,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
      */
     @Override
-    final int computeHashCode() {
+    int computeHashCode() {
         return Objects.hash(scope, name) ^ (int) serialVersionUID;
     }
 
@@ -256,9 +329,8 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * to replace an instance of a user-defined class.</p>
      *
      * @return The unique instance.
-     * @throws ObjectStreamException Should never happen.
      */
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         final DefaultNameSpace ns;
         if (scope == null) { // Not a bug: readResolve() is intentionally private.
             ns = GlobalNameSpace.GLOBAL;

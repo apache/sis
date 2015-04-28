@@ -25,7 +25,7 @@
  * will be substituted to that interface.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.15)
+ * @since   0.3
  * @version 0.3
  * @module
  *

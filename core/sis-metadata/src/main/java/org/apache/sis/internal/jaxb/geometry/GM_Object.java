@@ -24,16 +24,15 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link Geometry}, in order to integrate the value in an element
- * complying with OGC/ISO standard. The geometry values are covered by a {@code gml:**}
- * element
+ * JAXB adapter for {@link Geometry}, in order to integrate the value in an element complying with OGC/ISO standard.
+ * The geometry element names are usually prefixed by {@code gml:}.
  *
  * <p>The default implementation does almost nothing. The geometry objects will <strong>not</strong>
  * create the expected {@link JAXBElement} type. This class is only a hook to be extended by more
  * specialized subclasses in GML modules.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.15)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -59,7 +58,13 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      */
     @Override
     public final Geometry unmarshal(final GM_Object value) {
-        return (value != null) ? value.geometry.getValue() : null;
+        if (value != null) {
+            final JAXBElement<? extends Geometry> g = value.geometry;
+            if (g != null) {
+                return g.getValue();
+            }
+        }
+        return null;
     }
 
     /**
@@ -83,7 +88,7 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * The default implementation returns {@code null} if all cases. Subclasses
      * must override this method in order to provide useful marshalling.
      *
-     * @param value The value to marshall.
+     * @param value The value to marshal.
      * @return The adapter which covers the geometry value.
      */
     protected GM_Object wrap(Geometry value) {

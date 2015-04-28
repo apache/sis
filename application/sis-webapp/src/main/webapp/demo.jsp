@@ -1,14 +1,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<!-- 
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
- 
+
       http://www.apache.org/licenses/LICENSE-2.0
- 
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,7 +64,7 @@ body {
 <script type="text/javascript">
 	var map;
 	var req;
-	
+
 	function initialize() {
 		map = new L.Map('map_canvas', {scrollWheelZoom:false});
 		var tileURL = 'http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png';
@@ -147,7 +147,7 @@ body {
 				}
 
 				document.getElementById("result").innerHTML = ids.length + " results (" + ( parseInt(time[0].firstChild.nodeValue)  / 1000 ) + " seconds)";
-				
+
 				for ( var i = 0; i < ids.length; i++) {
 					var latLon = new L.LatLng(
 							parseFloat(lats[i].firstChild.nodeValue),
@@ -207,11 +207,11 @@ body {
 			req.send("filename=" + filename);
 		}
 	}
-	
+
 	function createMarker(latLon, filename) {
 		var marker = new L.Marker(latLon);
 		map.addLayer(marker);
-		marker.on('click', function(event) 
+		marker.on('click', function(event)
 		{
 			getHTMLDescription(filename, marker);
 		});
@@ -227,7 +227,7 @@ body {
 			}
 		}
 	}
-	
+
 	function switchType()
 	{
 
@@ -269,12 +269,12 @@ body {
 				return false;
 			}
 		}
-		
+
 	}
 </script>
 </head>
 <body onload="initialize()">
-<div class="center" ><a href="http://incubator.apache.org/sis/"><image src="images/sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></div>
+<div class="center" ><a href="http://sis.apache.org"><image src="images/sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></div>
 <form method="get"
 	onsubmit="return validate()" class="center">
 

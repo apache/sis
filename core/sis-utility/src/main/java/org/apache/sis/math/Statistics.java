@@ -26,8 +26,10 @@ import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.LongConsumer;
+import org.apache.sis.internal.jdk8.DoubleConsumer;
 
 
 /**
@@ -57,7 +59,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * The statistics are updated every time an {@link #accept(double)} method is invoked with a non-NaN
  * value.</p>
  *
- * {@section Examples}
+ * <div class="section">Examples</div>
  * The following examples assume that a <var>y</var>=<var>f</var>(<var>x</var>) function
  * is defined. A simple usage is:
  *
@@ -84,11 +86,11 @@ import org.apache.sis.internal.jdk7.Objects;
  * }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-public class Statistics implements Cloneable, Serializable {
+public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -245,14 +247,12 @@ public class Statistics implements Cloneable, Serializable {
      * {@link Double#NaN NaN} values increment the {@linkplain #countNaN() NaN count},
      * but are otherwise ignored.
      *
-     * {@note This method is named <code>accept</code> for compatibility with the
-     *        <code>java.util.function.DoubleConsumer</code> interface in JDK8.}
-     *
      * @param sample The sample value (may be NaN).
      *
      * @see #accept(long)
      * @see #combine(Statistics)
      */
+    @Override
     public void accept(final double sample) {
         if (isNaN(sample)) {
             countNaN++;
@@ -287,14 +287,12 @@ public class Statistics implements Cloneable, Serializable {
      * For very large integer values (greater than 2<sup>52</sup> in magnitude),
      * this method may be more accurate than the {@link #accept(double)} version.
      *
-     * {@note This method is named <code>accept</code> for compatibility with the
-     *        <code>java.util.function.LongConsumer</code> interface in JDK8.}
-     *
      * @param sample The sample value.
      *
      * @see #accept(double)
      * @see #combine(Statistics)
      */
+    @Override
     public void accept(final long sample) {
         real(sample);
     }
@@ -441,7 +439,7 @@ public class Statistics implements Cloneable, Serializable {
      * assuming that the distribution is Gaussian (first column) or assuming that the
      * distribution is uniform (second column).</p>
      *
-     * <table class="sis">
+     * <table class="sis" summary="Propability values for some standard deviations.">
      *   <tr><th>n</th><th>Gaussian</th><th>uniform</th>
      *   <tr><td>0.5</td><td>69.1%</td><td>28.9%</td></tr>
      *   <tr><td>1.0</td><td>84.2%</td><td>57.7%</td></tr>
@@ -571,7 +569,7 @@ public class Statistics implements Cloneable, Serializable {
      * which are stored in a {@link #delta} statistics object.
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
-     * @since   0.3 (derived from geotk-1.0)
+     * @since   0.3
      * @version 0.3
      * @module
      */

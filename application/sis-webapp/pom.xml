@@ -28,13 +28,14 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <version>0.6-android-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-webapp</artifactId>
   <packaging>war</packaging>
   <name>Apache SIS web services layer</name>
-  <url>http://incubator.apache.org/sis/</url>
+  <url>http://sis.apache.org</url>
 
   <dependencies>
     <dependency>
@@ -44,11 +45,13 @@
     <dependency>
       <groupId>org.geonames</groupId>
       <artifactId>georss-rome</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-referencing</artifactId>
-      <version>${project.version}</version>
+      <version>0.9.8</version>
+      <!-- We have to specify the version here because georss-rome is intentionally excluded from
+           the dependency management of the root pom.xml. The problem is that the artifact filename
+           is "georss-rome", but the <artifactId> element in its pom.xml declares "georss" without
+           the "-rome" suffix, which causes some environments to complain about this inconsistency.
+           Omitting the declaration from the root pom.xml limits the inconvenience to this "sis-webapp"
+           module only. -->
     </dependency>
   </dependencies>
 
@@ -60,13 +63,14 @@
         <executions>
           <execution>
             <id>reserve-ports</id>
-            <phase>initialize</phase>
+            <phase>pre-integration-test</phase>
             <goals>
               <goal>reserve-network-port</goal>
             </goals>
             <configuration>
               <portNames>
                 <portName>jettyPort</portName>
+                <portName>stopPort</portName>
               </portNames>
             </configuration>
           </execution>
@@ -76,7 +80,8 @@
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
         <configuration>
-          <webApp>${basedir}/target/sis-webapp-${project.version}.war</webApp>
+          <stopKey>stopJetty</stopKey>
+          <stopPort>${stopPort}</stopPort>
         </configuration>
         <executions>
           <execution>
@@ -104,6 +109,13 @@
                 </systemProperty>
               </systemProperties>
             </configuration>
+          </execution>
+          <execution>
+            <id>stop-jetty</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

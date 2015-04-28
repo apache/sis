@@ -17,6 +17,7 @@
 package org.apache.sis.xml;
 
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -29,7 +30,7 @@ import static org.junit.Assert.*;
  * Tests the {@link MarshallerPool}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -44,7 +45,7 @@ public final strictfp class MarshallerPoolTest extends TestCase {
      */
     @Test
     public void testAcquireRelease() throws JAXBException {
-        final MarshallerPool pool = new MarshallerPool(new Class<?>[0]);
+        final MarshallerPool pool = new MarshallerPool(JAXBContext.newInstance(new Class<?>[0]), null);
         final Marshaller marshaller = pool.acquireMarshaller();
         assertNotNull(marshaller);
         /*

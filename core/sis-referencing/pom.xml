@@ -28,13 +28,49 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-android-SNAPSHOT</version>
+    <version>0.6-android-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing</artifactId>
   <packaging>jar</packaging>
   <name>Apache SIS referencing</name>
-  <url>http://incubator.apache.org/sis/</url>
+  <description>
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+Implementations of Coordinate Reference Systems (CRS),
+ conversion and transformation services derived from ISO 19111.
+  </description>
+
+
+  <!-- ===========================================================
+           Developers and Contributors
+       =========================================================== -->
+  <developers>
+    <developer>
+      <name>Chris A. Mattmann</name>
+      <id>mattmann</id>
+      <email>mattmann@apache.org</email>
+      <url>http://sunset.usc.edu/~mattmann/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
 
 
   <!-- ===========================================================
@@ -42,31 +78,32 @@
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.geonames</groupId>
-      <artifactId>georss-rome</artifactId>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>gov.nist.math</groupId>
+      <artifactId>jama</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-metadata</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>

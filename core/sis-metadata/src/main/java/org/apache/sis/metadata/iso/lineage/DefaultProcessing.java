@@ -31,13 +31,21 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
- * Comprehensive information about the procedure(s), process(es) and algorithm(s) applied
- * in the process step.
+ * Comprehensive information about the procedure(s), process(es) and algorithm(s) applied in the process step.
+ *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -93,23 +101,25 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Processing)
      */
     public DefaultProcessing(final Processing object) {
         super(object);
-        identifiers          = singleton(object.getIdentifier(), Identifier.class); // TODO
-        softwareReferences   = copyCollection(object.getSoftwareReferences(), Citation.class);
-        procedureDescription = object.getProcedureDescription();
-        documentations       = copyCollection(object.getDocumentations(), Citation.class);
-        runTimeParameters    = object.getRunTimeParameters();
-        algorithms           = copyCollection(object.getAlgorithms(), Algorithm.class);
+        if (object != null) {
+            identifiers          = singleton(object.getIdentifier(), Identifier.class);
+            softwareReferences   = copyCollection(object.getSoftwareReferences(), Citation.class);
+            procedureDescription = object.getProcedureDescription();
+            documentations       = copyCollection(object.getDocumentations(), Citation.class);
+            runTimeParameters    = object.getRunTimeParameters();
+            algorithms           = copyCollection(object.getAlgorithms(), Algorithm.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -134,6 +144,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the information to identify the processing package that produced the data.
+     *
+     * @return Identifier of the processing package that produced the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", namespace = Namespaces.GMI, required = true)
@@ -154,6 +166,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the reference to document describing processing software.
+     *
+     * @return Document describing processing software.
      */
     @Override
     @XmlElement(name = "softwareReference", namespace = Namespaces.GMI)
@@ -172,6 +186,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the additional details about the processing procedures. {@code null} if unspecified.
+     *
+     * @return Processing procedures, or {@code null}.
      */
     @Override
     @XmlElement(name = "procedureDescription", namespace = Namespaces.GMI)
@@ -191,6 +207,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the reference to documentation describing the processing.
+     *
+     * @return Documentation describing the processing.
      */
     @Override
     @XmlElement(name = "documentation", namespace = Namespaces.GMI)
@@ -209,7 +227,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the parameters to control the processing operations, entered at run time.
-     * {@code null} if unspecified.
+     *
+     * @return Parameters to control the processing operations, or {@code null}.
      */
     @Override
     @XmlElement(name = "runTimeParameters", namespace = Namespaces.GMI)
@@ -230,6 +249,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the details of the methodology by which geographic information was derived from the
      * instrument readings.
+     *
+     * @return Methodology by which geographic information was derived from the instrument readings.
      */
     @Override
     @XmlElement(name = "algorithm", namespace = Namespaces.GMI)

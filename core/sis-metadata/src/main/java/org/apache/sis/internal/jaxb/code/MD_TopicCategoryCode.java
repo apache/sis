@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -30,18 +30,11 @@ import org.opengis.metadata.identification.TopicCategory;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guihem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategoryCode, TopicCategory> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(TopicCategory.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -57,6 +50,8 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected MD_TopicCategoryCode wrap(CodeListProxy proxy) {
@@ -65,6 +60,8 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<TopicCategory> getCodeListClass() {

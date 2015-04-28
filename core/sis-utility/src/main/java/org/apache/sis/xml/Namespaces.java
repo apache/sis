@@ -25,13 +25,45 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * List some namespaces URLs used by JAXB when (un)marshalling.
+ * Lists some namespaces URLs used by JAXB when (un)marshalling.
+ *
+ * <p><strong>Warning: string constants in this class may change in any SIS version.</strong>
+ * Those constants are made available for applications who wish to use the same URLs than SIS
+ * in their own JAXB annotations. Note that applications using those constants will have their
+ * URLs determined by the SIS version available at compile-time, not runtime, because the
+ * {@code javac} compiler inlines string constants.</p>
+ *
+ * <p>The following table lists the URLs, their usual prefix, and the SIS versions when each URL changed.</p>
+ * <table class="sis">
+ *   <caption>Namespaces and change log</caption>
+ *   <tr><th>Prefix</th> <th>XML Namespace</th>   <th>Changes history</th></tr>
+ *   <tr><td>gco</td>    <td>{@value #GCO}</td>   <td></td></tr>
+ *   <tr><td>gfc</td>    <td>{@value #GFC}</td>   <td></td></tr>
+ *   <tr><td>gmd</td>    <td>{@value #GMD}</td>   <td></td></tr>
+ *   <tr><td>gmi</td>    <td>{@value #GMI}</td>   <td></td></tr>
+ *   <tr><td>srv</td>    <td>{@value #SRV}</td>   <td></td></tr>
+ *   <tr><td>gts</td>    <td>{@value #GTS}</td>   <td></td></tr>
+ *   <tr><td>gmx</td>    <td>{@value #GMX}</td>   <td></td></tr>
+ *   <tr><td>gml</td>    <td>{@value #GML}</td>   <td>0.4</td></tr>
+ *   <tr><td>csw</td>    <td>{@value #CSW}</td>   <td></td></tr>
+ *   <tr><td>xsi</td>    <td>{@value #XSI}</td>   <td></td></tr>
+ *   <tr><td>xlink</td>  <td>{@value #XLINK}</td> <td></td></tr>
+ * </table>
+ *
+ * <div class="section">Profiles</div>
+ * Some countries or organizations define profiles of international standards, which may contain
+ * country-specific extensions. The namespace of such extensions are usually defined in a separated
+ * class dedicated to the profile. Some of them are listed below:
+ *
+ * <ul>
+ *   <li>{@value org.apache.sis.profile.france.FrenchProfile#NAMESPACE}</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.3
+ * @version 0.4
  * @module
  */
 public final class Namespaces extends Static {
@@ -100,10 +132,18 @@ public final class Namespaces extends Static {
     /**
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gml"}.
+     * The 3.2 version is equivalent to ISO 19136.
+     *
+     * <p>History</p>
+     * <table class="sis">
+     *   <caption>Change log</caption>
+     *   <tr><th>SIS version</th> <th>URL</th></tr>
+     *   <tr><td>0.3</td>         <td>http://www.opengis.net/gml</td></tr>
+     * </table>
      *
      * @category OGC
      */
-    public static final String GML = "http://www.opengis.net/gml";
+    public static final String GML = "http://www.opengis.net/gml/3.2";
 
     /**
      * The <code>{@value}</code> URL.
@@ -115,6 +155,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "xsi"}.
      * This is also defined by {@link XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI}.
      *
      * @category W3C
@@ -129,14 +170,6 @@ public final class Namespaces extends Static {
      * @category W3C
      */
     public static final String XLINK = "http://www.w3.org/1999/xlink";
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "fra"}.
-     *
-     * @category Profiles
-     */
-    public static final String FRA = "http://www.cnig.gouv.fr/2005/fra";
 
     /**
      * URLs for which the prefix to use directly follows them.

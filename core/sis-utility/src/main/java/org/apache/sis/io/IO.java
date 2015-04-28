@@ -23,7 +23,7 @@ import java.io.Writer;
 import java.io.StringWriter;
 import java.io.CharArrayWriter;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -42,7 +42,7 @@ public final class IO extends Static {
     }
 
     /**
-     * If the given {@code out} argument implements {@link Flushable}, or is a chain
+     * If the given {@code out} argument implements {@link Flushable}, or is a chain
      * of wrappers defined in this package around a flushable object, invokes the
      * {@link Flushable#flush() flush()} method on that object. Otherwise do nothing.
      *
@@ -63,13 +63,13 @@ public final class IO extends Static {
     }
 
     /**
-     * If the given {@code out} argument implements {@link Closeable}, or is a chain
+     * If the given {@code out} argument implements {@link Closeable}, or is a chain
      * of wrappers defined in this package around a closeable object, invokes the
      * {@link Closeable#close() close()} method on that object. Otherwise do nothing.
      *
      * <p>Chains of wrappers are followed until a {@code Closeable}
      * instance is found, if any. The first {@link Flushable} instance found <em>before</em> the
-     * {@code Closeable} one, if any, is {@linkplain Flushable#flush() flushed}. The search stops
+     * {@code Closeable} one, if any, is {@linkplain Flushable#flush() flushed}. The search stops
      * at the first {@code Closeable} occurrence found.</p>
      *
      * @param  out The stream or buffer to close, or {@code null}.
@@ -136,20 +136,20 @@ public final class IO extends Static {
 
     /**
      * Returns the content of the given {@code Appendable} as a string if possible,
-     * or the localized "<cite>Unavailable content</cite>" string otherwise.
+     * or the localized <cite>"Unavailable content"</cite> string otherwise.
      */
     static String toString(final Appendable out) {
         final CharSequence content = IO.content(out);
         if (content != null) {
             return content.toString();
         }
-        return Messages.format(Messages.Keys.UnavailableContent);
+        return Vocabulary.format(Vocabulary.Keys.UnavailableContent);
     }
 
     /**
      * Returns a view of the given {@code Appendable} as a {@code Writer}.
      * If the given argument is already a {@code Writer} instance, then it is returned unchanged.
-     * Otherwise if the argument is non-null, then it is wrapped in an adapter.
+     * Otherwise if the argument is non-null, then it is wrapped in an adapter.
      * Any write operations performed on the returned writer will be forwarded
      * to the given {@code Appendable}.
      *

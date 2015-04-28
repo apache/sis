@@ -17,7 +17,6 @@
 package org.apache.sis.internal.converter;
 
 import java.io.Serializable;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.Debug;
 
@@ -30,15 +29,19 @@ import org.apache.sis.util.Debug;
  * <strong>No other direct subtype shall exist</strong>.
  * See {@link #equals(Object)} for an explanation.</p>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class is immutable and thus inherently thread-safe. {@code ClassPair} immutability is necessary
+ * for {@link ConverterRegistry}. Subclasses should also be immutable, but this requirement is not as strong
+ * as for {@code ClassPair} (because subclasses are not used as keys in hash map).
+ *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 class ClassPair<S,T> implements Serializable {
     /**
      * For cross-version compatibility.
@@ -83,10 +86,10 @@ class ClassPair<S,T> implements Serializable {
      *
      * @return A key for the parent source, or {@code null}.
      */
+    @SuppressWarnings({"unchecked","rawtypes"})
     final ClassPair<? super S, T> parentSource() {
         final Class<? super S> source;
         if (sourceClass.isInterface()) {
-            @SuppressWarnings({"unchecked","rawtypes"})
             final Class<? super S>[] interfaces = (Class[]) sourceClass.getInterfaces();
             if (interfaces.length == 0) {
                 return null;

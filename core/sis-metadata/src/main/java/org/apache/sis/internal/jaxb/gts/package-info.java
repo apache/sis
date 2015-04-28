@@ -19,14 +19,18 @@
  * Temporary placeholder for the Temporal Schema JAXB adapters.
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.21)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GTS)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GTS, xmlns = {
+    @XmlNs(prefix = "gts", namespaceURI = Namespaces.GTS),
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+})
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gts;
 
+import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlAccessType;

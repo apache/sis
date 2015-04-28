@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.OnLineFunction;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -28,20 +28,13 @@ import org.opengis.metadata.citation.OnLineFunction;
  * the handling of {@code CodeList} in ISO-19139.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
 public final class CI_OnLineFunctionCode
         extends CodeListAdapter<CI_OnLineFunctionCode, OnLineFunction>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(OnLineFunction.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
@@ -57,6 +50,8 @@ public final class CI_OnLineFunctionCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The wrapper for the code list value.
      */
     @Override
     protected CI_OnLineFunctionCode wrap(CodeListProxy proxy) {
@@ -65,6 +60,8 @@ public final class CI_OnLineFunctionCode
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code list class.
      */
     @Override
     protected Class<OnLineFunction> getCodeListClass() {

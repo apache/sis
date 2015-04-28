@@ -31,26 +31,27 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
-// JDK7 related
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Holds the coordinates for a position within some coordinate reference system.
+ * A mutable {@code DirectPosition} (the coordinates of a position) of arbitrary dimension.
+ * This particular implementation of {@code DirectPosition} is said "General" because it
+ * uses an {@linkplain #ordinates array of ordinates} of an arbitrary length. If the direct
+ * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
+ * a more efficient implementation.
+ *
+ * <div class="section">Coordinate Reference System (CRS) optionality</div>
  * Since {@code DirectPosition}s, as data types, will often be included in larger objects
- * (such as {@linkplain org.opengis.geometry.Geometry geometries}) that have references
+ * (such as {@link org.opengis.geometry.Geometry}) that have references
  * to {@code CoordinateReferenceSystem}, the {@link #getCoordinateReferenceSystem()} method
  * may returns {@code null} if this particular {@code DirectPosition} is included in such
  * larger object. In this case, the coordinate reference system is implicitly assumed to take
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
- * <p>This particular implementation of {@code DirectPosition} is said "General" because it
- * uses an {@linkplain #ordinates array of ordinates} of an arbitrary length. If the direct
- * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
- * a more efficient implementation.</p>
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -100,10 +101,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * This constructor assigns the given array directly (without clone) to the {@link #ordinates} field.
      * Consequently, callers shall not recycle the same array for creating many instances.
      *
-     * {@note The array is not cloned because this is usually not needed, especially in the context
-     *        of variable argument lengths since the array is often created implicitly. Furthermore
-     *        the <code>ordinates</code> field is public, so cloning the array would not protect
-     *        the state of this object anyway.}
+     * <div class="note"><b>Implementation note:</b>
+     * The array is not cloned because this is usually not needed, especially in the context of variable
+     * argument lengths since the array is often created implicitly. Furthermore the {@link #ordinates}
+     * field is public, so cloning the array would not protect the state of this object anyway.</div>
      *
      * @param ordinates The ordinate values. This array is <strong>not</strong> cloned.
      */
@@ -185,11 +186,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinates</code>,
-     *        array field, which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
      * @return A copy of the {@linkplain #ordinates ordinates} array.
      */
@@ -201,7 +201,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Sets the ordinate values along all dimensions.
      *
-     * @param  ordinates The new ordinates values, or a {@code null} array
+     * @param  ordinates The new ordinates values, or a {@code null} array
      *         for setting all ordinate values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException If the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
@@ -218,8 +218,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Returns the ordinate at the specified dimension.
      *
-     * {@note This method is final for ensuring consistency with the <code>ordinates</code>,
-     *        array field, which is public.}
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
      *
      * @param  dimension The dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
      * @return The ordinate at the specified dimension.
@@ -247,7 +247,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * contains a coordinate reference system (CRS), then the CRS for this position will
      * be set to the CRS of the specified position.
      *
-     * @param  position The new position for this point, or {@code null} for setting all ordinate
+     * @param  position The new position for this point, or {@code null} for setting all ordinate
      *         values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException if the given position doesn't have the expected dimension.
      */
@@ -274,6 +274,8 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
 
     /**
      * Returns a deep copy of this position.
+     *
+     * @return A copy of this direct position.
      */
     @Override
     public GeneralDirectPosition clone() {

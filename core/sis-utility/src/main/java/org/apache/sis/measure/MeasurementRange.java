@@ -19,11 +19,10 @@ package org.apache.sis.measure;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -43,17 +42,21 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe.
+ * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * encouraged to make sure that subclasses remain immutable for more predictable behavior.
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.6
  * @module
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
  */
-@Immutable
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**
      * Serial number for inter-operability with different versions.
@@ -69,6 +72,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Constructs a range of {@code float} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -80,13 +84,14 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return new MeasurementRange<Float>(Float.class,
+        return unique(new MeasurementRange<Float>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit);
+                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit));
     }
 
     /**
      * Constructs a range of {@code double} values.
+     * This method may return a shared instance, at implementation choice.
      *
      * @param  minValue       The minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -98,9 +103,25 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
-        return new MeasurementRange<Double>(Double.class,
+        return unique(new MeasurementRange<Double>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit);
+                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit));
+    }
+
+    /**
+     * Constructs a range of {@code double} values greater than the given value.
+     * The {@code minValue} is often zero for creating a range of strictly positive values.
+     * This method may return a shared instance, at implementation choice.
+     *
+     * @param  minValue The minimal value (exclusive), or {@link Double#NEGATIVE_INFINITY} if none.
+     * @param  unit The unit of measurement, or {@code null} if unknown.
+     * @return The new range of numeric values greater than the given value.
+     *
+     * @since 0.6
+     */
+    public static MeasurementRange<Double> createGreaterThan(final double minValue, final Unit<?> unit) {
+        return unique(new MeasurementRange<Double>(Double.class,
+                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), false, null, false, unit));
     }
 
     /**
@@ -108,12 +129,14 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * This method performs the same work than {@link NumberRange#createBestFit
      * NumberRange.createBestFit(…)} with an additional {@code unit} argument.
      *
+     * <p>This method may return a shared instance, at implementation choice.</p>
+     *
      * @param  minValue       The minimal value, or {@code null} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@code null} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
+     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      *
      * @see NumberRange#createBestFit(Number, boolean, Number, boolean)
      */
@@ -123,9 +146,12 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     {
         final Class<? extends Number> type = Numbers.widestClass(
                 Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
-        return (type == null) ? null :
-            new MeasurementRange(type, Numbers.cast(minValue, type), isMinIncluded,
-                                       Numbers.cast(maxValue, type), isMaxIncluded, unit);
+        if (type == null) {
+            return null;
+        }
+        return unique(new MeasurementRange(type,
+                Numbers.cast(minValue, type), isMinIncluded,
+                Numbers.cast(maxValue, type), isMaxIncluded, unit));
     }
 
     /**
@@ -228,6 +254,8 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -340,6 +368,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -354,6 +383,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -368,6 +398,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -382,6 +413,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -396,6 +428,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * the value of the other range to the unit of measurement of this range before to perform
      * the operation.
      *
+     * @return {@inheritDoc}
      * @throws IllegalArgumentException is the given range is an instance of
      *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
@@ -406,15 +439,21 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
 
     /**
      * Compares this range with the specified object for equality.
+     *
+     * @return {@inheritDoc}
      */
     @Override
     public boolean equals(final Object object) {
-        if (super.equals(object)) {
-            if (object instanceof MeasurementRange<?>) {
-                return Objects.equals(unit, ((MeasurementRange<?>) object).unit);
-            }
-            return true;
-        }
-        return false;
+        return super.equals(object) && Objects.equals(unit, ((MeasurementRange<?>) object).unit);
+    }
+
+    /**
+     * Returns a hash code value for this measurement range.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Objects.hashCode(unit);
     }
 }

@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.math.FunctionProperty;
 
 
@@ -29,12 +28,15 @@ import org.apache.sis.math.FunctionProperty;
  * The source class is fixed to {@code Collection}. The target class is determined
  * by the inner class which extends this {@code CollectionConverter} class.
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
+ * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.02)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Immutable
 abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**
      * For cross-version compatibility.
@@ -69,7 +71,8 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        public java.util.List<?> convert(final Collection<?> source) {
+        @SuppressWarnings({"unchecked","rawtypes"})
+        public java.util.List<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
             }
@@ -93,7 +96,8 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        public java.util.Set<?> convert(final Collection<?> source) {
+        @SuppressWarnings({"unchecked","rawtypes"})
+        public java.util.Set<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
             }

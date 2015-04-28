@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.io.Serializable;
-import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -37,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  *       obtain the storage values using the {@link Invertible#inverse} converter.</li>
  * </ul>
  *
- * {@section Constraints}
+ * <div class="section">Constraints</div>
  * <ul>
  *   <li>This set does not support {@code null} values, since {@code null} is used as a
  *       sentinel value when no mapping from {@linkplain #storage} to {@code this} exists.</li>
@@ -49,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *       are thread-safe.</li>
  * </ul>
  *
- * {@section Performance considerations}
+ * <div class="section">Performance considerations</div>
  * This class does not cache any value, since the {@linkplain #storage} set is presumed modifiable.
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
@@ -58,11 +57,10 @@ import org.apache.sis.util.resources.Errors;
  * @param <E> The type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-@Decorator(Set.class)
 class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -160,7 +158,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * then delegates to the {@link #storage} set like below:
      *
      * {@preformat java
-     *     return storage.add(inverse.convert(element));
+     *     return storage.add(inverse.apply(element));
      * }
      *
      * @param  element element whose presence in this set is to be ensured.
@@ -170,7 +168,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      */
     @Override
     public boolean add(final E element) throws UnsupportedOperationException {
-        return add(element, converter.inverse().convert(element));
+        return add(element, converter.inverse().apply(element));
     }
 
     /**
@@ -221,7 +219,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          */
         @Override
         public final boolean add(final E element) throws UnsupportedOperationException {
-            return add(element, inverse.convert(element));
+            return add(element, inverse.apply(element));
         }
 
         /**
@@ -230,7 +228,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * then delegates to the {@link #storage} set like below:
          *
          * {@preformat java
-         *     return storage.contains(inverse.convert(element));
+         *     return storage.contains(inverse.apply(element));
          * }
          *
          * @param  element object to be checked for containment in this set.
@@ -239,7 +237,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         @Override
         public final boolean contains(final Object element) {
             final Class<E> type = getElementType();
-            return type.isInstance(element) && storage.contains(inverse.convert(type.cast(element)));
+            return type.isInstance(element) && storage.contains(inverse.apply(type.cast(element)));
         }
 
         /**
@@ -248,7 +246,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * then delegates to the {@link #storage} set like below:
          *
          * {@preformat java
-         *     return storage.remove(inverse.convert(element));
+         *     return storage.remove(inverse.apply(element));
          * }
          *
          * @param  element element to be removed from this set, if present.
@@ -259,13 +257,13 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         @Override
         public final boolean remove(final Object element) throws UnsupportedOperationException {
             final Class<E> type = getElementType();
-            return type.isInstance(element) && storage.remove(inverse.convert(type.cast(element)));
+            return type.isInstance(element) && storage.remove(inverse.apply(type.cast(element)));
         }
     }
 
     /**
      * A {@link DerivedSet} for converters that are both invertible and bijective.
-     * The bijection allows us to query the {@linkplai #storage} set size directly
+     * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
      * @param <S> The type of elements in the storage set.

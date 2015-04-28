@@ -40,21 +40,21 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
 
 
 /**
- * A minimum bounding box or rectangle. Regardless of dimension, an {@code Envelope} can
- * be represented without ambiguity as two {@linkplain DirectPosition direct positions}
- * (coordinate points). To encode an {@code Envelope}, it is sufficient to encode these
- * two points.
+ * A mutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
+ * Regardless of dimension, an {@code Envelope} can be represented without ambiguity
+ * as two {@linkplain AbstractDirectPosition direct positions} (coordinate points).
+ * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
- * {@note <code>Envelope</code> uses an arbitrary <cite>Coordinate Reference System</cite>, which
- * doesn't need to be geographic. This is different than the <code>GeographicBoundingBox</code>
- * class provided in the metadata package, which can be used as a kind of envelope restricted to
- * a Geographic CRS having Greenwich prime meridian.}
+ * <div class="note"><b>Note:</b>
+ * {@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
+ * This is different than the {@code GeographicBoundingBox} class provided in the metadata package, which can be used
+ * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</div>
  *
  * This particular implementation of {@code Envelope} is said "General" because it uses
  * coordinates of an arbitrary number of dimensions. This is in contrast with
  * {@link Envelope2D}, which can use only two-dimensional coordinates.
  *
- * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
+ * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
  * <ul>
  *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all ordinates initialized to 0.</li>
  *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
@@ -64,15 +64,15 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
  * </ul>
  *
- * {@section Spanning the anti-meridian of a Geographic CRS}
+ * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <table class="compact" align="center"><tr><td>
- *   <img src="doc-files/AntiMeridian.png">
- * </td><td>
+ * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
+ * </td><td style="vertical-align: middle">
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>
@@ -80,19 +80,38 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #getSpan(int)}</li>
  *   <li>{@link #isEmpty()}</li>
+ *   <li>{@link #toSimpleEnvelopes() toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition) contains(DirectPosition)}</li>
- *   <li>{@link #contains(Envelope, boolean) contains(Envelope, boolean)}</li>
- *   <li>{@link #intersects(Envelope, boolean) intersects(Envelope, boolean)}</li>
+ *   <li>{@link #contains(Envelope) contains(Envelope)}</li>
+ *   <li>{@link #intersects(Envelope) intersects(Envelope)}</li>
  *   <li>{@link #intersect(Envelope)}</li>
  *   <li>{@link #add(Envelope)}</li>
  *   <li>{@link #add(DirectPosition)}</li>
  * </ul>
- * </td></tr></table>
+ * </td></tr></table></center>
+ *
+ * <div class="section">Envelope validation</div>
+ * If and only if this envelope is associated to a non-null CRS, then constructors and setter methods
+ * in this class perform the following checks:
+ *
+ * <ul>
+ *   <li>The number of CRS dimensions must be equals to <code>this.{@linkplain #getDimension()}</code>.</li>
+ *   <li>For each dimension <var>i</var>,
+ *       <code>{@linkplain #getLower(int) getLower}(i) &gt; {@linkplain #getUpper(int) getUpper}(i)</code> is allowed
+ *       only if the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getRangeMeaning() coordinate
+ *       system axis range meaning} is {@code WRAPAROUND}.</li>
+ * </ul>
+ *
+ * Note that this class does <em>not</em> require the ordinate values to be between the axis minimum and
+ * maximum values. This flexibility exists because out-of-range values happen in practice, while they do
+ * not hurt the working of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods.
+ * This in contrast with the {@code lower > upper} case, which cause the above-cited methods to behave in
+ * an unexpected way if the axis does not have wraparound range meaning.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  *
  * @see Envelope2D
@@ -182,7 +201,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
+     * The coordinate reference system is set to the
+     * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}.
+     * Axis order is (<var>longitude</var>, <var>latitude</var>).
      *
      * @param box The bounding box to copy.
      */
@@ -215,14 +236,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * check that every points in a {@code LINESTRING} have the same dimension. However this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * <p>The following examples can be parsed by this constructor in addition of the usual
-     * {@code BOX} element. This constructor creates the bounding box of those geometries:</p>
+     * <div class="note"><b>Example:</b>
+     * The following texts can be parsed by this constructor in addition of the usual {@code BOX} element.
+     * This constructor creates the bounding box of those geometries:
      *
      * <ul>
      *   <li>{@code POINT(6 10)}</li>
      *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
-     * </ul>
+     * </ul></div>
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
@@ -255,21 +277,42 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Sets the coordinate reference system in which the coordinate are given.
-     * This method <strong>does not</strong> reproject the envelope, and do not
-     * check if the envelope is contained in the new domain of validity.
+     * This method <strong>does not</strong> reproject the envelope, and does
+     * not check if the envelope is contained in the new domain of validity.
      *
      * <p>If the envelope coordinates need to be transformed to the new CRS, consider
      * using {@link Envelopes#transform(Envelope, CoordinateReferenceSystem)} instead.</p>
      *
      * @param  crs The new coordinate reference system, or {@code null}.
-     * @throws MismatchedDimensionException if the specified CRS doesn't have the expected
-     *         number of dimensions.
+     * @throws MismatchedDimensionException if the specified CRS doesn't have the expected number of dimensions.
+     * @throws IllegalStateException if a range of ordinate values in this envelope is compatible with the given CRS.
+     *         See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
         ensureDimensionMatches("crs", getDimension(), crs);
-        this.crs = crs;
+        /*
+         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates)
+         * except that it may verify only a subset of the ordinate array and throws a different kind
+         * of exception in caseo of failure.
+         */
+        if (crs != null) {
+            final int beginIndex = beginIndex();
+            final int endIndex = endIndex();
+            final int d = ordinates.length >>> 1;
+            for (int i=beginIndex; i<endIndex; i++) {
+                final double lower = ordinates[i];
+                final double upper = ordinates[i + d];
+                if (lower > upper) {
+                    final int j = i - beginIndex;
+                    if (!isWrapAround(crs, j)) {
+                        throw new IllegalStateException(illegalRange(crs, j, lower, upper));
+                    }
+                }
+            }
+        }
+        this.crs = crs; // Set only on success.
     }
 
     /**
@@ -279,6 +322,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  lower     The limit in the direction of decreasing ordinate values.
      * @param  upper     The limit in the direction of increasing ordinate values.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     * @throws IllegalArgumentException If {@code lower > upper} and the axis range meaning at the given dimension
+     *         is not "wraparound". See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     @Override // Must also be overridden in SubEnvelope
     public void setRange(final int dimension, final double lower, final double upper)
@@ -286,6 +331,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     {
         final int d = ordinates.length >>> 1;
         ensureValidIndex(d, dimension);
+        /*
+         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates),
+         * except that there is no loop.
+         */
+        if (lower > upper && crs != null && !isWrapAround(crs, dimension)) {
+            throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
+        }
         ordinates[dimension + d] = upper;
         ordinates[dimension]     = lower;
     }
@@ -296,14 +348,16 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * this {@linkplain #getDimension() envelope dimension}, and minimum shall not be greater
      * than maximum.
      *
-     * <p><b>Example:</b></p>
+     * <div class="note"><b>Example:</b>
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>z</var><sub>min</sub>,
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
+     * </div>
      *
      * @param corners Ordinates of the new lower corner followed by the new upper corner.
      */
     public void setEnvelope(final double... corners) {
         verifyArrayLength(ordinates.length >>> 1, corners);
+        verifyRanges(crs, corners);
         System.arraycopy(corners, 0, ordinates, 0, ordinates.length);
     }
 
@@ -385,6 +439,32 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
+     * Translates the envelope by the given vector. For every dimension <var>i</var>, the
+     * {@linkplain #getLower(int) lower} and {@linkplain #getUpper(int) upper} values are
+     * increased by {@code vector[i]}.
+     *
+     * <p>This method does not check if the translation result is inside the coordinate system domain
+     * (e.g. [-180 … +180]° of longitude). Callers can normalize the envelope when desired by call to
+     * the {@link #normalize()} method.</p>
+     *
+     * @param vector The translation vector. The length of this array shall be equal to this envelope
+     *        {@linkplain #getDimension() dimension}.
+     *
+     * @since 0.5
+     */
+    public void translate(final double... vector) {
+        ensureNonNull("vector", vector);
+        final int beginIndex = beginIndex();
+        ensureDimensionMatches("vector", endIndex() - beginIndex, vector);
+        final int upperIndex = beginIndex + (ordinates.length >>> 1);
+        for (int i=0; i<vector.length; i++) {
+            final double t = vector[i];
+            ordinates[beginIndex + i] += t;
+            ordinates[upperIndex + i] += t;
+        }
+    }
+
+    /**
      * Adds to this envelope a point of the given array.
      * This method does not check for anti-meridian spanning. It is invoked only
      * by the {@link Envelopes} transform methods, which build "normal" envelopes.
@@ -409,10 +489,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * with the added point as an argument will return {@code true}, except if one of the point
      * ordinates was {@link Double#NaN} in which case the corresponding ordinate has been ignored.</p>
      *
-     * {@note This method assumes that the specified point uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified point uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian. In such cases it is possible to
      * move both envelope borders in order to encompass the given point, as illustrated below (the
      * new point is represented by the {@code +} symbol):
@@ -488,10 +569,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Adds an envelope object to this envelope. The resulting envelope is the union of the
      * two {@code Envelope} objects.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian. If one or both envelopes span
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
      * to infinities. In such case, the ordinate range will be either [-∞…∞] or [0…-0] depending on
@@ -583,7 +665,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  * given envelope spans to infinities.
                  */
                 if (max0 <= max1 || min0 >= min1) {
-                    ordinates[iLower]   = min1;
+                    ordinates[iLower] = min1;
                     ordinates[iUpper] = max1;
                     continue;
                 }
@@ -608,16 +690,17 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 ordinates[iUpper] = Double.POSITIVE_INFINITY;
             }
         }
-        assert contains(envelope, true) || isEmpty() || hasNaN(envelope) : this;
+        assert contains(envelope) || isEmpty() || hasNaN(envelope) : this;
     }
 
     /**
      * Sets this envelope to the intersection if this envelope with the specified one.
      *
-     * {@note This method assumes that the specified envelope uses the same CRS than this envelope.
-     *        For performance raisons, it will no be verified unless Java assertions are enabled.}
+     * <div class="section">Pre-conditions</div>
+     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian.
      *
      * @param  envelope the {@code Envelope} to intersect to this envelope.
@@ -738,7 +821,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             if (max1 < max0) ordinates[iUpper] = max1;
         }
         // Tests only if the interection result is non-empty.
-        assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this, true) : this;
+        assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this) : this;
     }
 
     /**
@@ -766,7 +849,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *       class javadoc for more information about the meaning of such range.</li>
      * </ul>
      *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the envelope is spanning the anti-meridian, then some {@linkplain #getLower(int) lower}
      * ordinate values may become greater than their {@linkplain #getUpper(int) upper} counterpart
      * as a result of this method call. If such effect is undesirable, then this method may be
@@ -778,13 +861,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *     }
      * }
      *
-     * {@section Choosing the range of longitude values}
+     * <div class="section">Choosing the range of longitude values</div>
      * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
      * range is also occasionally used. Callers need to ensure that this envelope CRS is associated
      * to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum} and
      * {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
      *
-     * {@section Usage}
+     * <div class="section">Usage</div>
      * This method is sometime useful before to compute the {@linkplain #add(Envelope) union}
      * or {@linkplain #intersect(Envelope) intersection} of envelopes, in order to ensure that
      * both envelopes are defined in the same domain. This method may also be invoked before
@@ -793,6 +876,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
+     *
+     * @see AbstractDirectPosition#normalize()
      */
     public boolean normalize() {
         boolean changed = false;
@@ -857,10 +942,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * {@linkplain #getLower(int) lower ordinate value}, then there is a choice:
      *
      * <ul>
-     *   <li>If the axis has {@link RangeMeaning#WRAPAROUND}, then the lower ordinate value is
-     *       set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}
-     *       and the upper ordinate value is set to the
-     *       {@linkplain CoordinateSystemAxis#getMaximumValue() axis maimum value}.</li>
+     *   <li>If the axis has {@link RangeMeaning#WRAPAROUND}, then:<ul>
+     *       <li>the lower ordinate value is set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}, and</li>
+     *       <li>the upper ordinate value is set to the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.</li>
+     *     </ul></li>
      *   <li>Otherwise an {@link IllegalStateException} is thrown.</li>
      * </ul>
      *
@@ -871,6 +956,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *         or {@code false} if no change has been done.
      * @throws IllegalStateException If a upper ordinate value is less than a lower ordinate
      *         value on an axis which does not have the {@code WRAPAROUND} range meaning.
+     *
+     * @see #toSimpleEnvelopes()
      */
     public boolean simplify() throws IllegalStateException {
         boolean changed = false;
@@ -890,7 +977,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     changed = true;
                 } else {
                     throw new IllegalStateException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
-                            (axis != null) ? axis.getName() : i, lower, upper));
+                            lower, upper, (axis != null) ? axis.getName() : i));
                 }
             }
         }
@@ -923,6 +1010,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  endIndex   The index after the last valid ordinate value of the corners.
      * @return The sub-envelope of dimension {@code endIndex - beginIndex}.
      * @throws IndexOutOfBoundsException If an index is out of bounds.
+     *
+     * @see org.apache.sis.referencing.CRS#getComponentAt(CoordinateReferenceSystem, int, int)
      */
     // Must be overridden in SubEnvelope
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {

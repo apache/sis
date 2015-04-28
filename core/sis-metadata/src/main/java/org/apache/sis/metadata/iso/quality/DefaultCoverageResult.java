@@ -31,9 +31,18 @@ import org.apache.sis.xml.Namespaces;
 /**
  * Result of a data quality measure organising the measured values as a coverage.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -88,22 +97,24 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoverageResult)
      */
     public DefaultCoverageResult(final CoverageResult object) {
         super(object);
-        spatialRepresentationType   = object.getSpatialRepresentationType();
-        resultSpatialRepresentation = object.getResultSpatialRepresentation();
-        resultContentDescription    = object.getResultContentDescription();
-        resultFormat                = object.getResultFormat();
-        resultFile                  = object.getResultFile();
+        if (object != null) {
+            spatialRepresentationType   = object.getSpatialRepresentationType();
+            resultSpatialRepresentation = object.getResultSpatialRepresentation();
+            resultContentDescription    = object.getResultContentDescription();
+            resultFormat                = object.getResultFormat();
+            resultFile                  = object.getResultFile();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -128,6 +139,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the method used to spatially represent the coverage result.
+     *
+     * @return Spatial representation of the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
@@ -147,6 +160,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the digital representation of data quality measures composing the coverage result.
+     *
+     * @return Digital representation of data quality measures composing the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
@@ -167,6 +182,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
+     *
+     * @return Description of the content of the result coverage, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
@@ -187,6 +204,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the information about the format of the result coverage data.
+     *
+     * @return Format of the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
@@ -206,6 +225,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the information about the data file containing the result coverage data.
+     *
+     * @return Data file containing the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFile", namespace = Namespaces.GMX, required = true)

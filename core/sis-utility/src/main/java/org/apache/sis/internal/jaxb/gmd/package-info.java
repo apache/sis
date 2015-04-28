@@ -21,14 +21,13 @@
  * lists (except base classes), which are defined in their own package.
  *
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })

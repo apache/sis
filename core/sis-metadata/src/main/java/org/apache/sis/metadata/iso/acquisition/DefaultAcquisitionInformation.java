@@ -35,9 +35,18 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * Designations for the measuring instruments, the platform carrying them, and the mission to
  * which the data contributes.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -103,24 +112,26 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AcquisitionInformation)
      */
     public DefaultAcquisitionInformation(final AcquisitionInformation object) {
         super(object);
-        acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
-        acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
-        environmentalConditions = object.getEnvironmentalConditions();
-        instruments             = copyCollection(object.getInstruments(), Instrument.class);
-        objectives              = copyCollection(object.getObjectives(), Objective.class);
-        operations              = copyCollection(object.getOperations(), Operation.class);
-        platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        if (object != null) {
+            acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
+            acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
+            environmentalConditions = object.getEnvironmentalConditions();
+            instruments             = copyCollection(object.getInstruments(), Instrument.class);
+            objectives              = copyCollection(object.getObjectives(), Objective.class);
+            operations              = copyCollection(object.getOperations(), Operation.class);
+            platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -145,6 +156,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the plan as implemented by the acquisition.
+     *
+     * @return Plan as implemented by the acquisition.
      */
     @Override
     @XmlElement(name = "acquisitionPlan")
@@ -163,6 +176,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the requirement the data acquisition intends to satisfy.
+     *
+     * @return Requirement the data acquisition intends to satisfy.
      */
     @Override
     @XmlElement(name = "acquisitionRequirement")
@@ -182,6 +197,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns a record of the environmental circumstances during the data acquisition.
      * {@code null} if unspecified.
+     *
+     * @return Record of the environmental circumstances, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentalConditions")
@@ -201,6 +218,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the instrument used in data acquisition.
+     *
+     * @return Instrument used in data acquisition.
      */
     @Override
     @XmlElement(name = "instrument")
@@ -219,6 +238,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the area or object to be sensed.
+     *
+     * @return Area or object to be sensed.
      */
     @Override
     @XmlElement(name = "objective")
@@ -237,6 +258,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about an identifiable activity which provided the data.
+     *
+     * @return Identifiable activity which provided the data.
      */
     @Override
     @XmlElement(name = "operation")
@@ -255,6 +278,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the platform from which the data were taken.
+     *
+     * @return Platform from which the data were taken.
      */
     @Override
     @XmlElement(name = "platform")

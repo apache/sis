@@ -35,7 +35,7 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * The attributed character iterator to be returned by {@link Format}
  * implementations in the {@code org.apache.sis.measure} package.
  *
- * {@section Implementation assumption}
+ * <div class="section">Implementation assumption</div>
  * Every {@code getRunStart(…)} and {@code getRunLimit(…)} methods defined in this class check
  * only for attribute existence, ignoring the actual attribute value. This is a departure from
  * the {@link java.text.AttributedCharacterIterator} contract, but should be invisible to the
@@ -65,7 +65,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * <p>To be more specific:</p>
      * <ul>
      *   <li>The map key is one of the static constants defined in the formatter {@code Field} inner class.</li>
-     *   <li>{@link #value} is the numeric value being formatted for that particular field.</li>
+     *   <li>{@link #value} is the numeric value being formatted for that particular field.</li>
      *   <li>{@link #start} and {@link #limit} are the range of index in the
      *       {@link SimpleCharacterIterator#text} where the field value has been formatted.</li>
      * </ul>
@@ -342,7 +342,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
 
         /** Returns the value for the given entry, or {@code null} if none. */
         @Override
-        public Object convert(Entry entry) {
+        public Object apply(Entry entry) {
             while (entry != null) {
                 if (index >= entry.start && index < entry.limit) {
                     return entry.value;
@@ -377,7 +377,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
 
         /** Returns {@code attribute} if it shall be included in the derived map, or {@code null} otherwise. */
         @Override
-        public Attribute convert(final Attribute attribute) {
+        public Attribute apply(final Attribute attribute) {
             for (Entry e=attributes.get(attribute); e!=null; e=e.previous) {
                 if (index >= e.start && index < e.limit) {
                     return attribute;

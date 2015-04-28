@@ -17,41 +17,52 @@
 package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Set;
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.FeatureType;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Branch-dependent imports
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.FeatureType;
 
 
 /**
  * Description of the class of information covered by the information.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
  *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
-@XmlType(name = "MD_ScopeDescription_Type", propOrder = {
-    "dataset",
-    "other"
-})
+@XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription")
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
     /**
@@ -62,18 +73,18 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Enumeration of possible values for {@link #property}.
      */
-    private static final byte ATTRIBUTES=1, FEATURES=2, FEATURE_INSTANCES=3, ATTRIBUTE_INSTANCES=4, DATASET=5, OTHER=6;
+    private static final byte DATASET=1, FEATURES=2, ATTRIBUTES=3, FEATURE_INSTANCES=4, ATTRIBUTE_INSTANCES=5, OTHER=6;
 
     /**
      * The names of the mutually exclusive properties. The index of each name shall be the
-     * value of the above {@code byte} constants minus one.
+     * value of the above {@code byte} constants minus one.
      */
     private static final String[] NAMES = {
-        "attributes",
+        "dataset",
         "features",
+        "attributes",
         "featureInstances",
         "attributeInstances",
-        "dataset",
         "other"
     };
 
@@ -81,11 +92,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The names of the setter methods, for logging purpose only.
      */
     private static final String[] SETTERS = {
-        "setAttributes",
+        "setDataset",
         "setFeatures",
+        "setAttributes",
         "setFeatureInstances",
         "setAttributeInstances",
-        "setDataset",
         "setOther"
     };
 
@@ -98,8 +109,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * The value, as one of the following types:
      *
      * <ul>
-     *   <li>{@code Set<AttributeType>} for the {@code attributes} property</li>
      *   <li>{@code Set<FeatureType>}   for the {@code features} property</li>
+     *   <li>{@code Set<AttributeType>} for the {@code attributes} property</li>
      *   <li>{@code Set<FeatureType>}   for the {@code featureInstances} property</li>
      *   <li>{@code Set<AttributeType>} for the {@code attributeInstances} property</li>
      *   <li>{@code String} for the {@code dataset} property</li>
@@ -120,52 +131,57 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * given object are not recursively copied.
      *
      * <p>If the given object contains more than one value, then the first non-null element in the
-     * following list has precedence: {@linkplain #getAttributes() attributes},
-     * {@linkplain #getFeatures() features}, {@linkplain #getFeatureInstances() feature instances},
-     * {@linkplain #getAttributeInstances() attribute instances}, {@linkplain #getDataset() dataset}
+     * following list has precedence (from wider scope to smaller scope):
+     * {@linkplain #getDataset() dataset},
+     * {@linkplain #getFeatures() features},
+     * {@linkplain #getAttributes() attributes},
+     * {@linkplain #getFeatureInstances() feature instances},
+     * {@linkplain #getAttributeInstances() attribute instances}
      * and {@linkplain #getOther() other}.</p>
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ScopeDescription)
      */
     @SuppressWarnings("unchecked")
     public DefaultScopeDescription(final ScopeDescription object) {
         super(object);
-        for (byte i=ATTRIBUTES; i<=OTHER; i++) {
-            Object candidate;
-            switch (i) {
-                case ATTRIBUTES:          candidate = object.getAttributes();         break;
-                case FEATURES:            candidate = object.getFeatures();           break;
-                case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
-                case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
-                case DATASET:             candidate = object.getDataset();            break;
-                case OTHER:               candidate = object.getOther();              break;
-                default: throw new AssertionError(i);
-            }
-            if (candidate != null) {
+        if (object != null) {
+            for (byte i=DATASET; i<=OTHER; i++) {
+                Object candidate;
                 switch (i) {
-                    case ATTRIBUTES:
-                    case ATTRIBUTE_INSTANCES: {
-                        candidate = copySet((Set<AttributeType>) candidate, AttributeType.class);
-                        break;
-                    }
-                    case FEATURES:
-                    case FEATURE_INSTANCES: {
-                        candidate = copySet((Set<FeatureType>) candidate, FeatureType.class);
-                        break;
-                    }
+                    case DATASET:             candidate = object.getDataset();            break;
+                    case FEATURES:            candidate = object.getFeatures();           break;
+                    case ATTRIBUTES:          candidate = object.getAttributes();         break;
+                    case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
+                    case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
+                    case OTHER:               candidate = object.getOther();              break;
+                    default: throw new AssertionError(i);
                 }
-                value = candidate;
-                property = i;
-                break;
+                if (candidate != null) {
+                    switch (i) {
+                        case ATTRIBUTES:
+                        case ATTRIBUTE_INSTANCES: {
+                            candidate = copySet((Collection<AttributeType>) candidate, AttributeType.class);
+                            break;
+                        }
+                        case FEATURES:
+                        case FEATURE_INSTANCES: {
+                            candidate = copySet((Collection<FeatureType>) candidate, FeatureType.class);
+                            break;
+                        }
+                    }
+                    value = candidate;
+                    property = i;
+                    break;
+                }
             }
         }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -209,7 +225,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             if (property == code) {
                 return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
-                return isMarshalling() ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+                return Semaphores.query(Semaphores.NULL_COLLECTION)
+                       ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
             }
         }
         // Unconditionally create a new set, because the
@@ -247,113 +264,22 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     private void warningOnOverwrite(final byte code) {
         if (value != null && property != code) {
-            MetadataUtilities.warning(DefaultScopeDescription.class, SETTERS[code-1],
-                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
+            Context.warningOccured(Context.current(), LOGGER, DefaultScopeDescription.class, SETTERS[code-1],
+                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
     }
 
     /**
-     * Returns the attributes to which the information applies.
-     *
-     * {@section Conditions}
-     * This method returns a modifiable collection only if no other property is set.
-     * Otherwise, this method returns an unmodifiable empty collection.
-     */
-    @Override
-    public Set<AttributeType> getAttributes() {
-        return getProperty(AttributeType.class, ATTRIBUTES);
-    }
-
-    /**
-     * Sets the attributes to which the information applies.
-     *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards all other properties.
-     *
-     * @param newValues The new attributes.
-     */
-    public void setAttributes(final Set<? extends AttributeType> newValues) {
-        setProperty(newValues, AttributeType.class, ATTRIBUTES);
-    }
-
-    /**
-     * Returns the features to which the information applies.
-     *
-     * {@section Conditions}
-     * This method returns a modifiable collection only if no other property is set.
-     * Otherwise, this method returns an unmodifiable empty collection.
-     */
-    @Override
-    public Set<FeatureType> getFeatures() {
-        return getProperty(FeatureType.class, FEATURES);
-    }
-
-    /**
-     * Sets the features to which the information applies.
-     *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards all other properties.
-     *
-     * @param newValues The new features.
-     */
-    public void setFeatures(final Set<? extends FeatureType> newValues) {
-        setProperty(newValues, FeatureType.class, FEATURES);
-    }
-
-    /**
-     * Returns the feature instances to which the information applies.
-     *
-     * {@section Conditions}
-     * This method returns a modifiable collection only if no other property is set.
-     * Otherwise, this method returns an unmodifiable empty collection.
-     */
-    @Override
-    public Set<FeatureType> getFeatureInstances() {
-        return getProperty(FeatureType.class, FEATURE_INSTANCES);
-    }
-
-    /**
-     * Sets the feature instances to which the information applies.
-     *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards all other properties.
-     *
-     * @param newValues The new feature instances.
-     */
-    public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
-        setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
-    }
-
-    /**
-     * Returns the attribute instances to which the information applies.
-     *
-     * {@section Conditions}
-     * This method returns a modifiable collection only if no other property is set.
-     * Otherwise, this method returns an unmodifiable empty collection.
-     */
-    @Override
-    public Set<AttributeType> getAttributeInstances() {
-        return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
-    }
-
-    /**
-     * Sets the attribute instances to which the information applies.
-     *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards all other properties.
-     *
-     * @param newValues The new attribute instances.
-     */
-    public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
-        setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
-    }
-
-    /**
      * Returns the dataset to which the information applies.
+     *
+     * <div class="note"><b>Example:</b>
+     * If a geographic data provider is generating vector mapping for thee administrative areas
+     * and if the data were processed in the same way, then the provider could record the bulk
+     * of initial data at {@link ScopeCode#DATASET} level with a
+     * “<cite>Administrative area A, B &amp; C</cite>” description.
+     * </div>
+     *
+     * @return Dataset to which the information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataset")
@@ -364,7 +290,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the dataset to which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -380,8 +306,177 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the class of information that does not fall into the other categories to
-     * which the information applies.
+     * Returns the feature types to which the information applies.
+     *
+     * <div class="note"><b>Example:</b>
+     * if an administrative area performs a complete re-survey of the road network,
+     * the change can be recorded at {@link ScopeCode#FEATURE_TYPE} level with a
+     * “<cite>Administrative area A — Road network</cite>” description.
+     * </div>
+     *
+     * <div class="section">Conditions</div>
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @return Feature types to which the information applies.
+     */
+    @Override
+    public Set<FeatureType> getFeatures() {
+        return getProperty(FeatureType.class, FEATURES);
+    }
+
+    /**
+     * Sets the feature types to which the information applies.
+     *
+     * <div class="section">Effect on other properties</div>
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @param newValues The new feature types.
+     */
+    public void setFeatures(final Set<? extends FeatureType> newValues) {
+        setProperty(newValues, FeatureType.class, FEATURES);
+    }
+
+    /**
+     * Returns the attribute types to which the information applies.
+     *
+     * <div class="note"><b>Example:</b>
+     * if an administrative area detects an anomaly in all overhead clearance of the road survey,
+     * the correction can be recorded at {@link ScopeCode#ATTRIBUTE_TYPE} level with a
+     * “<cite>Administrative area A — Overhead clearance</cite>” description.
+     * </div>
+     *
+     * <div class="section">Conditions</div>
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @return Attribute types to which the information applies.
+     */
+    @Override
+    public Set<AttributeType> getAttributes() {
+        return getProperty(AttributeType.class, ATTRIBUTES);
+    }
+
+    /**
+     * Sets the attribute types to which the information applies.
+     *
+     * <div class="section">Effect on other properties</div>
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @param newValues The new attribute types.
+     */
+    public void setAttributes(final Set<? extends AttributeType> newValues) {
+        setProperty(newValues, AttributeType.class, ATTRIBUTES);
+    }
+
+    /**
+     * Returns the feature instances to which the information applies.
+     *
+     * <div class="note"><b>Example:</b>
+     * If a new bridge is constructed in a road network,
+     * the change can be recorded at {@link ScopeCode#FEATURE} level with a
+     * “<cite>Administrative area A — New bridge</cite>” description.
+     * </div>
+     *
+     * <div class="section">Conditions</div>
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @return Feature instances to which the information applies.
+     */
+    @Override
+    public Set<FeatureType> getFeatureInstances() {
+        return getProperty(FeatureType.class, FEATURE_INSTANCES);
+    }
+
+    /**
+     * Sets the feature instances to which the information applies.
+     *
+     * <div class="section">Effect on other properties</div>
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @param newValues The new feature instances.
+     */
+    public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
+        setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
+    }
+
+    /**
+     * Returns the attribute instances to which the information applies.
+     *
+     * <div class="note"><b>Example:</b>
+     * If the overhead clearance of a new bridge was wrongly recorded,
+     * the correction can be recorded at {@link ScopeCode#ATTRIBUTE} level with a
+     * “<cite>Administrative area A — New bridge — Overhead clearance</cite>” description.
+     * </div>
+     *
+     * <div class="section">Conditions</div>
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @return Attribute instances to which the information applies.
+     */
+    @Override
+    public Set<AttributeType> getAttributeInstances() {
+        return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
+    }
+
+    /**
+     * Sets the attribute instances to which the information applies.
+     *
+     * <div class="section">Effect on other properties</div>
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@code Set<CharSequence>} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-238">GEO-238</a> for more information.</div>
+     *
+     * @param newValues The new attribute instances.
+     */
+    public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
+        setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
+    }
+
+    /**
+     * Returns the class of information that does not fall into the other categories to which the information applies.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
+     *
+     * @return Class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
     @XmlElement(name = "other")
@@ -393,9 +488,13 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Sets the class of information that does not fall into the other categories to
      * which the information applies.
      *
-     * {@section Effect on other properties}
+     * <div class="section">Effect on other properties</div>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
+     *
+     * <div class="warning"><b>Upcoming API change:</b>
+     * The type of this property may be changed to {@link InternationalString} for ISO 19115:2014 conformance.
+     * See <a href="http://jira.codehaus.org/browse/GEO-221">GEO-221</a> for more information.</div>
      *
      * @param newValue Other class of information.
      */

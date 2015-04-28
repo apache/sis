@@ -29,8 +29,16 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.constraint.Constraints;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.CoverageDescription;
+import org.opengis.metadata.identification.*; // Really using almost everything.
+import org.opengis.metadata.maintenance.MaintenanceInformation;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -45,13 +53,18 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
@@ -69,8 +82,8 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * to be updated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @DependsOn(PropertyInformationTest.class)
@@ -112,11 +125,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             final String   propertyName  = (String)   expected[i++];
             final String   umlIdentifier = (String)   expected[i++];
             final String   sentence      = (String)   expected[i++];
-            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals("methodName",    methodName,    accessor.name(index, KeyNamePolicy.METHOD_NAME));
             assertEquals("propertyName",  propertyName,  accessor.name(index, KeyNamePolicy.JAVABEANS_PROPERTY));
             assertEquals("umlIdentifier", umlIdentifier, accessor.name(index, KeyNamePolicy.UML_IDENTIFIER));
             assertEquals("sentence",      sentence,      accessor.name(index, KeyNamePolicy.SENTENCE));
+            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
             assertEquals(methodName,      index,         accessor.indexOf(methodName,    false));
             assertEquals(propertyName,    index,         accessor.indexOf(propertyName,  false));
             assertEquals(umlIdentifier,   index,         accessor.indexOf(umlIdentifier, false));
@@ -168,9 +181,50 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
             Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
             Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
-            Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
+//          Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,   -- deprecated as of ISO 19115:2014
             Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
-            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class);
+            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
+     DefaultCitation.class, "getGraphics",                "graphics",                "graphic",               "Graphics",                   BrowseGraphic[].class,
+     DefaultCitation.class, "getOnlineResources",         "onlineResources",         "onlineResource",        "Online resources",           OnlineResource[].class);
+    }
+
+    /**
+     * Tests the constructor with the {@link DefaultDataIdentification} implementation.
+     * The purpose of this test is to ensure that the properties defined in the parent
+     * class are sorted first.
+     *
+     * <div class="note"><b>Note:</b> if there is any element not declared as JAXB elements,
+     * those ones will be last in alphabetical order. Such situation is usually temporary
+     * until the JAXB annotations are completed.</div>
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testConstructorWithInheritance() {
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class),
+        //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
+            Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
+            Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
+            Identification.class, "getPurpose",                    "purpose",                    "purpose",                   "Purpose",                      InternationalString.class,
+            Identification.class, "getCredits",                    "credits",                    "credit",                    "Credits",                      String[].class,
+            Identification.class, "getStatus",                     "status",                     "status",                    "Status",                       Progress[].class,
+            Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            ResponsibleParty[].class,
+            Identification.class, "getResourceMaintenances",       "resourceMaintenances",       "resourceMaintenance",       "Resource maintenances",        MaintenanceInformation[].class,
+            Identification.class, "getGraphicOverviews",           "graphicOverviews",           "graphicOverview",           "Graphic overviews",            BrowseGraphic[].class,
+            Identification.class, "getResourceFormats",            "resourceFormats",            "resourceFormat",            "Resource formats",             Format[].class,
+            Identification.class, "getDescriptiveKeywords",        "descriptiveKeywords",        "descriptiveKeywords",       "Descriptive keywords",         Keywords[].class,
+            Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
+            Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
+        DataIdentification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
+        DataIdentification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
+        DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
+        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
+        DataIdentification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
+        DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
+        DataIdentification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
+    AbstractIdentification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,
+    AbstractIdentification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         DefaultAssociatedResource[].class,
+    AbstractIdentification.class, "getProcessingLevel",            "processingLevel",            "processingLevel",           "Processing level",             Identifier.class);
     }
 
     /**
@@ -181,7 +235,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-205">GEOTK-205</a>
      */
     @Test
-    @DependsOnMethod("testConstructor")
+    @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
         assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
@@ -240,7 +294,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
         assertInstanceOf("identifiers", Collection.class, identifiers);
-        HardCodedCitations.assertIdentifiersFor("ISO", (Collection<?>) identifiers);
+        assertContainsIdentifierCode("ISO", (Collection<?>) identifiers);
     }
 
     /**
@@ -304,6 +358,40 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         instance.setTitle(title);
         assertSame("title", title, accessor.set(index, instance, null, RETURN_PREVIOUS));
         assertNull("title", instance.getTitle());
+    }
+
+    /**
+     * Tests setting a deprecated properties. This properties should not be visible in the map,
+     * but still be accepted by the map views.
+     */
+    @Test
+    @DependsOnMethod("testSet")
+    public void testSetDeprecated() {
+        final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
+                CoverageDescription.class, DefaultCoverageDescription.class);
+        final int indexOfDeprecated  = accessor.indexOf("contentType", true);
+        final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
+        assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
+                indexOfDeprecated > indexOfReplacement);
+        /*
+         * Writes a value using the deprecated property.
+         */
+        final DefaultCoverageDescription instance = new DefaultCoverageDescription();
+        assertNull("Shall be initially empty.", accessor.set(indexOfDeprecated, instance,
+                CoverageContentType.IMAGE, PropertyAccessor.RETURN_PREVIOUS));
+        assertEquals(CoverageContentType.IMAGE, accessor.get(indexOfDeprecated, instance));
+        /*
+         * Compares with the non-deprecated property.
+         */
+        final Collection<DefaultAttributeGroup> groups = instance.getAttributeGroups();
+        assertSame(groups, accessor.get(indexOfReplacement, instance));
+        assertEquals(CoverageContentType.IMAGE, getSingleton(getSingleton(groups).getContentTypes()));
+        /*
+         * While we can read/write the value through two properties,
+         * only one should be visible.
+         */
+        assertEquals("Deprecated property shall not be visible.", 1, accessor.count(
+                instance, ValueExistencePolicy.NON_EMPTY, PropertyAccessor.COUNT_SHALLOW));
     }
 
     /**
@@ -425,7 +513,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         assertTrue("alternateTitles", ((Collection<?>) oldValue).isEmpty());
 
-        // Insert the second value. Old collection shall contains the first value.
+        // Insert the second value. Old collection shall contain the first value.
         oldValue = accessor.set(index, instance, conversion ? text2 : title2, RETURN_PREVIOUS);
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         oldValue = getSingleton((Collection<?>) oldValue);
@@ -520,7 +608,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("identifiers", Collection.class, target);
         assertNotSame("Distinct objects shall have distinct collections.", source, target);
         assertEquals ("The two collections shall have the same content.",  source, target);
-        HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) target);
+        assertContainsIdentifierCode("EPSG", (Collection<?>) target);
 
         // Set the identifiers to null, which should clear the collection.
         assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));
@@ -558,6 +646,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
     }
 }

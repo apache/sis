@@ -17,17 +17,13 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
-
-import static org.apache.sis.metadata.iso.ISOMetadata.LOGGER;
-
-// Related to JDK7
-import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -35,7 +31,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.5
  * @module
  */
 public final class MetadataUtilities extends Static {
@@ -68,75 +64,108 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Sets the bit under the given mask for the given boolean value.
-     * This method uses two bits as below:
-     *
-     * <ul>
-     *   <li>{@code 00} - {@code null}</li>
-     *   <li>{@code 10} - {@code Boolean.FALSE}</li>
-     *   <li>{@code 11} - {@code Boolean.TRUE}</li>
-     * </ul>
-     *
-     * @param  flags The set of bits to modify for the given boolean value.
-     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
-     * @param  value The boolean value to store in the {@code flags}, or {@code null}.
-     * @return The updated {@code flags}.
-     */
-    public static int setBoolean(int flags, final int mask, final Boolean value) {
-        assert 3 << Integer.numberOfTrailingZeros(mask) == mask : mask;
-        if (value == null) {
-            flags &= ~mask;
-        } else {
-            flags |= mask;
-            if (!value) {
-                flags &= ~(mask & (mask >>> 1));
-            }
-        }
-        assert Objects.equals(getBoolean(flags, mask), value) : value;
-        return flags;
-    }
-
-    /**
-     * Returns the boolean value for the bits under the given mask.
-     * This method is the reverse of {@link #setBoolean(int, int, Boolean)}.
-     *
-     * @param  flags The set of bits from which to read the boolean value under the given mask.
-     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
-     * @return The boolean value under the given mask (may be {@code null}).
-     */
-    public static Boolean getBoolean(int flags, final int mask) {
-        flags &= mask;
-        return (flags == 0) ? null : Boolean.valueOf(flags == mask);
-    }
-
-    /**
-     * Makes sure that the given inclusion is non-null, then returns its value.
+     * Makes sure that the given inclusion is non-nil, then returns its value.
+     * If the given inclusion is {@code null}, then the default value is {@code true}.
      *
      * @param  value The {@link org.opengis.metadata.extent.GeographicBoundingBox#getInclusion()} value.
      * @return The given value as a primitive type.
-     * @throws InvalidMetadataException if the given value is null.
+     * @throws InvalidMetadataException if the given value is nil.
      */
     public static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
         if (value == null) {
-            throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
+            return true;
         }
-        return value;
+        final boolean p = value;
+        // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
+        // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
+        if (p || value == Boolean.FALSE || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
+            return p;
+        }
+        throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
     }
 
     /**
-     * Convenience method for logging a warning to the {@code ISOMetadata} logger.
-     * The message will be produced using the {@link Messages} resources bundle.
+     * Convenience method invoked when an argument was expected to be positive, but the user gave a negative value
+     * or (in some case) zero. This method logs a warning if we are in process of (un)marshalling a XML document,
+     * or throw an exception otherwise.
      *
-     * @param  caller    The public class which is invoking this method.
-     * @param  method    The public method which is invoking this method.
-     * @param  key       The key from the message resource bundle to use for creating a message.
-     * @param  arguments The arguments to be used together with the key for building the message.
+     * <p><b>When to use:</b></p>
+     * <ul>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
+     * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
+     *
+     * @param  classe   The caller class.
+     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  strict   {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
+     * @param  value    The invalid argument value.
+     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
      */
-    public static void warning(final Class<?> caller, final String method, final int key, final Object... arguments) {
-        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, key, arguments);
-        record.setSourceClassName(caller.getCanonicalName());
-        record.setSourceMethodName(method);
-        record.setLoggerName(LOGGER.getName());
-        LOGGER.log(record);
+    public static void warnNonPositiveArgument(final Class<?> classe, final String property, final boolean strict,
+            final Number value) throws IllegalArgumentException
+    {
+        final String msg = logOrFormat(classe, property,
+                strict ? Errors.Keys.ValueNotGreaterThanZero_2 : Errors.Keys.NegativeArgument_2, property, value);
+        if (msg != null) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**
+     * Convenience method invoked when an argument is outside the expected range of values. This method logs
+     * a warning if we are in process of (un)marshalling a XML document, or throw an exception otherwise.
+     *
+     * <p><b>When to use:</b></p>
+     * <ul>
+     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
+     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
+     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
+     *       The stored metadata value may be invalid, but not lost.</li>
+     * </ul>
+     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
+     * are only warnings for this method, while they are errors by default for
+     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
+     *
+     * @param  classe   The caller class.
+     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  minimum  The minimal legal value.
+     * @param  maximum  The maximal legal value.
+     * @param  value    The invalid argument value.
+     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
+     */
+    public static void warnOutOfRangeArgument(final Class<?> classe, final String property,
+            final Number minimum, final Number maximum, final Number value) throws IllegalArgumentException
+    {
+        final String msg = logOrFormat(classe, property, Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, value);
+        if (msg != null) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**
+     * Formats an error message and logs it if we are (un)marshalling a document, or return the message otherwise.
+     * In the later case, it is caller's responsibility to use the message for throwing an exception.
+     *
+     * @param  classe    The caller class, used only in case of warning message to log.
+     * @param  property  The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  key       A {@code Errors.Keys} value.
+     * @param  arguments The argument to use for formatting the error message.
+     * @return {@code null} if the message has been logged, or the message to put in an exception otherwise.
+     */
+    private static String logOrFormat(final Class<?> classe, final String property, final short key, final Object... arguments) {
+        final Context context = Context.current();
+        if (context == null) {
+            return Errors.format(key, arguments);
+        } else {
+            final StringBuilder buffer = new StringBuilder(property.length() + 3).append("set").append(property);
+            buffer.setCharAt(3, Character.toUpperCase(buffer.charAt(3)));
+            Context.warningOccured(context, ISOMetadata.LOGGER, classe, buffer.toString(), Errors.class, key, arguments);
+            return null;
+        }
     }
 }

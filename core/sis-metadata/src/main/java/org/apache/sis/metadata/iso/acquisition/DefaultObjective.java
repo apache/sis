@@ -36,9 +36,18 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 /**
  * Describes the characteristics, spatial and temporal extent of the intended object to be observed.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.03)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -106,25 +115,27 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Objective)
      */
     public DefaultObjective(final Objective object) {
         super(object);
-        identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
-        priority            = object.getPriority();
-        types               = copyCollection(object.getTypes(), ObjectiveType.class);
-        functions           = copyCollection(object.getFunctions(), InternationalString.class);
-        extents             = copyCollection(object.getExtents(), Extent.class);
-        objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
-        pass                = copyCollection(object.getPass(), PlatformPass.class);
-        sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+        if (object != null) {
+            identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
+            priority            = object.getPriority();
+            types               = copyCollection(object.getTypes(), ObjectiveType.class);
+            functions           = copyCollection(object.getFunctions(), InternationalString.class);
+            extents             = copyCollection(object.getExtents(), Extent.class);
+            objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
+            pass                = copyCollection(object.getPass(), PlatformPass.class);
+            sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -150,14 +161,16 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the code used to identify the objective.
      *
-     * {@section Unified identifiers view}
+     * <div class="section">Unified identifiers view</div>
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
      * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * thus providing a unified view of every kind of identifiers associated to this objective.
      *
-     * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
-     *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
-     *        will appear in other XML elements or attributes.}
+     * <div class="note"><b>XML note:</b>
+     * The {@code <gmd:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * for ISO 19139 compliance. Those identifiers will appear in other XML elements or attributes.</div>
+     *
+     * @return Identify the objective.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -183,6 +196,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the priority applied to the target. {@code null} if unspecified.
+     *
+     * @return Priority applied, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority")
@@ -202,6 +217,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the collection technique for the objective.
+     *
+     * @return Collection technique for the objective.
      */
     @Override
     @XmlElement(name = "type")
@@ -220,6 +237,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the role or purpose performed by or activity performed at the objective.
+     *
+     * @return Role or purpose performed by or activity performed at the objective.
      */
     @Override
     @XmlElement(name = "function")
@@ -239,6 +258,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
+     *
+     * @return Extent information.
      */
     @Override
     @XmlElement(name = "extent")
@@ -247,7 +268,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     }
 
     /**
-     * Set the extent information including the bounding box, bounding polygon, vertical and
+     * Sets the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
      *
      * @param newValues The new extents values.
@@ -258,6 +279,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the event or events associated with objective completion.
+     *
+     * @return Events associated with objective completion.
      */
     @Override
     @XmlElement(name = "objectiveOccurence", required = true)
@@ -276,6 +299,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the pass of the platform over the objective.
+     *
+     * @return Pass of the platform.
      */
     @Override
     @XmlElement(name = "pass")
@@ -294,6 +319,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the instrument which senses the objective data.
+     *
+     * @return Instrument which senses the objective data.
      */
     @Override
     @XmlElement(name = "sensingInstrument")

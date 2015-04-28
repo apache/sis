@@ -18,10 +18,12 @@ package org.apache.sis.internal.util;
 
 import java.io.Serializable;
 import java.util.AbstractList;
+import java.util.Arrays;
+import java.lang.reflect.Array;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.CheckedContainer;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -42,7 +44,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
  * interface.
  *
- * {@section WARNING! Type safety hole}
+ * <div class="section">WARNING! Type safety hole</div>
  * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
  * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
  * covariant (at the contrary of collections). In order to avoid such contract violation, callers
@@ -50,13 +52,13 @@ import org.apache.sis.internal.jdk7.Objects;
  * of {@code E}. This class has no way to verify that condition. This class is not in the public API
  * for this reason.
  *
- * <p>Note that the public API, {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])},
+ * <p>Note that the public API, {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])},
  * returns {@code List<? extends E>}, which is okay.</p>
  *
  * @param <E> The type of elements in the list.
  *
  * @author  Martin Desruisseaux (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -69,7 +71,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * The wrapped array.
      */
-    private final E[] array;
+    final E[] array;
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
@@ -83,7 +85,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * the caller to instantiate the array explicitely, in order to make sure that the array type is
      * the intended one.</p>
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. See class javadoc for more information.
      *
@@ -98,10 +100,10 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
      * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
@@ -126,10 +128,10 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * <p>This method does not check the validity of the given index.
      * The check must be done by the caller.</p>
      *
-     * {@section WARNING! Type safety hole}
+     * <div class="section">WARNING! Type safety hole</div>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
      *
      * @param  <E>   The type of elements in the list.
@@ -167,6 +169,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
     /**
      * Returns the list size.
+     *
+     * @return The size of this list.
      */
     @Override
     public int size() {
@@ -192,6 +196,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
     /**
      * Returns the element at the specified index.
+     *
+     * @param  index The index of the element to get.
+     * @return The element at the given index.
      */
     @Override
     public E get(final int index) {
@@ -303,7 +310,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @param <E> The type of elements in the list.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.00)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -321,7 +328,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
         /**
          * Creates a new sublist.
          *
-         * {@section WARNING! Type safety hole}
+         * <p><b>WARNING! Type safety hole</b></p>
          * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
          * not a subtype of {@code E}. See {@link UnmodifiableArrayList} class javadoc for more information.
          */
@@ -355,6 +362,55 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
             ArgumentChecks.ensureValidIndex(size, index);
             return super.get(index + lower);
         }
+
+        /**
+         * Returns a copy of the backing array section viewed by this sublist.
+         */
+        @Override
+        public E[] toArray() {
+            return Arrays.copyOfRange(array, lower, lower + size);
+        }
+    }
+
+    /**
+     * Returns a copy of the backing array. Note that the array type is {@code E[]} rather than {@code Object[]}.
+     * This is not what {@code ArrayList} does, but is not forbidden by {@link java.util.List#toArray()} javadoc
+     * neither.
+     *
+     * @return A copy of the wrapped array.
+     */
+    @Override
+    public E[] toArray() {
+        return array.clone();
+    }
+
+    /**
+     * Copies the backing array in the given one if the list fits in the given array.
+     * If the list does not fit in the given array, returns the collection in a new array.
+     *
+     * @param  <T>   The type of array element.
+     * @param  dest  The array where to copy the elements if the list can fits in the array.
+     * @return The given array, or a newly created array if this list is larger than the given array.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] dest) {
+        final int size = size();
+        if (dest.length != size) {
+            if (dest.length < size) {
+                /*
+                 * We are cheating here since the array component may not be assignable to T.
+                 * But if this assumption is wrong, then the call to System.arraycopy(…) later
+                 * will thrown an ArrayStoreException, which is the exception type required by
+                 * the Collection.toArray(T[]) javadoc.
+                 */
+                dest = (T[]) Array.newInstance(dest.getClass().getComponentType(), size);
+            } else {
+                dest[size] = null; // Required by Collection.toArray(T[]) javadoc.
+            }
+        }
+        System.arraycopy(array, lower(), dest, 0, size);
+        return dest;
     }
 
     /**

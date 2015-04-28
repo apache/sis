@@ -27,13 +27,14 @@ import java.util.NoSuchElementException;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
-// Related to JDK7
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -46,7 +47,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * only for small maps (less than 10 elements). Given that objects typically have only one or
  * two identifiers, this is considered acceptable.</p>
  *
- * {@section Handling of duplicated authorities}
+ * <div class="section">Handling of duplicated authorities</div>
  * The collection shall not contain more than one identifier for the same
  * {@linkplain Identifier#getAuthority() authority}. However duplications may happen if the user
  * has direct access to the list, for example through {@link Citation#getIdentifiers()}. If such
@@ -63,7 +64,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *       to getter methods.</li>
  * </ul>
  *
- * {@section Handling of null identifiers}
+ * <div class="section">Handling of null identifiers</div>
  * The collection of identifiers shall not contains any null element. This is normally ensured by
  * the {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations.
  * This class performs opportunist null checks as an additional safety. However because we perform
@@ -74,11 +75,11 @@ import org.apache.sis.internal.jdk7.Objects;
  *       method returns 0.</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -335,20 +336,19 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * The view returned by {@link IdentifierMap#entrySet()}. If the backing identifier
-     * collection contains null entries, those entries will be ignored. If the backing
-     * collection contains many entries for the same authority, then only the first
-     * occurrence is retained.
+     * The view returned by {@link IdentifierMapAdapter#entrySet()}. If the backing identifier collection
+     * contains null entries, those entries will be ignored. If the backing collection contains many entries
+     * for the same authority, then only the first occurrence is retained.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      */
     private static final class Entries extends AbstractSet<Entry<Citation,String>> {
         /**
          * The identifiers to wrap in a set of entries view. This is a reference
-         * to the same collection than {@link IdentifierMap#identifiers}.
+         * to the same collection than {@link IdentifierMapAdapter#identifiers}.
          */
         private final Collection<? extends Identifier> identifiers;
 
@@ -403,9 +403,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is
-     * created by the {@link IdentifierMap.Entries} collection. It extends {@link HashMap} as
-     * an opportunist implementation strategy, but users don't need to know this detail.
+     * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is created by
+     * the {@link IdentifierMapAdapter.Entries} collection. It extends {@link HashMap} as an opportunist
+     * implementation strategy, but users don't need to know this detail.
      *
      * <p>This iterator supports the {@link #remove()} operation if the underlying collection
      * supports it.</p>
@@ -415,14 +415,14 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * if the identifier has been removed, of {@code Boolean#FALSE} otherwise.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3 (derived from geotk-3.18)
+     * @since   0.3
      * @version 0.3
      * @module
      */
     @SuppressWarnings("serial") // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {
         /**
-         * An iterator over the {@link IdentifierMap#identifiers} collection,
+         * An iterator over the {@link IdentifierMapAdapter#identifiers} collection,
          * or (@code null} if we have reached the iteration end.
          */
         private Iterator<? extends Identifier> identifiers;
@@ -448,7 +448,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
 
         /**
          * Advances to the next non-null identifier, skips duplicated authorities, wraps the
-         * identifier in an entry if needed and stores the result in the {@link #next} field.
+         * identifier in an entry if needed and stores the result in the {@link #next} field.
          * If we reach the iteration end, then this method set the {@link #identifiers}
          * iterator to {@code null}.
          */
@@ -541,15 +541,16 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      *
      * @see SpecializedIdentifier#toString()
      */
+    @Debug
     @Override
     public String toString() {
-	final StringBuilder buffer = new StringBuilder(50).append('{');
-	for (final Entry<Citation,String> entry : entrySet()) {
-	    if (buffer.length() != 1) {
+    final StringBuilder buffer = new StringBuilder(50).append('{');
+    for (final Entry<Citation,String> entry : entrySet()) {
+        if (buffer.length() != 1) {
                 buffer.append(", ");
             }
             SpecializedIdentifier.format(buffer, entry.getKey(), entry.getValue());
-	}
+        }
         return buffer.append('}').toString();
     }
 }

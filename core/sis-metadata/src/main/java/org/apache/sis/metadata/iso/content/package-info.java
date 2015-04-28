@@ -16,25 +16,29 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information} implementation.
+ * Description of the dataset content.
  * An explanation for this package is provided in the {@linkplain org.opengis.metadata.content OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * {@section Overview}
- * For a global overview of metadata in SIS, see the
- * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * <div class="section">Overview</div>
+ * For a global overview of metadata in SIS, see the {@link org.apache.sis.metadata} package javadoc.
  *
- * <table class="sis"><tr>
+ * <table class="sis">
+ * <caption>Package overview</caption>
+ * <tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td width="50%" nowrap>
+ * </tr><tr><td style="width: 50%; white-space: nowrap">
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
+ * {@code  │   ├─}                                                                                        Feature catalogue<br>
  * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
  * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo             Feature type info}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
- * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultSampleDimension             Sample dimension}<br>
+ * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition          Band definition}<br>
@@ -42,32 +46,25 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.content.ImagingCondition        Imaging condition}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType    Transfer function type}<br>
- * </td><td class="sep" width="50%" nowrap>
- *             {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.CoverageContentType                       Coverage content type} «code list»<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition                            Band definition} «code list»<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarization orientation} «code list»<br>
- * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType                      Transfer function type} «code list»<br>
- *             {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
+ * </td><td class="sep" style="width: 50%; white-space: nowrap">
+ *                 {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo             Feature type info}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription         Coverage description}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultAttributeGroup              Attribute group}<br>
+ * {@code  │   ├─} {@linkplain org.opengis.metadata.content.CoverageContentType                       Coverage content type} «code list»<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension              Range dimension}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.content.BandDefinition                            Band definition} «code list»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarization orientation} «code list»<br>
+ * {@code  └─}     {@linkplain org.opengis.metadata.content.TransferFunctionType                      Transfer function type} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
+ * {@code  └─}     {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
  * </td></tr></table>
  *
- * {@section Bands in gridded data}
- * ISO 19115 defines a {@link org.opengis.metadata.content.Band} interface
- * which expresses the range of wavelengths in the electromagnetic spectrum.
- * For the needs of Image I/O, an additional interface has been defined with a subset
- * of the {@code Band} API and the restriction to electromagnetic spectrum removed.
- * That interface is named {@link org.apache.sis.image.io.metadata.SampleDimension}.
- * Both {@code Band} and {@code SampleDimension} interfaces extend the same parent,
- * {@link org.opengis.metadata.content.RangeDimension}.
- *
- * {@section Null values, nil objects and collections}
- * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
+ * <div class="section">Null values, nil objects and collections</div>
+ * All constructors and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -83,8 +80,8 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
@@ -106,15 +103,14 @@
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
 
     // Java types, primitive types and basic OGC types handling
-//  @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
+    @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
-//  @XmlJavaTypeAdapter(GO_RecordType.class), // TODO
-    @XmlJavaTypeAdapter(GO_Boolean.class),        @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Decimal.class),        @XmlJavaTypeAdapter(type=double.class,  value=GO_Decimal.class),
-    @XmlJavaTypeAdapter(GO_Integer.class),        @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Integer.AsLong.class), @XmlJavaTypeAdapter(type=long.class,    value=GO_Integer.AsLong.class)
+    @XmlJavaTypeAdapter(GO_RecordType.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Real.class),    @XmlJavaTypeAdapter(type=double.class,  value=GO_Real.class)
 })
 package org.apache.sis.metadata.iso.content;
 

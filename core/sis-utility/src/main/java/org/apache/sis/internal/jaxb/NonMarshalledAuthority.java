@@ -19,15 +19,16 @@ package org.apache.sis.internal.jaxb;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.Serializable;
-import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;
@@ -36,7 +37,7 @@ import org.apache.sis.xml.IdentifierSpace;
 /**
  * The {@linkplain Identifier#getAuthority() authority of identifiers} that are not expected to be
  * marshalled in a {@code MD_Identifier} XML element. Those identifiers are also excluded from the
- * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTree()}.
+ * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTreeTable()}.
  *
  * <p>There is two kinds of non-marshalled identifiers:</p>
  *
@@ -63,7 +64,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * @param <T> The type of object used as identifier values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.19)
+ * @since   0.3
  * @version 0.3
  * @module
  *
@@ -123,6 +124,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     /**
      * Returns a string representation of this identifier space.
      */
+    @Debug
     @Override
     public String toString() {
         return "IdentifierSpace[" + title + ']';
@@ -183,7 +185,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * @return The identifiers to marshal, or {@code null} if none.
      */
     public static Collection<Identifier> excludeOnMarshalling(Collection<Identifier> identifiers) {
-        if (identifiers != null && Context.isMarshalling()) {
+        if (identifiers != null && Context.isFlagSet(Context.current(), Context.MARSHALLING)) {
             int count = identifiers.size();
             if (count != 0) {
                 final Identifier[] copy = identifiers.toArray(new Identifier[count]);
@@ -267,11 +269,11 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Returns one of the constants in the {@link DefaultCitation} class, or {@code null} if none.
-     * We need to use Java reflection because the {@code sis-metadata} module may not be in the
-     * classpath.
+     * Returns one of the constants in the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class,
+     * or {@code null} if none. We need to use Java reflection because the {@code sis-metadata} module may not
+     * be in the classpath.
      */
-    private static IdentifierSpace<?> getCitation(final String name) throws ObjectStreamException {
+    private static IdentifierSpace<?> getCitation(final String name) {
         try {
             final Field field = Class.forName("org.apache.sis.metadata.iso.citation.DefaultCitation").getDeclaredField(name);
             field.setAccessible(true);
@@ -279,8 +281,12 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
         } catch (Exception e) {
             if (!warningLogged) {
                 warningLogged = true;
-                final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
+                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING,
                         Errors.Keys.MissingRequiredModule_1, "sis-metadata");
+                /*
+                 * Log directly the the logger rather than invoking the Context.warningOccured(…) method because
+                 * this warning does not occur during XML (un)marshalling. It may occurs only during serialization.
+                 */
                 record.setThrown(e);
                 Logging.log(NonMarshalledAuthority.class, "readResolve", record);
             }
@@ -292,7 +298,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
      */
-    private Object readResolve() throws ObjectStreamException {
+    private Object readResolve() {
         int code = 0;
         while (true) {
             final IdentifierSpace<?> candidate;

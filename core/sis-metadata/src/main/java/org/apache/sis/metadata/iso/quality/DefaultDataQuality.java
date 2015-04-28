@@ -30,13 +30,22 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Quality information for the data specified by a data quality scope.
  *
- * {@section Relationship between properties}
+ * <div class="section">Relationship between properties</div>
  * According ISO 19115, at least one of {@linkplain #getLineage() lineage} and
  * {@linkplain #getReports() reports} shall be provided.
  *
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -91,20 +100,22 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataQuality)
      */
     public DefaultDataQuality(final DataQuality object) {
         super(object);
-        scope   = object.getScope();
-        reports = copyCollection(object.getReports(), Element.class);
-        lineage = object.getLineage();
+        if (object != null) {
+            scope   = object.getScope();
+            reports = copyCollection(object.getReports(), Element.class);
+            lineage = object.getLineage();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -129,6 +140,8 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
 
     /**
      * Returns the specific data to which the data quality information applies.
+     *
+     * @return The specific data to which the data quality information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -149,7 +162,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns the quantitative quality information for the data specified by the scope.
      *
-     * @return The quantitative quality information.
+     * @return Quantitative quality information for the data.
      */
     @Override
     @XmlElement(name = "report")
@@ -167,8 +180,9 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Returns non-quantitative quality information about the lineage of the data specified
-     * by the scope.
+     * Returns non-quantitative quality information about the lineage of the data specified by the scope.
+     *
+     * @return Non-quantitative quality information about the lineage of the data specified, or {@code null}.
      */
     @Override
     @XmlElement(name = "lineage")
@@ -177,8 +191,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Sets the non-quantitative quality information about the lineage of the data specified
-     * by the scope.
+     * Sets the non-quantitative quality information about the lineage of the data specified by the scope.
      *
      * @param newValue The new lineage.
      */

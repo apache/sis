@@ -28,13 +28,12 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-public final class CI_ResponsibleParty extends
-        PropertyType<CI_ResponsibleParty, ResponsibleParty>
-{
+@SuppressWarnings("deprecation")
+public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty, ResponsibleParty> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -45,6 +44,8 @@ public final class CI_ResponsibleParty extends
      * Returns the GeoAPI interface which is bound by this adapter.
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
+     *
+     * @return {@code ResponsibleParty.class}
      */
     @Override
     protected Class<ResponsibleParty> getBoundType() {
@@ -79,7 +80,7 @@ public final class CI_ResponsibleParty extends
      */
     @XmlElementRef
     public DefaultResponsibleParty getElement() {
-        return skip() ? null : DefaultResponsibleParty.castOrCopy(metadata);
+        return DefaultResponsibleParty.castOrCopy(metadata);
     }
 
     /**

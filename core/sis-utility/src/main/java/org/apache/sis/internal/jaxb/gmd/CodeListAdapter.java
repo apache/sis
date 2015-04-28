@@ -43,11 +43,9 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.3
  * @version 0.3
  * @module
- *
- * @see CodeListLocaleAdapter
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,
         BoundType extends CodeList<BoundType>> extends XmlAdapter<ValueType,BoundType>
@@ -64,8 +62,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified
-     * in ISO-19139.
+     * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
      * @param proxy The proxy version of {@link CodeList} to be marshalled.
      */
@@ -74,27 +71,19 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Forces the initialization of the given code list class, since some
-     * calls to {@link CodeList#valueOf(Class, String)} are done whereas
-     * the constructor has not already been called.
-     *
-     * @param <T>  The code list type.
-     * @param type The code list class to initialize.
-     */
-    protected static <T extends CodeList<T>> void ensureClassLoaded(final Class<T> type) {
-        final String name = type.getName();
-        try {
-            Class.forName(name, true, type.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new TypeNotPresentException(name, e); // Should never happen.
-        }
-    }
-
-    /**
      * Wraps the proxy value into an adapter.
+     * Most implementations will be like below:
+     *
+     * {@preformat java
+     *     return new ValueType(proxy);
+     * }
+     *
+     * However is some cases, the {@code proxy} argument may be inspected.
+     * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
+     * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
      * @param proxy The proxy version of {@link CodeList}, to be marshalled.
-     * @return The adapter that wraps the proxy value.
+     * @return The wrapper for the code list value.
      */
     protected abstract ValueType wrap(final CodeListProxy proxy);
 
@@ -107,17 +96,14 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
 
     /**
      * Substitutes the adapter value read from an XML stream by the object which will
-     * contains the value. JAXB calls automatically this method at unmarshalling time.
+     * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  adapter The adapter for this metadata value.
      * @return A code list which represents the metadata value.
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        if (adapter == null) {
-            return null;
-        }
-        return Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true);
+        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true) : null;
     }
 
     /**
@@ -132,8 +118,15 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         if (value == null) {
             return null;
         }
-        return wrap(isEnum() ? new CodeListProxy(Types.getCodeName(value))
-                             : new CodeListProxy(Context.current(), value));
+        final CodeListProxy p;
+        if (isEnum()) {
+            // To be removed after GEO-199 resolution.
+            p = new CodeListProxy();
+            p.value = Types.getCodeName(value);
+        } else {
+            p = new CodeListProxy(Context.current(), value);
+        }
+        return wrap(p);
     }
 
     /**
@@ -141,6 +134,11 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * returns {@code false} in every cases, since there is very few enums in ISO 19115.
      *
      * @return {@code true} if this code list is actually an enum.
+     *
+     * @todo Remove this method after we refactored enum wrappers as {@link EnumAdapter} subclasses
+     *       instead of {@code CodeListAdapter}. This requires the resolution of GEO-199 first.
+     *
+     * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
      */
     protected boolean isEnum() {
         return false;

@@ -71,7 +71,7 @@ public interface TreeTable {
     /**
      * Returns the table columns, in the order they shall be rendered by default.
      * This method returns the union of all table columns in every nodes of this
-     * tree. However any {@link Node} instance can return {@code null} for a
+     * tree. However any {@link Node} instance can return {@code null} for a
      * particular column if the node doesn't have that column.
      *
      * @return The union of all table columns in every tree node.
@@ -97,6 +97,7 @@ public interface TreeTable {
      * <p>The following table summarizes the tree-related and table-related methods:</p>
      *
      * <table class="sis">
+     * <caption>Tree-table methods</caption>
      * <tr>
      *   <th>Tree-related methods</th>
      *   <th>Table-related methods</th>
@@ -117,7 +118,7 @@ public interface TreeTable {
      * {@link #getUserObject()} method. This object is not used directly by the tree tables.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.3 (derived from geotk-3.19)
+     * @since   0.3
      * @version 0.3
      * @module
      */
@@ -179,7 +180,7 @@ public interface TreeTable {
         Node newChild() throws UnsupportedOperationException;
 
         /**
-         * Returns the value in the given column, or {@code null} if none.
+         * Returns the value in the given column, or {@code null} if none.
          *
          * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column from which to get the value.
@@ -225,11 +226,10 @@ public interface TreeTable {
          * The user object is for information purpose only and does not appear in the rendered tree.
          * It is typically a Java object whose content is splitted into the various table columns.
          *
-         * <blockquote><font size="-1"><b>Example:</b>
+         * <div class="note"><b>Example:</b>
          * If a {@code CityLocation} class is defined as a (<var>city name</var>, <var>latitude</var>,
-         * <var>longitude</var>) tuple, then a {@code TreeTable.Node} could be defined to have
-         * 3 columns for the above 3 tuple components, and the user object could be the original
-         * {@code CityLocation} instance.</font></blockquote>
+         * <var>longitude</var>) tuple, then a {@code TreeTable.Node} could be defined to have 3 columns for the
+         * above 3 tuple components, and the user object could be the original {@code CityLocation} instance.</div>
          *
          * @return Any object stored at this node by the user, or {@code null} if none.
          * @category tree

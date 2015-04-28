@@ -16,14 +16,17 @@
  */
 package org.apache.sis.util.iso;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -32,14 +35,25 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <ul>
  *   <li>{@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}</li>
+ *   <li>Similar static convenience method in {@link Names}.</li>
  * </ul>
  *
+ * <div class="section">Immutability and thread safety</div>
+ * This class is immutable and thus inherently thread-safe if the {@link NameSpace}, {@link CharSequence} and
+ * {@link TypeName} arguments given to the constructor are also immutable. Subclasses shall make sure that any
+ * overridden methods remain safe to call from multiple threads and do not change any public {@code MemberName}
+ * state.
+ *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
+ *
+ * @see DefaultTypeName
+ * @see DefaultNameFactory
+ * @see DefaultRecordType
  */
-@Immutable
+@XmlType(name = "MemberName_Type")
 @XmlRootElement(name = "MemberName")
 public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
@@ -75,10 +89,56 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     }
 
     /**
+     * Returns a SIS member name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable action in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultMemberName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultMemberName} instance is created
+     *       with the same values than the given name.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     *
+     * @since 0.5
+     */
+    public static DefaultMemberName castOrCopy(final MemberName object) {
+        if (object == null || object instanceof DefaultMemberName) {
+            return (DefaultMemberName) object;
+        }
+        return new DefaultMemberName(object.scope(), object.toInternationalString(), object.getAttributeType());
+    }
+
+    /**
      * Returns the type of the data associated with the record member.
+     *
+     * @return The type of the data associated with the record member.
      */
     @Override
     public TypeName getAttributeType() {
         return attributeType;
+    }
+
+    /**
+     * Compares this member name with the specified object for equality.
+     *
+     * @param object The object to compare with this name for equality.
+     * @return {@code true} if the given object is equal to this name.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        return super.equals(object) && Objects.equals(attributeType, ((DefaultMemberName) object).attributeType);
+    }
+
+    /**
+     * Invoked by {@link #hashCode()} for computing the hash code value when first needed.
+     */
+    @Override
+    final int computeHashCode() {
+        return super.computeHashCode() + Objects.hashCode(attributeType);
     }
 }

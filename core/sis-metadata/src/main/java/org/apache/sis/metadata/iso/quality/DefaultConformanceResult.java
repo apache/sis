@@ -29,10 +29,19 @@ import org.apache.sis.util.iso.Types;
  * Information about the outcome of evaluating the obtained value (or set of values) against
  * a specified acceptable conformance quality level.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -94,20 +103,22 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ConformanceResult)
      */
     public DefaultConformanceResult(final ConformanceResult object) {
         super(object);
-        specification = object.getSpecification();
-        explanation   = object.getExplanation();
-        pass          = object.pass();
+        if (object != null) {
+            specification = object.getSpecification();
+            explanation   = object.getExplanation();
+            pass          = object.pass();
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -131,8 +142,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Returns the citation of product specification or user
-     * requirement against which data is being evaluated.
+     * Returns the citation of product specification or user requirement against which data is being evaluated.
+     *
+     * @return Citation of product specification or user requirement, or {@code null}.
      */
     @Override
     @XmlElement(name = "specification", required = true)
@@ -141,8 +153,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Sets the citation of product specification or user requirement against which data
-     * is being evaluated.
+     * Sets the citation of product specification or user requirement against which data is being evaluated.
      *
      * @param newValue The new specification.
      */
@@ -153,6 +164,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns the explanation of the meaning of conformance for this result.
+     *
+     * @return Explanation of the meaning of conformance, or {@code null}.
      */
     @Override
     @XmlElement(name = "explanation", required = true)
@@ -172,6 +185,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns an indication of the conformance result.
+     *
+     * @return Indication of the conformance result, or {@code null}.
      */
     @Override
     public Boolean pass() {

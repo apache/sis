@@ -20,13 +20,13 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Thrown when an operation can't use arbitrary implementation of an interface, and
- * a given instance doesn't meet the requirement. For example this exception may be
- * thrown when an operation requires an Apache SIS implementation of a
- * <A HREF="http://www.geoapi.org">GeoAPI</A> interface.
+ * Thrown when an operation can not use arbitrary implementation of an interface,
+ * and a given instance does not meet the requirement. For example this exception
+ * may be thrown when an operation requires an Apache SIS implementation of a
+ * <a href="http://www.geoapi.org">GeoAPI</a> interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -39,7 +39,7 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message.
+     * @param message The detail message, or {@code null} if none.
      */
     public UnsupportedImplementationException(final String message) {
         super(message);
@@ -59,7 +59,7 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
      * and a cause.
      *
      * @param classe The unexpected implementation class.
-     * @param cause  The cause for the exception.
+     * @param cause  The cause for the exception, or {@code null} if none.
      */
     public UnsupportedImplementationException(final Class<?> classe, final Exception cause) {
         super(Errors.format(Errors.Keys.UnsupportedImplementation_1, classe), cause);

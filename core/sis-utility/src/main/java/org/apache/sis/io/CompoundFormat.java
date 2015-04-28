@@ -29,11 +29,16 @@ import java.text.ParsePosition;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import net.jcip.annotations.NotThreadSafe;
+import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -59,12 +64,12 @@ import org.apache.sis.internal.util.LocalizedParseException;
  *   <li>{@link #format(Object, Appendable)} may throws {@code IOException}.</li>
  * </ul>
  *
- * {@note In the standard <code>Format</code> class, the <code>parse</code> methods either accept
- *        a <code>ParsePosition</code> argument and returns <code>null</code> on error,
- *        or does not take position argument and throws a <code>ParseException</code> on error.
- *        In this <code>CompoundFormat</code> class, the <code>parse</code> method both takes a
- *        <code>ParsePosition</code> argument and throws a <code>ParseException</code> on error.
- *        This allows both substring parsing and more accurate exception message in case of error.}
+ * <div class="note"><b>API note:</b>
+ * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
+ * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
+ * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
+ * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
+ * in case of error.</div>
  *
  * @param <T> The base type of objects parsed and formatted by this class.
  *
@@ -73,7 +78,6 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * For cross-version compatibility.
@@ -83,13 +87,17 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for
      * unlocalized format. See {@link #getLocale()} for more information on {@code ROOT} locale.
+     *
+     * @see #getLocale()
      */
-    protected final Locale locale;
+    private final Locale locale;
 
     /**
      * The timezone given at construction time, or {@code null} for UTC.
+     *
+     * @see #getTimeZone()
      */
-    protected final TimeZone timezone;
+    private final TimeZone timezone;
 
     /**
      * The formats for smaller unit of information.
@@ -100,10 +108,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Creates a new format for the given locale. The given locale can be {@code null} or
      * {@link Locale#ROOT} if this format shall parse and format "unlocalized" strings.
-     * See {@link #getLocale()} for more information on {@code ROOT} locale.
+     * See {@link #getLocale()} for more information about the {@code ROOT} locale.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting,
-     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
+     * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param timezone The timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
@@ -112,16 +119,16 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     }
 
     /**
-     * Returns the locale given at construction time. The returned value may be {@link Locale#ROOT}
+     * Returns the locale used by this format. The returned value may be {@link Locale#ROOT}
      * if this format does not apply any localization. The definition of "unlocalized string"
      * is implementation-dependent, but some typical examples are:
      *
      * <ul>
-     *   <li>Format {@link Number}s using {@code toString()} instead than {@code NumberFormat}.</li>
-     *   <li>Format {@link Date}s using the ISO pattern instead than the English one.</li>
+     *   <li>Format {@link Number} instances using {@code toString()} instead than {@code NumberFormat}.</li>
+     *   <li>Format {@link Date} instances using the ISO pattern instead than the English one.</li>
      * </ul>
      *
-     * @return The locale used for this format, or {@link Locale#ROOT} for unlocalized format.
+     * @return The locale of this {@code Format}, or {@code Locale.ROOT} for unlocalized format.
      */
     @Override
     public Locale getLocale() {
@@ -129,9 +136,25 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     }
 
     /**
+     * Returns the timezone used by this format.
+     *
+     * @return The timezone used for this format, or UTC for unlocalized format.
+     */
+    public TimeZone getTimeZone() {
+        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone("UTC");
+    }
+
+    /**
      * Returns the base type of values parsed and formatted by this {@code Format} instance.
      * The returned type may be a subclass of {@code <T>} if the format is configured in a way
      * that restrict the kind value to be parsed.
+     *
+     * <div class="note"><b>Example:</b>
+     *   <ul>
+     *     <li>{@code StatisticsFormat} unconditionally returns {@code Statistics.class}.</li>
+     *     <li>{@code TreeTableFormat} unconditionally returns {@code TreeTable.class}.</li>
+     *   </ul>
+     * </div>
      *
      * @return The base type of values parsed and formatted by this {@code Format} instance.
      */
@@ -160,12 +183,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *       error index</var> + <var>{@code ParseException} error offset</var>.</li>
      * </ul>
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number,
-     * then the {@code pos} error index will be set to 5 (the beginning of the {@code "40.0"}
-     * character sequence) while the {@code ParseException} error offset will be set to 2
-     * (the coma position relative the the beginning of the {@code "40.0"} character sequence).
-     * </font></blockquote>
+     * <div class="note"><b>Example:</b>
+     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number, then the {@code pos}
+     * error index will be set to 5 (the beginning of the {@code "40.0"} character sequence) while the
+     * {@link ParseException} error offset will be set to 2 (the coma position relative the beginning
+     * of the {@code "40.0"} character sequence).</div>
      *
      * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
      * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
@@ -222,11 +244,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain Character#isSpaceChar(int) spaces} and
      * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
-     * {@note The usual SIS policy, as documented in the <code>CharSequences</code> class,
-     * is to test for whitespaces using the <code>Characters.isWhitespace(…)</code> method.
-     * The combination of <code>isSpaceChar(…)</code> and <code>isISOControl(…)</code> done
-     * in this <code>parseObject(…)</code> method is more permissive since it encompasses
-     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.}
+     * <div class="note"><b>Note:</b>
+     * The usual SIS policy, as documented in the {@link org.apache.sis.util.CharSequences} class, is to test for
+     * whitespaces using the {@code Character.isWhitespace(…)} method. The combination of {@code isSpaceChar(…)}
+     * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
+     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.</div>
      *
      * @param  text The string representation of the object to parse.
      * @return The parsed object.
@@ -248,7 +270,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
-        throw new LocalizedParseException(locale, getValueType(), text, pos);
+        throw new LocalizedParseException(getLocale(), getValueType(), text, pos);
     }
 
     /**
@@ -256,7 +278,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * @param  object      The object to format.
      * @param  toAppendTo  Where to format the object.
-     * @throws IOException If an error occurred while writing in the given appender.
+     * @throws IOException If an error occurred while writing to the given appendable.
      */
     public abstract void format(T object, Appendable toAppendTo) throws IOException;
 
@@ -266,10 +288,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * without propagating {@link IOException}. The I/O exception should never
      * occur since we are writing in a {@link StringBuffer}.
      *
-     * {@note Strictly speaking, an <code>IOException</code> could still occur if a subclass
-     * overrides the above <code>format</code> method and performs some I/O operation outside
-     * the given <code>StringBuffer</code>. However this is not the intended usage of this
-     * class and implementors should avoid such unexpected I/O operation.}
+     * <div class="note"><b>Note:</b>
+     * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
+     * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
+     * usage of this class and implementors should avoid such unexpected I/O operation.</div>
      *
      * @param  object      The object to format.
      * @param  toAppendTo  Where to format the object.
@@ -308,7 +330,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * See {@link #createFormat(Class)} for the list of value types recognized by the default
      * {@code CompoundFormat} implementation.
      *
-     * @param  valueType The base type of values to parse or format.
+     * @param  valueType The base type of values to parse or format, or {@code null} if unknown.
      * @return The format to use for parsing and formatting values of the given type or any
      *         parent type, or {@code null} if none.
      */
@@ -345,10 +367,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <p>The default implementation creates the following formats:</p>
      *
      * <table class="sis">
+     *   <caption>Supported formats by type</caption>
      *   <tr><th>Value type</th>     <th>Format</th></tr>
      *   <tr><td>{@link Angle}</td>  <td>{@link AngleFormat}</td></tr>
      *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td></tr>
      *   <tr><td>{@link Number}</td> <td>{@link NumberFormat}</td></tr>
+     *   <tr><td>{@link Unit}</td>   <td>{@link UnitFormat}</td></tr>
+     *   <tr><td>{@link Range}</td>  <td>{@link RangeFormat}</td></tr>
+     *   <tr><td>{@link Class}</td>  <td>(internal)</td></tr>
      * </table>
      *
      * Subclasses can override this method for adding more types, or for configuring the
@@ -370,6 +396,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
+        final Locale locale = getLocale();
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);
@@ -379,22 +406,33 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         } else if (valueType == Date.class) {
             final DateFormat format;
             if (!Locale.ROOT.equals(locale)) {
-                format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
+                format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale);
             } else {
-                format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.ROOT);
+                format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
             }
-            format.setTimeZone(timezone != null ? timezone : TimeZone.getTimeZone("UTC"));
+            format.setTimeZone(getTimeZone());
             return format;
         } else if (valueType == Angle.class) {
             return AngleFormat.getInstance(locale);
+        } else if (valueType == Unit.class) {
+            return UnitFormat.getInstance(locale);
+        } else if (valueType == Range.class) {
+            return new RangeFormat(locale);
         } else if (valueType == Class.class) {
             return ClassFormat.INSTANCE;
+        } else {
+            final Class<?>[] interfaces = valueType.getInterfaces();
+            if (ArraysExt.contains(interfaces, IdentifiedObject.class)) {
+                return new IdentifiedObjectFormat(locale);
+            }
         }
         return null;
     }
 
     /**
      * Returns a clone of this format.
+     *
+     * @return A clone of this format.
      */
     @Override
     public CompoundFormat<T> clone() {

@@ -25,10 +25,10 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Annotates methods having a system-wide impact on the configuration of the Apache SIS library.
- * See "<cite>Use</cite>" javadoc link for a list of annotated methods.
+ * See <cite>"Use"</cite> javadoc link for a list of annotated methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */

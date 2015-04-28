@@ -17,7 +17,6 @@
 package org.apache.sis.util.logging;
 
 import java.util.logging.Logger;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 
@@ -38,18 +37,21 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * The {@link #getLogger(String)} method shall return some {@link Logger} subclass
  * (typically {@link LoggerAdapter}) which forwards directly all log methods to the other framework.
  *
+ * <div class="section">Thread safety</div>
+ * This base class is safe for multi-threads usage. Subclasses registered in {@code META-INF/services/}
+ * shall make sure that any overridden methods remain safe to call from multiple threads.
+ *
  * @param <L> The type of loggers used for the implementation backend.
  *            This is the type used by external frameworks like Log4J.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.4)
+ * @since   0.3
  * @version 0.3
  * @module
  *
  * @see Logging
  * @see LoggerAdapter
  */
-@ThreadSafe
 public abstract class LoggerFactory<L> {
     /**
      * The logger class. We ask for this information right at construction time in order to
@@ -72,6 +74,13 @@ public abstract class LoggerFactory<L> {
         this.loggerClass = loggerClass;
         loggers = new WeakValueHashMap<String,Logger>(String.class);
     }
+
+    /**
+     * Returns the name of the logging framework.
+     *
+     * @return The logging framework name.
+     */
+    public abstract String getName();
 
     /**
      * Returns the logger of the specified name, or {@code null} if the JDK logging framework

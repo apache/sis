@@ -24,11 +24,11 @@ import static org.apache.sis.util.StringBuilders.*;
 
 
 /**
- * Tests {@link StringBuilders} methods.
+ * Tests the {@link StringBuilders} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @since   0.3
  * @version 0.3
  * @module
  */
@@ -97,8 +97,8 @@ public final strictfp class StringBuildersTest extends TestCase {
      */
     @Test
     public void testToASCII() {
-        final StringBuilder metre = new StringBuilder("mètre");
+        final StringBuilder metre = new StringBuilder("mètres" + Characters.PARAGRAPH_SEPARATOR);
         toASCII(metre);
-        assertEquals("metre", metre.toString());
+        assertEquals("metres\n", metre.toString());
     }
 }

@@ -31,11 +31,20 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Information about the distributor.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Distributor_Type", propOrder = {
@@ -92,21 +101,23 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distributor)
      */
     public DefaultDistributor(final Distributor object) {
         super(object);
-        distributorContact         = object.getDistributorContact();
-        distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
-        distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
-        distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        if (object != null) {
+            distributorContact         = object.getDistributorContact();
+            distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
+            distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
+            distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -130,7 +141,14 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     }
 
     /**
-     * Party from whom the resource may be obtained. This list need not be exhaustive.
+     * Party from whom the resource may be obtained.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
@@ -139,7 +157,12 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     }
 
     /**
-     * Sets the party from whom the resource may be obtained. This list need not be exhaustive.
+     * Sets the party from whom the resource may be obtained.
+     *
+     * <div class="warning"><b>Upcoming API change — generalization</b><br>
+     * As of ISO 19115:2014, {@code ResponsibleParty} is replaced by the {@link Responsibility} parent interface.
+     * This change may be applied in GeoAPI 4.0.
+     * </div>
      *
      * @param newValue The new distributor contact.
      */
@@ -151,6 +174,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about how the resource may be obtained,
      * and related instructions and fee information.
+     *
+     * @return Information about how the resource may be obtained.
      */
     @Override
     @XmlElement(name = "distributionOrderProcess")
@@ -170,6 +195,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the format used by the distributor.
+     *
+     * @return Information about the format used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorFormat")
@@ -188,6 +215,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the technical means and media used by the distributor.
+     *
+     * @return Information about the technical means and media used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorTransferOptions")

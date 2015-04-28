@@ -17,25 +17,46 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
+import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
+import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
+import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.BiConsumer;
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Description of the computer language construct that specifies the representation
  * of data objects in a record, file, message, storage device or transmission channel.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "MD_Format_Type", propOrder = {
@@ -51,17 +72,12 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6713019619784302519L;
+    private static final long serialVersionUID = -8346373589075887348L;
 
     /**
-     * Name of the data transfer format(s).
+     * Citation / URL of the specification format.
      */
-    private InternationalString name;
-
-    /**
-     * Version of the format (date, number, etc.).
-     */
-    private InternationalString version;
+    private Citation formatSpecificationCitation;
 
     /**
      * Amendment number of the format version.
@@ -69,15 +85,15 @@ public class DefaultFormat extends ISOMetadata implements Format {
     private InternationalString amendmentNumber;
 
     /**
-     * Name of a subset, profile, or product specification of the format.
-     */
-    private InternationalString specification;
-
-    /**
      * Recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
      */
     private InternationalString fileDecompressionTechnique;
+
+    /**
+     * Media used by the format.
+     */
+    private Collection<Medium> media;
 
     /**
      * Provides information about the distributor's format.
@@ -97,8 +113,12 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param version The version of the format (date, number, etc.), or {@code null}.
      */
     public DefaultFormat(final CharSequence name, final CharSequence version) {
-        this.name    = Types.toInternationalString(name);
-        this.version = Types.toInternationalString(version);
+        final DefaultCitation citation = new DefaultCitation();
+        if (name != null) {
+            citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
+        }
+        citation.setEdition(Types.toInternationalString(version));
+        formatSpecificationCitation = citation;
     }
 
     /**
@@ -106,23 +126,30 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Format)
      */
     public DefaultFormat(final Format object) {
         super(object);
-        name                       = object.getName();
-        version                    = object.getVersion();
-        amendmentNumber            = object.getAmendmentNumber();
-        specification              = object.getSpecification();
-        fileDecompressionTechnique = object.getFileDecompressionTechnique();
-        formatDistributors         = copyCollection(object.getFormatDistributors(), Distributor.class);
+        if (object != null) {
+            amendmentNumber             = object.getAmendmentNumber();
+            fileDecompressionTechnique  = object.getFileDecompressionTechnique();
+            formatDistributors          = copyCollection(object.getFormatDistributors(), Distributor.class);
+            if (object instanceof DefaultFormat) {
+                formatSpecificationCitation = ((DefaultFormat) object).getFormatSpecificationCitation();
+                media = copyCollection(((DefaultFormat) object).getMedia(), Medium.class);
+            } else {
+                setSpecification(object.getSpecification());
+                setVersion(object.getVersion());
+                setName(object.getName());
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -146,45 +173,166 @@ public class DefaultFormat extends ISOMetadata implements Format {
     }
 
     /**
-     * Returns the name of the data transfer format(s).
+     * Returns the citation / URL of the specification format.
+     *
+     * @return Citation / URL of the specification format.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "formatSpecificationCitation", required = true)
+    @UML(identifier="formatSpecificationCitation", obligation=MANDATORY, specification=ISO_19115)
+    public Citation getFormatSpecificationCitation() {
+        return formatSpecificationCitation;
+    }
+
+    /**
+     * Sets the citation / URL of the specification format.
+     *
+     * @param newValue The new specification format.
+     *
+     * @since 0.5
+     */
+    public void setFormatSpecificationCitation(final Citation newValue) {
+        checkWritePermission();
+        formatSpecificationCitation = newValue;
+    }
+
+    /**
+     * Sets the specification title or version.
+     */
+    private <T> void setFormatSpecificationCitation(final BiConsumer<DefaultCitation,T> setter, final T value) {
+        Citation citation = formatSpecificationCitation;
+        if (citation != null || value != null) {
+            if (!(citation instanceof DefaultCitation)) {
+                citation = new DefaultCitation(citation);
+            }
+            setter.accept((DefaultCitation) citation, value);
+            if (value == null && ((DefaultCitation) citation).isEmpty()) {
+                citation = null;
+            }
+        }
+        // Invoke the non-deprecated setter method only if the reference changed,
+        // for consistency with other deprecated setter methods in metadata module.
+        if (citation != formatSpecificationCitation) {
+            setFormatSpecificationCitation(citation);
+        }
+    }
+
+    /**
+     * Returns the name of a subset, profile, or product specification of the format.
+     *
+     * @return Name of a subset, profile, or product specification of the format, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getTitle() getTitle()}</code>.
      */
     @Override
+    @Deprecated
+    @XmlElement(name = "specification")
+    public InternationalString getSpecification() {
+        final Citation citation = getFormatSpecificationCitation();
+        return (citation != null) ? citation.getTitle(): null;
+    }
+
+    /**
+     * Sets the name of a subset, profile, or product specification of the format.
+     *
+     * @param newValue The new specification.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setTitle(InternationalString)
+     * setTitle(InternationalString)}</code>.
+     */
+    @Deprecated
+    public void setSpecification(final InternationalString newValue) {
+        checkWritePermission();
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setTitle(value);
+            }
+        }, newValue);
+    }
+
+    /**
+     * Returns the name of the data transfer format(s).
+     *
+     * @return Name of the data transfer format(s), or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getAlternateTitles()
+     * getAlternateTitles()}</code>. Note that citation alternate titles are often used for abbreviations.
+     */
+    @Override
+    @Deprecated
     @XmlElement(name = "name", required = true)
     public InternationalString getName() {
-        return name;
+        final Citation citation = getFormatSpecificationCitation();
+        if (citation != null) {
+            return LegacyPropertyAdapter.getSingleton(citation.getAlternateTitles(),
+                    InternationalString.class, null, DefaultFormat.class, "getName");
+        }
+        return null;
     }
 
     /**
      * Sets the name of the data transfer format(s).
      *
      * @param newValue The new name.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setAlternateTitles(Collection)
+     * setAlternateTitles(Collection)}</code>.
      */
+    @Deprecated
     public void setName(final InternationalString newValue) {
-         checkWritePermission();
-         name = newValue;
-     }
+        checkWritePermission();
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value));
+            }
+        }, newValue);
+    }
 
     /**
      * Returns the version of the format (date, number, etc.).
+     *
+     * @return Version of the format, or {@code null}.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getEdition()
+     * getEdition()}</code>.
      */
     @Override
+    @Deprecated
     @XmlElement(name = "version", required = true)
     public InternationalString getVersion() {
-        return version;
+        final Citation citation = getFormatSpecificationCitation();
+        return (citation != null) ? citation.getEdition(): null;
     }
 
     /**
      * Sets the version of the format (date, number, etc.).
      *
      * @param newValue The new version.
+     *
+     * @deprecated As of ISO 19115:2014, replaced by
+     * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setEdition(InternationalString)
+     * setEdition(InternationalString)}</code>.
      */
+    @Deprecated
     public void setVersion(final InternationalString newValue) {
         checkWritePermission();
-        version = newValue;
+        setFormatSpecificationCitation(new BiConsumer<DefaultCitation,InternationalString>() {
+            @Override public void accept(DefaultCitation citation, InternationalString value) {
+                citation.setEdition(value);
+            }
+        }, newValue);
     }
 
     /**
      * Returns the amendment number of the format version.
+     *
+     * @return Amendment number of the format version, or {@code null}.
      */
     @Override
     @XmlElement(name = "amendmentNumber")
@@ -203,27 +351,11 @@ public class DefaultFormat extends ISOMetadata implements Format {
     }
 
     /**
-     * Returns the name of a subset, profile, or product specification of the format.
-     */
-    @Override
-    @XmlElement(name = "specification")
-    public InternationalString getSpecification() {
-        return specification;
-    }
-
-    /**
-     * Sets the name of a subset, profile, or product specification of the format.
-     *
-     * @param newValue The new specification.
-     */
-    public void setSpecification(final InternationalString newValue) {
-        checkWritePermission();
-        specification = newValue;
-    }
-
-    /**
      * Returns recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
+     *
+     * @return Processes that can be applied to read resources to which compression techniques have
+     *         been applied, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileDecompressionTechnique")
@@ -243,7 +375,33 @@ public class DefaultFormat extends ISOMetadata implements Format {
     }
 
     /**
+     * Returns the media used by the format.
+     *
+     * @return Media used by the format.
+     *
+     * @since 0.5
+     */
+/// @XmlElement(name = "medium")
+    @UML(identifier="medium", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<Medium> getMedia() {
+        return media = nonNullCollection(media, Medium.class);
+    }
+
+    /**
+     * Sets the media used by the format.
+     *
+     * @param newValues The new media.
+     *
+     * @since 0.5
+     */
+    public void setMedia(final Collection<? extends Medium> newValues) {
+        media = writeCollection(newValues, media, Medium.class);
+    }
+
+    /**
      * Provides information about the distributor's format.
+     *
+     * @return Information about the distributor's format.
      */
     @Override
     @XmlElement(name = "formatDistributor")

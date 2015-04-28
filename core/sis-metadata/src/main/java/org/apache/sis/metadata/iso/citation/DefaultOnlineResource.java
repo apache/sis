@@ -20,21 +20,34 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.annotation.UML;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.metadata.iso.ISOMetadata;
+
+import static org.opengis.annotation.Obligation.OPTIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
  * Information about on-line sources from which the dataset, specification, or
  * community profile name and extended metadata elements can be obtained.
  *
+ * <p><b>Limitations:</b></p>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       Synchronization, if needed, is caller's responsibility.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS. For long term storage, use {@link org.apache.sis.xml.XML} instead.</li>
+ * </ul>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @since   0.3
+ * @version 0.5
  * @module
  */
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
@@ -84,6 +97,12 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     private OnLineFunction function;
 
     /**
+     * Request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     */
+    private String protocolRequest;
+
+    /**
      * Creates an initially empty on line resource.
      */
     public DefaultOnlineResource() {
@@ -104,23 +123,28 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(OnlineResource)
      */
     public DefaultOnlineResource(final OnlineResource object) {
         super(object);
-        linkage            = object.getLinkage();
-        protocol           = object.getProtocol();
-        applicationProfile = object.getApplicationProfile();
-        name               = object.getName();
-        description        = object.getDescription();
-        function           = object.getFunction();
+        if (object != null) {
+            linkage            = object.getLinkage();
+            protocol           = object.getProtocol();
+            applicationProfile = object.getApplicationProfile();
+            name               = object.getName();
+            description        = object.getDescription();
+            function           = object.getFunction();
+            if (object instanceof DefaultOnlineResource) {
+                protocolRequest = ((DefaultOnlineResource) object).getProtocolRequest();
+            }
+        }
     }
 
     /**
      * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
-     * This method performs the first applicable actions in the following choices:
+     * This method performs the first applicable action in the following choices:
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
@@ -146,6 +170,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the name of an application profile that can be used with the online resource.
      * Returns {@code null} if none.
+     *
+     * @return Application profile that can be used with the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "applicationProfile")
@@ -165,6 +191,12 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Name of the online resource. Returns {@code null} if none.
+     *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The return type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
+     *
+     * @return Name of the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -175,6 +207,10 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Sets the name of the online resource.
      *
+     * <div class="warning"><b>Upcoming API change — internationalization</b><br>
+     * The argument type may be changed from {@code String} to {@code InternationalString} in GeoAPI 4.0.
+     * </div>
+     *
      * @param newValue The new name, or {@code null} if none.
      */
     public void setName(final String newValue) {
@@ -184,6 +220,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the detailed text description of what the online resource is/does.
+     *
+     * @return Text description of what the online resource is/does, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -203,6 +241,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the code for function performed by the online resource.
+     *
+     * @return Function performed by the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "function")
@@ -222,7 +262,9 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
-     * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
+     * similar addressing scheme.
+     *
+     * @return Location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
     @Override
     @XmlElement(name = "linkage", required = true)
@@ -242,28 +284,62 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     }
 
     /**
-     * Returns the connection protocol to be used. If no protocol has been {@linkplain #setProtocol(String)
-     * explicitely set}, then this method returns the {@linkplain #getLinkage() linkage}
-     * {@linkplain URI#getScheme() scheme} (if any).
+     * Returns the connection protocol to be used.
      *
-     * @see <a href="../doc-files/auto-properties.html">List of automatic properties</a>
+     * <div class="note"><b>Example:</b>
+     * ftp, http get KVP, http POST, <i>etc</i>.
+     * </div>
+     *
+     * @return Connection protocol to be used, or {@code null}.
      */
     @Override
     @XmlElement(name = "protocol")
     public String getProtocol() {
-        if (protocol == null && linkage != null) {
-            return linkage.getScheme();
-        }
         return protocol;
     }
 
     /**
-     * Returns the connection protocol to be used.
+     * Sets the connection protocol to be used.
      *
      * @param newValue The new protocol, or {@code null} if none.
      */
     public void setProtocol(final String newValue) {
         checkWritePermission();
         protocol = newValue;
+    }
+
+    /**
+     * Returns the request used to access the resource depending on the protocol.
+     * This is used mainly for POST requests.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@preformat xml
+     *     <GetFeature service="WFS" version="2.0.0"
+     *                 outputFormat="application/gml+xml;verson=3.2"
+     *                 xmlns="(…snip…)">
+     *         <Query typeNames="Roads"/>
+     *     </GetFeature>
+     * }
+     * </div>
+     *
+     * @return Request used to access the resource.
+     *
+     * @since 0.5
+     */
+    @UML(identifier="protocolRequest", obligation=OPTIONAL, specification=ISO_19115)
+    public String getProtocolRequest() {
+        return protocolRequest;
+    }
+
+    /**
+     * Sets the request to be used.
+     *
+     * @param newValue The new request, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    public void setProtocolRequest(final String newValue) {
+        checkWritePermission();
+        protocolRequest = newValue;
     }
 }

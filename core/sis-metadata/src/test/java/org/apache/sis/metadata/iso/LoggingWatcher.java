@@ -63,6 +63,8 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
      * for the log messages before the tests are run. This installation will cause the
      * {@link #isLoggable(LogRecord)} method to be invoked when a message is logged.
      *
+     * @param description A description of the JUnit test which is starting.
+     *
      * @see #isLoggable(LogRecord)
      */
     @Override
@@ -75,6 +77,8 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
     /**
      * Invoked when a test method finishes (whether passing or failing)
      * This method removes the filter which had been set for testing purpose.
+     *
+     * @param description A description of the JUnit test that finished.
      */
     @Override
     public final void finished(final FrameworkMethod method) {

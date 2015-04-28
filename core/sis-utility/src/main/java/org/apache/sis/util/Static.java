@@ -18,10 +18,11 @@ package org.apache.sis.util;
 
 
 /**
- * Parent of classes that contain only static utility methods. This parent is for documentation
- * purpose only. The list below summarizes some of the utility classes:
+ * Parent of SIS classes that contain only static utility methods, for documentation purpose.
+ * The list below summarizes some of the utility classes:
  *
  * <table class="sis">
+ * <caption>Static utility classes (non exhaustive list)</caption>
  * <tr><th colspan="2">Classes of the Java language</th></tr>
  * <tr><td>{@link Characters}</td>
  *     <td>Find subscript and superscript digit characters.</td></tr>
@@ -43,21 +44,45 @@ package org.apache.sis.util;
  * <tr><th colspan="2" class="hsep">Mathematics and units of measurement</th></tr>
  * <tr><td>{@link org.apache.sis.math.MathFunctions}</td>
  *     <td>Additions to the {@link java.lang.Math} methods.</td></tr>
+ * <tr><td>{@link org.apache.sis.math.DecimalFunctions}</td>
+ *     <td>Mathematical methods related to base 10 representation of numbers.</td></tr>
+ * <tr><td>{@link org.apache.sis.referencing.operation.matrix.Matrices}</td>
+ *     <td>Create and compare {@link org.opengis.referencing.operation.Matrix} objects</td></tr>
  * <tr><td>{@link org.apache.sis.measure.Units}</td>
  *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
+ * <tr><td>{@link org.apache.sis.util.iso.Types}</td>
+ *     <td>UML identifier and description for GeoAPI types.</td></tr>
+ * <tr><td>{@link org.apache.sis.util.iso.Names}</td>
+ *     <td>Simple creation and operations on {@link org.opengis.util.GenericName} objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.metadata.iso.citation.Citations}</td>
+ *     <td>Pre-defined {@link org.opengis.metadata.citation.Citation}
+ *         and methods for comparing against titles or identifiers.</td></tr>
  * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
  *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.geometry.Envelopes}</td>
- *     <td>Parse, format and transform {@linkplain org.opengis.geometry.Envelope envelopes}.</td></tr>
+ *     <td>Parse, format and transform {@link org.opengis.geometry.Envelope} objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.referencing.IdentifiedObjects}</td>
+ *     <td>Handle names, identifiers or properties of
+ *         {@link org.opengis.referencing.IdentifiedObject} instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.referencing.cs.CoordinateSystems}</td>
+ *     <td>Parses axis names and creates transforms between {@link org.opengis.referencing.cs.CoordinateSystem}
+ *         instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.parameter.Parameters}</td>
+ *     <td>Creates, searches or modifies {@link org.opengis.parameter.ParameterValue} instances
+ *         in a group of parameters.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
  *     <td>Methods working on {@link Appendable} instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.storage.DataStores}</td>
+ *     <td>Read or write geospatial data in various backends.</td></tr>
  * <tr><td>{@link org.apache.sis.xml.XML}</td>
  *     <td>Marshal or unmarshal ISO 19115 objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.xml.Namespaces}</td>
+ *     <td>{@code String} constants for commonly used namespaces.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Loggings and exceptions</th></tr>
  * <tr><td>{@link ArgumentChecks}</td>
@@ -70,11 +95,11 @@ package org.apache.sis.util;
  *
  * <tr><th colspan="2" class="hsep">Factories</th></tr>
  * <tr><td>{@link ObjectConverters}</td>
- *     <td>Creates {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
+ *     <td>Create {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
  * </table>
  *
- * @author Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3
  * @version 0.3
  * @module
  */

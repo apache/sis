@@ -30,6 +30,7 @@ import java.util.EnumSet;
  * other properties:</p>
  *
  * <table class="sis">
+ *   <caption>Inferred function properties</caption>
  *   <tr><th>Property</th> <th>How to build</th></tr>
  *   <tr><td>{@linkplain #isBijective(Set) Bijective}</td>
  *       <td><code>EnumSet.of({@linkplain #INJECTIVE}, {@linkplain #SURJECTIVE})</code></td>
@@ -78,10 +79,9 @@ public enum FunctionProperty {
      * A function is <cite>injective</cite> if each value of <var>T</var> is either unrelated
      * to <var>S</var>, or is the output of exactly one value of <var>S</var>.
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * A {@code ObjectConverter} doing conversions from {@code Integer} to {@code String} is an
-     * injective function, because no pair of integers can produce the same string.
-     * </font></blockquote>
+     * <div class="note"><b>Example:</b>
+     * An {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link Integer} to {@link String}
+     * is an injective function, because no pair of integers can produce the same string.</div>
      *
      * A function which is both injective and {@linkplain #SURJECTIVE surjective} is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
@@ -96,12 +96,10 @@ public enum FunctionProperty {
      * A function is <cite>surjective</cite> if any value of <var>T</var> can be created
      * from one or many values of <var>S</var>.
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * A {@code ObjectConverter} doing conversions from {@link String} to {@link Integer} is a
-     * surjective function, since there is always at least one string for each integer value.
-     * Note that such function can not be {@linkplain #INJECTIVE injective} since many different
-     * strings can represent the same integer value.
-     * </font></blockquote>
+     * <div class="note"><b>Example:</b>
+     * An {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link String} to {@link Integer}
+     * is a surjective function, since there is always at least one string for each integer value. Note that such
+     * function can not be injective since many different strings can represent the same integer value.</div>
      *
      * A function which is both {@linkplain #INJECTIVE injective} and surjective is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
@@ -145,11 +143,11 @@ public enum FunctionProperty {
     ORDER_REVERSING;
 
     /**
-     * Bijective functions shall contains all the value in this set.
+     * Bijective functions shall contain all the value in this set.
      *
      * @see #isBijective(Set)
      */
-    private static EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
+    private static final EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
 
     /**
      * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
@@ -159,7 +157,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #INJECTIVE}</li>
      *   <li>{@link #SURJECTIVE}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for bijectivity.
      * @return {@code true} if a function having the given set of properties is bijective.
@@ -176,7 +174,7 @@ public enum FunctionProperty {
      * <ul>
      *   <li>{@link #ORDER_PRESERVING}</li>
      *   <li>{@link #ORDER_REVERSING}</li>
-     * </u>
+     * </ul>
      *
      * @param  properties The properties of the function to test for monotonicity.
      * @return {@code true} if a function having the given set of properties is monotonic.
