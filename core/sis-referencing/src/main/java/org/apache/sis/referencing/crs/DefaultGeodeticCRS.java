@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -175,16 +174,10 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
-        final Unit<?> unit    = getUnit();
-        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
-        formatTo(isWKT1, getDatum(), formatter);
+        final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
+        formatDatum(formatter, getDatum(), isWKT1);
         CoordinateSystem cs = getCoordinateSystem();
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
-            formatter.append(unit);
-            if (unit == null) {
-                formatter.setInvalidWKT(this, null);
-            }
+        if (isWKT1) {
             /*
              * Replaces the given coordinate system by an instance conform to the conventions used in WKT 1.
              * Note that we can not delegate this task to subclasses, because XML unmarshalling of a geodetic
@@ -198,23 +191,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
                     formatter.setInvalidWKT(cs, null);
                 }
             }
-        } else {
-            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
-            formatter.indent(+1);
         }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(toFormattable(cs.getAxis(i)));
-        }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
-            formatter.newLine();
-            formatter.append(unit);
-            formatter.indent(-1);
-        }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        formatCS(formatter, cs, isWKT1);
         if (!isWKT1) {
             return "GeodeticCRS";
         }
@@ -232,11 +210,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * Formats the given geodetic datum to the given formatter. This is part of the WKT formatting
      * for a geodetic CRS, either standalone or as part of a projected CRS.
      *
-     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
-     * @param datum     The datum to format.
      * @param formatter Where to format the datum.
+     * @param datum     The datum to format.
+     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     *
+     * @see #formatCS(Formatter, CoordinateSystem, boolean)
      */
-    static void formatTo(final boolean isWKT1, final GeodeticDatum datum, final Formatter formatter) {
+    static void formatDatum(final Formatter formatter, final GeodeticDatum datum, final boolean isWKT1) {
         formatter.newLine();
         formatter.append(toFormattable(datum));
         formatter.newLine();

@@ -393,14 +393,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the unit used for all axis, or {@code null} if not all axis uses the same unit.
-     * This method is often used for formatting according  Well Known Text (WKT) version 1.
-     */
-    final Unit<?> getUnit() {
-        return ReferencingUtilities.getUnit(coordinateSystem);
-    }
-
-    /**
      * Compares this coordinate reference system with the specified object for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are
@@ -467,20 +459,30 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     protected String formatTo(final Formatter formatter) {
         final String  keyword = super.formatTo(formatter);
-        final CoordinateSystem cs = getCoordinateSystem();
-        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
-        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
-        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();
+        formatCS(formatter, getCoordinateSystem(), formatter.getConvention().majorVersion() == 1);
+        return keyword;
+    }
+
+    /**
+     * Formats the given coordinate system.
+     *
+     * @param formatter The formatter where to append the coordinate system.
+     * @param cs        The coordinate system to append.
+     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     */
+    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final boolean isWKT1) {
+        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
+        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
             if (unit == null) {
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
@@ -496,6 +498,5 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return keyword;
     }
 }
