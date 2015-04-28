@@ -16,16 +16,13 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Collections;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.GeodeticObjectBuilder;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -50,21 +47,17 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
      * Creates the "NTF (Paris) / Lambert zone II" CRS.
      *
      * @see HardCodedCRS#NTF
-     *
-     * @todo Move this kind of code in a helper class.
      */
-    private static DefaultProjectedCRS create() throws FactoryException {
-        final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        final ParameterValueGroup p = mtFactory.getDefaultParameters("Lambert Conic Conformal (1SP)");
-        p.parameter("Latitude of natural origin").setValue(52, NonSI.GRADE);
-        p.parameter("Scale factor at natural origin").setValue(0.99987742);
-        p.parameter("False easting").setValue(600000, SI.METRE);
-        p.parameter("False northing").setValue(2200000, SI.METRE);
-        final MathTransform mt = mtFactory.createBaseToDerived(HardCodedCRS.NTF, p, HardCodedCS.PROJECTED);
-        final DefaultConversion conversion = new DefaultConversion(Collections.singletonMap(
-                DefaultConversion.NAME_KEY, "Lambert zone II"), mtFactory.getLastMethodUsed(), mt);
-        return new DefaultProjectedCRS(Collections.singletonMap(DefaultConversion.NAME_KEY,
-                "NTF (Paris) / Lambert zone II"), conversion, HardCodedCRS.NTF, HardCodedCS.PROJECTED);
+    private static ProjectedCRS create() throws FactoryException {
+        return new GeodeticObjectBuilder()
+                .setConversionMethod("Lambert Conic Conformal (1SP)")
+                .setConversionName("Lambert zone II")
+                .setParameter("Latitude of natural origin",             52, NonSI.GRADE)
+                .setParameter("Scale factor at natural origin", 0.99987742, Unit.ONE)
+                .setParameter("False easting",                      600000, SI.METRE)
+                .setParameter("False northing",                    2200000, SI.METRE)
+                .addName("NTF (Paris) / Lambert zone II")
+                .createProjectedCRS(HardCodedCRS.NTF, HardCodedCS.PROJECTED);
     }
 
     /**
@@ -74,7 +67,7 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
      */
     @Test
     public void testWKT1() throws FactoryException {
-        final DefaultProjectedCRS crs = create();
+        final ProjectedCRS crs = create();
         assertWktEquals(Convention.WKT1,
                 "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  GEOGCS[“NTF (Paris)”,\n" +
