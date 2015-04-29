@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
@@ -29,6 +28,7 @@ import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.util.NameFactory;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
@@ -86,7 +86,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractFeature
@@ -285,12 +285,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
         scanPropertiesFrom(this);
-        byName        = CollectionsExt.compact(byName);
-        assignableTo  = CollectionsExt.unmodifiableOrCopy(assignableTo);
-        allProperties = byName.values();
-        if (byName instanceof HashMap<?,?>) {
-            allProperties = Collections.unmodifiableCollection(allProperties);
-        }
+        allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(new PropertyType[byName.size()]));
         /*
          * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
          * to create the list of all properties, because some properties may be overridden and we want to take
@@ -320,7 +315,42 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 }
             }
         }
-        indices = CollectionsExt.compact(indices);
+        /*
+         * If some properties use long name of the form "head:tip", creates short aliases containing only the "tip"
+         * name for convenience, provided that it does not create ambiguity. If an short alias could map to two or
+         * more properties, then this alias is not added.
+         *
+         * In the 'aliases' map below, null values will be assigned to ambiguous short names.
+         */
+        final Map<String, PropertyType> aliases = new LinkedHashMap<>();
+        for (final PropertyType property : allProperties) {
+            final GenericName name = property.getName();
+            final LocalName tip = name.tip();
+            if (tip != name) {  // Slight optimization for a common case.
+                final String key = tip.toString();
+                if (key != null && !key.isEmpty() && !key.equals(name.toString())) {
+                    aliases.put(key, aliases.containsKey(key) ? null : property);
+                }
+            }
+        }
+        for (final Map.Entry<String,PropertyType> entry : aliases.entrySet()) {
+            final PropertyType property = entry.getValue();
+            if (property != null) {
+                final String tip = entry.getKey();
+                if (byName.putIfAbsent(tip, property) == null) {
+                    // This block is skipped if there is properties named "tip" and "head:tip".
+                    if (indices.put(tip, indices.get(property.getName().toString())) != null) {
+                        throw new AssertionError(tip);  // Should never happen.
+                    }
+                }
+            }
+        }
+        /*
+         * Trim the collections. Especially useful when the collections have less that 2 elements.
+         */
+        byName       = CollectionsExt.compact(byName);
+        indices      = CollectionsExt.compact(indices);
+        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
         /*
          * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
          * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance
