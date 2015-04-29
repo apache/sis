@@ -62,7 +62,7 @@ public class DefaultOperation extends AbstractOperation {
      * @return {@inheritDoc}
      */
     @Override
-    public Property invoke(Feature feature, ParameterValueGroup parameters) {
+    public Property apply(Feature feature, ParameterValueGroup parameters) {
         throw new UnsupportedOperationException();
     }
 }

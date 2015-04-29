@@ -57,7 +57,7 @@ final strictfp class NoOperation extends AbstractOperation {
      * @return {@code null}
      */
     @Override
-    public Property invoke(Feature feature, ParameterValueGroup parameters) {
+    public Property apply(Feature feature, ParameterValueGroup parameters) {
         return null;
     }
 }

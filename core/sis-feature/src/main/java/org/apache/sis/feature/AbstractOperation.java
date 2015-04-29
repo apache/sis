@@ -27,6 +27,7 @@ import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import java.util.Objects;
+import java.util.function.BiFunction;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
@@ -53,7 +54,9 @@ import org.opengis.feature.Property;
  * @version 0.6
  * @module
  */
-public abstract class AbstractOperation extends AbstractIdentifiedType implements Operation {
+public abstract class AbstractOperation extends AbstractIdentifiedType implements Operation,
+        BiFunction<Feature, ParameterValueGroup, Property>
+{
     /**
      * For cross-version compatibility.
      */
@@ -123,14 +126,15 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      *
      * <div class="note"><b>Analogy:</b>
      * if we compare {@code Operation} to {@link Method} in the Java language, then this method is equivalent
-     * to {@link Method#invoke(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
+     * to {@link Method#apply(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
      * in the Java language.</div>
      *
      * @param  feature    The feature on which to execute the operation.
      * @param  parameters The parameters to use for executing the operation.
      * @return The operation result, or {@code null} if this operation does not produce any result.
      */
-    public abstract Property invoke(Feature feature, ParameterValueGroup parameters);
+    @Override
+    public abstract Property apply(Feature feature, ParameterValueGroup parameters);
 
     /**
      * Returns a hash code value for this operation.
