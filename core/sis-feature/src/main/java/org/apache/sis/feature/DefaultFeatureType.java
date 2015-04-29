@@ -65,7 +65,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
  *   <li>{@linkplain DefaultAssociationRole  Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation        Operations}</li>
+ *   <li>{@linkplain AbstractOperation       Operations}</li>
  * </ul>
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.

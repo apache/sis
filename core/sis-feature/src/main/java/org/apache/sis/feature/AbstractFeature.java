@@ -46,7 +46,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * <ul>
  *   <li>{@linkplain AbstractAttribute   Attributes}</li>
  *   <li>{@linkplain AbstractAssociation Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation    Operations}</li>
+ *   <li>{@linkplain AbstractOperation   Operations}</li>
  * </ul>
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.

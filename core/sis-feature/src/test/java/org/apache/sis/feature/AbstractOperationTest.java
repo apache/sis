@@ -27,24 +27,24 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultOperationTest}.
+ * Tests {@link AbstractOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
- * @version 0.5
+ * @since   0.6
+ * @version 0.6
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class DefaultOperationTest extends TestCase {
+public final strictfp class AbstractOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.
      */
-    static DefaultOperation foundCity() {
+    static AbstractOperation foundCity() {
         final ParameterBuilder builder = new ParameterBuilder();
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("founder").create(String.class, null)
         };
-        return new DefaultOperation(singletonMap(DefaultOperation.NAME_KEY, "found city"),
+        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "found city"),
                 builder.addName("found city").createGroup(parameters),
                 DefaultAttributeTypeTest.city());
     }

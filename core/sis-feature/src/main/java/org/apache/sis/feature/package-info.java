@@ -24,7 +24,7 @@
  *   <li><b>{@linkplain org.apache.sis.feature.DefaultFeatureType Feature types}</b><br>
  *       Define the <em>structure</em> of real-world representations. A feature type lists the
  *       {@linkplain org.apache.sis.feature.DefaultAttributeType attributes},
- *       {@linkplain org.apache.sis.feature.DefaultOperation operations} or
+ *       {@linkplain org.apache.sis.feature.AbstractOperation operations} or
  *       {@linkplain org.apache.sis.feature.DefaultAssociationRole associations to other features}
  *       (collectively called “{@linkplain org.apache.sis.feature.DefaultFeatureType#getProperties(boolean) properties}”
  *       or “characteristics”) that a feature can have.
@@ -70,7 +70,7 @@
  * {@code  └─}                                                                Property type<br>
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAttributeType    Attribute type}<br>
  * {@code      ├─} {@linkplain org.apache.sis.feature.DefaultAssociationRole  Feature association role}<br>
- * {@code      └─} {@linkplain org.apache.sis.feature.DefaultOperation        Operation}<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.AbstractOperation       Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *             {@linkplain org.apache.sis.feature.AbstractFeature     Feature}             (<cite>sparse</cite> or <cite>dense</cite>)<br>
  *                                                                    Property<br>
