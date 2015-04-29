@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
@@ -186,6 +187,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
              * except the aliases and identifiers. The name defaults to the ProjectedCRS name,
              * but can optionally be different.
              */
+            properties.put(OperationMethods.PARAMETERS_KEY, parameters);
             final Object name = (conversionName != null) ? properties.put(Conversion.NAME_KEY, conversionName) : null;
             final Object alias = properties.put(Conversion.ALIAS_KEY, null);
             final Object identifier = properties.put(Conversion.IDENTIFIERS_KEY, null);
@@ -201,6 +203,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             return new DefaultProjectedCRS(properties, conversion, baseCRS, derivedCS);
         } finally {
             onCreate(true);
+            properties.remove(OperationMethods.PARAMETERS_KEY);
         }
     }
 }
