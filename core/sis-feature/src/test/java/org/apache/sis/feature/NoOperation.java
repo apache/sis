@@ -27,20 +27,16 @@ import org.opengis.feature.Property;
 
 
 /**
- * @deprecated Renamed {@link AbstractOperation}.
+ * An operation that does nothing.
+ * This is used for testing purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.5
+ * @since   0.6
  * @version 0.6
  * @module
  */
-@Deprecated
-public class DefaultOperation extends AbstractOperation {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 6300319108116735764L;
-
+@SuppressWarnings("serial")
+final strictfp class NoOperation extends AbstractOperation {
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
@@ -49,20 +45,19 @@ public class DefaultOperation extends AbstractOperation {
      * @param parameters     A description of the input parameters.
      * @param result         The type of the result, or {@code null} if none.
      */
-    public DefaultOperation(final Map<String,?> identification,
+    NoOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final IdentifiedType result)
     {
         super(identification, parameters, result);
     }
 
     /**
-     * Subclasses should override.
-     * Default implementation throws {@link UnsupportedOperationException}.
+     * Do nothing.
      *
-     * @return {@inheritDoc}
+     * @return {@code null}
      */
     @Override
     public Property invoke(Feature feature, ParameterValueGroup parameters) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }
