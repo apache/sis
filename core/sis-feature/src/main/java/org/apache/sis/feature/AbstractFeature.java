@@ -223,7 +223,11 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Executes the parameterless operation of the given name and returns the value of its result.
      */
     final Object getOperationValue(final String name) {
-        final Property result = getOperationResult(name);
+        final Operation operation = (Operation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            return getPropertyValue(((LinkOperation) operation).propertyName);
+        }
+        final Property result = operation.apply(this, null);
         if (result instanceof Attribute<?>) {
             return getAttributeValue((Attribute<?>) result);
         } else if (result instanceof FeatureAssociation) {
@@ -237,11 +241,16 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Executes the parameterless operation of the given name and sets the value of its result.
      */
     final void setOperationValue(final String name, final Object value) {
-        final Property result = getOperationResult(name);
-        if (result != null) {
-            setPropertyValue(result, value);
+        final Operation operation = (Operation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            setPropertyValue(((LinkOperation) operation).propertyName, value);
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, name));
+            final Property result = operation.apply(this, null);
+            if (result != null) {
+                setPropertyValue(result, value);
+            } else {
+                throw new IllegalStateException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, name));
+            }
         }
     }
 
