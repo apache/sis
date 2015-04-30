@@ -180,11 +180,12 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     @Override
     protected String formatTo(final Formatter formatter) {
         InternationalString text = null;
+        final Citation citation = getCitation();    // Gives to users a chance to override properties.
         if (citation != null) {
             text = citation.getTitle();
         }
         if (text == null) {
-            text = formula;
+            text = getFormula();
         }
         if (text != null) {
             formatter.append(text.toString(formatter.getLocale()), ElementKind.REMARKS);

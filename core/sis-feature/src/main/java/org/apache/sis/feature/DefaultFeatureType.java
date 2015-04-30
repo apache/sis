@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
@@ -29,8 +28,10 @@ import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.util.NameFactory;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -39,11 +40,13 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.JDK8;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -65,7 +68,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * <ul>
  *   <li>{@linkplain DefaultAttributeType    Attributes}</li>
  *   <li>{@linkplain DefaultAssociationRole  Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation        Operations}</li>
+ *   <li>{@linkplain AbstractOperation       Operations}</li>
  * </ul>
  *
  * In addition, a feature type can inherit the properties of one or more other feature types.
@@ -86,7 +89,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractFeature
@@ -177,11 +180,18 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Indices of properties in an array of properties similar to {@link #properties},
      * but excluding operations. This map includes the properties from the super-types.
+     * Parameterless operations (to be handled in a special way) are identified by index -1.
      *
      * The size of this map may be smaller than the {@link #byName} size.
      * This map shall not be modified after construction.
      */
     private transient Map<String, Integer> indices;
+
+    /**
+     * Value in {@link #indices} map for parameterless operations. Those operations are not stored
+     * in feature instances, but can be handled as virtual attributes computed on-the-fly.
+     */
+    static final Integer OPERATION_INDEX = -1;
 
     /**
      * Constructs a feature type from the given properties. The identification map is given unchanged to
@@ -285,18 +295,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
         scanPropertiesFrom(this);
-        byName        = CollectionsExt.compact(byName);
-        assignableTo  = CollectionsExt.unmodifiableOrCopy(assignableTo);
-        allProperties = byName.values();
-        if (byName instanceof HashMap<?,?>) {
-            allProperties = Collections.unmodifiableCollection(allProperties);
-        }
+        allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(new PropertyType[byName.size()]));
         /*
          * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
          * to create the list of all properties, because some properties may be overridden and we want to take
          * in account only the most specific ones.
          */
         isSimple = true;
+        int index = 0;
         int mandatory = 0; // Count of mandatory properties.
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
@@ -310,17 +316,57 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 maximumOccurs = ((FeatureAssociationRole) property).getMaximumOccurs();
                 isSimple = false;
             } else {
+                if (isParameterlessOperation(property)) {
+                    indices.put(entry.getKey(), OPERATION_INDEX);
+                }
                 continue; // For feature operations, maximumOccurs is implicitly 0.
             }
             if (maximumOccurs != 0) {
                 isSimple &= (maximumOccurs == 1);
-                indices.put(entry.getKey(), indices.size());
+                indices.put(entry.getKey(), index++);
                 if (minimumOccurs != 0) {
                     mandatory++;
                 }
             }
         }
-        indices = CollectionsExt.compact(indices);
+        /*
+         * If some properties use long name of the form "head:tip", creates short aliases containing only the "tip"
+         * name for convenience, provided that it does not create ambiguity. If an short alias could map to two or
+         * more properties, then this alias is not added.
+         *
+         * In the 'aliases' map below, null values will be assigned to ambiguous short names.
+         */
+        final Map<String, PropertyType> aliases = new LinkedHashMap<>();
+        for (final PropertyType property : allProperties) {
+            final GenericName name = property.getName();
+            final LocalName tip = name.tip();
+            if (tip != name) {  // Slight optimization for a common case.
+                final String key = tip.toString();
+                if (key != null && !key.isEmpty() && !key.equals(name.toString())) {
+                    aliases.put(key, aliases.containsKey(key) ? null : property);
+                }
+            }
+        }
+        for (final Map.Entry<String,PropertyType> entry : aliases.entrySet()) {
+            final PropertyType property = entry.getValue();
+            if (property != null) {
+                final String tip = entry.getKey();
+                if (JDK8.putIfAbsent(byName, tip, property) == null) {
+                    // This block is skipped if there is properties named "tip" and "head:tip".
+                    // The 'indices' value may be null if the property is an operation.
+                    final Integer value = indices.get(property.getName().toString());
+                    if (value != null && indices.put(tip, value) != null) {
+                        throw new AssertionError(tip);  // Should never happen.
+                    }
+                }
+            }
+        }
+        /*
+         * Trim the collections. Especially useful when the collections have less that 2 elements.
+         */
+        byName       = CollectionsExt.compact(byName);
+        indices      = CollectionsExt.compact(indices);
+        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
         /*
          * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
          * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance
@@ -458,6 +504,20 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             }
         }
         return resolved;
+    }
+
+    /**
+     * Returns {@code true} if the given property type stands for a parameterless operation which return a result.
+     *
+     * @see #OPERATION_INDEX
+     */
+    private static boolean isParameterlessOperation(final PropertyType type) {
+        if (type instanceof Operation) {
+            final ParameterDescriptorGroup parameters = ((Operation) type).getParameters();
+            return ((parameters == null) || parameters.descriptors().isEmpty())
+                   && ((Operation) type).getResult() != null;
+        }
+        return false;
     }
 
 
