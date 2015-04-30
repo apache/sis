@@ -424,7 +424,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
         for (final CoordinateReferenceSystem element :
-                (isWKT1 || convention == Convention.INTERNAL) ? components : singles)
+                (isWKT1 || convention == Convention.INTERNAL) ? getComponents() : getSingleComponents())
         {
             formatter.newLine();
             formatter.append(toFormattable(element));

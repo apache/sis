@@ -349,10 +349,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (targetUnit == null) {
             targetUnit = NonSI.DEGREE_ANGLE;
         }
-        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : greenwichLongitude);
+        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
         if (isWKT1) {
             return "PrimeM";
         }
+        final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
         if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
             formatter.append(angularUnit);
         }

@@ -58,6 +58,9 @@ public final strictfp class FormatterTest extends TestCase {
     @Test
     public void testQuote() {
         assertWktEquals(Convention.WKT2,
+                "“A \"quote\" to replace”",             // Expect replacement of non-latin characters.
+                 "A “quote” to replace");
+        assertWktEquals(Convention.INTERNAL,
                 "“A “quote”” to double”",               // Expect doubling quotes.
                  "A “quote” to double");
         assertWktEquals(Convention.WKT2,

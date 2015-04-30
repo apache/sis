@@ -541,19 +541,30 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     @Override
     protected String formatTo(final Formatter formatter) {
         String keyword = null;
+        /*
+         * The code, codeSpace, authority and version local variables in this method usually have the exact same
+         * value than the fields of the same name in this class.  But we get those values by invoking the public
+         * methods in order to give to users a chance to override those properties.  The intend is also to use a
+         * consistent approach for all 'formatTo' implementations, since some other classes have no choice other
+         * than using the public methods.
+         */
+        final String code = getCode();
         if (code != null) {
+            final String   codeSpace = getCodeSpace();
+            final Citation authority = getAuthority();
             final String cs = (codeSpace != null) ? codeSpace :
                     org.apache.sis.internal.util.Citations.getIdentifier(authority, true);
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
                     keyword = "Authority";
-                    formatter.append(cs, ElementKind.IDENTIFIER);
+                    formatter.append(cs,   ElementKind.IDENTIFIER);
                     formatter.append(code, ElementKind.IDENTIFIER);
                 } else {
                     keyword = "Id";
                     formatter.append(cs, ElementKind.IDENTIFIER);
                     appendCode(formatter, code);
+                    final String version = getVersion();
                     if (version != null) {
                         appendCode(formatter, version);
                     }

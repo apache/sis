@@ -226,14 +226,14 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * Used by JAXB only (invoked by reflection).
      */
     private void setAffineCS(final AffineCS cs) {
-        super.setCoordinateSystem("affineCS", cs);
+        setCoordinateSystem("affineCS", cs);
     }
 
     /**
      * Used by JAXB only (invoked by reflection).
      */
     private void setCartesianCS(final CartesianCS cs) {
-        super.setCoordinateSystem("cartesianCS", cs);
+        setCoordinateSystem("cartesianCS", cs);
     }
 
     /**

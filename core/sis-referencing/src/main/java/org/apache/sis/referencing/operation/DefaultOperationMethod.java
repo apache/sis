@@ -32,11 +32,11 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -600,7 +600,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                      * and parameters.
                      */
                     final OperationMethod that = (OperationMethod) object;
-                    final Boolean match = OperationMethods.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
+                    final Boolean match = Citations.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
                     if (match != null) {
                         if (!match) {
                             return false;

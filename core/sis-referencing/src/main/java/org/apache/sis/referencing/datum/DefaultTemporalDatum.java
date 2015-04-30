@@ -289,7 +289,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        formatter.append(new Origin(MetadataUtilities.toDate(origin)));
+        formatter.append(new Origin(getOrigin()));
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }

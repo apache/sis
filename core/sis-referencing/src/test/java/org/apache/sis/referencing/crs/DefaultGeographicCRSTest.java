@@ -162,26 +162,39 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Longitude (λ)”, east],\n" +
-                "    Axis[“Latitude (φ)”, north],\n" +
+                "    Axis[“Longitude (L)”, east, Order[1]],\n" +
+                "    Axis[“Latitude (B)”, north, Order[2]],\n" +
                 "    AngleUnit[“degree”, 0.017453292519943295],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);
+    }
 
+    /**
+     * Tests WKT 2 simplified formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "    PrimeMeridian[“Greenwich”, 0.0],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +
-                "    Axis[“Longitude (λ)”, east],\n" +
-                "    Axis[“Latitude (φ)”, north],\n" +
+                "    Axis[“Longitude (L)”, east],\n" +
+                "    Axis[“Latitude (B)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);
+    }
 
+    /**
+     * Tests WKT 2 internal formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Internal() {
         assertWktEquals(Convention.INTERNAL,
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +

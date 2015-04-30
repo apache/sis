@@ -761,13 +761,15 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.majorVersion() == 1;
-        double length = semiMajorAxis;
+        final Convention   convention = formatter.getConvention();
+        final boolean      isWKT1     = convention.majorVersion() == 1;
+        final Unit<Length> unit       = getAxisUnit();  // Gives to users a chance to override properties.
+        double length = getSemiMajorAxis();
         if (isWKT1) {
             length = unit.getConverterTo(SI.METRE).convert(length);
         }
         formatter.append(length);
+        final double inverseFlattening = getInverseFlattening();  // Gives to users a chance to override properties.
         formatter.append(isInfinite(inverseFlattening) ? 0 : inverseFlattening);
         if (isWKT1) {
             return "Spheroid";
