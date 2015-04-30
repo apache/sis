@@ -139,13 +139,15 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
     /**
      * Sets the attribute values. All previous values are replaced by the given collection.
      *
-     * @param values The new values.
+     * @param newValues The new values.
      */
     @Override
-    public void setValues(final Collection<? extends V> values) {
-        ArgumentChecks.ensureNonNull("values", values);
-        this.values.clear();
-        this.values.addAll(values);
+    public void setValues(final Collection<? extends V> newValues) {
+        if (newValues != values) {
+            ArgumentChecks.ensureNonNull("values", newValues);  // The parameter name in public API is "values".
+            values.clear();
+            values.addAll(newValues);
+        }
     }
 
     /**

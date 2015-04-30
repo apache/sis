@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -27,7 +28,7 @@ import org.opengis.feature.Property;
 
 
 /**
- * @deprecated Renamed {@link AbstractOperation}.
+ * @deprecated Replaced by {@link AbstractOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -42,6 +43,16 @@ public class DefaultOperation extends AbstractOperation {
     private static final long serialVersionUID = 6300319108116735764L;
 
     /**
+     * A description of the input parameters.
+     */
+    private final ParameterDescriptorGroup parameters;
+
+    /**
+     * The type of the result, or {@code null} if none.
+     */
+    private final IdentifiedType result;
+
+    /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
@@ -52,7 +63,30 @@ public class DefaultOperation extends AbstractOperation {
     public DefaultOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final IdentifiedType result)
     {
-        super(identification, parameters, result);
+        super(identification);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        this.parameters = parameters;
+        this.result     = result;
+    }
+
+    /**
+     * Returns a description of the input parameters.
+     *
+     * @return Description of the input parameters.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameters() {
+        return parameters;
+    }
+
+    /**
+     * Returns the expected result type, or {@code null} if none.
+     *
+     * @return The type of the result, or {@code null} if none.
+     */
+    @Override
+    public IdentifiedType getResult() {
+        return result;
     }
 
     /**

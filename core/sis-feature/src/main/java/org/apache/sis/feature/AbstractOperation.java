@@ -22,13 +22,14 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import java.util.Objects;
 import java.util.function.BiFunction;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
@@ -46,6 +47,9 @@ import org.opengis.feature.Property;
  * <div class="note"><b>Example:</b> a mutator operation may raise the height of a dam. This changes
  * may affect other properties like the watercourse and the reservoir associated with the dam.</div>
  *
+ * The value is computed, or the operation is executed, by {@link #apply(Feature, ParameterValueGroup)}.
+ * If the value is modifiable, new value can be set by call to {@link Attribute#setValue(Object)}.
+ *
  * <div class="warning"><b>Warning:</b> this class is experimental and may change after we gained more
  * experience on this aspect of ISO 19109.</div>
  *
@@ -60,33 +64,16 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6300319108116735764L;
-
-    /**
-     * A description of the input parameters.
-     */
-    private final ParameterDescriptorGroup parameters;
-
-    /**
-     * The type of the result, or {@code null} if none.
-     */
-    private final IdentifiedType result;
+    private static final long serialVersionUID = -179930765502963170L;
 
     /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
      * @param identification The name and other information to be given to this operation.
-     * @param parameters     A description of the input parameters.
-     * @param result         The type of the result, or {@code null} if none.
      */
-    public AbstractOperation(final Map<String,?> identification,
-            final ParameterDescriptorGroup parameters, final IdentifiedType result)
-    {
+    public AbstractOperation(final Map<String,?> identification) {
         super(identification);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        this.parameters = parameters;
-        this.result     = result;
     }
 
     /**
@@ -95,9 +82,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @return Description of the input parameters.
      */
     @Override
-    public ParameterDescriptorGroup getParameters() {
-        return parameters;
-    }
+    public abstract ParameterDescriptorGroup getParameters();
 
     /**
      * Returns the expected result type, or {@code null} if none.
@@ -105,9 +90,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @return The type of the result, or {@code null} if none.
      */
     @Override
-    public IdentifiedType getResult() {
-        return result;
-    }
+    public abstract IdentifiedType getResult();
 
     /**
      * Executes the operation on the specified feature with the specified parameters.
@@ -127,10 +110,13 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * <div class="note"><b>Analogy:</b>
      * if we compare {@code Operation} to {@link Method} in the Java language, then this method is equivalent
      * to {@link Method#apply(Object, Object...)}. The {@code Feature} argument is equivalent to {@code this}
-     * in the Java language.</div>
+     * in the Java language, and may be {@code null} if the operation does not need a feature instance
+     * (like static methods in the Java language).</div>
      *
      * @param  feature    The feature on which to execute the operation.
+     *                    Can be {@code null} if the operation does not need feature instance.
      * @param  parameters The parameters to use for executing the operation.
+     *                    Can be {@code null} if the operation does not take any parameters.
      * @return The operation result, or {@code null} if this operation does not produce any result.
      */
     @Override
@@ -138,16 +124,20 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Returns a hash code value for this operation.
+     * The default implementation computes a hash code from the {@linkplain #getParameters() parameters}
+     * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + parameters.hashCode() + Objects.hashCode(result);
+        return super.hashCode() + Objects.hashCode(getParameters()) + Objects.hashCode(getResult());
     }
 
     /**
      * Compares this operation with the given object for equality.
+     * The default implementation compares the {@linkplain #getParameters() parameters}
+     * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}
      */
@@ -158,8 +148,8 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
         }
         if (super.equals(obj)) {
             final AbstractOperation that = (AbstractOperation) obj;
-            return parameters.equals(that.parameters) &&
-                   Objects.equals(result, that.result);
+            return Objects.equals(getParameters(), that.getParameters()) &&
+                   Objects.equals(getResult(),     that.getResult());
         }
         return false;
     }
@@ -183,13 +173,14 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
             buffer.append('”');
         }
         String separator = " (";
-        for (final GeneralParameterDescriptor param : parameters.descriptors()) {
+        for (final GeneralParameterDescriptor param : getParameters().descriptors()) {
             buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
             separator = ", ";
         }
         if (separator == ", ") { // Identity comparaison is okay here.
             buffer.append(')');
         }
+        final IdentifiedType result = getResult();
         if (result != null) {
             buffer.append(" : ").append(result.getName());
         }
