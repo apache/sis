@@ -38,6 +38,16 @@ import org.opengis.feature.Property;
 @SuppressWarnings("serial")
 final strictfp class NoOperation extends AbstractOperation {
     /**
+     * A description of the input parameters.
+     */
+    private final ParameterDescriptorGroup parameters;
+
+    /**
+     * The type of the result, or {@code null} if none.
+     */
+    private final IdentifiedType result;
+
+    /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
@@ -48,7 +58,29 @@ final strictfp class NoOperation extends AbstractOperation {
     NoOperation(final Map<String,?> identification,
             final ParameterDescriptorGroup parameters, final IdentifiedType result)
     {
-        super(identification, parameters, result);
+        super(identification);
+        this.parameters = parameters;
+        this.result     = result;
+    }
+
+    /**
+     * Returns a description of the input parameters.
+     *
+     * @return Description of the input parameters.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameters() {
+        return parameters;
+    }
+
+    /**
+     * Returns the expected result type, or {@code null} if none.
+     *
+     * @return The type of the result, or {@code null} if none.
+     */
+    @Override
+    public IdentifiedType getResult() {
+        return result;
     }
 
     /**

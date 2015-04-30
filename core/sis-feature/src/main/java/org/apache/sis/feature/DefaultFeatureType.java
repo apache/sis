@@ -31,6 +31,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -44,6 +45,7 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -177,11 +179,18 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Indices of properties in an array of properties similar to {@link #properties},
      * but excluding operations. This map includes the properties from the super-types.
+     * Parameterless operations (to be handled in a special way) are identified by index -1.
      *
      * The size of this map may be smaller than the {@link #byName} size.
      * This map shall not be modified after construction.
      */
     private transient Map<String, Integer> indices;
+
+    /**
+     * Value in {@link #indices} map for parameterless operations. Those operations are not stored
+     * in feature instances, but can be handled as virtual attributes computed on-the-fly.
+     */
+    static final Integer OPERATION_INDEX = -1;
 
     /**
      * Constructs a feature type from the given properties. The identification map is given unchanged to
@@ -292,6 +301,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          * in account only the most specific ones.
          */
         isSimple = true;
+        int index = 0;
         int mandatory = 0; // Count of mandatory properties.
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
@@ -305,11 +315,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 maximumOccurs = ((FeatureAssociationRole) property).getMaximumOccurs();
                 isSimple = false;
             } else {
+                if (isParameterlessOperation(property)) {
+                    indices.put(entry.getKey(), OPERATION_INDEX);
+                }
                 continue; // For feature operations, maximumOccurs is implicitly 0.
             }
             if (maximumOccurs != 0) {
                 isSimple &= (maximumOccurs == 1);
-                indices.put(entry.getKey(), indices.size());
+                indices.put(entry.getKey(), index++);
                 if (minimumOccurs != 0) {
                     mandatory++;
                 }
@@ -339,7 +352,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 final String tip = entry.getKey();
                 if (byName.putIfAbsent(tip, property) == null) {
                     // This block is skipped if there is properties named "tip" and "head:tip".
-                    if (indices.put(tip, indices.get(property.getName().toString())) != null) {
+                    // The 'indices' value may be null if the property is an operation.
+                    final Integer value = indices.get(property.getName().toString());
+                    if (value != null && indices.put(tip, value) != null) {
                         throw new AssertionError(tip);  // Should never happen.
                     }
                 }
@@ -488,6 +503,20 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             }
         }
         return resolved;
+    }
+
+    /**
+     * Returns {@code true} if the given property type stands for a parameterless operation which return a result.
+     *
+     * @see #OPERATION_INDEX
+     */
+    private static boolean isParameterlessOperation(final PropertyType type) {
+        if (type instanceof Operation) {
+            final ParameterDescriptorGroup parameters = ((Operation) type).getParameters();
+            return ((parameters == null) || parameters.descriptors().isEmpty())
+                   && ((Operation) type).getResult() != null;
+        }
+        return false;
     }
 
 
