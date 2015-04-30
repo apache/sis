@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
@@ -45,6 +45,28 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -2554090935254116470L;
+
+    /**
+     * Presumed worst case error when no datum shift information was found.
+     * The highest value found in the EPSG database 6.7 is 999 metres (worst datum shift), so this error
+     * should be yet higher. I have seen 3 kilometres mentioned in some documentation somewhere.
+     *
+     * <p>If this value is modified, please update {@code getLinearAccuracy()} public javadoc accordingly.</p>
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
+     */
+    public static final double UNKNOWN_ACCURACY = 3000;
+
+    /**
+     * Default accuracy of datum shift, if not explicitly provided in the EPSG database.
+     * The 25 meters value is the next highest value (after 999 metres) found in the EPSG
+     * database version 6.7 for a significant number of transformations.
+     *
+     * <p>If this value is modified, please update {@code getLinearAccuracy()} public javadoc accordingly.</p>
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
+     */
+    public static final double DATUM_SHIFT_ACCURACY = 25;
 
     /**
      * Indicates that a {@linkplain org.opengis.referencing.operation.Transformation transformation}

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Comparator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -50,7 +51,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 final class SubTypes implements Comparator<Object> {
@@ -105,6 +106,12 @@ final class SubTypes implements Comparator<Object> {
      * @see AbstractCRS#castOrCopy(CoordinateReferenceSystem)
      */
     static AbstractCRS castOrCopy(final CoordinateReferenceSystem object) {
+        if (object instanceof DerivedCRS) {
+            return DefaultDerivedCRS.castOrCopy((DerivedCRS) object);
+        }
+        if (object instanceof ProjectedCRS) {
+            return DefaultProjectedCRS.castOrCopy((ProjectedCRS) object);
+        }
         if (object instanceof GeodeticCRS) {
             if (object instanceof GeographicCRS) {
                 return DefaultGeographicCRS.castOrCopy((GeographicCRS) object);

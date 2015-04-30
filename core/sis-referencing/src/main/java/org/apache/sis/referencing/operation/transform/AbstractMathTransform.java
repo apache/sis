@@ -83,6 +83,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @module
  *
  * @see DefaultMathTransformFactory
+ * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable

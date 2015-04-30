@@ -209,7 +209,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Used by JAXB only (invoked by reflection).
      */
     private void setCoordinateSystem(final VerticalCS cs) {
-        super.setCoordinateSystem("verticalCS", cs);
+        setCoordinateSystem("verticalCS", cs);
     }
 
     /**

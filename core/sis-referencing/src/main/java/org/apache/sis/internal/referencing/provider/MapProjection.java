@@ -132,6 +132,8 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  descriptor The descriptor that specify the parameter to validate.
      * @param  value The parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
+     *
+     * @see #createConstant(ParameterBuilder, Double)
      */
     public static void validate(final ParameterDescriptor<Double> descriptor, final double value)
             throws IllegalArgumentException
@@ -149,6 +151,8 @@ public abstract class MapProjection extends AbstractProvider {
              * because of the way the map projection is defined (see e.g. Mercator1SP.LATITUDE_OF_ORIGIN).
              * But in some cases, it would be possible to deal with non-zero values, even if in principle
              * we should not. In such case we let the caller decides.
+             *
+             * Above check should be revisited if createConstant(ParameterBuilder, Double) is modified.
              */
             if ((min instanceof Number && !(value >= ((Number) min).doubleValue())) ||
                 (max instanceof Number && !(value <= ((Number) max).doubleValue())))
