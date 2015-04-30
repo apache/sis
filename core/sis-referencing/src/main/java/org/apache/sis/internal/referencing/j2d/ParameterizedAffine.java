@@ -104,7 +104,8 @@ public final class ParameterizedAffine extends AffineTransform2D {
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return isDefinitive ? parameters.getDescriptor() : super.getParameterDescriptors();
+        return isDefinitive || Semaphores.query(Semaphores.PROJCS)  // See comment in getParameterValues().
+               ? parameters.getDescriptor() : super.getParameterDescriptors();
     }
 
     /**

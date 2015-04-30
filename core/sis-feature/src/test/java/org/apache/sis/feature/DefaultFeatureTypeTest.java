@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
+import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -39,7 +41,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -129,20 +131,25 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * {@link InternationalString} and an arbitrary amount of universities.
      */
     static DefaultFeatureType worldMetropolis() {
-        return worldMetropolis(metropolis(), universityCity(), InternationalString.class);
+        return worldMetropolis(metropolis(), universityCity(), CharacteristicTypeMapTest.temperature(), InternationalString.class);
     }
 
     /**
      * Creates a sub-type of the "metropolis" type with the "region" attribute overridden to the given type.
-     * The given type should be {@link InternationalString}, but we allow other type for testing argument checks.
+     * The given type should be {@link InternationalString}, but we allow other types for testing argument checks.
      */
     private static DefaultFeatureType worldMetropolis(final DefaultFeatureType metropolis,
-            final DefaultFeatureType universityCity, final Class<?> regionType)
+            final DefaultFeatureType universityCity, final DefaultAttributeType<?> temperature, final Class<?> regionType)
     {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
-                new DefaultFeatureType[] {metropolis, universityCity},
-                new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"),
-                        regionType, 1, 1, null));
+                new DefaultFeatureType[] {
+                    metropolis,
+                    universityCity
+                },
+                new DefaultAttributeType<?>[] {
+                    new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"), regionType, 1, 1, null),
+                    temperature
+                });
 
     }
 
@@ -306,8 +313,51 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             fail("Duplicated attribute names shall not be allowed.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("name")); // Property name.
-            assertTrue(message, message.contains("City")); // Feature name.
+            assertTrue(message, message.contains("name"));      // Property name.
+            assertTrue(message, message.contains("City"));      // Feature name.
+        }
+    }
+
+    /**
+     * Same than {@link #testNameCollision()}, but resolving collisions with usage of names
+     * of the form {@code "head:tip"}.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testNameCollision")
+    public void testQualifiedNames() {
+        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final DefaultAttributeType<String> city = new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns1", "name")),
+                String.class, 1, 1, null);
+        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns2", "name")),
+                Integer.class, 1, 1, null);
+        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
+                singletonMap(DefaultAttributeType.NAME_KEY, factory.createGenericName(null, "ns1", "population")),
+                Integer.class, 1, 1, null);
+        final DefaultFeatureType feature = new DefaultFeatureType(
+                singletonMap(DefaultAttributeType.NAME_KEY, "City"),
+                false, null, city, cityId, population);
+
+        final Iterator<PropertyType> it = feature.getProperties(false).iterator();
+        assertSame ("properties[0]", city,       it.next());
+        assertSame ("properties[1]", cityId,     it.next());
+        assertSame ("properties[2]", population, it.next());
+        assertFalse(it.hasNext());
+
+        assertSame("Shall get from fully qualified name.", city,       feature.getProperty("ns1:name"));
+        assertSame("Shall get from fully qualified name.", cityId,     feature.getProperty("ns2:name"));
+        assertSame("Shall get from fully qualified name.", population, feature.getProperty("ns1:population"));
+        assertSame("Shall get from short alias.",          population, feature.getProperty(    "population"));
+        try {
+            feature.getProperty("name");
+            fail("Expected no alias because of ambiguity.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("name"));      // Property name.
+            assertTrue(message, message.contains("City"));      // Feature name.
         }
     }
 
@@ -319,7 +369,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod({"testComplex", "testEquals"})
     public void testInheritance() {
-        final DefaultFeatureType city    = city(); // Tested by 'testSimple()'.
+        final DefaultFeatureType city    = city();      // Tested by 'testSimple()'.
         final DefaultFeatureType capital = capital();
         assertUnmodifiable(capital);
         assertEquals("name", "Capital", capital.getName().toString());
@@ -349,7 +399,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     @DependsOnMethod("testInheritance")
     public void testMultiInheritance() {
         final DefaultFeatureType metropolis   = metropolis();
-        final DefaultFeatureType capital      = capital(); // Tested by 'testComplex()'.
+        final DefaultFeatureType capital      = capital();      // Tested by 'testComplex()'.
         final DefaultFeatureType metroCapital = new DefaultFeatureType(
                 singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis and capital"), false,
                 new DefaultFeatureType[] {metropolis, capital},
@@ -390,25 +440,26 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     public void testPropertyOverride() {
         final DefaultFeatureType metropolis     = metropolis();
         final DefaultFeatureType universityCity = universityCity();
+        final DefaultAttributeType<?> temperature = CharacteristicTypeMapTest.temperature();
         try {
-            worldMetropolis(metropolis, universityCity, Integer.class);
+            worldMetropolis(metropolis, universityCity, temperature, Integer.class);
             fail("Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("region"));
             assertTrue(message, message.contains("Metropolis"));
         }
-        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, InternationalString.class);
+        final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, temperature, InternationalString.class);
         assertUnmodifiable(worldMetropolis);
         assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
         assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
         assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
         assertFalse      ("isSparse",        worldMetropolis.isSparse());
         assertFalse      ("isSimple",        worldMetropolis.isSimple()); // Because of the arbitrary amount of universities.
-        assertEquals     ("instanceSize", 5, worldMetropolis.indices().size());
+        assertEquals     ("instanceSize", 6, worldMetropolis.indices().size());
 
-        assertPropertiesEquals(worldMetropolis, false, "region");
-        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities");
+        assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
+        assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
         assertEquals("property(“region”).valueClass", InternationalString.class,
                 ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
 

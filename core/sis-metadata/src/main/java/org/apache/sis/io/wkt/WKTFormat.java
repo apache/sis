@@ -41,10 +41,11 @@ import org.apache.sis.util.resources.Errors;
  * {@code WKTFormat} objects allow the following configuration:
  *
  * <ul>
- *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
  *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
- *   <li>Whatever ANSI X3.64 colors are allowed or not (default is not).</li>
+ *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
+ *   <li>The {@linkplain CharEncoding character encoding} (i.e. replacements to use for Unicode characters).</li>
+ *   <li>Whether ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
  *
@@ -78,7 +79,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class WKTFormat extends CompoundFormat<Object> {
@@ -146,10 +147,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
-     * {@code true} for preserving non-ASCII characters. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@code REMARKS["…"]}.
+     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
+     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     *
+     * <p>A {@code null} value means to infer this property from the {@linkplain #convention}.</p>
      */
-    private boolean isNonAsciiAllowed;
+    private CharEncoding encoding;
 
     /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
@@ -224,6 +228,45 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns a mapper between Java character sequences and the characters to write in WKT.
+     * The intend is to specify how to write characters that are not allowed in WKT strings
+     * according ISO 19162 specification. Return values can be:
+     *
+     * <ul>
+     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *       in all WKT elements except {@code REMARKS["…"]}.</li>
+     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>Any other user-supplied mapping.</li>
+     * </ul>
+     *
+     * @return The mapper between Java character sequences and the characters to write in WKT.
+     *
+     * @since 0.6
+     */
+    public CharEncoding getCharEncoding() {
+        CharEncoding result = encoding;
+        if (result == null) {
+            result = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+        }
+        return result;
+    }
+
+    /**
+     * Sets the mapper between Java character sequences and the characters to write in WKT.
+     *
+     * <p>If this method is never invoked, or if this method is invoked with a {@code null} value,
+     * then the default mapper is {@link CharEncoding#DEFAULT} except for WKT formatted according
+     * the {@linkplain Convention#INTERNAL internal convention}.</p>
+     *
+     * @param encoding The new mapper to use, or {@code null} for restoring the default value.
+     *
+     * @since 0.6
+     */
+    public void setCharEncoding(final CharEncoding encoding) {
+        this.encoding = encoding;
+    }
+
+    /**
      * Returns whether non-ASCII characters are preserved. The default value is {@code false},
      * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
      *
@@ -233,9 +276,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return Whether non-ASCII characters are preserved.
      *
      * @since 0.5
+     *
+     * @deprecated Replaced by {@link #getCharEncoding()}.
      */
+    @Deprecated
     public boolean isNonAsciiAllowed() {
-        return isNonAsciiAllowed || (convention == Convention.INTERNAL);
+        return getCharEncoding() == CharEncoding.UNICODE;
     }
 
     /**
@@ -246,9 +292,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param allowed Whether non-ASCII characters shall be preserved.
      *
      * @since 0.5
+     *
+     * @deprecated Replaced by {@link #setCharEncoding(CharEncoding)}.
      */
+    @Deprecated
     public void setNonAsciiAllowed(final boolean allowed) {
-        isNonAsciiAllowed = allowed;
+        setCharEncoding(allowed ? CharEncoding.UNICODE : CharEncoding.DEFAULT);
     }
 
     /**
@@ -381,7 +430,9 @@ public class WKTFormat extends CompoundFormat<Object> {
                 default: toUpperCase = (convention.majorVersion() == 1); break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
-            formatter.isNonAsciiAllowed |= isNonAsciiAllowed;
+            if (encoding != null) {
+                formatter.encoding = encoding;
+            }
         }
     }
 

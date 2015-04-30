@@ -525,6 +525,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MissingHorizontalDimension_1 = 169;
 
         /**
+         * Not enough dimension in ‘MathTransform’ input or output coordinates for the interpolation
+         * points.
+         */
+        public static final short MissingInterpolationOrdinates = 184;
+
+        /**
          * “{0}” has no namespace.
          */
         public static final short MissingNamespace_1 = 163;

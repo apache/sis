@@ -33,7 +33,11 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.PolarCS;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -48,6 +52,8 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.CharEncoding;
+import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
@@ -79,7 +85,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see AbstractCS
@@ -733,6 +739,26 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
+     * Returns the enclosing coordinate system, or {@code null} if none. In ISO 19162 compliant WKT the coordinate
+     * <strong>reference</strong> system should be the first parent ({@code formatter.getEnclosingElement(1)}) and
+     * the coordinate system shall be obtained from that CRS (yes, this is convolved. This is because of historical
+     * reasons, since compatibility with WKT 1 was a requirement of WKT 2). But we nevertheless walk over all parents
+     * in case someone format unusual things.
+     */
+    private static CoordinateSystem getEnclosingCS(final Formatter formatter) {
+        int depth = 1;
+        for (Object e; (e = formatter.getEnclosingElement(depth)) != null; depth++) {
+            if (e instanceof CoordinateReferenceSystem) {   // This is what we expect in standard WKT.
+                return ((CoordinateReferenceSystem) e).getCoordinateSystem();
+            }
+            if (e instanceof CoordinateSystem) {    // In case someone formats something unusual.
+                return (CoordinateSystem) e;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
      * <div class="section">Constraints for WKT validity</div>
@@ -743,26 +769,34 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * The only actions (derived from ISO 19162 rules) taken by this method are:
      *
      * <ul>
-     *   <li>Replace “<cite>Geodetic latitude</cite>” and “<cite>Geodetic longitude</cite>” names (case insensitive)
-     *       by “<cite>Latitude</cite>” and “<cite>Longitude</cite>” respectively.</li>
+     *   <li>Replace <cite>“Geodetic latitude”</cite> and <cite>“Geodetic longitude”</cite> names (case insensitive)
+     *       by <cite>“latitude”</cite> and <cite>“longitude”</cite> respectively.</li>
+     *   <li>For latitude and longitude axes, replace “φ” and “λ” abbreviations by <var>“B”</var> and <var>“L”</var>
+     *       respectively (from German “Breite” and “Länge”, used in academic texts worldwide).
+     *       Note that <var>“L”</var> is also the transliteration of Greek letter “lambda” (λ).</li>
+     *   <li>In {@link SphericalCS}, replace “φ” and “θ” abbreviations by <var>“U”</var> and <var>“V”</var> respectively.</li>
+     *   <li>In {@link PolarCS}, replace “θ” abbreviation by <var>“U”</var>.</li>
      * </ul>
+     *
+     * The above-cited replacements of Greek letters can be modified by calls to
+     * {@link org.apache.sis.io.wkt.WKTFormat#setCharEncoding(CharEncoding)}.
      *
      * @return {@code "Axis"}.
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.majorVersion() == 1;
-        final boolean isInternal = (convention == Convention.INTERNAL);
+        final boolean    isWKT1     = (convention.majorVersion() == 1);
+        final boolean    isInternal = (convention == Convention.INTERNAL);
         String name = null;
         if (isWKT1 || isInternal || !omitName(formatter)) {
             name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
             if (name == null) {
                 name = IdentifiedObjects.getName(this, null);
             }
-            if (!isInternal && name != null) {
+            if (name != null && !isInternal) {
                 if (name.equalsIgnoreCase("Geodetic latitude")) {
-                    name = "Latitude"; // ISO 19162 §7.5.3(ii)
+                    name = "Latitude";    // ISO 19162 §7.5.3(ii)
                 } else if (name.equalsIgnoreCase("Geodetic longitude")) {
                     name = "Longitude";
                 }
@@ -770,20 +804,31 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
         /*
          * ISO 19162 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
+         * special case of Geocentric axis, and disallows Greek letters.
          */
-        if (!isWKT1 && (name == null || !name.equals(abbreviation))) {
-            final StringBuilder buffer = new StringBuilder();
-            if (name != null) {
-                buffer.append(name).append(' ');
+        final CoordinateSystem cs;
+        if (isWKT1) {
+            cs = null;
+        } else {
+            cs = getEnclosingCS(formatter);
+            final String a = formatter.getCharEncoding().getAbbreviation(cs, this);
+            if (a != null && !a.equals(name)) {
+                final StringBuilder buffer = new StringBuilder();
+                if (name != null) {
+                    buffer.append(name).append(' ');
+                }
+                name = buffer.append('(').append(a).append(')').toString();
             }
-            name = buffer.append('(').append(abbreviation).append(')').toString();
         }
-        formatter.append(name, ElementKind.AXIS);
+        if (name != null) {
+            formatter.append(name, ElementKind.AXIS);
+        }
         /*
          * Format the axis direction, optionally followed by a MERIDIAN[…] element
          * if the direction is of the kind "South along 90°N" for instance.
          */
-        AxisDirection dir = direction;
+        AxisDirection dir = getDirection();
         DirectionAlongMeridian meridian = null;
         if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);
@@ -798,9 +843,73 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * If the enclosing CRS provided a contextual unit, then it is assumed to apply
          * to all axes (we do not verify).
          */
-        if (!isWKT1 && !formatter.hasContextualUnit(1)) {
-            formatter.append(unit);
+        if (!isWKT1) {
+            if (convention == Convention.WKT2 && cs != null) {
+                final Order order = Order.create(cs, this);
+                if (order != null) {
+                    formatter.append(order);
+                } else {
+                    formatter.setInvalidWKT(cs, null);
+                }
+            }
+            if (!formatter.hasContextualUnit(1)) {
+                formatter.append(getUnit());
+            }
         }
         return "Axis";
+    }
+
+    /**
+     * The {@code ORDER[…]} element to be formatted inside {@code AXIS[…]} element.
+     * This is an element of WKT 2 only.
+     */
+    private static final class Order extends FormattableObject {
+        /**
+         * The sequence number to format inside the {@code ORDER[…]} element.
+         */
+        private final int index;
+
+        /**
+         * Creates a new {@code ORDER[…]} element for the given axis in the given coordinate system.
+         * If this method does not found exactly one instance of the given axis in the given coordinate system,
+         * then returns {@code null}. In the later case, it is caller's responsibility to declare the WKT as invalid.
+         *
+         * <p>This method is a little bit inefficient since the enclosing {@link AbstractCS#formatTo(Formatter)}
+         * method already know this axis index. But there is currently no API in {@link Formatter} for carrying
+         * this information, and we are a little bit reluctant to introduce such API since it would force us to
+         * introduce lists in a model which is, for everything else, purely based on trees.</p>
+         *
+         * @se <a href="https://issues.apache.org/jira/browse/SIS-163">SIS-163</a>
+         */
+        static Order create(final CoordinateSystem cs, final DefaultCoordinateSystemAxis axis) {
+            Order order = null;
+            final int dimension = cs.getDimension();
+            for (int i=0; i<dimension;) {
+                if (cs.getAxis(i++) == axis) {
+                    if (order == null) {
+                        order = new Order(i);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            return order;
+        }
+
+        /**
+         * Creates new {@code ORDER[…]} element for the given sequential number.
+         */
+        private Order(final int index) {
+            this.index = index;
+        }
+
+        /**
+         * Formats the {@code ORDER[…]} element.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.append(index);
+            return "Order";
+        }
     }
 }

@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,9 +27,12 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -171,22 +174,10 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
-        final Unit<?> unit    = getUnit();
-        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
-        formatter.newLine();
-        formatter.append(toFormattable(datum));
-        formatter.newLine();
-        formatter.indent(isWKT1 ? 0 : +1);
-        formatter.append(toFormattable(datum.getPrimeMeridian()));
-        formatter.indent(isWKT1 ? 0 : -1);
-        formatter.newLine();
-        CoordinateSystem cs = super.getCoordinateSystem();
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
-            formatter.append(unit);
-            if (unit == null) {
-                formatter.setInvalidWKT(this, null);
-            }
+        final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
+        formatDatum(formatter, getDatum(), isWKT1);
+        CoordinateSystem cs = getCoordinateSystem();
+        if (isWKT1) {
             /*
              * Replaces the given coordinate system by an instance conform to the conventions used in WKT 1.
              * Note that we can not delegate this task to subclasses, because XML unmarshalling of a geodetic
@@ -200,23 +191,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
                     formatter.setInvalidWKT(cs, null);
                 }
             }
-        } else {
-            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
-            formatter.indent(+1);
         }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(toFormattable(cs.getAxis(i)));
-        }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
-            formatter.newLine();
-            formatter.append(unit);
-            formatter.indent(-1);
-        }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
+        formatCS(formatter, cs, isWKT1);
         if (!isWKT1) {
             return "GeodeticCRS";
         }
@@ -228,5 +204,30 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * is a sufficient criterion.
          */
         return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
+    }
+
+    /**
+     * Formats the given geodetic datum to the given formatter. This is part of the WKT formatting
+     * for a geodetic CRS, either standalone or as part of a projected CRS.
+     *
+     * @param formatter Where to format the datum.
+     * @param datum     The datum to format.
+     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     *
+     * @see #formatCS(Formatter, CoordinateSystem, boolean)
+     */
+    static void formatDatum(final Formatter formatter, final GeodeticDatum datum, final boolean isWKT1) {
+        formatter.newLine();
+        formatter.append(toFormattable(datum));
+        formatter.newLine();
+        formatter.indent(isWKT1 ? 0 : +1);
+        final PrimeMeridian pm = datum.getPrimeMeridian();
+        if (formatter.getConvention() != Convention.WKT2_SIMPLIFIED ||
+                ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
+        {
+            formatter.append(toFormattable(pm));
+        }
+        formatter.indent(isWKT1 ? 0 : -1);
+        formatter.newLine();
     }
 }

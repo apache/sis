@@ -55,13 +55,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 public enum Convention {
     /**
      * The ISO 19162 format, also known as “WKT 2”.
-     * This convention follows the ISO recommendations with the following exceptions:
-     *
-     * <ul>
-     *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
-     * </ul>
-     *
-     * Since the {@code Order} element is optional, the WKT is still valid.
+     * This convention follows the ISO recommendations.
      *
      * <p>Unless otherwise specified by {@link WKTFormat#setNameAuthority(Citation)}, projections
      * and parameters formatted with this convention will use the {@linkplain Citations#EPSG EPSG}
@@ -77,6 +71,8 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
+     *   <li>{@code PrimeMeridian} element omitted if the meridian is Greenwich.</li>
+     *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
      *   <li>{@code VerticalExtent} element omits the {@code LengthUnit} sub-element
      *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
      *   <li>{@code Ellipsoid} element omits the {@code LengthUnit} sub-element

@@ -90,8 +90,8 @@ import org.junit.BeforeClass;
     // Registration of map projections and other math transforms.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
     org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
-    org.apache.sis.internal.referencing.OperationMethodsTest.class,
     org.apache.sis.internal.referencing.provider.AffineTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
@@ -126,6 +126,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
+    org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
     org.apache.sis.referencing.crs.SubTypesTest.class,

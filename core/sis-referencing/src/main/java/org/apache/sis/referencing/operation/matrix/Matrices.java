@@ -480,29 +480,9 @@ public final class Matrices extends Static {
     {
         ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
         ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
-        ensureDimensionMatch("srcEnvelope", srcEnvelope, srcAxes.length);
-        ensureDimensionMatch("dstEnvelope", dstEnvelope, dstAxes.length);
+        ArgumentChecks.ensureDimensionMatches("srcEnvelope", srcAxes.length, srcEnvelope);
+        ArgumentChecks.ensureDimensionMatches("dstEnvelope", dstAxes.length, dstEnvelope);
         return createTransform(srcEnvelope, srcAxes, dstEnvelope, dstAxes, true);
-    }
-
-    /**
-     * Convenience method for checking object dimension validity.
-     * This method is invoked for argument checking.
-     *
-     * @param  name      The name of the argument to check.
-     * @param  envelope  The envelope to check.
-     * @param  dimension The expected dimension for the object.
-     * @throws MismatchedDimensionException if the envelope doesn't have the expected dimension.
-     */
-    private static void ensureDimensionMatch(final String name, final Envelope envelope,
-            final int dimension) throws MismatchedDimensionException
-    {
-        ArgumentChecks.ensureNonNull(name, envelope);
-        final int dim = envelope.getDimension();
-        if (dimension != dim) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, name, dimension, dim));
-        }
     }
 
     /**
