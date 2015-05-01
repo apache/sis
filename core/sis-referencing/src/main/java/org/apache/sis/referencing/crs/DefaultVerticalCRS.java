@@ -67,7 +67,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "verticalDatum")
+    @XmlElement(name = "verticalDatum", required = true)
     private final VerticalDatum datum;
 
     /**
@@ -200,7 +200,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name = "verticalCS")
+    @XmlElement(name = "verticalCS", required = true)
     public VerticalCS getCoordinateSystem() {
         return (VerticalCS) super.getCoordinateSystem();
     }

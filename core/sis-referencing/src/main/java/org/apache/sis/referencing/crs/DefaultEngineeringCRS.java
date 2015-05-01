@@ -85,7 +85,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     /**
      * The datum.
      */
-    @XmlElement(name = "engineeringDatum")
+    @XmlElement(name = "engineeringDatum", required = true)
     private final EngineeringDatum datum;
 
     /**

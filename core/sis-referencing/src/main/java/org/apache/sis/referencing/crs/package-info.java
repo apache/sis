@@ -98,6 +98,7 @@
     @XmlJavaTypeAdapter(CS_TimeCS.class),
     @XmlJavaTypeAdapter(CS_UserDefinedCS.class),
     @XmlJavaTypeAdapter(CS_VerticalCS.class),
+    @XmlJavaTypeAdapter(CC_Conversion.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)
 })

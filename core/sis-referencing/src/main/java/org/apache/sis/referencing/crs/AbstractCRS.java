@@ -88,7 +88,7 @@ import java.util.Objects;
 @XmlType(name="AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
-    DefaultProjectedCRS.class,
+    AbstractDerivedCRS.class,
     DefaultGeodeticCRS.class,
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,

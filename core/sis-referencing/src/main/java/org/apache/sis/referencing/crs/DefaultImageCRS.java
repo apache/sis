@@ -67,7 +67,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "imageDatum")
+    @XmlElement(name = "imageDatum", required = true)
     private final ImageDatum datum;
 
     /**

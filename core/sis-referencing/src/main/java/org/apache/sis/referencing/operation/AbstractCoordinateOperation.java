@@ -19,6 +19,10 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
@@ -84,6 +88,18 @@ import java.util.Objects;
  * @version 0.6
  * @module
  */
+@XmlType(name="AbstractCoordinateOperationType", propOrder = {
+    "domainOfValidity",
+    "scope",
+    "operationVersion",
+    "coordinateOperationAccuracy",
+//  "sourceCRS",    // TODO
+//  "targetCRS"
+})
+@XmlRootElement(name = "AbstractCoordinateOperation")
+@XmlSeeAlso({
+    AbstractSingleOperation.class
+})
 public class AbstractCoordinateOperation extends AbstractIdentifiedObject implements CoordinateOperation {
     /**
      * Serial number for inter-operability with different versions.
@@ -95,6 +111,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getSourceCRS()
      */
+//  @XmlElement
     private final CoordinateReferenceSystem sourceCRS;
 
     /**
@@ -102,6 +119,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getTargetCRS()
      */
+//  @XmlElement
     private final CoordinateReferenceSystem targetCRS;
 
     /**
@@ -116,21 +134,25 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Version of the coordinate transformation
      * (i.e., instantiation due to the stochastic nature of the parameters).
      */
+    @XmlElement
     private final String operationVersion;
 
     /**
      * Estimate(s) of the impact of this operation on point accuracy, or {@code null} if none.
      */
+    @XmlElement
     private final Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
      * Area in which this operation is valid, or {@code null} if not available.
      */
+    @XmlElement
     private final Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage, for which this operation is valid.
      */
+    @XmlElement
     private final InternationalString scope;
 
     /**
@@ -138,6 +160,23 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      */
     private final MathTransform transform;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCoordinateOperation() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        sourceCRS = null;
+        targetCRS = null;
+        interpolationCRS = null;
+        operationVersion = null;
+        coordinateOperationAccuracy = null;
+        domainOfValidity = null;
+        scope = null;
+        transform = null;
+    }
 
     /**
      * Constructs a new coordinate operation with the same values than the specified defining conversion,
