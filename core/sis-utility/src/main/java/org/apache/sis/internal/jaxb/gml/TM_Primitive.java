@@ -164,6 +164,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
      * @param e the exception.
      */
     private static void warningOccured(final String method, final Exception e) {
-        Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
+        if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
+            Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
+        }
     }
 }
