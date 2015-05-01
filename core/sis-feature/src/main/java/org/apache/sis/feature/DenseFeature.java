@@ -158,10 +158,12 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (properties != null) {
             assert c.length == properties.length;
             for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
-                final int   index  = entry.getValue();
-                final Object value = properties[index];
-                if (value != null) {
-                    c[index] = createProperty(entry.getKey(), value);
+                final int index = entry.getValue();
+                if (index >= 0) {
+                    final Object value = properties[index];
+                    if (value != null) {
+                        c[index] = createProperty(entry.getKey(), value);
+                    }
                 }
             }
         }
