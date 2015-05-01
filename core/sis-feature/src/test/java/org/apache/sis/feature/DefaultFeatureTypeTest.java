@@ -48,7 +48,7 @@ import org.opengis.feature.PropertyType;
 public final strictfp class DefaultFeatureTypeTest extends TestCase {
     /**
      * Creates a simple feature type without super-types.
-     * The feature contains the following attribute:
+     * The feature contains the following attributes:
      *
      * <ul>
      *   <li>{@code city}       as a  {@link String}  (mandatory)</li>
@@ -142,15 +142,14 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final DefaultFeatureType universityCity, final DefaultAttributeType<?> temperature, final Class<?> regionType)
     {
         return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "World metropolis"), false,
-                new DefaultFeatureType[] {
+                new DefaultFeatureType[] {          // Super types
                     metropolis,
                     universityCity
                 },
-                new DefaultAttributeType<?>[] {
+                new DefaultAttributeType<?>[] {     // Properties
                     new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, "region"), regionType, 1, 1, null),
                     temperature
                 });
-
     }
 
     /**
