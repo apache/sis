@@ -75,7 +75,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "temporalDatum")
+    @XmlElement(name = "temporalDatum", required = true)
     private final TemporalDatum datum;
 
     /**
@@ -229,7 +229,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name = "timeCS")
+    @XmlElement(name = "timeCS", required = true)
     public TimeCS getCoordinateSystem() {
         return (TimeCS) super.getCoordinateSystem();
     }

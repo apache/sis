@@ -71,7 +71,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * The datum.
      */
-    @XmlElement(name = "geodeticDatum")
+    @XmlElement(name = "geodeticDatum", required = true)
     private final GeodeticDatum datum;
 
     /**

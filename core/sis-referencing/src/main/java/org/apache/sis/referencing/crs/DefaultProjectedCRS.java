@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValue;
@@ -66,6 +67,10 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @version 0.6
  * @module
  */
+@XmlType(name="ProjectedCRSType", propOrder = {
+//  "baseCRS",  // TODO
+    "coordinateSystem"
+})
 @XmlRootElement(name = "ProjectedCRS")
 public class DefaultProjectedCRS extends AbstractDerivedCRS implements ProjectedCRS {
     /**
@@ -195,16 +200,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * @return The datum of the base CRS.
      */
     @Override
-    @XmlElement(name="geodeticDatum")
     public GeodeticDatum getDatum() {
         return (GeodeticDatum) super.getDatum();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setDatum(final GeodeticDatum datum) {
-        throw new UnsupportedOperationException(); // TODO
     }
 
     /**
@@ -213,6 +210,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * @return The base CRS.
      */
     @Override
+//  @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
         return (GeographicCRS) super.getBaseCRS();
     }
@@ -231,7 +229,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * Returns the coordinate system.
      */
     @Override
-    @XmlElement(name="cartesianCS")
+    @XmlElement(name="cartesianCS", required = true)
     public CartesianCS getCoordinateSystem() {
         return (CartesianCS) super.getCoordinateSystem();
     }

@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
@@ -46,7 +49,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @version 0.6
  * @module
  */
-@XmlTransient   // TODO: GML not yet investigated
+@XmlType(name="AbstractGeneralDerivedCRSType")
+@XmlRootElement(name = "AbstractGeneralDerivedCRS")
+@XmlSeeAlso({
+    DefaultProjectedCRS.class
+})
 class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
@@ -57,6 +64,7 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      * The conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
      * The base CRS of this {@code GeneralDerivedCRS} is {@link Conversion#getSourceCRS()}.
      */
+    @XmlElement(name = "conversion", required = true)
     private final Conversion conversionFromBase;
 
     /**
