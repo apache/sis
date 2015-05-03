@@ -22,6 +22,7 @@ import java.util.Arrays;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -32,6 +33,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.util.Constants.CRS;
 import static org.apache.sis.internal.util.Constants.EPSG;
@@ -56,7 +58,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @XmlTransient
@@ -138,6 +140,21 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                                 final EllipsoidalCS cs)
     {
         super(properties, datum, cs);
+    }
+
+    /**
+     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
+     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
+     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
+     * GeographicCRS instance.
+     */
+    DefaultGeographicCRS(final GeodeticCRS crs) {
+        super(crs);
+        final CoordinateSystem cs = super.getCoordinateSystem();
+        if (!(cs instanceof EllipsoidalCS)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
+        }
     }
 
     /**

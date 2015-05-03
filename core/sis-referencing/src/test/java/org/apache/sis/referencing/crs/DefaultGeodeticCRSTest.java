@@ -43,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
 })
 public final strictfp class DefaultGeodeticCRSTest extends XMLTestCase {
     /**
-     * An XML file in this package containing a Cartesian coordinate system definition.
+     * An XML file in this package containing a geodetic CRS definition.
      */
     private static final String XML_FILE = "WGS 84.xml";
 

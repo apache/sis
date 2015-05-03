@@ -68,7 +68,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @module
  */
 @XmlType(name="ProjectedCRSType", propOrder = {
-//  "baseCRS",  // TODO
+    "baseCRS",
     "coordinateSystem"
 })
 @XmlRootElement(name = "ProjectedCRS")
@@ -210,7 +210,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * @return The base CRS.
      */
     @Override
-//  @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
+    @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
         return (GeographicCRS) super.getBaseCRS();
     }
