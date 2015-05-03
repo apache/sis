@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.ConicProjection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -32,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  * @see <a href="http://mathworld.wolfram.com/ConicProjection.html">Conic projection on MathWorld</a>
  */
+@XmlTransient
 final class DefaultConicProjection extends DefaultProjection implements ConicProjection {
     /**
      * Serial number for inter-operability with different versions.
