@@ -57,6 +57,12 @@ final class SubTypes {
         if (object instanceof Conversion) {
             return forConversion((Conversion) object);
         }
+        if (object instanceof PassThroughOperation) {
+            return DefaultPassThroughOperation.castOrCopy((PassThroughOperation) object);
+        }
+        if (object instanceof ConcatenatedOperation) {
+            return DefaultConcatenatedOperation.castOrCopy((ConcatenatedOperation) object);
+        }
         if (object instanceof SingleOperation) {
             return (object instanceof AbstractSingleOperation) ? (AbstractSingleOperation) object
                    : new AbstractSingleOperation((SingleOperation) object);
