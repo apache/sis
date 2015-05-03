@@ -88,8 +88,8 @@
     @XmlJavaTypeAdapter(CD_ImageDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),
+    @XmlJavaTypeAdapter(CS_CartesianCS.class),      // Must be before CS_AffineCS.
     @XmlJavaTypeAdapter(CS_AffineCS.class),
-    @XmlJavaTypeAdapter(CS_CartesianCS.class),
     @XmlJavaTypeAdapter(CS_CylindricalCS.class),
     @XmlJavaTypeAdapter(CS_EllipsoidalCS.class),
     @XmlJavaTypeAdapter(CS_LinearCS.class),
@@ -99,6 +99,7 @@
     @XmlJavaTypeAdapter(CS_UserDefinedCS.class),
     @XmlJavaTypeAdapter(CS_VerticalCS.class),
     @XmlJavaTypeAdapter(CC_Conversion.class),
+    @XmlJavaTypeAdapter(SC_GeographicCRS.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)
 })

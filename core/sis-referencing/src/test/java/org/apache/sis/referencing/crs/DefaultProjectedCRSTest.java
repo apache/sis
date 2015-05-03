@@ -19,8 +19,10 @@ package org.apache.sis.referencing.crs;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
+import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.test.Validators;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -28,7 +30,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -45,7 +47,12 @@ import static org.apache.sis.test.MetadataAssert.*;
 @DependsOn({
     DefaultGeographicCRSTest.class
 })
-public final strictfp class DefaultProjectedCRSTest extends TestCase {
+public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a projected CRS definition.
+     */
+    private static final String XML_FILE = "NTF.xml";
+
     /**
      * Creates the "NTF (Paris) / Lambert zone II" CRS.
      *
@@ -73,6 +80,7 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
     @Test
     public void testWKT1() throws FactoryException {
         final ProjectedCRS crs = create();
+        Validators.validate(crs);
         assertWktEquals(Convention.WKT1,
                 "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  GEOGCS[“NTF (Paris)”,\n" +
@@ -123,5 +131,23 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
                 "    LengthUnit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, Citation[“IOGP”], URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+    }
+
+    /**
+     * Tests (un)marshalling of a projected coordinate reference system.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     * @throws JAXBException If an error occurred during (un)marshalling.
+     */
+    @Test
+    @org.junit.Ignore("Still missing some JAXB annotations.")
+    public void testXML() throws FactoryException, JAXBException {
+        final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, XML_FILE);
+        Validators.validate(crs);
+        assertEquals("scope", "Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
+        /*
+         * Marshal and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
     }
 }
