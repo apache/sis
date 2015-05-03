@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -44,6 +45,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  */
+@XmlTransient
 class DefaultProjection extends DefaultConversion implements Projection {
     /**
      * Serial number for inter-operability with different versions.
