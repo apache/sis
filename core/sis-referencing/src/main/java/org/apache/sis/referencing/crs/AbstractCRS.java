@@ -474,6 +474,11 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Returns {@code true} if the given formatter is in the process of formatting the base CRS of a
      * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
      *
+     * <p>This method should return {@code true} when {@code this} CRS is the value returned by
+     * {@link GeneralDerivedCRS#getBaseCRS()} (typically {@link AbstractDerivedCRS#getBaseCRS()}).
+     * Since the base CRS is the only CRS enclosed in derived CRS, we should have no ambiguity
+     * (assuming that the user did not created some weird subclass).</p>
+     *
      * <p>This method should be invoked for WKT 2 formatting only.</p>
      */
     static boolean isBaseCRS(final Formatter formatter) {
