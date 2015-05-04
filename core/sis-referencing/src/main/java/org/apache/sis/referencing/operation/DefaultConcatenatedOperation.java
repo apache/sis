@@ -145,7 +145,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      * @param  factory       The math transform factory to use.
      * @param  wantTransform {@code true} if the concatenated math transform should be computed.
      *         This is set to {@code false} only when this method invokes itself recursively.
-     * @return The concatenated math transform.
+     * @return The concatenated math transform, or {@code null} if {@code wantTransform} was {@code false}.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
     private static MathTransform expand(final CoordinateOperation[] operations,

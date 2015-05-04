@@ -96,8 +96,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method",    method);
-        ArgumentChecks.ensureNonNull("transform", transform);
+        ArgumentChecks.ensureNonNull("method", method);
         checkDimensions(method, transform, properties);
         this.method = method;
         /*
