@@ -49,9 +49,9 @@ final class DefaultConicProjection extends DefaultProjection implements ConicPro
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      */
-    public DefaultConicProjection(final Conversion                definition,
-                                  final CoordinateReferenceSystem sourceCRS,
-                                  final CoordinateReferenceSystem targetCRS)
+    DefaultConicProjection(final Conversion                definition,
+                           final CoordinateReferenceSystem sourceCRS,
+                           final CoordinateReferenceSystem targetCRS)
     {
         super(definition, sourceCRS, targetCRS);
     }

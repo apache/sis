@@ -46,7 +46,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "GEOCCS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“metre”, 1],\n" +
                 "  AXIS[“X”, OTHER],\n" +
                 "  AXIS[“Y”, EAST],\n" +

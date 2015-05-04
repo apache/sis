@@ -201,22 +201,34 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      */
     @Override
     public GeodeticDatum getDatum() {
-        return (GeodeticDatum) super.getDatum();
+        return getBaseCRS().getDatum();
     }
 
     /**
-     * Returns the base coordinate reference system, which must be geographic.
+     * Returns the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
+     * of the {@linkplain #getConversionFromBase() conversion from base}.
      *
-     * @return The base CRS.
+     * @return The base coordinate reference system, which must be geographic.
      */
     @Override
     @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return (GeographicCRS) super.getBaseCRS();
+        return (GeographicCRS) getConversionFromBase().getSourceCRS();
     }
 
     /**
      * Returns the map projection from the {@linkplain #getBaseCRS() base CRS} to this CRS.
+     * In Apache SIS, the conversion source and target CRS are set to the following values:
+     *
+     * <ul>
+     *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS()
+     *       source CRS} defines the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
+     *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getTargetCRS()
+     *       target CRS} is {@code this} CRS.
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * This is different than ISO 19111, which allows source and target CRS to be {@code null}.</div>
      *
      * @return The map projection from base CRS to this CRS.
      */
@@ -244,6 +256,53 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     /**
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      *
+     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
+     * of a projected coordinate reference system using the Lambert Conformal method.
+     *
+     * {@preformat wkt
+     *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
+     *     BaseGeodCRS[“NTF (Paris)”,
+     *       Datum[“Nouvelle Triangulation Francaise”,
+     *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],
+     *         PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],
+     *     Conversion[“Lambert zone II”,
+     *       Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801, Citation[“IOGP”]]],
+     *       Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8801]],
+     *       Parameter[“Longitude of natural origin”, 0.0, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8802]],
+     *       Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],
+     *       Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],
+     *       Parameter[“False northing”, 2200000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8807]]],
+     *     CS[“Cartesian”, 2],
+     *       Axis[“Easting (E)”, east, Order[1]],
+     *       Axis[“Northing (N)”, north, Order[2]],
+     *       LengthUnit[“metre”, 1],
+     *     Id[“EPSG”, 27572, Citation[“IOGP”], URI[“urn:ogc:def:crs:EPSG::27572”]]]
+     * }
+     *
+     * <p>Same coordinate reference system using WKT 1.</p>
+     *
+     * {@preformat wkt
+     *   PROJCS[“NTF (Paris) / Lambert zone II”,
+     *     GEOGCS[“NTF (Paris)”,
+     *       DATUM[“Nouvelle Triangulation Francaise”,
+     *         SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],
+     *         PRIMEM[“Paris”, 2.33722917],
+     *       UNIT[“degree”, 0.017453292519943295],
+     *       AXIS[“Longitude”, EAST],
+     *       AXIS[“Latitude”, NORTH]],
+     *     PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],
+     *     PARAMETER[“latitude_of_origin”, 46.8],
+     *     PARAMETER[“central_meridian”, 0.0],
+     *     PARAMETER[“scale_factor”, 0.99987742],
+     *     PARAMETER[“false_easting”, 600000.0],
+     *     PARAMETER[“false_northing”, 2200000.0],
+     *     UNIT[“metre”, 1],
+     *     AXIS[“Easting”, EAST],
+     *     AXIS[“Northing”, NORTH],
+     *     AUTHORITY[“EPSG”, “27572”]]
+     * }
+     * </div>
+     *
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
      */
     @Override
@@ -254,62 +313,34 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
         final GeographicCRS baseCRS    = getBaseCRS();
         final Unit<Angle>   unit       = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
         final Unit<Angle>   oldUnit    = formatter.addContextualUnit(unit);
+        /*
+         * Format the enclosing base CRS. Note that WKT 1 formats a full GeographicCRS while WKT 2 formats only
+         * the datum with the prime meridian (no coordinate system) and uses a different keyword ("BaseGeodCRS"
+         * instead of "GeodeticCRS"). The DefaultGeodeticCRS.formatTo(Formatter) method detects when the CRS to
+         * format is part of an enclosing ProjectedCRS and will adapt accordingly.
+         */
         formatter.newLine();
-        if (isWKT1) {
-            formatter.append(toFormattable(baseCRS));
-        } else {
-            /*
-             * WKT 1 (above case) formatted a full GeographicCRS while WKT 2 (this case) formats
-             * only the datum and the prime meridian.  It does not format the coordinate system,
-             * and uses a different keyword ("BaseGeodCRS" instead of "GeogCS").
-             *
-             * Note that we format the unit in "simplified" mode, not in verbose mode. This looks
-             * like the opposite of what we would expect, but this is because formatting the unit
-             * here allow us to avoid repeating the unit in many projection parameters.
-             */
-            formatter.append(new BaseCRS(baseCRS, isWKT1, convention.isSimplified() ? unit : null));
-        }
+        formatter.append(toFormattable(baseCRS));
         formatter.newLine();
         final Parameters p = new Parameters(this);
+        final boolean isBaseCRS;
         if (isWKT1) {
             p.append(formatter);    // Format outside of any "Conversion" element.
+            isBaseCRS = false;
         } else {
             formatter.append(p);    // Format inside a "Conversion" element.
+            isBaseCRS = isBaseCRS(formatter);
         }
-        formatCS(formatter, getCoordinateSystem(), isWKT1);
+        /*
+         * In WKT 2 format, the coordinate system axes are written only if this projected CRS is not the base CRS
+         * of another derived CRS.
+         */
+        if (!isBaseCRS) {
+            formatCS(formatter, getCoordinateSystem(), isWKT1);
+        }
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
-        return isWKT1 ? "ProjCS" : "ProjectedCRS";
-    }
-
-    /**
-     * Temporary object for formatting the {@code BaseGeodCRS} element inside a {@code ProjectedCRS} element.
-     */
-    private static final class BaseCRS extends FormattableObject {
-        /** The base CRS. */
-        private final GeographicCRS baseCRS;
-
-        /** {@code true} for WKT 1 formatting, or {@code false} for WKT 2. */
-        private final boolean isWKT1;
-
-        /** Coordinate axis units. */
-        private final Unit<Angle> angularUnit;
-
-        /** Creates a new temporary {@code BaseGeodCRS} element. */
-        BaseCRS(final GeographicCRS baseCRS, final boolean isWKT1, final Unit<Angle> angularUnit) {
-            this.baseCRS     = baseCRS;
-            this.isWKT1      = isWKT1;
-            this.angularUnit = angularUnit;
-        }
-
-        /** Formats this {@code BaseGeodCRS} element. */
-        @Override protected String formatTo(final Formatter formatter) {
-            WKTUtilities.appendName(baseCRS, formatter, null);
-            DefaultGeodeticCRS.formatDatum(formatter, baseCRS.getDatum(), isWKT1);
-            formatter.append(angularUnit);  // May be null.
-            formatter.newLine();
-            return "BaseGeodCRS";
-        }
+        return isWKT1 ? "ProjCS" : isBaseCRS ? "BaseProjCRS" : "ProjectedCRS";
     }
 
     /**

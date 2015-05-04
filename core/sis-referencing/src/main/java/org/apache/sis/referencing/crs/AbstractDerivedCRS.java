@@ -26,15 +26,12 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -54,7 +51,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 @XmlSeeAlso({
     DefaultProjectedCRS.class
 })
-class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
+abstract class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -150,7 +147,7 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      */
     @Override
     public SingleCRS getBaseCRS() {
-        return (SingleCRS) conversionFromBase.getSourceCRS();
+        return (SingleCRS) getConversionFromBase().getSourceCRS();
     }
 
     /**
@@ -213,28 +210,5 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
         return super.computeHashCode()
                + 31 * conversionFromBase.getSourceCRS().hashCode()
                + 37 * conversionFromBase.getMathTransform().hashCode();
-    }
-
-    /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
-     *
-     * @return {@code "Fitted_CS"} (WKT 1).
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, null);
-        final Conversion conversionFromBase = getConversionFromBase();  // Gives to users a chance to override.
-        MathTransform inverse = conversionFromBase.getMathTransform();
-        try {
-            inverse = inverse.inverse();
-        } catch (NoninvertibleTransformException exception) {
-            // TODO: provide a more accurate error message.
-            throw new IllegalStateException(exception.getLocalizedMessage(), exception);
-        }
-        formatter.newLine();
-        formatter.append(inverse);
-        formatter.newLine();
-        formatter.append(WKTUtilities.toFormattable(getBaseCRS()));
-        return "Fitted_CS";
     }
 }

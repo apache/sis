@@ -49,9 +49,9 @@ final class DefaultPlanarProjection extends DefaultProjection implements PlanarP
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      */
-    public DefaultPlanarProjection(final Conversion                definition,
-                                   final CoordinateReferenceSystem sourceCRS,
-                                   final CoordinateReferenceSystem targetCRS)
+    DefaultPlanarProjection(final Conversion                definition,
+                            final CoordinateReferenceSystem sourceCRS,
+                            final CoordinateReferenceSystem targetCRS)
     {
         super(definition, sourceCRS, targetCRS);
     }

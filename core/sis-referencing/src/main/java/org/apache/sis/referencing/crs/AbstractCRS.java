@@ -28,6 +28,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
@@ -79,7 +80,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractCS
@@ -462,18 +463,38 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();
-        formatCS(formatter, getCoordinateSystem(), formatter.getConvention().majorVersion() == 1);
+        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
+        if (isWKT1 || !isBaseCRS(formatter)) {
+            formatCS(formatter, getCoordinateSystem(), isWKT1);
+        }
         return keyword;
     }
 
     /**
+     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of a
+     * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
+     *
+     * <p>This method should be invoked for WKT 2 formatting only.</p>
+     */
+    static boolean isBaseCRS(final Formatter formatter) {
+        return formatter.getEnclosingElement(1) instanceof GeneralDerivedCRS;
+    }
+
+    /**
      * Formats the given coordinate system.
+     *
+     * <p>In WKT 2 format, this method should not be invoked if {@link #isBaseCRS(Formatter)} returned {@code true}
+     * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
+     * coordinate systems.</p>
      *
      * @param formatter The formatter where to append the coordinate system.
      * @param cs        The coordinate system to append.
      * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
      */
     final void formatCS(final Formatter formatter, final CoordinateSystem cs, final boolean isWKT1) {
+        assert (formatter.getConvention().majorVersion() == 1) == isWKT1 : isWKT1;
+        assert isWKT1 || !isBaseCRS(formatter) : isWKT1;    // Condition documented in javadoc.
+
         final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
