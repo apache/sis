@@ -140,8 +140,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
-                               final Conversion    conversionFromBase,
                                final GeographicCRS baseCRS,
+                               final Conversion    conversionFromBase,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
