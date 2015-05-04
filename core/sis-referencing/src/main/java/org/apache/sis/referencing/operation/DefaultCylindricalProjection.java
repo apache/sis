@@ -49,9 +49,9 @@ final class DefaultCylindricalProjection extends DefaultProjection implements Cy
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      */
-    public DefaultCylindricalProjection(final Conversion                definition,
-                                        final CoordinateReferenceSystem sourceCRS,
-                                        final CoordinateReferenceSystem targetCRS)
+    DefaultCylindricalProjection(final Conversion                definition,
+                                 final CoordinateReferenceSystem sourceCRS,
+                                 final CoordinateReferenceSystem targetCRS)
     {
         super(definition, sourceCRS, targetCRS);
     }

@@ -86,7 +86,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  GEOGCS[“NTF (Paris)”,\n" +
                 "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
                 "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
-                "    PRIMEM[“Paris”, 2.33722917],\n" +                      // Note the conversion from 2.5969213 grades.
+                "      PRIMEM[“Paris”, 2.33722917],\n" +                    // Note the conversion from 2.5969213 grades.
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +

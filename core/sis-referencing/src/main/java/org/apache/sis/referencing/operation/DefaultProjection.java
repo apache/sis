@@ -19,7 +19,10 @@ package org.apache.sis.referencing.operation;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -61,11 +64,13 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      */
-    public DefaultProjection(final Conversion                definition,
-                             final CoordinateReferenceSystem sourceCRS,
-                             final CoordinateReferenceSystem targetCRS)
+    DefaultProjection(final Conversion                definition,
+                      final CoordinateReferenceSystem sourceCRS,
+                      final CoordinateReferenceSystem targetCRS)
     {
         super(definition, sourceCRS, targetCRS);
+        ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
+        ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }
 
     /**
@@ -91,5 +96,21 @@ class DefaultProjection extends DefaultConversion implements Projection {
     @Override
     public Class<? extends Projection> getInterface() {
         return Projection.class;
+    }
+
+    /**
+     * Returns the source CRS, which must be geographic or {@code null}.
+     */
+    @Override
+    public final GeographicCRS getSourceCRS() {
+        return (GeographicCRS) super.getSourceCRS();
+    }
+
+    /**
+     * Returns the target CRS, which must be projected or {@code null}.
+     */
+    @Override
+    public final ProjectedCRS getTargetCRS() {
+        return (ProjectedCRS) super.getTargetCRS();
     }
 }

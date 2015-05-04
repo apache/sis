@@ -282,18 +282,18 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *        AngleUnit["degree", 0.017453292519943295],
      *      Area["World"],
      *      BBox[-90.00, -180.00, 90.00, 180.00],
-     *      Scope["Used by GPS satellite navigation system."]
+     *      Scope["Used by GPS satellite navigation system."],
      *      Id["EPSG", 4326, Citation["IOGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
      * }
      *
      * <p>Same coordinate reference system using WKT 1.</p>
      *
      * {@preformat wkt
-     *   GEOGCS["WGS 84"
-     *      DATUM["World Geodetic System 1984"
-     *        SPHEROID["WGS84", 6378137.0, 298.257223563]]
-     *      PRIMEM["Greenwich", 0.0]
-     *      UNIT["degree", 0.017453292519943295]
+     *   GEOGCS["WGS 84",
+     *      DATUM["World Geodetic System 1984",
+     *        SPHEROID["WGS84", 6378137.0, 298.257223563]],
+     *        PRIMEM["Greenwich", 0.0],
+     *      UNIT["degree", 0.017453292519943295],
      *      AXIS["Latitude", NORTH],
      *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]

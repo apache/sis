@@ -18,11 +18,19 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -165,5 +173,111 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     @Override
     public Class<? extends DerivedCRS> getInterface() {
         return DerivedCRS.class;
+    }
+
+    /**
+     * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
+     *
+     * @return The datum of the base CRS.
+     */
+    @Override
+    public Datum getDatum() {
+        return super.getDatum();
+    }
+
+    /**
+     * Returns the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
+     * of the {@linkplain #getConversionFromBase() conversion from base}.
+     *
+     * @return The base coordinate reference system.
+     */
+    @Override
+    public SingleCRS getBaseCRS() {
+        return super.getBaseCRS();
+    }
+
+    /**
+     * Returns the conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
+     * In Apache SIS, the conversion source and target CRS are set to the following values:
+     *
+     * <ul>
+     *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS()
+     *       source CRS} defines the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
+     *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getTargetCRS()
+     *       target CRS} is {@code this} CRS.
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * This is different than ISO 19111, which allows source and target CRS to be {@code null}.</div>
+     *
+     * @return The conversion to this CRS.
+     */
+    @Override
+    public Conversion getConversionFromBase() {
+        return super.getConversionFromBase();
+    }
+
+    /**
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
+     *
+     * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        WKTUtilities.appendName(this, formatter, null);
+        final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
+        final Conversion conversionFromBase = getConversionFromBase();  // Gives to users a chance to override.
+        /*
+         * Both WKT 1 and WKT 2 format the base CRS. But WKT 1 formats the MathTransform before the base CRS,
+         * while WKT 2 formats the conversion method and parameter values after the base CRS.
+         */
+        if (isWKT1) {
+            MathTransform inverse = conversionFromBase.getMathTransform();
+            try {
+                inverse = inverse.inverse();
+            } catch (NoninvertibleTransformException exception) {
+                formatter.setInvalidWKT(this, exception);
+                inverse = null;
+            }
+            formatter.newLine();
+            formatter.append(inverse);
+        }
+        formatter.newLine();
+        formatter.append(WKTUtilities.toFormattable(getBaseCRS()));
+        if (isWKT1) {
+            return "Fitted_CS";
+        } else {
+            formatter.append(new Parameters(this));    // Format inside a "DefiningConversion" element.
+            if (!isBaseCRS(formatter)) {
+                formatCS(formatter, getCoordinateSystem(), isWKT1);
+            }
+            return "EngineeringCRS"; // TODO: may be GeodeticCRS, VerticalCRS, etc.
+        }
+    }
+
+    /**
+     * Temporary object for formatting the conversion method and parameters inside a
+     * a {@code DerivingConversion} element. This is used in WKT 2 formatting only.
+     */
+    private static final class Parameters extends FormattableObject {
+        /** The conversion which specify the operation method and parameters. */
+        private final Conversion conversion;
+
+        /** Creates a new temporary {@code DerivingConversion} elements for the parameters of the given CRS. */
+        Parameters(final AbstractDerivedCRS crs) {
+            conversion = crs.getConversionFromBase();
+        }
+
+        /** Formats this {@code Conversion} element. */
+        @Override protected String formatTo(final Formatter formatter) {
+            WKTUtilities.appendName(conversion, formatter, null);
+            formatter.newLine();
+            formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
+            formatter.newLine();
+            for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
+                WKTUtilities.append(param, formatter);
+            }
+            return "DerivingConversion";
+        }
     }
 }
