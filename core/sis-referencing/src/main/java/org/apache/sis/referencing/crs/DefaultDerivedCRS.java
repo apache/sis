@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -53,7 +54,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @module
  */
 @XmlTransient   // TODO: GML not yet investigated
-public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS {
+public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements DerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -126,7 +127,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
                              final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, baseCRS, conversionFromBase, derivedCS, Conversion.class);
+        super(properties, Conversion.class, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -141,7 +142,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
      * @see #castOrCopy(DerivedCRS)
      */
     protected DefaultDerivedCRS(final DerivedCRS crs) {
-        super(crs);
+        super(crs, Conversion.class);
     }
 
     /**
@@ -182,18 +183,20 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
      */
     @Override
     public Datum getDatum() {
-        return super.getDatum();
+        return getBaseCRS().getDatum();
     }
 
     /**
-     * Returns the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
+     * Returns the CRS on which the conversion is applied.
+     * This CRS defines the {@linkplain #getDatum() datum} of this CRS and (at least implicitly)
+     * the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
      * of the {@linkplain #getConversionFromBase() conversion from base}.
      *
      * @return The base coordinate reference system.
      */
     @Override
     public SingleCRS getBaseCRS() {
-        return super.getBaseCRS();
+        return (SingleCRS) super.getConversionFromBase().getSourceCRS();
     }
 
     /**
@@ -202,7 +205,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
      *
      * <ul>
      *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS()
-     *       source CRS} defines the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
+     *       source CRS} is the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
      *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getTargetCRS()
      *       target CRS} is {@code this} CRS.
      * </ul>
@@ -218,6 +221,30 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     }
 
     /**
+     * Compares this coordinate reference system with the specified object for equality.
+     *
+     * @param  object The object to compare to {@code this}.
+     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
+     *         relevant to coordinate transformations.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        return (object == this) || super.equals(object, mode);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected long computeHashCode() {
+        return super.computeHashCode();
+    }
+
+    /**
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      *
      * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
@@ -226,13 +253,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
         final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
-        final Conversion conversionFromBase = getConversionFromBase();  // Gives to users a chance to override.
+        final Conversion conversion = getConversionFromBase();  // Gives to users a chance to override.
         /*
          * Both WKT 1 and WKT 2 format the base CRS. But WKT 1 formats the MathTransform before the base CRS,
          * while WKT 2 formats the conversion method and parameter values after the base CRS.
          */
         if (isWKT1) {
-            MathTransform inverse = conversionFromBase.getMathTransform();
+            MathTransform inverse = conversion.getMathTransform();
             try {
                 inverse = inverse.inverse();
             } catch (NoninvertibleTransformException exception) {
@@ -247,37 +274,22 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
         if (isWKT1) {
             return "Fitted_CS";
         } else {
-            formatter.append(new Parameters(this));    // Format inside a "DefiningConversion" element.
+            formatter.append(new FormattableObject() {     // Format inside a "DefiningConversion" element.
+                @Override protected String formatTo(final Formatter formatter) {
+                    WKTUtilities.appendName(conversion, formatter, null);
+                    formatter.newLine();
+                    formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
+                    formatter.newLine();
+                    for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
+                        WKTUtilities.append(param, formatter);
+                    }
+                    return "DerivingConversion";
+                }
+            });
             if (!isBaseCRS(formatter)) {
                 formatCS(formatter, getCoordinateSystem(), isWKT1);
             }
             return "EngineeringCRS"; // TODO: may be GeodeticCRS, VerticalCRS, etc.
-        }
-    }
-
-    /**
-     * Temporary object for formatting the conversion method and parameters inside a
-     * a {@code DerivingConversion} element. This is used in WKT 2 formatting only.
-     */
-    private static final class Parameters extends FormattableObject {
-        /** The conversion which specify the operation method and parameters. */
-        private final Conversion conversion;
-
-        /** Creates a new temporary {@code DerivingConversion} elements for the parameters of the given CRS. */
-        Parameters(final AbstractDerivedCRS crs) {
-            conversion = crs.getConversionFromBase();
-        }
-
-        /** Formats this {@code Conversion} element. */
-        @Override protected String formatTo(final Formatter formatter) {
-            WKTUtilities.appendName(conversion, formatter, null);
-            formatter.newLine();
-            formatter.append(DefaultOperationMethod.castOrCopy(conversion.getMethod()));
-            formatter.newLine();
-            for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
-                WKTUtilities.append(param, formatter);
-            }
-            return "DerivingConversion";
         }
     }
 }

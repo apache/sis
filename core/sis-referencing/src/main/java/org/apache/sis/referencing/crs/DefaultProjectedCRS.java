@@ -43,6 +43,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
@@ -72,7 +73,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
     "coordinateSystem"
 })
 @XmlRootElement(name = "ProjectedCRS")
-public class DefaultProjectedCRS extends AbstractDerivedCRS implements ProjectedCRS {
+public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implements ProjectedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -145,7 +146,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, baseCRS, conversionFromBase, derivedCS, Projection.class);
+        super(properties, Projection.class, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -160,7 +161,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      * @see #castOrCopy(ProjectedCRS)
      */
     protected DefaultProjectedCRS(final ProjectedCRS crs) {
-        super(crs);
+        super(crs, Projection.class);
     }
 
     /**
@@ -205,7 +206,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     }
 
     /**
-     * Returns the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
+     * Returns the geographic CRS on which the map projection is applied.
+     * This CRS defines the {@linkplain #getDatum() datum} of this CRS and (at least implicitly)
+     * the {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS() source}
      * of the {@linkplain #getConversionFromBase() conversion from base}.
      *
      * @return The base coordinate reference system, which must be geographic.
@@ -213,7 +216,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     @Override
     @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return (GeographicCRS) getConversionFromBase().getSourceCRS();
+        return (GeographicCRS) super.getConversionFromBase().getSourceCRS();
     }
 
     /**
@@ -222,7 +225,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      *
      * <ul>
      *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getSourceCRS()
-     *       source CRS} defines the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
+     *       source CRS} is the {@linkplain #getBaseCRS() base CRS} of {@code this} CRS.</li>
      *   <li>The conversion {@linkplain org.apache.sis.referencing.operation.DefaultConversion#getTargetCRS()
      *       target CRS} is {@code this} CRS.
      * </ul>
@@ -234,7 +237,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      */
     @Override
     public Projection getConversionFromBase() {
-        return (Projection) super.getConversionFromBase();
+        return super.getConversionFromBase();
     }
 
     /**
@@ -251,6 +254,30 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
      */
     private void setCoordinateSystem(final CartesianCS cs) {
         setCoordinateSystem("cartesianCS", cs);
+    }
+
+    /**
+     * Compares this coordinate reference system with the specified object for equality.
+     *
+     * @param  object The object to compare to {@code this}.
+     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
+     *         relevant to coordinate transformations.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        return (object == this) || super.equals(object, mode);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected long computeHashCode() {
+        return super.computeHashCode();
     }
 
     /**
