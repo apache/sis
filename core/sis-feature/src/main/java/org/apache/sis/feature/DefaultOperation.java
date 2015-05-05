@@ -17,38 +17,21 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import org.opengis.util.GenericName;
-import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Debug;
-
-// Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Describes the behaviour of a feature type as a function or a method.
- * Operations can:
- *
- * <ul>
- *   <li>Compute values from the attributes.</li>
- *   <li>Perform actions that change the attribute values.</li>
- * </ul>
- *
- * <div class="note"><b>Example:</b> a mutator operation may raise the height of a dam. This changes
- * may affect other properties like the watercourse and the reservoir associated with the dam.</div>
- *
- * <div class="warning"><b>Warning:</b> this class is experimental and may change after we gained more
- * experience on this aspect of ISO 19109.</div>
+ * @deprecated Replaced by {@link AbstractOperation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
-public class DefaultOperation extends AbstractIdentifiedType {
+@Deprecated
+public class DefaultOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
@@ -86,6 +69,7 @@ public class DefaultOperation extends AbstractIdentifiedType {
      *
      * @return Description of the input parameters.
      */
+    @Override
     public ParameterDescriptorGroup getParameters() {
         return parameters;
     }
@@ -95,67 +79,19 @@ public class DefaultOperation extends AbstractIdentifiedType {
      *
      * @return The type of the result, or {@code null} if none.
      */
+    @Override
     public AbstractIdentifiedType getResult() {
         return result;
     }
 
     /**
-     * Returns a hash code value for this operation.
+     * Subclasses should override.
+     * Default implementation throws {@link UnsupportedOperationException}.
      *
      * @return {@inheritDoc}
      */
     @Override
-    public int hashCode() {
-        return super.hashCode() + parameters.hashCode() + Objects.hashCode(result);
-    }
-
-    /**
-     * Compares this operation with the given object for equality.
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (super.equals(obj)) {
-            final DefaultOperation that = (DefaultOperation) obj;
-            return parameters.equals(that.parameters) &&
-                   Objects.equals(result, that.result);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a string representation of this operation.
-     * The returned string is for debugging purpose and may change in any future SIS version.
-     *
-     * @return A string representation of this operation for debugging purpose.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(40).append("Operation").append('[');
-        final GenericName name = getName();
-        if (name != null) {
-            buffer.append('“');
-        }
-        buffer.append(name);
-        if (name != null) {
-            buffer.append('”');
-        }
-        String separator = " (";
-        for (final GeneralParameterDescriptor param : parameters.descriptors()) {
-            buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
-            separator = ", ";
-        }
-        if (separator == ", ") { // Identity comparaison is okay here.
-            buffer.append(')');
-        }
-        if (result != null) {
-            buffer.append(" : ").append(result.getName());
-        }
-        return buffer.append(']').toString();
+    public Object apply(AbstractFeature feature, ParameterValueGroup parameters) {
+        throw new UnsupportedOperationException();
     }
 }

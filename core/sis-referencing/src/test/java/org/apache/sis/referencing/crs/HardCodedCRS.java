@@ -84,6 +84,8 @@ public final strictfp class HardCodedCRS {
      * this CRS is to test operations between CRS having different prime meridian.</p>
      *
      * @since 0.5
+     *
+     * @see DefaultProjectedCRSTest#NTF_ZONE_II
      */
     public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
             properties("NTF (Paris)"), HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);

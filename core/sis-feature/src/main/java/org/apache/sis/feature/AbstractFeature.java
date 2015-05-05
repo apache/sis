@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * <ul>
  *   <li>{@linkplain AbstractAttribute   Attributes}</li>
  *   <li>{@linkplain AbstractAssociation Associations to other features}</li>
- *   <li>{@linkplain DefaultOperation    Operations}</li>
+ *   <li>{@linkplain AbstractOperation   Operations}</li>
  * </ul>
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.
@@ -61,7 +61,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultFeatureType#newInstance()
@@ -110,7 +110,10 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns the property (attribute, operation or association) of the given name.
+     * Returns the property (attribute, feature association or operation result) of the given name.
+     * If the property type is a parameterless {@linkplain AbstractOperation operation}, then this
+     * method may return the result of {@linkplain AbstractOperation#apply executing} the operation
+     * on this feature, at implementation choice.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
@@ -129,7 +132,7 @@ public abstract class AbstractFeature implements Serializable {
     public abstract Object getProperty(final String name) throws IllegalArgumentException;
 
     /**
-     * Sets the property (attribute, operation or association).
+     * Sets the property (attribute or feature association).
      * The given property shall comply to the following conditions:
      *
      * <ul>
@@ -185,7 +188,8 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name The name of the property to create.
      * @return A {@code Property} of the given name.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @throws IllegalArgumentException If the given argument is not the name of an attribute or
+     *         feature association of this feature.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name) throws IllegalArgumentException {
@@ -196,6 +200,54 @@ public abstract class AbstractFeature implements Serializable {
             return ((DefaultAssociationRole) pt).newInstance();
         } else {
             throw unsupportedPropertyType(pt.getName());
+        }
+    }
+
+    /**
+     * Executes the parameterless operation of the given name and returns its result.
+     */
+    final Object getOperationResult(final String name) {
+        /*
+         * The (Operation) cast below should never fail (unless the DefaultFeatureType in not really immutable,
+         * which would be a contract violation) because all callers shall ensure that this method is invoked in
+         * a context where the following assertion holds.
+         */
+        assert DefaultFeatureType.OPERATION_INDEX.equals(type.indices().get(name)) : name;
+        return ((AbstractOperation) type.getProperty(name)).apply(this, null);
+    }
+
+    /**
+     * Executes the parameterless operation of the given name and returns the value of its result.
+     */
+    final Object getOperationValue(final String name) {
+        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            return getPropertyValue(((LinkOperation) operation).propertyName);
+        }
+        final Object result = operation.apply(this, null);
+        if (result instanceof AbstractAttribute<?>) {
+            return getAttributeValue((AbstractAttribute<?>) result);
+        } else if (result instanceof AbstractAssociation) {
+            return getAssociationValue((AbstractAssociation) result);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Executes the parameterless operation of the given name and sets the value of its result.
+     */
+    final void setOperationValue(final String name, final Object value) {
+        final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
+        if (operation instanceof LinkOperation) {
+            setPropertyValue(((LinkOperation) operation).propertyName, value);
+        } else {
+            final Object result = operation.apply(this, null);
+            if (result instanceof Property) {
+                setPropertyValue((Property) result, value);
+            } else {
+                throw new IllegalStateException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, name));
+            }
         }
     }
 

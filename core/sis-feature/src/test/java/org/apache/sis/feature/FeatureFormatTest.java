@@ -34,7 +34,10 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @module
  */
-@DependsOn(DenseFeatureTest.class)
+@DependsOn({
+    DenseFeatureTest.class,
+    CharacteristicMapTest.class
+})
 public final strictfp class FeatureFormatTest extends TestCase {
     /**
      * Tests the formatting of a {@link DefaultFeatureType}.
@@ -45,15 +48,16 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
         assertMultilinesEquals("World metropolis\n" +
-                "┌──────────────┬─────────────────────┬─────────────┬───────────────┐\n" +
-                "│ Name         │ Type                │ Cardinality │ Default value │\n" +
-                "├──────────────┼─────────────────────┼─────────────┼───────────────┤\n" +
-                "│ city         │ String              │ [1 … 1]     │ Utopia        │\n" +
-                "│ population   │ Integer             │ [1 … 1]     │               │\n" +
-                "│ region       │ InternationalString │ [1 … 1]     │               │\n" +
-                "│ isGlobal     │ Boolean             │ [1 … 1]     │               │\n" +
-                "│ universities │ String              │ [0 … ∞]     │               │\n" +
-                "└──────────────┴─────────────────────┴─────────────┴───────────────┘\n", text);
+                "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
+                "│ Name         │ Type                │ Cardinality │ Default value │ Characteristics            │\n" +
+                "├──────────────┼─────────────────────┼─────────────┼───────────────┼────────────────────────────┤\n" +
+                "│ city         │ String              │ [1 … 1]     │ Utopia        │                            │\n" +
+                "│ population   │ Integer             │ [1 … 1]     │               │                            │\n" +
+                "│ region       │ InternationalString │ [1 … 1]     │               │                            │\n" +
+                "│ isGlobal     │ Boolean             │ [1 … 1]     │               │                            │\n" +
+                "│ universities │ String              │ [0 … ∞]     │               │                            │\n" +
+                "│ temperature  │ Float               │ [1 … 1]     │               │ accuracy = 0.1, units = °C │\n" +
+                "└──────────────┴─────────────────────┴─────────────┴───────────────┴────────────────────────────┘\n", text);
     }
 
     /**
