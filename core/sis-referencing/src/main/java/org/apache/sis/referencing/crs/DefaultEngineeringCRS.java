@@ -62,7 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
@@ -85,7 +85,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     /**
      * The datum.
      */
-    @XmlElement(name = "engineeringDatum")
+    @XmlElement(name = "engineeringDatum", required = true)
     private final EngineeringDatum datum;
 
     /**
@@ -260,6 +260,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS" : "EngineeringCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS"
+               : isBaseCRS(formatter) ? "BaseEngCRS" : "EngineeringCRS";
     }
 }

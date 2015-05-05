@@ -39,6 +39,8 @@ import static org.apache.sis.test.MetadataAssert.*;
 public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting.
+     * Axis directions Geocentric X, Y and Z shall be replaced be Other, East and North respectively,
+     * for conformance with legacy WKT 1 practice.
      */
     @Test
     public void testWKT1() {
@@ -46,7 +48,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "GEOCCS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“metre”, 1],\n" +
                 "  AXIS[“X”, OTHER],\n" +
                 "  AXIS[“Y”, EAST],\n" +
@@ -106,6 +108,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "GeodeticCRS[“Geocentric”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    Scope[“Satellite navigation.”],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[“Cartesian”, 3],\n" +

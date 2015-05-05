@@ -276,7 +276,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *         or {@code null} if it is not going to have any declared authority.
      * @return The identified object properties in a mutable map.
      */
-    static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
+    private static Map<String,Object> getProperties(final IdentifiedObject info, final Citation authority) {
         final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(info));
         properties.put(NAME_KEY, new NamedIdentifier(authority, info.getName().getCode()));
         properties.remove(IDENTIFIERS_KEY);

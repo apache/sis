@@ -47,7 +47,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
@@ -67,7 +67,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "verticalDatum")
+    @XmlElement(name = "verticalDatum", required = true)
     private final VerticalDatum datum;
 
     /**
@@ -200,7 +200,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name = "verticalCS")
+    @XmlElement(name = "verticalCS", required = true)
     public VerticalCS getCoordinateSystem() {
         return (VerticalCS) super.getCoordinateSystem();
     }
@@ -238,6 +238,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Vert_CS" : "VerticalCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? "Vert_CS"
+               : isBaseCRS(formatter) ? "BaseVertCRS" : "VerticalCRS";
     }
 }

@@ -200,7 +200,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             if (name != null) {
                 properties.put(Conversion.NAME_KEY, name);
             }
-            return new DefaultProjectedCRS(properties, conversion, baseCRS, derivedCS);
+            return new DefaultProjectedCRS(properties, baseCRS, conversion, derivedCS);
         } finally {
             onCreate(true);
             properties.remove(OperationMethods.PARAMETERS_KEY);
