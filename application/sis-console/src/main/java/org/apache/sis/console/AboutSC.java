@@ -98,7 +98,7 @@ final class AboutSC extends SubCommand {
                  *
                  * Tutorial: http://docs.oracle.com/javase/tutorial/jmx/remote/custom.html
                  */
-                final String path = toRemoveURL(files.get(0));
+                final String path = toRemoteURL(files.get(0));
                 try {
                     final JMXServiceURL url = new JMXServiceURL(path);
                     try (JMXConnector jmxc = JMXConnectorFactory.connect(url)) {
@@ -121,7 +121,7 @@ final class AboutSC extends SubCommand {
      * Creates a {@code "service:jmx:rmi:///jndi/rmi://host:port/jmxrmi"} URL for the given host name.
      * The host name can optionally be followed by a port number.
      */
-    static String toRemoveURL(final String host) {
+    static String toRemoteURL(final String host) {
         final StringBuilder buffer = new StringBuilder(60).append("service:jmx:rmi:///jndi/rmi://")
                 .append(host, host.regionMatches(true, 0, "localhost", 0, 9) ? 9 : 0, host.length());
         if (host.lastIndexOf(':') < 0) {
