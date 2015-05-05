@@ -149,20 +149,4 @@ Miscellaneous utilities.
     </plugins>
   </build>
 
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <!-- Optional dependencies (provided scope) -->
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-    </dependency>
-  </dependencies>
-
 </project>

@@ -17,20 +17,9 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
-import java.io.IOException;
-import java.rmi.registry.Registry;
-import javax.management.JMX;
-import javax.management.ObjectName;
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXServiceURL;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
 import org.apache.sis.setup.About;
 import org.apache.sis.util.Version;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.system.Supervisor;
-import org.apache.sis.internal.system.SupervisorMBean;
 
 
 /**
@@ -82,54 +71,17 @@ final class AboutSC extends SubCommand {
             configuration = Vocabulary.getResources(locale).getString(
                     Vocabulary.Keys.Version_2, "Apache SIS", Version.SIS);
         } else {
-            if (files.isEmpty()) {
-                /*
-                 * Provide information about the local SIS installation.
-                 */
-                final EnumSet<About> sections = EnumSet.allOf(About.class);
-                if (!options.containsKey(Option.VERBOSE)) {
-                    sections.remove(About.LIBRARIES);
-                }
-                configuration = About.configuration(sections, locale, timezone).toString();
-            } else {
-                /*
-                 * Provide information about a remote SIS installation. Those information are accessible
-                 * only if explicitely enabled at JVM startup time.
-                 *
-                 * Tutorial: http://docs.oracle.com/javase/tutorial/jmx/remote/custom.html
-                 */
-                final String path = toRemoveURL(files.get(0));
-                try {
-                    final JMXServiceURL url = new JMXServiceURL(path);
-                    final JMXConnector jmxc = JMXConnectorFactory.connect(url);
-                    try {
-                        final MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-                        final SupervisorMBean bean = JMX.newMBeanProxy(mbsc, new ObjectName(Supervisor.NAME), SupervisorMBean.class);
-                        configuration = bean.configuration().toString();
-                    } finally {
-                        jmxc.close();
-                    }
-                } catch (IOException e) {
-                    error(Errors.format(Errors.Keys.CanNotConnectTo_1, path), e);
-                    return Command.IO_EXCEPTION_EXIT_CODE;
-                }
+            /*
+             * Provide information about the local SIS installation.
+             */
+            final EnumSet<About> sections = EnumSet.allOf(About.class);
+            if (!options.containsKey(Option.VERBOSE)) {
+                sections.remove(About.LIBRARIES);
             }
+            configuration = About.configuration(sections, locale, timezone).toString();
         }
         out.println(configuration);
         out.flush();
         return 0;
-    }
-
-    /**
-     * Creates a {@code "service:jmx:rmi:///jndi/rmi://host:port/jmxrmi"} URL for the given host name.
-     * The host name can optionally be followed by a port number.
-     */
-    static String toRemoveURL(final String host) {
-        final StringBuilder buffer = new StringBuilder(60).append("service:jmx:rmi:///jndi/rmi://")
-                .append(host, host.regionMatches(true, 0, "localhost", 0, 9) ? 9 : 0, host.length());
-        if (host.lastIndexOf(':') < 0) {
-            buffer.append(':').append(Registry.REGISTRY_PORT);
-        }
-        return buffer.append("/jmxrmi").toString();
     }
 }

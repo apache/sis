@@ -69,9 +69,6 @@ public final class ReferenceQueueConsumer extends DaemonThread {
             // (Reference: Goetz et al.: "Java Concurrency in Practice").
             thread.start();
         }
-        if (Supervisor.ENABLED) {
-            Supervisor.register();
-        }
     }
 
     /**

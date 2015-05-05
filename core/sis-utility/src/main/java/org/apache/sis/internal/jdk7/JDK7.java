@@ -20,7 +20,6 @@ import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import javax.imageio.stream.ImageInputStream;
 
 
 /**
@@ -99,7 +98,7 @@ public final class JDK7 {
      * @return {@code true} if the given object is closeable.
      */
     public static boolean isAutoCloseable(final Object object) {
-        return (object instanceof AutoCloseable) || (object instanceof Closeable) || (object instanceof ImageInputStream) ||
+        return (object instanceof AutoCloseable) || (object instanceof Closeable) ||
                 (object instanceof Connection) || (object instanceof Statement) || (object instanceof ResultSet);
     }
 
@@ -113,7 +112,6 @@ public final class JDK7 {
      */
     public static void close(final Object object) throws Exception {
              if (object instanceof Closeable)        ((Closeable)        object).close();
-        else if (object instanceof ImageInputStream) ((ImageInputStream) object).close();
         else if (object instanceof Connection)       ((Connection)       object).close();
         else if (object instanceof Statement)        ((Statement)        object).close();
         else if (object instanceof ResultSet)        ((ResultSet)        object).close();

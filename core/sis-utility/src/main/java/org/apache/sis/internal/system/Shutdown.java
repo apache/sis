@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.system;
 
-import javax.management.JMException;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -43,20 +42,8 @@ public final class Shutdown {
      * @param  caller The class invoking this method, to be used only for logging purpose,
      *         or {@code null} if the logging system is not available anymore (i.e. the JVM
      *         itself is shutting down).
-     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
      */
-    public static void stop(final Class<?> caller) throws JMException {
-        /*
-         * Unregister the MBean before to stop the threads, in order to avoid false alerts
-         * in the superviror 'warnings()' method. Failure to unregister the MBean is worth
-         * to report, but we will do that only after we completed the other shutdown steps.
-         */
-        JMException exception = null;
-        if (Supervisor.ENABLED) try {
-            Supervisor.unregister();
-        } catch (JMException deferred) {
-            exception = deferred;
-        }
+    public static void stop(final Class<?> caller) {
         /*
          * Following is usually fast, but may potentially take a little while.
          * If an other thread invoked Thread.interrupt() while we were waiting
@@ -69,9 +56,6 @@ public final class Shutdown {
             if (caller != null) {
                 Logging.unexpectedException(caller, "stop", e);
             }
-        }
-        if (exception != null) {
-            throw exception;
         }
     }
 }

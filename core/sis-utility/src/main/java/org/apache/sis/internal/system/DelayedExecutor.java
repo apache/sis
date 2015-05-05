@@ -134,9 +134,6 @@ public final class DelayedExecutor extends DaemonThread {
             // (Reference: Goetz et al.: "Java Concurrency in Practice").
             thread.start();
         }
-        if (Supervisor.ENABLED) {
-            Supervisor.register();
-        }
     }
 
     /**

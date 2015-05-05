@@ -93,17 +93,4 @@ public final strictfp class AboutSCTest extends TestCase {
         // Check for a dependency which should be present.
         assertTrue("geoapi", result.contains("geoapi"));
     }
-
-    /**
-     * Tests the {@link AboutSC#toRemoveURL(String)} method.
-     */
-    @Test
-    public void testToRemoveURL() {
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutSC.toRemoveURL("myhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutSC.toRemoveURL("myhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL("localhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutSC.toRemoveURL("localhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL(":9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutSC.toRemoveURL("localhosx"));
-    }
 }
