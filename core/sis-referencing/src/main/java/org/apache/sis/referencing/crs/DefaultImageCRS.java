@@ -67,7 +67,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "imageDatum")
+    @XmlElement(name = "imageDatum", required = true)
     private final ImageDatum datum;
 
     /**
@@ -264,12 +264,10 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        /*
-         * Note: super.formatTo(formatter) will usually format a DefaultImageDatum instance,
-         * which will declare this WKT has invalid if the formatter convention is a WKT 1 one.
-         * So we do not redo this check here.
-         */
         super.formatTo(formatter);
+        if (formatter.getConvention().majorVersion() == 1) {
+            formatter.setInvalidWKT(this, null);
+        }
         return "ImageCRS";
     }
 }

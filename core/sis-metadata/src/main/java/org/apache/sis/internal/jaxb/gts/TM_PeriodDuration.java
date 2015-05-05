@@ -178,6 +178,8 @@ public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, Per
      * @param e The exception.
      */
     private static void warningOccured(final String methodName, final Exception e) {
-        Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
+        if (TemporalUtilities.REPORT_MISSING_MODULE || !e.getMessage().contains("sis-temporal")) {
+            Context.warningOccured(Context.current(), TM_PeriodDuration.class, methodName, e, true);
+        }
     }
 }

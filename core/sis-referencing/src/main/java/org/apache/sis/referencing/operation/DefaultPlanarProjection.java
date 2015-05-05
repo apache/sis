@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.PlanarProjection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -32,6 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  * @see <a href="http://mathworld.wolfram.com/AzimuthalProjection.html">Azimuthal projection on MathWorld</a>
  */
+@XmlTransient
 final class DefaultPlanarProjection extends DefaultProjection implements PlanarProjection {
     /**
      * Serial number for inter-operability with different versions.
@@ -47,9 +49,9 @@ final class DefaultPlanarProjection extends DefaultProjection implements PlanarP
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      */
-    public DefaultPlanarProjection(final Conversion                definition,
-                                   final CoordinateReferenceSystem sourceCRS,
-                                   final CoordinateReferenceSystem targetCRS)
+    DefaultPlanarProjection(final Conversion                definition,
+                            final CoordinateReferenceSystem sourceCRS,
+                            final CoordinateReferenceSystem targetCRS)
     {
         super(definition, sourceCRS, targetCRS);
     }

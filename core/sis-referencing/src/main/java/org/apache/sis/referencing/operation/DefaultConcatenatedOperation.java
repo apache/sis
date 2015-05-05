@@ -145,7 +145,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      * @param  factory       The math transform factory to use.
      * @param  wantTransform {@code true} if the concatenated math transform should be computed.
      *         This is set to {@code false} only when this method invokes itself recursively.
-     * @return The concatenated math transform.
+     * @return The concatenated math transform, or {@code null} if {@code wantTransform} was {@code false}.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
     private static MathTransform expand(final CoordinateOperation[] operations,
@@ -250,6 +250,39 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
             }
         }
         return properties;
+    }
+
+    /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     *
+     * @see #castOrCopy(ConcatenatedOperation)
+     */
+    protected DefaultConcatenatedOperation(final ConcatenatedOperation operation) {
+        super(operation);
+        operations = operation.getOperations();
+    }
+
+    /**
+     * Returns a SIS coordinate operation implementation with the values of the given arbitrary implementation.
+     * If the given object is already an instance of {@code DefaultConcatenatedOperation}, then it is returned
+     * unchanged. Otherwise a new {@code DefaultConcatenatedOperation} instance is created using the
+     * {@linkplain #DefaultConcatenatedOperation(ConcatenatedOperation) copy constructor} and returned.
+     * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
+     * object are not recursively copied.
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultConcatenatedOperation castOrCopy(final ConcatenatedOperation object) {
+        return (object == null) || (object instanceof DefaultConcatenatedOperation)
+                ? (DefaultConcatenatedOperation) object : new DefaultConcatenatedOperation(object);
     }
 
     /**

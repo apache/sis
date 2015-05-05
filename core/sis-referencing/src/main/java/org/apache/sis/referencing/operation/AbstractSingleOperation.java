@@ -17,6 +17,9 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -48,6 +51,14 @@ import java.util.Objects;
  * @version 0.6
  * @module
  */
+@XmlType(name="AbstractSingleOperationType", propOrder = {
+//  "method",   // TODO
+//  "parameters"
+})
+@XmlRootElement(name = "AbstractSingleOperation")
+@XmlSeeAlso({
+    DefaultConversion.class
+})
 class AbstractSingleOperation extends AbstractCoordinateOperation implements SingleOperation, Parameterized {
     /**
      * Serial number for inter-operability with different versions.
@@ -65,6 +76,16 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     private final ParameterValueGroup parameters;
 
     /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractSingleOperation() {
+        method = null;
+        parameters = null;
+    }
+
+    /**
      * Creates a coordinate operation from the given properties.
      */
     public AbstractSingleOperation(final Map<String,?>             properties,
@@ -75,8 +96,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method",    method);
-        ArgumentChecks.ensureNonNull("transform", transform);
+        ArgumentChecks.ensureNonNull("method", method);
         checkDimensions(method, transform, properties);
         this.method = method;
         /*
