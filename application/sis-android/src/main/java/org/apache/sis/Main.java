@@ -38,6 +38,6 @@ public class Main extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-        setContentView(R.layout.main);
+//      setContentView(R.layout.main);
     }
 }
