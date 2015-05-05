@@ -17,21 +17,21 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -41,13 +41,19 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} from another CRS
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
+ * @param <C> The conversion type, either {@code Conversion} or {@code Projection}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-@XmlTransient   // TODO: GML not yet investigated
-class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
+@XmlType(name="AbstractGeneralDerivedCRSType")
+@XmlRootElement(name = "AbstractGeneralDerivedCRS")
+@XmlSeeAlso({
+    DefaultProjectedCRS.class
+})
+abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements GeneralDerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -57,7 +63,8 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      * The conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
      * The base CRS of this {@code GeneralDerivedCRS} is {@link Conversion#getSourceCRS()}.
      */
-    private final Conversion conversionFromBase;
+    @XmlElement(name = "conversion", required = true)
+    private final C conversionFromBase;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
@@ -74,29 +81,29 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
      *
      * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS Coordinate reference system to base the derived CRS on.
-     * @param  conversionFromBase The conversion from the base CRS to this derived CRS.
-     * @param  derivedCS The coordinate system for the derived CRS. The number of axes
+     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
+     * @param  conversion The conversion from the base CRS to this derived CRS.
+     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
      */
     AbstractDerivedCRS(final Map<String,?>    properties,
+                       final Class<C>         baseType,
                        final SingleCRS        baseCRS,
-                       final Conversion       conversionFromBase,
-                       final CoordinateSystem derivedCS,
-                       final Class<? extends Conversion> type)
+                       final Conversion       conversion,
+                       final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
-        ArgumentChecks.ensureNonNull("conversionFromBase", conversionFromBase);
-        final MathTransform baseToDerived = conversionFromBase.getMathTransform();
+        ArgumentChecks.ensureNonNull("conversionFromBase", conversion);   // "conversionFromBase" is the name used by subclass constructors.
+        final MathTransform baseToDerived = conversion.getMathTransform();
         if (baseToDerived != null) {
             ArgumentChecks.ensureDimensionMatches("baseCRS",   baseToDerived.getSourceDimensions(), baseCRS);
             ArgumentChecks.ensureDimensionMatches("derivedCS", baseToDerived.getTargetDimensions(), derivedCS);
         }
-        this.conversionFromBase = DefaultConversion.castOrCopy(conversionFromBase).specialize(type, baseCRS, this);
+        conversionFromBase = DefaultConversion.castOrCopy(conversion).specialize(baseType, baseCRS, this);
     }
 
     /**
@@ -108,22 +115,17 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      *
      * @param crs The coordinate reference system to copy.
      */
-    protected AbstractDerivedCRS(final GeneralDerivedCRS crs) {
+    AbstractDerivedCRS(final GeneralDerivedCRS crs, final Class<C> baseType) {
         super(crs);
-        conversionFromBase = crs.getConversionFromBase();
+        conversionFromBase = DefaultConversion.castOrCopy(crs.getConversionFromBase())
+                .specialize(baseType, crs.getBaseCRS(), this);
     }
 
     /**
      * Returns the GeoAPI interface implemented by this class.
-     * The default implementation returns {@code GeneralDerivedCRS.class}.
-     * Subclasses implementing a more specific GeoAPI interface shall override this method.
-     *
-     * @return The coordinate reference system interface implemented by this class.
      */
     @Override
-    public Class<? extends GeneralDerivedCRS> getInterface() {
-        return GeneralDerivedCRS.class;
-    }
+    public abstract Class<? extends GeneralDerivedCRS> getInterface();
 
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
@@ -131,19 +133,7 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      * @return The datum of the base CRS.
      */
     @Override
-    public Datum getDatum() {
-        return getBaseCRS().getDatum();
-    }
-
-    /**
-     * Returns the base coordinate reference system.
-     *
-     * @return The base coordinate reference system.
-     */
-    @Override
-    public SingleCRS getBaseCRS() {
-        return (SingleCRS) conversionFromBase.getSourceCRS();
-    }
+    public abstract Datum getDatum();
 
     /**
      * Returns the conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
@@ -151,7 +141,7 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      * @return The conversion to this CRS.
      */
     @Override
-    public Conversion getConversionFromBase() {
+    public C getConversionFromBase() {
         return conversionFromBase;
     }
 
@@ -166,9 +156,6 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            return true; // Slight optimization.
-        }
         if (super.equals(object, mode)) {
             final boolean strict = (mode == ComparisonMode.STRICT);
             /*
@@ -205,28 +192,5 @@ class AbstractDerivedCRS extends AbstractCRS implements GeneralDerivedCRS {
         return super.computeHashCode()
                + 31 * conversionFromBase.getSourceCRS().hashCode()
                + 37 * conversionFromBase.getMathTransform().hashCode();
-    }
-
-    /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
-     *
-     * @return {@code "Fitted_CS"} (WKT 1).
-     */
-    @Override
-    protected String formatTo(final Formatter formatter) {
-        WKTUtilities.appendName(this, formatter, null);
-        final Conversion conversionFromBase = getConversionFromBase();  // Gives to users a chance to override.
-        MathTransform inverse = conversionFromBase.getMathTransform();
-        try {
-            inverse = inverse.inverse();
-        } catch (NoninvertibleTransformException exception) {
-            // TODO: provide a more accurate error message.
-            throw new IllegalStateException(exception.getLocalizedMessage(), exception);
-        }
-        formatter.newLine();
-        formatter.append(inverse);
-        formatter.newLine();
-        formatter.append(WKTUtilities.toFormattable(getBaseCRS()));
-        return "Fitted_CS";
     }
 }

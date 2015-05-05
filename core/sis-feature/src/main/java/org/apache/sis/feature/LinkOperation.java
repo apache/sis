@@ -16,8 +16,10 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -30,6 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -74,7 +77,7 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The type of the result.
      */
-    private final IdentifiedType result;
+    private final PropertyType result;
 
     /**
      * The name of the referenced attribute or feature association.
@@ -87,7 +90,7 @@ final class LinkOperation extends AbstractOperation {
      * @param identification The name of the link, together with optional information.
      * @param propertyType   The referenced attribute or feature association.
      */
-    LinkOperation(final Map<String, ?> identification, final IdentifiedType propertyType) {
+    LinkOperation(final Map<String, ?> identification, final PropertyType propertyType) {
         super(identification);
         result = propertyType;
         propertyName = propertyType.getName().toString();
@@ -107,6 +110,14 @@ final class LinkOperation extends AbstractOperation {
     @Override
     public IdentifiedType getResult() {
         return result;
+    }
+
+    /**
+     * Returns the names of feature properties that this operation needs for performing its task.
+     */
+    @Override
+    public Set<String> getDependencies() {
+        return Collections.singleton(propertyName);
     }
 
     /**

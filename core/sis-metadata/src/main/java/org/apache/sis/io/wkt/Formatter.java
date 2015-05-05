@@ -1375,22 +1375,21 @@ public class Formatter implements Localized {
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
      * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the first failure will be retained.</p>
+     * then only information about the last failure will be retained. The reason is that the
+     * last failure is typically the enclosing element.</p>
      *
      * @param unformattable The object that can not be formatted,
      * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final IdentifiedObject unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        if (invalidElement == null) {
-            String name;
-            final Identifier id = unformattable.getName();
-            if (id == null || (name = id.getCode()) == null) {
-                name = getName(unformattable.getClass());
-            }
-            invalidElement = name;
-            errorCause     = cause;
+        String name;
+        final Identifier id = unformattable.getName();
+        if (id == null || (name = id.getCode()) == null) {
+            name = getName(unformattable.getClass());
         }
+        invalidElement = name;
+        errorCause     = cause;
         highlightError = true;
     }
 

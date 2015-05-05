@@ -143,7 +143,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Longitude”, EAST],\n" +
                 "  AXIS[“Latitude”, NORTH]]",
@@ -199,6 +199,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    Scope[“Satellite navigation.”],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
                 "  CS[“ellipsoidal”, 2],\n" +

@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
@@ -75,7 +75,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * The datum.
      */
-    @XmlElement(name = "temporalDatum")
+    @XmlElement(name = "temporalDatum", required = true)
     private final TemporalDatum datum;
 
     /**
@@ -229,7 +229,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name = "timeCS")
+    @XmlElement(name = "timeCS", required = true)
     public TimeCS getCoordinateSystem() {
         return (TimeCS) super.getCoordinateSystem();
     }
@@ -307,12 +307,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        /*
-         * Note: super.formatTo(formatter) will usually format a DefaultTemporalDatum instance,
-         * which will declare this WKT has invalid if the formatter convention is a WKT 1 one.
-         * So we do not redo this check here.
-         */
         super.formatTo(formatter);
-        return "TimeCRS";
+        if (formatter.getConvention().majorVersion() == 1) {
+            formatter.setInvalidWKT(this, null);
+        }
+        return isBaseCRS(formatter) ? "BaseTimeCRS" : "TimeCRS";
     }
 }

@@ -100,6 +100,39 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
+     * Creates a new coordinate operation with the same values than the specified one.
+     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
+     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     *
+     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
+     *
+     * @param operation The coordinate operation to copy.
+     *
+     * @see #castOrCopy(PassThroughOperation)
+     */
+    protected DefaultPassThroughOperation(final PassThroughOperation operation) {
+        super(operation);
+        this.operation = operation.getOperation();
+    }
+
+    /**
+     * Returns a SIS coordinate operation implementation with the values of the given arbitrary implementation.
+     * If the given object is already an instance of {@code DefaultPassThroughOperation}, then it is returned
+     * unchanged. Otherwise a new {@code DefaultPassThroughOperation} instance is created using the
+     * {@linkplain #DefaultPassThroughOperation(PassThroughOperation) copy constructor} and returned.
+     * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
+     * object are not recursively copied.
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultPassThroughOperation castOrCopy(final PassThroughOperation object) {
+        return (object == null) || (object instanceof DefaultPassThroughOperation)
+                ? (DefaultPassThroughOperation) object : new DefaultPassThroughOperation(object);
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code PassThroughOperation.class}.
      *
