@@ -169,10 +169,11 @@ public class Formatter implements Localized {
     private Citation authority;
 
     /**
-     * {@code true} for preserving non-ASCII characters. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@code REMARKS["…"]}.
+     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
+     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
      */
-    boolean isNonAsciiAllowed;
+    CharEncoding encoding;
 
     /**
      * The enclosing WKT element being formatted.
@@ -384,7 +385,7 @@ public class Formatter implements Localized {
         this.colors       = colors;
         this.toUpperCase  = toUpperCase;
         this.indentation  = indentation;
-        isNonAsciiAllowed = (convention == Convention.INTERNAL);
+        this.encoding     = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
     }
 
     /**
@@ -397,6 +398,28 @@ public class Formatter implements Localized {
      */
     public final Convention getConvention() {
         return convention;
+    }
+
+    /**
+     * Returns a mapper between Java character sequences and the characters to write in WKT.
+     * The intend is to specify how to write characters that are not allowed in WKT strings
+     * according ISO 19162 specification. Return values can be:
+     *
+     * <ul>
+     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *       in all WKT elements except {@code REMARKS["…"]}.</li>
+     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>Any other user-supplied mapping.</li>
+     * </ul>
+     *
+     * @return The mapper between Java character sequences and the characters to write in WKT.
+     *
+     * @see WKTFormat#setCharEncoding(CharEncoding)
+     *
+     * @since 0.6
+     */
+    public final CharEncoding getCharEncoding() {
+        return encoding;
     }
 
     /**
@@ -928,10 +951,10 @@ public class Formatter implements Localized {
     private void quote(final String text, final ElementKind type) {
         setColor(type);
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-        if (isNonAsciiAllowed || (type == ElementKind.REMARKS)) {
+        if (type == ElementKind.REMARKS) {
             buffer.append(text);
         } else {
-            buffer.append(CharSequences.toASCII(text));
+            buffer.append(encoding.filter(text));
         }
         closeQuote(base);
         resetColor();
@@ -1105,7 +1128,9 @@ public class Formatter implements Localized {
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-            if (NonSI.DEGREE_ANGLE.equals(unit)) {
+            if (Unit.ONE.equals(unit)) {
+                buffer.append("unity");
+            } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
                 buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
@@ -1351,22 +1376,21 @@ public class Formatter implements Localized {
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
      *
      * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the first failure will be retained.</p>
+     * then only information about the last failure will be retained. The reason is that the
+     * last failure is typically the enclosing element.</p>
      *
      * @param unformattable The object that can not be formatted,
      * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final IdentifiedObject unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        if (invalidElement == null) {
-            String name;
-            final Identifier id = unformattable.getName();
-            if (id == null || (name = id.getCode()) == null) {
-                name = getName(unformattable.getClass());
-            }
-            invalidElement = name;
-            errorCause     = cause;
+        String name;
+        final Identifier id = unformattable.getName();
+        if (id == null || (name = id.getCode()) == null) {
+            name = getName(unformattable.getClass());
         }
+        invalidElement = name;
+        errorCause     = cause;
         highlightError = true;
     }
 

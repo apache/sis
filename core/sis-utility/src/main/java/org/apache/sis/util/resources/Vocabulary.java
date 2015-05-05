@@ -101,6 +101,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CharacterEncoding = 6;
 
         /**
+         * Characteristics
+         */
+        public static final short Characteristics = 85;
+
+        /**
          * Classpath
          */
         public static final short Classpath = 7;

@@ -124,16 +124,18 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * Sets the feature values. All previous values are replaced by the given collection.
      *
-     * @param values The new values.
+     * @param newValues The new values.
      */
     @Override
-    public void setValues(final Collection<? extends AbstractFeature> values) {
-        ArgumentChecks.ensureNonNull("values", values);
-        final DefaultFeatureType base = role.getValueType();
-        this.values.clear();
-        for (final AbstractFeature value : values) {
-            ensureValid(base, value.getType());
-            this.values.add(value);
+    public void setValues(final Collection<? extends AbstractFeature> newValues) {
+        if (newValues != values) {
+            ArgumentChecks.ensureNonNull("values", newValues);  // The parameter name in public API is "values".
+            final DefaultFeatureType base = role.getValueType();
+            values.clear();
+            for (final AbstractFeature value : newValues) {
+                ensureValid(base, value.getType());
+                values.add(value);
+            }
         }
     }
 

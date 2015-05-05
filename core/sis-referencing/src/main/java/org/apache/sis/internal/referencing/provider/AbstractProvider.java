@@ -115,6 +115,8 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
 
     /**
      * Creates a descriptor for a constant value in degrees.
+     *
+     * @see MapProjection#validate(ParameterDescriptor, double)
      */
     static ParameterDescriptor<Double> createConstant(final ParameterBuilder builder, final Double constant) {
         return builder.createBounded(MeasurementRange.create(constant, true, constant, true, NonSI.DEGREE_ANGLE), constant);

@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
+import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,9 +27,12 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -68,7 +71,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * The datum.
      */
-    @XmlElement(name = "geodeticDatum")
+    @XmlElement(name = "geodeticDatum", required = true)
     private final GeodeticDatum datum;
 
     /**
@@ -165,68 +168,81 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * More information about the WKT format is documented in subclasses.
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
-        final Unit<?> unit    = getUnit();
-        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = (convention.majorVersion() == 1);
+        /*
+         * Unconditionally format the datum element, followed by the prime meridian.
+         * The prime meridian is part of datum according ISO 19111, but is formatted
+         * as a sibling (rather than a child) element in WKT for historical reasons.
+         */
+        final GeodeticDatum datum = getDatum();     // Gives subclasses a chance to override.
         formatter.newLine();
         formatter.append(toFormattable(datum));
         formatter.newLine();
-        formatter.indent(isWKT1 ? 0 : +1);
-        formatter.append(toFormattable(datum.getPrimeMeridian()));
-        formatter.indent(isWKT1 ? 0 : -1);
-        formatter.newLine();
-        CoordinateSystem cs = super.getCoordinateSystem();
-        if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
-            formatter.append(unit);
-            if (unit == null) {
-                formatter.setInvalidWKT(this, null);
-            }
-            /*
-             * Replaces the given coordinate system by an instance conform to the conventions used in WKT 1.
-             * Note that we can not delegate this task to subclasses, because XML unmarshalling of a geodetic
-             * CRS will NOT create an instance of a subclass (because the distinction between geographic and
-             * geocentric CRS is not anymore in ISO 19111:2007).
-             */
+        final PrimeMeridian pm = datum.getPrimeMeridian();
+        if (convention != Convention.WKT2_SIMPLIFIED ||
+                ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
+        {
+            formatter.indent(1);
+            formatter.append(toFormattable(pm));
+            formatter.indent(-1);
+            formatter.newLine();
+        }
+        /*
+         * Get the coordinate system to format. This will also determine the units to write and the keyword to
+         * return in WKT 1 format. Note that for the WKT 1 format, we need to replace the coordinate system by
+         * an instance conform to the legacy conventions.
+         *
+         * We can not delegate the work below to subclasses,  because XML unmarshalling of a geodetic CRS will
+         * NOT create an instance of a subclass (because the distinction between geographic and geocentric CRS
+         * is not anymore in ISO 19111:2007).
+         */
+        CoordinateSystem cs = getCoordinateSystem();
+        final boolean isBaseCRS;
+        if (isWKT1) {
             if (!(cs instanceof EllipsoidalCS)) { // Tested first because this is the most common case.
                 if (cs instanceof CartesianCS) {
                     cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
                 } else {
-                    formatter.setInvalidWKT(cs, null);
+                    formatter.setInvalidWKT(cs, null);  // SphericalCS was not supported in WKT 1.
                 }
             }
+            isBaseCRS = false;
         } else {
-            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
-            formatter.indent(+1);
-        }
-        final int dimension = cs.getDimension();
-        for (int i=0; i<dimension; i++) {
-            formatter.newLine();
-            formatter.append(toFormattable(cs.getAxis(i)));
-        }
-        if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.
-            formatter.newLine();
-            formatter.append(unit);
-            formatter.indent(-1);
-        }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
-        formatter.newLine(); // For writing the ID[…] element on its own line.
-        if (!isWKT1) {
-            return "GeodeticCRS";
+            isBaseCRS = isBaseCRS(formatter);
         }
         /*
-         * For WKT1, the keyword depends on the subclass: "GeogCS" for GeographicCRS,
-         * or 'GeocCS" for GeocentricCRS. However we can not rely on the subclass for
-         * choosing the keyword, because in some situations (after XML unmarhaling)
-         * we only have a GeodeticCRS. We need to make the choice here. The CS type
-         * is a sufficient criterion.
+         * Format the coordinate system, except if this CRS is the base CRS of an AbstractDerivedCRS in WKT 2 format.
+         * This is because ISO 19162 omits the coordinate system definition of enclosed base CRS in order to simplify
+         * the WKT. The 'formatCS(…)' method may write axis unit before or after the axes depending on whether we are
+         * formatting WKT version 1 or 2 respectively.
+         *
+         * Note that even if we do not format the CS, we may still write the units if we are formatting in "simplified"
+         * mode (as opposed to the more verbose mode). This looks like the opposite of what we would expect, but this is
+         * because formatting the unit here allow us to avoid repeating the unit in projection parameters when this CRS
+         * is part of a ProjectedCRS.
          */
-        return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
+        if (!isBaseCRS) {
+            formatCS(formatter, cs, isWKT1);    // Will also format the axis unit.
+        } else if (convention.isSimplified()) {
+            formatter.append(formatter.toContextualUnit(ReferencingUtilities.getAngularUnit(cs)));
+        }
+        /*
+         * For WKT 1, the keyword depends on the subclass: "GeogCS" for GeographicCRS or "GeocCS" for GeocentricCRS.
+         * However we can not rely on the subclass for choosing the keyword, because after XML unmarhaling we only
+         * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
+         */
+        if (isWKT1) {
+            return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
+        } else {
+            return isBaseCRS ? "BaseGeodCRS" : "GeodeticCRS";
+        }
     }
 }

@@ -194,8 +194,8 @@ public final class StringBuilders extends Static {
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
      * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
      *
-     * <p>The current implementation replaces only the characters in the range {@code 00C0}
-     * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
+     * <p>The current implementation replaces the characters in the range {@code 00C0}
+     * to {@code 00FF} (inclusive) and some space and punctuation characters.</p>
      *
      * @param  buffer The text to scan for Unicode characters to replace by ASCII characters.
      * @throws NullArgumentException If the given {@code buffer} is null.
@@ -227,9 +227,19 @@ public final class StringBuilders extends Static {
                         cr = ASCII.charAt(r);
                     } else {
                         switch (getType(c)) {
-                            case SPACE_SEPARATOR: cr = ' '; break;
-                            case PARAGRAPH_SEPARATOR: // Fall through
-                            case LINE_SEPARATOR: cr = '\n'; break;
+                            case PARAGRAPH_SEPARATOR:       // Fall through
+                            case LINE_SEPARATOR:            cr = '\n'; break;
+                            case SPACE_SEPARATOR:           cr = ' '; break;
+                            case INITIAL_QUOTE_PUNCTUATION: cr = (c == '‘') ? '\'' : '"'; break;
+                            case FINAL_QUOTE_PUNCTUATION:   cr = (c == '’') ? '\'' : '"'; break;
+                            case OTHER_PUNCTUATION: {
+                                switch (c) {
+                                    case '′': cr = '\''; break;
+                                    case '″': cr = '"';  break;
+                                    default:  continue;
+                                }
+                                break;
+                            }
                             default: continue;
                         }
                     }

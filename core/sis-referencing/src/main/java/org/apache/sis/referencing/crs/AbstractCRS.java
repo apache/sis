@@ -28,6 +28,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
@@ -47,9 +48,17 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Abstract coordinate reference system, usually defined by a coordinate system and a datum.
- * {@code AbstractCRS} can have an arbitrary number of dimensions. The actual dimension of a
- * given instance can be determined as below:
+ * Coordinate reference system, defined by a {@linkplain AbstractCS coordinate system}
+ * and (usually) a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}.
+ * A coordinate reference system (CRS) consists of an ordered sequence of
+ * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes}
+ * that are related to the earth through the datum.
+ * Most coordinate reference system do not move relative to the earth, except for
+ * {@linkplain DefaultEngineeringCRS engineering coordinate reference systems}
+ * defined on moving platforms such as cars, ships, aircraft, and spacecraft.
+ *
+ * <p>Coordinate reference systems can have an arbitrary number of dimensions.
+ * The actual dimension of a given instance can be determined as below:</p>
  *
  * {@preformat java
  *   int dimension = crs.getCoordinateSystem().getDimension();
@@ -71,7 +80,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractCS
@@ -80,6 +89,7 @@ import org.apache.sis.internal.jdk7.Objects;
 @XmlType(name="AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
+    AbstractDerivedCRS.class,
     DefaultGeodeticCRS.class,
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
@@ -384,14 +394,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the unit used for all axis, or {@code null} if not all axis uses the same unit.
-     * This method is often used for formatting according  Well Known Text (WKT) version 1.
-     */
-    final Unit<?> getUnit() {
-        return ReferencingUtilities.getUnit(coordinateSystem);
-    }
-
-    /**
      * Compares this coordinate reference system with the specified object for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are
@@ -458,20 +460,55 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     protected String formatTo(final Formatter formatter) {
         final String  keyword = super.formatTo(formatter);
-        final CoordinateSystem cs = coordinateSystem;
-        final boolean isWKT1  = formatter.getConvention().majorVersion() == 1;
-        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
-        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();
+        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
+        if (isWKT1 || !isBaseCRS(formatter)) {
+            formatCS(formatter, getCoordinateSystem(), isWKT1);
+        }
+        return keyword;
+    }
+
+    /**
+     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of a
+     * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
+     *
+     * <p>This method should return {@code true} when {@code this} CRS is the value returned by
+     * {@link GeneralDerivedCRS#getBaseCRS()} (typically {@link AbstractDerivedCRS#getBaseCRS()}).
+     * Since the base CRS is the only CRS enclosed in derived CRS, we should have no ambiguity
+     * (assuming that the user did not created some weird subclass).</p>
+     *
+     * <p>This method should be invoked for WKT 2 formatting only.</p>
+     */
+    static boolean isBaseCRS(final Formatter formatter) {
+        return formatter.getEnclosingElement(1) instanceof GeneralDerivedCRS;
+    }
+
+    /**
+     * Formats the given coordinate system.
+     *
+     * <p>In WKT 2 format, this method should not be invoked if {@link #isBaseCRS(Formatter)} returned {@code true}
+     * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
+     * coordinate systems.</p>
+     *
+     * @param formatter The formatter where to append the coordinate system.
+     * @param cs        The coordinate system to append.
+     * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
+     */
+    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final boolean isWKT1) {
+        assert (formatter.getConvention().majorVersion() == 1) == isWKT1 : isWKT1;
+        assert isWKT1 || !isBaseCRS(formatter) : isWKT1;    // Condition documented in javadoc.
+
+        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
+        final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
             if (unit == null) {
                 formatter.setInvalidWKT(this, null);
             }
         } else {
-            formatter.append(toFormattable(cs)); // The concept of CoordinateSystem was not explicit in WKT 1.
+            formatter.append(toFormattable(cs)); // WKT2 only, since the concept of CoordinateSystem was not explicit in WKT 1.
             formatter.indent(+1);
         }
         final int dimension = cs.getDimension();
@@ -487,6 +524,5 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return keyword;
     }
 }
