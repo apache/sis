@@ -136,9 +136,6 @@ is divided into following sections:
         <condition property="have.sources">
             <or>
                 <available file="${src.local-src.dir}"/>
-                <available file="${src.android.dir}"/>
-                <available file="${src.android.gen}"/>
-                <available file="${src.webapp.dir}"/>
                 <available file="${src.console.dir}"/>
                 <available file="${src.netcdf.dir}"/>
                 <available file="${src.shapefile.dir}"/>
@@ -244,9 +241,6 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.local-src.dir">Must set src.local-src.dir</fail>
-        <fail unless="src.android.dir">Must set src.android.dir</fail>
-        <fail unless="src.android.gen">Must set src.android.gen</fail>
-        <fail unless="src.webapp.dir">Must set src.webapp.dir</fail>
         <fail unless="src.console.dir">Must set src.console.dir</fail>
         <fail unless="src.netcdf.dir">Must set src.netcdf.dir</fail>
         <fail unless="src.shapefile.dir">Must set src.shapefile.dir</fail>
@@ -285,7 +279,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -326,7 +320,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -359,7 +353,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -1029,15 +1023,12 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.local-src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.android.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.android.gen}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.webapp.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.netcdf.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.shapefile.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1067,7 +1058,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -1336,15 +1327,6 @@ is divided into following sections:
             <fileset dir="${src.local-src.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.android.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.android.gen}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.webapp.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${src.console.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -1380,15 +1362,6 @@ is divided into following sections:
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.local-src.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${src.android.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${src.android.gen}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${src.webapp.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.console.dir}" excludes="${excludes}" includes="${includes}">

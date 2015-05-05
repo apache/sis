@@ -114,7 +114,6 @@
            Sub-modules included in the build in dependency order
        =========================================================== -->
   <modules>
-    <!-- module>sis-android</module -->
     <module>sis-console</module>
   </modules>
 
