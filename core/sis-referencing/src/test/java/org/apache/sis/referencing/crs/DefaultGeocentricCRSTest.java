@@ -39,6 +39,8 @@ import static org.apache.sis.test.MetadataAssert.*;
 public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting.
+     * Axis directions Geocentric X, Y and Z shall be replaced be Other, East and North respectively,
+     * for conformance with legacy WKT 1 practice.
      */
     @Test
     public void testWKT1() {
