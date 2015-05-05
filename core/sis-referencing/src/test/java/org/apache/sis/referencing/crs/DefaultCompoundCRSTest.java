@@ -153,7 +153,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "  GEOGCS[“WGS 84”,\n" +
                 "    DATUM[“World Geodetic System 1984”,\n" +
                 "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "    PRIMEM[“Greenwich”, 0.0],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +

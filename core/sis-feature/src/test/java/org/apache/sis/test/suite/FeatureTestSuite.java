@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.DefaultAssociationRoleTest.class,
     org.apache.sis.feature.SingletonAssociationTest.class,
     org.apache.sis.feature.AbstractOperationTest.class,
+    org.apache.sis.feature.LinkOperationTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class
 })

@@ -245,7 +245,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *   GEOCCS["Geocentric",
      *     DATUM["World Geodetic System 1984",
      *       SPHEROID["WGS84", 6378137.0, 298.257223563]],
-     *     PRIMEM["Greenwich", 0.0],
+     *       PRIMEM["Greenwich", 0.0],
      *     UNIT["metre", 1],
      *     AXIS["X", OTHER],
      *     AXIS["Y", EAST],

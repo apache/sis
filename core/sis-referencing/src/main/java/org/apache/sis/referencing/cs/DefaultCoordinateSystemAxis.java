@@ -742,18 +742,15 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the enclosing coordinate system, or {@code null} if none. In ISO 19162 compliant WKT the coordinate
      * <strong>reference</strong> system should be the first parent ({@code formatter.getEnclosingElement(1)}) and
      * the coordinate system shall be obtained from that CRS (yes, this is convolved. This is because of historical
-     * reasons, since compatibility with WKT 1 was a requirement of WKT 2). But we nevertheless walk over all parents
-     * in case someone format unusual things.
+     * reasons, since compatibility with WKT 1 was a requirement of WKT 2).
      */
     private static CoordinateSystem getEnclosingCS(final Formatter formatter) {
-        int depth = 1;
-        for (Object e; (e = formatter.getEnclosingElement(depth)) != null; depth++) {
-            if (e instanceof CoordinateReferenceSystem) {   // This is what we expect in standard WKT.
-                return ((CoordinateReferenceSystem) e).getCoordinateSystem();
-            }
-            if (e instanceof CoordinateSystem) {    // In case someone formats something unusual.
-                return (CoordinateSystem) e;
-            }
+        final FormattableObject e = formatter.getEnclosingElement(1);
+        if (e instanceof CoordinateReferenceSystem) {   // This is what we expect in standard WKT.
+            return ((CoordinateReferenceSystem) e).getCoordinateSystem();
+        }
+        if (e instanceof CoordinateSystem) {    // Not standard WKT, but conceptually the right thing.
+            return (CoordinateSystem) e;
         }
         return null;
     }
