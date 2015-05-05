@@ -81,7 +81,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class ArgumentChecks extends Static {
@@ -590,6 +590,30 @@ public final class ArgumentChecks extends Static {
                     throw new MismatchedDimensionException(Errors.format(
                             Errors.Keys.MismatchedDimension_3, name, expected, dimension));
                 }
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given coordinate system, if non-null, has the expected number of dimensions.
+     * This method does nothing if the given coordinate system is null.
+     *
+     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected The expected number of dimensions.
+     * @param  cs       The coordinate system to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException if the given coordinate system is non-null
+     *         and does not have the expected number of dimensions.
+     *
+     * @since 0.6
+     */
+    public static void ensureDimensionMatches(final String name, final int expected,
+            final CoordinateSystem cs) throws MismatchedDimensionException
+    {
+        if (cs != null) {
+            final int dimension = cs.getDimension();
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
     }

@@ -184,9 +184,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * Before we set the population attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
          */
-        assertQualityReports("population", "population");
+        assertQualityReports("population");
         setAttributeValue("population", null, 1000);
-        assertQualityReports(null, null);
+        assertQualityReports();
         /*
          * Opportunist tests using the existing instance.
          */
@@ -259,9 +259,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * Before we set the 'isGlobal' attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
          */
-        assertQualityReports("isGlobal", "isGlobal");
+        assertQualityReports("isGlobal", "temperature");
         setAttributeValue("isGlobal", null, Boolean.TRUE);
-        assertQualityReports(null, null);
+        assertQualityReports("temperature");
         /*
          * Opportunist tests using the existing instance.
          */
@@ -299,7 +299,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * The quality report is expected to contains a custom element.
          */
         int numOccurrences = 0;
-        final DataQuality quality = assertQualityReports("population", "population");
+        final DataQuality quality = assertQualityReports("population");
         for (final Element report : quality.getReports()) {
             final String identifier = report.getMeasureIdentification().toString();
             if (identifier.equals("city")) {
@@ -315,27 +315,28 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     }
 
     /**
-     * Asserts that {@link AbstractFeature#quality()} reports no anomaly, or only an anomaly for the given property.
+     * Asserts that {@link AbstractFeature#quality()} reports no anomaly, or only anomalies for the given properties.
      *
-     * @param  property The property for which we expect a report, or {@code null} if none.
-     * @param  keyword  A keyword which is expected to exists in the explanation.
+     * @param  anomalousProperties The property for which we expect a report.
      * @return The data quality report.
      */
-    private DataQuality assertQualityReports(final String property, final String keyword) {
-        int numOccurrences = 0;
+    private DataQuality assertQualityReports(final String... anomalousProperties) {
+        int anomalyIndex  = 0;
         final DataQuality quality = feature.quality();
         for (final Element report : quality.getReports()) {
             for (final Result result : report.getResults()) {
                 if (result instanceof ConformanceResult && !((ConformanceResult) result).pass()) {
-                    final String identifier  = report.getMeasureIdentification().toString();
-                    final String explanation = ((ConformanceResult) result).getExplanation().toString();
-                    assertEquals("quality.report.measureIdentification", property, identifier);
-                    assertTrue("quality.report.result.explanation", explanation.contains(keyword));
-                    numOccurrences++;
+                    assertTrue("Too many reports", anomalyIndex < anomalousProperties.length);
+                    final String propertyName = anomalousProperties[anomalyIndex];
+                    final String identifier   = report.getMeasureIdentification().toString();
+                    final String explanation  = ((ConformanceResult) result).getExplanation().toString();
+                    assertEquals("quality.report.measureIdentification", propertyName, identifier);
+                    assertTrue  ("quality.report.result.explanation", explanation.contains(propertyName));
+                    anomalyIndex++;
                 }
             }
         }
-        assertEquals("Number of reports.", property == null ? 0 : 1, numOccurrences);
+        assertEquals("Number of reports.", anomalousProperties.length, anomalyIndex);
         return quality;
     }
 

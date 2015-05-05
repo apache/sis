@@ -39,6 +39,8 @@ import static org.apache.sis.test.MetadataAssert.*;
 public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting.
+     * Axis directions Geocentric X, Y and Z shall be replaced be Other, East and North respectively,
+     * for conformance with legacy WKT 1 practice.
      */
     @Test
     public void testWKT1() {
@@ -46,7 +48,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "GEOCCS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“metre”, 1],\n" +
                 "  AXIS[“X”, OTHER],\n" +
                 "  AXIS[“Y”, EAST],\n" +
@@ -71,10 +73,49 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
                 "  CS[“Cartesian”, 3],\n" +
+                "    Axis[“(X)”, geocentricX, Order[1]],\n" +
+                "    Axis[“(Y)”, geocentricY, Order[2]],\n" +
+                "    Axis[“(Z)”, geocentricZ, Order[3]],\n" +
+                "    LengthUnit[“metre”, 1]]",
+                HardCodedCRS.GEOCENTRIC);
+    }
+
+    /**
+     * Tests WKT 2 simplified formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "GeodeticCRS[“Geocentric”,\n" +
+                "  Datum[“World Geodetic System 1984”,\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "  CS[“Cartesian”, 3],\n" +
                 "    Axis[“(X)”, geocentricX],\n" +
                 "    Axis[“(Y)”, geocentricY],\n" +
                 "    Axis[“(Z)”, geocentricZ],\n" +
-                "    LengthUnit[“metre”, 1]]",
+                "    Unit[“metre”, 1]]",
+                HardCodedCRS.GEOCENTRIC);
+    }
+
+    /**
+     * Tests WKT 2 internal formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Internal() {
+        assertWktEquals(Convention.INTERNAL,
+                "GeodeticCRS[“Geocentric”,\n" +
+                "  Datum[“World Geodetic System 1984”,\n" +
+                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563],\n" +
+                "    Scope[“Satellite navigation.”],\n" +
+                "    Id[“EPSG”, 6326]],\n" +
+                "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
+                "  CS[“Cartesian”, 3],\n" +
+                "    Axis[“Geocentric X (X)”, geocentricX],\n" +
+                "    Axis[“Geocentric Y (Y)”, geocentricY],\n" +
+                "    Axis[“Geocentric Z (Z)”, geocentricZ],\n" +
+                "    Unit[“metre”, 1]]",
                 HardCodedCRS.GEOCENTRIC);
     }
 }

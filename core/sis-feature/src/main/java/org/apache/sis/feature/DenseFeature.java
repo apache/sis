@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see SparseFeature
@@ -53,7 +53,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     private final Map<String, Integer> indices;
 
     /**
-     * The properties (attributes, operations, feature associations) of this feature.
+     * The properties (attributes or feature associations) in this feature.
      *
      * Conceptually, values in this array are {@link Property} instances. However at first we will store only
      * the property <em>values</em>, and convert to an array of type {@code Property[]} only when at least one
@@ -73,10 +73,12 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     }
 
     /**
-     * Returns the index for the property of the given name.
+     * Returns the index for the property of the given name, or {@link DefaultFeatureType#OPERATION_INDEX}
+     * if the property is a parameterless operation.
      *
      * @param  name The property name.
-     * @return The index for the property of the given name.
+     * @return The index for the property of the given name,
+     *         or a negative value if the property is a parameterless operation.
      * @throws IllegalArgumentException If the given argument is not a property name of this feature.
      */
     private int getIndex(final String name) throws IllegalArgumentException {
@@ -97,17 +99,22 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
-        final int index = getIndex(name); // Invoked first because this method checks name validity.
-
-        // Are the properties currently initialized? If not, wrap the values we can find.
+        final int index = getIndex(name);
+        if (index < 0) {
+            return getOperationResult(name);
+        }
+        /*
+         * Are the Property instances currently initialized? If not, wrap the values we can find.
+         * This is a all-or-nothing converion (we do not wrap only the requested property)
+         * for avoiding the additional complexity of remembering which values were wrapped.
+         */
         if (!(properties instanceof Property[])) {
             wrapValuesInProperties();
         }
-
-        // Find the wanted property.
+        /*
+         * Find the wanted property. If the property still have a null value, we create it from its type.
+         */
         Property property = ((Property[]) properties)[index];
-
-        // If the property still have a null value, we create it, but we can only tell its type.
         if (property == null) {
             property = createProperty(name);
             properties[index] = property;
@@ -130,6 +137,10 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (!(properties instanceof Property[])) {
             wrapValuesInProperties();
         }
+        /*
+         * Following index should never be OPERATION_INDEX (a negative value) because the call
+         * to 'verifyPropertyType(name, property)' shall have rejected all Operation types.
+         */
         properties[indices.get(name)] = property;
     }
 
@@ -142,10 +153,12 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         if (properties != null) {
             assert c.length == properties.length;
             for (final Map.Entry<String, Integer> entry : indices.entrySet()) {
-                final int   index  = entry.getValue();
-                final Object value = properties[index];
-                if (value != null) {
-                    c[index] = createProperty(entry.getKey(), value);
+                final int index = entry.getValue();
+                if (index >= 0) {
+                    final Object value = properties[index];
+                    if (value != null) {
+                        c[index] = createProperty(entry.getKey(), value);
+                    }
                 }
             }
         }
@@ -162,8 +175,12 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     @Override
     public Object getPropertyValue(final String name) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
+        final int index = getIndex(name);
+        if (index < 0) {
+            return getOperationValue(name);
+        }
         if (properties != null) {
-            final Object element = properties[getIndex(name)];
+            final Object element = properties[index];
             if (element != null) {
                 if (!(properties instanceof Property[])) {
                     return element; // Most common case.
@@ -191,6 +208,10 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("name", name);
         final int index = getIndex(name);
+        if (index < 0) {
+            setOperationValue(name, value);
+            return;
+        }
         if (properties == null) {
             final int n = indices.size();
             properties = (value != null) ? new Object[n] : new Property[n];

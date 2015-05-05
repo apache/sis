@@ -181,7 +181,7 @@ public final strictfp class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
-     * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "Ω" (omega).
+     * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "θ" (theta).
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -189,7 +189,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
      */
-    public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create("Spherical longitude", "Ω",
+    public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create("Spherical longitude", "θ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
 
     /**
@@ -197,7 +197,7 @@ public final strictfp class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
-     * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "Θ" (theta).
+     * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "φ′" (phi).
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -205,7 +205,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create("Spherical latitude", "Θ",
+    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create("Spherical latitude", "φ′",
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**

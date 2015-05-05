@@ -37,6 +37,15 @@ import org.apache.sis.internal.system.DefaultFactories;
  */
 public final class TemporalUtilities extends Static {
     /**
+     * {@code true} if the SIS library should log the "This operation requires the sis-temporal module" warning.
+     * This flag can be {@code true} during development phase, but should be set to {@code false} in SIS releases
+     * until we can really provide a sis-temporal module.
+     *
+     * This constant will be removed after SIS release a sis-temporal module.
+     */
+    public static final boolean REPORT_MISSING_MODULE = true;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private TemporalUtilities() {
