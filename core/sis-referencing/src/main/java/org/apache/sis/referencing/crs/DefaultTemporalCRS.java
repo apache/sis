@@ -36,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for the recording of time.
+ * A 1-dimensional coordinate reference system used for the recording of time.
  * The Apache SIS implementation provides the following methods in addition to the OGC/ISO properties:
  *
  * <ul>

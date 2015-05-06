@@ -43,7 +43,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
 
 
 /**
- * A coordinate reference system based on an ellipsoidal approximation of the geoid.
+ * A 2- or 3-dimensional coordinate reference system based on an ellipsoidal approximation of the geoid.
  * This provides an accurate representation of the geometry of geographic features
  * for a large portion of the earth's surface.
  *
