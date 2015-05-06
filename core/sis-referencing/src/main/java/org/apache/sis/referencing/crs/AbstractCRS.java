@@ -462,7 +462,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String  keyword = super.formatTo(formatter);
+        final String keyword = super.formatTo(formatter);
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();

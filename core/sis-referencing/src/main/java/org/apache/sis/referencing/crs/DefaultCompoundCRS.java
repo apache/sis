@@ -75,6 +75,23 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
+ * <div class="section">Component order</div>
+ * ISO 19162 restricts compound CRS to the following components in that order:
+ * <ul>
+ *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+ *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+ *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+ * </ul>
+ *
+ * SIS currently does not enforce those restrictions. In particular:
+ * <ul>
+ *   <li>Components may appear in different order.
+ *   <li>{@code VerticalCRS} + {@code TemporalCRS} (without horizontal component) is accepted.</li>
+ *   <li>{@code GeocentricCRS} or three-dimensional {@code GeographicCRS} can be combined with {@code TemporalCRS}.</li>
+ * </ul>
+ *
+ * However users are encouraged to follow ISO 19162 restriction for better portability.
+ *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and all {@link CoordinateReferenceSystem} instances given to the constructor are also immutable.

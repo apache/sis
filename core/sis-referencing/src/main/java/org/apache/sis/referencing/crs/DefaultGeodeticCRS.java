@@ -40,7 +40,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
- * A 2D or 3D coordinate reference system based on a geodetic datum.
+ * A 2- or 3-dimensional coordinate reference system based on a geodetic datum.
  * The CRS is geographic if associated with an ellipsoidal coordinate system,
  * or geocentric if associated with a spherical or Cartesian coordinate system.
  *

@@ -33,9 +33,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * An engineering coordinate reference system applied to locations in images. Image coordinate
- * reference systems are treated as a separate sub-type because a separate user community exists
- * for images with its own terms of reference.
+ * A 2-dimensional engineering coordinate reference system applied to locations in images.
+ * Image coordinate reference systems are treated as a separate sub-type because a separate
+ * user community exists for images with its own terms of reference.
  *
  * <p><b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or

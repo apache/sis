@@ -20,18 +20,32 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.TemporalDatum;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.VerticalCS;
+import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -291,7 +305,170 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             if (!isBaseCRS(formatter)) {
                 formatCS(formatter, getCoordinateSystem(), isWKT1);
             }
-            return "EngineeringCRS"; // TODO: may be GeodeticCRS, VerticalCRS, etc.
+            return keyword();
+        }
+    }
+
+    /**
+     * Return the WKT 2 keyword for this {@code DerivedCRS}, or {@code null} if unknown.
+     * Inner subclasses will override this method for returning a constant value instead
+     * than trying to infer it from the components.
+     */
+    String keyword() {
+        return getType(getBaseCRS(), getCoordinateSystem());
+    }
+
+    /**
+     * Returns the WKT 2 keyword for a {@code DerivedCRS} having the given base CRS and derived coordinate system.
+     * Note that an ambiguity exists if the given base CRS is a {@code GeodeticCRS}, as the result could be either
+     * {@code "GeodeticCRS"} or {@code "EngineeringCRS"}. The current implementation returns the former if the
+     * derived coordinate system is of the same kind than the base coordinate system.
+     */
+    static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
+        final Class<?> type;
+        if (baseCRS instanceof AbstractIdentifiedObject) {
+            // For avoiding ambiguity if a user chooses to implement more
+            // than 1 CRS interface (not recommended, but may happen).
+            type = ((AbstractIdentifiedObject) baseCRS).getInterface();
+        } else {
+            type = baseCRS.getClass();
+        }
+        if (GeodeticCRS.class.isAssignableFrom(type)) {
+            if (Classes.implementSameInterfaces(derivedCS.getClass(),
+                    baseCRS.getCoordinateSystem().getClass(), CoordinateSystem.class))
+            {
+                return "GeodeticCRS";
+            } else {
+                return "EngineeringCRS";
+            }
+        } else if (VerticalCRS.class.isAssignableFrom(type) && derivedCS instanceof VerticalCS) {
+            return "VerticalCRS";
+        } else if (TemporalCRS.class.isAssignableFrom(type) && derivedCS instanceof TimeCS) {
+            return "TimeCRS";
+        } else if (ProjectedCRS.class.isAssignableFrom(type) || EngineeringCRS.class.isAssignableFrom(type)) {
+            return "EngineeringCRS";
+        } else {
+            return null;
+        }
+    }
+
+
+
+
+    /**
+     * A derived geodetic CRS.  Note that base CRS of kind {@link GeodeticCRS} can be used both with this class
+     * and with {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Engineering}. Consequently an ambiguity
+     * may exist when choosing the kind if {@code DerivedCRS} to create for a given {@code GeodeticCRS}.
+     */
+    @XmlTransient
+    private static final class Geodetic extends DefaultDerivedCRS implements GeodeticCRS {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -1263243517380302846L;
+
+        /** Creates a new geodetic CRS derived from the given one. */
+        Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, Conversion conversionFromBase, EllipsoidalCS derivedCS) {
+            super(properties, baseCRS, conversionFromBase, derivedCS);
+        }
+
+        /** Returns the datum of the base geodetic CRS. */
+        @Override public GeodeticDatum getDatum() {
+            return (GeodeticDatum) super.getDatum();
+        }
+
+        /** Returns the coordinate system given at construction time. */
+        @Override public EllipsoidalCS getCoordinateSystem() {
+            return (EllipsoidalCS) super.getCoordinateSystem();
+        }
+
+        /** Returns the WKT keyword for this derived CRS type.*/
+        @Override String keyword() {
+            return "GeodeticCRS";
+        }
+    }
+
+    /**
+     * A derived vertical CRS.
+     */
+    @XmlTransient
+    private static final class Vertical extends DefaultDerivedCRS implements VerticalCRS {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -5599709829566076972L;
+
+        /** Creates a new vertical CRS derived from the given one. */
+        Vertical(Map<String,?> properties, VerticalCRS baseCRS, Conversion conversionFromBase, VerticalCS derivedCS) {
+            super(properties, baseCRS, conversionFromBase, derivedCS);
+        }
+
+        /** Returns the datum of the base vertical CRS. */
+        @Override public VerticalDatum getDatum() {
+            return (VerticalDatum) super.getDatum();
+        }
+
+        /** Returns the coordinate system given at construction time. */
+        @Override public VerticalCS getCoordinateSystem() {
+            return (VerticalCS) super.getCoordinateSystem();
+        }
+
+        /** Returns the WKT keyword for this derived CRS type.*/
+        @Override String keyword() {
+            return "VerticalCRS";
+        }
+    }
+
+    /**
+     * A derived temporal CRS.
+     */
+    @XmlTransient
+    private static final class Temporal extends DefaultDerivedCRS implements TemporalCRS {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -4721311735720248819L;
+
+        /** Creates a new temporal CRS derived from the given one. */
+        Temporal(Map<String,?> properties, TemporalCRS baseCRS, Conversion conversionFromBase, TimeCS derivedCS) {
+            super(properties, baseCRS, conversionFromBase, derivedCS);
+        }
+
+        /** Returns the datum of the base temporal CRS. */
+        @Override public TemporalDatum getDatum() {
+            return (TemporalDatum) super.getDatum();
+        }
+
+        /** Returns the coordinate system given at construction time. */
+        @Override public TimeCS getCoordinateSystem() {
+            return (TimeCS) super.getCoordinateSystem();
+        }
+
+        /** Returns the WKT keyword for this derived CRS type.*/
+        @Override String keyword() {
+            return "TimeCRS";
+        }
+    }
+
+    /**
+     * An derived engineering CRS. ISO 19162 restricts the base CRS to {@code EngineeringCRS}, {@code ProjectedCRS}
+     * or {@code GeodeticCRS}. Note that in the later case, an ambiguity may exist with the
+     * {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Geodetic} when deciding which {@code DerivedCRS} to
+     * create.
+     */
+    @XmlTransient
+    private static final class Engineering extends DefaultDerivedCRS implements EngineeringCRS {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 42334975023270039L;
+
+        /** Creates a new temporal CRS derived from the given one. */
+        Engineering(Map<String,?> properties, SingleCRS baseCRS, Conversion conversionFromBase, CoordinateSystem derivedCS) {
+            super(properties, baseCRS, conversionFromBase, derivedCS);
+        }
+
+        /** Returns the datum of the base engineering CRS. */
+        @Override public EngineeringDatum getDatum() {
+            final Datum datum = super.getDatum();
+            return (datum instanceof EngineeringDatum) ? (EngineeringDatum) datum : null;
+        }
+
+        /** Returns the WKT keyword for this derived CRS type.*/
+        @Override String keyword() {
+            return "EngineeringCRS";
         }
     }
 }

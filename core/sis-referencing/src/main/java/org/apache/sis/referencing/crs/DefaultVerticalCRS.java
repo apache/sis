@@ -32,7 +32,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for recording heights or depths.
+ * A 1-dimensional coordinate reference system used for recording heights or depths.
  * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
  * but the relationship with gravity may not be straightforward.
  *
