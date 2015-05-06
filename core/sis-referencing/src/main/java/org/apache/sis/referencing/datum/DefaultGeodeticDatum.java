@@ -534,6 +534,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
      *
      * @return {@code "Datum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

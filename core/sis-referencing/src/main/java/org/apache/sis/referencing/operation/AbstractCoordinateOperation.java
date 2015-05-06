@@ -721,6 +721,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @param  formatter The formatter to use.
      * @return {@code "CoordinateOperation"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

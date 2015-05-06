@@ -537,6 +537,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

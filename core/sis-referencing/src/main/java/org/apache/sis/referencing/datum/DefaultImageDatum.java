@@ -239,6 +239,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * {@code ImageDatum} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageDatum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -261,6 +261,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * {@code ImageCRS} are defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

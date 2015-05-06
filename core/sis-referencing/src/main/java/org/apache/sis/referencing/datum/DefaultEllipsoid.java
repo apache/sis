@@ -757,6 +757,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Formats this ellipsoid as a <cite>Well Known Text</cite> {@code Ellipsoid[…]} element.
      *
      * @return {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

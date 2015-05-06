@@ -339,6 +339,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
      *
      * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

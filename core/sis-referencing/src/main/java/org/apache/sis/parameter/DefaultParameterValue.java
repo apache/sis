@@ -823,7 +823,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Instead, the unit was inherited from the enclosing element.</div>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
-     * @return {@code "Parameter"}.
+     * @return {@code "Parameter"} or {@code "ParameterFile"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#119">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
