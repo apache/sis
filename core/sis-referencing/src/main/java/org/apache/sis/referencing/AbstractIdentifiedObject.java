@@ -1033,6 +1033,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

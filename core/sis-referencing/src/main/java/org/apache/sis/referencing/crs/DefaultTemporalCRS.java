@@ -304,6 +304,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "TimeCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#88">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

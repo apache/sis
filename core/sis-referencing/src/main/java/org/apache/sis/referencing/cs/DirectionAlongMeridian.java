@@ -292,6 +292,8 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Meridian"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

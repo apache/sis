@@ -248,6 +248,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      *
      * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#93">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

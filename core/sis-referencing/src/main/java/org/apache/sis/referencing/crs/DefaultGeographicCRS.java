@@ -301,6 +301,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

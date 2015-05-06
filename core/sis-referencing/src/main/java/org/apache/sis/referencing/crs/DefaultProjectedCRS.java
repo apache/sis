@@ -331,6 +331,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * </div>
      *
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

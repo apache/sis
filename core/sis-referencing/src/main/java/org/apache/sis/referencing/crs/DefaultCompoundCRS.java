@@ -417,6 +417,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * SIS does not check if this CRS is compliant with the above-cited restrictions.
      *
      * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

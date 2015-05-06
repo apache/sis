@@ -438,6 +438,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * {@code CS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "CS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
