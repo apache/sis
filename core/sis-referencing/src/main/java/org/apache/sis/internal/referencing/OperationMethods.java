@@ -17,10 +17,10 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
-import org.opengis.util.Record;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.util.Record;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.QuantitativeResult;

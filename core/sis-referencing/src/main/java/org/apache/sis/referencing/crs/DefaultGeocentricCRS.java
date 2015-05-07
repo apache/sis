@@ -29,8 +29,8 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 
 
 /**
- * A 3D coordinate reference system with the origin at the approximate centre of mass of the earth.
- * A geocentric CRS deals with the earth's curvature by taking a 3D spatial view, which obviates
+ * A 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+ * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
  * the need to model the earth's curvature.
  *
  * <p><b>Used with coordinate system type:</b>
@@ -254,6 +254,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

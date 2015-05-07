@@ -26,6 +26,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.ComparisonMode;
@@ -285,6 +286,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * {@code TimeDatum} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "TimeDatum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#90">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -293,7 +296,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "TimeDatum";
+        return WKTKeywords.TimeDatum;
     }
 
     /**
@@ -312,7 +315,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         @Override
         protected String formatTo(final Formatter formatter) {
             formatter.append(origin);
-            return "TimeOrigin";
+            return WKTKeywords.TimeOrigin;
         }
     }
 }

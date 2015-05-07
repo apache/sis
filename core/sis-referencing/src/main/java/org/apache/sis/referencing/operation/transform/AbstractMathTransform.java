@@ -37,6 +37,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -956,7 +957,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendParamMT(getParameterValues(), formatter);
-        return "Param_MT";
+        return WKTKeywords.Param_MT;
     }
 
     /**
@@ -1117,10 +1118,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             final ParameterValueGroup parameters = getParameterValues();
             if (parameters != null) {
                 WKTUtilities.appendParamMT(parameters, formatter);
-                return "Param_MT";
+                return WKTKeywords.Param_MT;
             } else {
                 formatter.append((FormattableObject) AbstractMathTransform.this);
-                return "Inverse_MT";
+                return WKTKeywords.Inverse_MT;
             }
         }
     }

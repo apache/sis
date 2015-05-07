@@ -36,8 +36,10 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -49,7 +51,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
- * A 2D coordinate reference system used to approximate the shape of the earth on a planar surface.
+ * A 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
  * It is done in such a way that the distortion that is inherent to the approximation is carefully
  * controlled and known. Distortion correction is commonly applied to calculated bearings and
  * distances to produce values that are a close match to actual field values.
@@ -216,7 +218,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @Override
     @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return (GeographicCRS) super.getConversionFromBase().getSourceCRS();
+        return super.getConversionFromBase().getSourceCRS();
     }
 
     /**
@@ -254,6 +256,25 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     private void setCoordinateSystem(final CartesianCS cs) {
         setCoordinateSystem("cartesianCS", cs);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultProjectedCRS forConvention(final AxesConvention convention) {
+        return (DefaultProjectedCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        final Projection conversion = super.getConversionFromBase();
+        return new DefaultProjectedCRS(properties, conversion.getSourceCRS(), conversion, (CartesianCS) cs);
     }
 
     /**
@@ -331,6 +352,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * </div>
      *
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -367,7 +390,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         }
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
-        return isWKT1 ? "ProjCS" : isBaseCRS ? "BaseProjCRS" : "ProjectedCRS";
+        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS : WKTKeywords.ProjectedCRS;
     }
 
     /**
@@ -391,7 +414,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             WKTUtilities.appendName(conversion, formatter, null);
             formatter.newLine();
             append(formatter);
-            return "Conversion";
+            return WKTKeywords.Conversion;
         }
 
         /** Formats this {@code Conversion} element without the conversion name. */

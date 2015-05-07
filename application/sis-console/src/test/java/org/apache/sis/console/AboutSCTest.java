@@ -95,15 +95,15 @@ public final strictfp class AboutSCTest extends TestCase {
     }
 
     /**
-     * Tests the {@link AboutSC#toRemoveURL(String)} method.
+     * Tests the {@link AboutSC#toRemoteURL(String)} method.
      */
     @Test
-    public void testToRemoveURL() {
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutSC.toRemoveURL("myhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutSC.toRemoveURL("myhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL("localhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutSC.toRemoveURL("localhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL(":9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutSC.toRemoveURL("localhosx"));
+    public void testToRemoteURL() {
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutSC.toRemoteURL("myhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutSC.toRemoteURL("myhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoteURL("localhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutSC.toRemoteURL("localhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoteURL(":9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutSC.toRemoteURL("localhosx"));
     }
 }

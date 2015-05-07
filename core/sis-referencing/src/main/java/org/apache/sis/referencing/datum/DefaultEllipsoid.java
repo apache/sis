@@ -35,6 +35,7 @@ import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -757,6 +758,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Formats this ellipsoid as a <cite>Well Known Text</cite> {@code Ellipsoid[…]} element.
      *
      * @return {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -772,11 +775,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         final double inverseFlattening = getInverseFlattening();  // Gives to users a chance to override properties.
         formatter.append(isInfinite(inverseFlattening) ? 0 : inverseFlattening);
         if (isWKT1) {
-            return "Spheroid";
+            return WKTKeywords.Spheroid;
         }
         if (!convention.isSimplified() || !SI.METRE.equals(unit)) {
             formatter.append(unit);
         }
-        return "Ellipsoid";
+        return WKTKeywords.Ellipsoid;
     }
 }

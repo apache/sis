@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.LenientComparable;
@@ -918,6 +919,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 formatter.append((MathTransform) step);
             }
         }
-        return "Concat_MT";
+        return WKTKeywords.Concat_MT;
     }
 }
