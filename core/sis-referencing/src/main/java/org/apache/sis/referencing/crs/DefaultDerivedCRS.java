@@ -56,6 +56,22 @@ import org.apache.sis.util.Classes;
  * can not be {@linkplain DefaultProjectedCRS projected CRS} themselves, but may be derived from a projected CRS
  * (for example in order to use a {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate system}).
  *
+ * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
+ * provided that the conditions in the right column are meet:</p>
+ *
+ * <table class="ogc">
+ *   <caption>Derived CRS types</caption>
+ *   <tr><th>Type</th>                   <th>Conditions</th></tr>
+ *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
+ *   <tr><td>{@link VerticalCRS}</td>    <td>Base CRS is also a {@code VerticalCRS} and coordinate system is a {@code VerticalCS}.</td></tr>
+ *   <tr><td>{@link TemporalCRS}</td>    <td>Base CRS is also a {@code TemporalCRS} and coordinate system is a {@code TimeCS}.</td></tr>
+ *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is also a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
+ * </table>
+ *
+ * Those specialized subclasses can be inferred automatically by
+ * {@link DefaultFactory#createDerivedCRS(Map, CoordinateReferenceSystem, Conversion, CoordinateSystem)}.
+ * Alternatively, users can create their own {@code DefaultDerivedCRS} subclass implementing the desired interface.
+ *
  * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
@@ -161,6 +177,25 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
+     * Creates a {@code DefaultDerivedCRS} or one of the internal sub-classes
+     * depending on the argument type.
+     */
+    static DefaultDerivedCRS create(final Map<String,?>    properties,
+                                    final SingleCRS        baseCRS,
+                                    final Conversion       conversionFromBase,
+                                    final CoordinateSystem derivedCS)
+            throws MismatchedDimensionException
+    {
+        switch (getType(baseCRS, derivedCS)) {
+            case WKTKeywords.GeodeticCRS:    return new Geodetic   (properties, (GeodeticCRS) baseCRS, conversionFromBase, (EllipsoidalCS) derivedCS);
+            case WKTKeywords.VerticalCRS:    return new Vertical   (properties, (VerticalCRS) baseCRS, conversionFromBase,    (VerticalCS) derivedCS);
+            case WKTKeywords.TimeCRS:        return new Temporal   (properties, (TemporalCRS) baseCRS, conversionFromBase,        (TimeCS) derivedCS);
+            case WKTKeywords.EngineeringCRS: return new Engineering(properties,               baseCRS, conversionFromBase,                 derivedCS);
+            default: return new DefaultDerivedCRS(properties, baseCRS, conversionFromBase, derivedCS);
+        }
+    }
+
+    /**
      * Returns a SIS coordinate reference system implementation with the same values than the given
      * arbitrary implementation. If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
@@ -171,8 +206,17 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDerivedCRS castOrCopy(final DerivedCRS object) {
-        return (object == null) || (object instanceof DefaultDerivedCRS)
-                ? (DefaultDerivedCRS) object : new DefaultDerivedCRS(object);
+        if (object == null || object instanceof DefaultDerivedCRS) {
+            return (DefaultDerivedCRS) object;
+        } else {
+            switch (getType(object.getBaseCRS(), object.getCoordinateSystem())) {
+                case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
+                case WKTKeywords.VerticalCRS:    return new Vertical   (object);
+                case WKTKeywords.TimeCRS:        return new Temporal   (object);
+                case WKTKeywords.EngineeringCRS: return new Engineering(object);
+                default: return new DefaultDerivedCRS(object);
+            }
+        }
     }
 
     /**
@@ -366,6 +410,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1263243517380302846L;
 
+        /** Creates a copy of the given CRS. */
+        Geodetic(DerivedCRS other) {
+            super(other);
+        }
+
         /** Creates a new geodetic CRS derived from the given one. */
         Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, Conversion conversionFromBase, EllipsoidalCS derivedCS) {
             super(properties, baseCRS, conversionFromBase, derivedCS);
@@ -395,6 +444,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -5599709829566076972L;
 
+        /** Creates a copy of the given CRS. */
+        Vertical(DerivedCRS other) {
+            super(other);
+        }
+
         /** Creates a new vertical CRS derived from the given one. */
         Vertical(Map<String,?> properties, VerticalCRS baseCRS, Conversion conversionFromBase, VerticalCS derivedCS) {
             super(properties, baseCRS, conversionFromBase, derivedCS);
@@ -423,6 +477,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     private static final class Temporal extends DefaultDerivedCRS implements TemporalCRS {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -4721311735720248819L;
+
+        /** Creates a copy of the given CRS. */
+        Temporal(DerivedCRS other) {
+            super(other);
+        }
 
         /** Creates a new temporal CRS derived from the given one. */
         Temporal(Map<String,?> properties, TemporalCRS baseCRS, Conversion conversionFromBase, TimeCS derivedCS) {
@@ -455,6 +514,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     private static final class Engineering extends DefaultDerivedCRS implements EngineeringCRS {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 42334975023270039L;
+
+        /** Creates a copy of the given CRS. */
+        Engineering(DerivedCRS other) {
+            super(other);
+        }
 
         /** Creates a new temporal CRS derived from the given one. */
         Engineering(Map<String,?> properties, SingleCRS baseCRS, Conversion conversionFromBase, CoordinateSystem derivedCS) {
