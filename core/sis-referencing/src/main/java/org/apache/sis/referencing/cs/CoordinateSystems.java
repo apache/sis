@@ -209,13 +209,15 @@ public final class CoordinateSystems extends Static {
 
     /**
      * Returns an affine transform between two coordinate systems.
-     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
-     * For example if {@code sourceCRS} is a {@link org.opengis.referencing.cs.CartesianCS},
-     * then {@code targetCRS} must be a {@code CartesianCS} too.
      * Only units and axes order (e.g. transforming from
      * ({@linkplain AxisDirection#NORTH North}, {@linkplain AxisDirection#WEST West}) to
      * ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North})
      * are taken in account by this method.
+     *
+     * <div class="section">Conditions</div>
+     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
+     * For example if {@code sourceCS} is a {@link org.opengis.referencing.cs.CartesianCS},
+     * then {@code targetCS} must be a {@code CartesianCS} too.
      *
      * <div class="note"><b>Example:</b>
      * If coordinates in {@code sourceCS} are (<var>x</var>,<var>y</var>) tuples in metres

@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -255,6 +256,25 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     private void setCoordinateSystem(final CartesianCS cs) {
         setCoordinateSystem("cartesianCS", cs);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultProjectedCRS forConvention(final AxesConvention convention) {
+        return (DefaultProjectedCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        final Projection conversion = super.getConversionFromBase();
+        return new DefaultProjectedCRS(properties, conversion.getSourceCRS(), conversion, (CartesianCS) cs);
     }
 
     /**

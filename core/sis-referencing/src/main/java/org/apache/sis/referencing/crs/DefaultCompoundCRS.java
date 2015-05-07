@@ -383,6 +383,14 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
+     * Should never be invoked since we override {@link AbstractCRS#forConvention(AxesConvention)}.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        throw new AssertionError();
+    }
+
+    /**
      * Compares this coordinate reference system with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.

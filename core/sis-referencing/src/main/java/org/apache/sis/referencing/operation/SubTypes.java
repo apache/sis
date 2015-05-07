@@ -119,13 +119,15 @@ final class SubTypes {
      * @param  definition The defining conversion.
      * @param  sourceCRS  The source CRS.
      * @param  targetCRS  The target CRS.
+     * @param  factory    The factory to use if some axis changes are needed, or {@code null} for the default.
      * @return The conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
      */
     static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
+            final MathTransformFactory factory)
     {
         Class<? extends T> type = baseType;
         if (definition instanceof AbstractIdentifiedObject) {
@@ -143,15 +145,15 @@ final class SubTypes {
         }
         final Conversion conversion;
         if (CylindricalProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory);
         } else if (ConicProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory);
         } else if (PlanarProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory);
         } else if (Projection.class.isAssignableFrom(type)) {
-            conversion = new DefaultProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory);
         } else {
-            conversion = new DefaultConversion(definition, sourceCRS, targetCRS);
+            conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory);
         }
         return type.cast(conversion);
     }
