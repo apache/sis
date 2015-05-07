@@ -29,6 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -317,14 +318,16 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * completely in ISO 19111:2007.</div>
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
-            return "Vert_Datum";
+            return WKTKeywords.Vert_Datum;
         }
-        return "VerticalDatum";
+        return WKTKeywords.VerticalDatum;
     }
 }

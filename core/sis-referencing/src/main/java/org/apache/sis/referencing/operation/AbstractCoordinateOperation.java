@@ -23,13 +23,17 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.measure.converter.ConversionException;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -43,10 +47,13 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Semaphores;
 
@@ -168,23 +175,24 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceCRS = null;
-        targetCRS = null;
-        interpolationCRS = null;
-        operationVersion = null;
+        sourceCRS                   = null;
+        targetCRS                   = null;
+        interpolationCRS            = null;
+        operationVersion            = null;
         coordinateOperationAccuracy = null;
-        domainOfValidity = null;
-        scope = null;
-        transform = null;
+        domainOfValidity            = null;
+        scope                       = null;
+        transform                   = null;
     }
 
     /**
      * Constructs a new coordinate operation with the same values than the specified defining conversion,
      * together with the specified source and target CRS. This constructor is used by {@link DefaultConversion} only.
      */
-    AbstractCoordinateOperation(final CoordinateOperation       definition,
+    AbstractCoordinateOperation(final CoordinateOperation definition,
                                 final CoordinateReferenceSystem sourceCRS,
-                                final CoordinateReferenceSystem targetCRS)
+                                final CoordinateReferenceSystem targetCRS,
+                                final MathTransformFactory factory)
     {
         super(definition);
         this.sourceCRS                   = sourceCRS;
@@ -194,8 +202,47 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         this.coordinateOperationAccuracy = definition.getCoordinateOperationAccuracy();
         this.domainOfValidity            = definition.getDomainOfValidity();
         this.scope                       = definition.getScope();
-        this.transform                   = definition.getMathTransform();
+        MathTransform mt = definition.getMathTransform();
+        mt = swapAndScaleAxes(mt, sourceCRS, definition.getSourceCRS(), true,  factory);
+        mt = swapAndScaleAxes(mt, definition.getTargetCRS(), targetCRS, false, factory);
+        transform = mt;
         checkDimensions();
+    }
+
+    /**
+     * Concatenates to the given transform the operation needed for swapping and scaling the axes.
+     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
+     * For example if {@code sourceCRS} uses a {@code CartesianCS}, then {@code targetCRS} must use
+     * a {@code CartesianCS} too.
+     *
+     * @param transform The transform to which to concatenate axis changes.
+     * @param sourceCRS The first CRS of the pair for which to check for axes changes.
+     * @param targetCRS The second CRS of the pair for which to check for axes changes.
+     * @param isSource  {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
+     * @param factory   The factory to use if some axis changes are needed, or {@code null} for the default.
+     */
+    private static MathTransform swapAndScaleAxes(MathTransform transform,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final boolean isSource, MathTransformFactory factory)
+    {
+        if (sourceCRS != null && targetCRS != null && sourceCRS != targetCRS) try {
+            final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                                targetCRS.getCoordinateSystem());
+            if (!m.isIdentity()) {
+                if (factory == null) {
+                    factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+                }
+                final MathTransform s = factory.createAffineTransform(m);
+                transform = factory.createConcatenatedTransform(isSource ? s : transform,
+                                                                isSource ? transform : s);
+            }
+        } catch (ConversionException | FactoryException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
+                    (isSource ? "sourceCRS" : "targetCRS"),
+                    (isSource ?  sourceCRS  :  targetCRS).getName()), e);
+        }
+        return transform;
     }
 
     /**
@@ -721,27 +768,29 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @param  formatter The formatter to use.
      * @return {@code "CoordinateOperation"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        append(formatter, getSourceCRS(), "SourceCRS");
-        append(formatter, getTargetCRS(), "TargetCRS");
+        append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+        append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        append(formatter, getInterpolationCRS(), "InterpolationCRS");
+        append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
         final double accuracy = getLinearAccuracy();
         if (accuracy > 0) {
             formatter.append(new FormattableObject() {
                 @Override protected String formatTo(final Formatter formatter) {
                     formatter.append(accuracy);
-                    return "OperationAccuracy";
+                    return WKTKeywords.OperationAccuracy;
                 }
             });
         }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "CoordinateOperation";
+        return WKTKeywords.CoordinateOperation;
     }
 
     /**

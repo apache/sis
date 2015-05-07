@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.apache.sis.internal.metadata.WKTKeywords;
 import java.util.Iterator;
 import java.util.Collection;
 
@@ -128,7 +129,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             @Override
             protected String formatTo(final Formatter formatter) {
                 WKTUtilities.appendParamMT(parameters, formatter);
-                return "Param_MT";
+                return WKTKeywords.Param_MT;
             }
         };
     }

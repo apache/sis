@@ -23,6 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -168,6 +169,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Formats this datum as a <cite>Well Known Text</cite> {@code EngineeringDatum[…]} element.
      *
      * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -180,8 +183,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
              * in WKT 1, but do not have any indication about what the values should be.
              */
             formatter.append(0);
-            return "Local_Datum";
+            return WKTKeywords.Local_Datum;
         }
-        return "EngineeringDatum";
+        return WKTKeywords.EngineeringDatum;
     }
 }

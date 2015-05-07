@@ -23,6 +23,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -155,12 +156,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param definition The defining conversion.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
+     * @param factory    The factory to use if some axis changes are needed, or {@code null} for the default.
      */
-    DefaultConversion(final Conversion                definition,
+    DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
-                      final CoordinateReferenceSystem targetCRS)
+                      final CoordinateReferenceSystem targetCRS,
+                      final MathTransformFactory factory)
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory);
     }
 
     /**
@@ -255,6 +258,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         ArgumentChecks.ensureNonNull("baseType",  baseType);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        return SubTypes.create(baseType, this, sourceCRS, targetCRS);
+        return SubTypes.create(baseType, this, sourceCRS, targetCRS, null);
     }
 }

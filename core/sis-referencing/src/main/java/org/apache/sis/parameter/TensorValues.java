@@ -33,6 +33,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
@@ -465,6 +466,6 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendParamMT(this, formatter);
-        return "ParameterGroup";
+        return WKTKeywords.ParameterGroup;
     }
 }

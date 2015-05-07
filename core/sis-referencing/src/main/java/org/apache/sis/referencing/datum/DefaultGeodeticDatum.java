@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
@@ -534,6 +535,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
      *
      * @return {@code "Datum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -557,6 +560,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         }
         // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "Datum";
+        return WKTKeywords.Datum;
     }
 }

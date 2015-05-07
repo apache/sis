@@ -33,6 +33,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -637,6 +638,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formats this operation as a <cite>Well Known Text</cite> {@code Method[…]} element.
      *
      * @return {@code "Method"} (WKT 2) or {@code "Projection"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -660,10 +663,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              */
             final Class<? extends SingleOperation> type = getOperationType();
             if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
-                return "Projection";
+                return WKTKeywords.Projection;
             }
             formatter.setInvalidWKT(this, null);
         }
-        return "Method";
+        return WKTKeywords.Method;
     }
 }

@@ -107,7 +107,7 @@ public final strictfp class DirectionAlongMeridianTest extends TestCase {
     }
 
     /**
-     * Test Well Known Text formatting.
+     * Tests Well Known Text formatting.
      */
     @Test
     public void testWKT() {

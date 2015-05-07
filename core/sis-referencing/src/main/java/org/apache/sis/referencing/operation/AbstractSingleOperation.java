@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -113,11 +114,12 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * specified source and target CRS. While the source operation can be an arbitrary one, it is
      * typically a defining conversion.
      */
-    AbstractSingleOperation(final SingleOperation           definition,
+    AbstractSingleOperation(final SingleOperation definition,
                             final CoordinateReferenceSystem sourceCRS,
-                            final CoordinateReferenceSystem targetCRS)
+                            final CoordinateReferenceSystem targetCRS,
+                            final MathTransformFactory factory)
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory);
         method = definition.getMethod();
         parameters = (definition instanceof AbstractSingleOperation) ?
                 ((AbstractSingleOperation) definition).parameters : definition.getParameterValues();

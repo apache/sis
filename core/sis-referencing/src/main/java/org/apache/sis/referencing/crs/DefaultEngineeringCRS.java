@@ -32,13 +32,15 @@ import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A contextually local coordinate reference system. It can be divided into two broad categories:
+ * A 1-, 2- or 3-dimensional contextually local coordinate reference system.
+ * It can be divided into two broad categories:
  *
  * <ul>
  *   <li>earth-fixed systems applied to engineering activities on or near the surface of the earth;</li>
@@ -256,11 +258,13 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
      *
      * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS"
-               : isBaseCRS(formatter) ? "BaseEngCRS" : "EngineeringCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS : WKTKeywords.EngineeringCRS;
     }
 }

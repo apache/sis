@@ -522,15 +522,17 @@ next:       for (final Class<?> candidate : candidates) {
      * of interfaces. Only interfaces assignable to {@code baseInterface} are compared.
      * Declaration order doesn't matter.
      *
-     * For example in ISO 19111, different interfaces exist for different coordinate system (CS)
-     * geometries ({@code CartesianCS}, {@code PolarCS}, etc.). One can check if two implementations
-     * have the same geometry with the following code:
+     * <div class="note"><b>Example:</b>
+     * in ISO 19111, different interfaces exist for different coordinate system (CS) geometries
+     * ({@code CartesianCS}, {@code PolarCS}, etc.). One can check if two implementations have
+     * the same geometry with the following code:
      *
      * {@preformat java
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {
      *         // The two Coordinate System are of the same kind.
      *     }
      * }
+     * </div>
      *
      * @param object1 The first object to check for interfaces.
      * @param object2 The second object to check for interfaces.
