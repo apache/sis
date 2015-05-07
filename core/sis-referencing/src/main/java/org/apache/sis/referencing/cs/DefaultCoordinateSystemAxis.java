@@ -38,7 +38,9 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -54,7 +56,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.CharEncoding;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -855,7 +856,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 formatter.append(getUnit());
             }
         }
-        return "Axis";
+        return WKTKeywords.Axis;
     }
 
     /**
@@ -908,7 +909,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         @Override
         protected String formatTo(final Formatter formatter) {
             formatter.append(index);
-            return "Order";
+            return WKTKeywords.Order;
         }
     }
 }

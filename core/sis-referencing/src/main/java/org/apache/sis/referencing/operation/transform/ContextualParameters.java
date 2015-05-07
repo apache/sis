@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
@@ -626,10 +627,10 @@ public class ContextualParameters extends Parameters implements Serializable {
         protected String formatTo(final Formatter formatter) {
             if (inverse) {
                 formatter.append(new WKT(false));
-                return "Inverse_MT";
+                return WKTKeywords.Inverse_MT;
             } else {
                 WKTUtilities.appendParamMT(ContextualParameters.this, formatter);
-                return "Param_MT";
+                return WKTKeywords.Param_MT;
             }
         }
     }

@@ -33,6 +33,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -449,6 +450,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             formatter.append(toFormattable(element));
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return isWKT1 ? "Compd_CS" : "CompoundCRS";
+        return isWKT1 ? WKTKeywords.Compd_CS : WKTKeywords.CompoundCRS;
     }
 }

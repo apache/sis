@@ -29,6 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -325,8 +326,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
-            return "Vert_Datum";
+            return WKTKeywords.Vert_Datum;
         }
-        return "VerticalDatum";
+        return WKTKeywords.VerticalDatum;
     }
 }

@@ -32,6 +32,7 @@ import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -263,7 +264,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Local_CS"
-               : isBaseCRS(formatter) ? "BaseEngCRS" : "EngineeringCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS : WKTKeywords.EngineeringCRS;
     }
 }
