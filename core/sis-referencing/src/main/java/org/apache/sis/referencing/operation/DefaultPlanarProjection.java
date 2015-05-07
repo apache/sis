@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.PlanarProjection;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -48,12 +49,14 @@ final class DefaultPlanarProjection extends DefaultProjection implements PlanarP
      * @param definition The defining conversion.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
+     * @param factory    The factory to use if some axis changes are needed, or {@code null} for the default.
      */
-    DefaultPlanarProjection(final Conversion                definition,
+    DefaultPlanarProjection(final Conversion definition,
                             final CoordinateReferenceSystem sourceCRS,
-                            final CoordinateReferenceSystem targetCRS)
+                            final CoordinateReferenceSystem targetCRS,
+                            final MathTransformFactory factory)
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory);
     }
 
     /**

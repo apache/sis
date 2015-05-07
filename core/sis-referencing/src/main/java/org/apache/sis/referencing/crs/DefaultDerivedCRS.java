@@ -41,6 +41,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -59,7 +60,7 @@ import org.apache.sis.util.Classes;
  * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
  * provided that the conditions in the right column are meet:</p>
  *
- * <table class="ogc">
+ * <table class="sis">
  *   <caption>Derived CRS types</caption>
  *   <tr><th>Type</th>                   <th>Conditions</th></tr>
  *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
@@ -68,8 +69,7 @@ import org.apache.sis.util.Classes;
  *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is also a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
  * </table>
  *
- * Those specialized subclasses can be inferred automatically by
- * {@link DefaultFactory#createDerivedCRS(Map, CoordinateReferenceSystem, Conversion, CoordinateSystem)}.
+ * Those specialized subclasses can be inferred automatically by the {@link #create create(…)} static method.
  * Alternatively, users can create their own {@code DefaultDerivedCRS} subclass implementing the desired interface.
  *
  * <div class="section">Immutability and thread safety</div>
@@ -151,6 +151,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
+     *
+     * @see #create(Map, SingleCRS, Conversion, CoordinateSystem)
      */
     public DefaultDerivedCRS(final Map<String,?>    properties,
                              final SingleCRS        baseCRS,
@@ -177,22 +179,39 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Creates a {@code DefaultDerivedCRS} or one of the internal sub-classes
-     * depending on the argument type.
+     * Creates a derived CRS from a defining conversion and a type inferred from the given arguments.
+     * This method expects the same arguments and performs the same work than the
+     * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem) above constructor},
+     * except that the {@code DerivedCRS} instance returned by this method may additionally implement
+     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS} or {@link EngineeringCRS} interface.
+     * See the class javadoc for more information.
+     *
+     * @param  properties The properties to be given to the new derived CRS object.
+     * @param  baseCRS Coordinate reference system to base the derived CRS on.
+     * @param  conversionFromBase The conversion from the base CRS to this derived CRS.
+     * @param  derivedCS The coordinate system for the derived CRS. The number of axes
+     *         must match the target dimension of the {@code baseToDerived} transform.
+     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
+     *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
+     *
+     * @see #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem)
      */
-    static DefaultDerivedCRS create(final Map<String,?>    properties,
-                                    final SingleCRS        baseCRS,
-                                    final Conversion       conversionFromBase,
-                                    final CoordinateSystem derivedCS)
+    public static DefaultDerivedCRS create(final Map<String,?>    properties,
+                                           final SingleCRS        baseCRS,
+                                           final Conversion       conversionFromBase,
+                                           final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
-        switch (getType(baseCRS, derivedCS)) {
-            case WKTKeywords.GeodeticCRS:    return new Geodetic   (properties, (GeodeticCRS) baseCRS, conversionFromBase, (EllipsoidalCS) derivedCS);
-            case WKTKeywords.VerticalCRS:    return new Vertical   (properties, (VerticalCRS) baseCRS, conversionFromBase,    (VerticalCS) derivedCS);
-            case WKTKeywords.TimeCRS:        return new Temporal   (properties, (TemporalCRS) baseCRS, conversionFromBase,        (TimeCS) derivedCS);
-            case WKTKeywords.EngineeringCRS: return new Engineering(properties,               baseCRS, conversionFromBase,                 derivedCS);
-            default: return new DefaultDerivedCRS(properties, baseCRS, conversionFromBase, derivedCS);
+        if (baseCRS != null && derivedCS != null) {
+            switch (getType(baseCRS, derivedCS)) {
+                case WKTKeywords.GeodeticCRS:    return new Geodetic   (properties, (GeodeticCRS) baseCRS, conversionFromBase, (EllipsoidalCS) derivedCS);
+                case WKTKeywords.VerticalCRS:    return new Vertical   (properties, (VerticalCRS) baseCRS, conversionFromBase,    (VerticalCS) derivedCS);
+                case WKTKeywords.TimeCRS:        return new Temporal   (properties, (TemporalCRS) baseCRS, conversionFromBase,        (TimeCS) derivedCS);
+                case WKTKeywords.EngineeringCRS: return new Engineering(properties,               baseCRS, conversionFromBase,                 derivedCS);
+            }
         }
+        return new DefaultDerivedCRS(properties, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -277,6 +296,25 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     @Override
     public Conversion getConversionFromBase() {
         return super.getConversionFromBase();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultDerivedCRS forConvention(final AxesConvention convention) {
+        return (DefaultDerivedCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+        final Conversion conversionFromBase = super.getConversionFromBase();
+        return new DefaultDerivedCRS(properties, (SingleCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);
     }
 
     /**
@@ -430,6 +468,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (EllipsoidalCS) super.getCoordinateSystem();
         }
 
+        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+            final Conversion conversionFromBase = getConversionFromBase();
+            return new Geodetic(properties, (GeodeticCRS) conversionFromBase.getSourceCRS(),
+                    conversionFromBase, (EllipsoidalCS) derivedCS);
+        }
+
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
             return WKTKeywords.GeodeticCRS;
@@ -462,6 +507,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the coordinate system given at construction time. */
         @Override public VerticalCS getCoordinateSystem() {
             return (VerticalCS) super.getCoordinateSystem();
+        }
+
+        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+            final Conversion conversionFromBase = getConversionFromBase();
+            return new Vertical(properties, (VerticalCRS) conversionFromBase.getSourceCRS(),
+                    conversionFromBase, (VerticalCS) derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
@@ -498,6 +550,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (TimeCS) super.getCoordinateSystem();
         }
 
+        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+            final Conversion conversionFromBase = getConversionFromBase();
+            return new Temporal(properties, (TemporalCRS) conversionFromBase.getSourceCRS(),
+                    conversionFromBase, (TimeCS) derivedCS);
+        }
+
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
             return WKTKeywords.TimeCRS;
@@ -529,6 +588,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         @Override public EngineeringDatum getDatum() {
             final Datum datum = super.getDatum();
             return (datum instanceof EngineeringDatum) ? (EngineeringDatum) datum : null;
+        }
+
+        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+            final Conversion conversionFromBase = getConversionFromBase();
+            return new Engineering(properties, (SingleCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/

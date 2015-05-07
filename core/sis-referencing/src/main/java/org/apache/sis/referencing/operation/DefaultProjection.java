@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -63,12 +64,14 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * @param definition The defining conversion.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
+     * @param factory    The factory to use if some axis changes are needed, or {@code null} for the default.
      */
-    DefaultProjection(final Conversion                definition,
+    DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
-                      final CoordinateReferenceSystem targetCRS)
+                      final CoordinateReferenceSystem targetCRS,
+                      final MathTransformFactory factory)
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory);
         ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
         ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }
