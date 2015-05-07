@@ -44,7 +44,37 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
      */
     @Test
     public void testGetType() {
-        assertEquals(WKTKeywords.VerticalCRS,
+        assertEquals("Using consistent arguments.", WKTKeywords.VerticalCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+
+        assertNull("Using inconsistent arguments.",
+                DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.SECONDS));
+
+        assertEquals("Using consistent arguments.", WKTKeywords.TimeCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.SECONDS));
+
+        assertNull("Using inconsistent arguments.",
+                DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+
+        assertEquals("Using consistent arguments.", WKTKeywords.GeodeticCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_2D));
+
+        assertEquals("Using consistent arguments but one more dimension.", WKTKeywords.GeodeticCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_3D));
+
+        assertEquals("Using consistent arguments.", WKTKeywords.GeodeticCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_3D));
+
+        assertEquals("Using consistent arguments but one less dimension.", WKTKeywords.GeodeticCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_2D));
+
+        assertEquals("Using different coordinate system type.", WKTKeywords.EngineeringCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.SPHERICAL));
+
+        assertEquals("Using different coordinate system type.", WKTKeywords.EngineeringCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.CARTESIAN_2D));
+
+        assertEquals("Using illegal coordinate system type.", WKTKeywords.EngineeringCRS,
+                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
     }
 }
