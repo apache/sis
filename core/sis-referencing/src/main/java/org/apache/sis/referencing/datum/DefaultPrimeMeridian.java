@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
@@ -353,12 +354,12 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         }
         formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
         if (isWKT1) {
-            return "PrimeM";
+            return WKTKeywords.PrimeM;
         }
         final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
         if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
             formatter.append(angularUnit);
         }
-        return "PrimeMeridian";
+        return WKTKeywords.PrimeMeridian;
     }
 }

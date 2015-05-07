@@ -47,6 +47,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Semaphores;
 
@@ -727,23 +728,23 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        append(formatter, getSourceCRS(), "SourceCRS");
-        append(formatter, getTargetCRS(), "TargetCRS");
+        append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+        append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        append(formatter, getInterpolationCRS(), "InterpolationCRS");
+        append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
         final double accuracy = getLinearAccuracy();
         if (accuracy > 0) {
             formatter.append(new FormattableObject() {
                 @Override protected String formatTo(final Formatter formatter) {
                     formatter.append(accuracy);
-                    return "OperationAccuracy";
+                    return WKTKeywords.OperationAccuracy;
                 }
             });
         }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "CoordinateOperation";
+        return WKTKeywords.CoordinateOperation;
     }
 
     /**

@@ -34,6 +34,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
@@ -857,7 +858,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                     || value instanceof File || value instanceof Path))
             {
                 formatter.append(value.toString(), null);
-                return "ParameterFile";
+                return WKTKeywords.ParameterFile;
             }
             formatter.appendAny(value);
         }
@@ -871,6 +872,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             formatter.append(unit);
             // ID will be added by the Formatter itself.
         }
-        return "Parameter";
+        return WKTKeywords.Parameter;
     }
 }

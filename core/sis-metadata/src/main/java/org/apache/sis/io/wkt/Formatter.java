@@ -66,6 +66,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.simple.SimpleExtent;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -737,7 +738,7 @@ public class Formatter implements Localized {
             }
         }
         if (showOthers) {
-            appendOnNewLine("Remarks", object.getRemarks(), ElementKind.REMARKS);
+            appendOnNewLine(WKTKeywords.Remarks, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }
@@ -764,10 +765,10 @@ public class Formatter implements Localized {
         } else {
             return;
         }
-        appendOnNewLine("Anchor", anchor, null);
-        appendOnNewLine("Scope", scope, ElementKind.SCOPE);
+        appendOnNewLine(WKTKeywords.Anchor, anchor, null);
+        appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
         if (area != null) {
-            appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
+            appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));
             appendTemporalExtent(Extents.getTimeRange(area));
@@ -790,7 +791,7 @@ public class Formatter implements Localized {
      */
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
-            openElement(isComplement, "BBox");
+            openElement(isComplement, WKTKeywords.BBox);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
@@ -825,7 +826,7 @@ public class Formatter implements Localized {
                 maximumFractionDigits = VERTICAL_ACCURACY;
                 minimumFractionDigits = 0;
             }
-            openElement(true, "VerticalExtent");
+            openElement(true, WKTKeywords.VerticalExtent);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(minimumFractionDigits);
             numberFormat.setMaximumFractionDigits(maximumFractionDigits);
@@ -865,7 +866,7 @@ public class Formatter implements Localized {
                         ((SimpleDateFormat) dateFormat).applyPattern(WKTFormat.SHORT_DATE_PATTERN);
                     }
                 }
-                openElement(true, "TimeExtent");
+                openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
                 try {
                     append(min);

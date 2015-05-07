@@ -23,6 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.EngineeringDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 
@@ -182,8 +183,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
              * in WKT 1, but do not have any indication about what the values should be.
              */
             formatter.append(0);
-            return "Local_Datum";
+            return WKTKeywords.Local_Datum;
         }
-        return "EngineeringDatum";
+        return WKTKeywords.EngineeringDatum;
     }
 }

@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -240,7 +241,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Vert_CS"
-               : isBaseCRS(formatter) ? "BaseVertCRS" : "VerticalCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Vert_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS : WKTKeywords.VerticalCRS;
     }
 }

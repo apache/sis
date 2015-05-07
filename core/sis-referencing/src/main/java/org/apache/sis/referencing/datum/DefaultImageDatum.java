@@ -25,6 +25,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
@@ -251,6 +252,6 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "ImageDatum";
+        return WKTKeywords.ImageDatum;
     }
 }

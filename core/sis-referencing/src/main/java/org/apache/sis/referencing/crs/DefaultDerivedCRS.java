@@ -42,6 +42,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -288,7 +289,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         formatter.newLine();
         formatter.append(WKTUtilities.toFormattable(getBaseCRS()));
         if (isWKT1) {
-            return "Fitted_CS";
+            return WKTKeywords.Fitted_CS;
         } else {
             formatter.append(new FormattableObject() {     // Format inside a "DefiningConversion" element.
                 @Override protected String formatTo(final Formatter formatter) {
@@ -299,7 +300,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     for (final GeneralParameterValue param : conversion.getParameterValues().values()) {
                         WKTUtilities.append(param, formatter);
                     }
-                    return "DerivingConversion";
+                    return WKTKeywords.DerivingConversion;
                 }
             });
             if (!isBaseCRS(formatter)) {
@@ -337,16 +338,16 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             if (Classes.implementSameInterfaces(derivedCS.getClass(),
                     baseCRS.getCoordinateSystem().getClass(), CoordinateSystem.class))
             {
-                return "GeodeticCRS";
+                return WKTKeywords.GeodeticCRS;
             } else {
-                return "EngineeringCRS";
+                return WKTKeywords.EngineeringCRS;
             }
         } else if (VerticalCRS.class.isAssignableFrom(type) && derivedCS instanceof VerticalCS) {
-            return "VerticalCRS";
+            return WKTKeywords.VerticalCRS;
         } else if (TemporalCRS.class.isAssignableFrom(type) && derivedCS instanceof TimeCS) {
-            return "TimeCRS";
+            return WKTKeywords.TimeCRS;
         } else if (ProjectedCRS.class.isAssignableFrom(type) || EngineeringCRS.class.isAssignableFrom(type)) {
-            return "EngineeringCRS";
+            return WKTKeywords.EngineeringCRS;
         } else {
             return null;
         }
@@ -382,7 +383,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
-            return "GeodeticCRS";
+            return WKTKeywords.GeodeticCRS;
         }
     }
 
@@ -411,7 +412,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
-            return "VerticalCRS";
+            return WKTKeywords.VerticalCRS;
         }
     }
 
@@ -440,7 +441,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
-            return "TimeCRS";
+            return WKTKeywords.TimeCRS;
         }
     }
 
@@ -468,7 +469,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword() {
-            return "EngineeringCRS";
+            return WKTKeywords.EngineeringCRS;
         }
     }
 }

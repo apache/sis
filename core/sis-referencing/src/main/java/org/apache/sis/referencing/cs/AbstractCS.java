@@ -35,6 +35,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -449,6 +450,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         }
         formatter.append(type, null);
         formatter.append(getDimension());
-        return "CS";
+        return WKTKeywords.CS;
     }
 }

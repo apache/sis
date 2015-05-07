@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.crs;
+package org.apache.sis.internal.metadata;
 
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.test.DependsOn;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,23 +25,29 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link DefaultDerivedCRS} class.
+ * Tests the {@link WKTKeywords} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-@DependsOn({
-    DefaultProjectedCRSTest.class   // Has many similarities with DerivedCRS, but is simpler.
-})
-public final strictfp class DefaultDerivedCRSTest extends TestCase {
+public final strictfp class WKTKeywordsTest extends TestCase {
     /**
-     * Tests {@link DefaultDerivedCRS#getType(SingleCRS, CoordinateSystem)}.
+     * Ensures that all constants are equal to the name of the field that declare it.
+     * The intend is to avoid misleading constant names when reading code.
+     *
+     * @throws ReflectiveOperationException should never happen.
      */
     @Test
-    public void testGetType() {
-        assertEquals(WKTKeywords.VerticalCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+    public void verifyConstantValues() throws ReflectiveOperationException {
+        for (final Field field : WKTKeywords.class.getDeclaredFields()) {
+            final String name = field.getName();
+            final int modifiers = field.getModifiers();
+            assertTrue(name, Modifier.isPublic(modifiers));
+            assertTrue(name, Modifier.isStatic(modifiers));
+            assertTrue(name, Modifier.isFinal (modifiers));
+            assertEquals("As a policy of WKTKeywords, constants value should be equal to field name.", name, field.get(null));
+        }
     }
 }

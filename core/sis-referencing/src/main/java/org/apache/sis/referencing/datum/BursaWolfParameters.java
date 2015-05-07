@@ -29,6 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
@@ -606,7 +607,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         formatter.append(rZ);
         formatter.append(dS);
         if (isToWGS84()) {
-            return "ToWGS84";
+            return WKTKeywords.ToWGS84;
         }
         formatter.setInvalidWKT(BursaWolfParameters.class, null);
         String name = IdentifiedObjects.getUnicodeIdentifier(getTargetDatum());

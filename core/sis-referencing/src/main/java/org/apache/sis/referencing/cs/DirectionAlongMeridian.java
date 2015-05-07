@@ -24,6 +24,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -299,6 +300,6 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     protected String formatTo(final Formatter formatter) {
         formatter.append(meridian);
         formatter.append(NonSI.DEGREE_ANGLE);
-        return "Meridian";
+        return WKTKeywords.Meridian;
     }
 }

@@ -38,6 +38,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -216,7 +217,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @Override
     @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return (GeographicCRS) super.getConversionFromBase().getSourceCRS();
+        return super.getConversionFromBase().getSourceCRS();
     }
 
     /**
@@ -369,7 +370,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         }
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
-        return isWKT1 ? "ProjCS" : isBaseCRS ? "BaseProjCRS" : "ProjectedCRS";
+        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS : WKTKeywords.ProjectedCRS;
     }
 
     /**
@@ -393,7 +394,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             WKTUtilities.appendName(conversion, formatter, null);
             formatter.newLine();
             append(formatter);
-            return "Conversion";
+            return WKTKeywords.Conversion;
         }
 
         /** Formats this {@code Conversion} element without the conversion name. */
