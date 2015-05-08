@@ -951,7 +951,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnresolvedFeatureName_1 = 164;
 
         /**
-         * Coordinate reference system is unspecified.
+         * Coordinate reference system has not been specified.
          */
         public static final short UnspecifiedCRS = 173;
 
@@ -959,6 +959,11 @@ public final class Errors extends IndexedResourceBundle {
          * No format is specified for objects of class ‘{0}’.
          */
         public static final short UnspecifiedFormatForClass_1 = 126;
+
+        /**
+         * Parameter values have not been specified.
+         */
+        public static final short UnspecifiedParameterValues = 185;
 
         /**
          * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
