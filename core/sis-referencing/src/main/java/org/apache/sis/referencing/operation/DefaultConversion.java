@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Errors;
@@ -42,9 +43,11 @@ import org.apache.sis.util.Workaround;
  * The parameters describing coordinate conversions are defined rather than empirically derived.
  *
  * <p>This coordinate operation contains an {@linkplain DefaultOperationMethod operation method}, usually
- * with associated parameter values. In the SIS default implementation, the parameter values are inferred from the
- * {@linkplain #getMathTransform() math transform}. Subclasses may have to override the {@link #getParameterValues()}
- * method if they need to provide a different set of parameters.</p>
+ * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
+ * In the SIS default implementation, the parameter values are inferred from the
+ * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
+ * Subclasses may have to override the {@link #getParameterValues()} method if they need to provide
+ * a different set of parameters.</p>
  *
  * <div class="section">Defining conversions</div>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
@@ -53,14 +56,22 @@ import org.apache.sis.util.Workaround;
  * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
  * Those <cite>defining conversions</cite> have no source and target CRS since those elements are provided by the
  * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
- * MathTransform) constructor} for such defining conversions.
+ * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
+ *
+ * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
+ * {@linkplain DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup,
+ * CoordinateSystem) creating a math transform from the parameters}, instantiate a new {@code Conversion} of a
+ * more specific type
+ * ({@link org.opengis.referencing.operation.ConicProjection},
+ *  {@link org.opengis.referencing.operation.CylindricalProjection} or
+ *  {@link org.opengis.referencing.operation.PlanarProjection}) if possible,
+ * and assign the source and target CRS to it.</p>
  *
  * <div class="section">Immutability and thread safety</div>
- * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
- * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
- * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateOperation} instances created
- * using only SIS factories and static constants can be shared by many objects and passed between threads without
- * synchronization.
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
+ * {@code Conversion} instances created using only SIS factories and static constants can be shared
+ * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -136,24 +147,47 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Creates a defining conversion from the given transform.
-     * This conversion has no source and target CRS since those elements will be provided by the
-     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
-     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
+     * Creates a defining conversion from the given transform and/or parameters.
+     * This conversion has no source and target CRS since those elements are usually unknown
+     * at <cite>defining conversion</cite> construction time. The source and target CRS will
+     * become known later, at the
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
+     * construction time.
      *
-     * <p>The properties given in argument follow the same rules than for the
+     * <p>The {@code properties} map given in argument follows the same rules than for the
      * {@linkplain #DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, OperationMethod, MathTransform) above constructor}.</p>
      *
+     * <div class="section">Transform and parameters arguments</div>
+     * At least one of the {@code transform} or {@code parameters} argument must be non-null.
+     * If the caller supplies a {@code transform} argument, then it shall be a transform expecting
+     * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates
+     * and producing normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention}
+     * for more information about what Apache SIS means by "normalized".
+     *
+     * <p>If the caller can not yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
+     * for creating that transform, with the possible omission of {@code "semi-major"} and {@code "semi-minor"} values.
+     * The semi-major and semi-minor parameter values will be set automatically when the
+     * {@link #specialize specialize(…)} method will be invoked.</p>
+     *
+     * <p>If both the {@code transform} and {@code parameters} arguments are non-null, then the later should describes
+     * the parameters used for creating the transform. Those parameters will be stored for information purpose and can
+     * be given back by the {@link #getParameterValues()} method.</p>
+     *
      * @param properties The properties to be given to the identified object.
      * @param method     The operation method.
-     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @param transform  Transform from positions in the source CRS to positions in the target CRS, or {@code null}.
+     * @param parameters The {@code transform} parameter values, or {@code null}.
+     *
+     * @see DefaultMathTransformFactory#createBaseToDerived(CoordinateSystem, MathTransform, CoordinateSystem)
      */
-    public DefaultConversion(final Map<String,?>   properties,
-                             final OperationMethod method,
-                             final MathTransform   transform)
+    public DefaultConversion(final Map<String,?>       properties,
+                             final OperationMethod     method,
+                             final MathTransform       transform,
+                             final ParameterValueGroup parameters)
     {
-        super(properties, null, null, null, method, transform);
+        super(properties, method, transform, parameters);
     }
 
     /**
@@ -263,6 +297,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
+     *
+     * @see DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
      */
     public <T extends Conversion> T specialize(final Class<T> baseType,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,

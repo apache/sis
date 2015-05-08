@@ -96,7 +96,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method", method);
+        ArgumentChecks.ensureNonNull("method",    method);
+        ArgumentChecks.ensureNonNull("transform", transform);
         checkDimensions(method, transform, properties);
         this.method = method;
         /*
@@ -106,6 +107,27 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          */
         parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
         // No clone since this is a SIS internal property and SIS does not modify those values after construction.
+    }
+
+    /**
+     * Creates a defining conversion from the given transform and/or parameters.
+     * See {@link DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)}
+     * for more information.
+     */
+    AbstractSingleOperation(final Map<String,?>       properties,
+                            final OperationMethod     method,
+                            final MathTransform       transform,
+                            final ParameterValueGroup parameters)
+    {
+        super(properties, null, null, null, transform);
+        ArgumentChecks.ensureNonNull("method", method);
+        if (transform != null) {
+            checkDimensions(method, transform, properties);
+        } else if (parameters == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+        }
+        this.method = method;
+        this.parameters = (parameters != null) ? parameters.clone() : null;
     }
 
     /**
@@ -256,6 +278,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * values or units of measurement.</div>
      *
      * @return A description of the parameters.
+     *
+     * @see DefaultOperationMethod#getParameters()
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterDescriptors()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -269,6 +294,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @return The parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined
      *         for the current math transform implementation.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {

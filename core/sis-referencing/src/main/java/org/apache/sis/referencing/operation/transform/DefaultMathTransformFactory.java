@@ -609,6 +609,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *         if some required parameter has not been supplied, or has illegal value.
      *
      * @see org.apache.sis.referencing.cs.AxesConvention#NORMALIZED
+     * @see org.apache.sis.referencing.operation.DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
      */
     public MathTransform createBaseToDerived(final CoordinateSystem baseCS,
             final MathTransform parameterized, final CoordinateSystem derivedCS)

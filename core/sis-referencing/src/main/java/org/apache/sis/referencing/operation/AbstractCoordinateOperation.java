@@ -299,8 +299,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
                                        final MathTransform             transform)
     {
         super(properties);
-        ArgumentChecks.ensureNonNull("transform", transform);
-
         this.sourceCRS        = sourceCRS;
         this.targetCRS        = targetCRS;
         this.interpolationCRS = interpolationCRS;

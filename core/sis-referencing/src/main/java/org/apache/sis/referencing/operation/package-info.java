@@ -29,6 +29,14 @@
  *   <li>{@link org.apache.sis.referencing.operation.transform} for any transform other than map projections</li>
  * </ul>
  *
+ * <div class="section">Apache SIS extensions</div>
+ * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy() AbstractCoordinateOperation.getLinearAccuracy()}</li>
+ *   <li>{@link org.apache.sis.referencing.operation.DefaultConversion#specialize DefaultConversion.specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
+ * </ul>
+ *
  * <div class="section">Apache SIS specific behavior</div>
  * The following operations have a behavior in Apache SIS which may be different
  * than the behavior found in other softwares. Those particularities apply only when the math transform is
