@@ -551,6 +551,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
      *
      * @return The parameters, or {@code null} if unknown.
+     *
+     * @see DefaultConversion#getParameterDescriptors()
+     * @see DefaultConversion#getParameterValues()
      */
     @Override
     public ParameterDescriptorGroup getParameters() {

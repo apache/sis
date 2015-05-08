@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -97,7 +96,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method", method);
+        ArgumentChecks.ensureNonNull("method",    method);
+        ArgumentChecks.ensureNonNull("transform", transform);
         checkDimensions(method, transform, properties);
         this.method = method;
         /*
@@ -110,19 +110,41 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Constructs a new operation with the same values than the specified one, together with the
-     * specified source and target CRS. While the source operation can be an arbitrary one, it is
-     * typically a defining conversion.
+     * Creates a defining conversion from the given transform and/or parameters.
+     * See {@link DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)}
+     * for more information.
+     */
+    AbstractSingleOperation(final Map<String,?>       properties,
+                            final OperationMethod     method,
+                            final MathTransform       transform,
+                            final ParameterValueGroup parameters)
+    {
+        super(properties, null, null, null, transform);
+        ArgumentChecks.ensureNonNull("method", method);
+        if (transform != null) {
+            checkDimensions(method, transform, properties);
+        } else if (parameters == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+        }
+        this.method = method;
+        this.parameters = (parameters != null) ? parameters.clone() : null;
+    }
+
+    /**
+     * Creates a new coordinate operation with the same values than the specified defining conversion,
+     * except for the source CRS, target CRS and the math transform which are set the given values.
+     *
+     * <p>This constructor is for {@link DefaultConversion} usage only,
+     * in order to create a "real" conversion from a defining conversion.</p>
      */
     AbstractSingleOperation(final SingleOperation definition,
                             final CoordinateReferenceSystem sourceCRS,
                             final CoordinateReferenceSystem targetCRS,
-                            final MathTransformFactory factory)
+                            final MathTransform transform)
     {
-        super(definition, sourceCRS, targetCRS, factory);
+        super(definition, sourceCRS, targetCRS, transform);
         method = definition.getMethod();
-        parameters = (definition instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) definition).parameters : definition.getParameterValues();
+        parameters = getParameterValues(definition);
     }
 
     /**
@@ -137,8 +159,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     protected AbstractSingleOperation(final SingleOperation operation) {
         super(operation);
         method = operation.getMethod();
-        parameters = (operation instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
+        parameters = getParameterValues(operation);
     }
 
     /**
@@ -257,6 +278,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * values or units of measurement.</div>
      *
      * @return A description of the parameters.
+     *
+     * @see DefaultOperationMethod#getParameters()
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterDescriptors()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -270,10 +294,22 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @return The parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined
      *         for the current math transform implementation.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
         return (parameters != null) ? parameters.clone() : super.getParameterValues();
+    }
+
+    /**
+     * Gets the parameter values of the given operation without computing and without cloning them (if possible).
+     * If the parameters are automatically inferred from the math transform, do not compute them and instead return
+     * {@code null} (in conformance with {@link #parameters} contract).
+     */
+    private static ParameterValueGroup getParameterValues(final SingleOperation operation) {
+        return (operation instanceof AbstractSingleOperation) ?
+                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
     }
 
     /**
