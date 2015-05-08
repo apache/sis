@@ -19,12 +19,20 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.measure.converter.ConversionException;
+import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -156,14 +164,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param definition The defining conversion.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
-     * @param factory    The factory to use if some axis changes are needed, or {@code null} for the default.
+     * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      */
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
                       final CoordinateReferenceSystem targetCRS,
-                      final MathTransformFactory factory)
+                      final MathTransformFactory factory) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS, factory);
+        super(definition, sourceCRS, targetCRS, createMathTransform(definition, sourceCRS, targetCRS, factory));
     }
 
     /**
@@ -247,17 +255,110 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param  baseType   The base GeoAPI interface to be implemented by the conversion to return.
      * @param  sourceCRS  The source CRS.
      * @param  targetCRS  The target CRS.
+     * @param  factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      * @return The conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
+     *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
+     *         failed.
      */
     public <T extends Conversion> T specialize(final Class<T> baseType,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
+            final MathTransformFactory factory) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("baseType",  baseType);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        return SubTypes.create(baseType, this, sourceCRS, targetCRS, null);
+        ArgumentChecks.ensureNonNull("factory",   factory);
+        return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
+    }
+
+    /**
+     * Creates the math transform to be given to the sub-class constructor.
+     * This method is a workaround for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static MathTransform createMathTransform(
+            final Conversion definition,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final MathTransformFactory factory) throws FactoryException
+    {
+        MathTransform mt = definition.getMathTransform();
+        if (mt == null) {
+            /*
+             * If the user did not specified explicitely a MathTransform, we will need to create it
+             * from the parameters. This case happen often when creating a ProjectedCRS, because the
+             * user often did not have all needed information when he created the defining conversion:
+             * the length of semi-major and semi-minor axes were often missing. But now we know those
+             * lengths thanks to the 'sourceCRS' argument given to this method. So we can complete the
+             * parameters. This is the job of MathTransformFactory.createBaseToDerived(…).
+             */
+            final ParameterValueGroup parameters = definition.getParameterValues();
+            if (parameters == null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+            }
+            mt = factory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+        } else {
+            /*
+             * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
+             * If this conversion is a defining conversion (which is usually the case when creating a new
+             * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
+             * method for this job.
+             */
+            final CoordinateReferenceSystem mtSource = definition.getSourceCRS();
+            final CoordinateReferenceSystem mtTarget = definition.getTargetCRS();
+            if (mtSource == null && mtTarget == null && factory instanceof DefaultMathTransformFactory) {
+                mt = ((DefaultMathTransformFactory) factory).createBaseToDerived(
+                        sourceCRS.getCoordinateSystem(), mt,
+                        targetCRS.getCoordinateSystem());
+            } else {
+                /*
+                 * If we can not use our SIS factory implementation, or if this conversion is not a defining
+                 * conversion (i.e. if this is the conversion of an existing ProjectedCRS, in which case the
+                 * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
+                 * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
+                 */
+                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, true,  factory);
+                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, false, factory);
+            }
+        }
+        return mt;
+    }
+
+    /**
+     * Concatenates to the given transform the operation needed for swapping and scaling the axes.
+     * The two coordinate systems must implement the same GeoAPI coordinate system interface.
+     * For example if {@code sourceCRS} uses a {@code CartesianCS}, then {@code targetCRS} must use
+     * a {@code CartesianCS} too.
+     *
+     * @param transform The transform to which to concatenate axis changes.
+     * @param sourceCRS The first CRS of the pair for which to check for axes changes.
+     * @param targetCRS The second CRS of the pair for which to check for axes changes.
+     * @param isSource  {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
+     * @param factory   The factory to use for performing axis changes.
+     */
+    private static MathTransform swapAndScaleAxes(MathTransform transform,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final boolean isSource, final MathTransformFactory factory) throws FactoryException
+    {
+        if (sourceCRS != null && targetCRS != null && sourceCRS != targetCRS) try {
+            final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                                targetCRS.getCoordinateSystem());
+            if (!m.isIdentity()) {
+                final MathTransform s = factory.createAffineTransform(m);
+                transform = factory.createConcatenatedTransform(isSource ? s : transform,
+                                                                isSource ? transform : s);
+            }
+        } catch (ConversionException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
+                    (isSource ? "sourceCRS" : "targetCRS"),
+                    (isSource ?  sourceCRS  :  targetCRS).getName()), e);
+        }
+        return transform;
     }
 }

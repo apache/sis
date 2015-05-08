@@ -160,7 +160,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                              final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, Conversion.class, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -175,7 +175,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * @see #castOrCopy(DerivedCRS)
      */
     protected DefaultDerivedCRS(final DerivedCRS crs) {
-        super(crs, Conversion.class);
+        super(crs);
     }
 
     /**
@@ -236,6 +236,15 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 default: return new DefaultDerivedCRS(object);
             }
         }
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code DefaultDerivedCRS}.
+     * Must be a hard-coded, constant value (not dependent on object state).
+     */
+    @Override
+    final Class<Conversion> getConversionType() {
+        return Conversion.class;
     }
 
     /**

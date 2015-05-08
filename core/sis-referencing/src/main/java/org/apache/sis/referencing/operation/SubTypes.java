@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -30,7 +31,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * <ul>
  *   <li>{@link AbstractCoordinateOperation#castOrCopy(CoordinateOperation)}</li>
  *   <li>{@link DefaultConversion#castOrCopy(Conversion)}</li>
- *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
+ *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -119,7 +120,7 @@ final class SubTypes {
      * @param  definition The defining conversion.
      * @param  sourceCRS  The source CRS.
      * @param  targetCRS  The target CRS.
-     * @param  factory    The factory to use if some axis changes are needed, or {@code null} for the default.
+     * @param  factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      * @return The conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
@@ -127,7 +128,7 @@ final class SubTypes {
      */
     static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
-            final MathTransformFactory factory)
+            final MathTransformFactory factory) throws FactoryException
     {
         Class<? extends T> type = baseType;
         if (definition instanceof AbstractIdentifiedObject) {
