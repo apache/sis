@@ -145,7 +145,11 @@ final class SubTypes {
             }
         }
         final Conversion conversion;
-        if (CylindricalProjection.class.isAssignableFrom(type)) {
+        if (type.isInstance(definition) && definition.getSourceCRS() == sourceCRS
+                                        && definition.getTargetCRS() == targetCRS)
+        {
+            conversion = definition;
+        } else if (CylindricalProjection.class.isAssignableFrom(type)) {
             conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory);
         } else if (ConicProjection.class.isAssignableFrom(type)) {
             conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory);
