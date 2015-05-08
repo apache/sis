@@ -39,11 +39,10 @@ import org.apache.sis.util.ArgumentChecks;
  * method if they need to provide a different set of parameters.</p>
  *
  * <div class="section">Immutability and thread safety</div>
- * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
- * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
- * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateOperation} instances created
- * using only SIS factories and static constants can be shared by many objects and passed between threads without
- * synchronization.
+ * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
+ * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
+ * {@code Transformation} instances created using only SIS factories and static constants can be shared
+ * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6

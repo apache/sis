@@ -58,7 +58,7 @@ import org.apache.sis.util.Classes;
  * (for example in order to use a {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate system}).
  *
  * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
- * provided that the conditions in the right column are meet:</p>
+ * provided that the conditions in the right column are meet (derived from ISO 19162):</p>
  *
  * <table class="sis">
  *   <caption>Derived CRS types</caption>
@@ -66,7 +66,7 @@ import org.apache.sis.util.Classes;
  *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
  *   <tr><td>{@link VerticalCRS}</td>    <td>Base CRS is also a {@code VerticalCRS} and coordinate system is a {@code VerticalCS}.</td></tr>
  *   <tr><td>{@link TemporalCRS}</td>    <td>Base CRS is also a {@code TemporalCRS} and coordinate system is a {@code TimeCS}.</td></tr>
- *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is also a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
+ *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
  * </table>
  *
  * Those specialized subclasses can be inferred automatically by the {@link #create create(…)} static method.
@@ -160,7 +160,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                              final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, Conversion.class, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -175,7 +175,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * @see #castOrCopy(DerivedCRS)
      */
     protected DefaultDerivedCRS(final DerivedCRS crs) {
-        super(crs, Conversion.class);
+        super(crs);
     }
 
     /**
@@ -236,6 +236,15 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 default: return new DefaultDerivedCRS(object);
             }
         }
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code DefaultDerivedCRS}.
+     * Must be a hard-coded, constant value (not dependent on object state).
+     */
+    @Override
+    final Class<Conversion> getConversionType() {
+        return Conversion.class;
     }
 
     /**

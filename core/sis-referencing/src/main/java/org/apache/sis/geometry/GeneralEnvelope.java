@@ -507,7 +507,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * The default implementation moves only the border which is closest to the given point.
      *
      * @param  position The point to add.
-     * @throws MismatchedDimensionException if the specified point doesn't have the expected dimension.
+     * @throws MismatchedDimensionException If the given point does not have the expected number of dimensions.
      * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
      */
     public void add(final DirectPosition position) throws MismatchedDimensionException {
@@ -581,9 +581,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * whatever the original range span the anti-meridian or not.
      *
      * @param  envelope the {@code Envelope} to add to this envelope.
-     * @throws MismatchedDimensionException if the specified envelope doesn't
-     *         have the expected dimension.
+     * @throws MismatchedDimensionException If the given envelope does not have the expected number of dimensions.
      * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
      */
     public void add(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
@@ -705,9 +706,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This method supports envelopes spanning the anti-meridian.
      *
      * @param  envelope the {@code Envelope} to intersect to this envelope.
-     * @throws MismatchedDimensionException if the specified envelope doesn't
-     *         have the expected dimension.
+     * @throws MismatchedDimensionException If the given envelope does not have the expected number of dimensions.
      * @throws AssertionError If assertions are enabled and the envelopes have mismatched CRS.
+     *
+     * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
      */
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);

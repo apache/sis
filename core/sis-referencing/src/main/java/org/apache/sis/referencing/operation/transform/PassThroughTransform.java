@@ -145,6 +145,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                                        final MathTransform subTransform,
                                        final int numTrailingOrdinates)
     {
+        ensureNonNull ("subTransform",          subTransform);
         ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
         ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
         if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {

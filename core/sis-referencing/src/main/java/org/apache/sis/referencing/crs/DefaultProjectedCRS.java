@@ -148,7 +148,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, Projection.class, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversionFromBase, derivedCS);
     }
 
     /**
@@ -163,7 +163,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @see #castOrCopy(ProjectedCRS)
      */
     protected DefaultProjectedCRS(final ProjectedCRS crs) {
-        super(crs, Projection.class);
+        super(crs);
     }
 
     /**
@@ -179,6 +179,15 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     public static DefaultProjectedCRS castOrCopy(final ProjectedCRS object) {
         return (object == null) || (object instanceof DefaultProjectedCRS)
                 ? (DefaultProjectedCRS) object : new DefaultProjectedCRS(object);
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code DefaultProjectedCRS}.
+     * Must be a hard-coded, constant value (not dependent on object state).
+     */
+    @Override
+    final Class<Projection> getConversionType() {
+        return Projection.class;
     }
 
     /**
@@ -247,7 +256,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     @XmlElement(name="cartesianCS", required = true)
-    public CartesianCS getCoordinateSystem() {
+    public final CartesianCS getCoordinateSystem() {
+        // See AbstractDerivedCRS.createConversionFromBase(…) for
+        // an explanation about why this method is declared final.
         return (CartesianCS) super.getCoordinateSystem();
     }
 

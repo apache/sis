@@ -602,7 +602,16 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * In both cases, if either this box or the specified box has {@linkplain Double#NaN NaN} bounds,
      * then the corresponding bounds of the result will bet set to NaN.
      *
+     * <div class="note"><b>Rational:</b>
+     * this class is stricter about NaN values than other classes like {@link org.apache.sis.geometry.GeneralEnvelope}.
+     * The reason is that computations on {@code GeographicBoundingBox} instances are rare ({@code Envelope} instances
+     * are preferred for this purpose). Usually, {@code GeographicBoundingBox} values come directly from some metadata
+     * structure. Consequently NaN values in {@code GeographicBoundingBox} means <cite>"information is unknown"</cite>
+     * more often than <cite>"not yet calculated"</cite>.</div>
+     *
      * @param box The geographic bounding box to add to this box.
+     *
+     * @see org.apache.sis.geometry.GeneralEnvelope#add(Envelope)
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission();
@@ -659,6 +668,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @throws IllegalArgumentException If the inclusion status is not the same for both boxes.
      *
      * @see Extents#intersection(GeographicBoundingBox, GeographicBoundingBox)
+     * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission();

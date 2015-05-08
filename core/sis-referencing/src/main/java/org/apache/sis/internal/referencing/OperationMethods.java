@@ -51,6 +51,13 @@ public final class OperationMethods extends Static {
     public static final String PARAMETERS_KEY = "parameters";
 
     /**
+     * The key for specifying a {@linkplain org.opengis.referencing.operation.MathTransformFactory}
+     * instance to use for the construction of a geodetic object. This is usually not needed for CRS
+     * construction, except in the special case of a derived CRS created from a defining conversion.
+     */
+    public static final String MT_FACTORY = "mtFactory";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private OperationMethods() {
