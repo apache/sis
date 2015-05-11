@@ -218,8 +218,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
          * Can not avoid the creation of a ConcatenatedTransform object.
          * Check for the type to create (1D, 2D, general case...)
          */
-        assert tr1.getTargetDimensions() == dim1;
-        assert tr2.getSourceDimensions() == dim2;
         final int dimSource = tr1.getSourceDimensions();
         final int dimTarget = tr2.getTargetDimensions();
         if (dimSource == 1 && dimTarget == 1) {
@@ -242,7 +240,9 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             } else {
                 return new ConcatenatedTransform2D(tr1, tr2);
             }
-        } else if (dimSource == dim1 && dim2 == dimTarget) {
+        } else if (dimSource == tr1.getTargetDimensions()   // dim1 = tr1.getTargetDimensions() and
+                && dimTarget == tr2.getSourceDimensions())  // dim2 = tr2.getSourceDimensions() may not be true anymore.
+        {
             return new ConcatenatedTransformDirect(tr1, tr2);
         } else {
             return new ConcatenatedTransform(tr1, tr2);
