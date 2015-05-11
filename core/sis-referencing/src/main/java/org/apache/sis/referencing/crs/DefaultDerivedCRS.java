@@ -359,9 +359,18 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        final Conversion conversion = getConversionFromBase();  // Gives to users a chance to override.
+        if (conversion == null) {
+            /*
+             * Should never happen except temporarily at construction time, or if the user invoked the copy
+             * constructor with an invalid Conversion, or if the user overrides the getConversionFromBase()
+             * method. Delegates to the super-class method for avoiding a NullPointerException. That method
+             * returns 'null', which will cause the WKT to be declared invalid.
+             */
+            return super.formatTo(formatter);
+        }
         WKTUtilities.appendName(this, formatter, null);
         final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
-        final Conversion conversion = getConversionFromBase();  // Gives to users a chance to override.
         /*
          * Both WKT 1 and WKT 2 format the base CRS. But WKT 1 formats the MathTransform before the base CRS,
          * while WKT 2 formats the conversion method and parameter values after the base CRS.
