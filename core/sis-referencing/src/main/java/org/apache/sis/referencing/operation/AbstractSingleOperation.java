@@ -28,9 +28,11 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -195,7 +197,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         Integer expected = method.getSourceDimensions();
         if (expected != null && actual > expected) {
             /*
-             * The given MathTransform use more dimensions than the OperationMethod.
+             * The given MathTransform uses more dimensions than the OperationMethod.
              * Try to locate one and only one sub-transform, ignoring axis swapping and scaling.
              */
             MathTransform subTransform = null;
@@ -227,8 +229,16 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             }
             isTarget = 1; // true: wrong dimension is the target one.
         }
-        throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        /*
+         * At least one dimension does not match.  In principle this is an error, but we make an exception for the
+         * "Affine parametric transformation" (EPSG:9624). The reason is that while OGC define that transformation
+         * as two-dimensional, it can easily be extended to any number of dimensions. Note that Apache SIS already
+         * has special handling for this operation (a TensorParameters dedicated class, etc.)
+         */
+        if (!IdentifiedObjects.isHeuristicMatchForName(method, Constants.AFFINE)) {
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        }
     }
 
     /**
