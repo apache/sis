@@ -164,7 +164,9 @@ public final class MathTransforms extends Static {
     {
         ensureNonNull("tr1", tr1);
         ensureNonNull("tr2", tr2);
-        return ConcatenatedTransform.create(tr1, tr2);
+        final MathTransform tr = ConcatenatedTransform.create(tr1, tr2);
+        assert isValid(getSteps(tr)) : tr;
+        return tr;
     }
 
     /**
@@ -255,6 +257,24 @@ public final class MathTransforms extends Static {
             throws MismatchedDimensionException
     {
         return (MathTransform2D) concatenate((MathTransform) tr1, (MathTransform) tr2, (MathTransform) tr3);
+    }
+
+    /**
+     * Makes sure that the given list does not contains two consecutive linear transforms
+     * (because their matrices should have been multiplied together).
+     * This is used for assertion purposes only.
+     */
+    private static boolean isValid(final List<MathTransform> steps) {
+        boolean wasLinear = false;
+        for (final MathTransform step : steps) {
+            if (step instanceof LinearTransform) {
+                if (wasLinear) return false;
+                wasLinear = true;
+            } else {
+                wasLinear = false;
+            }
+        }
+        return true;
     }
 
     /**
