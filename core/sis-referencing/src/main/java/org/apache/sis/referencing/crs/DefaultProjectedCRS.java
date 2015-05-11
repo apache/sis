@@ -46,6 +46,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
@@ -368,6 +369,14 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        if (super.getConversionFromBase() == null) {
+            /*
+             * Should never happen except temporarily at construction time, or if the user invoked the copy constructor
+             * with an invalid Conversion. Delegates to the super-class method for avoiding a NullPointerException.
+             * That method returns 'null', which will cause the WKT to be declared invalid.
+             */
+            return super.formatTo(formatter);
+        }
         WKTUtilities.appendName(this, formatter, null);
         final Convention    convention = formatter.getConvention();
         final boolean       isWKT1     = (convention.majorVersion() == 1);
@@ -445,7 +454,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                      * the lengths are different from the ones declared in the datum.
                      */
                     if (param instanceof ParameterValue<?>) {
-                        final double value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        final double value;
+                        try {
+                            value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        } catch (IllegalStateException e) {
+                            /*
+                             * May happen if the 'conversionFromBase' parameter group does not provide values
+                             * for "semi_major" or "semi_minor" axis length. This should not happen with SIS
+                             * implementation, but may happen with user-defined map projection implementations.
+                             * Since the intend of this check was to skip those parameters anyway, it is okay
+                             * for the purpose of WKT formatting if there is no parameter for axis lengths.
+                             */
+                            Logging.recoverableException(DefaultProjectedCRS.class, "formatTo", e);
+                            continue;
+                        }
+                        if (Double.isNaN(value)) {
+                            continue;
+                        }
                         final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
                                 ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
                         if (value == expected) {
