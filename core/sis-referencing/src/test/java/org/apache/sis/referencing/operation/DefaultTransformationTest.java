@@ -75,6 +75,13 @@ public final strictfp class DefaultTransformationTest extends TestCase {
      * Creates a “Tokyo to JGD2000 (GSI)” transformation.
      */
     private static DefaultTransformation createGeocentricTranslation() {
+        /*
+         * The following code fills the parameter values AND creates itself the MathTransform instance
+         * (indirectly, through the matrix). The later step is normally not our business, since we are
+         * supposed to only fill the parameter values and let MathTransformFactory creates the transform
+         * from the parameters. But we don't do the normal steps here because this class is a unit test:
+         * we want to test DefaultTransformation in isolation of MathTransformFactory.
+         */
         final Matrix4 translation = new Matrix4();
         final OperationMethod method = DefaultOperationMethodTest.create(
                 "Geocentric translations", "1031", "EPSG guidance note #7-2", 3,
@@ -85,6 +92,12 @@ public final strictfp class DefaultTransformationTest extends TestCase {
         pg.parameter("X-axis translation").setValue(translation.m02 = -146.414);
         pg.parameter("Y-axis translation").setValue(translation.m12 =  507.337);
         pg.parameter("Z-axis translation").setValue(translation.m22 =  680.507);
+        /*
+         * In theory we should not need to provide the parameters explicitly to the constructor since
+         * we are supposed to be able to find them from the MathTransform. But in this simple test we
+         * did not bothered to define a specialized MathTransform class for our case. So we will help
+         * a little bit DefaultTransformation by telling it the parameters that we used.
+         */
         final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
         properties.put(OperationMethods.PARAMETERS_KEY, pg);
@@ -97,11 +110,10 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     }
 
     /**
-     * Tests construction.
+     * Asserts that at least some of the properties of the given {@code op} instance have the expected values
+     * for an instance created by {@link #createGeocentricTranslation()}.
      */
-    @Test
-    public void testConstruction() {
-        final DefaultTransformation op = createGeocentricTranslation();
+    private static void verifyProperties(final DefaultTransformation op) {
         assertEquals("name",       "Tokyo to JGD2000 (GSI)",  op.getName().getCode());
         assertEquals("sourceCRS",  "Tokyo 1918",              op.getSourceCRS().getName().getCode());
         assertEquals("targetCRS",  "JGD2000",                 op.getTargetCRS().getName().getCode());
@@ -117,6 +129,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
         assertEquals("parameters[0]", -146.414, values[0].doubleValue(), STRICT);
         assertEquals("parameters[1]",  507.337, values[1].doubleValue(), STRICT);
         assertEquals("parameters[2]",  680.507, values[2].doubleValue(), STRICT);
+        assertEquals(3, values.length);
 
         final Matrix m = MathTransforms.getMatrix(op.getMathTransform());
         assertNotNull("transform", m);
@@ -131,6 +144,14 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 assertEquals(expected, m.getElement(j,i), STRICT);
             }
         }
+    }
+
+    /**
+     * Tests construction.
+     */
+    @Test
+    public void testConstruction() {
+        verifyProperties(createGeocentricTranslation());
     }
 
     /**
@@ -195,6 +216,6 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     @Test
     @DependsOnMethod("testConstruction")
     public void testSerialization() {
-        assertSerializedEquals(createGeocentricTranslation());
+        verifyProperties(assertSerializedEquals(createGeocentricTranslation()));
     }
 }
