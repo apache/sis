@@ -27,13 +27,16 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -44,10 +47,9 @@ import org.apache.sis.util.Workaround;
  *
  * <p>This coordinate operation contains an {@linkplain DefaultOperationMethod operation method}, usually
  * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
- * In the SIS default implementation, the parameter values are inferred from the
- * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
- * Subclasses may have to override the {@link #getParameterValues()} method if they need to provide
- * a different set of parameters.</p>
+ * In the SIS implementation, the parameter values can be either inferred from the
+ * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
+ * or explicitely provided at construction time in a <cite>defining conversion</cite> (see below).</p>
  *
  * <div class="section">Defining conversions</div>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
@@ -167,7 +169,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * for more information about what Apache SIS means by "normalized".
      *
      * <p>If the caller can not yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
-     * for creating that transform, with the possible omission of {@code "semi-major"} and {@code "semi-minor"} values.
+     * for creating that transform, with the possible omission of {@code "semi_major"} and {@code "semi_minor"} values.
      * The semi-major and semi-minor parameter values will be set automatically when the
      * {@link #specialize specialize(…)} method will be invoked.</p>
      *
@@ -308,7 +310,29 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("factory",   factory);
+        ensureCompatibleDatum("sourceCRS", super.getSourceCRS(), sourceCRS);
+        ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
         return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
+    }
+
+    /**
+     * Ensures that the {@code actual} CRS uses a datum which is equals, ignoring metadata,
+     * to the datum of the {@code expected} CRS.
+     *
+     * @param param     The parameter name, used only in case of error.
+     * @param expected  The CRS containing the expected datum, or {@code null}.
+     * @param actual    The CRS for which to check the datam, or {@code null}.
+     */
+    private static void ensureCompatibleDatum(final String param,
+            final CoordinateReferenceSystem expected,
+            final CoordinateReferenceSystem actual)
+    {
+        if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
+            final Datum datum = ((SingleCRS) expected).getDatum();
+             if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
+             }
+        }
     }
 
     /**
