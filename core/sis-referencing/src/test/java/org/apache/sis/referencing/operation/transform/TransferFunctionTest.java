@@ -38,11 +38,6 @@ import static org.opengis.test.Assert.*;
 @DependsOn(ExponentialTransform1DTest.class)
 public final class TransferFunctionTest extends TestCase {
     /**
-     * For floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests the creation of a linear transfer function.
      */
     @Test

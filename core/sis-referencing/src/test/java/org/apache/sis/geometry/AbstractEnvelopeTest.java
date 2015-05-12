@@ -43,11 +43,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
 @DependsOn(GeneralDirectPositionTest.class)
 public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    static final double STRICT = 0;
-
-    /**
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
      */

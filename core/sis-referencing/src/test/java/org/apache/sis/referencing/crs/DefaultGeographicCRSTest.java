@@ -46,11 +46,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final strictfp class DefaultGeographicCRSTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#POSITIVE_RANGE}.
      */

@@ -42,11 +42,6 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 })
 public final strictfp class MathFunctionsTest extends TestCase {
     /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Small number for floating point comparisons.
      */
     private static final double EPS = 1E-12;

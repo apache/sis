@@ -38,11 +38,6 @@ import static org.junit.Assert.*;
  */
 public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
-     * The tolerance factor for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0.0;
-
-    /**
      * Asserts that the given geographic bounding box is strictly equals to the given values.
      * The {@link GeographicBoundingBox#getInclusion()} is expected to be {@code true}.
      */

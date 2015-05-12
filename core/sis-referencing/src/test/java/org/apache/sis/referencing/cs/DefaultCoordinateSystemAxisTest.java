@@ -32,7 +32,6 @@ import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
-import static org.apache.sis.referencing.cs.CoordinateSystemsTest.STRICT;
 
 
 /**

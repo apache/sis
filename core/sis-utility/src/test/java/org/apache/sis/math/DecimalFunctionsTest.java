@@ -40,11 +40,6 @@ import static org.apache.sis.math.DecimalFunctions.*;
 @DependsOn(org.apache.sis.internal.util.NumericsTest.class)
 public final strictfp class DecimalFunctionsTest extends TestCase {
     /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */
     @Test

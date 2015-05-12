@@ -25,7 +25,6 @@ import org.junit.Test;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
-import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
