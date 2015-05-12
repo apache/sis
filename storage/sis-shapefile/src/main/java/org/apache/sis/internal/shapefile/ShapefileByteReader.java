@@ -25,6 +25,7 @@ import java.util.*;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.shapefile.jdbc.*;
+import org.apache.sis.storage.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
 import org.opengis.feature.Feature;
 
@@ -38,7 +39,7 @@ import com.esri.core.geometry.*;
  * @since   0.5
  * @module
  */
-public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormatException, ShapefileNotFoundException> {
+public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormatException, SQLShapefileNotFoundException> {
     /** Name of the Geometry field. */
     private static final String GEOMETRY_NAME = "geometry";
 
@@ -56,12 +57,12 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * @param shapefile Shapefile.
      * @param dbaseFile underlying database file name.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
-     * @throws InvalidDbaseFileFormatException if the database file format is invalid.
-     * @throws ShapefileNotFoundException if the shapefile has not been found.
-     * @throws DbaseFileNotFoundException if the database file has not been found.
+     * @throws SQLInvalidDbaseFileFormatException if the database file format is invalid.
+     * @throws SQLShapefileNotFoundException if the shapefile has not been found.
+     * @throws SQLDbaseFileNotFoundException if the database file has not been found.
      */
-    public ShapefileByteReader(File shapefile, File dbaseFile) throws InvalidShapefileFormatException, InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
-        super(shapefile, InvalidShapefileFormatException.class, ShapefileNotFoundException.class);
+    public ShapefileByteReader(File shapefile, File dbaseFile) throws InvalidShapefileFormatException, SQLInvalidDbaseFileFormatException, SQLShapefileNotFoundException, SQLDbaseFileNotFoundException {
+        super(shapefile, InvalidShapefileFormatException.class, SQLShapefileNotFoundException.class);
         loadDatabaseFieldDescriptors(dbaseFile);
         loadDescriptor();
 
@@ -129,10 +130,10 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     /**
      * Load database field descriptors.
      * @param dbaseFile Database file.
-     * @throws InvalidDbaseFileFormatException if the database format is incorrect.
-     * @throws DbaseFileNotFoundException if the database file cannot be found.
+     * @throws SQLInvalidDbaseFileFormatException if the database format is incorrect.
+     * @throws SQLDbaseFileNotFoundException if the database file cannot be found.
      */
-    private void loadDatabaseFieldDescriptors(File dbaseFile) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
+    private void loadDatabaseFieldDescriptors(File dbaseFile) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         MappedByteReader databaseReader = null;
 
         try {

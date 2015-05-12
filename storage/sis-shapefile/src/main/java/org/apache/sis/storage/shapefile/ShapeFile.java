@@ -19,13 +19,6 @@ package org.apache.sis.storage.shapefile;
 import java.io.File;
 import java.util.Objects;
 
-import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
-import org.apache.sis.internal.shapefile.ShapefileNotFoundException;
-import org.apache.sis.internal.shapefile.jdbc.DbaseFileNotFoundException;
-import org.apache.sis.internal.shapefile.jdbc.InvalidDbaseFileFormatException;
-import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
-// Branch-dependent imports
-
 /**
  * Provides a ShapeFile Reader.
  *
@@ -62,13 +55,12 @@ public class ShapeFile {
     /**
      * Find features corresponding to an SQL request SELECT * FROM database.
      * @return Features
-     * @throws SQLInvalidStatementException if the SQL statement is invalid.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws InvalidDbaseFileFormatException if the database file format is invalid.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      */
-    public InputFeatureStream findAll() throws InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException, SQLInvalidStatementException, InvalidShapefileFormatException {
+    public InputFeatureStream findAll() throws InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException, InvalidShapefileFormatException {
         return new InputFeatureStream(shapeFile, databaseFile);
     }
 }
