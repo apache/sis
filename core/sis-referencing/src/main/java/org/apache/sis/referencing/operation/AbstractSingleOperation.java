@@ -268,9 +268,10 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the operation method.
+     * Returns a description of the operation method, including a list of expected parameter names.
+     * The returned object does not contains any parameter value.
      *
-     * @return The operation method.
+     * @return A description of the operation method.
      */
     @Override
     public OperationMethod getMethod() {
@@ -278,9 +279,15 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns a description of the parameters. The default implementation tries to infer the
-     * description from the {@linkplain #getMathTransform() math transform} itself before to
-     * fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.
+     * Returns a description of the parameters. The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time,
+     *       then the descriptor of those parameters is returned.</li>
+     *   <li>Otherwise if this method can infer the parameter descriptor from the
+     *       {@linkplain #getMathTransform() math transform}, then that descriptor is returned.</li>
+     *   <li>Otherwise fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.</li>
+     * </ul>
      *
      * <div class="note"><b>Note:</b>
      * the two parameter descriptions (from the {@code MathTransform} or from the {@code OperationMethod})
@@ -298,8 +305,16 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the parameter values. The default implementation infers the parameter values from the
-     * {@linkplain #getMathTransform() math transform}, if possible.
+     * Returns the parameter values. The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time, then a
+     *       {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#clone() clone}
+     *       of those parameters is returned.</li>
+     *   <li>Otherwise if this method can infer the parameter values from the
+     *       {@linkplain #getMathTransform() math transform}, then those parameters are returned.</li>
+     *   <li>Otherwise throw {@link org.apache.sis.util.UnsupportedImplementationException}.</li>
+     * </ul>
      *
      * @return The parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined

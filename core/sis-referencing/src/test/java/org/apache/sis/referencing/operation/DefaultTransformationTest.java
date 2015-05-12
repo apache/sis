@@ -18,8 +18,10 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
@@ -30,6 +32,7 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -51,12 +54,21 @@ import static org.apache.sis.test.MetadataAssert.*;
 })
 public final strictfp class DefaultTransformationTest extends TestCase {
     /**
+     * Tolerance threshold for strict floating point comparisons.
+     */
+    private static final double STRICT = 0;
+
+    /**
      * Creates a geocentric CRS using the given datum.
      */
-    private static DefaultGeocentricCRS createCRS(final GeodeticDatum datum) {
-        return new DefaultGeocentricCRS(
-                IdentifiedObjects.getProperties(datum, DefaultGeocentricCRS.IDENTIFIERS_KEY),
-                datum, HardCodedCS.GEOCENTRIC);
+    private static DefaultGeocentricCRS createCRS(final String name, final GeodeticDatum datum) {
+        Map<String,?> properties = IdentifiedObjects.getProperties(datum, DefaultGeocentricCRS.IDENTIFIERS_KEY);
+        if (name != null) {
+            final Map<String,Object> copy = new HashMap<>(properties);
+            copy.put(DefaultGeocentricCRS.NAME_KEY, name);
+            properties = copy;
+        }
+        return new DefaultGeocentricCRS(properties, datum, HardCodedCS.GEOCENTRIC);
     }
 
     /**
@@ -77,20 +89,57 @@ public final strictfp class DefaultTransformationTest extends TestCase {
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
         properties.put(OperationMethods.PARAMETERS_KEY, pg);
         return new DefaultTransformation(properties,
-                createCRS(HardCodedDatum.TOKYO),    // SourceCRS
-                createCRS(HardCodedDatum.JGD2000),  // TargetCRS
-                null,                               // InterpolationCRS
+                createCRS(null,      HardCodedDatum.TOKYO),     // SourceCRS
+                createCRS("JGD2000", HardCodedDatum.JGD2000),   // TargetCRS
+                null,                                           // InterpolationCRS
                 method,
                 MathTransforms.linear(translation));
+    }
+
+    /**
+     * Tests construction.
+     */
+    @Test
+    public void testConstruction() {
+        final DefaultTransformation op = createGeocentricTranslation();
+        assertEquals("name",       "Tokyo to JGD2000 (GSI)",  op.getName().getCode());
+        assertEquals("sourceCRS",  "Tokyo 1918",              op.getSourceCRS().getName().getCode());
+        assertEquals("targetCRS",  "JGD2000",                 op.getTargetCRS().getName().getCode());
+        assertEquals("method",     "Geocentric translations", op.getMethod().getName().getCode());
+        assertEquals("parameters", "Geocentric translations", op.getParameterDescriptors().getName().getCode());
+
+        final ParameterValueGroup parameters = op.getParameterValues();
+        final ParameterValue<?>[] values = parameters.values().toArray(new ParameterValue<?>[3]);
+        assertEquals("parameters",    "Geocentric translations", parameters.getDescriptor().getName().getCode());
+        assertEquals("parameters[0]", "X-axis translation",      values[0] .getDescriptor().getName().getCode());
+        assertEquals("parameters[1]", "Y-axis translation",      values[1] .getDescriptor().getName().getCode());
+        assertEquals("parameters[2]", "Z-axis translation",      values[2] .getDescriptor().getName().getCode());
+        assertEquals("parameters[0]", -146.414, values[0].doubleValue(), STRICT);
+        assertEquals("parameters[1]",  507.337, values[1].doubleValue(), STRICT);
+        assertEquals("parameters[2]",  680.507, values[2].doubleValue(), STRICT);
+
+        final Matrix m = MathTransforms.getMatrix(op.getMathTransform());
+        assertNotNull("transform", m);
+        for (int j=m.getNumRow(); --j >= 0;) {
+            for (int i=m.getNumCol(); --i >= 0;) {
+                double expected = (i == j) ? 1 : 0;
+                if (i == 2) switch (j) {
+                    case 0: expected = -146.414; break;
+                    case 1: expected =  507.337; break;
+                    case 2: expected =  680.507; break;
+                }
+                assertEquals(expected, m.getElement(j,i), STRICT);
+            }
+        }
     }
 
     /**
      * Tests WKT formatting.
      */
     @Test
+    @DependsOnMethod("testConstruction")
     public void testWKT() {
         final DefaultTransformation op = createGeocentricTranslation();
-
         assertWktEquals(
                 "CoordinateOperation[“Tokyo to JGD2000 (GSI)”,\n" +
                 "  SourceCRS[GeodeticCRS[“Tokyo 1918”,\n" +
@@ -102,7 +151,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
                 "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
                 "      LengthUnit[“metre”, 1]]],\n" +
-                "  TargetCRS[GeodeticCRS[“Japanese Geodetic Datum 2000”,\n" +
+                "  TargetCRS[GeodeticCRS[“JGD2000”,\n" +
                 "    Datum[“Japanese Geodetic Datum 2000”,\n" +
                 "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
@@ -126,7 +175,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "      Axis[“(Y)”, geocentricY],\n" +
                 "      Axis[“(Z)”, geocentricZ],\n" +
                 "      Unit[“metre”, 1]]],\n" +
-                "  TargetCRS[GeodeticCRS[“Japanese Geodetic Datum 2000”,\n" +
+                "  TargetCRS[GeodeticCRS[“JGD2000”,\n" +
                 "    Datum[“Japanese Geodetic Datum 2000”,\n" +
                 "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
                 "    CS[“Cartesian”, 3],\n" +
@@ -144,6 +193,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
      * Tests serialization.
      */
     @Test
+    @DependsOnMethod("testConstruction")
     public void testSerialization() {
         assertSerializedEquals(createGeocentricTranslation());
     }
