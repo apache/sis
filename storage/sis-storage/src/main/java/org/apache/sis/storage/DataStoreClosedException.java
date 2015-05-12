@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import org.apache.sis.storage.DataStoreException;
 
 /**
  * Thrown when a Data store is closed and can no more return data.
@@ -31,7 +30,8 @@ public class DataStoreClosedException extends DataStoreException {
     private static final long serialVersionUID = 7205119080377665796L;
 
     /**
-     * Construct an exception.
+     * Constructs an exception with the specified details message.
+     *
      * @param message Message of the exception.
      */
     public DataStoreClosedException(String message) {
@@ -39,7 +39,8 @@ public class DataStoreClosedException extends DataStoreException {
     }
 
     /**
-     * Construct an exception.
+     * Constructs an exception with the specified details message and cause.
+     *
      * @param message Message of the exception.
      * @param cause Root cause of the exception.
      */
