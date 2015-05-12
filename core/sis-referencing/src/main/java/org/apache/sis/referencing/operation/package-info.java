@@ -25,16 +25,18 @@
  * sub-packages, but most users will not need to deal with them directly:</p>
  *
  * <ul>
- *   <li>{@link org.apache.sis.referencing.operation.projection} for map projections</li>
- *   <li>{@link org.apache.sis.referencing.operation.transform} for any transform other than map projections</li>
+ *   <li>{@link org.apache.sis.referencing.operation.projection} — map projections,</li>
+ *   <li>{@link org.apache.sis.referencing.operation.transform} — any transform other than map projections.</li>
  * </ul>
  *
  * <div class="section">Apache SIS extensions</div>
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
  *
  * <ul>
- *   <li>{@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy() AbstractCoordinateOperation.getLinearAccuracy()}</li>
- *   <li>{@link org.apache.sis.referencing.operation.DefaultConversion#specialize DefaultConversion.specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
+ *   <li>{@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy() AbstractCoordinateOperation.getLinearAccuracy()}
+ *     — tries to convert the accuracy to metres,</li>
+ *   <li>{@link org.apache.sis.referencing.operation.DefaultConversion#specialize DefaultConversion.specialize(…)}
+ *     — changes a <cite>defining conversion</cite> into a complete conversion.</li>
  * </ul>
  *
  * <div class="section">Apache SIS specific behavior</div>
@@ -78,6 +80,5 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
-import org.apache.sis.internal.jaxb.referencing.*;
 import org.apache.sis.internal.jaxb.metadata.EX_Extent;
 import org.apache.sis.internal.jaxb.metadata.DQ_PositionalAccuracy;

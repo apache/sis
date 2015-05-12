@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.metadata.Identifier;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.io.wkt.Convention;
@@ -45,7 +46,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  */
 @DependsOn({
     DefaultFormulaTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
+    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
+    org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class
 })
 public final strictfp class DefaultOperationMethodTest extends TestCase {
     /**
@@ -54,11 +56,12 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
      * @param  method     The operation name (example: "Mercator (variant A)").
      * @param  identifier The EPSG numeric identifier (example: "9804").
      * @param  formula    Formula citation (example: "EPSG guidance note #7-2").
-     * @param  dimension  The number of input and output dimension.
+     * @param  dimension  The number of input and output dimension, or {@code null}.
+     * @param  parameters The parameters (can be empty).
      * @return The operation method.
      */
-    private static DefaultOperationMethod create(final String method, final String identifier, final String formula,
-            final Integer dimension)
+    static DefaultOperationMethod create(final String method, final String identifier, final String formula,
+            final Integer dimension, final ParameterDescriptor<?>... parameters)
     {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(OperationMethod.NAME_KEY, method));
@@ -68,15 +71,15 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
          * The parameter group for a Mercator projection is actually not empty, but it is not the purpose of
          * this class to test DefaultParameterDescriptorGroup. So we use an empty group of parameters here.
          */
-        final ParameterDescriptorGroup parameters = new DefaultParameterDescriptorGroup(properties, 1, 1);
+        final ParameterDescriptorGroup pg = new DefaultParameterDescriptorGroup(properties, 1, 1, parameters);
         /*
          * NAME_KEY share the same Identifier instance for saving a little bit of memory.
          * Then define the other properties to be given to OperationMethod.
          */
-        assertNotNull(properties.put(OperationMethod.NAME_KEY, parameters.getName()));
+        assertNotNull(properties.put(OperationMethod.NAME_KEY, pg.getName()));
         assertNull(properties.put(OperationMethod.IDENTIFIERS_KEY, new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", identifier)));
         assertNull(properties.put(OperationMethod.FORMULA_KEY, new DefaultCitation(formula)));
-        return new DefaultOperationMethod(properties, dimension, dimension, parameters);
+        return new DefaultOperationMethod(properties, dimension, dimension, pg);
     }
 
     /**
@@ -151,6 +154,8 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
 
     /**
      * Tests {@link DefaultOperationMethod#toWKT()}.
+     * Since the WKT format of {@code OperationMethod} does not include parameters,
+     * we do not bother specifying the parameters in the object created here.
      */
     @Test
     @DependsOnMethod("testConstruction")

@@ -459,22 +459,20 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * is more than one remaining step, even if all other transform steps are not parameterizable,
      * would be a contract violation.</p>
      *
-     * <p>However in the special case where we are formatting {@code PROJCS} element, the above rule
-     * is slightly relaxed. More specifically we ignore affine transforms in order to accept axis
-     * swapping or unit conversions. This special case is internal to SIS implementation of WKT
-     * formatter and should be unknown to users.</p>
-     *
-     * <p>See {@link org.apache.sis.referencing.operation.DefaultSingleOperation#getParameterValues()}
-     * for the code where the above-cited special case is applied.</p>
+     * <p>However in the special case where we are getting the parameters of a {@code CoordinateOperation} instance
+     * through {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getParameterValues()} method
+     * (often indirectly trough WKT formatting of a {@code "ProjectedCRS"} element), then the above rule is slightly
+     * relaxed: we ignore affine transforms in order to accept axis swapping or unit conversions. We do that in that
+     * particular case only because the coordinate systems given with the enclosing {@code CoordinateOperation} or
+     * {@code GeneralDerivedCRS} specify the axis swapping and unit conversions.
+     * This special case is internal to SIS implementation and should be unknown to users.</p>
      *
      * @return The parameterizable transform step, or {@code null} if none.
-     *
-     * @see org.apache.sis.referencing.operation.DefaultSingleOperation#simplify(MathTransform)
      */
     private Parameterized getParameterised() {
         Parameterized param = null;
         final List<Object> transforms = getPseudoSteps();
-        if (transforms.size() == 1 || Semaphores.query(Semaphores.PROJCS)) {
+        if (transforms.size() == 1 || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)) {
             for (final Object candidate : transforms) {
                 /*
                  * Search for non-linear parameters only, ignoring affine transforms and the matrices

@@ -41,7 +41,7 @@ import static org.opengis.test.Assert.*;
  */
 @DependsOn({
     DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.transform.MathTransformsTest.class
+    MathTransformsTest.class
 })
 public final strictfp class AbstractSingleOperationTest extends TestCase {
     /**
@@ -55,7 +55,7 @@ public final strictfp class AbstractSingleOperationTest extends TestCase {
     }
 
     /**
-     * Tests {@link OperationMethods#checkDimensions(OperationMethod, MathTransform, Map)}.
+     * Tests {@link AbstractSingleOperation#checkDimensions(OperationMethod, MathTransform, Map)}.
      */
     @Test
     public void testCheckDimensions() {
