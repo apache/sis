@@ -42,10 +42,10 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
-     * @throws InvalidDbaseFileFormatException if the database seems to be invalid.
-     * @throws DbaseFileNotFoundException if the Dbase file has not been found.
+     * @throws SQLInvalidDbaseFileFormatException if the database seems to be invalid.
+     * @throws SQLDbaseFileNotFoundException if the Dbase file has not been found.
      */
-    public MappedByteReader(File dbase3File) throws InvalidDbaseFileFormatException, DbaseFileNotFoundException {
+    public MappedByteReader(File dbase3File) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         super(dbase3File);
         loadDescriptor();
     }
@@ -115,9 +115,9 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
     /**
      * Loading the database file content from binary .dbf file.
-     * @throws InvalidDbaseFileFormatException if descriptor is not readable.
+     * @throws SQLInvalidDbaseFileFormatException if descriptor is not readable.
      */
-    private void loadDescriptor() throws InvalidDbaseFileFormatException {
+    private void loadDescriptor() throws SQLInvalidDbaseFileFormatException {
         try {
             this.dbaseVersion = getByteBuffer().get();
             getByteBuffer().get(this.dbaseLastUpdate);
@@ -152,7 +152,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             // If the last character read after the field descriptor isn't 0x0D, the expected mark has not been found and the DBF is corrupted.
             if (descriptorTerminator != 0x0D) {
                 String message = format(Level.WARNING, "excp.filedescriptor_problem", getFile().getAbsolutePath(), "Character marking the end of the fields descriptors (0x0D) has not been found.");
-                throw new InvalidDbaseFileFormatException(message);
+                throw new SQLInvalidDbaseFileFormatException(message);
             }
         }
         catch(BufferUnderflowException e) {
@@ -161,7 +161,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             // Therefore, an internal structure problem cause maybe a premature End of file or anything else, but the only thing
             // we can conclude is : we are not before a device trouble, but a file format trouble.
             String message = format(Level.WARNING, "excp.filedescriptor_problem", getFile().getAbsolutePath(), e.getMessage());
-            throw new InvalidDbaseFileFormatException(message);
+            throw new SQLInvalidDbaseFileFormatException(message);
         }
     }
 

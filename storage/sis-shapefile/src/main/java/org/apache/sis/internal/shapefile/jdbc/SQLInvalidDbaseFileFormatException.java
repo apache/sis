@@ -27,7 +27,7 @@ import java.sql.SQLNonTransientException;
  * @since   0.5
  * @module
  */
-public class InvalidDbaseFileFormatException extends SQLNonTransientException {
+public class SQLInvalidDbaseFileFormatException extends SQLNonTransientException {
     /** Serial UID. */
     private static final long serialVersionUID = 3924612615300490837L;
 
@@ -35,7 +35,7 @@ public class InvalidDbaseFileFormatException extends SQLNonTransientException {
      * Construct an exception.
      * @param message Message of the exception.
      */
-    public InvalidDbaseFileFormatException(String message) {
+    public SQLInvalidDbaseFileFormatException(String message) {
         super(message);
     }
 
@@ -44,7 +44,7 @@ public class InvalidDbaseFileFormatException extends SQLNonTransientException {
      * @param message Message of the exception.
      * @param cause Root cause of the exception.
      */
-    public InvalidDbaseFileFormatException(String message, Throwable cause) {
+    public SQLInvalidDbaseFileFormatException(String message, Throwable cause) {
         super(message, cause);
     }
 }
