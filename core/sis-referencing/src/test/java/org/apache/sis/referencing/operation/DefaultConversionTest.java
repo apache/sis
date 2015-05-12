@@ -87,18 +87,28 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * @param targetCRS A CRS using the Greenwich prime meridian.
      */
     private static DefaultConversion createLongitudeRotation(final GeographicCRS sourceCRS, final GeographicCRS targetCRS) {
-        final Matrix rotation = Matrices.createDiagonal(
-                targetCRS.getCoordinateSystem().getDimension() + 1,     // Number of rows.
-                sourceCRS.getCoordinateSystem().getDimension() + 1);    // Number of columns.
-        rotation.setElement(0, rotation.getNumCol() - 1, OFFSET);
-
+        /*
+         * The following code fills the parameter values AND creates itself the MathTransform instance
+         * (indirectly, through the matrix). The later step is normally not our business, since we are
+         * supposed to only fill the parameter values and let MathTransformFactory creates the transform
+         * from the parameters. But we don't do the normal steps here because this class is a unit test:
+         * we want to test DefaultConversion in isolation of MathTransformFactory.
+         */
+        final int srcDim = sourceCRS.getCoordinateSystem().getDimension();
+        final int tgtDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(
-                "Longitude rotation", "9601", "EPSG guidance note #7-2",
-                sourceCRS.getCoordinateSystem().getDimension(),
+                "Longitude rotation", "9601", "EPSG guidance note #7-2", srcDim,
                 DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 9601));
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);
-
+        final Matrix rotation = Matrices.createDiagonal(tgtDim + 1, srcDim + 1);
+        rotation.setElement(0, srcDim, OFFSET);
+        /*
+         * In theory we should not need to provide the parameters explicitly to the constructor since
+         * we are supposed to be able to find them from the MathTransform. But in this simple test we
+         * did not bothered to define a specialized MathTransform class for our case. So we will help
+         * a little bit DefaultConversion by telling it the parameters that we used.
+         */
         final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Paris to Greenwich");
         properties.put(OperationMethods.PARAMETERS_KEY, pg);
@@ -106,11 +116,10 @@ public final strictfp class DefaultConversionTest extends TestCase {
     }
 
     /**
-     * Tests a simple two-dimensional conversion performing a longitude rotation on the WGS84 datum.
+     * Asserts that at least some of the properties of the given {@code op} instance have the expected values
+     * for an instance created by {@link #createLongitudeRotation(GeographicCRS, GeographicCRS)}.
      */
-    @Test
-    public void testConstruction() {
-        final DefaultConversion op = createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84);
+    private static void verifyProperties(final DefaultConversion op) {
         assertEquals("name",       "Paris to Greenwich", op.getName().getCode());
         assertEquals("sourceCRS",  "Paris",              op.getSourceCRS().getName().getCode());
         assertEquals("targetCRS",  "WGS 84",             op.getTargetCRS().getName().getCode());
@@ -122,6 +131,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
         assertEquals("parameters",    "Longitude rotation", parameters.getDescriptor().getName().getCode());
         assertEquals("parameters[0]", "Longitude offset",    values[0].getDescriptor().getName().getCode());
         assertEquals("parameters[0]", OFFSET, values[0].doubleValue(), STRICT);
+        assertEquals(1, values.length);
 
         final Matrix m = MathTransforms.getMatrix(op.getMathTransform());
         assertNotNull("transform", m);
@@ -134,11 +144,20 @@ public final strictfp class DefaultConversionTest extends TestCase {
     }
 
     /**
+     * Tests a simple two-dimensional conversion performing a longitude rotation on the WGS84 datum.
+     */
+    @Test
+    public void testConstruction() {
+        verifyProperties(createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84));
+    }
+
+    /**
      * Tests serialization.
      */
     @Test
     @DependsOnMethod("testConstruction")
     public void testSerialization() {
-        assertSerializedEquals(createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84));
+        verifyProperties(assertSerializedEquals(createLongitudeRotation(
+                createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84)));
     }
 }
