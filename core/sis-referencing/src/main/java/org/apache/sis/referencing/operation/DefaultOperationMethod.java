@@ -104,7 +104,8 @@ import java.util.Objects;
  * @since   0.5
  * @module
  *
- * @see DefaultSingleOperation
+ * @see DefaultConversion
+ * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
 public class DefaultOperationMethod extends AbstractIdentifiedObject implements OperationMethod {

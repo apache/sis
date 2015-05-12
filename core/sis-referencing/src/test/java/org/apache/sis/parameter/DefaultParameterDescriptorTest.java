@@ -144,7 +144,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * @param  code The parameter identifier.
      * @return The descriptor with the given EPSG identifier.
      */
-    static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
+    public static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
         final Map<String, Object> properties = properties(name);
         assertNull(properties.put(DefaultParameterDescriptor.IDENTIFIERS_KEY,
                 new ImmutableIdentifier(HardCodedCitations.IOGP, Constants.EPSG, Short.toString(code))));

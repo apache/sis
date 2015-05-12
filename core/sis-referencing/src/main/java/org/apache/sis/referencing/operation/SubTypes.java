@@ -145,8 +145,10 @@ final class SubTypes {
             }
         }
         final Conversion conversion;
-        if (type.isInstance(definition) && definition.getSourceCRS() == sourceCRS
-                                        && definition.getTargetCRS() == targetCRS)
+        if (type.isInstance(definition)
+                && definition.getSourceCRS() == sourceCRS
+                && definition.getTargetCRS() == targetCRS
+                && definition.getMathTransform() != null)
         {
             conversion = definition;
         } else if (CylindricalProjection.class.isAssignableFrom(type)) {

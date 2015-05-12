@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.VerticalDatumType;
@@ -35,7 +36,7 @@ import static org.opengis.referencing.datum.Datum.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class HardCodedDatum {
@@ -83,7 +84,7 @@ public final strictfp class HardCodedDatum {
      * Earth Gravitational Model}.
      */
     public static final DefaultGeodeticDatum WGS72 = new DefaultGeodeticDatum(
-            properties("World Geodetic System 1972", "6322", "Satellite navigation."),
+            properties("World Geodetic System 1972", "6322", WGS84.getScope()),
             new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid()), GREENWICH);
 
     /**
@@ -96,6 +97,28 @@ public final strictfp class HardCodedDatum {
             new DefaultEllipsoid(GeodeticDatumMock.NTF.getEllipsoid()), PARIS);
 
     /**
+     * Tokyo 1918 datum (EPSG:6301). Ellipsoid is Bessel 1841 and prime meridian is Greenwich.
+     * Bursa-Wolf parameters to {@link #JGD2000} are (-146.414, 507.337, 680.507).
+     *
+     * @since 0.6
+     */
+    public static final DefaultGeodeticDatum TOKYO = new DefaultGeodeticDatum(
+            properties("Tokyo 1918", "6301", "Geodetic survey."),
+            DefaultEllipsoid.createFlattenedSphere(properties("Bessel 1841", "7004", null),
+                    6377397.155, 299.1528128, SI.METRE), GREENWICH);
+
+    /**
+     * Japanese Geodetic Datum 2000 datum (EPSG:6612). Ellipsoid is GRS 1980 and prime meridian is Greenwich.
+     * This is useful for testing datum shift from {@link #TOKYO}.
+     *
+     * @since 0.6
+     */
+    public static final DefaultGeodeticDatum JGD2000 = new DefaultGeodeticDatum(
+            properties("Japanese Geodetic Datum 2000", "6612", TOKYO.getScope()),
+            DefaultEllipsoid.createFlattenedSphere(properties("GRS 1980", "7019", null),
+                    6378137, 298.257222101, SI.METRE), GREENWICH);
+
+    /**
      * Spherical datum based on GRS 1980 Authalic Sphere (EPSG:6047). Prime meridian is Greenwich.
      */
     public static final DefaultGeodeticDatum SPHERE = new DefaultGeodeticDatum(
@@ -103,19 +126,19 @@ public final strictfp class HardCodedDatum {
             new DefaultEllipsoid(GeodeticDatumMock.SPHERE.getEllipsoid()), GREENWICH);
 
     /**
+     * Ellipsoid for measurements of height above the ellipsoid.
+     * This is not a valid datum according ISO 19111, but is used by Apache SIS for internal calculation.
+     */
+    public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
+            properties("Ellipsoid", null, SPHERE.getScope()),
+            VerticalDatumTypes.ELLIPSOIDAL);
+
+    /**
      * Mean sea level, which can be used as an approximation of geoid.
      */
     public static final DefaultVerticalDatum MEAN_SEA_LEVEL = new DefaultVerticalDatum(
             properties("Mean Sea Level", "5100", "Hydrography."),
             VerticalDatumType.GEOIDAL);
-
-    /**
-     * Ellipsoid for measurements of height above the ellipsoid.
-     * This is not a valid datum according ISO 19111, but is used by Apache SIS for internal calculation.
-     */
-    public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
-            properties("Ellipsoid", null, "Not a valid datum."),
-            VerticalDatumTypes.ELLIPSOIDAL);
 
     /**
      * Default datum for time measured since January 1st, 1970 at 00:00 UTC.
@@ -147,7 +170,7 @@ public final strictfp class HardCodedDatum {
     /**
      * Creates a map of properties for the given name and EPSG code.
      */
-    private static Map<String,?> properties(final String name, final String code, final String scope) {
+    private static Map<String,?> properties(final String name, final String code, final CharSequence scope) {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, name);
         if (code != null) {

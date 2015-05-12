@@ -32,6 +32,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.wkt.Formatter;
@@ -75,7 +76,7 @@ import java.util.Objects;
  * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
- * An exception to this rule may occur when it is not possible to identify the exact CRS type.
+ * An exception to this rule may occur when it is not possible to identify the exact operation type.
  *
  * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -587,13 +588,13 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterDescriptorGroup param;
-                if (Semaphores.queryAndSet(Semaphores.PROJCS)) {
+                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
                     throw new AssertionError(); // Should never happen.
                 }
                 try {
                     param = ((Parameterized) mt).getParameterDescriptors();
                 } finally {
-                    Semaphores.clear(Semaphores.PROJCS);
+                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
                 }
                 if (param != null) {
                     return param;
@@ -621,13 +622,13 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterValueGroup param;
-                if (Semaphores.queryAndSet(Semaphores.PROJCS)) {
+                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
                     throw new AssertionError(); // Should never happen.
                 }
                 try {
                     param = ((Parameterized) mt).getParameterValues();
                 } finally {
-                    Semaphores.clear(Semaphores.PROJCS);
+                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
                 }
                 if (param != null) {
                     return param;
@@ -729,9 +730,17 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
+        formatter.newLine();
         append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
         append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
+        final ParameterValueGroup parameters = getParameterValues();
+        if (parameters != null) {
+            formatter.newLine();
+            for (final GeneralParameterValue param : parameters.values()) {
+                WKTUtilities.append(param, formatter);
+            }
+        }
         append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
         final double accuracy = getLinearAccuracy();
         if (accuracy > 0) {
@@ -759,7 +768,9 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         if (crs != null) {
             formatter.append(new FormattableObject() {
                 @Override protected String formatTo(final Formatter formatter) {
+                    formatter.indent(-1);
                     formatter.append(WKTUtilities.toFormattable(crs));
+                    formatter.indent(+1);
                     return type;
                 }
             });

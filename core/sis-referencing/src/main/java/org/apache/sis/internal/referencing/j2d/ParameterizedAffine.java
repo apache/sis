@@ -104,7 +104,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return isDefinitive || Semaphores.query(Semaphores.PROJCS)  // See comment in getParameterValues().
+        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)  // See comment in getParameterValues().
                ? parameters.getDescriptor() : super.getParameterDescriptors();
     }
 
@@ -112,9 +112,9 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * Returns the parameter values for this map projection.
      *
      * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However if
-     * {@link Semaphores#PROJCS} is set, then this method returns the map projection parameters even
-     * if they are not a complete description of this math transform. This internal hack shall be used
-     * only by {@link org.apache.sis.referencing.operation.DefaultSingleOperation}.</p>
+     * {@link Semaphores#ENCLOSED_IN_OPERATION} is set, then this method returns the map projection parameters
+     * even if they are not a complete description of this math transform. This internal hack shall be used
+     * only by {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.</p>
      *
      * <p><b>Use case of above hack:</b> consider an "Equidistant Cylindrical (Spherical)" map projection
      * from a {@code GeographiCRS} base using (latitude, longitude) axis order. We need to concatenate an
@@ -132,14 +132,16 @@ public final class ParameterizedAffine extends AffineTransform2D {
      *     has been applied.</li>
      * </ul>
      *
-     * The {@code Semaphores.PROJCS} flag is SIS internal mechanism for distinguish the two above-cited cases.
+     * The {@code Semaphores.ENCLOSED_IN_OPERATION} flag is SIS internal mechanism for distinguish the two above-cited
+     * cases.
      *
      * @return The map projection parameters if they are an accurate description of this transform,
      *         or the generic affine parameters in case of doubt.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return isDefinitive || Semaphores.query(Semaphores.PROJCS) ? parameters : super.getParameterValues();
+        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)
+               ? parameters : super.getParameterValues();
     }
 
     /**
