@@ -51,11 +51,6 @@ import static org.apache.sis.test.Assert.*;
 })
 public final strictfp class CoordinateSystemsTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    static final double STRICT = 0;
-
-    /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
      */
     @Test

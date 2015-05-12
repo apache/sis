@@ -54,11 +54,6 @@ import static org.apache.sis.test.MetadataAssert.*;
 })
 public final strictfp class DefaultTransformationTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Creates a geocentric CRS using the given datum.
      */
     private static DefaultGeocentricCRS createCRS(final String name, final GeodeticDatum datum) {
