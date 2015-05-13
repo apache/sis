@@ -39,13 +39,13 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -322,18 +322,29 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      */
     private void checkDimensions() {
         if (transform != null) {
-            int sourceDim = transform.getSourceDimensions();
-            int targetDim = transform.getTargetDimensions();
-            if (interpolationCRS != null) {
-                final int dim = interpolationCRS.getCoordinateSystem().getDimension();
-                sourceDim -= dim;
-                targetDim -= dim;
-                if (sourceDim <= 0 || targetDim <= 0) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingInterpolationOrdinates));
+            final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
+                final CoordinateReferenceSystem crs;    // Will determine the expected dimensions.
+                int actual;                             // The MathTransform number of dimensions.
+                switch (isTarget) {
+                    case 0: crs = sourceCRS; actual = transform.getSourceDimensions(); break;
+                    case 1: crs = targetCRS; actual = transform.getTargetDimensions(); break;
+                    default: break check;
+                }
+                int expected = ReferencingUtilities.getDimension(crs);
+                if (interpDim != 0) {
+                    if (actual == expected || actual < interpDim) {
+                        // This check is not strictly necessary as the next check below would catch the error,
+                        // but we provide here a hopefully more helpful error message for a common mistake.
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingInterpolationOrdinates));
+                    }
+                    expected += interpDim;
+                }
+                if (crs != null && actual != expected) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
                 }
             }
-            ArgumentChecks.ensureDimensionMatches("sourceCRS", sourceDim, sourceCRS);
-            ArgumentChecks.ensureDimensionMatches("targetCRS", targetDim, targetCRS);
         }
     }
 
@@ -450,7 +461,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
