@@ -85,8 +85,11 @@ public final strictfp class DefaultConversionTest extends TestCase {
     /**
      * Creates a very simple conversion performing a longitude rotation between two-dimensional normalized CRS.
      * The source CRS uses the Paris prime meridian and the target CRS uses the Greenwich prime meridian.
+     * Both CRS use the WGS84 datum.
+     *
+     * @return A simple conversion performing a longitude rotation on the WGS84 geodetic datum.
      */
-    private static DefaultConversion createLongitudeRotation() {
+    public static DefaultConversion createLongitudeRotation() {
         return createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84, null);
     }
 
@@ -114,7 +117,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
         final int targetDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(
                 "Longitude rotation", "9601", "EPSG guidance note #7-2", sourceDim,
-                DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 9601));
+                DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 8602));
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);
         final Matrix rotation = Matrices.createDiagonal(

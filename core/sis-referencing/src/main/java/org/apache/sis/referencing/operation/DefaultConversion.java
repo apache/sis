@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
@@ -331,9 +332,24 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     {
         if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
             final Datum datum = ((SingleCRS) expected).getDatum();
-             if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
-             }
+            if (datum != null) {
+                /*
+                 * HACK: this method may be invoked indirectly by DefaultDerivedCRS and DefaultProjectedCRS constructors
+                 * before their 'conversionFromBase' field is set. Since the Apache SIS implementations of those CRS map
+                 * the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking the actual.getDatum() method
+                 * below result in a NullPointerException.  To avoid this problem, we bypass this check if the given CRS
+                 * is a derived CRS with a null conversion.
+                 */
+                if (!(actual instanceof GeneralDerivedCRS) || ((GeneralDerivedCRS) actual).getConversionFromBase() != null) {
+                    /*
+                     * Now the real check.
+                     */
+                    if (!Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
+                        throw new IllegalArgumentException(Errors.format(
+                                Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
+                    }
+                }
+            }
         }
     }
 
