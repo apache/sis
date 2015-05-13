@@ -33,6 +33,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
@@ -347,6 +349,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             final CoordinateReferenceSystem targetCRS,
             final MathTransformFactory factory) throws FactoryException
     {
+        final int interpDim = ReferencingUtilities.getDimension(getInterpolationCRS(definition));
         MathTransform mt = definition.getMathTransform();
         if (mt == null) {
             /*
@@ -382,9 +385,13 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
                  * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
                  */
-                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, true,  factory);
-                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, false, factory);
+                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, interpDim, true,  factory);
+                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, interpDim, false, factory);
+                return mt;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
             }
+        }
+        if (interpDim != 0) {
+            mt = factory.createPassThroughTransform(interpDim, mt, 0);
         }
         return mt;
     }
@@ -398,18 +405,23 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param transform The transform to which to concatenate axis changes.
      * @param sourceCRS The first CRS of the pair for which to check for axes changes.
      * @param targetCRS The second CRS of the pair for which to check for axes changes.
+     * @param interpDim The number of dimensions of the interpolation CRS, or 0 if none.
      * @param isSource  {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
      * @param factory   The factory to use for performing axis changes.
      */
     private static MathTransform swapAndScaleAxes(MathTransform transform,
             final CoordinateReferenceSystem sourceCRS,
             final CoordinateReferenceSystem targetCRS,
-            final boolean isSource, final MathTransformFactory factory) throws FactoryException
+            final int interpDim, final boolean isSource,
+            final MathTransformFactory factory) throws FactoryException
     {
         if (sourceCRS != null && targetCRS != null && sourceCRS != targetCRS) try {
-            final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
-                                                                targetCRS.getCoordinateSystem());
+            Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                          targetCRS.getCoordinateSystem());
             if (!m.isIdentity()) {
+                if (interpDim != 0) {
+                    m = Matrices.createPassThrough(interpDim, m, 0);
+                }
                 final MathTransform s = factory.createAffineTransform(m);
                 transform = factory.createConcatenatedTransform(isSource ? s : transform,
                                                                 isSource ? transform : s);

@@ -23,12 +23,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -85,7 +87,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * The source CRS uses the Paris prime meridian and the target CRS uses the Greenwich prime meridian.
      */
     private static DefaultConversion createLongitudeRotation() {
-        return createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84);
+        return createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84, null);
     }
 
     /**
@@ -95,8 +97,11 @@ public final strictfp class DefaultConversionTest extends TestCase {
      *
      * @param sourceCRS A CRS using the Paris prime meridian.
      * @param targetCRS A CRS using the Greenwich prime meridian.
+     * @param interpolationCRS A dummy interpolation CRS, or {@code null} if none.
      */
-    private static DefaultConversion createLongitudeRotation(final GeographicCRS sourceCRS, final GeographicCRS targetCRS) {
+    private static DefaultConversion createLongitudeRotation(final GeographicCRS sourceCRS,
+            final GeographicCRS targetCRS, final TemporalCRS interpolationCRS)
+    {
         /*
          * The following code fills the parameter values AND creates itself the MathTransform instance
          * (indirectly, through the matrix). The later step is normally not our business, since we are
@@ -104,15 +109,18 @@ public final strictfp class DefaultConversionTest extends TestCase {
          * from the parameters. But we don't do the normal steps here because this class is a unit test:
          * we want to test DefaultConversion in isolation of MathTransformFactory.
          */
-        final int srcDim = sourceCRS.getCoordinateSystem().getDimension();
-        final int tgtDim = targetCRS.getCoordinateSystem().getDimension();
+        final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+        final int sourceDim = sourceCRS.getCoordinateSystem().getDimension();
+        final int targetDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(
-                "Longitude rotation", "9601", "EPSG guidance note #7-2", srcDim,
+                "Longitude rotation", "9601", "EPSG guidance note #7-2", sourceDim,
                 DefaultParameterDescriptorTest.createEPSG("Longitude offset", (short) 9601));
         final ParameterValueGroup pg = method.getParameters().createValue();
         pg.parameter("Longitude offset").setValue(OFFSET);
-        final Matrix rotation = Matrices.createDiagonal(tgtDim + 1, srcDim + 1);
-        rotation.setElement(0, srcDim, OFFSET);
+        final Matrix rotation = Matrices.createDiagonal(
+                targetDim + interpDim + 1,      // Number of rows.
+                sourceDim + interpDim + 1);     // Number of columns.
+        rotation.setElement(interpDim, interpDim + sourceDim, OFFSET);
         /*
          * In theory we should not need to provide the parameters explicitly to the constructor since
          * we are supposed to be able to find them from the MathTransform. But in this simple test we
@@ -122,7 +130,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
         final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Paris to Greenwich");
         properties.put(OperationMethods.PARAMETERS_KEY, pg);
-        return new DefaultConversion(properties, sourceCRS, targetCRS, null, method, MathTransforms.linear(rotation));
+        return new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS,
+                method, MathTransforms.linear(rotation));
     }
 
     /**
@@ -163,6 +172,10 @@ public final strictfp class DefaultConversionTest extends TestCase {
 
     /**
      * Creates a defining conversion and tests {@link DefaultConversion#specialize DefaultConversion.specialize(…)}.
+     * This test includes a swapping of axis order in the <em>source</em> CRS.
+     *
+     * <div class="note"><b>Note:</b>
+     * By contrast, {@link #testSpecialize()} will test swapping axis order in the <em>target</em> CRS.</div>
      *
      * @throws FactoryException Should not happen in this test.
      */
@@ -198,6 +211,10 @@ public final strictfp class DefaultConversionTest extends TestCase {
 
     /**
      * Tests {@link DefaultConversion#specialize DefaultConversion.specialize(…)} with new source and target CRS.
+     * This test attempts to swap axis order and change the number of dimensions of the <em>target</em> CRS.
+     *
+     * <div class="note"><b>Note:</b>
+     * By contrast, {@link #testDefiningConversion()} tested swapping axis order in the <em>source</em> CRS.</div>
      *
      * @throws FactoryException Should not happen in this test.
      */
@@ -205,7 +222,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @DependsOnMethod("testDefiningConversion")
     public void testSpecialize() throws FactoryException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        DefaultConversion op = createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_3D), HardCodedCRS.WGS84_3D);
+        DefaultConversion op = createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_3D), HardCodedCRS.WGS84_3D, null);
         assertMatrixEquals("Longitude rotation of a three-dimensional CRS", new Matrix4(
                 1, 0, 0, OFFSET,
                 0, 1, 0, 0,
@@ -224,6 +241,45 @@ public final strictfp class DefaultConversionTest extends TestCase {
                 0, 1, 0, 0,
                 1, 0, 0, OFFSET,
                 0, 0, 0, 1}), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+    }
+
+
+    /**
+     * Tests {@link DefaultConversion#specialize DefaultConversion.specialize(…)} with an interpolation CRS.
+     * In this test, we invent an imaginary scenario where the longitude rotation to apply varies with time
+     * (a "moving prime meridian").
+     *
+     * <div class="note"><b>Note:</b>
+     * from some point of view, this scenario is not as weird as it may look like. The Greenwich prime meridian
+     * was initially the meridian passing through the telescope of the Greenwich observatory. But when a new
+     * more powerful telescopes was built, is was installed a few metres far from the old one. So if we were
+     * staying to a strict interpretation like "the meridian passing through the main telescope",
+     * that meridian would indeed more with time.</div>
+     *
+     * @throws FactoryException Should not happen in this test.
+     */
+    @Test
+    @DependsOnMethod("testDefiningConversion")
+    public void testWithInterpolationCRS() throws FactoryException {
+        DefaultConversion op = createLongitudeRotation(
+                createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84, HardCodedCRS.TIME);
+        assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
+                1, 0, 0, 0,
+                0, 1, 0, OFFSET,
+                0, 0, 1, 0,
+                0, 0, 0, 1), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+
+        op = op.specialize(
+                DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
+                op.getSourceCRS(),          // Keep the same source CRS.
+                HardCodedCRS.WGS84_φλ,      // Swap axis order.
+                DefaultFactories.forBuildin(MathTransformFactory.class));
+
+        assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
+                1, 0, 0, 0,
+                0, 0, 1, 0,
+                0, 1, 0, OFFSET,
+                0, 0, 0, 1), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
     }
 
     /**

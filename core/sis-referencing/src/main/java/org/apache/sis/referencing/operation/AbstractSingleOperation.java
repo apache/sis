@@ -31,6 +31,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
@@ -100,7 +101,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
         ArgumentChecks.ensureNonNull("method",    method);
         ArgumentChecks.ensureNonNull("transform", transform);
-        checkDimensions(method, transform, properties);
+        checkDimensions(method, ReferencingUtilities.getDimension(interpolationCRS), transform, properties);
         this.method = method;
         /*
          * Undocumented property, because SIS usually infers the parameters from the MathTransform.
@@ -124,7 +125,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         super(properties, null, null, null, transform);
         ArgumentChecks.ensureNonNull("method", method);
         if (transform != null) {
-            checkDimensions(method, transform, properties);
+            checkDimensions(method, 0, transform, properties);
         } else if (parameters == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
         }
@@ -186,16 +187,17 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * </ul>
      *
      * @param  method     The operation method to compare to the math transform.
+     * @param  interpDim  The number of interpolation dimension, or 0 if none.
      * @param  transform  The math transform to compare to the operation method.
      * @param  properties Properties of the caller object being constructed, used only for formatting error message.
      * @throws IllegalArgumentException if the number of dimensions are incompatible.
      */
-    static void checkDimensions(final OperationMethod method, MathTransform transform,
+    static void checkDimensions(final OperationMethod method, final int interpDim, MathTransform transform,
             final Map<String,?> properties) throws IllegalArgumentException
     {
         int actual = transform.getSourceDimensions();
         Integer expected = method.getSourceDimensions();
-        if (expected != null && actual > expected) {
+        if (expected != null && actual > expected + interpDim) {
             /*
              * The given MathTransform uses more dimensions than the OperationMethod.
              * Try to locate one and only one sub-transform, ignoring axis swapping and scaling.
@@ -218,16 +220,17 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         }
         /*
          * Now verify if the MathTransform dimensions are equal to the OperationMethod ones,
-         * ignoring null java.lang.Integer instances.
+         * ignoring null java.lang.Integer instances.  We do not specify whether the method
+         * dimensions should include the interpolation dimensions or not, so we accept both.
          */
-        byte isTarget = 0; // false: wrong dimension is the source one.
-        if (expected == null || actual == expected) {
+        int isTarget = 0;   // 0 == false: the wrong dimension is the source one.
+        if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
             actual = transform.getTargetDimensions();
             expected = method.getTargetDimensions();
-            if (expected == null || actual == expected) {
+            if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
                 return;
             }
-            isTarget = 1; // true: wrong dimension is the target one.
+            isTarget = 1;   // 1 == true: the wrong dimension is the target one.
         }
         /*
          * At least one dimension does not match.  In principle this is an error, but we make an exception for the
