@@ -124,7 +124,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
         for (int i=0; i<2; i++) {
             final AxisDirection direction = super.getAxis(i).getDirection();
             if (AxisDirections.isVertical(direction)) {
-                throw new IllegalArgumentException(Errors.format(
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
                         Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
             }
         }

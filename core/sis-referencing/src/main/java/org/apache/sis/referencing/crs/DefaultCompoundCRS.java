@@ -182,7 +182,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @param components The sequence of coordinate reference systems making this compound CRS.
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
-        super(properties, createCoordinateSystem(components));
+        super(properties, createCoordinateSystem(properties, components));
         this.components = copy(Arrays.asList(components));
         // 'singles' is computed by the above method call.
     }
@@ -193,10 +193,13 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static CoordinateSystem createCoordinateSystem(final CoordinateReferenceSystem[] components) {
+    private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
+            final CoordinateReferenceSystem[] components)
+    {
         ensureNonNull("components", components);
         if (components.length < 2) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, components.length));
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.TooFewArguments_2, 2, components.length));
         }
         final CoordinateSystem[] cs = new CoordinateSystem[components.length];
         for (int i=0; i<components.length; i++) {

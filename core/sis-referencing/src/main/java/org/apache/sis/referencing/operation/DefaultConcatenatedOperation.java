@@ -117,7 +117,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
                                          final MathTransformFactory factory)
             throws FactoryException
     {
-        this(properties, expand(operations, list, factory, true), list);
+        this(properties, expand(properties, operations, list, factory, true), list);
     }
 
     /**
@@ -148,10 +148,11 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
      * @return The concatenated math transform, or {@code null} if {@code wantTransform} was {@code false}.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
-    private static MathTransform expand(final CoordinateOperation[] operations,
-                                        final List<SingleOperation> target,
-                                        final MathTransformFactory  factory,
-                                        final boolean wantTransform)
+    private static MathTransform expand(final Map<String,?> properties,
+            final CoordinateOperation[] operations,
+            final List<SingleOperation> target,
+            final MathTransformFactory  factory,
+            final boolean wantTransform)
             throws FactoryException
     {
         MathTransform transform = null;
@@ -164,9 +165,9 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
             } else if (op instanceof ConcatenatedOperation) {
                 final ConcatenatedOperation cop = (ConcatenatedOperation) op;
                 final List<SingleOperation> cops = cop.getOperations();
-                expand(cops.toArray(new CoordinateOperation[cops.size()]), target, factory, false);
+                expand(properties, cops.toArray(new CoordinateOperation[cops.size()]), target, factory, false);
             } else {
-                throw new IllegalArgumentException(Errors.format(
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
                         Errors.Keys.IllegalArgumentClass_2, "operations[" + i + ']', op.getClass()));
             }
             /*
@@ -180,8 +181,8 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
                         final int dim1 = previous.getCoordinateSystem().getDimension();
                         final int dim2 = next.getCoordinateSystem().getDimension();
                         if (dim1 != dim2) {
-                            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                                    "operations[" + i + "].sourceCRS", dim1, dim2));
+                            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                                    Errors.Keys.MismatchedDimension_3, "operations[" + i + "].sourceCRS", dim1, dim2));
                         }
                     }
                 }
@@ -199,7 +200,7 @@ public class DefaultConcatenatedOperation extends AbstractCoordinateOperation im
             }
         }
         if (wantTransform && target.size() <= 1) {
-            throw new IllegalArgumentException(Errors.format(
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
         }
         return transform;

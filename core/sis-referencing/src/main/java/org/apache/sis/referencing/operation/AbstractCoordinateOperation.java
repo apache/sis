@@ -201,7 +201,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         this.domainOfValidity            = definition.getDomainOfValidity();
         this.scope                       = definition.getScope();
         this.transform                   = transform;
-        checkDimensions();
+        checkDimensions(null);
     }
 
     /**
@@ -313,14 +313,14 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         } else {
             coordinateOperationAccuracy = (value != null) ? Collections.singleton((PositionalAccuracy) value) : null;
         }
-        checkDimensions();
+        checkDimensions(properties);
     }
 
     /**
      * Ensures that {@link #sourceCRS}, {@link #targetCRS} and {@link #interpolationCRS} dimensions
      * are consistent with {@link #transform} input and output dimensions.
      */
-    private void checkDimensions() {
+    private void checkDimensions(final Map<String,?> properties) {
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
@@ -336,12 +336,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     if (actual == expected || actual < interpDim) {
                         // This check is not strictly necessary as the next check below would catch the error,
                         // but we provide here a hopefully more helpful error message for a common mistake.
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingInterpolationOrdinates));
+                        throw new IllegalArgumentException(Errors.getResources(properties)
+                                .getString(Errors.Keys.MissingInterpolationOrdinates));
                     }
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Errors.format(
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
                 }
             }
