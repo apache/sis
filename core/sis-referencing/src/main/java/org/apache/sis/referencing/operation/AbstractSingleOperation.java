@@ -127,7 +127,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         if (transform != null) {
             checkDimensions(method, 0, transform, properties);
         } else if (parameters == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString(Errors.Keys.UnspecifiedParameterValues));
         }
         this.method = method;
         this.parameters = (parameters != null) ? parameters.clone() : null;

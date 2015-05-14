@@ -327,7 +327,8 @@ public abstract class Builder<B extends Builder<B>> {
                 return false;
             }
             if (properties.get(IdentifiedObject.NAME_KEY) != null) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, key));
+                throw new IllegalStateException(Errors.getResources(properties)
+                        .getString(Errors.Keys.ValueAlreadyDefined_1, key));
             }
             properties.put(key, value);
         }
