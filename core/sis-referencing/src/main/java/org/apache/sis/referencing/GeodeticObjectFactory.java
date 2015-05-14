@@ -17,12 +17,17 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -33,20 +38,146 @@ import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * Creates implementations of {@link CoordinateReferenceSystem}, {@link CoordinateSystem} and {@link Datum} objects.
+ * Creates {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) implementations,
+ * with their {@linkplain org.apache.sis.referencing.cs.AbstractCS Coordinate System} (CS)
+ * and {@linkplain org.apache.sis.referencing.datum.AbstractDatum Datum} components.
+ * This factory serves two purposes:
+ *
+ * <ul>
+ *   <li><b>For users</b>, allows the creation of complex objects that can not be created by the authority factory,
+ *       without explicit dependency to Apache SIS (when using the GeoAPI interfaces implemented by this class).</li>
+ *   <li><b>For providers</b>, allows <cite>inversion of control</cite> by overriding methods in this class,
+ *       then specifying the customized instance to other services that consume {@code CRSFactory} (for example
+ *       authority factories or WKT parsers).</li>
+ * </ul>
+ *
+ * This {@code GeodeticObjectFactory} class is not easy to use directly.
+ * Users are encouraged to use an authority factory instead
+ * (or the {@link CRS#forCode(String)} convenience method) when the CRS object to construct can be identified
+ * by a code in the namespace of an authority (typically EPSG).
+ *
+ * <div class="section">Object properties</div>
+ * Most factory methods expect a {@link Map Map&lt;String,?&gt;} argument, often followed by explicit arguments.
+ * Unless otherwise noticed, information provided in the {@code properties} map are considered ignorable metadata
+ * while information provided in explicit arguments have an impact on coordinate transformation results.
+ *
+ * <p>The following table lists the keys recognized by {@code GeodeticObjectFactory} default implementation,
+ * together with the type of values associated to those keys.
+ * A value for the {@code "name"} key is mandatory for all objects, while all other properties are optional.
+ * {@code GeodeticObjectFactory} methods ignore all unknown properties.</p>
+ *
+ * <table class="sis">
+ *   <caption>Recognized properties (non exhaustive list)</caption>
+ *   <tr>
+ *     <th>Property name</th>
+ *     <th>Value type</th>
+ *     <th>Returned by</th>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+ *     <td>{@link Identifier} or {@link String}</td>
+ *     <td>{@link AbstractIdentifiedObject#getName()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
+ *     <td>{@link String} or {@link Citation}</td>
+ *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
+ *     <td>{@link String}</td>
+ *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+ *     <td>{@link String}</td>
+ *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+ *     <td>{@link String}</td>
+ *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+ *     <td>{@link String}</td>
+ *     <td>{@link NamedIdentifier#getDescription()} on the {@linkplain AbstractIdentifiedObject#getName() name}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+ *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+ *     <td>{@link AbstractIdentifiedObject#getAlias()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+ *     <td>{@link Identifier} (optionally as array)</td>
+ *     <td>{@link AbstractIdentifiedObject#getIdentifiers()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
+ *     <td>{@link Extent}</td>
+ *     <td>{@link AbstractReferenceSystem#getDomainOfValidity()} or {@link AbstractDatum#getDomainOfValidity()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
+ *     <td>{@link String} or {@link InternationalString}</td>
+ *     <td>{@link AbstractReferenceSystem#getScope()} or {@link AbstractDatum#getScope()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
+ *     <td>{@link InternationalString} or {@link String}</td>
+ *     <td>{@link AbstractDatum#getAnchorPoint()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
+ *     <td>{@link Date}</td>
+ *     <td>{@link AbstractDatum#getRealizationEpoch()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
+ *     <td>{@link InternationalString} or {@link String}</td>
+ *     <td>{@link AbstractIdentifiedObject#getRemarks()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value #DEPRECATED_KEY}</td>
+ *     <td>{@link Boolean}</td>
+ *     <td>{@link AbstractIdentifiedObject#isDeprecated()}</td>
+ *   </tr>
+ *   <tr>
+ *     <td>{@value #LOCALE_KEY}</td>
+ *     <td>{@link Locale}</td>
+ *     <td>(none)</td>
+ *   </tr>
+ * </table>
+ *
+ * <div class="section">Localization</div>
+ * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
+ * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
+ * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
+ * They are convenience properties for building the {@code InternationalString} value.
+ *
+ * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
+ * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
+ * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public class GeodeticObjectFactory extends AbstractFactory implements CSFactory, DatumFactory, CRSFactory {
+public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
+    /**
+     * The default properties, or {@code null} if none.
+     */
+    private final Map<String,?> defaultProperties;
+
     /**
      * The math transform factory. Will be created only when first needed.
      */
@@ -59,16 +190,35 @@ public class GeodeticObjectFactory extends AbstractFactory implements CSFactory,
     private final WeakHashSet<IdentifiedObject> pool;
 
     /**
-     * Constructs a default factory.
+     * Constructs a factory with no default properties.
      */
     public GeodeticObjectFactory() {
+        this(null);
+    }
+
+    /**
+     * Constructs a factory with the given default properties.
+     * {@code GeodeticObjectFactory} will fallback on the map given to this constructor for any property
+     * not present in the map provided to a {@code createFoo(Map<String,?> properties, …)} method.
+     *
+     * @param properties The default properties, or {@code null} if none.
+     */
+    public GeodeticObjectFactory(Map<String,?> properties) {
+        if (properties != null) {
+            if (properties.isEmpty()) {
+                properties = null;
+            } else {
+                properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
+            }
+        }
+        defaultProperties = properties;
         pool = new WeakHashSet<>(IdentifiedObject.class);
     }
 
     /**
      * Returns the math transform factory for internal usage only.
      */
-    private MathTransformFactory getMathTransformFactory() {
+    final MathTransformFactory getMathTransformFactory() {
         MathTransformFactory factory = mtFactory;
         if (factory == null) {
             mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);
