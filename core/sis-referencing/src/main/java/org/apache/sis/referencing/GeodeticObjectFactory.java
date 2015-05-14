@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -38,6 +39,7 @@ import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -55,7 +57,7 @@ import org.apache.sis.util.ArgumentChecks;
  *       without explicit dependency to Apache SIS (when using the GeoAPI interfaces implemented by this class).</li>
  *   <li><b>For providers</b>, allows <cite>inversion of control</cite> by overriding methods in this class,
  *       then specifying the customized instance to other services that consume {@code CRSFactory} (for example
- *       authority factories or WKT parsers).</li>
+ *       authority factories or {@linkplain org.apache.sis.io.wkt.WKTFormat WKT parsers}).</li>
  * </ul>
  *
  * This {@code GeodeticObjectFactory} class is not easy to use directly.
@@ -68,7 +70,7 @@ import org.apache.sis.util.ArgumentChecks;
  * Unless otherwise noticed, information provided in the {@code properties} map are considered ignorable metadata
  * while information provided in explicit arguments have an impact on coordinate transformation results.
  *
- * <p>The following table lists the keys recognized by {@code GeodeticObjectFactory} default implementation,
+ * <p>The following table lists the keys recognized by the {@code GeodeticObjectFactory} default implementation,
  * together with the type of values associated to those keys.
  * A value for the {@code "name"} key is mandatory for all objects, while all other properties are optional.
  * {@code GeodeticObjectFactory} methods ignore all unknown properties.</p>
@@ -123,12 +125,12 @@ import org.apache.sis.util.ArgumentChecks;
  *   <tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
  *     <td>{@link Extent}</td>
- *     <td>{@link AbstractReferenceSystem#getDomainOfValidity()} or {@link AbstractDatum#getDomainOfValidity()}</td>
+ *     <td>{@link AbstractReferenceSystem#getDomainOfValidity()}</td>
  *   </tr>
  *   <tr>
  *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
  *     <td>{@link String} or {@link InternationalString}</td>
- *     <td>{@link AbstractReferenceSystem#getScope()} or {@link AbstractDatum#getScope()}</td>
+ *     <td>{@link AbstractReferenceSystem#getScope()}</td>
  *   </tr>
  *   <tr>
  *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
@@ -146,12 +148,12 @@ import org.apache.sis.util.ArgumentChecks;
  *     <td>{@link AbstractIdentifiedObject#getRemarks()}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value #DEPRECATED_KEY}</td>
+ *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#DEPRECATED_KEY}</td>
  *     <td>{@link Boolean}</td>
  *     <td>{@link AbstractIdentifiedObject#isDeprecated()}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value #LOCALE_KEY}</td>
+ *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
  *     <td>{@link Locale}</td>
  *     <td>(none)</td>
  *   </tr>
@@ -174,12 +176,13 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
     /**
-     * The default properties, or {@code null} if none.
+     * The default properties, or an empty map if none.
      */
     private final Map<String,?> defaultProperties;
 
     /**
      * The math transform factory. Will be created only when first needed.
+     * This is normally not needed by this factory, except when constructing derived and projected CRS.
      */
     private volatile MathTransformFactory mtFactory;
 
@@ -199,20 +202,76 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Constructs a factory with the given default properties.
      * {@code GeodeticObjectFactory} will fallback on the map given to this constructor for any property
-     * not present in the map provided to a {@code createFoo(Map<String,?> properties, …)} method.
+     * not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
      * @param properties The default properties, or {@code null} if none.
      */
     public GeodeticObjectFactory(Map<String,?> properties) {
-        if (properties != null) {
-            if (properties.isEmpty()) {
-                properties = null;
-            } else {
-                properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
-            }
+        if (properties == null || properties.isEmpty()) {
+            properties = Collections.emptyMap();
+        } else {
+            properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
         }
         defaultProperties = properties;
         pool = new WeakHashSet<>(IdentifiedObject.class);
+    }
+
+    /**
+     * Returns the union of the given {@code properties} map with the default properties given at
+     * {@linkplain #GeodeticObjectFactory(Map) construction time}. Entries in the given properties
+     * map have precedence, even if their {@linkplain java.util.Map.Entry#getValue() value} is {@code null}
+     * (i.e. a null value "erase" the default property value).
+     * Entries with null value after the union will be omitted.
+     *
+     * <p>This method is invoked by all {@code createFoo(Map<String,?>, …)} methods.</p>
+     *
+     * @param  properties The user-supplied properties.
+     * @return The union of the given properties with the default properties.
+     */
+    protected Map<String,?> complete(final Map<String,?> properties) {
+        ArgumentChecks.ensureNonNull("properties", properties);
+        return new AbstractMap<String,Object>() {
+            /**
+             * A map containing the merge of user and default properties, or {@code null} if not yet created.
+             * This map is normally never needed. It may be created only if the user create his own subclass
+             * of {@link GeodeticObjectFactory} and iterate on this map or ask for its size.
+             */
+            private Map<String,Object> merge;
+
+            /**
+             * Returns an iterator over the user-supplied properties together with
+             * the default properties which were not specified in the user's ones.
+             */
+            @Override
+            protected EntryIterator<String,Object> entryIterator() {
+                if (merge == null) {
+                    merge = new HashMap<>(defaultProperties);
+                    merge.putAll(properties);
+                    merge.remove(null);
+                }
+                return new IteratorAdapter<>(merge);    // That iterator will skip null values.
+            }
+
+            /**
+             * Returns the value for the given key by first looking in the user-supplied map,
+             * then by looking in the default properties if no value were specified in the user map.
+             * We handle the "mtFactory" key in a special way since this is normally not needed for
+             * {@link GeodeticObjectFactory}, except when creating the SIS implementation of derived
+             * or projected CRS (because of the way we implemented derived CRS, but this is somewhat
+             * specific to SIS).
+             */
+            @Override
+            public Object get(final Object key) {
+                Object value = properties.get(key);
+                if (value == null && !properties.containsKey(key)) {
+                    value = defaultProperties.get(key);
+                    if (value == null && OperationMethods.MT_FACTORY.equals(key)) {
+                        value = getMathTransformFactory();
+                    }
+                }
+                return value;
+            }
+        };
     }
 
     /**
@@ -243,7 +302,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final GeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(properties, datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -270,7 +329,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final CartesianCS cs;
         try {
-            cs = new DefaultCartesianCS(properties, axis0, axis1, axis2);
+            cs = new DefaultCartesianCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -294,7 +353,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final GeocentricCRS crs;
         try {
-            crs = new DefaultGeocentricCRS(properties, datum, cs);
+            crs = new DefaultGeocentricCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -321,7 +380,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final SphericalCS cs;
         try {
-            cs = new DefaultSphericalCS(properties, axis0, axis1, axis2);
+            cs = new DefaultSphericalCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -346,7 +405,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final GeographicCRS crs;
         try {
-            crs = new DefaultGeographicCRS(properties, datum, cs);
+            crs = new DefaultGeographicCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -370,7 +429,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final GeodeticDatum datum;
         try {
-            datum = new DefaultGeodeticDatum(properties, ellipsoid, primeMeridian);
+            datum = new DefaultGeodeticDatum(complete(properties), ellipsoid, primeMeridian);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -394,7 +453,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final PrimeMeridian meridian;
         try {
-            meridian = new DefaultPrimeMeridian(properties, longitude, angularUnit);
+            meridian = new DefaultPrimeMeridian(complete(properties), longitude, angularUnit);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -419,7 +478,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final EllipsoidalCS cs;
         try {
-            cs = new DefaultEllipsoidalCS(properties, axis0, axis1);
+            cs = new DefaultEllipsoidalCS(complete(properties), axis0, axis1);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -446,7 +505,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final EllipsoidalCS cs;
         try {
-            cs = new DefaultEllipsoidalCS(properties, axis0, axis1, axis2);
+            cs = new DefaultEllipsoidalCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -472,7 +531,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final Ellipsoid ellipsoid;
         try {
-            ellipsoid = DefaultEllipsoid.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
+            ellipsoid = DefaultEllipsoid.createEllipsoid(complete(properties), semiMajorAxis, semiMinorAxis, unit);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -498,7 +557,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final Ellipsoid ellipsoid;
         try {
-            ellipsoid = DefaultEllipsoid.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
+            ellipsoid = DefaultEllipsoid.createFlattenedSphere(complete(properties), semiMajorAxis, inverseFlattening, unit);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -522,18 +581,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultProjectedCRS
      */
     @Override
-    public ProjectedCRS createProjectedCRS(Map<String,?> properties,
+    public ProjectedCRS createProjectedCRS(final Map<String,?> properties,
             final GeographicCRS baseCRS, Conversion conversion,
             final CartesianCS derivedCS) throws FactoryException
     {
-        if (!properties.containsKey(OperationMethods.MT_FACTORY)) {
-            final Map<String,Object> copy = new HashMap<>(properties);
-            copy.put(OperationMethods.MT_FACTORY, getMathTransformFactory());
-            properties = copy;
-        }
         final ProjectedCRS crs;
         try {
-            crs = new DefaultProjectedCRS(properties, baseCRS, conversion, derivedCS);
+            crs = new DefaultProjectedCRS(complete(properties), baseCRS, conversion, derivedCS);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -558,7 +612,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final CartesianCS cs;
         try {
-            cs = new DefaultCartesianCS(properties, axis0, axis1);
+            cs = new DefaultCartesianCS(complete(properties), axis0, axis1);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -586,7 +640,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         ArgumentChecks.ensureCanCast("baseCRS", SingleCRS.class, baseCRS);
         final DerivedCRS crs;
         try {
-            crs = new DefaultDerivedCRS(properties, (SingleCRS) baseCRS, conversion, derivedCS);
+            crs = DefaultDerivedCRS.create(complete(properties), (SingleCRS) baseCRS, conversion, derivedCS);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -610,7 +664,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final VerticalCRS crs;
         try {
-            crs = new DefaultVerticalCRS(properties, datum, cs);
+            crs = new DefaultVerticalCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -633,7 +687,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final VerticalDatum datum;
         try {
-            datum = new DefaultVerticalDatum(properties, type);
+            datum = new DefaultVerticalDatum(complete(properties), type);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -656,7 +710,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final VerticalCS cs;
         try {
-            cs = new DefaultVerticalCS(properties, axis);
+            cs = new DefaultVerticalCS(complete(properties), axis);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -680,7 +734,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final TemporalCRS crs;
         try {
-            crs = new DefaultTemporalCRS(properties, datum, cs);
+            crs = new DefaultTemporalCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -703,7 +757,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final TemporalDatum datum;
         try {
-            datum = new DefaultTemporalDatum(properties, origin);
+            datum = new DefaultTemporalDatum(complete(properties), origin);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -726,7 +780,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final TimeCS cs;
         try {
-            cs = new DefaultTimeCS(properties, axis);
+            cs = new DefaultTimeCS(complete(properties), axis);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -749,7 +803,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final CompoundCRS crs;
         try {
-            crs = new DefaultCompoundCRS(properties, elements);
+            crs = new DefaultCompoundCRS(complete(properties), elements);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -773,7 +827,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final ImageCRS crs;
         try {
-            crs = new DefaultImageCRS(properties, datum, cs);
+            crs = new DefaultImageCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -796,7 +850,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final ImageDatum datum;
         try {
-            datum = new DefaultImageDatum(properties, pixelInCell);
+            datum = new DefaultImageDatum(complete(properties), pixelInCell);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -821,7 +875,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final AffineCS cs;
         try {
-            cs = new DefaultAffineCS(properties, axis0, axis1);
+            cs = new DefaultAffineCS(complete(properties), axis0, axis1);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -845,7 +899,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final EngineeringCRS crs;
         try {
-            crs = new DefaultEngineeringCRS(properties, datum, cs);
+            crs = new DefaultEngineeringCRS(complete(properties), datum, cs);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -867,7 +921,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final EngineeringDatum datum;
         try {
-            datum = new DefaultEngineeringDatum(properties);
+            datum = new DefaultEngineeringDatum(complete(properties));
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -894,7 +948,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final AffineCS cs;
         try {
-            cs = new DefaultAffineCS(properties, axis0, axis1, axis2);
+            cs = new DefaultAffineCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -921,7 +975,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final CylindricalCS cs;
         try {
-            cs = new DefaultCylindricalCS(properties, axis0, axis1, axis2);
+            cs = new DefaultCylindricalCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -946,7 +1000,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final PolarCS cs;
         try {
-            cs = new DefaultPolarCS(properties, axis0, axis1);
+            cs = new DefaultPolarCS(complete(properties), axis0, axis1);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -969,7 +1023,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final LinearCS cs;
         try {
-            cs = new DefaultLinearCS(properties, axis);
+            cs = new DefaultLinearCS(complete(properties), axis);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -994,7 +1048,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final UserDefinedCS cs;
         try {
-            cs = new DefaultUserDefinedCS(properties, axis0, axis1);
+            cs = new DefaultUserDefinedCS(complete(properties), axis0, axis1);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -1021,7 +1075,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final UserDefinedCS cs;
         try {
-            cs = new DefaultUserDefinedCS(properties, axis0, axis1, axis2);
+            cs = new DefaultUserDefinedCS(complete(properties), axis0, axis1, axis2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
@@ -1047,7 +1101,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     {
         final CoordinateSystemAxis axis;
         try {
-            axis = new DefaultCoordinateSystemAxis(properties, abbreviation, direction, unit);
+            axis = new DefaultCoordinateSystemAxis(complete(properties), abbreviation, direction, unit);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }

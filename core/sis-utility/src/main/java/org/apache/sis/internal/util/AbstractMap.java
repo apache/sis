@@ -50,7 +50,7 @@ import java.util.Objects;
  *
  * <p>Read-only subclasses need to implement the following methods:</p>
  * <ul>
- *   <li>{@link #size()}</li>
+ *   <li>{@link #size()} (not mandatory but recommended)</li>
  *   <li>{@link #get(Object)}</li>
  *   <li>{@link #entryIterator()} (non-standard method)</li>
  * </ul>
@@ -69,7 +69,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
@@ -133,9 +133,104 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     }
 
     /**
+     * An implementation of {@link EntryIterator} which delegates its work to a standard iterator.
+     * Subclasses can modify the {@link #value} or other properties during iteration.
+     *
+     * <p>This method does not implement the {@link #remove()} method, thus assuming an unmodifiable map
+     * (which is consistent with the default implementation of {@link AbstractMap} methods).
+     * Modifiable maps should override {@code remove()} themselves.</p>
+     *
+     * @param <K> The type of keys maintained by the map.
+     * @param <V> The type of mapped values.
+     *
+     * @see AbstractMap#entryIterator()
+     */
+    protected static class IteratorAdapter<K,V> extends EntryIterator<K,V> {
+        /**
+         * The standard iterator on which to delegate the work.
+         * It is safe to change this value before to invoke {@link #next()}.
+         */
+        protected Iterator<Entry<K,V>> it;
+
+        /**
+         * The entry found by the last call to {@link #next()}.
+         */
+        protected Entry<K,V> entry;
+
+        /**
+         * The value of <code>{@linkplain #entry}.getValue()}</code>.
+         * It is safe to change this value after {@link #next()} invocation.
+         */
+        protected V value;
+
+        /**
+         * Creates a new adapter initialized to the entry iterator of the given map.
+         *
+         * @param map The map from which to return entries.
+         */
+        public IteratorAdapter(final Map<K,V> map) {
+            it = map.entrySet().iterator();
+        }
+
+        /**
+         * Moves to the next entry having a non-null value. If this method returns {@code true}, then the
+         * {@link #entry} and {@link #value} fields are set to the properties of the new current entry.
+         * Otherwise (if this method returns {@code false}) the {@link #entry} and {@link #value} fields
+         * are undetermined.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected boolean next() {
+            do {
+                if (!it.hasNext()) {
+                    return false;
+                }
+                entry = it.next();
+                value = entry.getValue();
+            } while (value == null);
+            return true;
+        }
+
+        /**
+         * Returns <code>{@linkplain #entry}.getKey()}</code>.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected K getKey() {
+            return entry.getKey();
+        }
+
+        /**
+         * Returns {@link #value}, which was itself initialized to <code>{@linkplain #entry}.getValue()}</code>.
+         *
+         * @return {@inheritDoc}
+         */
+        @Override
+        protected V getValue() {
+            return value;
+        }
+    }
+
+    /**
      * For subclass constructors.
      */
     protected AbstractMap() {
+    }
+
+    /**
+     * Returns the number of key-value mappings in this map.
+     * The default implementation count the number of values returned by {@link #entryIterator()}.
+     * Subclasses should implement a more efficient method.
+     */
+    @Override
+    public int size() {
+        int count = 0;
+        for (final EntryIterator<K,V> it = entryIterator(); it.next();) {
+            if (++count == Integer.MAX_VALUE) break;
+        }
+        return count;
     }
 
     /**
@@ -145,7 +240,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public boolean isEmpty() {
-        return size() == 0;
+        return !entryIterator().next();
     }
 
     /**
