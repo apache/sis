@@ -119,7 +119,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *   <tr>
      *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
-     *     <td>{@link #getScope}</td>
+     *     <td>{@link #getScope()}</td>
      *   </tr>
      *   <tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>

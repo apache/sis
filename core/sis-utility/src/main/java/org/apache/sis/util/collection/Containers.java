@@ -165,7 +165,7 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys and values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
