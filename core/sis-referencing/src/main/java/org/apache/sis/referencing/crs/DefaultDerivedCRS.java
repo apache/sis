@@ -154,10 +154,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *
      * @see #create(Map, SingleCRS, Conversion, CoordinateSystem)
      */
-    public DefaultDerivedCRS(final Map<String,?>    properties,
-                             final SingleCRS        baseCRS,
-                             final Conversion       conversionFromBase,
-                             final CoordinateSystem derivedCS)
+    protected DefaultDerivedCRS(final Map<String,?>    properties,
+                                final SingleCRS        baseCRS,
+                                final Conversion       conversionFromBase,
+                                final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
         super(properties, baseCRS, conversionFromBase, derivedCS);
