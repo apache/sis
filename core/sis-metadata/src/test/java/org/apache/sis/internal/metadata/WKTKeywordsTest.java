@@ -37,6 +37,10 @@ public final strictfp class WKTKeywordsTest extends TestCase {
      * Ensures that all constants are equal to the name of the field that declare it.
      * The intend is to avoid misleading constant names when reading code.
      *
+     * <p>This test is not strictly necessary. We are just checking an arbitrary convention here, not a requirement.
+     * If a developer change the constant values without changing the constant names (for example in order to use the
+     * abridged WKT 2 keyword names instead that their long name), this is okay — just ignore this test.</p>
+     *
      * @throws ReflectiveOperationException should never happen.
      */
     @Test
