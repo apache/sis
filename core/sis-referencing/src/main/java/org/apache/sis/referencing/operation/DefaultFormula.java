@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.operation.Formula;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -191,6 +192,6 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
             formatter.append(text.toString(formatter.getLocale()), ElementKind.REMARKS);
         }
         formatter.setInvalidWKT(Formula.class, null);
-        return "Formula";
+        return WKTKeywords.Formula;
     }
 }

@@ -50,11 +50,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final strictfp class ServicesForMetadataTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Creates a test envelope with the given CRS and initialized with
      * [-10 … 70]° of longitude, [-20 … 30]° of latitude, [-40 … 60] metres of elevation
      * and [51000 … 52000] modified Julian days.

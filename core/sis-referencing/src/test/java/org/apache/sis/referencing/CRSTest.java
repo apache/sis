@@ -43,11 +43,6 @@ import static org.apache.sis.test.Assert.*;
 })
 public final strictfp class CRSTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {

@@ -59,11 +59,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 })
 public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * The resource file which contains an XML representation
      * of a {@link Metadata} object with a {@link VerticalCRS}.
      */

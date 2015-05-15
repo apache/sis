@@ -67,6 +67,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.simple.SimpleExtent;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -92,6 +93,9 @@ import org.apache.sis.metadata.iso.extent.Extents;
  * @since   0.4
  * @version 0.6
  * @module
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+ * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  */
 public class Formatter implements Localized {
     /**
@@ -671,8 +675,8 @@ public class Formatter implements Localized {
      * }
      *
      * For non-internal conventions, all elements other than {@code ID[…]} are formatted
-     * only for {@link CoordinateOperation} and {@link ReferenceSystem} types.
-     * In the later case, we also require that the CRS is not the base of a derived CRS.
+     * only for {@link CoordinateOperation} and root {@link ReferenceSystem} instances,
+     * with an exception for remarks of {@code ReferenceSystem} embedded inside {@code CoordinateOperation}.
      * Those restrictions are our interpretation of the following ISO 19162 requirement:
      *
      * <blockquote>(…snip…) {@code <scope extent identifier remark>} is a collection of four optional attributes
@@ -686,11 +690,13 @@ public class Formatter implements Localized {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
         final boolean filterID;     // Whether we shall limit to a single ID[…] element.
-        final boolean showOthers;   // Whether to format any element other than ID[…].
+        final boolean showOthers;   // Whether to format any element other than ID[…] and Remarks[…].
+        final boolean showRemarks;  // Whether to format Remarks[…].
         if (convention == Convention.INTERNAL) {
-            showIDs    = true;
-            filterID   = false;
-            showOthers = true;
+            showIDs     = true;
+            filterID    = false;
+            showOthers  = true;
+            showRemarks = true;
         } else {
             if (convention == Convention.WKT2_SIMPLIFIED) {
                 showIDs = isRoot;
@@ -698,16 +704,20 @@ public class Formatter implements Localized {
                 showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
             if (convention.majorVersion() == 1) {
-                filterID   = true;
-                showOthers = false;
+                filterID    = true;
+                showOthers  = false;
+                showRemarks = false;
             } else {
                 filterID = !isRoot;
                 if (object instanceof CoordinateOperation) {
-                    showOthers = true;
+                    showOthers  = true;
+                    showRemarks = true;
                 } else if (object instanceof ReferenceSystem) {
-                    showOthers = !(getEnclosingElement(1) instanceof ReferenceSystem);
+                    showOthers  = isRoot;
+                    showRemarks = isRoot || (getEnclosingElement(2) instanceof CoordinateOperation);
                 } else {
-                    showOthers = false; // Mandated by ISO 19162.
+                    showOthers  = false;    // Mandated by ISO 19162.
+                    showRemarks = false;
                 }
             }
         }
@@ -716,7 +726,7 @@ public class Formatter implements Localized {
         }
         if (showIDs) {
             Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
-            if (identifiers != null) { // Paranoiac check
+            if (identifiers != null) {  // Paranoiac check
                 if (filterID) {
                     for (final ReferenceIdentifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
@@ -734,8 +744,8 @@ public class Formatter implements Localized {
                 }
             }
         }
-        if (showOthers) {
-            appendOnNewLine("Remarks", object.getRemarks(), ElementKind.REMARKS);
+        if (showRemarks) {
+            appendOnNewLine(WKTKeywords.Remarks, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }
@@ -762,10 +772,10 @@ public class Formatter implements Localized {
         } else {
             return;
         }
-        appendOnNewLine("Anchor", anchor, null);
-        appendOnNewLine("Scope", scope, ElementKind.SCOPE);
+        appendOnNewLine(WKTKeywords.Anchor, anchor, null);
+        appendOnNewLine(WKTKeywords.Scope, scope, ElementKind.SCOPE);
         if (area != null) {
-            appendOnNewLine("Area", area.getDescription(), ElementKind.EXTENT);
+            appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));
             appendTemporalExtent(Extents.getTimeRange(area));
@@ -788,7 +798,7 @@ public class Formatter implements Localized {
      */
     public void append(final GeographicBoundingBox bbox, final int fractionDigits) {
         if (bbox != null) {
-            openElement(isComplement, "BBox");
+            openElement(isComplement, WKTKeywords.BBox);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(fractionDigits);
             numberFormat.setMaximumFractionDigits(fractionDigits);
@@ -823,7 +833,7 @@ public class Formatter implements Localized {
                 maximumFractionDigits = VERTICAL_ACCURACY;
                 minimumFractionDigits = 0;
             }
-            openElement(true, "VerticalExtent");
+            openElement(true, WKTKeywords.VerticalExtent);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(minimumFractionDigits);
             numberFormat.setMaximumFractionDigits(maximumFractionDigits);
@@ -863,7 +873,7 @@ public class Formatter implements Localized {
                         ((SimpleDateFormat) dateFormat).applyPattern(WKTFormat.SHORT_DATE_PATTERN);
                     }
                 }
-                openElement(true, "TimeExtent");
+                openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
                 try {
                     append(min);

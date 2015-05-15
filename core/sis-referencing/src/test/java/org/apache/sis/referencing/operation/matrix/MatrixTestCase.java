@@ -64,12 +64,6 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     protected static final boolean DETERMINIST = !DoubleDouble.DISABLED;
 
     /**
-     * A constant for any test in this class or a subclass which expect
-     * a floating point value to be strictly equals to an other value.
-     */
-    static final double STRICT = 0;
-
-    /**
      * Tolerance factor for comparisons of floating point numbers between SIS and JAMA implementation,
      * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
      * and the {@code StrictMath.ulp(100.0)} value is approximatively 1.4E-14.

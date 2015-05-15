@@ -47,11 +47,6 @@ import static org.apache.sis.test.MetadataAssert.*;
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final strictfp class ContextualParametersTest extends TestCase {
     /**
-     * For floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Creates an instance to use for testing purpose.
      */
     private static ContextualParameters create(final int srcDim, final int dstDim) {

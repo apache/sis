@@ -36,20 +36,23 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
- * A 2D coordinate reference system used to approximate the shape of the earth on a planar surface.
+ * A 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
  * It is done in such a way that the distortion that is inherent to the approximation is carefully
  * controlled and known. Distortion correction is commonly applied to calculated bearings and
  * distances to produce values that are a close match to actual field values.
@@ -132,21 +135,26 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *   </tr>
      * </table>
      *
+     * The supplied {@code conversion} argument shall <strong>not</strong> includes the operation steps
+     * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
+     * conversions and change of axis order} since those operations will be inferred by this constructor.
+     *
      * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS Coordinate reference system to base the derived CRS on.
-     * @param  conversionFromBase The conversion from the base CRS to this derived CRS.
-     * @param  derivedCS The coordinate system for the derived CRS. The number of axes
+     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
+     * @param  conversion The defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base
+     *                    to a normalized derived CRS.
+     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,
-                               final Conversion    conversionFromBase,
+                               final Conversion    conversion,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, Projection.class, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversion, derivedCS);
     }
 
     /**
@@ -161,7 +169,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @see #castOrCopy(ProjectedCRS)
      */
     protected DefaultProjectedCRS(final ProjectedCRS crs) {
-        super(crs, Projection.class);
+        super(crs);
     }
 
     /**
@@ -177,6 +185,15 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     public static DefaultProjectedCRS castOrCopy(final ProjectedCRS object) {
         return (object == null) || (object instanceof DefaultProjectedCRS)
                 ? (DefaultProjectedCRS) object : new DefaultProjectedCRS(object);
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code DefaultProjectedCRS}.
+     * Must be a hard-coded, constant value (not dependent on object state).
+     */
+    @Override
+    final Class<Projection> getConversionType() {
+        return Projection.class;
     }
 
     /**
@@ -245,7 +262,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     @XmlElement(name="cartesianCS", required = true)
-    public CartesianCS getCoordinateSystem() {
+    public final CartesianCS getCoordinateSystem() {
+        // See AbstractDerivedCRS.createConversionFromBase(…) for
+        // an explanation about why this method is declared final.
         return (CartesianCS) super.getCoordinateSystem();
     }
 
@@ -254,6 +273,25 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     private void setCoordinateSystem(final CartesianCS cs) {
         setCoordinateSystem("cartesianCS", cs);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public DefaultProjectedCRS forConvention(final AxesConvention convention) {
+        return (DefaultProjectedCRS) super.forConvention(convention);
+    }
+
+    /**
+     * Returns a coordinate reference system of the same type than this CRS but with different axes.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        final Projection conversion = super.getConversionFromBase();
+        return new DefaultProjectedCRS(properties, (GeographicCRS) conversion.getSourceCRS(), conversion, (CartesianCS) cs);
     }
 
     /**
@@ -331,9 +369,19 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * </div>
      *
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
+        if (super.getConversionFromBase() == null) {
+            /*
+             * Should never happen except temporarily at construction time, or if the user invoked the copy constructor
+             * with an invalid Conversion. Delegates to the super-class method for avoiding a NullPointerException.
+             * That method returns 'null', which will cause the WKT to be declared invalid.
+             */
+            return super.formatTo(formatter);
+        }
         WKTUtilities.appendName(this, formatter, null);
         final Convention    convention = formatter.getConvention();
         final boolean       isWKT1     = (convention.majorVersion() == 1);
@@ -367,7 +415,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         }
         formatter.removeContextualUnit(unit);
         formatter.addContextualUnit(oldUnit);
-        return isWKT1 ? "ProjCS" : isBaseCRS ? "BaseProjCRS" : "ProjectedCRS";
+        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS : WKTKeywords.ProjectedCRS;
     }
 
     /**
@@ -391,7 +439,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             WKTUtilities.appendName(conversion, formatter, null);
             formatter.newLine();
             append(formatter);
-            return "Conversion";
+            return WKTKeywords.Conversion;
         }
 
         /** Formats this {@code Conversion} element without the conversion name. */
@@ -411,7 +459,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                      * the lengths are different from the ones declared in the datum.
                      */
                     if (param instanceof ParameterValue<?>) {
-                        final double value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        final double value;
+                        try {
+                            value = ((ParameterValue<?>) param).doubleValue(axisUnit);
+                        } catch (IllegalStateException e) {
+                            /*
+                             * May happen if the 'conversionFromBase' parameter group does not provide values
+                             * for "semi_major" or "semi_minor" axis length. This should not happen with SIS
+                             * implementation, but may happen with user-defined map projection implementations.
+                             * Since the intend of this check was to skip those parameters anyway, it is okay
+                             * for the purpose of WKT formatting if there is no parameter for axis lengths.
+                             */
+                            Logging.recoverableException(DefaultProjectedCRS.class, "formatTo", e);
+                            continue;
+                        }
+                        if (Double.isNaN(value)) {
+                            continue;
+                        }
                         final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
                                 ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
                         if (value == expected) {

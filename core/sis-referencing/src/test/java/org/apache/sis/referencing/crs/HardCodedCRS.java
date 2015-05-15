@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -84,11 +85,10 @@ public final strictfp class HardCodedCRS {
      * this CRS is to test operations between CRS having different prime meridian.</p>
      *
      * @since 0.5
-     *
-     * @see DefaultProjectedCRSTest#NTF_ZONE_II
      */
     public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
-            properties("NTF (Paris)"), HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
+            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "NTF (Paris)"),
+            HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.

@@ -52,11 +52,6 @@ public final strictfp class StatisticsTest extends TestCase {
     private static final double EPS = 1E-10;
 
     /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests the initial state of newly constructed instance.
      */
     @Test

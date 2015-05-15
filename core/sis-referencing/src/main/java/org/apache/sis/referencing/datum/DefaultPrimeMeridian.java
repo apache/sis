@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
@@ -60,8 +61,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#primeMeridian()}.</li>
  *   <li>Create a {@code PrimeMeridian} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createPrimeMeridian(String)}.</li>
- *   <li>Create a {@code PrimeMeridian} by invoking the {@code createPrimeMeridian(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code PrimeMeridian} by invoking the {@code DatumFactory.createPrimeMeridian(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultPrimeMeridian} by invoking the
  *       {@linkplain #DefaultPrimeMeridian(Map, double, Unit) constructor}.</li>
  * </ol>
@@ -339,6 +340,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
      *
      * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -351,12 +354,12 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         }
         formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
         if (isWKT1) {
-            return "PrimeM";
+            return WKTKeywords.PrimeM;
         }
         final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
         if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
             formatter.append(angularUnit);
         }
-        return "PrimeMeridian";
+        return WKTKeywords.PrimeMeridian;
     }
 }
