@@ -99,8 +99,8 @@ import java.util.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#datum()}.</li>
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
- *   <li>Create a {@code GeodeticDatum} by invoking the {@code createGeodeticDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
  *       {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>

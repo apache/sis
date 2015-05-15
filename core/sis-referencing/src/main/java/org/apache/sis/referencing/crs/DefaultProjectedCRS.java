@@ -135,21 +135,26 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *   </tr>
      * </table>
      *
+     * The supplied {@code conversion} argument shall <strong>not</strong> includes the operation steps
+     * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
+     * conversions and change of axis order} since those operations will be inferred by this constructor.
+     *
      * @param  properties The properties to be given to the new derived CRS object.
-     * @param  baseCRS Coordinate reference system to base the derived CRS on.
-     * @param  conversionFromBase The conversion from the base CRS to this derived CRS.
-     * @param  derivedCS The coordinate system for the derived CRS. The number of axes
+     * @param  baseCRS    Coordinate reference system to base the derived CRS on.
+     * @param  conversion The defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base
+     *                    to a normalized derived CRS.
+     * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,
-                               final Conversion    conversionFromBase,
+                               final Conversion    conversion,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, baseCRS, conversionFromBase, derivedCS);
+        super(properties, baseCRS, conversion, derivedCS);
     }
 
     /**

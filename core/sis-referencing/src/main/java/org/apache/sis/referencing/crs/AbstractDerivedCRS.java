@@ -87,7 +87,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @param  properties The properties to be given to the new derived CRS object.
      * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The conversion from the base CRS to this derived CRS.
+     * @param  conversion The defining conversion from a normalized base to a normalized derived CRS.
      * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
@@ -101,7 +101,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     {
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
-        ArgumentChecks.ensureNonNull("conversionFromBase", conversion);   // "conversionFromBase" is the name used by subclass constructors.
+        ArgumentChecks.ensureNonNull("conversion", conversion);
         final MathTransform baseToDerived = conversion.getMathTransform();
         if (baseToDerived != null) {
             ArgumentChecks.ensureDimensionMatches("baseCRS",   baseToDerived.getSourceDimensions(), baseCRS);
@@ -145,7 +145,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
         } catch (FactoryException e) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                    Errors.Keys.IllegalArgumentValue_2, "conversionFromBase", conversion.getName()), e);
+                    Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
         }
     }
 

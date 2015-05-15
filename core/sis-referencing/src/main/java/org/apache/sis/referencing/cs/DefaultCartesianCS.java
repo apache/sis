@@ -121,8 +121,8 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * </table>
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param axis0 The first  axis (e.g. “Easting”).
+     * @param axis1 The second axis (e.g. “Northing”).
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
@@ -138,9 +138,9 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param axis0 The first  axis (e.g. “Geocentric X”).
+     * @param axis1 The second axis (e.g. “Geocentric Y”).
+     * @param axis2 The third  axis (e.g. “Geocentric Z”).
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
