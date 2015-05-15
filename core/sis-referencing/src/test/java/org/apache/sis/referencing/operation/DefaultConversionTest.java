@@ -38,6 +38,7 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -70,16 +71,24 @@ public final strictfp class DefaultConversionTest extends TestCase {
     private static final double OFFSET = 2.33722917;
 
     /**
-     * Creates a CRS using the same datum than the "Nouvelle Triangulation Française (Paris)" datum (EPSG:6807).
+     * Creates a CRS using the same ellipsoid than the "Nouvelle Triangulation Française (Paris)" datum (EPSG:6807),
+     * but with the prime meridian optionally set to Greenwich. Such CRS is not in real usage, but this is convenient
+     * for testing a conversion consisting of only a longitude rotation, which is a very simple operation easy to test.
      *
      * @param isSource {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
      * @param cs {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
+     * @param useGreenwich {@code true} for using Greenwich prime meridian, or {@code false} for staying on the Paris one.
      *
      * @see HardCodedCRS#NTF
      */
-    private static GeographicCRS createParisCRS(final boolean isSource, final EllipsoidalCS cs) {
+    private static GeographicCRS createParisCRS(final boolean isSource, final EllipsoidalCS cs, final boolean useGreenwich) {
+        DefaultGeodeticDatum datum = HardCodedDatum.NTF;
+        if (useGreenwich) {
+            datum = new DefaultGeodeticDatum(Collections.singletonMap(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
+                    datum.getEllipsoid(), HardCodedDatum.GREENWICH);
+        }
         return new DefaultGeographicCRS(Collections.singletonMap(GeographicCRS.NAME_KEY,
-                isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"), HardCodedDatum.NTF, cs);
+                isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"), datum, cs);
     }
 
     /**
@@ -100,10 +109,13 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * change the prime meridian). However we handle them as conversions for testing purpose only, because the
      * longitude rotation is a very simple operation easy to test.</p>
      *
+     * @param  useGreenwich {@code true} for using Greenwich prime meridian in the {@code targetCRS},
+     *         or {@code false} for staying on the Paris one.
      * @return A pseudo-conversion performing a longitude rotation.
      */
-    public static DefaultConversion createLongitudeRotation() {
-        return createLongitudeRotation(HardCodedCRS.NTF, createParisCRS(false, HardCodedCS.GEODETIC_2D), null);
+    public static DefaultConversion createLongitudeRotation(final boolean useGreenwich) {
+        return createLongitudeRotation(HardCodedCRS.NTF,
+                createParisCRS(false, HardCodedCS.GEODETIC_2D, useGreenwich), null);
     }
 
     /**
@@ -184,7 +196,17 @@ public final strictfp class DefaultConversionTest extends TestCase {
      */
     @Test
     public void testConstruction() {
-        verifyProperties(createLongitudeRotation(), false);
+        /*
+         * Test construction of a valid conversion.
+         * This conversion use the same datum for the source and target CRS.
+         */
+        verifyProperties(createLongitudeRotation(false), false);
+        /*
+         * Test a conversion with a source and target CRS using different datum.
+         * This is a violation of conversion definition, but SIS is tolerant to
+         * such violation. See DefaultConversion constructor javadoc for discussion.
+         */
+        verifyProperties(createLongitudeRotation(true), false);
     }
 
     /**
@@ -199,7 +221,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @Test
     @DependsOnMethod("testConstruction")
     public void testDefiningConversion() throws FactoryException {
-        final DefaultConversion reference = createLongitudeRotation();
+        final DefaultConversion reference = createLongitudeRotation(true);
         final DefaultConversion definingConversion = new DefaultConversion(
                 IdentifiedObjects.getProperties(reference),
                 reference.getMethod(),
@@ -240,8 +262,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
     public void testSpecialize() throws FactoryException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         DefaultConversion op = createLongitudeRotation(
-                createParisCRS(true,  HardCodedCS.GEODETIC_3D),
-                createParisCRS(false, HardCodedCS.GEODETIC_3D), null);
+                createParisCRS(true,  HardCodedCS.GEODETIC_3D, false),
+                createParisCRS(false, HardCodedCS.GEODETIC_3D, true), null);
         assertMatrixEquals("Longitude rotation of a three-dimensional CRS", new Matrix4(
                 1, 0, 0, OFFSET,
                 0, 1, 0, 0,
@@ -282,7 +304,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @DependsOnMethod("testDefiningConversion")
     public void testWithInterpolationCRS() throws FactoryException {
         DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF,
-                createParisCRS(false, HardCodedCS.GEODETIC_2D), HardCodedCRS.TIME);
+                createParisCRS(false, HardCodedCS.GEODETIC_2D, true), HardCodedCRS.TIME);
         assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
                 1, 0, 0, 0,
                 0, 1, 0, OFFSET,
@@ -310,7 +332,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @Test
     public void testDatumCheck() throws FactoryException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        final DefaultConversion op = createLongitudeRotation();
+        final DefaultConversion op = createLongitudeRotation(true);
         try {
             op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF, factory);
             fail("Should not have accepted to change the geodetic datum.");
@@ -335,6 +357,6 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @Test
     @DependsOnMethod("testConstruction")
     public void testSerialization() {
-        verifyProperties(assertSerializedEquals(createLongitudeRotation()), false);
+        verifyProperties(assertSerializedEquals(createLongitudeRotation(false)), false);
     }
 }
