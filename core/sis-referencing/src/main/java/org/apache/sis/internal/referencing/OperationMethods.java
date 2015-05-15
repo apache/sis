@@ -17,10 +17,10 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
-import org.opengis.util.Record;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.util.Record;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.QuantitativeResult;
@@ -41,7 +41,7 @@ import org.apache.sis.measure.Units;
 public final class OperationMethods extends Static {
     /**
      * The key for specifying explicitely the value to be returned by
-     * {@link org.apache.sis.referencing.operation.DefaultSingleOperation#getParameterValues()}.
+     * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
      * It is usually not necessary to specify those parameters because they are inferred either from
      * the {@link MathTransform}, or specified explicitely in a {@code DefiningConversion}. However
      * there is a few cases, for example the Molodenski transform, where none of the above can apply,
@@ -49,6 +49,13 @@ public final class OperationMethods extends Static {
      * concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
      */
     public static final String PARAMETERS_KEY = "parameters";
+
+    /**
+     * The key for specifying a {@linkplain org.opengis.referencing.operation.MathTransformFactory}
+     * instance to use for the construction of a geodetic object. This is usually not needed for CRS
+     * construction, except in the special case of a derived CRS created from a defining conversion.
+     */
+    public static final String MT_FACTORY = "mtFactory";
 
     /**
      * Do not allow instantiation of this class.
@@ -120,12 +127,12 @@ public final class OperationMethods extends Static {
          * about the return values chosen.
          */
         if (operation instanceof Transformation) {
-            if (!accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_OMITTED)) {
-                if (accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED)) {
-                    return PositionalAccuracyConstant.DATUM_SHIFT_ACCURACY;
-                }
+            if (accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED)) {
+                return PositionalAccuracyConstant.DATUM_SHIFT_ACCURACY;
             }
-            return PositionalAccuracyConstant.UNKNOWN_ACCURACY;
+            if (accuracies.contains(PositionalAccuracyConstant.DATUM_SHIFT_OMITTED)) {
+                return PositionalAccuracyConstant.UNKNOWN_ACCURACY;
+            }
         }
         /*
          * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,

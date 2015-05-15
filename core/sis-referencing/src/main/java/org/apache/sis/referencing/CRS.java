@@ -433,15 +433,14 @@ public final class CRS extends Static {
      *
      * <ul>
      *   <li>If the given {@code crs} is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if {@code lower} is 0 and {@code upper} if the number of CRS dimensions,
+     *   <li>Otherwise if {@code lower} is 0 and {@code upper} is the number of CRS dimensions,
      *       then this method returns the given CRS unchanged.</li>
      *   <li>Otherwise if the given CRS is an instance of {@link CompoundCRS}, then this method
      *       searches for a {@linkplain CompoundCRS#getComponents() component} where:
      *       <ul>
-     *         <li>The {@linkplain CoordinateSystem#getDimension() number of dimensions} is
-     *             equals to {@code upper - lower};</li>
-     *         <li>The sum of the number of dimensions of all previous CRS is equals to
-     *             {@code lower}.</li>
+     *         <li>The {@linkplain org.apache.sis.referencing.cs.AbstractCS#getDimension() number of dimensions}
+     *             is equals to {@code upper - lower};</li>
+     *         <li>The sum of the number of dimensions of all previous CRS is equals to {@code lower}.</li>
      *       </ul>
      *       If such component is found, then it is returned.</li>
      *   <li>Otherwise (i.e. no component match), this method returns {@code null}.</li>
@@ -462,28 +461,26 @@ public final class CRS extends Static {
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
      */
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
-        if (crs != null) {
-            int dimension = crs.getCoordinateSystem().getDimension();
-            ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
-check:      while (lower != 0 || upper != dimension) {
-                if (crs instanceof CompoundCRS) {
-                    final List<CoordinateReferenceSystem> components = ((CompoundCRS) crs).getComponents();
-                    final int size = components.size();
-                    for (int i=0; i<size; i++) {
-                        crs = components.get(i);
-                        dimension = crs.getCoordinateSystem().getDimension();
-                        if (lower < dimension) {
-                            // The requested dimensions may intersect the dimension of this CRS.
-                            // The outer loop will perform the verification, and eventually go
-                            // down again in the tree of sub-components.
-                            continue check;
-                        }
-                        lower -= dimension;
-                        upper -= dimension;
+        int dimension = ReferencingUtilities.getDimension(crs);
+        ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
+check:  while (lower != 0 || upper != dimension) {
+            if (crs instanceof CompoundCRS) {
+                final List<CoordinateReferenceSystem> components = ((CompoundCRS) crs).getComponents();
+                final int size = components.size();
+                for (int i=0; i<size; i++) {
+                    crs = components.get(i);
+                    dimension = crs.getCoordinateSystem().getDimension();
+                    if (lower < dimension) {
+                        // The requested dimensions may intersect the dimension of this CRS.
+                        // The outer loop will perform the verification, and eventually go
+                        // down again in the tree of sub-components.
+                        continue check;
                     }
+                    lower -= dimension;
+                    upper -= dimension;
                 }
-                return null;
             }
+            return null;
         }
         return crs;
     }

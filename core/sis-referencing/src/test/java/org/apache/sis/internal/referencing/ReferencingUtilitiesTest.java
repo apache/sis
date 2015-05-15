@@ -45,11 +45,6 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests {@link ReferencingUtilities#isGreenwichLongitudeEquals(PrimeMeridian, PrimeMeridian)}.
      */
     @Test

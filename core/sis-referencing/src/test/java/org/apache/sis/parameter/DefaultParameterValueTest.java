@@ -47,13 +47,6 @@ import static org.apache.sis.test.MetadataAssert.*;
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final strictfp class DefaultParameterValueTest extends TestCase {
     /**
-     * Strict tolerance factor for floating point comparisons. In the particular
-     * case of this test suite, we can afford to be strict since we will perform
-     * arithmetic only on integer values.
-     */
-    private static final double STRICT = 0.0;
-
-    /**
      * Small tolerance factor for floating point comparisons resulting from some calculation.
      */
     private static final double EPS = 1E-10;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -30,7 +31,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * <ul>
  *   <li>{@link AbstractCoordinateOperation#castOrCopy(CoordinateOperation)}</li>
  *   <li>{@link DefaultConversion#castOrCopy(Conversion)}</li>
- *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem)}</li>
+ *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -119,13 +120,15 @@ final class SubTypes {
      * @param  definition The defining conversion.
      * @param  sourceCRS  The source CRS.
      * @param  targetCRS  The target CRS.
+     * @param  factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      * @return The conversion of the given type between the given CRS.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
      */
     static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS)
+            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
+            final MathTransformFactory factory) throws FactoryException
     {
         Class<? extends T> type = baseType;
         if (definition instanceof AbstractIdentifiedObject) {
@@ -142,16 +145,22 @@ final class SubTypes {
             }
         }
         final Conversion conversion;
-        if (CylindricalProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS);
+        if (type.isInstance(definition)
+                && definition.getSourceCRS() == sourceCRS
+                && definition.getTargetCRS() == targetCRS
+                && definition.getMathTransform() != null)
+        {
+            conversion = definition;
+        } else if (CylindricalProjection.class.isAssignableFrom(type)) {
+            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory);
         } else if (ConicProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory);
         } else if (PlanarProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory);
         } else if (Projection.class.isAssignableFrom(type)) {
-            conversion = new DefaultProjection(definition, sourceCRS, targetCRS);
+            conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory);
         } else {
-            conversion = new DefaultConversion(definition, sourceCRS, targetCRS);
+            conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory);
         }
         return type.cast(conversion);
     }

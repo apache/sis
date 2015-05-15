@@ -29,6 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -55,8 +56,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS.Vertical#datum()}.</li>
  *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
- *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code VerticalDatum} by invoking the {@code DatumFactory.createVerticalDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultVerticalDatum} by invoking the
  *       {@linkplain #DefaultVerticalDatum(Map, VerticalDatumType) constructor}.</li>
  * </ol>
@@ -317,14 +318,16 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * completely in ISO 19111:2007.</div>
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
-            return "Vert_Datum";
+            return WKTKeywords.Vert_Datum;
         }
-        return "VerticalDatum";
+        return WKTKeywords.VerticalDatum;
     }
 }

@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.shapefile;
+package org.apache.sis.storage.shapefile;
 
-import java.sql.SQLNonTransientException;
-
+import org.apache.sis.storage.DataStoreException;
 
 /**
- * Thrown when a shapefile has not been found.
+ * Thrown when the Shapefile format seems to be invalid.
  *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
  * @module
  */
-public class ShapefileNotFoundException extends SQLNonTransientException {
+public class InvalidShapefileFormatException extends DataStoreException {
     /** Serial UID. */
-    private static final long serialVersionUID = -3235671561698931817L;
+    private static final long serialVersionUID = -2724950178838120005L;
 
     /**
      * Construct an exception.
      * @param message Message of the exception.
      */
-    public ShapefileNotFoundException(String message) {
+    public InvalidShapefileFormatException(String message) {
         super(message);
     }
 
@@ -44,7 +43,7 @@ public class ShapefileNotFoundException extends SQLNonTransientException {
      * @param message Message of the exception.
      * @param cause Root cause of the exception.
      */
-    public ShapefileNotFoundException(String message, Throwable cause) {
+    public InvalidShapefileFormatException(String message, Throwable cause) {
         super(message, cause);
     }
 }

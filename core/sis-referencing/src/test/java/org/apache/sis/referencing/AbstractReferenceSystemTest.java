@@ -108,8 +108,8 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
         final AbstractReferenceSystem object = new AbstractReferenceSystem(properties);
 
-        assertEquals( // Quotes (at least the closing one) conservatively omitted for WKT 1.
-                "ReferenceSystem[\"My object.\", AUTHORITY[\"EPSG\", \"4326\"]]",
+        assertEquals(
+                "ReferenceSystem[\"My “object”.\", AUTHORITY[\"EPSG\", \"4326\"]]",
                 object.toString(Convention.WKT1));
 
         assertWktEquals(Convention.WKT1,

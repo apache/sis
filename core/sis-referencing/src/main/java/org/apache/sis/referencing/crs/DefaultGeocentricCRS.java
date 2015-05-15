@@ -29,14 +29,37 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 
 
 /**
- * A 3D coordinate reference system with the origin at the approximate centre of mass of the earth.
- * A geocentric CRS deals with the earth's curvature by taking a 3D spatial view, which obviates
+ * A 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+ * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
  * the need to model the earth's curvature.
  *
  * <p><b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
+ *
+ * <div class="section">Creating new geocentric CRS instances</div>
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a geocentric CRS.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code GeocentricCRS} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.CommonCRS#geocentric()}.</li>
+ *   <li>Create a {@code GeocentricCRS} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeocentricCRS(String)}.</li>
+ *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *   <li>Create a {@code GeocentricCRS} by invoking the
+ *       {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a geocentric CRS using the <cite>World Geodetic System 1984</cite> datum:
+ *
+ * {@preformat java
+ *     GeodeticDatum datum = CommonCRS.WGS84.geocentric();
+ * }
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -121,7 +144,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param cs The coordinate system, which must be three-dimensional.
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -254,6 +277,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * </div>
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

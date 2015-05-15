@@ -25,6 +25,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -33,9 +34,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * An engineering coordinate reference system applied to locations in images. Image coordinate
- * reference systems are treated as a separate sub-type because a separate user community exists
- * for images with its own terms of reference.
+ * A 2-dimensional engineering coordinate reference system applied to locations in images.
+ * Image coordinate reference systems are treated as a separate sub-type because a separate
+ * user community exists for images with its own terms of reference.
  *
  * <p><b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
@@ -261,6 +262,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * {@code ImageCRS} are defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ImageCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -268,6 +271,6 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "ImageCRS";
+        return WKTKeywords.ImageCRS;
     }
 }

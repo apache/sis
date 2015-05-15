@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
@@ -179,7 +180,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * <ul>
      *   <li>Set the relevant parameter values by calls to
-     *     <code>{@linkplain #parameter(ParameterDescriptor) parameter(…)}.setValue(…)</code>.</li>
+     *     <code>{@linkplain #parameter(String) parameter(…)}.setValue(…)</code>.</li>
      *   <li>Modify the element values in {@linkplain #getMatrix(boolean) normalization / denormalization}
      *     affine transforms, optionally by calls to the convenience methods in this class.</li>
      *   <li>Get the complete transforms chain with a call
@@ -629,10 +630,10 @@ public class ContextualParameters extends Parameters implements Serializable {
         protected String formatTo(final Formatter formatter) {
             if (inverse) {
                 formatter.append(new WKT(false));
-                return "Inverse_MT";
+                return WKTKeywords.Inverse_MT;
             } else {
                 WKTUtilities.appendParamMT(ContextualParameters.this, formatter);
-                return "Param_MT";
+                return WKTKeywords.Param_MT;
             }
         }
     }

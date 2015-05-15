@@ -20,7 +20,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -88,8 +88,8 @@ public final class LongitudeRotation extends AbstractProvider {
      * @return Interface implemented by all coordinate operations that use this method.
      */
     @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
+    public Class<Transformation> getOperationType() {
+        return Transformation.class;
     }
 
     /**

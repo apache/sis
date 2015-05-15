@@ -39,13 +39,6 @@ import static org.junit.Assert.*;
  */
 public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons. This is used when the math transform has
-     * been built from exactly 3 points, in which case we expect an exact solution without rounding errors
-     * at the scale of {@code double} type since the implementation use double-double arithmetic.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests a very simple case where an exact answer is expected.
      */
     @Test
@@ -65,6 +58,9 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
     /**
      * Tests a very simple case where an exact answer is expected.
+     * Tolerance threshold is set to zero because the math transform has been built from exactly 3 points,
+     * in which case we expect an exact solution without rounding errors at the scale of the {@code double}
+     * type. This is possible because SIS implementation uses double-double arithmetic.
      */
     @Test
     public void testMinimalist2D() {

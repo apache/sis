@@ -43,11 +43,6 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class SpecialCasesTest extends TestCase {
     /**
-     * The tolerance factor for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0.0;
-
-    /**
      * The accessor instance to be tested.
      */
     private final PropertyAccessor accessor;

@@ -17,8 +17,10 @@
 package org.apache.sis.referencing.operation;
 
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CylindricalProjection;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -48,12 +50,14 @@ final class DefaultCylindricalProjection extends DefaultProjection implements Cy
      * @param definition The defining conversion.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
+     * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      */
-    DefaultCylindricalProjection(final Conversion                definition,
+    DefaultCylindricalProjection(final Conversion definition,
                                  final CoordinateReferenceSystem sourceCRS,
-                                 final CoordinateReferenceSystem targetCRS)
+                                 final CoordinateReferenceSystem targetCRS,
+                                 final MathTransformFactory factory) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS);
+        super(definition, sourceCRS, targetCRS, factory);
     }
 
     /**

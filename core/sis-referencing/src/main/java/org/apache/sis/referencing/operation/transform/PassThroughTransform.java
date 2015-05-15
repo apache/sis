@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -144,6 +145,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                                        final MathTransform subTransform,
                                        final int numTrailingOrdinates)
     {
+        ensureNonNull ("subTransform",          subTransform);
         ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
         ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
         if (firstAffectedOrdinate == 0 && numTrailingOrdinates == 0) {
@@ -630,6 +632,6 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             formatter.setInvalidWKT(PassThroughTransform.class, null);
         }
         formatter.append(subTransform);
-        return "PassThrough_MT";
+        return WKTKeywords.PassThrough_MT;
     }
 }

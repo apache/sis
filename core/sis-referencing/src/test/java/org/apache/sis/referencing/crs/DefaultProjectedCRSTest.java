@@ -45,7 +45,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @module
  */
 @DependsOn({
-    DefaultGeographicCRSTest.class
+    DefaultGeographicCRSTest.class,
+    org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
 public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     /**
@@ -80,7 +81,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     @Test
     public void testWKT1() throws FactoryException {
         final ProjectedCRS crs = create();
-        Validators.validate(crs);
+        Validators.validate(crs);   // Opportunist check.
         assertWktEquals(Convention.WKT1,
                 "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  GEOGCS[“NTF (Paris)”,\n" +
