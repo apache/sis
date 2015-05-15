@@ -95,7 +95,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
      * Its purpose is only to perform easy tests.
      */
     private static DefaultDerivedCRS createLongitudeRotation() {
-        final DefaultConversion conversion = DefaultConversionTest.createLongitudeRotation();
+        final DefaultConversion conversion = DefaultConversionTest.createLongitudeRotation(false);
         return new DefaultDerivedCRS(Collections.singletonMap(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
                 (SingleCRS) conversion.getSourceCRS(), conversion, HardCodedCS.GEODETIC_φλ);
     }

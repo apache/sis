@@ -209,7 +209,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             throws MismatchedDimensionException
     {
         if (baseCRS != null && derivedCS != null) {
-            switch (getType(baseCRS, derivedCS)) {
+            final String type = getType(baseCRS, derivedCS);
+            if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:    return new Geodetic   (properties, (GeodeticCRS) baseCRS, conversion, (EllipsoidalCS) derivedCS);
                 case WKTKeywords.VerticalCRS:    return new Vertical   (properties, (VerticalCRS) baseCRS, conversion,    (VerticalCS) derivedCS);
                 case WKTKeywords.TimeCRS:        return new Temporal   (properties, (TemporalCRS) baseCRS, conversion,        (TimeCS) derivedCS);
@@ -233,13 +234,14 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (object == null || object instanceof DefaultDerivedCRS) {
             return (DefaultDerivedCRS) object;
         } else {
-            switch (getType(object.getBaseCRS(), object.getCoordinateSystem())) {
+            final String type = getType(object.getBaseCRS(), object.getCoordinateSystem());
+            if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
                 case WKTKeywords.VerticalCRS:    return new Vertical   (object);
                 case WKTKeywords.TimeCRS:        return new Temporal   (object);
                 case WKTKeywords.EngineeringCRS: return new Engineering(object);
-                default: return new DefaultDerivedCRS(object);
             }
+            return new DefaultDerivedCRS(object);
         }
     }
 
