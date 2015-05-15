@@ -35,11 +35,6 @@ import static org.apache.sis.test.MetadataAssert.*;
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final strictfp class DirectionAlongMeridianTest extends TestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests the {@link DirectionAlongMeridian#parse(AxisDirection)} method.
      */
     @Test

@@ -27,13 +27,19 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -44,10 +50,9 @@ import org.apache.sis.util.Workaround;
  *
  * <p>This coordinate operation contains an {@linkplain DefaultOperationMethod operation method}, usually
  * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
- * In the SIS default implementation, the parameter values are inferred from the
- * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
- * Subclasses may have to override the {@link #getParameterValues()} method if they need to provide
- * a different set of parameters.</p>
+ * In the SIS implementation, the parameter values can be either inferred from the
+ * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
+ * or explicitely provided at construction time in a <cite>defining conversion</cite> (see below).</p>
  *
  * <div class="section">Defining conversions</div>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
@@ -129,10 +134,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @param properties The properties to be given to the identified object.
      * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
+     * @param targetCRS  The target CRS, which shall use a datum
+     *                   {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)} to the source CRS datum.
      * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
      * @param method     The coordinate operation method (mandatory in all cases).
      * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @throws MismatchedDatumException if the source and target CRS use different datum.
      */
     public DefaultConversion(final Map<String,?>             properties,
                              final CoordinateReferenceSystem sourceCRS,
@@ -144,13 +151,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        ensureCompatibleDatum("targetCRS", sourceCRS, targetCRS);
     }
 
     /**
      * Creates a defining conversion from the given transform and/or parameters.
      * This conversion has no source and target CRS since those elements are usually unknown
-     * at <cite>defining conversion</cite> construction time. The source and target CRS will
-     * become known later, at the
+     * at <cite>defining conversion</cite> construction time.
+     * The source and target CRS will become known later, at the
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
      * construction time.
@@ -167,7 +175,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * for more information about what Apache SIS means by "normalized".
      *
      * <p>If the caller can not yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
-     * for creating that transform, with the possible omission of {@code "semi-major"} and {@code "semi-minor"} values.
+     * for creating that transform, with the possible omission of {@code "semi_major"} and {@code "semi_minor"} values.
      * The semi-major and semi-minor parameter values will be set automatically when the
      * {@link #specialize specialize(…)} method will be invoked.</p>
      *
@@ -269,8 +277,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     /**
      * Returns a specialization of this conversion with a more specific type, source and target CRS.
      * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
-     * OperationMethod, MathTransform) defining conversion} instances, when more information become
-     * available about the conversion to create.
+     * OperationMethod, MathTransform, ParameterValueGroup) defining conversion} instances,
+     * when more information become available about the conversion to create.
      *
      * <p>The given {@code baseType} argument can be one of the following values:</p>
      * <ul>
@@ -294,6 +302,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     * @throws MismatchedDatumException if the given CRS do not use the same datum than the source and target CRS
+     *         of this conversion.
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
@@ -308,7 +318,51 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("factory",   factory);
+        /*
+         * Conceptual consistency check: verify that the new CRS use the same datum than the previous ones,
+         * since the purpose of this method is not to apply datum changes. Datum changes are the purpose of
+         * a dedicated kind of operations, namely Transformation.
+         */
+        ensureCompatibleDatum("sourceCRS", super.getSourceCRS(), sourceCRS);
+        if (!(targetCRS instanceof GeneralDerivedCRS)) {
+            ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
+        } else {
+            /*
+             * Special case for derived and projected CRS: we can not check directly the datum of the target CRS
+             * of a derived CRS, because this method is invoked indirectly by SIS AbstractDerivedCRS constructor
+             * before its 'conversionFromBase' field is set. Since the Apache SIS implementations of derived CRS
+             * map the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking targetCRS.getDatum()
+             * below may result in a NullPointerException. Instead we verify that 'this' conversion use the same
+             * datum for source and target CRS, since DerivedCRS and ProjectedCRS are expected to have the same
+             * datum than their source CRS.
+             */
+            if (super.getTargetCRS() != null) {
+                ensureCompatibleDatum("targetCRS", sourceCRS, super.getTargetCRS());
+            }
+        }
         return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
+    }
+
+    /**
+     * Ensures that the {@code actual} CRS uses a datum which is equals, ignoring metadata,
+     * to the datum of the {@code expected} CRS.
+     *
+     * @param param     The parameter name, used only in case of error.
+     * @param expected  The CRS containing the expected datum, or {@code null}.
+     * @param actual    The CRS for which to check the datum, or {@code null}.
+     * @throws MismatchedDatumException if the two CRS use different datum.
+     */
+    private static void ensureCompatibleDatum(final String param,
+            final CoordinateReferenceSystem expected,
+            final CoordinateReferenceSystem actual)
+    {
+        if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
+            final Datum datum = ((SingleCRS) expected).getDatum();
+            if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
+                throw new MismatchedDatumException(Errors.format(
+                        Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
+            }
+        }
     }
 
     /**
@@ -323,6 +377,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             final CoordinateReferenceSystem targetCRS,
             final MathTransformFactory factory) throws FactoryException
     {
+        final int interpDim = ReferencingUtilities.getDimension(getInterpolationCRS(definition));
         MathTransform mt = definition.getMathTransform();
         if (mt == null) {
             /*
@@ -358,9 +413,13 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
                  * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
                  */
-                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, true,  factory);
-                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, false, factory);
+                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, interpDim, true,  factory);
+                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, interpDim, false, factory);
+                return mt;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
             }
+        }
+        if (interpDim != 0) {
+            mt = factory.createPassThroughTransform(interpDim, mt, 0);
         }
         return mt;
     }
@@ -374,18 +433,23 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param transform The transform to which to concatenate axis changes.
      * @param sourceCRS The first CRS of the pair for which to check for axes changes.
      * @param targetCRS The second CRS of the pair for which to check for axes changes.
+     * @param interpDim The number of dimensions of the interpolation CRS, or 0 if none.
      * @param isSource  {@code true} for pre-concatenating the changes, or {@code false} for post-concatenating.
      * @param factory   The factory to use for performing axis changes.
      */
     private static MathTransform swapAndScaleAxes(MathTransform transform,
             final CoordinateReferenceSystem sourceCRS,
             final CoordinateReferenceSystem targetCRS,
-            final boolean isSource, final MathTransformFactory factory) throws FactoryException
+            final int interpDim, final boolean isSource,
+            final MathTransformFactory factory) throws FactoryException
     {
         if (sourceCRS != null && targetCRS != null && sourceCRS != targetCRS) try {
-            final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
-                                                                targetCRS.getCoordinateSystem());
+            Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
+                                                          targetCRS.getCoordinateSystem());
             if (!m.isIdentity()) {
+                if (interpDim != 0) {
+                    m = Matrices.createPassThrough(interpDim, m, 0);
+                }
                 final MathTransform s = factory.createAffineTransform(m);
                 transform = factory.createConcatenatedTransform(isSource ? s : transform,
                                                                 isSource ? transform : s);

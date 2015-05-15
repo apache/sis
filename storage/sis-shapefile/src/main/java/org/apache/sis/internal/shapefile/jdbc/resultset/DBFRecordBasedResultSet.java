@@ -410,8 +410,17 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      * @see org.apache.sis.internal.shapefile.jdbc.resultset.DBFResultSet#getObject(java.lang.String)
      */
     @Override
-    public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
-        return getObject(findColumn(columnLabel));
+    public Object getObject(String columnLabel) throws SQLConnectionClosedException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
+        int index = -1;
+        
+        try {
+            index = findColumn(columnLabel);
+            return getObject(index);
+        }
+        catch(SQLIllegalColumnIndexException e) {
+            String message = format(Level.SEVERE, "assert.wrong_index_for_column_name", index, columnLabel);
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**

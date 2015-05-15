@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.shapefile.jdbc;
+package org.apache.sis.internal.shapefile;
 
 import java.sql.SQLNonTransientException;
 
 
 /**
- * Thrown when a DBF file has not been found.
+ * Thrown when a shapefile has not been found.
  *
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
  * @module
  */
-public class DbaseFileNotFoundException extends SQLNonTransientException {
+public class SQLShapefileNotFoundException extends SQLNonTransientException {
     /** Serial UID. */
-    private static final long serialVersionUID = 2572691456125734352L;
+    private static final long serialVersionUID = -3235671561698931817L;
 
     /**
      * Construct an exception.
      * @param message Message of the exception.
      */
-    public DbaseFileNotFoundException(String message) {
+    public SQLShapefileNotFoundException(String message) {
         super(message);
     }
 
@@ -44,7 +44,7 @@ public class DbaseFileNotFoundException extends SQLNonTransientException {
      * @param message Message of the exception.
      * @param cause Root cause of the exception.
      */
-    public DbaseFileNotFoundException(String message, Throwable cause) {
+    public SQLShapefileNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
 }

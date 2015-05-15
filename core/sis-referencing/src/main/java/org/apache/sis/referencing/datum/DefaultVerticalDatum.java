@@ -56,8 +56,8 @@ import java.util.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS.Vertical#datum()}.</li>
  *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
- *   <li>Create a {@code VerticalDatum} by invoking the {@code createVerticalDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code VerticalDatum} by invoking the {@code DatumFactory.createVerticalDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultVerticalDatum} by invoking the
  *       {@linkplain #DefaultVerticalDatum(Map, VerticalDatumType) constructor}.</li>
  * </ol>

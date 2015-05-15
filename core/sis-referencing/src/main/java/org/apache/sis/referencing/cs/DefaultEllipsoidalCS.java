@@ -113,8 +113,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * </table>
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param axis0 The first  axis (e.g. “Geodetic latitude”).
+     * @param axis1 The second axis (e.g. “Geodetic longitude”).
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -124,7 +124,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
         for (int i=0; i<2; i++) {
             final AxisDirection direction = super.getAxis(i).getDirection();
             if (AxisDirections.isVertical(direction)) {
-                throw new IllegalArgumentException(Errors.format(
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
                         Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
             }
         }
@@ -136,9 +136,9 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param axis0 The first  axis (e.g. “Geodetic latitude”).
+     * @param axis1 The second axis (e.g. “Geodetic longitude”).
+     * @param axis2 The third  axis (e.g. “Ellipsoidal height”).
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,

@@ -197,7 +197,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     static CoordinateSystemAxis getAxis(final CoordinateReferenceSystem crs, final int dimension) {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {
+            if (cs != null) {   // Paranoiac check (should never be null).
                 return cs.getAxis(dimension);
             }
         }

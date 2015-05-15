@@ -674,8 +674,8 @@ public class Formatter implements Localized {
      * }
      *
      * For non-internal conventions, all elements other than {@code ID[…]} are formatted
-     * only for {@link CoordinateOperation} and {@link ReferenceSystem} types.
-     * In the later case, we also require that the CRS is not the base of a derived CRS.
+     * only for {@link CoordinateOperation} and root {@link ReferenceSystem} instances,
+     * with an exception for remarks of {@code ReferenceSystem} embedded inside {@code CoordinateOperation}.
      * Those restrictions are our interpretation of the following ISO 19162 requirement:
      *
      * <blockquote>(…snip…) {@code <scope extent identifier remark>} is a collection of four optional attributes
@@ -689,11 +689,13 @@ public class Formatter implements Localized {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
         final boolean filterID;     // Whether we shall limit to a single ID[…] element.
-        final boolean showOthers;   // Whether to format any element other than ID[…].
+        final boolean showOthers;   // Whether to format any element other than ID[…] and Remarks[…].
+        final boolean showRemarks;  // Whether to format Remarks[…].
         if (convention == Convention.INTERNAL) {
-            showIDs    = true;
-            filterID   = false;
-            showOthers = true;
+            showIDs     = true;
+            filterID    = false;
+            showOthers  = true;
+            showRemarks = true;
         } else {
             if (convention == Convention.WKT2_SIMPLIFIED) {
                 showIDs = isRoot;
@@ -701,16 +703,20 @@ public class Formatter implements Localized {
                 showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
             if (convention.majorVersion() == 1) {
-                filterID   = true;
-                showOthers = false;
+                filterID    = true;
+                showOthers  = false;
+                showRemarks = false;
             } else {
                 filterID = !isRoot;
                 if (object instanceof CoordinateOperation) {
-                    showOthers = true;
+                    showOthers  = true;
+                    showRemarks = true;
                 } else if (object instanceof ReferenceSystem) {
-                    showOthers = !(getEnclosingElement(1) instanceof ReferenceSystem);
+                    showOthers  = isRoot;
+                    showRemarks = isRoot || (getEnclosingElement(2) instanceof CoordinateOperation);
                 } else {
-                    showOthers = false; // Mandated by ISO 19162.
+                    showOthers  = false;    // Mandated by ISO 19162.
+                    showRemarks = false;
                 }
             }
         }
@@ -719,7 +725,7 @@ public class Formatter implements Localized {
         }
         if (showIDs) {
             Collection<? extends Identifier> identifiers = object.getIdentifiers();
-            if (identifiers != null) { // Paranoiac check
+            if (identifiers != null) {  // Paranoiac check
                 if (filterID) {
                     for (final Identifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
@@ -737,7 +743,7 @@ public class Formatter implements Localized {
                 }
             }
         }
-        if (showOthers) {
+        if (showRemarks) {
             appendOnNewLine(WKTKeywords.Remarks, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;

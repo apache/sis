@@ -19,12 +19,12 @@ package org.apache.sis.storage.shapefile;
 import java.io.File;
 import java.io.InputStream;
 import java.sql.SQLFeatureNotSupportedException;
-import java.text.*;
+import java.text.DecimalFormat;
+import java.text.MessageFormat;
 
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
+import org.apache.sis.internal.shapefile.SQLShapefileNotFoundException;
 import org.apache.sis.internal.shapefile.ShapefileByteReader;
-import org.apache.sis.internal.shapefile.ShapefileNotFoundException;
 import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
@@ -33,6 +33,7 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLIllegalParameterException;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
+import org.apache.sis.storage.DataStoreClosedException;
 import org.opengis.feature.Feature;
 
 /**
@@ -75,27 +76,44 @@ public class InputFeatureStream extends InputStream {
      * Create an input stream of features over a connection.
      * @param shpfile Shapefile.
      * @param dbaseFile Database file.
-     * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      * @throws InvalidDbaseFileFormatException if the Dbase file format is invalid.
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      */
-    public InputFeatureStream(File shpfile, File dbaseFile) throws SQLInvalidStatementException, InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
-        connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
-        sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
-        shapefile = shpfile;
-        databaseFile = dbaseFile;
-
-        shapefileReader = new ShapefileByteReader(shapefile, databaseFile);
-        featuresType = shapefileReader.getFeaturesType();
-
+    public InputFeatureStream(File shpfile, File dbaseFile) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
         try {
-            executeQuery();
+            connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
+            sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
+            shapefile = shpfile;
+            databaseFile = dbaseFile;
+    
+            shapefileReader = new ShapefileByteReader(shapefile, databaseFile);
+            featuresType = shapefileReader.getFeaturesType();
+    
+            try {
+                executeQuery();
+            }
+            catch(SQLConnectionClosedException e) {
+                // This would be an internal trouble because in this function (at least) it should be open.
+                throw new RuntimeException(e.getMessage(), e);
+            }
+            catch(SQLInvalidStatementException e) {
+                // This would be an internal trouble because if any SQL statement is executed for the dbase file initialization, it should has a correct syntax or grammar.
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
-        catch(SQLConnectionClosedException e) {
-            // This would be an internal trouble because in this function (at least) it should be open.
-            throw new RuntimeException(e.getMessage(), e);
+        catch(SQLInvalidDbaseFileFormatException ex) {
+            // Promote this exception to an DataStoreException compatible exception.
+            throw new InvalidDbaseFileFormatException(ex.getMessage(), ex);
+        }
+        catch(SQLDbaseFileNotFoundException ex) {
+            // Promote this exception to an DataStoreException compatible exception.
+            throw new DbaseFileNotFoundException(ex.getMessage(), ex);
+        }
+        catch(SQLShapefileNotFoundException ex) {
+            // Promote this exception to an DataStoreException compatible exception.
+            throw new ShapefileNotFoundException(ex.getMessage(), ex);
         }
     }
 
@@ -126,7 +144,30 @@ public class InputFeatureStream extends InputStream {
     }
 
     /**
-     * Read next feature responding to the SQL request.
+     * Read next feature responding to the SQL query.
+     * @return Feature, null if no more feature is available.
+     * @throws DataStoreClosedException if the current connection used to query the shapefile has been closed.
+     * @throws DataStoreQueryException if the statement used to query the shapefile content is incorrect.
+     * @throws DataStoreQueryResultException if the shapefile results cause a trouble (wrong format, for example).
+     * @throws InvalidShapefileFormatException if the shapefile structure shows a problem.
+     */
+    public Feature readFeature() throws DataStoreClosedException, DataStoreQueryException, DataStoreQueryResultException, InvalidShapefileFormatException {
+        try {
+            return internalReadFeature();
+        }
+        catch(SQLConnectionClosedException e) {
+            throw new DataStoreClosedException(e.getMessage(), e);
+        }
+        catch(SQLInvalidStatementException | SQLIllegalParameterException | SQLNoSuchFieldException | SQLUnsupportedParsingFeatureException | SQLFeatureNotSupportedException e) {
+            throw new DataStoreQueryException(e.getMessage(), e);
+        }
+        catch(SQLNotNumericException | SQLNotDateException e) {
+            throw new DataStoreQueryResultException(e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Read next feature responding to the SQL query.
      * @return Feature, null if no more feature is available.
      * @throws SQLNotNumericException if a field expected numeric isn't.
      * @throws SQLNotDateException if a field expected of date kind, isn't.
@@ -135,11 +176,10 @@ public class InputFeatureStream extends InputStream {
      * @throws SQLInvalidStatementException if the SQL statement is invalid.
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLUnsupportedParsingFeatureException if a SQL ability is not currently available through this driver.
-     * @throws SQLIllegalColumnIndexException if a column index is illegal.
      * @throws SQLFeatureNotSupportedException if a SQL ability is not currently available through this driver.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      */
-    public Feature readFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, SQLIllegalColumnIndexException, InvalidShapefileFormatException {
+    private Feature internalReadFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, InvalidShapefileFormatException {
         try {
             if (endOfFile) {
                 return null;

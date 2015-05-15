@@ -51,6 +51,31 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.
  * </p>
  *
+ * <div class="section">Creating new geographic CRS instances</div>
+ * New instances can be created either directly by specifying all information to a factory method (choices 3
+ * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
+ * Choice 1 in the following list is the easiest but most restrictive way to get a geographic CRS.
+ * The other choices provide more freedom.
+ *
+ * <ol>
+ *   <li>Create a {@code GeographicCRS} from one of the static convenience shortcuts listed in
+ *       {@link org.apache.sis.referencing.CommonCRS#geographic()} or
+ *       {@link org.apache.sis.referencing.CommonCRS#geographic3D()}.</li>
+ *   <li>Create a {@code GeographicCRS} from an identifier in a database by invoking
+ *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeographicCRS(String)}.</li>
+ *   <li>Create a {@code GeographicCRS} by invoking the {@code CRSFactory.createGeographicCRS(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *   <li>Create a {@code GeographicCRS} by invoking the
+ *       {@linkplain #DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS) constructor}.</li>
+ * </ol>
+ *
+ * <b>Example:</b> the following code gets a two-dimensional geographic CRS
+ * using the <cite>World Geodetic System 1984</cite> datum:
+ *
+ * {@preformat java
+ *     GeodeticDatum datum = CommonCRS.WGS84.geographic();
+ * }
+ *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
@@ -133,7 +158,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
-     * @param cs The coordinate system.
+     * @param cs The two- or three-dimensional coordinate system.
      */
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
