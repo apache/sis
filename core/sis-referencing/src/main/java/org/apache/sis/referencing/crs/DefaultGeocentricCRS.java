@@ -52,7 +52,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeocentricCRS} by invoking the
- *       {@link #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) constructor}.</li>
+ *       {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a geocentric CRS using the <cite>World Geodetic System 1984</cite> datum:

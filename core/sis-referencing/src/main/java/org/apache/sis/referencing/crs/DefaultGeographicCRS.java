@@ -66,7 +66,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *   <li>Create a {@code GeographicCRS} by invoking the {@code CRSFactory.createGeographicCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeographicCRS} by invoking the
- *       {@link #DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS) constructor}.</li>
+ *       {@linkplain #DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a two-dimensional geographic CRS

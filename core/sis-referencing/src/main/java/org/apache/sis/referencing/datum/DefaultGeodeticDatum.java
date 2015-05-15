@@ -102,7 +102,7 @@ import java.util.Objects;
  *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
- *       {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
+ *       {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
