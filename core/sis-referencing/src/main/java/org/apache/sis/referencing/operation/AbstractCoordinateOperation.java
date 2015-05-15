@@ -585,6 +585,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the operation method. This apply only to {@link AbstractSingleOperation} subclasses,
      * which will make this method public.
+     *
+     * @return The operation method, or {@code null} if none.
      */
     OperationMethod getMethod() {
         return null;
@@ -626,6 +628,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the parameter values. The default implementation infers the
      * parameter values from the {@linkplain #transform}, if possible.
      *
+     * @return The parameter values (never {@code null}).
      * @throws UnsupportedOperationException if the parameter values can not
      *         be determined for the current math transform implementation.
      */

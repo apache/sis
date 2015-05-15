@@ -277,8 +277,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     /**
      * Returns a specialization of this conversion with a more specific type, source and target CRS.
      * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
-     * OperationMethod, MathTransform) defining conversion} instances, when more information become
-     * available about the conversion to create.
+     * OperationMethod, MathTransform, ParameterValueGroup) defining conversion} instances,
+     * when more information become available about the conversion to create.
      *
      * <p>The given {@code baseType} argument can be one of the following values:</p>
      * <ul>
