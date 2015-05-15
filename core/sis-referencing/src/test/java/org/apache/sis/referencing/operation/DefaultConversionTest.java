@@ -22,6 +22,7 @@ import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -37,7 +38,6 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -70,33 +70,47 @@ public final strictfp class DefaultConversionTest extends TestCase {
     private static final double OFFSET = 2.33722917;
 
     /**
-     * Creates a CRS using the WGS84 datum, except for the prime meridian which is set to Paris.
-     * This is not a CRS is real usage (the CRS with Paris prime meridian were using an older datum),
-     * but this is convenient for testing a conversion consisting of only a longitude rotation.
+     * Creates a CRS using the same datum than the "Nouvelle Triangulation Française (Paris)" datum (EPSG:6807).
      *
+     * @param isSource {@code true} if creating the source CRS, or {@code false} if creating the target CRS.
      * @param cs {@link HardCodedCS#GEODETIC_2D}, {@link HardCodedCS#GEODETIC_φλ} or other compatible coordinate system.
+     *
+     * @see HardCodedCRS#NTF
      */
-    private static GeographicCRS createParisCRS(final EllipsoidalCS cs) {
-        final Map<String, ?> name = Collections.singletonMap(GeographicCRS.NAME_KEY, HardCodedDatum.PARIS.getName());
-        return new DefaultGeographicCRS(name, new DefaultGeodeticDatum(name,
-                HardCodedDatum.WGS84.getEllipsoid(), HardCodedDatum.PARIS), cs);
+    private static GeographicCRS createParisCRS(final boolean isSource, final EllipsoidalCS cs) {
+        return new DefaultGeographicCRS(Collections.singletonMap(GeographicCRS.NAME_KEY,
+                isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"), HardCodedDatum.NTF, cs);
     }
 
     /**
-     * Creates a very simple conversion performing a longitude rotation between two-dimensional normalized CRS.
-     * The source CRS uses the Paris prime meridian and the target CRS uses the Greenwich prime meridian.
-     * Both CRS use the WGS84 datum.
+     * Changes only the coordinate system of the given CRS, which is supposed geographic.
+     */
+    private static GeographicCRS changeCS(final CoordinateReferenceSystem crs, final EllipsoidalCS cs) {
+        return new DefaultGeographicCRS(Collections.singletonMap(DefaultGeographicCRS.NAME_KEY,
+                crs.getName()), ((GeographicCRS) crs).getDatum(), cs);
+    }
+
+    /**
+     * Creates a pseudo-conversion performing a longitude rotation between two-dimensional normalized CRS.
+     * The source CRS uses the Paris prime meridian and the target CRS "conceptually" uses the Greenwich
+     * prime meridian.
      *
-     * @return A simple conversion performing a longitude rotation on the WGS84 geodetic datum.
+     * <p><b>This is not really a valid conversion</b> since, strictly speaking, <cite>Longitude rotations</cite>
+     * are coordinate <em>transformations</em> rather than conversions (because they change the datum, since they
+     * change the prime meridian). However we handle them as conversions for testing purpose only, because the
+     * longitude rotation is a very simple operation easy to test.</p>
+     *
+     * @return A pseudo-conversion performing a longitude rotation.
      */
     public static DefaultConversion createLongitudeRotation() {
-        return createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84, null);
+        return createLongitudeRotation(HardCodedCRS.NTF, createParisCRS(false, HardCodedCS.GEODETIC_2D), null);
     }
 
     /**
-     * Creates a very simple conversion performing a longitude rotation on the WGS84 datum.
-     * The source CRS shall use the Paris prime meridian and the target CRS the Greenwich
-     * prime meridian.
+     * Creates a very simple conversion performing a longitude rotation.
+     * The source CRS shall use the Paris prime meridian and the target CRS the Greenwich prime meridian,
+     * at least conceptually. See {@link #createLongitudeRotation(boolean)} for an explanation about why
+     * this is not really a valid conversion.
      *
      * @param sourceCRS A CRS using the Paris prime meridian.
      * @param targetCRS A CRS using the Greenwich prime meridian.
@@ -143,8 +157,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
      */
     private static void verifyProperties(final DefaultConversion op, final boolean swapSourceAxes) {
         assertEquals("name",       "Paris to Greenwich", op.getName().getCode());
-        assertEquals("sourceCRS",  "Paris",              op.getSourceCRS().getName().getCode());
-        assertEquals("targetCRS",  "WGS 84",             op.getTargetCRS().getName().getCode());
+        assertEquals("sourceCRS",  "NTF (Paris)",        op.getSourceCRS().getName().getCode());
+        assertEquals("targetCRS",  "Back to Greenwich",  op.getTargetCRS().getName().getCode());
         assertEquals("method",     "Longitude rotation", op.getMethod().getName().getCode());
         assertEquals("parameters", "Longitude rotation", op.getParameterDescriptors().getName().getCode());
 
@@ -166,7 +180,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     }
 
     /**
-     * Tests a simple two-dimensional conversion performing a longitude rotation on the WGS84 datum.
+     * Tests a simple two-dimensional conversion performing a longitude rotation.
      */
     @Test
     public void testConstruction() {
@@ -204,9 +218,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
          * but add a swapping of (latitude, longitude) axes.
          */
         final DefaultConversion completed = definingConversion.specialize(
-                DefaultConversion.class,                    // In normal use, this would be 'Conversion.class'.
-                createParisCRS(HardCodedCS.GEODETIC_φλ),    // Swap axis order.
-                reference.getTargetCRS(),                   // Keep the same target CRS.
+                DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
+                changeCS(reference.getSourceCRS(), HardCodedCS.GEODETIC_φλ),
+                reference.getTargetCRS(),
                 DefaultFactories.forBuildin(MathTransformFactory.class));
 
         verifyProperties(completed, true);
@@ -225,7 +239,9 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @DependsOnMethod("testDefiningConversion")
     public void testSpecialize() throws FactoryException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
-        DefaultConversion op = createLongitudeRotation(createParisCRS(HardCodedCS.GEODETIC_3D), HardCodedCRS.WGS84_3D, null);
+        DefaultConversion op = createLongitudeRotation(
+                createParisCRS(true,  HardCodedCS.GEODETIC_3D),
+                createParisCRS(false, HardCodedCS.GEODETIC_3D), null);
         assertMatrixEquals("Longitude rotation of a three-dimensional CRS", new Matrix4(
                 1, 0, 0, OFFSET,
                 0, 1, 0, 0,
@@ -239,7 +255,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
         /*
          * Reducing the number of dimensions to 2 and swapping (latitude, longitude) axes.
          */
-        op = op.specialize(DefaultConversion.class, createParisCRS(HardCodedCS.GEODETIC_3D), HardCodedCRS.WGS84_φλ, factory);
+        op = op.specialize(DefaultConversion.class, op.getSourceCRS(),
+                changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), factory);
         assertMatrixEquals("Longitude rotation of a two-dimensional CRS", Matrices.create(3, 4, new double[] {
                 0, 1, 0, 0,
                 1, 0, 0, OFFSET,
@@ -264,8 +281,8 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @Test
     @DependsOnMethod("testDefiningConversion")
     public void testWithInterpolationCRS() throws FactoryException {
-        DefaultConversion op = createLongitudeRotation(
-                createParisCRS(HardCodedCS.GEODETIC_2D), HardCodedCRS.WGS84, HardCodedCRS.TIME);
+        DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF,
+                createParisCRS(false, HardCodedCS.GEODETIC_2D), HardCodedCRS.TIME);
         assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
                 1, 0, 0, 0,
                 0, 1, 0, OFFSET,
@@ -275,7 +292,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
         op = op.specialize(
                 DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
                 op.getSourceCRS(),          // Keep the same source CRS.
-                HardCodedCRS.WGS84_φλ,      // Swap axis order.
+                changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ),   // Swap axis order.
                 DefaultFactories.forBuildin(MathTransformFactory.class));
 
         assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
@@ -295,21 +312,20 @@ public final strictfp class DefaultConversionTest extends TestCase {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final DefaultConversion op = createLongitudeRotation();
         try {
-            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.WGS84, factory);
+            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF, factory);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("sourceCRS"));
-            assertTrue(message, message.contains("Paris"));
+            assertTrue(message, message.contains("Nouvelle Triangulation Française"));
         }
-        GeographicCRS crs = (GeographicCRS) op.getSourceCRS();
         try {
-            op.specialize(Conversion.class, crs, crs, factory);
+            op.specialize(Conversion.class, HardCodedCRS.NTF, HardCodedCRS.WGS84, factory);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("targetCRS"));
-            assertTrue(message, message.contains("World Geodetic System 1984"));
+            assertTrue(message, message.contains("Nouvelle Triangulation Française"));
         }
     }
 

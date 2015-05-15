@@ -134,10 +134,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @param properties The properties to be given to the identified object.
      * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
+     * @param targetCRS  The target CRS, which shall use a datum
+     *                   {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)} to the source CRS datum.
      * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
      * @param method     The coordinate operation method (mandatory in all cases).
      * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @throws MismatchedDatumException if the source and target CRS use different datum.
      */
     public DefaultConversion(final Map<String,?>             properties,
                              final CoordinateReferenceSystem sourceCRS,
@@ -149,13 +151,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        ensureCompatibleDatum("targetCRS", sourceCRS, targetCRS);
     }
 
     /**
      * Creates a defining conversion from the given transform and/or parameters.
      * This conversion has no source and target CRS since those elements are usually unknown
-     * at <cite>defining conversion</cite> construction time. The source and target CRS will
-     * become known later, at the
+     * at <cite>defining conversion</cite> construction time.
+     * The source and target CRS will become known later, at the
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
      * construction time.
@@ -299,6 +302,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     * @throws MismatchedDatumException if the given CRS do not use the same datum than the source and target CRS
+     *         of this conversion.
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
@@ -313,8 +318,28 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         ArgumentChecks.ensureNonNull("factory",   factory);
+        /*
+         * Conceptual consistency check: verify that the new CRS use the same datum than the previous ones,
+         * since the purpose of this method is not to apply datum changes. Datum changes are the purpose of
+         * a dedicated kind of operations, namely Transformation.
+         */
         ensureCompatibleDatum("sourceCRS", super.getSourceCRS(), sourceCRS);
-        ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
+        if (!(targetCRS instanceof GeneralDerivedCRS)) {
+            ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
+        } else {
+            /*
+             * Special case for derived and projected CRS: we can not check directly the datum of the target CRS
+             * of a derived CRS, because this method is invoked indirectly by SIS AbstractDerivedCRS constructor
+             * before its 'conversionFromBase' field is set. Since the Apache SIS implementations of derived CRS
+             * map the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking targetCRS.getDatum()
+             * below may result in a NullPointerException. Instead we verify that 'this' conversion use the same
+             * datum for source and target CRS, since DerivedCRS and ProjectedCRS are expected to have the same
+             * datum than their source CRS.
+             */
+            if (super.getTargetCRS() != null) {
+                ensureCompatibleDatum("targetCRS", sourceCRS, super.getTargetCRS());
+            }
+        }
         return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
     }
 
@@ -324,7 +349,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @param param     The parameter name, used only in case of error.
      * @param expected  The CRS containing the expected datum, or {@code null}.
-     * @param actual    The CRS for which to check the datam, or {@code null}.
+     * @param actual    The CRS for which to check the datum, or {@code null}.
+     * @throws MismatchedDatumException if the two CRS use different datum.
      */
     private static void ensureCompatibleDatum(final String param,
             final CoordinateReferenceSystem expected,
@@ -332,23 +358,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     {
         if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
             final Datum datum = ((SingleCRS) expected).getDatum();
-            if (datum != null) {
-                /*
-                 * HACK: this method may be invoked indirectly by DefaultDerivedCRS and DefaultProjectedCRS constructors
-                 * before their 'conversionFromBase' field is set. Since the Apache SIS implementations of those CRS map
-                 * the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking the actual.getDatum() method
-                 * below result in a NullPointerException.  To avoid this problem, we bypass this check if the given CRS
-                 * is a derived CRS with a null conversion.
-                 */
-                if (!(actual instanceof GeneralDerivedCRS) || ((GeneralDerivedCRS) actual).getConversionFromBase() != null) {
-                    /*
-                     * Now the real check.
-                     */
-                    if (!Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
-                        throw new IllegalArgumentException(Errors.format(
-                                Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
-                    }
-                }
+            if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
+                throw new MismatchedDatumException(Errors.format(
+                        Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
             }
         }
     }

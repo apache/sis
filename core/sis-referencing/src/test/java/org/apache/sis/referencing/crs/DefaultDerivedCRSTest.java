@@ -96,7 +96,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
      */
     private static DefaultDerivedCRS createLongitudeRotation() {
         final DefaultConversion conversion = DefaultConversionTest.createLongitudeRotation();
-        return new DefaultDerivedCRS(Collections.singletonMap(DefaultDerivedCRS.NAME_KEY, "Back to WGS84"),
+        return new DefaultDerivedCRS(Collections.singletonMap(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
                 (SingleCRS) conversion.getSourceCRS(), conversion, HardCodedCS.GEODETIC_φλ);
     }
 
@@ -108,10 +108,10 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
         final DefaultDerivedCRS crs = createLongitudeRotation();
         Validators.validate(crs);
 
-        assertEquals("name",             "Back to WGS84",         crs.getName().getCode());
-        assertEquals("baseCRS",          "Paris",                 crs.getBaseCRS().getName().getCode());
-        assertEquals("datum",            "Paris",                 crs.getDatum().getName().getCode());
-        assertSame  ("coordinateSystem", HardCodedCS.GEODETIC_φλ, crs.getCoordinateSystem());
+        assertEquals("name",    "Back to Greenwich",                crs.getName().getCode());
+        assertEquals("baseCRS", "NTF (Paris)",                      crs.getBaseCRS().getName().getCode());
+        assertEquals("datum",   "Nouvelle Triangulation Française", crs.getDatum().getName().getCode());
+        assertSame  ("coordinateSystem", HardCodedCS.GEODETIC_φλ,   crs.getCoordinateSystem());
 
         final Conversion conversion = crs.getConversionFromBase();
         assertSame("sourceCRS", crs.getBaseCRS(), conversion.getSourceCRS());
@@ -130,16 +130,16 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
     @DependsOnMethod("testConstruction")
     public void testWKT1() {
         assertWktEquals(Convention.WKT1,
-                "FITTED_CS[“Back to WGS84”,\n" +
+                "FITTED_CS[“Back to Greenwich”,\n" +
                 "  PARAM_MT[“Affine”,\n" +
                 "    PARAMETER[“elt_0_0”, 0.0],\n" +
                 "    PARAMETER[“elt_0_1”, 1.0],\n" +
                 "    PARAMETER[“elt_0_2”, -2.33722917],\n" +
                 "    PARAMETER[“elt_1_0”, 1.0],\n" +
                 "    PARAMETER[“elt_1_1”, 0.0]],\n" +
-                "  GEOGCS[“Paris”,\n" +
-                "    DATUM[“Paris”,\n" +
-                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "  GEOGCS[“NTF (Paris)”,\n" +
+                "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
+                "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "      PRIMEM[“Paris”, 2.33722917],\n" +
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
@@ -155,10 +155,10 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(
-                "GeodeticCRS[“Back to WGS84”,\n" +
-                "  BaseGeodCRS[“Paris”,\n" +
-                "    Datum[“Paris”,\n" +
-                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
+                "GeodeticCRS[“Back to Greenwich”,\n" +
+                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "    Datum[“Nouvelle Triangulation Francaise”,\n" +
+                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],\n" +
                 "  DerivingConversion[“Paris to Greenwich”,\n" +
                 "    Method[“Longitude rotation”, Id[“EPSG”, 9601, Citation[“IOGP”]]],\n" +
