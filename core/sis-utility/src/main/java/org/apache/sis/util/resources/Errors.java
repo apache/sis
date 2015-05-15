@@ -616,7 +616,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NoSuchAuthorityCode_3 = 137;
 
         /**
-         * No operation method found for name of identifier “{0}”.
+         * No operation method found for name or identifier “{0}”.
          */
         public static final short NoSuchOperationMethod_1 = 179;
 
