@@ -39,11 +39,6 @@ import static org.junit.Assert.*;
 @DependsOn(DefaultParameterValueTest.class)
 public final strictfp class UnmodifiableParameterValueTest extends TestCase {
     /**
-     * Strict tolerance factor for floating point comparisons.
-     */
-    private static final double STRICT = 0.0;
-
-    /**
      * Creates an {@link UnmodifiableParameterValue} implementation for the given parameter
      * and asserts that we got a new instance equivalent to the original one.
      */

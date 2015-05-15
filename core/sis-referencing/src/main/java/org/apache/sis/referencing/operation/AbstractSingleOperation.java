@@ -28,9 +28,12 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -96,8 +99,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                                    final MathTransform             transform)
     {
         super(properties, sourceCRS, targetCRS, interpolationCRS, transform);
-        ArgumentChecks.ensureNonNull("method", method);
-        checkDimensions(method, transform, properties);
+        ArgumentChecks.ensureNonNull("method",    method);
+        ArgumentChecks.ensureNonNull("transform", transform);
+        checkDimensions(method, ReferencingUtilities.getDimension(interpolationCRS), transform, properties);
         this.method = method;
         /*
          * Undocumented property, because SIS usually infers the parameters from the MathTransform.
@@ -109,18 +113,42 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Constructs a new operation with the same values than the specified one, together with the
-     * specified source and target CRS. While the source operation can be an arbitrary one, it is
-     * typically a defining conversion.
+     * Creates a defining conversion from the given transform and/or parameters.
+     * See {@link DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)}
+     * for more information.
      */
-    AbstractSingleOperation(final SingleOperation           definition,
-                            final CoordinateReferenceSystem sourceCRS,
-                            final CoordinateReferenceSystem targetCRS)
+    AbstractSingleOperation(final Map<String,?>       properties,
+                            final OperationMethod     method,
+                            final MathTransform       transform,
+                            final ParameterValueGroup parameters)
     {
-        super(definition, sourceCRS, targetCRS);
+        super(properties, null, null, null, transform);
+        ArgumentChecks.ensureNonNull("method", method);
+        if (transform != null) {
+            checkDimensions(method, 0, transform, properties);
+        } else if (parameters == null) {
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString(Errors.Keys.UnspecifiedParameterValues));
+        }
+        this.method = method;
+        this.parameters = (parameters != null) ? parameters.clone() : null;
+    }
+
+    /**
+     * Creates a new coordinate operation with the same values than the specified defining conversion,
+     * except for the source CRS, target CRS and the math transform which are set the given values.
+     *
+     * <p>This constructor is for {@link DefaultConversion} usage only,
+     * in order to create a "real" conversion from a defining conversion.</p>
+     */
+    AbstractSingleOperation(final SingleOperation definition,
+                            final CoordinateReferenceSystem sourceCRS,
+                            final CoordinateReferenceSystem targetCRS,
+                            final MathTransform transform)
+    {
+        super(definition, sourceCRS, targetCRS, transform);
         method = definition.getMethod();
-        parameters = (definition instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) definition).parameters : definition.getParameterValues();
+        parameters = getParameterValues(definition);
     }
 
     /**
@@ -135,8 +163,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     protected AbstractSingleOperation(final SingleOperation operation) {
         super(operation);
         method = operation.getMethod();
-        parameters = (operation instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
+        parameters = getParameterValues(operation);
     }
 
     /**
@@ -161,18 +188,19 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * </ul>
      *
      * @param  method     The operation method to compare to the math transform.
+     * @param  interpDim  The number of interpolation dimension, or 0 if none.
      * @param  transform  The math transform to compare to the operation method.
      * @param  properties Properties of the caller object being constructed, used only for formatting error message.
      * @throws IllegalArgumentException if the number of dimensions are incompatible.
      */
-    static void checkDimensions(final OperationMethod method, MathTransform transform,
+    static void checkDimensions(final OperationMethod method, final int interpDim, MathTransform transform,
             final Map<String,?> properties) throws IllegalArgumentException
     {
         int actual = transform.getSourceDimensions();
         Integer expected = method.getSourceDimensions();
-        if (expected != null && actual > expected) {
+        if (expected != null && actual > expected + interpDim) {
             /*
-             * The given MathTransform use more dimensions than the OperationMethod.
+             * The given MathTransform uses more dimensions than the OperationMethod.
              * Try to locate one and only one sub-transform, ignoring axis swapping and scaling.
              */
             MathTransform subTransform = null;
@@ -193,19 +221,28 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         }
         /*
          * Now verify if the MathTransform dimensions are equal to the OperationMethod ones,
-         * ignoring null java.lang.Integer instances.
+         * ignoring null java.lang.Integer instances.  We do not specify whether the method
+         * dimensions should include the interpolation dimensions or not, so we accept both.
          */
-        byte isTarget = 0; // false: wrong dimension is the source one.
-        if (expected == null || actual == expected) {
+        int isTarget = 0;   // 0 == false: the wrong dimension is the source one.
+        if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
             actual = transform.getTargetDimensions();
             expected = method.getTargetDimensions();
-            if (expected == null || actual == expected) {
+            if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
                 return;
             }
-            isTarget = 1; // true: wrong dimension is the target one.
+            isTarget = 1;   // 1 == true: the wrong dimension is the target one.
         }
-        throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        /*
+         * At least one dimension does not match.  In principle this is an error, but we make an exception for the
+         * "Affine parametric transformation" (EPSG:9624). The reason is that while OGC define that transformation
+         * as two-dimensional, it can easily be extended to any number of dimensions. Note that Apache SIS already
+         * has special handling for this operation (a TensorParameters dedicated class, etc.)
+         */
+        if (!IdentifiedObjects.isHeuristicMatchForName(method, Constants.AFFINE)) {
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
+        }
     }
 
     /**
@@ -235,9 +272,10 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the operation method.
+     * Returns a description of the operation method, including a list of expected parameter names.
+     * The returned object does not contains any parameter value.
      *
-     * @return The operation method.
+     * @return A description of the operation method.
      */
     @Override
     public OperationMethod getMethod() {
@@ -245,9 +283,15 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns a description of the parameters. The default implementation tries to infer the
-     * description from the {@linkplain #getMathTransform() math transform} itself before to
-     * fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.
+     * Returns a description of the parameters. The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time,
+     *       then the descriptor of those parameters is returned.</li>
+     *   <li>Otherwise if this method can infer the parameter descriptor from the
+     *       {@linkplain #getMathTransform() math transform}, then that descriptor is returned.</li>
+     *   <li>Otherwise fallback on the {@linkplain DefaultOperationMethod#getParameters() method parameters}.</li>
+     * </ul>
      *
      * <div class="note"><b>Note:</b>
      * the two parameter descriptions (from the {@code MathTransform} or from the {@code OperationMethod})
@@ -255,6 +299,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * values or units of measurement.</div>
      *
      * @return A description of the parameters.
+     *
+     * @see DefaultOperationMethod#getParameters()
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterDescriptors()
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
@@ -262,16 +309,36 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Returns the parameter values. The default implementation infers the parameter values from the
-     * {@linkplain #getMathTransform() math transform}, if possible.
+     * Returns the parameter values. The default implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If parameter values were specified explicitely at construction time, then a
+     *       {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#clone() clone}
+     *       of those parameters is returned.</li>
+     *   <li>Otherwise if this method can infer the parameter values from the
+     *       {@linkplain #getMathTransform() math transform}, then those parameters are returned.</li>
+     *   <li>Otherwise throw {@link org.apache.sis.util.UnsupportedImplementationException}.</li>
+     * </ul>
      *
      * @return The parameter values.
      * @throws UnsupportedOperationException if the parameter values can not be determined
      *         for the current math transform implementation.
+     *
+     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
      */
     @Override
     public ParameterValueGroup getParameterValues() {
         return (parameters != null) ? parameters.clone() : super.getParameterValues();
+    }
+
+    /**
+     * Gets the parameter values of the given operation without computing and without cloning them (if possible).
+     * If the parameters are automatically inferred from the math transform, do not compute them and instead return
+     * {@code null} (in conformance with {@link #parameters} contract).
+     */
+    private static ParameterValueGroup getParameterValues(final SingleOperation operation) {
+        return (operation instanceof AbstractSingleOperation) ?
+                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
     }
 
     /**

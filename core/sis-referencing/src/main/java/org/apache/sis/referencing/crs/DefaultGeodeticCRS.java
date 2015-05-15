@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
@@ -40,7 +41,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
- * A 2D or 3D coordinate reference system based on a geodetic datum.
+ * A 2- or 3-dimensional coordinate reference system based on a geodetic datum.
  * The CRS is geographic if associated with an ellipsoidal coordinate system,
  * or geocentric if associated with a spherical or Cartesian coordinate system.
  *
@@ -240,9 +241,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
-            return (cs instanceof EllipsoidalCS) ? "GeogCS" : "GeocCS";
+            return (cs instanceof EllipsoidalCS) ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
         } else {
-            return isBaseCRS ? "BaseGeodCRS" : "GeodeticCRS";
+            return isBaseCRS ? WKTKeywords.BaseGeodCRS : WKTKeywords.GeodeticCRS;
         }
     }
 }

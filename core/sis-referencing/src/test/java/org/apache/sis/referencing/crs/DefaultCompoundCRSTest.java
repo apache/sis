@@ -58,11 +58,6 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     private static final DefaultTemporalCRS TIME = HardCodedCRS.TIME;
 
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Tests construction and serialization of a {@link DefaultCompoundCRS}.
      */
     @Test

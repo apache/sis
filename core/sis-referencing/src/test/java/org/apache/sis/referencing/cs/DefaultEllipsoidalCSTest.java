@@ -41,11 +41,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
     /**
-     * Tolerance threshold for strict floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */
     private static final String XML_FILE = "EllipsoidalCS.xml";

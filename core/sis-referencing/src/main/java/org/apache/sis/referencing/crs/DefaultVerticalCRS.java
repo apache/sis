@@ -26,13 +26,14 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for recording heights or depths.
+ * A 1-dimensional coordinate reference system used for recording heights or depths.
  * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
  * but the relationship with gravity may not be straightforward.
  *
@@ -234,11 +235,13 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * Formats this CRS as a <cite>Well Known Text</cite> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return (formatter.getConvention().majorVersion() == 1) ? "Vert_CS"
-               : isBaseCRS(formatter) ? "BaseVertCRS" : "VerticalCRS";
+        return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Vert_CS
+               : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS : WKTKeywords.VerticalCRS;
     }
 }

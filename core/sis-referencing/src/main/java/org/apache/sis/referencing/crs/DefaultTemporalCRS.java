@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 
@@ -36,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A 1D coordinate reference system used for the recording of time.
+ * A 1-dimensional coordinate reference system used for the recording of time.
  * The Apache SIS implementation provides the following methods in addition to the OGC/ISO properties:
  *
  * <ul>
@@ -304,6 +305,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "TimeCRS"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#88">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -311,6 +314,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return isBaseCRS(formatter) ? "BaseTimeCRS" : "TimeCRS";
+        return isBaseCRS(formatter) ? WKTKeywords.BaseTimeCRS : WKTKeywords.TimeCRS;
     }
 }

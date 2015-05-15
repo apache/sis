@@ -63,6 +63,8 @@ public enum Convention {
      *
      * <p>This is the default convention used by {@link FormattableObject#toWKT()}
      * and for new {@link WKTFormat} instances.</p>
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      */
     WKT2(false),
 
@@ -114,6 +116,8 @@ public enum Convention {
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
+     *
+     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     WKT1(true),
 

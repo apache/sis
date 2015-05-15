@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
@@ -98,10 +99,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#datum()}.</li>
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
- *   <li>Create a {@code GeodeticDatum} by invoking the {@code createGeodeticDatum(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
- *       {@link #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
+ *       {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>
  *
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
@@ -534,6 +535,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
      *
      * @return {@code "Datum"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -557,6 +560,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         }
         // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return "Datum";
+        return WKTKeywords.Datum;
     }
 }

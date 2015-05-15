@@ -56,11 +56,6 @@ import static org.apache.sis.internal.util.Constants.*;
  */
 public strictfp class ReferencingAssert extends MetadataAssert {
     /**
-     * The tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * For subclass constructor only.
      */
     protected ReferencingAssert() {
@@ -152,8 +147,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertEquals("name",         name,         axis.getName().getCode());
         assertEquals("abbreviation", abbreviation, axis.getAbbreviation());
         assertEquals("direction",    direction,    axis.getDirection());
-        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), STRICT);
+        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), TestCase.STRICT);
+        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), TestCase.STRICT);
         assertEquals("unit",         unit,         axis.getUnit());
         assertEquals("rangeMeaning", rangeMeaning, axis.getRangeMeaning());
     }

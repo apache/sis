@@ -26,10 +26,11 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.WKTKeywordsTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.internal.metadata.OtherLocalesTest.class,
