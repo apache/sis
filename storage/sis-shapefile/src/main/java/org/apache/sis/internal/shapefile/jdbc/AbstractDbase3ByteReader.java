@@ -32,7 +32,7 @@ import java.util.logging.Level;
  * @since   0.5
  * @module
  */
-abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFileFormatException, DbaseFileNotFoundException> implements Dbase3ByteReader {
+abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException> implements Dbase3ByteReader {
     /** Number of bytes in the header. */
     protected short dbaseHeaderBytes;
 
@@ -92,11 +92,11 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
     /**
      * Map a dbf file.
      * @param file Database file.
-     * @throws DbaseFileNotFoundException if the DBF file has not been found.
-     * @throws InvalidDbaseFileFormatException if the database has an invalid format.
+     * @throws SQLDbaseFileNotFoundException if the DBF file has not been found.
+     * @throws SQLInvalidDbaseFileFormatException if the database has an invalid format.
      */
-    public AbstractDbase3ByteReader(File file) throws DbaseFileNotFoundException, InvalidDbaseFileFormatException {
-        super(file, InvalidDbaseFileFormatException.class, DbaseFileNotFoundException.class);
+    public AbstractDbase3ByteReader(File file) throws SQLDbaseFileNotFoundException, SQLInvalidDbaseFileFormatException {
+        super(file, SQLInvalidDbaseFileFormatException.class, SQLDbaseFileNotFoundException.class);
     }
 
     /**
@@ -135,11 +135,11 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
      * Convert the binary code page value of the Dbase 3 file to a recent Charset.
      * @param codePageBinaryValue page code binary value.
      * @return Charset.
-     * @throws InvalidDbaseFileFormatException if the binary value is not one of the standard values that the DBF file should carry : the Dbase 3
+     * @throws SQLInvalidDbaseFileFormatException if the binary value is not one of the standard values that the DBF file should carry : the Dbase 3
      * file might be corrupted.
      * @throws UnsupportedCharsetException if the code page as no representation in recents Charset (legacy DOS or macintosh charsets).
      */
-    protected Charset toCharset(byte codePageBinaryValue) throws InvalidDbaseFileFormatException, UnsupportedCharsetException {
+    protected Charset toCharset(byte codePageBinaryValue) throws SQLInvalidDbaseFileFormatException, UnsupportedCharsetException {
         // Attempt to find a known conversion.
         String dbfCodePage = toCodePage(codePageBinaryValue);
 
@@ -162,7 +162,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<InvalidDbaseFil
         // If the code page is invalid, the database itself has chances to be invalid too.
         if (dbfCodePage.equals("invalid")) {
             String message = format(Level.WARNING, "excp.illegal_codepage", codePageBinaryValue, getFile().getAbsolutePath());
-            throw new InvalidDbaseFileFormatException(message);
+            throw new SQLInvalidDbaseFileFormatException(message);
         }
 
         // If the code page cannot find a match for a more recent Charset, we wont be able to handle this DBF.

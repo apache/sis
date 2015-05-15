@@ -423,14 +423,16 @@ public final class XML extends Static {
 
     /**
      * Unmarshall an object from the given string.
+     * Note that the given argument is the XML document itself,
+     * <strong>not</strong> a URL to a XML document.
      *
-     * @param  input The XML representation of an object.
+     * @param  xml The XML representation of an object.
      * @return The object unmarshalled from the given input.
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
-    public static Object unmarshal(final String input) throws JAXBException {
-        ensureNonNull("input", input);
-        final StringReader in = new StringReader(input);
+    public static Object unmarshal(final String xml) throws JAXBException {
+        ensureNonNull("input", xml);
+        final StringReader in = new StringReader(xml);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(in);

@@ -50,17 +50,17 @@ public class DBFConnection extends AbstractConnection {
      * Constructs a connection to the given database.
      * @param datafile Data file ({@code .dbf} extension).
      * @param br Byte reader to use for reading binary content.
-     * @throws DbaseFileNotFoundException if the Database file cannot be found or is not a file.
+     * @throws SQLDbaseFileNotFoundException if the Database file cannot be found or is not a file.
      */
-    public DBFConnection(final File datafile, Dbase3ByteReader br) throws DbaseFileNotFoundException {
+    public DBFConnection(final File datafile, Dbase3ByteReader br) throws SQLDbaseFileNotFoundException {
         // Check that file exists.
         if (!datafile.exists()) {
-            throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
+            throw new SQLDbaseFileNotFoundException(format(Level.WARNING, "excp.file_not_found", datafile.getAbsolutePath()));
         }
 
         // Check that its not a directory.
         if (datafile.isDirectory()) {
-            throw new DbaseFileNotFoundException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
+            throw new SQLDbaseFileNotFoundException(format(Level.WARNING, "excp.directory_not_expected", datafile.getAbsolutePath()));
         }
 
        databaseFile = datafile;

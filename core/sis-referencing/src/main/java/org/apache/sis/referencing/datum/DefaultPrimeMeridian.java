@@ -61,8 +61,8 @@ import java.util.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#primeMeridian()}.</li>
  *   <li>Create a {@code PrimeMeridian} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createPrimeMeridian(String)}.</li>
- *   <li>Create a {@code PrimeMeridian} by invoking the {@code createPrimeMeridian(…)}
- *       method defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create a {@code PrimeMeridian} by invoking the {@code DatumFactory.createPrimeMeridian(…)} method
+ *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultPrimeMeridian} by invoking the
  *       {@linkplain #DefaultPrimeMeridian(Map, double, Unit) constructor}.</li>
  * </ol>

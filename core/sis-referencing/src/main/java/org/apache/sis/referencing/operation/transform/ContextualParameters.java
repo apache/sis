@@ -178,7 +178,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * <ul>
      *   <li>Set the relevant parameter values by calls to
-     *     <code>{@linkplain #parameter(ParameterDescriptor) parameter(…)}.setValue(…)</code>.</li>
+     *     <code>{@linkplain #parameter(String) parameter(…)}.setValue(…)</code>.</li>
      *   <li>Modify the element values in {@linkplain #getMatrix(boolean) normalization / denormalization}
      *     affine transforms, optionally by calls to the convenience methods in this class.</li>
      *   <li>Get the complete transforms chain with a call

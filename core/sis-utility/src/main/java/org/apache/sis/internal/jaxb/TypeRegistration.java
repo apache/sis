@@ -88,7 +88,7 @@ public abstract class TypeRegistration {
         /*
          * Implementation note: do not keep the ServiceLoader in static field because:
          *
-         * 1) It would cache the RegsterableTypes instances, which are not needed after this method call.
+         * 1) It would cache the TypeRegistration instances, which are not needed after this method call.
          * 2) The ClassLoader between different invocations may be different in an OSGi context.
          */
         final ArrayList<Class<?>> types = new ArrayList<>();

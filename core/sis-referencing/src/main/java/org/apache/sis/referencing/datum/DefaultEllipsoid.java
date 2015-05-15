@@ -91,8 +91,8 @@ import java.util.Objects;
  *       {@link org.apache.sis.referencing.CommonCRS#ellipsoid()}.</li>
  *   <li>Create an {@code Ellipsoid} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createEllipsoid(String)}.</li>
- *   <li>Create an {@code Ellipsoid} by invoking the {@code createEllipsoid(…)} or {@code createFlattenedSphere(…)}
- *       methods defined in the {@link org.opengis.referencing.datum.DatumFactory} interface.</li>
+ *   <li>Create an {@code Ellipsoid} by invoking the {@code DatumFactory.createEllipsoid(…)} or {@code createFlattenedSphere(…)}
+ *       method (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultEllipsoid} by invoking the
  *       {@link #createEllipsoid(Map, double, double, Unit) createEllipsoid(…)} or
  *       {@link #createFlattenedSphere(Map, double, double, Unit) createFlattenedSphere(…)}

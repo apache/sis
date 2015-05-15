@@ -124,6 +124,14 @@ final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     }
 
     /**
+     * Returns {@code true} if there is no attribute characteristics.
+     */
+    @Override
+    public boolean isEmpty() {
+        return characterizedBy.length == 0;
+    }
+
+    /**
      * Returns the number of attribute characteristics.
      */
     @Override

@@ -18,9 +18,8 @@ package org.apache.sis.storage.shapefile;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
 
-import org.apache.sis.internal.shapefile.InvalidShapefileFormatException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import org.opengis.feature.Feature;
@@ -48,11 +47,10 @@ public final strictfp class ShapeFileTest extends TestCase {
     /**
      * Test polylines count.
      * @throws URISyntaxException if the resource name is incorrect.
-     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
-     * @throws SQLException if any SQL Exception occuring.
+     * @throws DataStoreException if a general file reading trouble occurs.
      */
     @Test
-    public void testPolyineCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
+    public void testPolyineCount() throws URISyntaxException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
         readAll(shp);
     }
@@ -60,11 +58,10 @@ public final strictfp class ShapeFileTest extends TestCase {
     /**
      * Test polygon count.
      * @throws URISyntaxException if the resource name is incorrect.
-     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
-     * @throws SQLException if any SQL Exception occuring.
+     * @throws DataStoreException if a general file reading trouble occurs.
      */
      @Test
-     public void testPolygonCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
+     public void testPolygonCount() throws URISyntaxException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
         readAll(shp);
     }
@@ -72,11 +69,10 @@ public final strictfp class ShapeFileTest extends TestCase {
      /**
       * Test point count.
       * @throws URISyntaxException if the resource name is incorrect.
-      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
-      * @throws SQLException if any SQL Exception occuring.
+      * @throws DataStoreException if a general file reading trouble occurs.
       */
      @Test
-     public void testPointCount() throws URISyntaxException, SQLException, InvalidShapefileFormatException {
+     public void testPointCount() throws URISyntaxException, DataStoreException {
         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
         readAll(shp);
      }
@@ -84,10 +80,9 @@ public final strictfp class ShapeFileTest extends TestCase {
     /**
      * Read all the shapefile content.
      * @param shp Shapefile to read.
-     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
-     * @throws SQLException if any SQL Exception occuring.
+     * @throws DataStoreException if a general file reading trouble occurs.
      */
-    private void readAll(ShapeFile shp) throws SQLException, InvalidShapefileFormatException {
+    private void readAll(ShapeFile shp) throws DataStoreException {
         try(InputFeatureStream is = shp.findAll()) {
             Feature feature = is.readFeature();
 

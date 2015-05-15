@@ -35,11 +35,6 @@ import static org.opengis.test.Assert.*;
  */
 public final strictfp class MathTransformsTest extends TestCase {
     /**
-     * For floating point comparisons.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Creates a dummy transform for testing purpose.
      * The transform has the folowing properties:
      *

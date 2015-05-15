@@ -35,7 +35,7 @@ import org.apache.sis.internal.util.X364;
  * representation of this object:</p>
  *
  * <ul>
- *   <li>{@link #toWKT()} returns a strictly compliant WKT or throws {@link UnformattableObjectException}
+ *   <li>{@link #toWKT()} tries to return a strictly compliant WKT or throws {@link UnformattableObjectException}
  *       if this object contains elements not defined by the ISO 19162 standard.</li>
  *   <li>{@link #toString()} returns a WKT with some redundant information omitted and some constraints relaxed.
  *       This method never throw {@code UnformattableObjectException};
@@ -59,7 +59,7 @@ import org.apache.sis.internal.util.X364;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
@@ -111,7 +111,8 @@ public abstract class FormattableObject {
      * If this object can not be represented in a standard way, then this method fallbacks on a non-standard
      * representation.
      *
-     * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules.</p>
+     * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules,
+     * except that Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).</p>
      *
      * @return The Well Known Text (WKT) or an alternative representation of this object.
      */
@@ -122,6 +123,7 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
+     * Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
      *
      * @param  convention The WKT convention to use.
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
@@ -162,7 +164,7 @@ public abstract class FormattableObject {
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
      * @throws UnformattableObjectException If {@code strict} is {@code true} and this object can not be formatted.
      */
-    final String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
+    private String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
     {
         Formatter formatter = FORMATTER.getAndSet(null);
@@ -171,6 +173,9 @@ public abstract class FormattableObject {
         }
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
+        if (!strict) {
+            formatter.encoding = CharEncoding.UNICODE;
+        }
         final String wkt;
         try {
             formatter.append(this);

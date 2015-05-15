@@ -399,6 +399,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IncompatibleCoordinateSystemTypes = 44;
 
         /**
+         * Datum of “{1}” shall be “{0}”.
+         */
+        public static final short IncompatibleDatum_2 = 186;
+
+        /**
          * Property “{0}” has an incompatible value.
          */
         public static final short IncompatiblePropertyValue_1 = 45;
