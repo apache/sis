@@ -356,6 +356,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  identifier The name or identifier of the operation method to search.
      * @return The coordinate operation method for the given name or identifier.
      * @throws NoSuchIdentifierException if there is no operation method registered for the specified identifier.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      */
     public OperationMethod getOperationMethod(String identifier) throws NoSuchIdentifierException {
         identifier = CharSequences.trimWhitespaces(identifier);

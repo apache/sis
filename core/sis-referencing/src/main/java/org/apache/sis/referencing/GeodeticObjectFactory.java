@@ -39,8 +39,8 @@ import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -194,7 +194,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     private volatile MathTransformFactory mtFactory;
 
     /**
-     * Weak references to existing objects (identifiers, CRS, Datum, whatever).
+     * Weak references to existing objects (CRS, CS, Datum, Ellipsoid or PrimeMeridian).
      * This set is used in order to return a pre-existing object instead of creating a new one.
      */
     private final WeakHashSet<IdentifiedObject> pool;
@@ -237,46 +237,19 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     protected Map<String,?> complete(final Map<String,?> properties) {
         ArgumentChecks.ensureNonNull("properties", properties);
-        return new AbstractMap<String,Object>() {
+        return new MergedProperties(properties, defaultProperties) {
             /**
-             * A map containing the merge of user and default properties, or {@code null} if not yet created.
-             * This map is normally never needed. It may be created only if the user create his own subclass
-             * of {@link GeodeticObjectFactory} and iterate on this map or ask for its size.
-             */
-            private Map<String,Object> merge;
-
-            /**
-             * Returns an iterator over the user-supplied properties together with
-             * the default properties which were not specified in the user's ones.
+             * Handles the {@code "mtFactory"} key in a special way since this is normally not needed for
+             * {@link GeodeticObjectFactory}, except when creating the SIS implementation of derived or
+             * projected CRS (because of the way we implemented derived CRS, but this is specific to SIS).
              */
             @Override
-            protected EntryIterator<String,Object> entryIterator() {
-                if (merge == null) {
-                    merge = new HashMap<>(defaultProperties);
-                    merge.putAll(properties);
-                    merge.remove(null);
+            protected Object invisibleEntry(final Object key) {
+                if (OperationMethods.MT_FACTORY.equals(key)) {
+                    return getMathTransformFactory();
+                } else {
+                    return super.invisibleEntry(key);
                 }
-                return new IteratorAdapter<>(merge);    // That iterator will skip null values.
-            }
-
-            /**
-             * Returns the value for the given key by first looking in the user-supplied map,
-             * then by looking in the default properties if no value were specified in the user map.
-             * We handle the "mtFactory" key in a special way since this is normally not needed for
-             * {@link GeodeticObjectFactory}, except when creating the SIS implementation of derived
-             * or projected CRS (because of the way we implemented derived CRS, but this is somewhat
-             * specific to SIS).
-             */
-            @Override
-            public Object get(final Object key) {
-                Object value = properties.get(key);
-                if (value == null && !properties.containsKey(key)) {
-                    value = defaultProperties.get(key);
-                    if (value == null && OperationMethods.MT_FACTORY.equals(key)) {
-                        value = getMathTransformFactory();
-                    }
-                }
-                return value;
             }
         };
     }
@@ -1343,8 +1316,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         } else {
-            throw new FactoryException(Errors.format(Errors.Keys.IllegalClass_2,
-                    CoordinateReferenceSystem.class, object.getClass()));
+            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+                    Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }
 
