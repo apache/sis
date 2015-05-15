@@ -41,7 +41,7 @@ import static org.opengis.test.Assert.*;
  */
 @DependsOn({
     DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.transform.MathTransformsTest.class
+    MathTransformsTest.class
 })
 public final strictfp class AbstractSingleOperationTest extends TestCase {
     /**
@@ -55,23 +55,24 @@ public final strictfp class AbstractSingleOperationTest extends TestCase {
     }
 
     /**
-     * Tests {@link OperationMethods#checkDimensions(OperationMethod, MathTransform, Map)}.
+     * Tests {@link AbstractSingleOperation#checkDimensions(OperationMethod, MathTransform, Map)}
+     * without interpolation dimension.
      */
     @Test
     public void testCheckDimensions() {
         final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.LOCALE_KEY, Locale.ENGLISH);
         final MathTransform tr = MathTransformsTest.createConcatenateAndPassThrough();
-        AbstractSingleOperation.checkDimensions(createOperationMethod(3, 3), tr, properties);
-        AbstractSingleOperation.checkDimensions(createOperationMethod(1, 1), tr, properties);
+        AbstractSingleOperation.checkDimensions(createOperationMethod(3, 3), 0, tr, properties);
+        AbstractSingleOperation.checkDimensions(createOperationMethod(1, 1), 0, tr, properties);
         try {
-            AbstractSingleOperation.checkDimensions(createOperationMethod(2, 2), tr, properties);
+            AbstractSingleOperation.checkDimensions(createOperationMethod(2, 2), 0, tr, properties);
             fail("MathTransform.sourceDimension == 3 shall be considered incompatible.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             assertEquals(e.getMessage(), "The transform has 1 source dimension, while 2 was expected.");
         }
         try {
-            AbstractSingleOperation.checkDimensions(createOperationMethod(3, 1), tr, properties);
+            AbstractSingleOperation.checkDimensions(createOperationMethod(3, 1), 0, tr, properties);
             fail("MathTransform.targetDimension == 3 shall be considered incompatible.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.

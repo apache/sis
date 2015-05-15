@@ -63,11 +63,6 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     private static final double PRODUCT_TOLERANCE_FACTOR = 1E-15;
 
     /**
-     * Tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * The random number generator to use for the test.
      */
     private final Random random = TestUtilities.createRandomNumberGenerator();

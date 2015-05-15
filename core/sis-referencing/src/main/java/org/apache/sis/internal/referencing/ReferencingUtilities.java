@@ -121,11 +121,13 @@ public final class ReferencingUtilities extends Static {
         if (cs != null) {
             for (int i = cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                final Unit<?> candidate = axis.getUnit();
-                if (Units.isAngular(candidate)) {
-                    unit = candidate.asType(Angle.class);
-                    if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
-                        break; // Found the longitude axis.
+                if (axis != null) {  // Paranoiac check.
+                    final Unit<?> candidate = axis.getUnit();
+                    if (Units.isAngular(candidate)) {
+                        unit = candidate.asType(Angle.class);
+                        if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
+                            break; // Found the longitude axis.
+                        }
                     }
                 }
             }
@@ -149,7 +151,7 @@ public final class ReferencingUtilities extends Static {
         if (cs != null) {
             for (int i=cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (axis != null) { // Paranoiac check.
+                if (axis != null) {  // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
                     if (candidate != null) {
                         if (unit == null) {
@@ -162,6 +164,24 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return unit;
+    }
+
+    /**
+     * Returns the number of dimensions of the given CRS, or 0 if {@code null}.
+     *
+     * @param  crs The CRS from which to get the number of dimensions, or {@code null}.
+     * @return The number of dimensions, or 0 if the given CRS or its coordinate system is null.
+     *
+     * @since 0.6
+     */
+    public static int getDimension(final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs != null) {  // Paranoiac check.
+                return cs.getDimension();
+            }
+        }
+        return 0;
     }
 
     /**

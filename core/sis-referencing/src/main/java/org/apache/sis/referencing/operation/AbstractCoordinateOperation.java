@@ -32,21 +32,23 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.parameter.Parameterized;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Semaphores;
 
@@ -74,7 +76,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * <div class="section">Instantiation</div>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
- * An exception to this rule may occur when it is not possible to identify the exact CRS type.
+ * An exception to this rule may occur when it is not possible to identify the exact operation type.
  *
  * <div class="section">Immutability and thread safety</div>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -162,40 +164,44 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     private final MathTransform transform;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
+     * Creates a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceCRS = null;
-        targetCRS = null;
-        interpolationCRS = null;
-        operationVersion = null;
+        sourceCRS                   = null;
+        targetCRS                   = null;
+        interpolationCRS            = null;
+        operationVersion            = null;
         coordinateOperationAccuracy = null;
-        domainOfValidity = null;
-        scope = null;
-        transform = null;
+        domainOfValidity            = null;
+        scope                       = null;
+        transform                   = null;
     }
 
     /**
-     * Constructs a new coordinate operation with the same values than the specified defining conversion,
-     * together with the specified source and target CRS. This constructor is used by {@link DefaultConversion} only.
+     * Creates a new coordinate operation with the same values than the specified defining conversion,
+     * except for the source CRS, target CRS and the math transform which are set the given values.
+     *
+     * <p>This constructor is (indirectly) for {@link DefaultConversion} usage only,
+     * in order to create a "real" conversion from a defining conversion.</p>
      */
-    AbstractCoordinateOperation(final CoordinateOperation       definition,
+    AbstractCoordinateOperation(final CoordinateOperation definition,
                                 final CoordinateReferenceSystem sourceCRS,
-                                final CoordinateReferenceSystem targetCRS)
+                                final CoordinateReferenceSystem targetCRS,
+                                final MathTransform transform)
     {
         super(definition);
         this.sourceCRS                   = sourceCRS;
         this.targetCRS                   = targetCRS;
-        this.interpolationCRS            = null;
+        this.interpolationCRS            = getInterpolationCRS(definition);
         this.operationVersion            = definition.getOperationVersion();
         this.coordinateOperationAccuracy = definition.getCoordinateOperationAccuracy();
         this.domainOfValidity            = definition.getDomainOfValidity();
         this.scope                       = definition.getScope();
-        this.transform                   = definition.getMathTransform();
-        checkDimensions();
+        this.transform                   = transform;
+        checkDimensions(null);
     }
 
     /**
@@ -294,8 +300,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
                                        final MathTransform             transform)
     {
         super(properties);
-        ArgumentChecks.ensureNonNull("transform", transform);
-
         this.sourceCRS        = sourceCRS;
         this.targetCRS        = targetCRS;
         this.interpolationCRS = interpolationCRS;
@@ -307,30 +311,41 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         if (value instanceof PositionalAccuracy[]) {
             coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
         } else {
-            coordinateOperationAccuracy = (value == null) ? null :
-                    Collections.singleton((PositionalAccuracy) value);
+            coordinateOperationAccuracy = (value != null) ? Collections.singleton((PositionalAccuracy) value) : null;
         }
-        checkDimensions();
+        checkDimensions(properties);
     }
 
     /**
      * Ensures that {@link #sourceCRS}, {@link #targetCRS} and {@link #interpolationCRS} dimensions
      * are consistent with {@link #transform} input and output dimensions.
      */
-    private void checkDimensions() {
+    private void checkDimensions(final Map<String,?> properties) {
         if (transform != null) {
-            int sourceDim = transform.getSourceDimensions();
-            int targetDim = transform.getTargetDimensions();
-            if (interpolationCRS != null) {
-                final int dim = interpolationCRS.getCoordinateSystem().getDimension();
-                sourceDim -= dim;
-                targetDim -= dim;
-                if (sourceDim <= 0 || targetDim <= 0) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingInterpolationOrdinates));
+            final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
+                final CoordinateReferenceSystem crs;    // Will determine the expected dimensions.
+                int actual;                             // The MathTransform number of dimensions.
+                switch (isTarget) {
+                    case 0: crs = sourceCRS; actual = transform.getSourceDimensions(); break;
+                    case 1: crs = targetCRS; actual = transform.getTargetDimensions(); break;
+                    default: break check;
+                }
+                int expected = ReferencingUtilities.getDimension(crs);
+                if (interpDim != 0) {
+                    if (actual == expected || actual < interpDim) {
+                        // This check is not strictly necessary as the next check below would catch the error,
+                        // but we provide here a hopefully more helpful error message for a common mistake.
+                        throw new IllegalArgumentException(Errors.getResources(properties)
+                                .getString(Errors.Keys.MissingInterpolationOrdinates));
+                    }
+                    expected += interpDim;
+                }
+                if (crs != null && actual != expected) {
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                            Errors.Keys.MismatchedTransformDimension_3, isTarget, expected, actual));
                 }
             }
-            ArgumentChecks.ensureDimensionMatches("sourceCRS", sourceDim, sourceCRS);
-            ArgumentChecks.ensureDimensionMatches("targetCRS", targetDim, targetCRS);
         }
     }
 
@@ -447,7 +462,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
@@ -570,6 +585,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Returns the operation method. This apply only to {@link AbstractSingleOperation} subclasses,
      * which will make this method public.
+     *
+     * @return The operation method, or {@code null} if none.
      */
     OperationMethod getMethod() {
         return null;
@@ -585,13 +602,13 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterDescriptorGroup param;
-                if (Semaphores.queryAndSet(Semaphores.PROJCS)) {
+                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
                     throw new AssertionError(); // Should never happen.
                 }
                 try {
                     param = ((Parameterized) mt).getParameterDescriptors();
                 } finally {
-                    Semaphores.clear(Semaphores.PROJCS);
+                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
                 }
                 if (param != null) {
                     return param;
@@ -611,6 +628,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Returns the parameter values. The default implementation infers the
      * parameter values from the {@linkplain #transform}, if possible.
      *
+     * @return The parameter values (never {@code null}).
      * @throws UnsupportedOperationException if the parameter values can not
      *         be determined for the current math transform implementation.
      */
@@ -619,13 +637,13 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterValueGroup param;
-                if (Semaphores.queryAndSet(Semaphores.PROJCS)) {
+                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
                     throw new AssertionError(); // Should never happen.
                 }
                 try {
                     param = ((Parameterized) mt).getParameterValues();
                 } finally {
-                    Semaphores.clear(Semaphores.PROJCS);
+                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
                 }
                 if (param != null) {
                     return param;
@@ -721,27 +739,37 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @param  formatter The formatter to use.
      * @return {@code "CoordinateOperation"}.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        append(formatter, getSourceCRS(), "SourceCRS");
-        append(formatter, getTargetCRS(), "TargetCRS");
+        formatter.newLine();
+        append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+        append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        append(formatter, getInterpolationCRS(), "InterpolationCRS");
+        final ParameterValueGroup parameters = getParameterValues();
+        if (parameters != null) {
+            formatter.newLine();
+            for (final GeneralParameterValue param : parameters.values()) {
+                WKTUtilities.append(param, formatter);
+            }
+        }
+        append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
         final double accuracy = getLinearAccuracy();
         if (accuracy > 0) {
             formatter.append(new FormattableObject() {
                 @Override protected String formatTo(final Formatter formatter) {
                     formatter.append(accuracy);
-                    return "OperationAccuracy";
+                    return WKTKeywords.OperationAccuracy;
                 }
             });
         }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return "CoordinateOperation";
+        return WKTKeywords.CoordinateOperation;
     }
 
     /**
@@ -755,7 +783,9 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         if (crs != null) {
             formatter.append(new FormattableObject() {
                 @Override protected String formatTo(final Formatter formatter) {
+                    formatter.indent(-1);
                     formatter.append(WKTUtilities.toFormattable(crs));
+                    formatter.indent(+1);
                     return type;
                 }
             });

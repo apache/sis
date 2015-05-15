@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.shapefile.jdbc;
+package org.apache.sis.storage.shapefile;
 
-import java.sql.SQLNonTransientException;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Thrown when the DBF file format seems to be invalid.
+ * Thrown when a shapefile has not been found.
  *
  * @author  Marc Le Bihan
- * @version 0.5
- * @since   0.5
+ * @version 0.6
+ * @since   0.6
  * @module
  */
-public class InvalidDbaseFileFormatException extends SQLNonTransientException {
+public class ShapefileNotFoundException extends DataStoreException {
     /** Serial UID. */
-    private static final long serialVersionUID = 3924612615300490837L;
+    private static final long serialVersionUID = -6186994116188421967L;
 
     /**
      * Construct an exception.
      * @param message Message of the exception.
      */
-    public InvalidDbaseFileFormatException(String message) {
+    public ShapefileNotFoundException(String message) {
         super(message);
     }
 
@@ -44,7 +44,7 @@ public class InvalidDbaseFileFormatException extends SQLNonTransientException {
      * @param message Message of the exception.
      * @param cause Root cause of the exception.
      */
-    public InvalidDbaseFileFormatException(String message, Throwable cause) {
+    public ShapefileNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
 }

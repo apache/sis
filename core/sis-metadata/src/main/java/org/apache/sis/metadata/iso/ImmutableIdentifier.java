@@ -30,6 +30,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -537,6 +538,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Id"} (WKT 2) or {@code "Authority"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#33">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -557,11 +560,11 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
-                    keyword = "Authority";
+                    keyword = WKTKeywords.Authority;
                     formatter.append(cs,   ElementKind.IDENTIFIER);
                     formatter.append(code, ElementKind.IDENTIFIER);
                 } else {
-                    keyword = "Id";
+                    keyword = WKTKeywords.Id;
                     formatter.append(cs, ElementKind.IDENTIFIER);
                     appendCode(formatter, code);
                     final String version = getVersion();
@@ -644,7 +647,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         @Override
         protected String formatTo(final Formatter formatter) {
             formatter.append(identifier, ElementKind.CITATION);
-            return "Citation";
+            return WKTKeywords.Citation;
         }
     }
 
@@ -675,7 +678,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
             }
             buffer.append(DefinitionURI.SEPARATOR).append(code);
             formatter.append(buffer.toString(), null);
-            return "URI";
+            return WKTKeywords.URI;
         }
     }
 }

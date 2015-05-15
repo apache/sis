@@ -21,15 +21,20 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 
@@ -82,14 +87,13 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @param  properties The properties to be given to the new derived CRS object.
      * @param  baseCRS    Coordinate reference system to base the derived CRS on.
-     * @param  conversion The conversion from the base CRS to this derived CRS.
+     * @param  conversion The defining conversion from a normalized base to a normalized derived CRS.
      * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
      *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
      */
     AbstractDerivedCRS(final Map<String,?>    properties,
-                       final Class<C>         baseType,
                        final SingleCRS        baseCRS,
                        final Conversion       conversion,
                        final CoordinateSystem derivedCS)
@@ -97,13 +101,13 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     {
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
-        ArgumentChecks.ensureNonNull("conversionFromBase", conversion);   // "conversionFromBase" is the name used by subclass constructors.
+        ArgumentChecks.ensureNonNull("conversion", conversion);
         final MathTransform baseToDerived = conversion.getMathTransform();
         if (baseToDerived != null) {
             ArgumentChecks.ensureDimensionMatches("baseCRS",   baseToDerived.getSourceDimensions(), baseCRS);
             ArgumentChecks.ensureDimensionMatches("derivedCS", baseToDerived.getTargetDimensions(), derivedCS);
         }
-        conversionFromBase = DefaultConversion.castOrCopy(conversion).specialize(baseType, baseCRS, this);
+        conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
     }
 
     /**
@@ -115,11 +119,44 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @param crs The coordinate reference system to copy.
      */
-    AbstractDerivedCRS(final GeneralDerivedCRS crs, final Class<C> baseType) {
+    AbstractDerivedCRS(final GeneralDerivedCRS crs) {
         super(crs);
-        conversionFromBase = DefaultConversion.castOrCopy(crs.getConversionFromBase())
-                .specialize(baseType, crs.getBaseCRS(), this);
+        conversionFromBase = createConversionFromBase(null, crs.getBaseCRS(), crs.getConversionFromBase());
     }
+
+    /**
+     * Creates the conversion instance to associate with this {@code AbstractDerivedCRS}.
+     *
+     * <p><b>WARNING:</b> this method is invoked at construction time and will invoke indirectly
+     * (through {@link DefaultConversion}) the {@link #getCoordinateSystem()} method on {@code this}.
+     * Consequently this method shall be invoked only after the construction of this {@code AbstractDerivedCRS}
+     * instance is advanced enough for allowing the {@code getCoordinateSystem()} method to execute.
+     * Subclasses may consider to make the {@code getCoordinateSystem()} method final for better guarantees.</p>
+     */
+    private C createConversionFromBase(final Map<String,?> properties, final SingleCRS baseCRS, final Conversion conversion) {
+        MathTransformFactory factory = null;
+        if (properties != null) {
+            factory = (MathTransformFactory) properties.get(OperationMethods.MT_FACTORY);
+        }
+        if (factory == null) {
+            factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        }
+        try {
+            return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
+        }
+    }
+
+    /**
+     * Returns the type of conversion associated to this {@code AbstractDerivedCRS}.
+     *
+     * <p><b>WARNING:</b> this method is invoked (indirectly) at construction time.
+     * Consequently it shall return a constant value - this method is not allowed to
+     * depend on the object state.</p>
+     */
+    abstract Class<C> getConversionType();
 
     /**
      * Returns the GeoAPI interface implemented by this class.

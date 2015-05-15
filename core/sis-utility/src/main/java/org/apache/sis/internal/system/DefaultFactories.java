@@ -25,11 +25,14 @@ import java.util.ServiceConfigurationError;
 /**
  * Default factories defined in the {@code sis-utility} module.
  * This is a temporary placeholder until we leverage the "dependency injection" pattern.
+ * A candidate replacement is JSR-330.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.6
  * @module
+ *
+ * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
  */
 public final class DefaultFactories extends SystemListener {
     /**

@@ -33,6 +33,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -74,6 +75,23 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>)
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
+ *
+ * <div class="section">Component order</div>
+ * ISO 19162 restricts compound CRS to the following components in that order:
+ * <ul>
+ *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+ *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+ *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+ * </ul>
+ *
+ * SIS currently does not enforce those restrictions. In particular:
+ * <ul>
+ *   <li>Components may appear in different order.
+ *   <li>{@code VerticalCRS} + {@code TemporalCRS} (without horizontal component) is accepted.</li>
+ *   <li>{@code GeocentricCRS} or three-dimensional {@code GeographicCRS} can be combined with {@code TemporalCRS}.</li>
+ * </ul>
+ *
+ * However users are encouraged to follow ISO 19162 restriction for better portability.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -164,7 +182,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @param components The sequence of coordinate reference systems making this compound CRS.
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
-        super(properties, createCoordinateSystem(components));
+        super(properties, createCoordinateSystem(properties, components));
         this.components = copy(Arrays.asList(components));
         // 'singles' is computed by the above method call.
     }
@@ -175,10 +193,13 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static CoordinateSystem createCoordinateSystem(final CoordinateReferenceSystem[] components) {
+    private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
+            final CoordinateReferenceSystem[] components)
+    {
         ensureNonNull("components", components);
         if (components.length < 2) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, components.length));
+            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    Errors.Keys.TooFewArguments_2, 2, components.length));
         }
         final CoordinateSystem[] cs = new CoordinateSystem[components.length];
         for (int i=0; i<components.length; i++) {
@@ -365,6 +386,14 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
+     * Should never be invoked since we override {@link AbstractCRS#forConvention(AxesConvention)}.
+     */
+    @Override
+    final AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem cs) {
+        throw new AssertionError();
+    }
+
+    /**
      * Compares this coordinate reference system with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.
@@ -417,6 +446,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * SIS does not check if this CRS is compliant with the above-cited restrictions.
      *
      * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
@@ -430,6 +461,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             formatter.append(toFormattable(element));
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
-        return isWKT1 ? "Compd_CS" : "CompoundCRS";
+        return isWKT1 ? WKTKeywords.Compd_CS : WKTKeywords.CompoundCRS;
     }
 }

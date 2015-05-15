@@ -121,15 +121,15 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * </table>
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
+     * @param axis0 The first  axis (e.g. “Easting”).
+     * @param axis1 The second axis (e.g. “Northing”).
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
                               final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        ensurePerpendicularAxis();
+        ensurePerpendicularAxis(properties);
     }
 
     /**
@@ -138,9 +138,9 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
      *
      * @param properties The properties to be given to the identified object.
-     * @param axis0 The first axis.
-     * @param axis1 The second axis.
-     * @param axis2 The third axis.
+     * @param axis0 The first  axis (e.g. “Geocentric X”).
+     * @param axis1 The second axis (e.g. “Geocentric Y”).
+     * @param axis2 The third  axis (e.g. “Geocentric Z”).
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
@@ -148,7 +148,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                               final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
-        ensurePerpendicularAxis();
+        ensurePerpendicularAxis(properties);
     }
 
     /**
@@ -164,7 +164,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      */
     protected DefaultCartesianCS(final CartesianCS cs) {
         super(cs);
-        ensurePerpendicularAxis();
+        ensurePerpendicularAxis(null);
     }
 
     /**
@@ -185,7 +185,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     /**
      * Ensures that all axes are perpendicular.
      */
-    private void ensurePerpendicularAxis() throws IllegalArgumentException {
+    private void ensurePerpendicularAxis(final Map<String,?> properties) throws IllegalArgumentException {
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final AxisDirection axis0 = getAxis(i).getDirection();
@@ -198,7 +198,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
                  * they are not really for Cartesian CS because we do not know the grid geometry.
                  */
                 if (angle != null && Math.abs(angle.degrees()) != 90) {
-                    throw new IllegalArgumentException(Errors.format(
+                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
                             Errors.Keys.NonPerpendicularDirections_2, axis0, axis1));
                 }
             }

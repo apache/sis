@@ -48,11 +48,6 @@ import static org.junit.Assert.*;
 })
 public final strictfp class StandardDefinitionsTest extends TestCase {
     /**
-     * The tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Compares the values created by {@code StandardDefinitions} against hard-coded constants.
      * This method tests the following methods:
      *

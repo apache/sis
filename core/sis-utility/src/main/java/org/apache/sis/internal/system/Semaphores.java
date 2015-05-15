@@ -24,7 +24,7 @@ package org.apache.sis.internal.system;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Semaphores {
@@ -39,11 +39,11 @@ public final class Semaphores {
     public static final byte COMPARING = 1;
 
     /**
-     * A flag to indicate that {@link org.apache.sis.referencing.operation.DefaultSingleOperation}
-     * is querying {@code org.apache.sis.referencing.operation.transform.ConcatenatedTransform} in
-     * the intend to format WKT (normally a {@code "PROJCS"} element).
+     * A flag to indicate that {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}
+     * is querying parameters of a {@code MathTransform} enclosed in the operation. This is often in the
+     * intend to format WKT of a {@code "ProjectedCRS"} element.
      */
-    public static final byte PROJCS = 2;
+    public static final byte ENCLOSED_IN_OPERATION = 2;
 
     /**
      * A flag to indicate that empty collections should be returned as {@code null}. Returning null
@@ -71,7 +71,7 @@ public final class Semaphores {
     /**
      * Returns {@code true} if the given flag is set.
      *
-     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
+     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      * @return {@code true} if the given flag is set.
      */
     public static boolean query(final byte flag) {
@@ -82,7 +82,7 @@ public final class Semaphores {
     /**
      * Sets the given flag.
      *
-     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
+     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      * @return {@code true} if the given flag was already set.
      */
     public static boolean queryAndSet(final byte flag) {
@@ -99,7 +99,7 @@ public final class Semaphores {
     /**
      * Clears the given flag.
      *
-     * @param flag One of {@link #COMPARING}, {@link #PROJCS} or other constants.
+     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      */
     public static void clear(final byte flag) {
         final Semaphores s = FLAGS.get();
