@@ -30,7 +30,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.converter.ConversionException;
 
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -50,10 +49,10 @@ import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Pending;     // Temporary import.
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -63,7 +62,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -161,14 +159,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * In this class, we reserve the "method" word for "coordinate operation method" as much as possible.
      * For Java methods, we rather use "constructor" or "function".
      */
-
-    /**
-     * The separator character between an identifier and its namespace in the argument given to
-     * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
-     *
-     * This is defined as a constant for now, but we may make it configurable in a future version.
-     */
-    private static final char IDENTIFIER_SEPARATOR = DefaultNameSpace.DEFAULT_SEPARATOR;
 
     /**
      * Minimal precision of ellipsoid semi-major and semi-minor axis lengths, in metres.
@@ -364,21 +354,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            for (final OperationMethod m : methods) {
-                if (matches(m, identifier)) {
-                    /*
-                     * Stop the iteration at the first non-deprecated method.
-                     * If we find only deprecated methods, take the first one.
-                     */
-                    final boolean isDeprecated = (m instanceof Deprecable) && ((Deprecable) m).isDeprecated();
-                    if (!isDeprecated || method == null) {
-                        method = m;
-                        if (!isDeprecated) {
-                            break;
-                        }
-                    }
-                }
-            }
+            method = OperationMethods.getOperationMethod(methods, identifier);
             if (method == null) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }
@@ -391,35 +367,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
         }
         return method;
-    }
-
-    /**
-     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
-     *
-     * This function is private and static for now, but we may consider to make it a protected member
-     * in a future SIS version in order to give users a chance to override the matching criterion.
-     * We don't do that yet because we would like to have at least one use case before doing so.
-     *
-     * @param  method     The method to test for a match.
-     * @param  identifier The name or identifier of the operation method to search.
-     * @return {@code true} if the given method is a match for the given identifier.
-     */
-    private static boolean matches(final OperationMethod method, final String identifier) {
-        if (IdentifiedObjects.isHeuristicMatchForName(method, identifier)) {
-            return true;
-        }
-        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
-                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
-        {
-            final String codespace = identifier.substring(0, s).trim();
-            final String code = identifier.substring(++s).trim();
-            for (final Identifier id : method.getIdentifiers()) {
-                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**

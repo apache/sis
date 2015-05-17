@@ -21,12 +21,16 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.Record;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.referencing.operation.*;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.iso.DefaultNameSpace;
 
 
 /**
@@ -58,9 +62,69 @@ public final class OperationMethods extends Static {
     public static final String MT_FACTORY = "mtFactory";
 
     /**
+     * The separator character between an identifier and its namespace in the argument given to
+     * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
+     *
+     * This is defined as a constant for now, but we may make it configurable in a future version.
+     */
+    private static final char IDENTIFIER_SEPARATOR = DefaultNameSpace.DEFAULT_SEPARATOR;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private OperationMethods() {
+    }
+
+    /**
+     * Returns the operation method for the specified name or identifier. The given argument shall be either a
+     * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     *
+     * @param  methods The method candidates.
+     * @param  identifier The name or identifier of the operation method to search.
+     * @return The coordinate operation method for the given name or identifier, or {@code null} if none.
+     */
+    public static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
+        OperationMethod fallback = null;
+        for (final OperationMethod method : methods) {
+            if (matches(method, identifier)) {
+                /*
+                 * Stop the iteration at the first non-deprecated method.
+                 * If we find only deprecated methods, take the first one.
+                 */
+                if (!(method instanceof Deprecable) || !((Deprecable) method).isDeprecated()) {
+                    return method;
+                }
+                if (fallback == null) {
+                    fallback = method;
+                }
+            }
+        }
+        return fallback;
+    }
+
+    /**
+     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
+     *
+     * @param  method     The method to test for a match.
+     * @param  identifier The name or identifier of the operation method to search.
+     * @return {@code true} if the given method is a match for the given identifier.
+     */
+    private static boolean matches(final OperationMethod method, final String identifier) {
+        if (IdentifiedObjects.isHeuristicMatchForName(method, identifier)) {
+            return true;
+        }
+        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
+                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
+        {
+            final String codespace = identifier.substring(0, s).trim();
+            final String code = identifier.substring(++s).trim();
+            for (final Identifier id : method.getIdentifiers()) {
+                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

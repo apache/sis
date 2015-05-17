@@ -30,20 +30,35 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 
 
 /**
- * Creates {@linkplain AbstractCoordinateOperation coordinate operations}.
- * This factory is capable to find coordinate {@linkplain DefaultConversion conversions}
- * or {@linkplain DefaultTransformation transformations} between two
- * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference systems}.
+ * Creates {@linkplain AbstractCoordinateOperation operations} capable to transform coordinates
+ * from a given source CRS to a given target CRS. This factory provides two ways to create such
+ * operations:
+ *
+ * <ul>
+ *   <li>By fetching or building explicitly each components of the operation:
+ *     <ul>
+ *       <li>The {@link DefaultOperationMethod operation method}, which can be
+ *         {@linkplain #getOperationMethod fetched from a set of predefined methods} or
+ *         {@linkplain #createOperationMethod built explicitly}.</li>
+ *       <li>A single {@linkplain #createDefiningConversion defining conversion}.</li>
+ *       <li>A {@linkplain #createConcatenatedOperation concatenation} of other operations.</li>
+ *     </ul>
+ *   </li>
+ *   <li>By {@linkplain #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem) giving only the source
+ *     and target CRS}, then let the Apache SIS referencing engine infers by itself the coordinate operation
+ *     (with the help of an EPSG database if available).</li>
+ * </ul>
+ *
+ * The second approach is the most frequently used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -76,7 +91,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Constructs a factory with no default properties.
      */
     public DefaultCoordinateOperationFactory() {
-        this(null);
+        defaultProperties = Collections.emptyMap();
+        pool = new WeakHashSet<>(IdentifiedObject.class);
     }
 
     /**
@@ -85,27 +101,33 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
      * @param properties The default properties, or {@code null} if none.
+     * @param mtFactory The factory to use for creating
+     *        {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
+     *        or {@code null} for the default factory.
      */
-    public DefaultCoordinateOperationFactory(Map<String,?> properties) {
+    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory mtFactory) {
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
         } else {
             properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
         }
         defaultProperties = properties;
-        mtFactory = Containers.property(properties, OperationMethods.MT_FACTORY, MathTransformFactory.class);
+        this.mtFactory = mtFactory;
         pool = new WeakHashSet<>(IdentifiedObject.class);
     }
 
     /**
-     * Returns the union of the given {@code properties} map with the default properties
-     * given at {@linkplain #DefaultCoordinateOperationFactory(Map) construction time}.
+     * Returns the union of the given {@code properties} map with the default properties given at
+     * {@linkplain #DefaultCoordinateOperationFactory(Map, MathTransformFactory) construction time}.
      * Entries in the given properties map have precedence, even if their
      * {@linkplain java.util.Map.Entry#getValue() value} is {@code null}
      * (i.e. a null value "erase" the default property value).
      * Entries with null value after the union will be omitted.
      *
-     * <p>This method is invoked by all {@code createFoo(Map<String,?>, …)} methods.</p>
+     * <p>This method is invoked by all {@code createFoo(Map<String,?>, …)} methods for determining
+     * the properties to give to {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map,
+     * CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform)
+     * coordinate operation constructor}.</p>
      *
      * @param  properties The user-supplied properties.
      * @return The union of the given properties with the default properties.
@@ -130,7 +152,16 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the operation method of the given name.
+     * Returns the operation method of the given name. The given argument shall be either a method
+     * {@linkplain DefaultOperationMethod#getName() name} (e.g. <cite>"Transverse Mercator"</cite>)
+     * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
+     *
+     * <p>The search is case-insensitive. Comparisons against method names can be
+     * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.</p>
+     *
+     * <p>If more than one method match the given name, then the first (according iteration order)
+     * non-{@linkplain Deprecable#isDeprecated() deprecated} matching method is returned. If all matching
+     * methods are deprecated, the first one is returned.</p>
      *
      * @param  name The name of the operation method to fetch.
      * @return The operation method of the given name.
@@ -139,50 +170,59 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @see DefaultMathTransformFactory#getOperationMethod(String)
      */
     @Override
-    public OperationMethod getOperationMethod(final String name) throws FactoryException {
+    public OperationMethod getOperationMethod(String name) throws FactoryException {
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
         }
-        for (final OperationMethod method : mtFactory.getAvailableMethods(SingleOperation.class)) {
-            if (IdentifiedObjects.isHeuristicMatchForName(method, name)) {
-                return method;
-            }
+        name = CharSequences.trimWhitespaces(name);
+        ArgumentChecks.ensureNonEmpty("name", name);
+        final OperationMethod method = OperationMethods.getOperationMethod(
+                mtFactory.getAvailableMethods(SingleOperation.class), name);
+        if (method != null) {
+            return method;
         }
         throw new NoSuchIdentifierException(Errors.getResources(defaultProperties)
                 .getString(Errors.Keys.NoSuchOperationMethod_1, name), name);
     }
 
     /**
-     * Constructs a defining conversion.
-     *
-     * @param  properties The properties to be given to the identified object.
-     * @param  method     The operation method.
-     * @param  parameters The parameter values.
-     * @return The defining conversion created from the given arguments.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @see DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
-     */
-    @Override
-    public Conversion createDefiningConversion(
-            final Map<String,?>       properties,
-            final OperationMethod     method,
-            final ParameterValueGroup parameters) throws FactoryException
-    {
-        final Conversion conversion;
-        try {
-            conversion = new DefaultConversion(properties, method, null, parameters);
-        } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
-        }
-        return pool.unique(conversion);
-    }
-
-    /**
      * Creates an operation method from a set of properties and a descriptor group.
      * The source and target dimensions may be {@code null} if the method can work
      * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
+     *
+     * <p>The properties given in argument follow the same rules than for the
+     * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, Integer, Integer, ParameterDescriptorGroup)
+     * operation method} constructor. The following table is a reminder of main (not all) properties:</p>
+     *
+     * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link Identifier} or {@link String}</td>
+     *     <td>{@link DefaultOperationMethod#getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
+     *     <td>{@link GenericName} or {@link CharSequence} (optionally as array)</td>
+     *     <td>{@link DefaultOperationMethod#getAlias()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link Identifier} (optionally as array)</td>
+     *     <td>{@link DefaultOperationMethod#getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.operation.OperationMethod#FORMULA_KEY}</td>
+     *     <td>{@link Formula}, {@link Citation} or {@link CharSequence}</td>
+     *     <td>{@link DefaultOperationMethod#getFormula()}</td>
+     *   </tr>
+     * </table>
      *
      * @param  properties       Set of properties. Shall contain at least {@code "name"}.
      * @param  sourceDimensions Number of dimensions in the source CRS of this operation method, or {@code null}.
@@ -208,6 +248,66 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
+     * Constructs a defining conversion from the given operation parameters.
+     * This conversion has no source and target CRS since those elements are usually unknown at this stage.
+     * The source and target CRS will become known later, at the
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
+     * construction time.
+     *
+     * <p>The properties given in argument follow the same rules than for the
+     * {@linkplain DefaultConversion#DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, OperationMethod, MathTransform) coordinate conversion} constructor.
+     * The following table is a reminder of main (not all) properties:</p>
+     *
+     * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
+     *     <td>{@link DefaultConversion#getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
+     *     <td>{@link DefaultConversion#getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
+     *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @param  method     The operation method.
+     * @param  parameters The parameter values.
+     * @return The defining conversion created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
+     */
+    @Override
+    public Conversion createDefiningConversion(
+            final Map<String,?>       properties,
+            final OperationMethod     method,
+            final ParameterValueGroup parameters) throws FactoryException
+    {
+        final Conversion conversion;
+        try {
+            conversion = new DefaultConversion(properties, method, null, parameters);
+        } catch (IllegalArgumentException exception) {
+            throw new FactoryException(exception);
+        }
+        return pool.unique(conversion);
+    }
+
+    /**
      * Creates an ordered sequence of two or more single coordinate operations.
      * The sequence of operations is constrained by the requirement that the source coordinate reference system
      * of step (<var>n</var>+1) must be the same as the target coordinate reference system of step (<var>n</var>).
@@ -216,7 +316,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * <p>The properties given in argument follow the same rules than for any other
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
-     * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) coordinate operation}.
+     * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) coordinate operation} constructor.
      * The following table is a reminder of main (not all) properties:</p>
      *
      * <table class="sis">
