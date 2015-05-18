@@ -17,6 +17,10 @@
 package org.apache.sis.internal.referencing;
 
 import java.text.ParseException;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -41,4 +45,14 @@ public abstract class Pending {
     }
 
     public abstract MathTransform createFromWKT(MathTransformFactory factory, String text) throws ParseException;
+
+    public CoordinateReferenceSystem createFromWKT(
+            final DatumFactory datumFactory,
+            final CSFactory csFactory,
+            final CRSFactory crsFactory,
+            final MathTransformFactory mtFactory,
+            final String text) throws ParseException
+    {
+        throw new UnsupportedOperationException();
+    }
 }
