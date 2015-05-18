@@ -246,6 +246,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short EmptyProperty_1 = 23;
 
         /**
+         * Error in “{0}”: {1}
+         */
+        public static final short ErrorIn_2 = 190;
+
+        /**
          * Argument ‘{0}’ shall not contain more than {1} elements. A number of {2} is excessive.
          */
         public static final short ExcessiveArgumentSize_3 = 24;
@@ -523,6 +528,16 @@ public final class Errors extends IndexedResourceBundle {
          * No authority was specified for code “{0}”. The expected syntax is “AUTHORITY:CODE”.
          */
         public static final short MissingAuthority_1 = 135;
+
+        /**
+         * Missing a ‘{1}’ character in “{0}” element.
+         */
+        public static final short MissingCharacterInElement_2 = 188;
+
+        /**
+         * Missing a “{1}” component in “{0}”.
+         */
+        public static final short MissingComponentInElement_2 = 189;
 
         /**
          * No horizontal dimension found in “{0}”.
@@ -949,6 +964,11 @@ public final class Errors extends IndexedResourceBundle {
          * Text “{1}” can not be parsed as an object of type ‘{0}’, because of the “{2}” characters.
          */
         public static final short UnparsableStringForClass_3 = 125;
+
+        /**
+         * Can not parse “{1}” in element “{0}”.
+         */
+        public static final short UnparsableStringInElement_2 = 187;
 
         /**
          * Feature named “{0}” has not yet been resolved.
