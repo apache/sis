@@ -114,25 +114,6 @@ Miscellaneous utilities.
   <build>
     <plugins>
 
-      <!-- Delete the "com/sun/xml/..." directory after compilation. -->
-      <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-test-classes</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <delete dir="${project.build.outputDirectory}/com"/>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Compile properties files into resources UTF files. -->
       <plugin>
         <groupId>org.apache.sis.core</groupId>
@@ -174,6 +155,14 @@ Miscellaneous utilities.
     <dependency>
       <groupId>javax</groupId>
       <artifactId>javaee-api</artifactId>
+    </dependency>
+
+    <!-- Allows compiler to use a JAXB class which should exist on the JVM. -->
+    <dependency>
+      <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
+      <artifactId>JAXBNamespacePrefixMapper</artifactId>
+      <version>2.2.4</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
