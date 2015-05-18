@@ -155,13 +155,12 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Returns the operation method of the given name. The given argument shall be either a method
      * {@linkplain DefaultOperationMethod#getName() name} (e.g. <cite>"Transverse Mercator"</cite>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
-     *
-     * <p>The search is case-insensitive. Comparisons against method names can be
-     * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.</p>
+     * The search is case-insensitive and comparisons against method names can be
+     * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
      *
      * <p>If more than one method match the given name, then the first (according iteration order)
-     * non-{@linkplain Deprecable#isDeprecated() deprecated} matching method is returned. If all matching
-     * methods are deprecated, the first one is returned.</p>
+     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
+     * If all matching methods are deprecated, the first one is returned.</p>
      *
      * @param  name The name of the operation method to fetch.
      * @return The operation method of the given name.

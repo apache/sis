@@ -59,7 +59,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
@@ -340,8 +339,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.</p>
      *
      * <p>If more than one method match the given identifier, then the first (according iteration order)
-     * non-{@linkplain Deprecable#isDeprecated() deprecated} matching method is returned. If all matching
-     * methods are deprecated, the first one is returned.</p>
+     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
+     * If all matching methods are deprecated, the first one is returned.</p>
      *
      * @param  identifier The name or identifier of the operation method to search.
      * @return The coordinate operation method for the given name or identifier.
