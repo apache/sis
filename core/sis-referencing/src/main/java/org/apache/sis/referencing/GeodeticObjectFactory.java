@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.text.ParseException;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -40,6 +41,7 @@ import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.MergedProperties;
+import org.apache.sis.internal.referencing.Pending;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -172,7 +174,7 @@ import org.apache.sis.xml.XML;
  * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
  * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
@@ -1324,11 +1326,20 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Creates a coordinate reference system object from a string.
      *
-     * @param  wkt Coordinate system encoded in Well-Known Text format.
+     * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.
      */
     @Override
-    public CoordinateReferenceSystem createFromWKT(final String wkt) throws FactoryException {
-        throw new FactoryException("Not yet implemented");
+    public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
+        final Pending pending = Pending.getInstance();
+        try {
+            return pending.createFromWKT(this, this, this, getMathTransformFactory(), text);
+        } catch (ParseException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;
+            }
+            throw new FactoryException(exception);
+        }
     }
 }

@@ -82,6 +82,9 @@ public final class OperationMethods extends Static {
      * @param  methods The method candidates.
      * @param  identifier The name or identifier of the operation method to search.
      * @return The coordinate operation method for the given name or identifier, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
      */
     public static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;
