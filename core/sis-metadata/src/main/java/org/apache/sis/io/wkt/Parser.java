@@ -37,9 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Like the later, a parser is constructed with a given set of {@linkplain Symbols symbols}.
  * Parsers also need a set of factories to be used for instantiating the parsed objects.
  *
- * <p>In current version, parsers are usually not intended to be subclassed outside this package.
- * A few exceptions exist, for example {@link ReferencingParser#alterProperties(Map)} is one of
- * the few hooks provided for overriding.</p>
+ * <p>In current version, parsers are usually not intended to be subclassed outside this package.</p>
  *
  * <p>Parsers are not synchronized. It is recommended to create separate parser instances for each thread.
  * If multiple threads access a parser concurrently, it must be synchronized externally.</p>
@@ -64,7 +62,7 @@ abstract class Parser {
     /**
      * The locale for error messages (not for number parsing), or {@code null} for the system default.
      */
-    final Locale displayLocale;
+    final Locale errorLocale;
 
     /**
      * The symbols to use for parsing WKT.
@@ -96,12 +94,11 @@ abstract class Parser {
     /**
      * Constructs a parser using the specified set of symbols.
      *
-     * @param symbols The set of symbols to use.
-     * @param displayLocale The locale for error messages (not for number parsing),
-     *        or {@code null} for the system default.
+     * @param symbols     The set of symbols to use.
+     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    Parser(final Symbols symbols, final Locale displayLocale) {
-        this.displayLocale = displayLocale;
+    Parser(final Symbols symbols, final Locale errorLocale) {
+        this.errorLocale = errorLocale;
         ensureNonNull("symbols", symbols);
         this.symbols = symbols;
         numberFormat = symbols.createNumberFormat();

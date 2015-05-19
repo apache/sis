@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import java.util.Date;
 import java.util.Map;
 import java.util.List;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -73,7 +74,7 @@ final class Element {
     /**
      * The position where this element starts in the string to be parsed.
      */
-    private final int offset;
+    final int offset;
 
     /**
      * Keyword of this entity. For example: {@code "PrimeMeridian"}.
@@ -84,7 +85,7 @@ final class Element {
      * An ordered list of {@link String}s, {@link Number}s and other {@link Element}s.
      * May be {@code null} if the keyword was not followed by a pair of brackets (e.g. "north").
      */
-    private final List<Object> list;
+    private final Deque<Object> list;
 
     /**
      * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
@@ -117,7 +118,7 @@ final class Element {
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.
          */
-        locale = parser.displayLocale;
+        locale = parser.errorLocale;
         offset = position.getIndex();
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
@@ -556,13 +557,13 @@ final class Element {
     }
 
     /**
-     * Returns the next element, or {@code null} if there is no more
-     * element. The element is <strong>not</strong> removed from the list.
+     * Returns the next element, or {@code null} if there is no more element.
+     * The element is <strong>not</strong> removed from the list.
      *
      * @return The next element, or {@code null} if there is no more elements.
      */
     public Object peek() {
-        return list.isEmpty() ? null : list.get(0);
+        return list.isEmpty() ? null : list.getFirst();
     }
 
     /**

@@ -92,7 +92,7 @@ public final strictfp class MathTransformParserTest extends TestCase {
 
     /**
      * Tests parsing of a {@code INVERSE_MT[…]} element.
-     * This tests uses an affine transform for the inner {@code PARAM_MT[…]} element,
+     * This test uses an affine transform for the inner {@code PARAM_MT[…]} element,
      * which is useless since we could as well inverse the matrix in-place. But this
      * approach is easier to test.
      *
@@ -118,8 +118,8 @@ public final strictfp class MathTransformParserTest extends TestCase {
     }
 
     /**
-     * TTests parsing of a {@code CONCAT_MT[…]} element.
-     * This tests uses affine transforms for the inner {@code PARAM_MT[…]} elements,
+     * Tests parsing of a {@code CONCAT_MT[…]} element.
+     * This test uses affine transforms for the inner {@code PARAM_MT[…]} elements,
      * which is useless since we could as well concatenate the matrices in-place.
      * But this approach is easier to test.
      *
