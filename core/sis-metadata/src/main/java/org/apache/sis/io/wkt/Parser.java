@@ -17,8 +17,10 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Date;
 import java.util.Locale;
+import java.util.LinkedHashMap;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
@@ -86,6 +88,12 @@ abstract class Parser {
     private DateFormat dateFormat;
 
     /**
+     * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
+     * but we will nevertheless report them as warnings.
+     */
+    private final Map<String, List<String>> ignoredElements;
+
+    /**
      * Constructs a parser using the specified set of symbols.
      *
      * @param symbols The set of symbols to use.
@@ -113,6 +121,7 @@ abstract class Parser {
         } else {
             exponentSymbol = null;
         }
+        ignoredElements = new LinkedHashMap<>();
     }
 
     /**
@@ -124,11 +133,12 @@ abstract class Parser {
      * @throws ParseException if the string can not be parsed.
      */
     public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
+        ignoredElements.clear();
         final int origin = position.getIndex();
         try {
             final Element element = getTree(text, position);
             final Object object = parse(element);
-            element.close();
+            element.close(ignoredElements);
             return object;
         } catch (ParseException exception) {
             position.setIndex(origin);
