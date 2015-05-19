@@ -127,15 +127,12 @@ final class Element {
          * will require the matching closing bracket at the end of this method. For example if the opening
          * bracket was '[', then we will require that the closing bracket is ']' and not ')'.
          */
-        if (lower >= length) {
-            position.setErrorIndex(lower);
-            list = null;
-            return;
-        }
-        final int openingBracket = text.codePointAt(lower);
-        final int closingBracket = parser.symbols.matchingBracket(openingBracket);
-        if (closingBracket < 0) {
-            position.setErrorIndex(lower);
+        final int openingBracket;
+        final int closingBracket;
+        if (lower >= length || (closingBracket = parser.symbols.matchingBracket(
+                                openingBracket = text.codePointAt(lower))) < 0)
+        {
+            position.setIndex(lower);
             list = null;
             return;
         }
@@ -151,14 +148,9 @@ final class Element {
          */
         list = new LinkedList<>();
         final String separator = parser.symbols.trimmedSeparator();
-        do {
-            if (lower >= length) {
-                position.setIndex(offset);
-                position.setErrorIndex(lower);
-                throw missingCharacter(parser, closingBracket, length);
-            }
-            final int c = text.codePointAt(lower);
-            final int closingQuote = parser.symbols.matchingQuote(c);
+        while (lower < length) {
+            final int firstChar = text.codePointAt(lower);
+            final int closingQuote = parser.symbols.matchingQuote(firstChar);
             if (closingQuote >= 0) {
                 /*
                  * Try to parse the next element as a quoted string. We will take it as a string if the first non-blank
@@ -166,10 +158,10 @@ final class Element {
                  * parsed text.
                  */
                 final int n = Character.charCount(closingQuote);
-                lower += Character.charCount(c);
+                lower += Character.charCount(firstChar) - n;    // This will usually let 'lower' unchanged.
                 CharSequence content = null;
                 do {
-                    final int upper = text.indexOf(closingQuote, lower);
+                    final int upper = text.indexOf(closingQuote, lower += n);
                     if (upper < lower) {
                         position.setIndex(offset);
                         position.setErrorIndex(lower);
@@ -191,7 +183,7 @@ final class Element {
                     lower = upper + n;  // After the closing quote.
                 } while (lower < text.length() && text.codePointAt(lower) == closingQuote);
                 list.add(content.toString());
-            } else if (!Character.isUnicodeIdentifierStart(c)) {
+            } else if (!Character.isUnicodeIdentifierStart(firstChar)) {
                 /*
                  * Try to parse the next element as a date or a number. We will attempt such parsing
                  * if the first non-blank character is not the beginning of an unicode identifier.
@@ -223,21 +215,28 @@ final class Element {
                 list.add(new Element(parser, text, position));
                 lower = position.getIndex();
             }
+            /*
+             * At this point we finished to parse the component. If we find a separator (usually a coma),
+             * search for another element. Otherwise verify that the closing bracket is present.
+             */
             lower = skipLeadingWhitespaces(text, lower, length);
-        } while (text.regionMatches(lower, separator, 0, separator.length()));
-        /*
-         * Verify that the closing bracket is present.
-         */
-        if (lower < length) {
-            final int c = text.codePointAt(lower);
-            if (c == closingBracket) {
-                position.setIndex(lower + Character.charCount(c));
-                return;
+            if (text.regionMatches(lower, separator, 0, separator.length())) {
+                lower = skipLeadingWhitespaces(text, lower + separator.length(), length);
+            } else {
+                if (lower >= length) break;
+                final int c = text.codePointAt(lower);
+                if (c == closingBracket) {
+                    position.setIndex(lower + Character.charCount(c));
+                    return;
+                }
+                position.setIndex(offset);
+                position.setErrorIndex(lower);
+                throw unparsableString(parser, text, position);
             }
         }
         position.setIndex(offset);
         position.setErrorIndex(lower);
-        throw unparsableString(parser, text, position);
+        throw missingCharacter(parser, closingBracket, lower);
     }
 
 

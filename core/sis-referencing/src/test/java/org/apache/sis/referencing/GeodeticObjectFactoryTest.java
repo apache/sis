@@ -56,10 +56,12 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
     }
 
     @Override
-    @Ignore("This tests need the Transverse Mercator projection, which is not yet implemented in SIS.")
+    @Deprecated
+    @Ignore("Replaced by testProjectedWithGeoidalHeight()")
     public void testProjected3D() throws FactoryException {
     }
 
+    @Override
     @Ignore("This tests need the Transverse Mercator projection, which is not yet implemented in SIS.")
     public void testProjectedWithGeoidalHeight() throws FactoryException {
     }
