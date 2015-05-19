@@ -19,6 +19,8 @@ package org.apache.sis.io.wkt;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -35,29 +37,92 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ElementTest extends TestCase {
     /**
-     * Tests a {@link Element#pullString(String)}.
+     * A dummy parser to be given to the {@link Element} constructor.
+     */
+    private final Parser parser = new Parser(Symbols.SQUARE_BRACKETS, Locale.ENGLISH) {
+        @Override Object parse(Element element) throws ParseException {
+            throw new UnsupportedOperationException();
+        }
+    };
+
+    /**
+     * Parses the given text and ensures that {@link ParsePosition} index is set at to the end of string.
+     */
+    private Element parse(final String text) throws ParseException {
+        final ParsePosition position = new ParsePosition(0);
+        final Element element = new Element(parser, text, position);
+        assertEquals("errorIndex", -1, position.getErrorIndex());
+        assertEquals("index", CharSequences.skipTrailingWhitespaces(text, 0, text.length()), position.getIndex());
+        return element;
+    }
+
+    /**
+     * Tests {@link Element#pullString(String)}.
      *
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    public void testString() throws ParseException {
-        final ParsePosition position = new ParsePosition(0);
-        final Element element = new Element(new ParserMock(), "Datum[\"World Geodetic System 1984\"]", position);
-        assertEquals("Datum", element.keyword);
-        assertEquals("World Geodetic System 1984", element.pullString("name"));
+    public void testPullString() throws ParseException {
+        Element element = parse("Datum[\"World Geodetic System 1984\"]");
+        assertEquals("keyword", "Datum", element.keyword);
+        assertEquals("value", "World Geodetic System 1984", element.pullString("value"));
+        element.close();
+
+        // Spaces inside quotes should be preserved.
+        element = parse("  Datum [  \" World Geodetic System 1984  \"  ]  ");
+        assertEquals("keyword", "Datum", element.keyword);
+        assertEquals("value", " World Geodetic System 1984  ", element.pullString("value"));
+        element.close();
+
+        // Consecutive values.
+        element = parse("A[\"B\", \"C\"]");
+        assertEquals("keyword", "A", element.keyword);
+        assertEquals("first",   "B", element.pullString("first"));
+        assertEquals("second",  "C", element.pullString("second"));
+        element.close();
     }
 
     /**
-     * A dummy parser for testing purpose.
+     * Tests {@link Element#pullString(String)} with enclosed quotes.
+     * Also opportunistically tests different kinds of quotes.
+     *
+     * @throws ParseException if an error occurred during the parsing.
      */
-    private static final class ParserMock extends Parser {
-        ParserMock() {
-            super(Symbols.SQUARE_BRACKETS, Locale.ENGLISH);
-        }
+    @Test
+    @DependsOnMethod("testPullString")
+    public void testEnclosedQuotes() throws ParseException {
+        Element element = parse("A[“text.”]");
+        assertEquals("keyword", "A", element.keyword);
+        assertEquals("value", "text.", element.pullString("value"));
+        element.close();
 
-        @Override
-        Object parse(Element element) throws ParseException {
-            throw new UnsupportedOperationException();
-        }
+        // No need to double the enclosed quotes here.
+        element = parse("A[“text with \"quotes\".”]");
+        assertEquals("keyword", "A", element.keyword);
+        assertEquals("value", "text with \"quotes\".", element.pullString("value"));
+        element.close();
+
+        // Those enclosed quotes need to be doubled.
+        element = parse("A[\"text with \"\"double quotes\"\".\"]");
+        assertEquals("keyword", "A", element.keyword);
+        assertEquals("value", "text with \"double quotes\".", element.pullString("value"));
+        element.close();
+    }
+
+    /**
+     * Tests {@link Element#pullDouble(String)} for many consecutive values,
+     * including usage of exponential notation.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    public void testPullDouble() throws ParseException {
+        Element element = parse("B[3.1, 4.2, 5.3E3, 6.4e3]");
+        assertEquals("B", element.keyword);
+        assertEquals("first",  3.1, element.pullDouble("first"),  STRICT);
+        assertEquals("second", 4.2, element.pullDouble("second"), STRICT);
+        assertEquals("third", 5300, element.pullDouble("third"),  STRICT);
+        assertEquals("forth", 6400, element.pullDouble("forth"),  STRICT);
+        element.close();
     }
 }
