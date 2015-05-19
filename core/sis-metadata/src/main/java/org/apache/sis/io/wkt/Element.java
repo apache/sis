@@ -280,21 +280,30 @@ final class Element {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns a {@link ParseException} for a child keyword which is either missing or unknown.
+     *
+     * @param  child The missing or unknown child keyword.
+     * @return {@code true} if the given keyword is missing, or {@code false} if it is unknown.
+     * @return The exception to be thrown.
+     */
+    final ParseException keywordNotFound(final String child, final boolean missing) {
+        return new LocalizedParseException(locale,
+                missing ? Errors.Keys.MissingComponentInElement_2
+                        : Errors.Keys.UnknownKeywordInElement_2,
+                new String[] {keyword, child}, offset);
+    }
+
+    /**
      * Returns a {@link ParseException} with the specified cause. A localized string
      * <code>"Error in &lt;{@link #keyword}&gt;"</code> will be prepend to the message.
      * The error index will be the starting index of this {@code Element}.
      *
-     * @param  cause   The cause of the failure, or {@code null} if none.
-     * @param  message The message explaining the cause of the failure, or {@code null}
-     *                 for reusing the same message than {@code cause}.
+     * @param  cause The cause of the failure, or {@code null} if none.
      * @return The exception to be thrown.
      */
-    final ParseException parseFailed(final Exception cause, String message) {
-        if (message == null) {
-            message = Exceptions.getLocalizedMessage(cause, locale);
-        }
-        return (ParseException) new LocalizedParseException(locale,
-                Errors.Keys.ErrorIn_2, new String[] {keyword, message}, offset).initCause(cause);
+    final ParseException parseFailed(final Exception cause) {
+        return (ParseException) new LocalizedParseException(locale, Errors.Keys.ErrorIn_2,
+                new String[] {keyword, Exceptions.getLocalizedMessage(cause, locale)}, offset).initCause(cause);
     }
 
     /**
@@ -355,7 +364,7 @@ final class Element {
      *
      * @return {@code true} if this element is the root element.
      */
-    public boolean isRoot() {
+    final boolean isRoot() {
         return this.offset == 0;
     }
 
@@ -570,7 +579,7 @@ final class Element {
      * @param  ignoredElements The collection where to declare ignored elements, or {@code null}.
      * @throws ParseException If the list still contains some unprocessed values.
      */
-    public void close(final Map<String, List<String>> ignoredElements) throws ParseException {
+    final void close(final Map<String, List<String>> ignoredElements) throws ParseException {
         if (list != null) {
             for (final Object value : list) {
                 if (value instanceof Element) {

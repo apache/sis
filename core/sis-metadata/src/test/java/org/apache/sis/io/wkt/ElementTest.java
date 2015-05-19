@@ -41,7 +41,7 @@ public final strictfp class ElementTest extends TestCase {
      * A dummy parser to be given to the {@link Element} constructor.
      */
     private final Parser parser = new Parser(Symbols.SQUARE_BRACKETS, Locale.ENGLISH) {
-        @Override Object parse(Element element) throws ParseException {
+        @Override Object parseObject(Element element) throws ParseException {
             throw new UnsupportedOperationException();
         }
     };
