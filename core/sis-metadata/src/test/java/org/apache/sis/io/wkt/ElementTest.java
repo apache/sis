@@ -21,6 +21,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -50,7 +51,15 @@ public final strictfp class ElementTest extends TestCase {
      */
     private Element parse(final String text) throws ParseException {
         final ParsePosition position = new ParsePosition(0);
-        final Element element = new Element(parser, text, position);
+        final Element element;
+        try {
+            element = new Element(parser, text, position);
+        } catch (ParseException e) {
+            assertEquals("index should be unchanged.", 0, position.getIndex());
+            assertTrue("Error index should be set.", position.getErrorIndex() > 0);
+            assertEquals("Expected consistent error indices.", position.getErrorIndex(), e.getErrorOffset());
+            throw e;
+        }
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", CharSequences.skipTrailingWhitespaces(text, 0, text.length()), position.getIndex());
         return element;
@@ -66,20 +75,26 @@ public final strictfp class ElementTest extends TestCase {
         Element element = parse("Datum[\"World Geodetic System 1984\"]");
         assertEquals("keyword", "Datum", element.keyword);
         assertEquals("value", "World Geodetic System 1984", element.pullString("value"));
-        element.close();
+        element.close(null);
+
+        // Alternative bracket and quote characters.
+        element = parse("Datum(“World Geodetic System 1984”)");
+        assertEquals("keyword", "Datum", element.keyword);
+        assertEquals("value", "World Geodetic System 1984", element.pullString("value"));
+        element.close(null);
 
         // Spaces inside quotes should be preserved.
         element = parse("  Datum [  \" World Geodetic System 1984  \"  ]  ");
         assertEquals("keyword", "Datum", element.keyword);
         assertEquals("value", " World Geodetic System 1984  ", element.pullString("value"));
-        element.close();
+        element.close(null);
 
         // Consecutive values.
         element = parse("A[\"B\", \"C\"]");
         assertEquals("keyword", "A", element.keyword);
         assertEquals("first",   "B", element.pullString("first"));
         assertEquals("second",  "C", element.pullString("second"));
-        element.close();
+        element.close(null);
     }
 
     /**
@@ -94,19 +109,19 @@ public final strictfp class ElementTest extends TestCase {
         Element element = parse("A[“text.”]");
         assertEquals("keyword", "A", element.keyword);
         assertEquals("value", "text.", element.pullString("value"));
-        element.close();
+        element.close(null);
 
         // No need to double the enclosed quotes here.
         element = parse("A[“text with \"quotes\".”]");
         assertEquals("keyword", "A", element.keyword);
         assertEquals("value", "text with \"quotes\".", element.pullString("value"));
-        element.close();
+        element.close(null);
 
         // Those enclosed quotes need to be doubled.
         element = parse("A[\"text with \"\"double quotes\"\".\"]");
         assertEquals("keyword", "A", element.keyword);
         assertEquals("value", "text with \"double quotes\".", element.pullString("value"));
-        element.close();
+        element.close(null);
     }
 
     /**
@@ -116,13 +131,146 @@ public final strictfp class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
+    @DependsOnMethod("testPullString")      // Because there is some common code in the Element class.
     public void testPullDouble() throws ParseException {
-        Element element = parse("B[3.1, 4.2, 5.3E3, 6.4e3]");
-        assertEquals("B", element.keyword);
+        Element element = parse("C[3.1, 4.2, 5.3E3, 6.4e3]");
+        assertEquals("keyword", "C", element.keyword);
         assertEquals("first",  3.1, element.pullDouble("first"),  STRICT);
         assertEquals("second", 4.2, element.pullDouble("second"), STRICT);
         assertEquals("third", 5300, element.pullDouble("third"),  STRICT);
         assertEquals("forth", 6400, element.pullDouble("forth"),  STRICT);
-        element.close();
+        element.close(null);
+    }
+
+    /**
+     * Tests {@link Element#pullInteger(String)} for many consecutive values.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testPullDouble")      // Because there is lot of common code in the Element class.
+    public void testPullInteger() throws ParseException {
+        Element element = parse("B[3, 7, -5, 6]");
+        assertEquals("keyword", "B", element.keyword);
+        assertEquals("first",  3, element.pullInteger("first"));
+        assertEquals("second", 7, element.pullInteger("second"));
+        assertEquals("third", -5, element.pullInteger("third"));
+        assertEquals("forth",  6, element.pullInteger("forth"));
+        element.close(null);
+        /*
+         * Tests error message.
+         */
+        element = parse("B[6.5]");
+        try {
+            element.pullInteger("forth");
+            fail("Double value can not be parsed as an integer.");
+        } catch (ParseException e) {
+            assertEquals("Text “6.5” can not be parsed as an object of type ‘Integer’.", e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Tests {@link Element#pullDate(String)}.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testPullDouble")      // Because there is lot of common code in the Element class.
+    public void testPullDate() throws ParseException {
+        Element element = parse("TimeOrigin[1858-11-17T00:00:00.0Z]");
+        assertEquals("keyword", "TimeOrigin", element.keyword);
+        assertEquals("date", TestUtilities.date("1858-11-17 00:00:00"), element.pullDate("date"));
+        element.close(null);
+    }
+
+    /**
+     * Tests {@link Element#pullBoolean(String)}.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testPullString")      // Because there is some common code in the Element class.
+    public void testPullBoolean() throws ParseException {
+        Element element = parse("ConformanceResult[true]");
+        assertEquals("keyword", "ConformanceResult", element.keyword);
+        assertTrue("pass", element.pullBoolean("pass"));
+        element.close(null);
+
+        element = parse("ConformanceResult[false]");
+        assertEquals("keyword", "ConformanceResult", element.keyword);
+        assertFalse("pass", element.pullBoolean("pass"));
+        element.close(null);
+        /*
+         * Tests error message.
+         */
+        element = parse("ConformanceResult[falseX]");
+        try {
+            element.pullBoolean("pass");
+            fail("Should not accept “falseX” as a boolean.");
+        } catch (ParseException e) {
+            assertEquals("Missing a “pass” component in “ConformanceResult”.", e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Tests {@link Element#pullElement(String)}. This implies testing {@code Element} nesting.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testPullDate")
+    public void testPullElement() throws ParseException {
+        Element element = parse("TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]]");
+        assertEquals("keyword", "TimeDatum", element.keyword);
+        assertEquals("name", "Modified Julian", element.pullString("name"));
+        Element inner = element.pullElement("TimeOrigin");
+        assertEquals("keyword", "TimeOrigin", inner.keyword);
+        assertEquals("date", TestUtilities.date("1858-11-17 00:00:00"), inner.pullDate("date"));
+        inner.close(null);
+        element.close(null);
+    }
+
+    /**
+     * Tests {@link Element#close()}.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    public void testClose() throws ParseException {
+        final Element element = parse("A[\"B\", \"C\"]");
+        try {
+            element.close(null);
+            fail("Should not close will we still have unparsed elements.");
+        } catch (ParseException e) {
+            assertEquals("Unexpected value “B” in “A” element.", e.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * Tests the production of error messages when a parsing fails.
+     */
+    @Test
+    public void testParsingErrors() {
+        // Missing closing quote or using the wrong quote character.
+        try {
+            parse("QuoteTest[“text\"]");
+            fail("Should complain about missing quote.");
+        } catch (ParseException e) {
+            assertEquals("Missing a ‘”’ character in “QuoteTest” element.", e.getLocalizedMessage());
+        }
+
+        // Missing closing bracket or using the wrong bracket character.
+        try {
+            parse("BracketTest(“text”]");
+            fail("Should complain about missing bracket.");
+        } catch (ParseException e) {
+            assertEquals("Can not parse “]” in element “BracketTest”.", e.getLocalizedMessage());
+        }
+        try {
+            parse("BracketTest(“text”");
+            fail("Should complain about missing bracket.");
+        } catch (ParseException e) {
+            assertEquals("Missing a ‘)’ character in “BracketTest” element.", e.getLocalizedMessage());
+        }
     }
 }

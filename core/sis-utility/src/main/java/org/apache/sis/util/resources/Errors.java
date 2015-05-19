@@ -886,6 +886,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedParameter_1 = 152;
 
         /**
+         * Unexpected value “{1}” in “{0}” element.
+         */
+        public static final short UnexpectedValueInElement_2 = 191;
+
+        /**
          * Parameter “{0}” has no unit.
          */
         public static final short UnitlessParameter_1 = 139;

@@ -17,9 +17,11 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.io.PrintWriter;
 import java.text.ParsePosition;
 import java.text.ParseException;
@@ -29,8 +31,9 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.LocalizedParseException;
 
-import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
 
@@ -54,10 +57,15 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  */
 final class Element {
     /**
+     * Kind of value expected in the element. Value 0 means "not yet determined".
+     */
+    private static final int NUMERIC = 1, TEMPORAL = 2;
+
+    /**
      * Hard-coded list of elements in which to parse values as dates instead than numbers.
      * We may try to find a more generic approach in a future version.
      */
-    private static final String[] TEMPORAL = {
+    private static final String[] TIME_KEYWORDS = {
         WKTKeywords.TimeOrigin,
         WKTKeywords.TimeExtent
     };
@@ -79,6 +87,12 @@ final class Element {
     private final List<Object> list;
 
     /**
+     * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
+     * the system default. This is <strong>not</strong> the locale for parting number or date values.
+     */
+    private final Locale locale;
+
+    /**
      * Constructs a root element.
      *
      * @param singleton The only children for this root.
@@ -86,7 +100,8 @@ final class Element {
     Element(final Element singleton) {
         offset  = 0;
         keyword = null;
-        list    = new LinkedList<>();
+        locale  = singleton.locale;
+        list    = new LinkedList<>();   // Needs to be a modifiable list.
         list.add(singleton);
     }
 
@@ -102,6 +117,7 @@ final class Element {
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.
          */
+        locale = parser.displayLocale;
         offset = position.getIndex();
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
@@ -110,7 +126,7 @@ final class Element {
             if (!Character.isUnicodeIdentifierStart(c)) {
                 keyword = text;
                 position.setErrorIndex(lower);
-                throw unparsableString(parser, text, position);
+                throw unparsableString(text, position);
             }
             int upper = lower;
             while ((upper += Character.charCount(c)) < length) {
@@ -120,7 +136,7 @@ final class Element {
             keyword = text.substring(lower, upper);
             lower = skipLeadingWhitespaces(text, upper, length);
         }
-        final boolean isTemporal = ArraysExt.containsIgnoreCase(TEMPORAL, keyword);
+        int valueType = 0;
         /*
          * At this point we have extracted the keyword (e.g. "PrimeMeridian"). Now parse the opening bracket.
          * According WKT's specification, two characters are acceptable: '[' and '('. We accept both, but we
@@ -165,7 +181,7 @@ final class Element {
                     if (upper < lower) {
                         position.setIndex(offset);
                         position.setErrorIndex(lower);
-                        throw missingCharacter(parser, closingQuote, lower);
+                        throw missingCharacter(closingQuote, lower);
                     }
                     if (content == null) {
                         content = text.substring(lower, upper);   // First text fragment, and usually the only one.
@@ -191,24 +207,25 @@ final class Element {
                  */
                 position.setIndex(lower);
                 final Object value;
-                if (isTemporal) {
-                    value = parser.parseDate(text, position);
-                } else {
-                    value = parser.parseNumber(text, position);
+                if (valueType == 0) {
+                    valueType = ArraysExt.containsIgnoreCase(TIME_KEYWORDS, keyword) ? TEMPORAL : NUMERIC;
+                }
+                switch (valueType) {
+                    case TEMPORAL: value = parser.parseDate  (text, position); break;
+                    case NUMERIC:  value = parser.parseNumber(text, position); break;
+                    default: throw new AssertionError(valueType);  // Should never happen.
                 }
                 if (value == null) {
                     position.setIndex(offset);
                     // Do not update the error index; it is already updated by NumberFormat.
-                    throw unparsableString(parser, text, position);
+                    throw unparsableString(text, position);
                 }
                 list.add(value);
                 lower = position.getIndex();
-            } else if (text.regionMatches(true, lower, "true", 0, 4)) {
+            } else if (lower != (lower = regionMatches(text, lower, "true"))) {
                 list.add(Boolean.TRUE);
-                lower += 4;
-            } else if (text.regionMatches(true, lower, "false", 0, 5)) {
+            } else if (lower != (lower = regionMatches(text, lower, "false"))) {
                 list.add(Boolean.FALSE);
-                lower += 5;
             } else {
                 // Otherwise, add the element as a child element.
                 position.setIndex(lower);
@@ -231,12 +248,26 @@ final class Element {
                 }
                 position.setIndex(offset);
                 position.setErrorIndex(lower);
-                throw unparsableString(parser, text, position);
+                throw unparsableString(text, position);
             }
         }
         position.setIndex(offset);
         position.setErrorIndex(lower);
-        throw missingCharacter(parser, closingBracket, lower);
+        throw missingCharacter(closingBracket, lower);
+    }
+
+    /**
+     * Increments the given {@code index} if and only if the word at that position is the given word,
+     * ignoring case. Otherwise returns the index unchanged.
+     */
+    private static int regionMatches(final String text, final int index, final String word) {
+        if (text.regionMatches(true, index, word, 0, word.length())) {
+            final int end = index + word.length();
+            if (end >= text.length() || !Character.isUnicodeIdentifierPart(text.codePointAt(end))) {
+                return end;
+            }
+        }
+        return index;
     }
 
 
@@ -258,12 +289,12 @@ final class Element {
      *                 for reusing the same message than {@code cause}.
      * @return The exception to be thrown.
      */
-    final ParseException parseFailed(final Parser parser, final Exception cause, String message) {
+    final ParseException parseFailed(final Exception cause, String message) {
         if (message == null) {
-            message = Exceptions.getLocalizedMessage(cause, parser.displayLocale);
+            message = Exceptions.getLocalizedMessage(cause, locale);
         }
-        return (ParseException) new ParseException(Errors.getResources(parser.displayLocale)
-                .getString(Errors.Keys.ErrorIn_2, keyword, message), offset).initCause(cause);
+        return (ParseException) new LocalizedParseException(locale,
+                Errors.Keys.ErrorIn_2, new String[] {keyword, message}, offset).initCause(cause);
     }
 
     /**
@@ -276,18 +307,19 @@ final class Element {
      * @param  position The position in the string.
      * @return An exception with a formatted error message.
      */
-    private ParseException unparsableString(final Parser parser, final String text, final ParsePosition position) {
-        final String message;
-        final Errors resources = Errors.getResources(parser.displayLocale);
+    private ParseException unparsableString(final String text, final ParsePosition position) {
+        final short errorKey;
+        final CharSequence[] arguments;
         final int errorIndex = Math.max(position.getIndex(), position.getErrorIndex());
         final int length = text.length();
         if (errorIndex == length) {
-            message = resources.getString(Errors.Keys.UnexpectedEndOfString_1, keyword);
+            errorKey  = Errors.Keys.UnexpectedEndOfString_1;
+            arguments = new String[] {keyword};
         } else {
-            message = resources.getString(Errors.Keys.UnparsableStringInElement_2, keyword,
-                    CharSequences.token(text, errorIndex));
+            errorKey  = Errors.Keys.UnparsableStringInElement_2;
+            arguments = new CharSequence[] {keyword, CharSequences.token(text, errorIndex)};
         }
-        return new ParseException(message, errorIndex);
+        return new LocalizedParseException(locale, errorKey, arguments, errorIndex);
     }
 
     /**
@@ -296,10 +328,10 @@ final class Element {
      * @param c The missing character.
      * @param position The error position.
      */
-    private ParseException missingCharacter(final Parser parser, final int c, final int position) {
+    private ParseException missingCharacter(final int c, final int position) {
         final StringBuilder buffer = new StringBuilder(2).appendCodePoint(c);
-        return new ParseException(Errors.getResources(parser.displayLocale)
-                .getString(Errors.Keys.MissingCharacterInElement_2, keyword, buffer), position);
+        return new LocalizedParseException(locale, Errors.Keys.MissingCharacterInElement_2,
+                new CharSequence[] {keyword, buffer}, position);
     }
 
     /**
@@ -312,7 +344,8 @@ final class Element {
         if (keyword != null) {
             error += keyword.length();
         }
-        return new ParseException(Errors.format(Errors.Keys.MissingComponentInElement_2, keyword, key), error);
+        return new LocalizedParseException(locale, Errors.Keys.MissingComponentInElement_2,
+                new String[] {keyword, key}, error);
     }
 
     /**
@@ -388,8 +421,8 @@ final class Element {
                 iterator.remove();
                 final Number number = (Number) object;
                 if (number instanceof Float || number instanceof Double) {
-                    throw new ParseException(Errors.format(
-                            Errors.Keys.UnparsableStringForClass_2, Integer.class, number), offset);
+                    throw new LocalizedParseException(locale, Errors.Keys.UnparsableStringForClass_2,
+                            new Object[] {Integer.class, number}, offset);
                 }
                 return number.intValue();
             }
@@ -457,7 +490,7 @@ final class Element {
     /**
      * Removes the next {@link Element} from the list and returns it.
      *
-     * @param  key The element name (e.g. {@code "PRIMEM"}).
+     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
      * @return The next {@link Element} on the list.
      * @throws ParseException if no more element is available.
      */
@@ -472,17 +505,16 @@ final class Element {
     /**
      * Removes the next {@link Element} from the list and returns it.
      *
-     * @param  key The element name (e.g. {@code "PRIMEM"}).
+     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
      * @return The next {@link Element} on the list, or {@code null} if no more element is available.
      */
-    public Element pullOptionalElement(String key) {
-        key = key.toUpperCase();
+    public Element pullOptionalElement(final String key) {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list!=null && element.keyword.equals(key)) {
+                if (element.list != null && key.equalsIgnoreCase(element.keyword)) {
                     iterator.remove();
                     return element;
                 }
@@ -525,48 +557,63 @@ final class Element {
     }
 
     /**
-     * Closes this element.
+     * Closes this element. This method verifies that there is no unprocessed value (dates,
+     * numbers, booleans or strings), but ignores inner elements as required by ISO 19162.
      *
-     * @throws ParseException If the list still contains some unprocessed elements.
+     * If the given {@code ignored} map is non-null, then this method will add the keywords
+     * of ignored elements in that map as below:
+     * <ul>
+     *   <li>Keyword of ignored elements are the keys. Note that a key may be null.</li>
+     *   <li>Keywords of the elements that contained ignored elements are the values.</li>
+     * </ul>
+     *
+     * @param  ignoredElements The collection where to declare ignored elements, or {@code null}.
+     * @throws ParseException If the list still contains some unprocessed values.
      */
-    public void close() throws ParseException {
-        if (!isNullOrEmpty(list)) {
-            throw new ParseException(Errors.format(Errors.Keys.UnexpectedParameter_1, list.get(0)), offset + keyword.length());
+    public void close(final Map<String, List<String>> ignoredElements) throws ParseException {
+        if (list != null) {
+            for (final Object value : list) {
+                if (value instanceof Element) {
+                    if (ignoredElements != null) {
+                        CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
+                    }
+                } else {
+                    throw new LocalizedParseException(locale, Errors.Keys.UnexpectedValueInElement_2,
+                            new Object[] {keyword, value}, offset + keyword.length());
+                }
+            }
         }
     }
 
     /**
-     * Returns the keyword. This overriding is needed for correct
-     * formatting of the error message in {@link #close}.
-     */
-    @Override
-    public String toString() {
-        return keyword;
-    }
-
-    /**
-     * Prints this {@code Element} as a tree.
+     * Formats this {@code Element} as a tree.
      * This method is used for debugging purpose only.
-     *
-     * @param out   The output stream.
-     * @param level The indentation level (usually 0).
      */
     @Debug
-    public void print(final PrintWriter out, final int level) {
-        final int tabWidth = 4;
-        out.print(CharSequences.spaces(tabWidth * level));
-        out.println(keyword);
-        if (list == null) {
-            return;
-        }
-        final int size = list.size();
-        for (int j=0; j<size; j++) {
-            final Object object = list.get(j);
-            if (object instanceof Element) {
-                ((Element) object).print(out, level+1);
-            } else {
-                out.print(CharSequences.spaces(tabWidth * (level+1)));
-                out.println(object);
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder();
+        format(buffer, 0);
+        return buffer.toString();
+    }
+
+    /**
+     * Implementation of {@link #toString()} to be invoked recursively.
+     *
+     * @param buffer Where to format.
+     * @param margin Number of space to put in the left margin.
+     */
+    @Debug
+    private void format(final StringBuilder buffer, int margin) {
+        buffer.append(CharSequences.spaces(margin)).append(keyword);
+        if (list != null) {
+            margin += 4;
+            for (final Object value : list) {
+                if (value instanceof Element) {
+                    ((Element) value).format(buffer, margin);
+                } else {
+                    buffer.append(CharSequences.spaces(margin)).append(value);
+                }
             }
         }
     }
