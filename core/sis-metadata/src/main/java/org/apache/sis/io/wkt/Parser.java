@@ -91,7 +91,7 @@ abstract class Parser {
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
      * but we will nevertheless report them as warnings.
      */
-    private final Map<String, List<String>> ignoredElements;
+    final Map<String, List<String>> ignoredElements;
 
     /**
      * Constructs a parser using the specified set of symbols.
@@ -134,32 +134,33 @@ abstract class Parser {
      */
     public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
         ignoredElements.clear();
-        final int origin = position.getIndex();
-        try {
-            final Element element = getTree(text, position);
-            final Object object = parse(element);
-            element.close(ignoredElements);
-            return object;
-        } catch (ParseException exception) {
-            position.setIndex(origin);
-            if (position.getErrorIndex() < origin) {
-                position.setErrorIndex(exception.getErrorOffset());
-            }
-            throw exception;
-        }
+        final Element element = new Element(new Element(this, text, position));
+        final Object object = parseObject(element);
+        element.close(ignoredElements);
+        return object;
     }
 
     /**
+     * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
+     *
+     * @param  element The element to be parsed.
+     * @return The parsed object.
+     * @throws ParseException if the element can not be parsed.
+     */
+    abstract Object parseObject(final Element element) throws ParseException;
+
+    /**
      * Parses the number at the given position.
+     * This is a helper method for {@link Element} only.
      */
     final Number parseNumber(String text, final ParsePosition position) {
-        /*
-         * HACK: DecimalFormat.parse(…) does not understand lower case 'e' for scientific notation.
-         *       It understands upper case 'E' only, so we need to perform the replacement here.
-         */
         final int base = position.getIndex();
         Number number = numberFormat.parse(text, position);
         if (number != null && exponentSymbol != null) {
+            /*
+             * HACK: DecimalFormat.parse(…) does not understand lower case 'e' for scientific notation.
+             *       It understands upper case 'E' only, so we may need to perform a replacement here.
+             */
             int i = position.getIndex();
             if (text.regionMatches(true, i, exponentSymbol, 0, exponentSymbol.length())) {
                 text = new StringBuilder(text).replace(i, i + exponentSymbol.length(), exponentSymbol).toString();
@@ -172,33 +173,12 @@ abstract class Parser {
 
     /**
      * Parses the date at the given position.
+     * This is a helper method for {@link Element} only.
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {
             dateFormat = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
         }
         return dateFormat.parse(text, position);
-    }
-
-    /**
-     * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
-     *
-     * @param  element The element to be parsed.
-     * @return The parsed object.
-     * @throws ParseException if the element can not be parsed.
-     */
-    abstract Object parse(final Element element) throws ParseException;
-
-    /**
-     * Returns a tree of {@link Element} for the specified text.
-     *
-     * @param  text       The text to parse.
-     * @param  position   In input, the position where to start parsing from.
-     *                    In output, the first character after the separator.
-     * @return The tree of elements to parse.
-     * @throws ParseException If an parsing error occurred while creating the tree.
-     */
-    final Element getTree(final String text, final ParsePosition position) throws ParseException {
-        return new Element(new Element(this, text, position));
     }
 }

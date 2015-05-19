@@ -1,0 +1,12 @@
+There is no package-info.java file in this directory because that file is
+defined in the sis-metadata module. Splitting a package in two modules is
+not a recommended practice, but we make an exception for this WKT package
+for dependencies reason. The split is:
+
+* 'sis-metadata' module provides formatting capability and a base Parser.
+* 'sis-referencing' module adds parsing capability on top of above parser.
+
+Formatting does not need to know all classes in advance since we just
+invoke an overrideable method. But parsing needs to know all classes,
+which is why we have to define it in the referencing module (at least
+for the current SIS version).
