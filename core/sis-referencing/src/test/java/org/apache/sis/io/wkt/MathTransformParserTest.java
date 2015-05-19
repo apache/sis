@@ -22,6 +22,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public final strictfp class MathTransformParserTest extends TestCase {
     }
 
     /**
-     * Tests the parser with a {@code PARAM_MT["Affine", …]}.
+     * Tests parsing of a {@code PARAM_MT["Affine", …]} element.
      *
      * @throws ParseException if an error occurred during the parsing.
      */
@@ -87,5 +88,63 @@ public final strictfp class MathTransformParserTest extends TestCase {
                 1, 1, 2,
                 0, 1, 3,
                 0, 0, 1), MathTransforms.getMatrix(tr), STRICT);
+    }
+
+    /**
+     * Tests parsing of a {@code INVERSE_MT[…]} element.
+     * This tests uses an affine transform for the inner {@code PARAM_MT[…]} element,
+     * which is useless since we could as well inverse the matrix in-place. But this
+     * approach is easier to test.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testParamMT")
+    public void testInverseMT() throws ParseException {
+        final MathTransform tr = parse(
+                "INVERSE_MT["
+                    + "PARAM_MT[\"Affine\","
+                        + "PARAMETER[\"num_row\",3],"
+                        + "PARAMETER[\"num_col\",3],"
+                        + "PARAMETER[\"elt_0_0\",2],"
+                        + "PARAMETER[\"elt_1_1\",4],"
+                        + "PARAMETER[\"elt_0_2\",5],"
+                        + "PARAMETER[\"elt_1_2\",3]]]");
+
+        assertMatrixEquals("Affine", new Matrix3(
+                0.5,  0,     -2.50,
+                0,    0.25,  -0.75,
+                0,    0,      1), MathTransforms.getMatrix(tr), STRICT);
+    }
+
+    /**
+     * TTests parsing of a {@code CONCAT_MT[…]} element.
+     * This tests uses affine transforms for the inner {@code PARAM_MT[…]} elements,
+     * which is useless since we could as well concatenate the matrices in-place.
+     * But this approach is easier to test.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod("testInverseMT")
+    public void testConcatMT() throws ParseException {
+        final MathTransform tr = parse(
+                "CONCAT_MT["
+                    + "PARAM_MT[\"Affine\","
+                        + "PARAMETER[\"num_row\",3],"
+                        + "PARAMETER[\"num_col\",3],"
+                        + "PARAMETER[\"elt_0_0\",2],"
+                        + "PARAMETER[\"elt_1_1\",4]],"
+                    + "INVERSE_MT["
+                        + "PARAM_MT[\"Affine\","
+                            + "PARAMETER[\"num_row\",3],"
+                            + "PARAMETER[\"num_col\",3],"
+                            + "PARAMETER[\"elt_0_2\",5],"
+                            + "PARAMETER[\"elt_1_2\",3]]]]");
+
+        assertMatrixEquals("Affine", new Matrix3(
+                2,  0,  -5,
+                0,  4,  -3,
+                0,  0,   1), MathTransforms.getMatrix(tr), STRICT);
     }
 }
