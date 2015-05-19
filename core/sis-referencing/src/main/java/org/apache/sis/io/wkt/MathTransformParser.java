@@ -18,10 +18,15 @@ package org.apache.sis.io.wkt;
 
 import java.util.Locale;
 import java.text.ParseException;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -30,7 +35,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -76,13 +84,12 @@ class MathTransformParser extends Parser {
     /**
      * Creates a parser using the specified set of symbols and factory.
      *
-     * @param symbols The set of symbols to use.
-     * @param mtFactory The factory to use to create {@link MathTransform} objects.
-     * @param displayLocale The locale for error messages (not for number parsing),
-     *        or {@code null} for the system default.
+     * @param symbols     The set of symbols to use.
+     * @param mtFactory   The factory to use to create {@link MathTransform} objects.
+     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    public MathTransformParser(final Symbols symbols, final MathTransformFactory mtFactory, final Locale locale) {
-        super(symbols, locale);
+    public MathTransformParser(final Symbols symbols, final MathTransformFactory mtFactory, final Locale errorLocale) {
+        super(symbols, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
     }
@@ -103,17 +110,17 @@ class MathTransformParser extends Parser {
      * Parses the next {@code MathTransform} in the specified <cite>Well Know Text</cite> (WKT) tree.
      *
      * @param  element The parent element.
-     * @param  required {@code true} if a math transform is required to be present.
+     * @param  mandatory {@code true} if a math transform must be present, or {@code false} if optional.
      * @return The next element as a {@code MathTransform} object, or {@code null}.
      * @throws ParseException if the next element can not be parsed.
      */
-    private MathTransform parseMathTransform(final Element element, final boolean required) throws ParseException {
+    final MathTransform parseMathTransform(final Element element, final boolean mandatory) throws ParseException {
         lastMethod = null;
         classification = null;
-        final Object key = element.peek();
         String keyword = WKTKeywords.Param_MT;
-        if (key instanceof Element) {
-            keyword = ((Element) key).keyword;
+        final Object child = element.peek();
+        if (child instanceof Element) {
+            keyword = ((Element) child).keyword;
             if (keyword != null) {
                 if (keyword.equalsIgnoreCase(WKTKeywords.Param_MT))       return parseParamMT      (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.Concat_MT))      return parseConcatMT     (element);
@@ -121,14 +128,60 @@ class MathTransformParser extends Parser {
                 if (keyword.equalsIgnoreCase(WKTKeywords.PassThrough_MT)) return parsePassThroughMT(element);
             }
         }
-        if (required) {
+        if (mandatory) {
             throw element.keywordNotFound(keyword, keyword == WKTKeywords.Param_MT);
         }
         return null;
     }
 
     /**
-     * Parses a "PARAM_MT" element. This element has the following pattern:
+     * Parses a sequence of {@code "PARAMETER"} elements.
+     *
+     * @param  element     The parent element containing the parameters to parse.
+     * @param  parameters  The group where to store the parameter values.
+     * @param  linearUnit  The default linear unit, or {@code null}.
+     * @param  angularUnit The default angular unit, or {@code null}.
+     * @throws ParseException if the {@code "PARAMETER"} element can not be parsed.
+     */
+    final void parseParameters(final Element element, final ParameterValueGroup parameters,
+            final Unit<Length> linearUnit, final Unit<Angle> angularUnit) throws ParseException
+    {
+        Element param = element;
+        try {
+            while ((param = element.pullOptionalElement(WKTKeywords.Parameter)) != null) {
+                final String                 name       = param.pullString("name");
+                final ParameterValue<?>      parameter  = parameters.parameter(name);
+                final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
+                final Class<?>               valueClass = descriptor.getValueClass();
+                if (Number.class.isAssignableFrom(valueClass)) {
+                    Unit<?> unit = descriptor.getUnit();
+                    if (Units.isLinear(unit)) {
+                        unit = linearUnit;
+                    } else if (Units.isAngular(unit)) {
+                        unit = angularUnit;
+                    }
+                    if (unit != null) {
+                        parameter.setValue(param.pullDouble("value"), unit);
+                    } else if (Numbers.isInteger(valueClass)) {
+                        parameter.setValue(param.pullInteger("value"));
+                    } else {
+                        parameter.setValue(param.pullDouble("value"));
+                    }
+                } else if (valueClass == Boolean.class) {
+                    parameter.setValue(param.pullBoolean("value"));
+                } else {
+                    parameter.setValue(param.pullString("value"));
+                }
+                param.close(ignoredElements);
+            }
+        } catch (ParameterNotFoundException exception) {
+            throw (ParseException) new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedParameter_1,
+                    new String[] {exception.getParameterName()}, param.offset).initCause(exception);
+        }
+    }
+
+    /**
+     * Parses a {@code "PARAM_MT"} element. This element has the following pattern:
      *
      * {@preformat text
      *     PARAM_MT["<classification-name>" {,<parameter>}* ]
@@ -151,24 +204,7 @@ class MathTransformParser extends Parser {
          * Scan over all PARAMETER["name", value] elements and
          * set the corresponding parameter in the parameter group.
          */
-        Element param;
-        while ((param = element.pullOptionalElement(WKTKeywords.Parameter)) != null) {
-            final String name = param.pullString("name");
-            final ParameterValue<?> parameter = parameters.parameter(name);
-            final Class<?> type = parameter.getDescriptor().getValueClass();
-            if (Number.class.isAssignableFrom(type)) {
-                if (Numbers.isInteger(type)) {
-                    parameter.setValue(param.pullInteger("value"));
-                } else {
-                    parameter.setValue(param.pullDouble("value"));
-                }
-            } else if (type == Boolean.class) {
-                parameter.setValue(param.pullBoolean("value"));
-            } else {
-                parameter.setValue(param.pullString("value"));
-            }
-            param.close(ignoredElements);
-        }
+        parseParameters(element, parameters, null, null);
         element.close(ignoredElements);
         /*
          * We now have all informations for constructing the math transform.
