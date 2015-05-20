@@ -27,7 +27,9 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.opengis.util.FactoryException;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.internal.metadata.WKTParser;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -48,7 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.6
  * @module
  */
-abstract class Parser {
+abstract class Parser implements WKTParser {
     /**
      * Set to {@code true} if parsing of number in scientific notation is allowed.
      * The way to achieve that is currently a hack, because {@link NumberFormat}
@@ -119,6 +121,30 @@ abstract class Parser {
             exponentSymbol = null;
         }
         ignoredElements = new LinkedHashMap<>();
+    }
+
+    /**
+     * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
+     * method is SIS factories only.
+     *
+     * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @return The result of parsing the given text.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createFromWKT(String)
+     */
+    @Override
+    public final Object createFromWKT(final String text) throws FactoryException {
+        try {
+            return parseObject(text, new ParsePosition(0));
+        } catch (ParseException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;
+            }
+            throw new FactoryException(exception);
+        }
     }
 
     /**
