@@ -100,7 +100,7 @@ import java.util.Objects;
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
  *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
- *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
  *       {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>

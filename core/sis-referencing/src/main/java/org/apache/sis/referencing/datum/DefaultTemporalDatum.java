@@ -55,7 +55,7 @@ import java.util.Objects;
  *   <li>Create a {@code TemporalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createTemporalDatum(String)}.</li>
  *   <li>Create a {@code TemporalDatum} by invoking the {@code DatumFactory.createTemporalDatum(…)} method,
- *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultTemporalDatum} by invoking the
  *       {@linkplain #DefaultTemporalDatum(Map, Date) constructor}.</li>
  * </ol>
