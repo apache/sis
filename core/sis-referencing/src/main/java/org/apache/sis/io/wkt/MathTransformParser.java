@@ -84,8 +84,10 @@ class MathTransformParser extends Parser {
     /**
      * Creates a parser for the given factory.
      *
-     * <p><b>Implementation note:</b> this parser is invoked by reflection by
-     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createFromWKT(String)}.</p>
+     * <p><b>Maintenance note:</b> this constructor is invoked through reflection by
+     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createFromWKT(String)}.
+     * Do not change the method signature even if it doesn't break the compilation, unless the reflection code
+     * is also updated.</p>
      *
      * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */

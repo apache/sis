@@ -43,7 +43,7 @@ public final strictfp class MathTransformParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */
-    private final MathTransformParser parser = new MathTransformParser();
+    private MathTransformParser parser;
 
     /**
      * Parses the given text.
@@ -51,6 +51,9 @@ public final strictfp class MathTransformParserTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     private MathTransform parse(final String text) throws ParseException {
+        if (parser == null) {
+            parser = new MathTransformParser();
+        }
         final ParsePosition position = new ParsePosition(0);
         final MathTransform mt = (MathTransform) parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());

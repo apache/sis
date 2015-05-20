@@ -182,6 +182,14 @@ import org.apache.sis.xml.XML;
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
     /**
+     * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
+     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * use reflection because the parser class is not yet public (because we do not want to commit
+     * its API yet).
+     */
+    private static volatile Constructor<? extends WKTParser> parserConstructor;
+
+    /**
      * The default properties, or an empty map if none. This map shall not change after construction in
      * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
      * in a unmodifiable map since {@code GeodeticObjectFactory} does not provide public access to it.
@@ -1341,10 +1349,14 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
         WKTParser p = parser.getAndSet(null);
         if (p == null) try {
-            final Constructor<?> c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").
-                    getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
-            c.setAccessible(true);
-            p = (WKTParser) c.newInstance(defaultProperties, this, getMathTransformFactory());
+            Constructor<? extends WKTParser> c = parserConstructor;
+            if (c == null) {
+                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(WKTParser.class)
+                         .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
+                c.setAccessible(true);
+                parserConstructor = c;
+            }
+            p = c.newInstance(defaultProperties, this, getMathTransformFactory());
         } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }

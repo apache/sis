@@ -44,7 +44,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */
-    private final GeodeticObjectParser parser = new GeodeticObjectParser();
+    private GeodeticObjectParser parser;
 
     /**
      * Parses the given text.
@@ -52,6 +52,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     private Object parse(final String text) throws ParseException {
+        if (parser == null) {
+            parser = new GeodeticObjectParser();
+        }
         final ParsePosition position = new ParsePosition(0);
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
@@ -110,6 +113,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         // VerticalCRS child
         final VerticalCRS vertCRS = (VerticalCRS) components.next();
         assertNameEquals("Gravity-related height", vertCRS);
+        assertNameEquals("Mean Sea Level", vertCRS.getDatum());
 
         // TemporalCRS child
         final TemporalCRS   timeCRS   = (TemporalCRS) components.next();
@@ -117,5 +121,27 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertNameEquals("Time", timeCRS);
         assertNameEquals("Modified Julian", timeDatum);
         assertEquals("epoch", new Date(-40587 * (24*60*60*1000L)), timeDatum.getOrigin());
+    }
+
+    /**
+     * Tests integration in {@link WKTFormat#parse(CharSequence, ParsePosition)}.
+     * This method tests only a simple WKT because it is not the purpose of this
+     * method to test the parser itself. We only want to tests its integration in
+     * the {@link WKTFormat} class.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testCompoundCRS")
+    public void testWKTFormat() throws ParseException {
+        final WKTFormat format = new WKTFormat(null, null);
+        final VerticalCRS crs = (VerticalCRS) format.parseObject(
+                "VERT_CS[“Gravity-related height”,\n" +
+                "  VERT_DATUM[“Mean Sea Level”, 2005],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Gravity-related height”, UP]]");
+
+        assertNameEquals("Gravity-related height", crs);
+        assertNameEquals("Mean Sea Level", crs.getDatum());
     }
 }
