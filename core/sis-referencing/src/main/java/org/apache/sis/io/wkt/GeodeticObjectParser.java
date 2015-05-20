@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
@@ -145,6 +146,12 @@ final class GeodeticObjectParser extends MathTransformParser {
     private static Map<String,AxisDirection> lastDirections;
 
     /**
+     * A map of properties to be given the factory constructor methods.
+     * This map will be recycled for each object to be parsed.
+     */
+    private final Map<String,Object> properties;
+
+    /**
      * Creates a parser using the default set of symbols and factories.
      */
     public GeodeticObjectParser() {
@@ -204,6 +211,24 @@ final class GeodeticObjectParser extends MathTransformParser {
             }
         }
         this.directions = directions;
+        properties = new HashMap<>(4);
+    }
+
+    /**
+     * Parses a <cite>Well Know Text</cite> (WKT).
+     *
+     * @param  text The text to be parsed.
+     * @param  position The position to start parsing from.
+     * @return The parsed object.
+     * @throws ParseException if the string can not be parsed.
+     */
+    @Override
+    public Object parseObject(final String text, final ParsePosition position) throws ParseException {
+        try {
+            return super.parseObject(text, position);
+        } finally {
+            properties.clear();     // for letting the garbage collector do its work.
+        }
     }
 
     /**
@@ -224,9 +249,9 @@ final class GeodeticObjectParser extends MathTransformParser {
             return value;
         }
         String keyword = WKTKeywords.GeogCS;
-        final Object key = element.peek();
-        if (key instanceof Element) {
-            keyword = ((Element) key).keyword;
+        final Object child = element.peek();
+        if (child instanceof Element) {
+            keyword = ((Element) child).keyword;
             if (keyword != null) {
                 if (keyword.equalsIgnoreCase(WKTKeywords.Axis))        return parseAxis      (element, SI.METRE, true);
                 if (keyword.equalsIgnoreCase(WKTKeywords.PrimeM))      return parsePrimem    (element, NonSI.DEGREE_ANGLE);
@@ -252,9 +277,9 @@ final class GeodeticObjectParser extends MathTransformParser {
             throws ParseException
     {
         String keyword = WKTKeywords.GeogCS;
-        final Object key = element.peek();
-        if (key instanceof Element) {
-            keyword = ((Element) key).keyword;
+        final Object child = element.peek();
+        if (child instanceof Element) {
+            keyword = ((Element) child).keyword;
             if (keyword != null) {
                 if (keyword.equalsIgnoreCase(WKTKeywords.GeogCS))    return parseGeoGCS  (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.ProjCS))    return parseProjCS  (element);
@@ -285,15 +310,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @return A properties map with the parent name and the optional authority code.
      * @throws ParseException if the {@code "AUTHORITY"} can not be parsed.
      */
-    private Map<String,Object> parseAuthority(final Element parent, Object name) throws ParseException {
+    private Map<String,Object> parseAuthorityAndClose(final Element parent, Object name) throws ParseException {
         assert (name instanceof String) || (name instanceof Identifier);
-        final boolean isRoot  = parent.isRoot();
-        final Element element = parent.pullOptionalElement(WKTKeywords.Authority);
-        if (element == null && !isRoot) {
-            return singletonMap(IdentifiedObject.NAME_KEY, name);
-        }
-        Map<String,Object> properties = new HashMap<>(4);
+        properties.clear();
         properties.put(IdentifiedObject.NAME_KEY, name);
+        final Element element = parent.pullOptionalElement(WKTKeywords.Authority);
         if (element != null) {
             final String auth = element.pullString("name");
             final String code = element.pullObject("code").toString();  // Accepts Integer as well as String.
@@ -313,6 +334,7 @@ final class GeodeticObjectParser extends MathTransformParser {
              * (for example "WGS84" instead than "World Geodetic System 1984").
              */
         }
+        parent.close(ignoredElements);
         return properties;
     }
 
@@ -336,10 +358,9 @@ final class GeodeticObjectParser extends MathTransformParser {
             throws ParseException
     {
         final Element element = parent.pullElement("Unit");
-        final String     name = element.pullString("name");
-        final double   factor = element.pullDouble("factor");
-        final Map<String,?> properties = parseAuthority(element, name); // Ignored for now.
-        element.close(ignoredElements);
+        final String  name    = element.pullString("name");
+        final double  factor  = element.pullDouble("factor");
+        parseAuthorityAndClose(element, name);
         return Units.multiply(unit, factor);
     }
 
@@ -377,14 +398,12 @@ final class GeodeticObjectParser extends MathTransformParser {
         }
         final String name = element.pullString("name");
         final Element orientation = element.pullVoidElement("orientation");
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         final AxisDirection direction = directions.get(orientation.keyword);
         if (direction == null) {
             throw element.keywordNotFound("orientation", true);
         }
         try {
-            return csFactory.createCoordinateSystemAxis(properties, name, direction, unit);
+            return csFactory.createCoordinateSystemAxis(parseAuthorityAndClose(element, name), name, direction, unit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -419,10 +438,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element element   = parent.pullElement(WKTKeywords.PrimeM);
         final String  name      = element.pullString("name");
         final double  longitude = element.pullDouble("longitude");
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         try {
-            return datumFactory.createPrimeMeridian(properties, longitude, angularUnit);
+            return datumFactory.createPrimeMeridian(parseAuthorityAndClose(element, name), longitude, angularUnit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -472,17 +489,16 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "SPHEROID"} element can not be parsed.
      */
     private Ellipsoid parseSpheroid(final Element parent) throws ParseException {
-        Element element           = parent.pullElement(WKTKeywords.Spheroid);
-        String  name              = element.pullString("name");
-        double  semiMajorAxis     = element.pullDouble("semiMajorAxis");
-        double  inverseFlattening = element.pullDouble("inverseFlattening");
-        Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
+        final Element element      = parent.pullElement(WKTKeywords.Spheroid);
+        final String name          = element.pullString("name");
+        final double semiMajorAxis = element.pullDouble("semiMajorAxis");
+        double inverseFlattening   = element.pullDouble("inverseFlattening");
         if (inverseFlattening == 0) {   // OGC convention for a sphere.
             inverseFlattening = Double.POSITIVE_INFINITY;
         }
         try {
-            return datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, SI.METRE);
+            return datumFactory.createFlattenedSphere(parseAuthorityAndClose(element, name),
+                    semiMajorAxis, inverseFlattening, SI.METRE);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -508,8 +524,6 @@ final class GeodeticObjectParser extends MathTransformParser {
     {
         final Element element = parent.pullElement(WKTKeywords.Projection);
         final String classification = element.pullString("name");
-        final Map<String,?> properties = parseAuthority(element, classification);
-        element.close(ignoredElements);
         /*
          * Set the list of parameters. NOTE: Parameters are defined in the parent
          * Element (usually a "PROJCS" element), not in this "PROJECTION" element.
@@ -518,7 +532,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             final OperationMethod method = opFactory.getOperationMethod(classification);
             final ParameterValueGroup parameters = method.getParameters().createValue();
             parseParameters(parent, parameters, linearUnit, angularUnit);
-            return opFactory.createDefiningConversion(properties, method, parameters);
+            return opFactory.createDefiningConversion(parseAuthorityAndClose(element, classification), method, parameters);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -537,16 +551,12 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "DATUM"} element can not be parsed.
      */
     private GeodeticDatum parseDatum(final Element parent, final PrimeMeridian meridian) throws ParseException {
-        Element             element    = parent.pullElement(WKTKeywords.Datum);
-        String              name       = element.pullString("name");
-        Ellipsoid           ellipsoid  = parseSpheroid(element);
-        BursaWolfParameters toWGS84    = parseToWGS84(element);     // Optional; may be null.
-        Map<String,Object>  properties = parseAuthority(element, name);
-        element.close(ignoredElements);
+        final Element             element    = parent.pullElement(WKTKeywords.Datum);
+        final String              name       = element.pullString("name");
+        final Ellipsoid           ellipsoid  = parseSpheroid(element);
+        final BursaWolfParameters toWGS84    = parseToWGS84(element);     // Optional; may be null.
+        final Map<String,Object>  properties = parseAuthorityAndClose(element, name);
         if (toWGS84 != null) {
-            if (!(properties instanceof HashMap<?,?>)) {
-                properties = new HashMap<>(properties);
-            }
             properties.put(BURSA_WOLF_KEY, toWGS84);
         }
         try {
@@ -571,12 +581,10 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element element = parent.pullElement(WKTKeywords.Vert_Datum);
         final String  name    = element.pullString ("name");
         final int     datum   = element.pullInteger("datum");
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         final VerticalDatumType type = VerticalDatumTypes.fromLegacy(datum);
         // TODO: need to find a default value if null.
         try {
-            return datumFactory.createVerticalDatum(properties, type);
+            return datumFactory.createVerticalDatum(parseAuthorityAndClose(element, name), type);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -599,10 +607,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element origin  = element.pullElement(WKTKeywords.TimeOrigin);
         final Date    epoch   = origin .pullDate("origin");
         origin.close(ignoredElements);
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         try {
-            return datumFactory.createTemporalDatum(properties, epoch);
+            return datumFactory.createTemporalDatum(parseAuthorityAndClose(element, name), epoch);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -625,10 +631,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element element = parent.pullElement(WKTKeywords.Local_Datum);
         final String  name    = element.pullString ("name");
         final int     datum   = element.pullInteger("datum");   // Ignored for now.
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         try {
-            return datumFactory.createEngineeringDatum(properties);
+            return datumFactory.createEngineeringDatum(parseAuthorityAndClose(element, name));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -651,22 +655,20 @@ final class GeodeticObjectParser extends MathTransformParser {
      *       coordinate system? a spherical one? etc.).
      */
     private EngineeringCRS parseLocalCS(final Element parent) throws ParseException {
-        Element           element = parent.pullElement(WKTKeywords.Local_CS);
-        String               name = element.pullString("name");
-        EngineeringDatum    datum = parseLocalDatum(element);
-        Unit<Length>   linearUnit = parseUnit(element, SI.METRE);
-        CoordinateSystemAxis axis = parseAxis(element, linearUnit, true);
-        List<CoordinateSystemAxis> list = new ArrayList<>();
+        final Element          element    = parent.pullElement(WKTKeywords.Local_CS);
+        final String           name       = element.pullString("name");
+        final EngineeringDatum datum      = parseLocalDatum(element);
+        final Unit<Length>     linearUnit = parseUnit(element, SI.METRE);
+        CoordinateSystemAxis   axis       = parseAxis(element, linearUnit, true);
+        final List<CoordinateSystemAxis> list = new ArrayList<>();
         do {
             list.add(axis);
             axis = parseAxis(element, linearUnit, false);
         } while (axis != null);
-        final Map<String,?> properties = parseAuthority(element, name);
-        element.close(ignoredElements);
-        final CoordinateSystem cs;
-        cs = new AbstractCS(singletonMap("name", name), list.toArray(new CoordinateSystemAxis[list.size()]));
+        final CoordinateSystem cs = new AbstractCS(singletonMap("name", name),
+                list.toArray(new CoordinateSystemAxis[list.size()]));
         try {
-            return crsFactory.createEngineeringCRS(properties, datum, cs);
+            return crsFactory.createEngineeringCRS(parseAuthorityAndClose(element, name), datum, cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -688,10 +690,9 @@ final class GeodeticObjectParser extends MathTransformParser {
     private GeocentricCRS parseGeoCCS(final Element parent) throws ParseException {
         final Element       element    = parent.pullElement(WKTKeywords.GeocCS);
         final String        name       = element.pullString("name");
-        final Map<String,?> properties = parseAuthority(element, name);
-        final PrimeMeridian meridian   = parsePrimem   (element, NonSI.DEGREE_ANGLE);
-        final GeodeticDatum datum      = parseDatum    (element, meridian);
-        final Unit<Length>  linearUnit = parseUnit     (element, SI.METRE);
+        final PrimeMeridian meridian   = parsePrimem(element, NonSI.DEGREE_ANGLE);
+        final GeodeticDatum datum      = parseDatum (element, meridian);
+        final Unit<Length>  linearUnit = parseUnit  (element, SI.METRE);
         CoordinateSystemAxis axis0, axis1 = null, axis2 = null;
         axis0 = parseAxis(element, linearUnit, false);
         try {
@@ -706,7 +707,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = createAxis("Y", AxisDirection.EAST,  linearUnit);
                 axis2 = createAxis("Z", AxisDirection.NORTH, linearUnit);
             }
-            element.close(ignoredElements);
+            final Map<String,?> properties = parseAuthorityAndClose(element, name);
             CartesianCS cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
             cs = Legacy.forGeocentricCRS(cs, false);
             return crsFactory.createGeocentricCRS(properties, datum, cs);
@@ -728,21 +729,16 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "VERT_CS"} element can not be parsed.
      */
     private VerticalCRS parseVertCS(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(WKTKeywords.Vert_CS);
-        if (element == null) {
-            return null;
-        }
-        String               name       = element.pullString("name");
-        VerticalDatum        datum      = parseVertDatum(element);
-        Unit<Length>         linearUnit = parseUnit(element, SI.METRE);
+        final Element        element    = parent.pullElement(WKTKeywords.Vert_CS);
+        final String         name       = element.pullString("name");
+        final VerticalDatum  datum      = parseVertDatum(element);
+        final Unit<Length>   linearUnit = parseUnit(element, SI.METRE);
         CoordinateSystemAxis axis       = parseAxis(element, linearUnit, false);
-        Map<String,?>        properties = parseAuthority(element, name);
-        element.close(ignoredElements);
         try {
             if (axis == null || isAxisIgnored) {
                 axis = createAxis("h", AxisDirection.UP, linearUnit);
             }
-            return crsFactory.createVerticalCRS(properties, datum,
+            return crsFactory.createVerticalCRS(parseAuthorityAndClose(element, name), datum,
                     csFactory.createVerticalCS(singletonMap("name", name), axis));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -757,21 +753,16 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "TIMECRS"} element can not be parsed.
      */
     private TemporalCRS parseTimeCRS(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(WKTKeywords.TimeCRS);
-        if (element == null) {
-            return null;
-        }
-        String               name       = element.pullString("name");
-        TemporalDatum        datum      = parseTimeDatum(element);
-        Unit<Duration>       timeUnit   = parseUnit(element, SI.SECOND);
-        CoordinateSystemAxis axis       = parseAxis(element, timeUnit, false);
-        Map<String,?>        properties = parseAuthority(element, name);
-        element.close(ignoredElements);
+        final Element        element  = parent.pullElement(WKTKeywords.TimeCRS);
+        final String         name     = element.pullString("name");
+        final TemporalDatum  datum    = parseTimeDatum(element);
+        final Unit<Duration> timeUnit = parseUnit(element, SI.SECOND);
+        CoordinateSystemAxis axis     = parseAxis(element, timeUnit, false);
         try {
             if (axis == null || isAxisIgnored) {
                 axis = createAxis("t", AxisDirection.UP, timeUnit);
             }
-            return crsFactory.createTemporalCRS(properties, datum,
+            return crsFactory.createTemporalCRS(parseAuthorityAndClose(element, name), datum,
                     csFactory.createTimeCS(singletonMap("name", name), axis));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -790,11 +781,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "GEOGCS"} element can not be parsed.
      */
     private GeographicCRS parseGeoGCS(final Element parent) throws ParseException {
-        Element       element     = parent.pullElement(WKTKeywords.GeogCS);
-        Object        name        = element.pullString("name");
-        Unit<Angle>   angularUnit = parseUnit  (element, SI.RADIAN);
-        PrimeMeridian meridian    = parsePrimem(element, angularUnit);
-        GeodeticDatum datum       = parseDatum (element, meridian);
+        final Element       element     = parent.pullElement(WKTKeywords.GeogCS);
+              Object        name        = element.pullString("name");
+        final Unit<Angle>   angularUnit = parseUnit  (element, SI.RADIAN);
+        final PrimeMeridian meridian    = parsePrimem(element, angularUnit);
+        final GeodeticDatum datum       = parseDatum (element, meridian);
         if (((String) name).isEmpty()) {
             /*
              * GeographicCRS name is a mandatory property, but some invalid WKT with an empty string exist.
@@ -803,8 +794,7 @@ final class GeodeticObjectParser extends MathTransformParser {
              */
             name = datum.getName();
         }
-        Map<String,?>   properties = parseAuthority(element, name);
-        CoordinateSystemAxis axis0 = parseAxis     (element, angularUnit, false);
+        CoordinateSystemAxis axis0 = parseAxis(element, angularUnit, false);
         CoordinateSystemAxis axis1 = null;
         try {
             if (axis0 != null) {
@@ -814,7 +804,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis0 = createAxis("λ", AxisDirection.EAST,  angularUnit);
                 axis1 = createAxis("φ", AxisDirection.NORTH, angularUnit);
             }
-            element.close(ignoredElements);
+            final Map<String,?> properties = parseAuthorityAndClose(element, name);
             return crsFactory.createGeographicCRS(properties, datum,
                     csFactory.createEllipsoidalCS(properties, axis0, axis1));
         } catch (FactoryException exception) {
@@ -836,11 +826,10 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "GEOGCS"} element can not be parsed.
      */
     private ProjectedCRS parseProjCS(final Element parent) throws ParseException {
-        Element             element    = parent.pullElement(WKTKeywords.ProjCS);
-        String              name       = element.pullString("name");
-        Map<String,?>       properties = parseAuthority(element, name);
-        GeographicCRS       geoCRS     = parseGeoGCS(element);
-        Unit<Length>        linearUnit = parseUnit(element, SI.METRE);
+        final Element       element    = parent.pullElement(WKTKeywords.ProjCS);
+        final String        name       = element.pullString("name");
+        final GeographicCRS geoCRS     = parseGeoGCS(element);
+        final Unit<Length>  linearUnit = parseUnit(element, SI.METRE);
         final Conversion    conversion = parseProjection(element, linearUnit,
                 (convention == Convention.WKT1_COMMON_UNITS) ? NonSI.DEGREE_ANGLE :
                 geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
@@ -854,7 +843,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis0 = createAxis("x", AxisDirection.EAST,  linearUnit);
                 axis1 = createAxis("y", AxisDirection.NORTH, linearUnit);
             }
-            element.close(ignoredElements);
+            final Map<String,?> properties = parseAuthorityAndClose(element, name);
             return crsFactory.createProjectedCRS(properties, geoCRS, conversion,
                     csFactory.createCartesianCS(properties, axis0, axis1));
         } catch (FactoryException exception) {
@@ -876,16 +865,15 @@ final class GeodeticObjectParser extends MathTransformParser {
      */
     private CompoundCRS parseCompdCS(final Element parent) throws ParseException {
         final List<CoordinateReferenceSystem> components = new ArrayList<>(4);
-        Element       element    = parent.pullElement(WKTKeywords.Compd_CS);
-        String        name       = element.pullString("name");
-        Map<String,?> properties = parseAuthority(element, name);
+        final Element element = parent.pullElement(WKTKeywords.Compd_CS);
+        final String  name    = element.pullString("name");
         CoordinateReferenceSystem crs;
         while ((crs = parseCoordinateReferenceSystem(element, components.size() < 2)) != null) {
             components.add(crs);
         }
-        element.close(ignoredElements);
         try {
-            return crsFactory.createCompoundCRS(properties, components.toArray(new CoordinateReferenceSystem[components.size()]));
+            return crsFactory.createCompoundCRS(parseAuthorityAndClose(element, name),
+                    components.toArray(new CoordinateReferenceSystem[components.size()]));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -904,13 +892,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "COMPD_CS"} element can not be parsed.
      */
     private DerivedCRS parseFittedCS(final Element parent) throws ParseException {
-        Element       element    = parent.pullElement(WKTKeywords.Fitted_CS);
-        String        name       = element.pullString("name");
-        Map<String,?> properties = parseAuthority(element, name);
-        final MathTransform toBase = parseMathTransform(element, true);
-        final CoordinateReferenceSystem base = parseCoordinateReferenceSystem(element, true);
-        final OperationMethod method = getOperationMethod();
-        element.close(ignoredElements);
+        final Element                   element = parent.pullElement(WKTKeywords.Fitted_CS);
+        final String                    name    = element.pullString("name");
+        final MathTransform             toBase  = parseMathTransform(element, true);
+        final CoordinateReferenceSystem base    = parseCoordinateReferenceSystem(element, true);
+        final OperationMethod           method  = getOperationMethod();
         /*
          * WKT 1 provides no informations about the underlying CS of a derived CRS.
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
@@ -932,6 +918,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             final Conversion conversion = new DefaultConversion(    // TODO: use opFactory
                     singletonMap(IdentifiedObject.NAME_KEY, method.getName().getCode()),
                     method, toBase.inverse(), null);
+            final Map<String,?> properties = parseAuthorityAndClose(element, name);
             final CoordinateSystem cs = new AbstractCS(properties, axis);
             return crsFactory.createDerivedCRS(properties, base, conversion, cs);
         } catch (FactoryException | NoninvertibleTransformException exception) {

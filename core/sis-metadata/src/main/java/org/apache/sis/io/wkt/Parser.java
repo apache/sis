@@ -129,7 +129,7 @@ abstract class Parser {
      * @return The parsed object.
      * @throws ParseException if the string can not be parsed.
      */
-    public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
+    public Object parseObject(final String text, final ParsePosition position) throws ParseException {
         ignoredElements.clear();
         final Element element = new Element(new Element(this, text, position));
         final Object object = parseObject(element);
