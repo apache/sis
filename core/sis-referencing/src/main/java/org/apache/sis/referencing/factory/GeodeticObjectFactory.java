@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.referencing.factory;
 
 import java.util.Date;
 import java.util.Locale;

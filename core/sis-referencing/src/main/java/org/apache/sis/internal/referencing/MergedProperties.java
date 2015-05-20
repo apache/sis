@@ -23,8 +23,8 @@ import org.apache.sis.internal.util.AbstractMap;
 
 /**
  * A map which first looks for values in a user-supplied map, then looks in a default map if no value where found
- * in the user-supplied one. This map is for {@link org.apache.sis.referencing.GeodeticObjectFactory} and other SIS
- * factories internal usage only.
+ * in the user-supplied one. This map is for {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} and
+ * other SIS factories internal usage only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -101,8 +101,8 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * This is used only for "secret" keys used for SIS internal purpose (not for public API).
      *
      * <div class="note"><b>Example:</b>
-     * {@link org.apache.sis.referencing.GeodeticObjectFactory} handles the {@code "mtFactory"} key in a special way
-     * since this is normally not needed for CRS, CS and datum objects, except when creating the SIS implementation
+     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} handles the {@code "mtFactory"} key in a special
+     * way since this is normally not needed for CRS, CS and datum objects, except when creating the SIS implementation
      * of derived or projected CRS (because of the way we implemented derived CRS). But this is somewhat specific to
      * SIS, so we do no want to expose this implementation details.</div>
      *
