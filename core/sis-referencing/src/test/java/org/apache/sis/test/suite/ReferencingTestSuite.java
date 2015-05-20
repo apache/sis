@@ -142,6 +142,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.CRSTest.class,
 
     org.apache.sis.io.wkt.MathTransformParserTest.class,
+    org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

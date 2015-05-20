@@ -358,17 +358,6 @@ final class Element {
                 new String[] {keyword, key}, error);
     }
 
-    /**
-     * Returns {@code true} if this element is the root element. For example in a WKT like
-     * {@code "GeodeticCRS["name", Datum["name, ...]]"}, this is true for {@code "GeodeticCRS"}
-     * and false for all other elements inside, like {@code "Datum"}.
-     *
-     * @return {@code true} if this element is the root element.
-     */
-    final boolean isRoot() {
-        return this.offset == 0;
-    }
-
 
 
 
@@ -603,7 +592,7 @@ final class Element {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        format(buffer, 0);
+        format(buffer, 0, System.lineSeparator());
         return buffer.toString();
     }
 
@@ -614,17 +603,27 @@ final class Element {
      * @param margin Number of space to put in the left margin.
      */
     @Debug
-    private void format(final StringBuilder buffer, int margin) {
+    private void format(final StringBuilder buffer, int margin, final String lineSeparator) {
         buffer.append(CharSequences.spaces(margin)).append(keyword);
         if (list != null) {
+            buffer.append('[');
             margin += 4;
+            boolean addSeparator = false;
             for (final Object value : list) {
                 if (value instanceof Element) {
-                    ((Element) value).format(buffer, margin);
+                    if (addSeparator) buffer.append(',');
+                    buffer.append(lineSeparator);
+                    ((Element) value).format(buffer, margin, lineSeparator);
                 } else {
-                    buffer.append(CharSequences.spaces(margin)).append(value);
+                    final boolean quote = (value instanceof CharSequence);
+                    if (addSeparator) buffer.append(", ");
+                    if (quote) buffer.append('“');
+                    buffer.append(value);
+                    if (quote) buffer.append('”');
                 }
+                addSeparator = true;
             }
+            buffer.append(']');
         }
     }
 }
