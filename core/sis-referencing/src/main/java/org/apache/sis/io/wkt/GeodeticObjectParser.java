@@ -32,6 +32,7 @@ import javax.measure.quantity.Length;
 import javax.measure.quantity.Quantity;
 import javax.measure.quantity.Duration;
 
+import org.opengis.util.Factory;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
@@ -60,7 +61,6 @@ import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.ArgumentChecks;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_KEY;
@@ -95,9 +95,9 @@ import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_K
  */
 final class GeodeticObjectParser extends MathTransformParser {
     /**
-     * The factory to use for creating {@link Datum} instances.
+     * The factory to use for creating {@link CoordinateReferenceSystem} instances.
      */
-    private final DatumFactory datumFactory;
+    private final CRSFactory crsFactory;
 
     /**
      * The factory to use for creating {@link CoordinateSystem} instances.
@@ -105,12 +105,13 @@ final class GeodeticObjectParser extends MathTransformParser {
     private final CSFactory csFactory;
 
     /**
-     * The factory to use for creating {@link CoordinateReferenceSystem} instances.
+     * The factory to use for creating {@link Datum} instances.
      */
-    private final CRSFactory crsFactory;
+    private final DatumFactory datumFactory;
 
     /**
      * The factory to use for creating defining conversions.
+     * Used only for map projections and derived CRS.
      */
     private final CoordinateOperationFactory opFactory;
 
@@ -123,7 +124,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      *       Note that this rule does not apply to {@code AXIS} elements.</li>
      * </ul>
      */
-    Convention convention;
+    private final Convention convention;
 
     /**
      * {@code true} if {@code AXIS[...]} elements should be ignored.
@@ -133,7 +134,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * <p>Note that {@code AXIS} elements still need to be well formed even when this flag is set to {@code true}.
      * Malformed axis elements will continue to cause a {@link ParseException} despite their content being ignored.</p>
      */
-    boolean isAxisIgnored;
+    private final boolean isAxisIgnored;
 
     /**
      * The list of {@linkplain AxisDirection axis directions} from their name.
@@ -151,73 +152,93 @@ final class GeodeticObjectParser extends MathTransformParser {
      * A map of properties to be given the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
-    private final Map<String,Object> properties;
+    private final Map<String,Object> properties = new HashMap<>(4);
 
     /**
      * Creates a parser using the default set of symbols and factories.
      */
     public GeodeticObjectParser() {
-        this(Symbols.getDefault(),
-             DefaultFactories.forBuildin(DatumFactory.class),
-             DefaultFactories.forBuildin(CSFactory.class),
-             DefaultFactories.forBuildin(CRSFactory.class),
-             new DefaultCoordinateOperationFactory(), // TODO
-             DefaultFactories.forBuildin(MathTransformFactory.class),
-             null);
-    }
-
-    /**
-     * Creates a parser using the default set of symbols and factories.
-     *
-     * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
-     *
-     * <p><b>Implementation note:</b> this parser is invoked by reflection by
-     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}.</p>
-     *
-     * @param factories   An object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
-     * @param mtFactory   The factory to use to create {@link MathTransform} objects.
-     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
-     */
-    public GeodeticObjectParser(final Map<String,?> properties,
-            final ObjectFactory factories, final MathTransformFactory mtFactory)
-    {
-        this(Symbols.getDefault(), (DatumFactory) factories, (CSFactory) factories, (CRSFactory) factories,
-                new org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory(properties, mtFactory),
-                mtFactory, (Locale) properties.get(AbstractIdentifiedObject.LOCALE_KEY));
+        this(Symbols.getDefault(), Convention.DEFAULT, false, null, null);
     }
 
     /**
      * Constructs a parser for the specified set of symbols using the specified set of factories.
      *
-     * @param symbols      The symbols for parsing and formatting numbers.
-     * @param datumFactory The factory to use for creating {@linkplain Datum datum}.
-     * @param csFactory    The factory to use for creating {@linkplain CoordinateSystem coordinate systems}.
-     * @param crsFactory   The factory to use for creating {@linkplain CoordinateReferenceSystem coordinate reference systems}.
-     * @param mtFactory    The factory to use for creating {@linkplain MathTransform math transform} objects.
-     * @param errorLocale  The locale for error messages (not for parsing), or {@code null} for the system default.
+     * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
+     *
+     * <p><b>Maintenance note:</b> this constructor is invoked through reflection by
+     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}.
+     * Do not change the method signature even if it doesn't break the compilation, unless the
+     * reflection code is also updated.</p>
+     *
+     * @param defaultProperties Default properties to give to the object to create.
+     * @param factories An object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
+     * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */
-    public GeodeticObjectParser(final Symbols symbols,
-                                final DatumFactory datumFactory,
-                                final CSFactory csFactory,
-                                final CRSFactory crsFactory,
-                                final CoordinateOperationFactory opFactory,
-                                final MathTransformFactory mtFactory,
-                                final Locale errorLocale)
+    public GeodeticObjectParser(final Map<String,?> defaultProperties,
+            final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(symbols, mtFactory, errorLocale);
-        ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
-        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
-        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
-        this.datumFactory = datumFactory;
-        this.csFactory    = csFactory;
-        this.crsFactory   = crsFactory;
-        this.opFactory    = opFactory;
-        /*
-         * Gets the map of axis directions.
-         */
+        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(AbstractIdentifiedObject.LOCALE_KEY));
+        crsFactory    = (CRSFactory)   factories;
+        csFactory     = (CSFactory)    factories;
+        datumFactory  = (DatumFactory) factories;
+        opFactory     = new DefaultCoordinateOperationFactory(defaultProperties, mtFactory);  // TODO
+        directions    = getAxisDirections(symbols.getLocale());
+        convention    = Convention.DEFAULT;
+        isAxisIgnored = false;
+    }
+
+    /**
+     * Constructs a parser for the specified set of symbols using the specified set of factories.
+     *
+     * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
+     *
+     * <p><b>Maintenance note:</b> this constructor is invoked through reflection by
+     * {@link WKTFormat#parse(CharSequence, ParsePosition)} because of modularization.
+     * Do not change the method signature even if it doesn't break the compilation,
+     * unless the reflection code is also updated.</p>
+     *
+     * @param symbols       The set of symbols to use.
+     * @param convention    The WKT convention to use.
+     * @param isAxisIgnored {@code true} if {@code AXIS} elements should be ignored.
+     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param factories     On input, the factories to use. On output, the factories used. Can be null.
+     */
+    GeodeticObjectParser(final Symbols symbols, final Convention convention, final boolean isAxisIgnored,
+            final Locale errorLocale, final Map<Class<?>,Factory> factories)
+    {
+        super(symbols, getFactory(MathTransformFactory.class, factories), errorLocale);
+        crsFactory   = getFactory(CRSFactory.class,   factories);
+        csFactory    = getFactory(CSFactory.class,    factories);
+        datumFactory = getFactory(DatumFactory.class, factories);
+        opFactory    = new DefaultCoordinateOperationFactory(null, mtFactory);  // TODO
+        directions   = getAxisDirections(symbols.getLocale());
+        this.convention = convention;
+        this.isAxisIgnored = isAxisIgnored;
+    }
+
+    /**
+     * Returns the factory of the given type. This method will fetch the factory from the given
+     * map if non-null. The factory actually used is stored in the map, unless the map is null.
+     */
+    private static <T extends Factory> T getFactory(final Class<T> type, final Map<Class<?>,Factory> factories) {
+        if (factories == null) {
+            return DefaultFactories.forBuildin(type);
+        }
+        T factory = type.cast(factories.get(type));
+        if (factory == null) {
+            factory = DefaultFactories.forBuildin(type);
+            factories.put(type, factory);
+        }
+        return factory;
+    }
+
+    /**
+     * Gets the map of axis directions.
+     */
+    private static Map<String,AxisDirection> getAxisDirections(final Locale locale) {
         final AxisDirection[] values = AxisDirection.values();
         Map<String,AxisDirection> directions = new HashMap<>(Containers.hashMapCapacity(values.length));
-        final Locale locale = symbols.getLocale();
         for (final AxisDirection value : values) {
             directions.put(value.name().trim().toUpperCase(locale), value);
         }
@@ -232,8 +253,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 lastDirections = directions;
             }
         }
-        this.directions = directions;
-        properties = new HashMap<>(4);
+        return directions;
     }
 
     /**

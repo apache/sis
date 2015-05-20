@@ -169,6 +169,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private static final double ELLIPSOID_PRECISION = Formulas.LINEAR_TOLERANCE;
 
     /**
+     * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
+     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * use reflection because the parser class is not yet public (because we do not want to commit
+     * its API yet).
+     */
+    private static volatile Constructor<? extends WKTParser> parserConstructor;
+
+    /**
      * All methods specified at construction time or found on the classpath.
      * If the iterable is an instance of {@link ServiceLoader}, then it will
      * be reloaded when {@link #reload()} is invoked.
@@ -820,10 +828,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         lastMethod.remove();
         WKTParser p = parser.getAndSet(null);
         if (p == null) try {
-            final Constructor<?> c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").
-                    getConstructor(MathTransformFactory.class);
-            c.setAccessible(true);
-            p = (WKTParser) c.newInstance(this);
+            Constructor<? extends WKTParser> c = parserConstructor;
+            if (c == null) {
+                c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(WKTParser.class)
+                         .getConstructor(MathTransformFactory.class);
+                c.setAccessible(true);
+                parserConstructor = c;
+            }
+            p = c.newInstance(this);
         } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }
