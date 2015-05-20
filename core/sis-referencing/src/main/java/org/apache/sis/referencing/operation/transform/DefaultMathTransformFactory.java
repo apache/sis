@@ -23,8 +23,9 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.text.ParseException;
+import java.lang.reflect.Constructor;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -47,7 +48,7 @@ import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.Pending;     // Temporary import.
+import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -205,6 +206,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private final WeakHashSet<MathTransform> pool;
 
     /**
+     * The <cite>Well Known Text</cite> parser for {@code MathTransform} instances.
+     * This parser is not thread-safe, so we need to prevent two threads from using
+     * the same instance in same time.
+     */
+    private final AtomicReference<WKTParser> parser;
+
+    /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
@@ -274,6 +282,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         methodsByType = new IdentityHashMap<>();
         lastMethod    = new ThreadLocal<>();
         pool          = new WeakHashSet<>(MathTransform.class);
+        parser        = new AtomicReference<>();
     }
 
     /**
@@ -809,16 +818,22 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
-        final Pending pending = Pending.getInstance();
-        try {
-            return pending.createFromWKT(this, text);
-        } catch (ParseException exception) {
-            final Throwable cause = exception.getCause();
-            if (cause instanceof FactoryException) {
-                throw (FactoryException) cause;
-            }
-            throw new FactoryException(exception);
+        WKTParser p = parser.getAndSet(null);
+        if (p == null) try {
+            final Constructor<?> c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").
+                    getConstructor(MathTransformFactory.class);
+            c.setAccessible(true);
+            p = (WKTParser) c.newInstance(this);
+        } catch (ReflectiveOperationException e) {
+            throw new FactoryException(e);
         }
+        /*
+         * No need to check the type of the parsed object, because MathTransformParser
+         * should return only instance of MathTransform.
+         */
+        final Object object = p.createFromWKT(text);
+        parser.set(p);
+        return (MathTransform) object;
     }
 
     /**

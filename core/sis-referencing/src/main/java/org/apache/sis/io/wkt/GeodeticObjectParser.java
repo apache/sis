@@ -36,6 +36,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.ObjectFactory;
 import org.opengis.util.FactoryException;
 
 // While start import is usually a deprecated practice, we use such a large amount
@@ -57,6 +58,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -162,6 +164,26 @@ final class GeodeticObjectParser extends MathTransformParser {
              new DefaultCoordinateOperationFactory(), // TODO
              DefaultFactories.forBuildin(MathTransformFactory.class),
              null);
+    }
+
+    /**
+     * Creates a parser using the default set of symbols and factories.
+     *
+     * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
+     *
+     * <p><b>Implementation note:</b> this parser is invoked by reflection by
+     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}.</p>
+     *
+     * @param factories   An object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
+     * @param mtFactory   The factory to use to create {@link MathTransform} objects.
+     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
+     */
+    public GeodeticObjectParser(final Map<String,?> properties,
+            final ObjectFactory factories, final MathTransformFactory mtFactory)
+    {
+        this(Symbols.getDefault(), (DatumFactory) factories, (CSFactory) factories, (CRSFactory) factories,
+                new org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory(properties, mtFactory),
+                mtFactory, (Locale) properties.get(AbstractIdentifiedObject.LOCALE_KEY));
     }
 
     /**

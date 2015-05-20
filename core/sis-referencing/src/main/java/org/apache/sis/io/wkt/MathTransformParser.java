@@ -78,7 +78,19 @@ class MathTransformParser extends Parser {
      * Creates a parser using the default set of symbols and factory.
      */
     public MathTransformParser() {
-        this(Symbols.getDefault(), DefaultFactories.forBuildin(MathTransformFactory.class), null);
+        this(DefaultFactories.forBuildin(MathTransformFactory.class));
+    }
+
+    /**
+     * Creates a parser for the given factory.
+     *
+     * <p><b>Implementation note:</b> this parser is invoked by reflection by
+     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createFromWKT(String)}.</p>
+     *
+     * @param mtFactory The factory to use to create {@link MathTransform} objects.
+     */
+    public MathTransformParser(final MathTransformFactory mtFactory) {
+        this(Symbols.getDefault(), mtFactory, null);
     }
 
     /**
