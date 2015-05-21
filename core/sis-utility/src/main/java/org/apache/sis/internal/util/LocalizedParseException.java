@@ -49,7 +49,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     private static final long serialVersionUID = -1467571540435486742L;
 
     /**
-     * The locale to use for formatting the localized error message.
+     * The locale to use for formatting the localized error message, or {@code null} for the default.
      */
     private final Locale locale;
 
@@ -67,7 +67,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * Constructs a {@code ParseException} with a message formatted from the given resource key
      * and message arguments. This is the most generic constructor.
      *
-     * @param locale      The locale for {@link #getLocalizedMessage()}.
+     * @param locale      The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param key         The resource key as one of the {@code Errors.Keys} constant.
      * @param arguments   The values to be given to {@link Errors#getString(short, Object)}.
      * @param errorOffset The position where the error is found while parsing.
@@ -84,7 +84,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * and unparsable string. This convenience constructor fetches the word starting at the error
      * index, and uses that word as the single argument associated to the resource key.
      *
-     * @param locale      The locale for {@link #getLocalizedMessage()}.
+     * @param locale      The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param key         The resource key as one of the {@code Errors.Keys} constant.
      * @param text        The full text that {@code Format} failed to parse.
      * @param errorOffset The position where the error is found while parsing.
@@ -98,7 +98,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * information. This convenience constructor creates a message of the kind <cite>"Can not
      * parse string "text" as an object of type 'type'"</cite>.
      *
-     * @param  locale The locale for {@link #getLocalizedMessage()}.
+     * @param  locale The locale for {@link #getLocalizedMessage()}, or {@code null} for the default.
      * @param  type   The type of objects parsed by the {@link java.text.Format}.
      * @param  text   The full text that {@code Format} failed to parse.
      * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},
@@ -173,7 +173,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      */
     @Override
     public Locale getLocale() {
-        return locale;
+        return (locale != null) ? locale : Locale.getDefault();
     }
 
     /**
