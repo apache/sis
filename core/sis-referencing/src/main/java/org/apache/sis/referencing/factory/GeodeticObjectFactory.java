@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.referencing.factory;
 
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
-import java.text.ParseException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.Constructor;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -41,8 +42,8 @@ import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.MergedProperties;
-import org.apache.sis.internal.referencing.Pending;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -181,6 +182,14 @@ import org.apache.sis.xml.XML;
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
     /**
+     * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
+     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * use reflection because the parser class is not yet public (because we do not want to commit
+     * its API yet).
+     */
+    private static volatile Constructor<? extends WKTParser> parserConstructor;
+
+    /**
      * The default properties, or an empty map if none. This map shall not change after construction in
      * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
      * in a unmodifiable map since {@code GeodeticObjectFactory} does not provide public access to it.
@@ -200,6 +209,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * This set is used in order to return a pre-existing object instead of creating a new one.
      */
     private final WeakHashSet<IdentifiedObject> pool;
+
+    /**
+     * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
+     * This parser is not thread-safe, so we need to prevent two threads from using the same instance in same time.
+     */
+    private final AtomicReference<WKTParser> parser;
 
     /**
      * Constructs a factory with no default properties.
@@ -223,6 +238,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         }
         defaultProperties = properties;
         pool = new WeakHashSet<>(IdentifiedObject.class);
+        parser = new AtomicReference<>();
     }
 
     /**
@@ -1331,15 +1347,26 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
-        final Pending pending = Pending.getInstance();
-        try {
-            return pending.createFromWKT(this, this, this, getMathTransformFactory(), text);
-        } catch (ParseException exception) {
-            final Throwable cause = exception.getCause();
-            if (cause instanceof FactoryException) {
-                throw (FactoryException) cause;
+        WKTParser p = parser.getAndSet(null);
+        if (p == null) try {
+            Constructor<? extends WKTParser> c = parserConstructor;
+            if (c == null) {
+                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(WKTParser.class)
+                         .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
+                c.setAccessible(true);
+                parserConstructor = c;
             }
-            throw new FactoryException(exception);
+            p = c.newInstance(defaultProperties, this, getMathTransformFactory());
+        } catch (ReflectiveOperationException e) {
+            throw new FactoryException(e);
+        }
+        final Object object = p.createFromWKT(text);
+        parser.set(p);
+        if (object instanceof CoordinateReferenceSystem) {
+            return (CoordinateReferenceSystem) object;
+        } else {
+            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+                    Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }
 }

@@ -89,8 +89,8 @@ public final class DefaultFactories extends SystemListener {
             }
             /*
              * Verifies if the factory that we just selected is the same implementation than an existing instance.
-             * The main case for this test is org.apache.sis.referencing.GeodeticObjectFactory, where the same class
-             * implements 3 factory interfaces.
+             * The main case for this test is org.apache.sis.referencing.factory.GeodeticObjectFactory, where the
+             * same class implements 3 factory interfaces.
              */
             if (factory != null) {
                 for (final Object existing : FACTORIES.values()) {

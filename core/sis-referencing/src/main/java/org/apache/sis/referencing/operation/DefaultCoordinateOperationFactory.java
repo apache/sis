@@ -303,7 +303,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
-        return pool.unique(conversion);
+        // We do no invoke unique(conversion) because defining conversions are usually short-lived objects.
+        return conversion;
     }
 
     /**

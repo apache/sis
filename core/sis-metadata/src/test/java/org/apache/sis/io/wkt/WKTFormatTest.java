@@ -23,7 +23,9 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link WKTFormat}.
+ * Tests {@link WKTFormat}. This class can test only formatting operations.
+ * WKT parsing operations require the {@code "sis-referencing"} module, so
+ * they will be tested in {@link GeodeticObjectParserTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5

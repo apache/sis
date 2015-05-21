@@ -97,6 +97,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.CharEncodingTest.class,
     org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
+    org.apache.sis.io.wkt.ElementTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {

@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see WKTFormat#getSymbols()
@@ -164,6 +164,11 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private String separator;
 
     /**
+     * Same value than {@link #separator} but without leading and trailing spaces.
+     */
+    private transient String trimmedSeparator;
+
+    /**
      * {@code true} if this instance shall be considered as immutable.
      */
     private boolean isImmutable;
@@ -175,13 +180,14 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public Symbols(final Symbols symbols) {
         ensureNonNull("symbols", symbols);
-        locale        = symbols.locale;
-        brackets      = symbols.brackets;
-        quotes        = symbols.quotes;
-        quote         = symbols.quote;
-        openSequence  = symbols.openSequence;
-        closeSequence = symbols.closeSequence;
-        separator     = symbols.separator;
+        locale           = symbols.locale;
+        brackets         = symbols.brackets;
+        quotes           = symbols.quotes;
+        quote            = symbols.quote;
+        openSequence     = symbols.openSequence;
+        closeSequence    = symbols.closeSequence;
+        separator        = symbols.separator;
+        trimmedSeparator = symbols.trimmedSeparator;
     }
 
     /**
@@ -189,14 +195,15 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The given array is stored by reference - it is not cloned.
      */
     private Symbols(final int[] brackets, final int[] quotes) {
-        this.locale        = Locale.ROOT;
-        this.brackets      = brackets;
-        this.quotes        = quotes;
-        this.quote         = "\"";
-        this.openSequence  = '{';
-        this.closeSequence = '}';
-        this.separator     = ", ";
-        this.isImmutable   = true;
+        this.locale           = Locale.ROOT;
+        this.brackets         = brackets;
+        this.quotes           = quotes;
+        this.quote            = "\"";
+        this.openSequence     = '{';
+        this.closeSequence    = '}';
+        this.separator        = ", ";
+        this.trimmedSeparator = ",";
+        this.isImmutable      = true;
     }
 
     /**
@@ -251,16 +258,23 @@ public class Symbols implements Localized, Cloneable, Serializable {
     }
 
     /**
+     * Implementation of {@link #matchingBracket(int)} and {@link #matchingQuote(int)}.
+     */
+    private static int matching(final int[] chars, final int c) {
+        for (int i = 0; i < chars.length; i += 2) {
+            if (chars[i] == c) {
+                return chars[i + 1];
+            }
+        }
+        return -1;
+    }
+
+    /**
      * If the given character is an opening bracket, returns the matching closing bracket.
      * Otherwise returns -1.
      */
     final int matchingBracket(final int c) {
-        for (int i=0; i<brackets.length; i+=2) {
-            if (brackets[i] == c) {
-                return brackets[i+1];
-            }
-        }
-        return -1;
+        return matching(brackets, c);
     }
 
     /**
@@ -321,6 +335,14 @@ public class Symbols implements Localized, Cloneable, Serializable {
     public void setPairedBrackets(final String preferred, final String... alternatives) {
         checkWritePermission();
         brackets = toCodePoints(preferred, alternatives);
+    }
+
+    /**
+     * If the given character is an opening quote, returns the matching closing quote.
+     * Otherwise returns -1.
+     */
+    final int matchingQuote(final int c) {
+        return matching(quotes, c);
     }
 
     /**
@@ -473,8 +495,17 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setSeparator(final String separator) {
         checkWritePermission();
-        ensureNonEmpty("separator", separator);
+        final String s = CharSequences.trimWhitespaces(separator.trim());
+        ensureNonEmpty("separator", s);
         this.separator = separator;
+        trimmedSeparator = s;
+    }
+
+    /**
+     * Returns the separator without trailing spaces.
+     */
+    final String trimmedSeparator() {
+        return trimmedSeparator;
     }
 
     /**
@@ -688,6 +719,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
             if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
         }
         quote = String.valueOf(Character.toChars(quotes[1]));
+        trimmedSeparator = CharSequences.trimWhitespaces(separator.trim());
         return this;
     }
 }
