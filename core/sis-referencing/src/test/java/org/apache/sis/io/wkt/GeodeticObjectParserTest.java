@@ -121,6 +121,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertNameEquals("Time", timeCRS);
         assertNameEquals("Modified Julian", timeDatum);
         assertEquals("epoch", new Date(-40587 * (24*60*60*1000L)), timeDatum.getOrigin());
+
+        // No more CRS.
+        assertFalse(components.hasNext());
     }
 
     /**

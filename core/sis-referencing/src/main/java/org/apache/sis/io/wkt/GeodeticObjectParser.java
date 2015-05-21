@@ -60,7 +60,7 @@ import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_KEY;
@@ -137,18 +137,6 @@ final class GeodeticObjectParser extends MathTransformParser {
     private final boolean isAxisIgnored;
 
     /**
-     * The list of {@linkplain AxisDirection axis directions} from their name.
-     * Instantiated at construction time and never modified after that point.
-     */
-    private final Map<String,AxisDirection> directions;
-
-    /**
-     * The value of the last {@linkplain #directions} map created.
-     * We keep this reference only on the assumption that the same map will often be reused.
-     */
-    private static Map<String,AxisDirection> lastDirections;
-
-    /**
      * A map of properties to be given the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
@@ -183,7 +171,6 @@ final class GeodeticObjectParser extends MathTransformParser {
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
         opFactory     = new DefaultCoordinateOperationFactory(defaultProperties, mtFactory);  // TODO
-        directions    = getAxisDirections(symbols.getLocale());
         convention    = Convention.DEFAULT;
         isAxisIgnored = false;
     }
@@ -212,7 +199,6 @@ final class GeodeticObjectParser extends MathTransformParser {
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
         opFactory    = new DefaultCoordinateOperationFactory(null, mtFactory);  // TODO
-        directions   = getAxisDirections(symbols.getLocale());
         this.convention = convention;
         this.isAxisIgnored = isAxisIgnored;
     }
@@ -231,29 +217,6 @@ final class GeodeticObjectParser extends MathTransformParser {
             factories.put(type, factory);
         }
         return factory;
-    }
-
-    /**
-     * Gets the map of axis directions.
-     */
-    private static Map<String,AxisDirection> getAxisDirections(final Locale locale) {
-        final AxisDirection[] values = AxisDirection.values();
-        Map<String,AxisDirection> directions = new HashMap<>(Containers.hashMapCapacity(values.length));
-        for (final AxisDirection value : values) {
-            directions.put(value.name().trim().toUpperCase(locale), value);
-        }
-        /*
-         * Replace by the last generated map if it is the same.
-         */
-        synchronized (GeodeticObjectParser.class) {
-            final Map<String,AxisDirection> existing = lastDirections;
-            if (directions.equals(existing)) {
-                directions = existing;
-            } else {
-                lastDirections = directions;
-            }
-        }
-        return directions;
     }
 
     /**
@@ -440,10 +403,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         }
         final String name = element.pullString("name");
         final Element orientation = element.pullVoidElement("orientation");
-        final AxisDirection direction = directions.get(orientation.keyword);
-        if (direction == null) {
-            throw element.keywordNotFound("orientation", true);
-        }
+        final AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, mandatory);
         try {
             return csFactory.createCoordinateSystemAxis(parseAuthorityAndClose(element, name), name, direction, unit);
         } catch (FactoryException exception) {
