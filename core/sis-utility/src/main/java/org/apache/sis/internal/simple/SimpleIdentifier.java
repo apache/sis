@@ -219,8 +219,8 @@ public class SimpleIdentifier implements Identifier, Serializable {
      * @return Pseudo Well Known Text for this identifier.
      */
     public String toWKT() {
-        final StringBuilder buffer = new StringBuilder(40).append("ID[");
-        append(buffer, Citations.getIdentifier(authority, true));   // Do not invoke getCodeSpace().
+        final StringBuilder buffer = new StringBuilder(40).append("Id[");   // Consistent with WKTKeywords.Id.
+        append(buffer, Citations.getIdentifier(authority, true));           // Do not invoke getCodeSpace().
         append(buffer.append(", "), code);
         return buffer.append(']').toString();
     }
