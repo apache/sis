@@ -85,6 +85,15 @@ public final class IdentifiedObjects extends Static {
      *       <td>{@link CoordinateOperation#getCoordinateOperationAccuracy()}</td></tr>
      * </table>
      *
+     * <div class="note"><b>Note:</b>
+     * the current implementation does not provide
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MINIMUM_VALUE_KEY},
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MAXIMUM_VALUE_KEY} or
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#RANGE_MEANING_KEY} entry for
+     * {@link org.opengis.referencing.cs.CoordinateSystemAxis} instances because the minimum and maximum
+     * values depend on the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getUnit()
+     * units of measurement}.</div>
+     *
      * @param  object The identified object to view as a properties map.
      * @param  excludes The keys of properties to exclude from the map.
      * @return An view of the identified object as an immutable map.
