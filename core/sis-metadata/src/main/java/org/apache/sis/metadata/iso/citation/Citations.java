@@ -318,7 +318,7 @@ public final class Citations extends Static {
 
     /**
      * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
-     * This method is useful for extracting the namespace from an authority (e.g. {@code "EPSG"})
+     * This method is useful for extracting a short designation of an authority (e.g. {@code "IOGP"})
      * for display purpose. This method performs the following choices:
      *
      * <ul>
@@ -361,7 +361,7 @@ public final class Citations extends Static {
 
     /**
      * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     * This method is useful for extracting the namespace from an authority (e.g. {@code "EPSG"})
+     * This method is useful for extracting a short designation of an authority (e.g. {@code "IOGP"})
      * for processing purpose. This method performs the following actions:
      *
      * <ul>
