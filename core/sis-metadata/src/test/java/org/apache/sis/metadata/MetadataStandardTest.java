@@ -227,7 +227,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse("The properties map shall not be empty.", map.isEmpty());
-        assertEquals("Unexpected number of properties.", 5, map.size());
+        assertEquals("Unexpected number of properties.", 4, map.size());
         /*
          * Verify the set of keys in the ValueMap.
          *
@@ -236,7 +236,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
          * PropertyAccessorTest.testConstructor().
          */
         final Set<String> keys = map.keySet();
-        assertEquals("[title, alternateTitles, identifiers, citedResponsibleParties, presentationForms]", keys.toString());
+        assertEquals("[title, identifiers, citedResponsibleParties, presentationForms]", keys.toString());
         assertTrue  ("Shall exist and be defined.",   keys.contains("title"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("getTitle"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("identifier"));
@@ -249,8 +249,8 @@ public final strictfp class MetadataStandardTest extends TestCase {
         /*
          * Verifies values.
          */
-        assertEquals("title", "European Petroleum Survey Group", map.get("title").toString());
-        assertEquals("title", "European Petroleum Survey Group", map.get("getTitle").toString());
+        assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("title").toString());
+        assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("getTitle").toString());
         final Object identifiers = map.get("identifiers");
         assertInstanceOf("identifiers", Collection.class, identifiers);
         assertContainsIdentifierCode("EPSG", (Collection<?>) identifiers);

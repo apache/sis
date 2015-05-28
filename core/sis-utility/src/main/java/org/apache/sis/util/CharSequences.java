@@ -1594,7 +1594,7 @@ cmp:    while (ia < lga) {
      * @param  s2 The second characters sequence to compare, or {@code null}.
      * @param  filter The subset of characters to compare, or {@code null} for comparing all characters.
      * @param  ignoreCase {@code true} for comparing cases, or {@code false} for requiring exact match.
-     * @return {@code true} if or if both arguments are {@code null} or if the two given texts are equal,
+     * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         optionally ignoring case and filtered-out characters.
      */
     public static boolean equalsFiltered(final CharSequence s1, final CharSequence s2,

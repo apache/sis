@@ -114,7 +114,7 @@ public final strictfp class PrunerTest extends TestCase {
         /*
          * Set a non-empty metadata info.
          */
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers"));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
         assertTrue ("GeographicBoundingBox", bbox.isEmpty());
         assertTrue ("Extent",                extent.isEmpty());
         assertTrue ("Scale",                 scale.isEmpty());
@@ -142,7 +142,7 @@ public final strictfp class PrunerTest extends TestCase {
          * Set an empty string in an element.
          */
         scale.setScale(Double.NaN);
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   "));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   ", false));
         assertTrue("Scale",                 scale.isEmpty());
         assertTrue("DataIdentification",    identification.isEmpty());
         assertTrue("Metadata",              metadata.isEmpty());
@@ -176,7 +176,7 @@ public final strictfp class PrunerTest extends TestCase {
     @Test
     @DependsOnMethod("testIsEmpty")
     public void testPrune() {
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers"));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
         identification.setCitation(new DefaultCitation("A citation title"));
         assertFalse(isNullOrEmpty(metadata.getMetadataIdentifier()));
         assertFalse(isNullOrEmpty(identification.getCitation()));
@@ -193,7 +193,7 @@ public final strictfp class PrunerTest extends TestCase {
         assertEquals(0, extent.getGeographicElements().size());
         assertFalse(metadata.isEmpty());
 
-        metadata.setMetadataIdentifier(new SimpleIdentifier(null, " "));
+        metadata.setMetadataIdentifier(new SimpleIdentifier(null, " ", false));
         identification.setCitation(new DefaultCitation(" "));
         assertNotNull(metadata.getMetadataIdentifier());
         metadata.prune();

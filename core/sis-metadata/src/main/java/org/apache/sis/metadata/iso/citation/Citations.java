@@ -23,7 +23,14 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.simple.CitationConstant;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
+import org.apache.sis.internal.metadata.ServicesForUtility;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;   // For javadoc
+
+import static org.apache.sis.internal.util.Citations.equalsFiltered;
 
 
 /**
@@ -53,22 +60,21 @@ public final class Citations extends Static {
      *
      * @category Organization
      */
-    public static final Citation ISO = new SimpleCitation("ISO");
+    public static final Citation ISO = new CitationConstant("ISO");
 
     /**
      * The <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a> organization.
-     * "Open Geospatial Consortium" is the new name for "OpenGIS consortium".
+     * <cite>"Open Geospatial Consortium"</cite> is the new name for <cite>"OpenGIS consortium"</cite>.
+     * An {@linkplain DefaultCitation#getAlternateTitles() alternate title} for this citation is "OGC"
+     * (according ISO 19115, alternate titles often contain abbreviations).
      *
      * @category Organization
      */
-    public static final Citation OGC = new SimpleCitation(Constants.OGC);
+    public static final Citation OGC = new CitationConstant(Constants.OGC);
 
     /**
      * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
-     *
-     * @see #EPSG
-     * @category Organization
      *
      * @since 0.4
      *
@@ -76,24 +82,30 @@ public final class Citations extends Static {
      *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
      */
     @Deprecated
-    public static final Citation OGP = new SimpleCitation("OGP"); // TODO: after removal, forName("OGP") should map to EPSG.
+    public static final Citation OGP = new CitationConstant(Constants.IOGP);
 
     /**
-     * The <a href="http://www.epsg.org">EPSG</a> dataset. This citation is used as an authority for
-     * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
-     * identifiers.
+     * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> identifier space.
+     * EPSG is not an organization by itself, but is the <em>identifier space</em> managed by the
+     * <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization
+     * for {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} identifiers.
      *
      * <div class="note"><b>Historical note:</b>
      * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
      * But this meaning does not apply anymore since the European and American associations merged into
-     * the <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP).
+     * the <cite>Association of Oil &amp; Gas producers</cite> (OGP), later renamed as IOGP.
      * The legacy acronym now applies only to the database Coordinate Reference System definitions,
-     * known as <cite>EPSG dataset</cite>.</div>
+     * known as <cite>EPSG Geodetic Parameter Dataset</cite>.</div>
      *
-     * The citation {@linkplain DefaultCitation#getTitle() title} and contact information reference
+     * The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible party} is
      * the IOGP organization, but the {@link IdentifierSpace#getName() namespace} is {@code "EPSG"}.
-     * Note that both the new "IOGP" and the legacy "OGP" abbreviations may be used as a code space
-     * in GML files.
+     * The {@code "EPSG"} name shall be used in URN, but the {@code codeSpace} attribute value in
+     * GML files can be “EPSG” or the authority abbreviation, either “IOGP” or the older “OGP”.
+     * Example:
+     *
+     * {@preformat xml
+     *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+     * }
      *
      * @see #AUTO
      * @see #AUTO2
@@ -102,14 +114,14 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> EPSG = new Authority<>(Constants.IOGP, Constants.EPSG);
+    public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
     /**
      * The <a href="http://sis.apache.org">Apache SIS</a> project.
      *
      * @since 0.4
      */
-    public static final Citation SIS = new SimpleCitation(Constants.SIS);
+    public static final Citation SIS = new CitationConstant(Constants.SIS);
 
     /**
      * The <a href="http://www.esri.com">ESRI</a> organization.
@@ -119,7 +131,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation ESRI = new SimpleCitation("ESRI");
+    public static final Citation ESRI = new CitationConstant("ESRI");
 
     /**
      * The <a href="http://www.oracle.com">Oracle</a> organization.
@@ -128,7 +140,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation ORACLE = new SimpleCitation("Oracle");
+    public static final Citation ORACLE = new CitationConstant("Oracle");
 
     /**
      * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
@@ -137,17 +149,17 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final Citation NETCDF = new SimpleCitation("NetCDF");
+    public static final Citation NETCDF = new CitationConstant("NetCDF");
 
     /**
-     * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
+     * The <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
      * This specification identifies some map projections by their own numerical codes.
      *
      * @category Code space
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<Integer> GEOTIFF = new Authority<>("GeoTIFF", "GeoTIFF");
+    public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>("GeoTIFF");
 
     /**
      * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
@@ -156,7 +168,7 @@ public final class Citations extends Static {
      *
      * @since 0.4
      */
-    public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "Proj4");
+    public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("Proj4");
 
     /**
      * The MapInfo software. This software defines its own projection codes.
@@ -165,7 +177,7 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final IdentifierSpace<Integer> MAP_INFO = new Authority<>("MapInfo", "MapInfo");
+    public static final IdentifierSpace<Integer> MAP_INFO = new CitationConstant.Authority<>("MapInfo");
 
     /**
      * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
@@ -175,10 +187,10 @@ public final class Citations extends Static {
      *
      * @since 0.6
      */
-    public static final IdentifierSpace<Integer> S57 = new Authority<>("S-57", "S57");
+    public static final IdentifierSpace<Integer> S57 = new CitationConstant.Authority<>("S57");
 
     /**
-     * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
+     * The <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
@@ -186,10 +198,10 @@ public final class Citations extends Static {
      *
      * @category Code space
      */
-    public static final IdentifierSpace<String> ISBN = DefaultCitation.ISBN;
+    public static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
 
     /**
-     * <cite>International Standard Serial Number</cite> (ISSN) defined by ISO-3297.
+     * The <cite>International Standard Serial Number</cite> (ISSN) defined by ISO-3297.
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
@@ -197,14 +209,35 @@ public final class Citations extends Static {
      *
      * @category Code space
      */
-    public static final IdentifierSpace<String> ISSN = DefaultCitation.ISSN;
+    public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
 
     /**
      * List of citations declared in this class.
+     * Most frequently used citations (at least in SIS) should be first.
      */
-    private static final Citation[] CITATIONS = {
-        ISO, OGC, OGP, EPSG, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, MAP_INFO, S57, ISBN, ISSN
+    private static final CitationConstant[] CITATIONS = {
+        (CitationConstant) EPSG,
+        (CitationConstant) OGC,
+        (CitationConstant) ISO,
+        (CitationConstant) OGP,
+        (CitationConstant) NETCDF,
+        (CitationConstant) GEOTIFF,
+        (CitationConstant) ESRI,
+        (CitationConstant) ORACLE,
+        (CitationConstant) PROJ4,
+        (CitationConstant) MAP_INFO,
+        (CitationConstant) S57,
+        (CitationConstant) ISBN,
+        (CitationConstant) ISSN,
+        (CitationConstant) SIS
     };
+
+    static {  // Must be after CITATIONS array construction.
+        SystemListener.add(new SystemListener(Modules.METADATA) {
+            @Override protected void classpathChanged() {refresh();}
+            @Override protected void databaseChanged()  {refresh();}
+        });
+    }
 
     /**
      * Do not allows instantiation of this class.
@@ -213,37 +246,50 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns a citation of the given name. The method makes the following choice:
+     * Invoked when the content of the citation constants (title, responsible party, URL, <i>etc.</i>)
+     * may have changed. This method notifies all citations that they will need to refresh their content.
+     */
+    static void refresh() {
+        for (final CitationConstant citation : CITATIONS) {
+            citation.refresh();
+        }
+    }
+
+    /**
+     * Returns a citation of the given identifier. The method makes the following choice:
      *
      * <ul>
      *   <li>If the given title is {@code null} or empty (ignoring spaces), then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given name matches a {@linkplain DefaultCitation#getTitle() title} or an
-     *       {@linkplain DefaultCitation#getAlternateTitles() alternate titles} of one of the pre-defined
-     *       constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
+     *   <li>Otherwise if the given string matches an {@linkplain DefaultCitation#getIdentifiers() identifier} of one of
+     *       the pre-defined constants ({@link #EPSG}, {@link #GEOTIFF}, <i>etc.</i>), then that constant is returned.</li>
      *   <li>Otherwise, a new citation is created with the specified name as the title.</li>
      * </ul>
      *
-     * @param  title The citation title (or alternate title), or {@code null}.
+     * @param  identifier The citation title (or alternate title), or {@code null}.
      * @return A citation using the specified name, or {@code null} if the given title is null or empty.
      */
-    public static Citation fromName(String title) {
-        if (title == null || ((title = CharSequences.trimWhitespaces(title)).isEmpty())) {
+    public static Citation fromName(String identifier) {
+        if (identifier == null || ((identifier = CharSequences.trimWhitespaces(identifier)).isEmpty())) {
             return null;
         }
-        /*
-         * We perform a special check because it is our only IdentifierSpace having an namespace ("EPSG")
-         * that can not be inferred from the authority abbreviation ("IOGP"). We test this special case
-         * first because it is usually to be the most frequently used citation.
-         */
-        if (title.equalsIgnoreCase(Constants.EPSG)) {
-            return EPSG;
-        }
-        for (final Citation citation : CITATIONS) {
-            if (titleMatches(citation, title)) {
+        for (final CitationConstant citation : CITATIONS) {
+            if (equalsFiltered(identifier, citation.title)) {
                 return citation;
             }
         }
-        return new SimpleCitation(title);
+        /*
+         * Additional identifiers other than the ones declared to CitationConstant constructors. Those identifiers
+         * shall be the same than the ones added by 'ServicesForUtility.createCitation(String)'.
+         */
+        if (equalsFiltered(identifier, ServicesForUtility.OGP)) {
+            return OGP;
+        }
+        /*
+         * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects the default citation
+         * to be of this exact class: SimpleCitation (not a subclass). If the type of citation created below is
+         * modified, then we need to review ServicesForUtility.getCitationConstant(String) method body.
+         */
+        return new SimpleCitation(identifier);
     }
 
     /**
@@ -305,8 +351,10 @@ public final class Citations extends Static {
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,String) titleMatches}
-     * method. This fallback exists for compatibility with client codes using citation
-     * {@linkplain DefaultCitation#getTitle() title} without identifiers.</p>
+     * method. This fallback exists for compatibility with citations using
+     * {@linkplain DefaultCitation#getTitle() title} and
+     * {@linkplain DefaultCitation#getAlternateTitles() alternate titles} (often abbreviations)
+     * without identifiers.</p>
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  identifier The identifier to compare, or {@code null}.
@@ -318,24 +366,30 @@ public final class Citations extends Static {
 
     /**
      * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
-     * This method is useful for extracting a short designation of an authority (e.g. {@code "IOGP"})
+     * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for display purpose. This method performs the following choices:
      *
      * <ul>
      *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain DefaultCitation#getIdentifiers() identifier}, then:
+     *   <li>Otherwise if the citation contains at least one
+     *       non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated}
+     *       {@linkplain DefaultCitation#getIdentifiers() identifier}, then:
      *     <ul>
-     *       <li>If at least one identifier is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
-     *           unicode identifier}, then the shortest of those identifiers is returned.</li>
-     *       <li>Otherwise the shortest identifier is returned, despite not being a Unicode identifier.</li>
-     *     </ul></li>
+     *       <li>If at least one non-deprecated identifier is a
+     *           {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier unicode identifier},
+     *           then the shortest of those identifiers is returned.</li>
+     *       <li>Otherwise the shortest non-deprecated identifier is returned,
+     *           despite not being a Unicode identifier.</li>
+     *     </ul>
+     *   </li>
      *   <li>Otherwise if the citation contains at least one {@linkplain DefaultCitation#getTitle() title} or
      *       {@linkplain DefaultCitation#getAlternateTitles() alternate title}, then:
      *     <ul>
      *       <li>If at least one title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
      *           unicode identifier}, then the shortest of those titles is returned.</li>
      *       <li>Otherwise the shortest title is returned, despite not being a Unicode identifier.</li>
-     *     </ul></li>
+     *     </ul>
+     *   </li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *
@@ -361,7 +415,7 @@ public final class Citations extends Static {
 
     /**
      * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     * This method is useful for extracting a short designation of an authority (e.g. {@code "IOGP"})
+     * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for processing purpose. This method performs the following actions:
      *
      * <ul>

@@ -79,6 +79,7 @@ public abstract class ReferencingServices extends SystemListener {
     @Override
     protected final void classpathChanged() {
         synchronized (ReferencingServices.class) {
+            SystemListener.remove(this);
             instance = null;
         }
     }
@@ -95,14 +96,22 @@ public abstract class ReferencingServices extends SystemListener {
         if (c == null) {
             synchronized (ReferencingServices.class) {
                 c = instance;
-                if (c == null) try {
-                    instance = c = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
-                } catch (ClassNotFoundException exception) {
-                    throw new UnsupportedOperationException(Errors.format(
-                            Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
-                } catch (ReflectiveOperationException exception) {
-                    // Should never happen if we didn't broke our helper class.
-                    throw new AssertionError(exception);
+                if (c == null) {
+                    /*
+                     * Double-checked locking: okay since Java 5 provided that the 'instance' field is volatile.
+                     * In the particular case of this class, the intend is to ensure that SystemListener.add(…)
+                     * is invoked only once.
+                     */
+                    try {
+                        c = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
+                    } catch (ClassNotFoundException exception) {
+                        throw new UnsupportedOperationException(Errors.format(
+                                Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
+                    } catch (ReflectiveOperationException exception) {
+                        // Should never happen if we didn't broke our helper class.
+                        throw new AssertionError(exception);
+                    }
+                    instance = c;
                 }
             }
         }

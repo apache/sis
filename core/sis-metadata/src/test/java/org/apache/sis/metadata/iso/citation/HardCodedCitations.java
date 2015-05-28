@@ -38,26 +38,10 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {
-    /**
-     * The <a href="http://www.opengeospatial.org">Open Geospatial consortium</a> organization.
-     * "Open Geospatial consortium" is the new name for "OpenGIS consortium".
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGC"
-     * (according ISO 19115, alternate titles often contain abbreviations).
-     */
-    public static final DefaultCitation OGC;
-    static {
-        final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
-        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.OGC)));
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
-        c.freeze();
-        OGC = c;
-    }
-
     /**
      * The <a href="http://www.iso.org/">International Organization for Standardization</a>
      * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
@@ -85,32 +69,14 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas Producers</a> organization.
-     * This organization is responsible for maintainance of {@link #EPSG} database.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "IOGP"
-     * (according ISO 19115, alternate titles often contain abbreviations).
-     */
-    public static final DefaultCitation IOGP;
-    static {
-        final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
-        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.IOGP)));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.IOGP)));
-        c.freeze();
-        IOGP = c;
-    }
-
-    /**
-     * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "EPSG"
-     * (according ISO 19115, alternate titles often contain abbreviations). In addition,
-     * this citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
+     * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> authority.
+     * This citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
      *
      * <p>String representation:</p>
      *
      * {@preformat text
      *   Citation
-     *     ├─Title………………………………………………………… European Petroleum Survey Group
-     *     ├─Alternate title……………………………… EPSG
+     *     ├─Title………………………………………………………… EPSG Geodetic Parameter Dataset
      *     ├─Identifier
      *     │   └─Code………………………………………………… EPSG
      *     ├─Cited responsible party
@@ -130,10 +96,9 @@ public final strictfp class HardCodedCitations extends Static {
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibility p = new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,
-                new DefaultOrganisation(IOGP.getTitle(), null, null, new DefaultContact(r)));
+                new DefaultOrganisation("International Association of Oil & Gas Producers", null, null, new DefaultContact(r)));
 
-        final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
+        final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
         c.setIdentifiers(singleton(new DefaultIdentifier(Constants.EPSG)));
         c.setCitedResponsibleParties(singleton(p));

@@ -16,12 +16,18 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Locale;
+import java.lang.reflect.Field;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.*;
-import static org.junit.Assert.assertSame;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -35,13 +41,16 @@ import static org.junit.Assert.assertSame;
 public final strictfp class CitationsTest extends TestCase {
     /**
      * Tests {@link Citations#fromName(String)}.
+     *
+     * @throws IllegalAccessException should never happen since we asked only for public fields.
      */
     @Test
-    public void testFromName() {
+    public void testFromName() throws IllegalAccessException {
         assertSame(ISO,      fromName("ISO"));
         assertSame(OGC,      fromName(Constants.OGC));
-        assertSame(EPSG,     fromName(Constants.EPSG));  // This one is important.
-        assertSame(EPSG,     fromName(Constants.IOGP));  // This one is not really needed (and maybe not strictly correct).
+        assertSame(EPSG,     fromName(Constants.EPSG));  // This one is most important.
+        assertSame(OGP,      fromName(Constants.IOGP));  // For parsing GML "codeSpace" attribute.
+        assertSame(OGP,      fromName("OGP"));           // Sometime seen in GML instead of "IOGP".
         assertSame(SIS,      fromName(Constants.SIS));
         assertSame(ESRI,     fromName("ESRI"));
         assertSame(ORACLE,   fromName("Oracle"));
@@ -54,5 +63,133 @@ public final strictfp class CitationsTest extends TestCase {
         assertSame(S57,      fromName("S57"));
         assertSame(ISBN,     fromName("ISBN"));
         assertSame(ISSN,     fromName("ISSN"));
+        /*
+         * Verify again, but using reflection for making sure that the field names
+         * are consistent and that we did not forgot any citation constant.
+         */
+        for (final Field field : Citations.class.getFields()) {
+            if (Citation.class.isAssignableFrom(field.getType())) {
+                final String name = field.getName();
+                assertSame(name, field.get(null), Citations.fromName(name));
+            }
+        }
+    }
+
+    /**
+     * Tests {@link Citations#getIdentifier(Citation)} on the constants declared in the {@link Citations} class.
+     * The values do not need to be valid Unicode identifiers.
+     */
+    @Test
+    public void testGetIdentifier() {
+        assertEquals("ISO",     getIdentifier(ISO));
+        assertEquals("OGC",     getIdentifier(OGC));
+        assertEquals("IOGP",    getIdentifier(OGP));
+        assertEquals("EPSG",    getIdentifier(EPSG));
+        assertEquals("SIS",     getIdentifier(SIS));
+        assertEquals("ESRI",    getIdentifier(ESRI));
+        assertEquals("Oracle",  getIdentifier(ORACLE));
+        assertEquals("NetCDF",  getIdentifier(NETCDF));
+        assertEquals("GeoTIFF", getIdentifier(GEOTIFF));
+        assertEquals("MapInfo", getIdentifier(MAP_INFO));
+        assertEquals("ISBN",    getIdentifier(ISBN));
+        assertEquals("ISSN",    getIdentifier(ISSN));
+        assertEquals("Proj.4",  getIdentifier(PROJ4));  // Not a valid Unicode identifier.
+        assertEquals("S-57",    getIdentifier(S57));    // Not a valid Unicode identifier.
+    }
+
+    /**
+     * Tests {@link Citations#getUnicodeIdentifier(Citation)} on the constants declared in the {@link Citations} class.
+     * All values shall be valid Unicode identifiers or {@code null}.
+     */
+    @Test
+    @DependsOnMethod("testGetIdentifier")
+    public void testGetUnicodeIdentifier() {
+        assertEquals("ISO",     getUnicodeIdentifier(ISO));
+        assertEquals("OGC",     getUnicodeIdentifier(OGC));
+        assertEquals("IOGP",    getUnicodeIdentifier(OGP));
+        assertEquals("EPSG",    getUnicodeIdentifier(EPSG));
+        assertEquals("SIS",     getUnicodeIdentifier(SIS));
+        assertEquals("ESRI",    getUnicodeIdentifier(ESRI));
+        assertEquals("Oracle",  getUnicodeIdentifier(ORACLE));
+        assertEquals("NetCDF",  getUnicodeIdentifier(NETCDF));
+        assertEquals("GeoTIFF", getUnicodeIdentifier(GEOTIFF));
+        assertEquals("MapInfo", getUnicodeIdentifier(MAP_INFO));
+        assertEquals("ISBN",    getUnicodeIdentifier(ISBN));
+        assertEquals("ISSN",    getUnicodeIdentifier(ISSN));
+        assertNull  ("Proj4",   getUnicodeIdentifier(PROJ4));   // Not yet publicly declared as an identifier.
+        assertNull  ("S57",     getUnicodeIdentifier(S57));     // Not yet publicly declared as an identifier.
+    }
+
+    /**
+     * Tests {@link org.apache.sis.internal.util.Citations#getCodeSpace(Citation)} on the constants
+     * declared in the {@link Citations} class.
+     */
+    @Test
+    @DependsOnMethod("testGetUnicodeIdentifier")
+    public void testGetCodeSpace() {
+        assertEquals("ISO",     org.apache.sis.internal.util.Citations.getCodeSpace(ISO));
+        assertEquals("OGC",     org.apache.sis.internal.util.Citations.getCodeSpace(OGC));
+        assertEquals("IOGP",    org.apache.sis.internal.util.Citations.getCodeSpace(OGP));
+        assertEquals("EPSG",    org.apache.sis.internal.util.Citations.getCodeSpace(EPSG));
+        assertEquals("SIS",     org.apache.sis.internal.util.Citations.getCodeSpace(SIS));
+        assertEquals("ESRI",    org.apache.sis.internal.util.Citations.getCodeSpace(ESRI));
+        assertEquals("Oracle",  org.apache.sis.internal.util.Citations.getCodeSpace(ORACLE));
+        assertEquals("NetCDF",  org.apache.sis.internal.util.Citations.getCodeSpace(NETCDF));
+        assertEquals("GeoTIFF", org.apache.sis.internal.util.Citations.getCodeSpace(GEOTIFF));
+        assertEquals("MapInfo", org.apache.sis.internal.util.Citations.getCodeSpace(MAP_INFO));
+        assertEquals("ISBN",    org.apache.sis.internal.util.Citations.getCodeSpace(ISBN));
+        assertEquals("ISSN",    org.apache.sis.internal.util.Citations.getCodeSpace(ISSN));
+        assertEquals("Proj4",   org.apache.sis.internal.util.Citations.getCodeSpace(PROJ4));
+        assertEquals("S57",     org.apache.sis.internal.util.Citations.getCodeSpace(S57));
+    }
+
+    /**
+     * Tests {@code getTitle()} on some {@code Citation} constants.
+     */
+    @Test
+    public void testGetTitles() {
+        assertEquals("International Organization for Standardization",    ISO    .getTitle().toString(Locale.US));
+        assertEquals("Open Geospatial Consortium",                        OGC    .getTitle().toString(Locale.US));
+        assertEquals("International Association of Oil & Gas producers",  OGP    .getTitle().toString(Locale.US));
+        assertEquals("EPSG Geodetic Parameter Dataset",                   EPSG   .getTitle().toString(Locale.US));
+        assertEquals("Apache Spatial Information System",                 SIS    .getTitle().toString(Locale.US));
+        assertEquals("International Standard Book Number",                ISBN   .getTitle().toString(Locale.US));
+        assertEquals("International Standard Serial Number",              ISSN   .getTitle().toString(Locale.US));
+        assertEquals("GeoTIFF",                                           GEOTIFF.getTitle().toString(Locale.US));
+        assertEquals("NetCDF",                                            NETCDF .getTitle().toString(Locale.US));
+        assertEquals("Proj.4",                                            PROJ4  .getTitle().toString(Locale.US));
+        assertEquals("S-57",                                              S57    .getTitle().toString(Locale.US));
+    }
+
+    /**
+     * Special tests dedicated to the {@link Citations#EPSG} constant. This is maybe the most important
+     * citation declared in the {@link Citations} class, since it is declared as the authority of almost
+     * all Coordinate Reference System (CRS) objects typically used by SIS.
+     *
+     * <p>Apache SIS identifies the EPSG authority with {@link Identifier} {@code "IOGP:EPSG"}.</p>
+     */
+    @Test
+    public void testEPSG() {
+        final Identifier identifier = TestUtilities.getSingleton(EPSG.getIdentifiers());
+        assertEquals("IOGP", getUnicodeIdentifier(identifier.getAuthority()));
+        assertEquals("EPSG", getUnicodeIdentifier(EPSG));
+        assertEquals("IOGP", identifier.getCodeSpace());
+        assertEquals("EPSG", identifier.getCode());
+    }
+
+    /**
+     * Test serialization.
+     *
+     * @throws IllegalAccessException should never happen since we asked only for public fields.
+     */
+    @Test
+    @DependsOnMethod("testFromName")
+    public void testSerialization() throws IllegalAccessException {
+        for (final Field field : Citations.class.getFields()) {
+            if (Citation.class.isAssignableFrom(field.getType())) {
+                final Object c = field.get(null);
+                assertSame(field.getName(), c, assertSerializedEquals(c));
+            }
+        }
     }
 }

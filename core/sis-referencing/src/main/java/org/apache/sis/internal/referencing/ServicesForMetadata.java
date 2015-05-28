@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.apache.sis.internal.metadata.WKTKeywords;
 import java.util.Iterator;
 import java.util.Collection;
 
@@ -50,6 +49,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;

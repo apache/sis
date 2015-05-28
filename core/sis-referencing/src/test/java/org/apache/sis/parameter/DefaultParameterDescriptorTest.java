@@ -26,7 +26,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -147,7 +147,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     public static DefaultParameterDescriptor<Double> createEPSG(final String name, final short code) {
         final Map<String, Object> properties = properties(name);
         assertNull(properties.put(DefaultParameterDescriptor.IDENTIFIERS_KEY,
-                new ImmutableIdentifier(HardCodedCitations.IOGP, Constants.EPSG, Short.toString(code))));
+                new ImmutableIdentifier(Citations.EPSG, Constants.EPSG, Short.toString(code))));
         return new DefaultParameterDescriptor<>(properties, 0, 1, Double.class, null, null, null);
     }
 
@@ -323,6 +323,6 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.A0);
-        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, Citation[“IOGP”], URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
     }
 }
