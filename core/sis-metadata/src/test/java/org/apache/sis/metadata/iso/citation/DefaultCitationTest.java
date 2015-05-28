@@ -59,8 +59,8 @@ public final strictfp class DefaultCitationTest extends TestCase {
          */
         assertNull("ISSN shall be initially null.", citation.getISSN());
         citation.setIdentifiers(Arrays.asList(
-                new DefaultIdentifier(HardCodedCitations.OGC,  "MyOGC"),
-                new DefaultIdentifier(HardCodedCitations.EPSG, "MyEPSG"),
+                new DefaultIdentifier(Citations.OGC,  "MyOGC"),
+                new DefaultIdentifier(Citations.EPSG, "MyEPSG"),
                 new DefaultIdentifier(Citations.ISBN, "MyIgnored"),
                 new DefaultIdentifier(Citations.ISSN, "MyISSN")));
 

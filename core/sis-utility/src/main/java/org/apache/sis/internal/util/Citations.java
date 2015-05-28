@@ -25,12 +25,8 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.util.CharSequences.equalsFiltered;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.util.CharSequences.isUnicodeIdentifier;
-import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -66,12 +62,34 @@ public final class Citations extends Static {
     }
 
     /**
+     * Return {@code true} if the given object is deprecated.
+     */
+    private static boolean isDeprecated(final Object object) {
+        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
+    }
+
+    /**
      * Returns a "unlocalized" string representation of the given international string,
      * or {@code null} if none. This method is used by {@link #getIdentifier(Citation, boolean)},
      * which is why we don't want the localized string.
      */
     private static String toString(final InternationalString title) {
-        return (title != null) ? trimWhitespaces(title.toString(Locale.ROOT)) : null;
+        return (title != null) ? CharSequences.trimWhitespaces(title.toString(Locale.ROOT)) : null;
+    }
+
+    /**
+     * The method to be used consistently for comparing titles or identifiers in all {@code fooMathes(…)}
+     * methods declared in this class.
+     *
+     * @param  s1 The first characters sequence to compare, or {@code null}.
+     * @param  s2 The second characters sequence to compare, or {@code null}.
+     * @return {@code true}if both arguments are {@code null} or if the two given texts are equal,
+     *         ignoring case and any characters other than digits and letters.
+     *
+     * @since 0.6
+     */
+    public static boolean equalsFiltered(final CharSequence s1, final CharSequence s2) {
+        return CharSequences.equalsFiltered(s1, s2, Characters.Filter.LETTERS_AND_DIGITS, true);
     }
 
     /**
@@ -133,12 +151,12 @@ public final class Citations extends Static {
             do {
                 if (candidate != null) {
                     final String unlocalized = candidate.toString(Locale.ROOT);
-                    if (equalsFiltered(unlocalized, title, LETTERS_AND_DIGITS, true)) {
+                    if (equalsFiltered(unlocalized, title)) {
                         return true;
                     }
                     final String localized = candidate.toString();
                     if (!Objects.equals(localized, unlocalized) // Slight optimization for a common case.
-                            && equalsFiltered(localized, title, LETTERS_AND_DIGITS, true))
+                            && equalsFiltered(localized, title))
                     {
                         return true;
                     }
@@ -196,14 +214,14 @@ public final class Citations extends Static {
 
     /**
      * Returns {@code true} if the given citation has at least one identifier equals to the given string,
-     * ignoring case and non-alphanumeric characters. If and <em>only</em> if the citations do not contain
+     * ignoring case and non-alphanumeric characters. If and <em>only</em> if the citation does not contain
      * any identifier, then this method fallback on titles comparison.
      * See {@link org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, String)}
      * for the public documentation of this method.
      *
      * @param  citation   The citation to check for, or {@code null}.
-     * @param  identifier The identifier to compare, or {@code null} to unknown.
-     * @param  code       The identifier code to compare, or {@code null}.
+     * @param  identifier The identifier to compare, or {@code null} if unknown.
+     * @param  code       Value of {@code identifier.getCode()}, or {@code null}.
      * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final Identifier identifier, final CharSequence code) {
@@ -214,13 +232,13 @@ public final class Citations extends Static {
             }
             while (identifiers.hasNext()) {
                 final Identifier id = identifiers.next();
-                if (id != null && equalsFiltered(code, id.getCode(), LETTERS_AND_DIGITS, true)) {
+                if (id != null && equalsFiltered(code, id.getCode())) {
                     if (identifier != null) {
                         final String codeSpace = identifier.getCodeSpace();
                         if (codeSpace != null) {
                             final String cs = id.getCodeSpace();
                             if (cs != null) {
-                                return equalsFiltered(codeSpace, cs, LETTERS_AND_DIGITS, true);
+                                return equalsFiltered(codeSpace, cs);
                             }
                         }
                     }
@@ -315,18 +333,18 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation, final boolean strict) {
-        boolean isUnicode = false; // Whether 'identifier' is a Unicode identifier.
+        boolean isUnicode = false;      // Whether 'identifier' is a Unicode identifier.
         String identifier = null;
         if (citation != null) {
             final Iterator<? extends Identifier> it = iterator(citation.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final Identifier id = it.next();
-                if (id != null) {
-                    final String candidate = trimWhitespaces(id.getCode());
+                if (id != null && !isDeprecated(id)) {
+                    final String candidate = CharSequences.trimWhitespaces(id.getCode());
                     if (candidate != null) {
                         final int length = candidate.length();
                         if (length != 0 && (identifier == null || length < identifier.length())) {
-                            final boolean s = isUnicodeIdentifier(candidate);
+                            final boolean s = CharSequences.isUnicodeIdentifier(candidate);
                             if (s || !isUnicode) {
                                 identifier = candidate;
                                 isUnicode = s;
@@ -341,12 +359,12 @@ public final class Citations extends Static {
              * often used for abbreviations.
              */
             if (identifier == null) {
-                identifier = toString(citation.getTitle()); // Whitepaces removed by toString(…).
+                identifier = toString(citation.getTitle());     // Whitepaces removed by toString(…).
                 if (identifier != null) {
                     if (identifier.isEmpty()) {
                         identifier = null;
                     } else {
-                        isUnicode = isUnicodeIdentifier(identifier);
+                        isUnicode = CharSequences.isUnicodeIdentifier(identifier);
                     }
                 }
                 final Iterator<? extends InternationalString> iterator = iterator(citation.getAlternateTitles());
@@ -355,7 +373,7 @@ public final class Citations extends Static {
                     if (candidate != null) {
                         final int length = candidate.length();
                         if (length != 0 && (identifier == null || length < identifier.length())) {
-                            final boolean s = isUnicodeIdentifier(candidate);
+                            final boolean s = CharSequences.isUnicodeIdentifier(candidate);
                             if (s || !isUnicode) {
                                 identifier = candidate;
                                 isUnicode = s;
@@ -430,9 +448,11 @@ public final class Citations extends Static {
 
     /**
      * Infers a code space from the given citation, or returns {@code null} if none.
-     * This method is very close to {@link #getUnicodeIdentifier(Citation)}; its main difference is regarding
-     * the {@link org.apache.sis.metadata.iso.citation.Citations#EPSG} constant: this method returns "EPSG"
-     * instead than "IOGP".
+     * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
+     * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
+     * be the same in most cases, except some cases like the SIS citation constant for {@code "Proj.4"}
+     * in which case this method returns {@code "Proj4"} instead of {@code null}. As a side effect,
+     * using this method also avoid constructing the full {@code DefaultCitation} objects when not needed
      *
      * @param  citation The citation for which to infer the code space, or {@code null}.
      * @return A non-empty code space for the given citation without leading or trailing whitespaces,

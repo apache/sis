@@ -151,7 +151,7 @@ public final strictfp class DefinitionURITest extends TestCase {
      */
     @Test
     public void testToURN() {
-        final Identifier identifier = new SimpleIdentifier(new SimpleCitation("EPSG"), "4326");
+        final Identifier identifier = new SimpleIdentifier(new SimpleCitation("EPSG"), "4326", false);
         assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", identifier));
     }
 }
