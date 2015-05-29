@@ -24,7 +24,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.metadata.ServicesForUtility;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -126,12 +125,10 @@ public final class Code {
              *
              * A symmetrical special handling for EPSG is done in the 'forIdentifiedObject(…)' method of this class.
              */
-            if (Constants.EPSG.equalsIgnoreCase(parsed.authority) &&
-               (Constants.IOGP.equalsIgnoreCase(cs) || ServicesForUtility.OGP.equalsIgnoreCase(cs)))
-            {
+            if (org.apache.sis.internal.util.Citations.isEPSG(cs, parsed.authority)) {
                 authority = Citations.EPSG;
             } else {
-                authority = Citations.fromName(cs); // May be null.
+                authority = Citations.fromName(cs);     // May be null.
             }
             cs      = parsed.authority;
             version = parsed.version;
@@ -204,31 +201,46 @@ public final class Code {
                          * -------------------------------------
                          * Apache SIS already formats the Identifier.getCodeSpace() value in the URN.
                          * This value is "EPSG" for IdentifiedObject instances from the EPSG database.
-                         * But GML additionally have a "codeSpace" attribute, and common usage seems
-                         * to give the "OGP" or "IOGP" to that attribute as in the following example:
+                         * But GML additionally have a "codeSpace" attribute, and common usage seems to
+                         * give the "OGP" or "IOGP" value to that attribute as in the following example:
                          *
                          *     <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
                          *
                          * A discussion can be found in the comments of https://issues.apache.org/jira/browse/SIS-196
                          *
                          * Where to take this "IOGP" value from? It is not the Identifier.getCodeSpace() String value
-                         * since ISO 19115-2 clearly uses the "EPSG" value in their example.  We could consider using
+                         * since ISO 19115-1 clearly uses the "EPSG" value in their example.  We could consider using
                          * the Identifier.getAuthority() value, which is a Citation. But the "EPSG" part in above URN
                          * is named "the authority" in URN specification, which suggest that Identifier.getAuthority()
                          * should return a citation for the "EPSG Geodetic Parameter Dataset" rather than for the IOGP
                          * organisation.
                          *
-                         * Apache SIS declares IOGP as the codespace of the EPSG codespace. We could write below a code
-                         * which would go down to this deeper level in identifier hierarchy, but there is no indication
-                         * at this time that objects from other sources than SIS would follow such convention. For now
-                         * the relationship between EPSG and IOGP is hard-coded, but we could revisit this approach in
-                         * any future SIS version.
+                         * Apache SIS declares IOGP as the codespace of the EPSG codespace, i.e. the identifier of the
+                         * EPSG authority is "IOGP:EPSG". So the code below searches for the "IOGP" part of the above.
+                         * However there is no indication at this time that objects from other sources than SIS would
+                         * follow such convention, so we also keep a hard-coded "IOGP" default value for now.
                          *
                          * A symmetrical special handling for EPSG is done in the 'getIdentifier()' method of this class.
                          *
                          * See https://issues.apache.org/jira/browse/SIS-199
                          */
-                        code.codeSpace = isEPSG ? Constants.IOGP : getCodeSpace(fallback.getAuthority());
+                        final Citation authority = fallback.getAuthority();
+                        if (isEPSG) {
+                            code.codeSpace = Constants.IOGP;    // Default value if we do not find a codespace below.
+                            if (authority != null) {
+                                for (final Identifier id : authority.getIdentifiers()) {
+                                    if (Constants.EPSG.equalsIgnoreCase(id.getCode())) {
+                                        final String cs = id.getCodeSpace();
+                                        if (cs != null) {
+                                            code.codeSpace = cs;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            code.codeSpace = getCodeSpace(authority);
+                        }
                         code.code = urn;
                         return code;
                     }

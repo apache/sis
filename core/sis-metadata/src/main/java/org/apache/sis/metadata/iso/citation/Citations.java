@@ -25,7 +25,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
-import org.apache.sis.internal.metadata.ServicesForUtility;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;   // For javadoc
@@ -35,15 +34,22 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
 
 /**
  * A set of pre-defined constants and static methods working on {@linkplain Citation citations}.
- * The citation constants declared in this class are for:
+ * The most common usage for those constants is to give information about who maintains the codes
+ * that we use in identifiers.
  *
- * <ul>
- *   <li><cite>Organizations</cite> (e.g. {@linkplain #OGC})</li>
- *   <li><cite>Specifications</cite> (e.g. {@linkplain #WMS})</li>
- *   <li><cite>Authorities</cite> that maintain definitions of codes (e.g. {@linkplain #EPSG})</li>
- * </ul>
+ * <div class="note"><b>Example:</b> {@code "EPSG:4326"} is a widely-used identifier
+ * for the <cite>World Geodetic System (WGS) 1984</cite> Coordinate Reference System (CRS).
+ * The {@code "4326"} part is the identifier {@linkplain DefaultIdentifier#getCode() code} and
+ * the {@code "EPSG"} part is the identifier {@linkplain DefaultIdentifier#getCodeSpace() code space}.
+ * The meaning of codes in that code space is controlled by an {@linkplain DefaultIdentifier#getAuthority() authority},
+ * the <cite>EPSG Geodetic Parameter Dataset</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
+ * reposible party} for the EPSG dataset is the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
+ * </div>
  *
- * In the later case, the citations are actually of kind {@link IdentifierSpace}.
+ * The constants defined in this class are typically values returned by
+ * {@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}.
+ * Citations to resources that define identifiers ({@linkplain #EPSG}, {@linkplain #ISBN}, {@linkplain #ISSN},
+ * <i>etc.</i>) are instances of {@link IdentifierSpace}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -51,26 +57,57 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  * @module
  */
 public final class Citations extends Static {
-    /*
-     * NOTE: other constants are defined in org.apache.sis.internal.metadata.Standards.
-     */
-
     /**
      * The <a href="http://www.iso.org/">International Organization for Standardization</a>.
      *
-     * @category Organization
+     * @deprecated No replacement since ISO is an {@linkplain DefaultOrganisation organisation} rather than a citation.
      */
-    public static final Citation ISO = new CitationConstant("ISO");
+    @Deprecated
+    public static final Citation ISO = new SimpleCitation("ISO");
 
     /**
-     * The <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a> organization.
-     * <cite>"Open Geospatial Consortium"</cite> is the new name for <cite>"OpenGIS consortium"</cite>.
-     * An {@linkplain DefaultCitation#getAlternateTitles() alternate title} for this citation is "OGC"
-     * (according ISO 19115, alternate titles often contain abbreviations).
+     * The <cite>ISO 19115 Geographic Information — Metadata</cite> standards published by the
+     * <a href="http://www.iso.org/">International Organization for Standardization</a>.
+     * Apache SIS uses this constant for a merge of two standards:
      *
-     * @category Organization
+     * <ul>
+     *   <li>ISO 19115-1 Geographic Information — Metadata Part 1: Fundamentals</li>
+     *   <li>ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * SIS uses a single citation that encompasses all standards of the ISO 19115 series because the SIS's API
+     * tries to provide a more unified view of some classes which are splitted between the two above standards
+     * (e.g. {@code MI_Band} versus {@code MD_Band}).</div>
+     *
+     * @see org.opengis.annotation.Specification#ISO_19115
+     * @see org.opengis.annotation.Specification#ISO_19115_2
+     *
+     * @since 0.6
      */
-    public static final Citation OGC = new CitationConstant(Constants.OGC);
+    public static final Citation ISO_19115 = new CitationConstant("ISO 19115");
+
+    /**
+     * The authority for identifiers found in specifications from the
+     * <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a>.
+     * The specification actually referenced by this citation is implementation dependent
+     * and may change in future SIS version. Some of the specifications used are:
+     *
+     * <ul>
+     *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
+     *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
+     *   <li>Definition identifier URNs in OGC namespace</li>
+     * </ul>
+     *
+     * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
+     * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
+     * We do not commit to a particular OGC specification in order to keep the flexibility to change the
+     * {@linkplain DefaultCitation#getTitle() title} or URL according newer OGC publications.
+     *
+     * @see #EPSG
+     * @see #ESRI
+     */
+    public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
 
     /**
      * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
@@ -82,7 +119,7 @@ public final class Citations extends Static {
      *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
      */
     @Deprecated
-    public static final Citation OGP = new CitationConstant(Constants.IOGP);
+    public static final Citation OGP = new SimpleCitation("OGP");
 
     /**
      * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> identifier space.
@@ -98,18 +135,15 @@ public final class Citations extends Static {
      * known as <cite>EPSG Geodetic Parameter Dataset</cite>.</div>
      *
      * The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible party} is
-     * the IOGP organization, but the {@link IdentifierSpace#getName() namespace} is {@code "EPSG"}.
+     * the IOGP organization, but the {@linkplain IdentifierSpace#getName() namespace} is {@code "EPSG"}.
      * The {@code "EPSG"} name shall be used in URN, but the {@code codeSpace} attribute value in
-     * GML files can be “EPSG” or the authority abbreviation, either “IOGP” or the older “OGP”.
-     * Example:
+     * GML files can be “EPSG” or the authority abbreviation, either “IOGP” or the older “OGP”,
+     * as in the following example:
      *
      * {@preformat xml
      *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
      * }
      *
-     * @see #AUTO
-     * @see #AUTO2
-     * @see #CRS
      * @category Code space
      *
      * @since 0.4
@@ -117,35 +151,40 @@ public final class Citations extends Static {
     public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
     /**
-     * The <a href="http://sis.apache.org">Apache SIS</a> project.
+     * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
      *
      * @since 0.4
      */
     public static final Citation SIS = new CitationConstant(Constants.SIS);
 
     /**
-     * The <a href="http://www.esri.com">ESRI</a> organization.
-     * This company defines many Coordinate Reference Systems in addition to the {@linkplain #EPSG} ones.
+     * The authority for identifiers of objects provided by <a href="http://www.esri.com">ESRI</a>.
+     * This citation is used as the authority for many map projection method and parameter names
+     * other than the {@linkplain #EPSG} ones.
      *
-     * @category Organization
+     * <div class="note"><b>Note:</b>
+     * Many parameter names defined by {@linkplain #OGC} are very similar to the ESRI ones, except for the case.</div>
      *
      * @since 0.4
+     *
+     * @see #OGC
+     * @see #EPSG
      */
     public static final Citation ESRI = new CitationConstant("ESRI");
 
     /**
      * The <a href="http://www.oracle.com">Oracle</a> organization.
      *
-     * @category Organization
+     * @deprecated No replacement since Oracle is an {@linkplain DefaultOrganisation organisation} rather
+     *             than a citation, and we do not have Oracle-specific objects.
      *
      * @since 0.4
      */
+    @Deprecated
     public static final Citation ORACLE = new CitationConstant("Oracle");
 
     /**
      * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
-     *
-     * @category Specification
      *
      * @since 0.4
      */
@@ -155,25 +194,19 @@ public final class Citations extends Static {
      * The <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
      * This specification identifies some map projections by their own numerical codes.
      *
-     * @category Code space
-     *
      * @since 0.4
      */
     public static final IdentifierSpace<Integer> GEOTIFF = new CitationConstant.Authority<>("GeoTIFF");
 
     /**
-     * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
-     *
-     * @category Code space
+     * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
      *
      * @since 0.4
      */
     public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("Proj4");
 
     /**
-     * The MapInfo software. This software defines its own projection codes.
-     *
-     * @category Code space
+     * The authority for identifiers of objects defined by MapInfo.
      *
      * @since 0.6
      */
@@ -182,8 +215,6 @@ public final class Citations extends Static {
     /**
      * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
      * for digital hydrographic data</a> specification.
-     *
-     * @category Code space
      *
      * @since 0.6
      */
@@ -195,8 +226,6 @@ public final class Citations extends Static {
      * but the SIS library handles it like any other identifier.
      *
      * @see DefaultCitation#getISBN()
-     *
-     * @category Code space
      */
     public static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
 
@@ -206,8 +235,6 @@ public final class Citations extends Static {
      * but the SIS library handles it like any other identifier.
      *
      * @see DefaultCitation#getISSN()
-     *
-     * @category Code space
      */
     public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
 
@@ -215,21 +242,22 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      * Most frequently used citations (at least in SIS) should be first.
      */
-    private static final CitationConstant[] CITATIONS = {
-        (CitationConstant) EPSG,
-        (CitationConstant) OGC,
-        (CitationConstant) ISO,
-        (CitationConstant) OGP,
-        (CitationConstant) NETCDF,
-        (CitationConstant) GEOTIFF,
-        (CitationConstant) ESRI,
-        (CitationConstant) ORACLE,
-        (CitationConstant) PROJ4,
-        (CitationConstant) MAP_INFO,
-        (CitationConstant) S57,
-        (CitationConstant) ISBN,
-        (CitationConstant) ISSN,
-        (CitationConstant) SIS
+    private static final SimpleCitation[] CITATIONS = {
+        (SimpleCitation) EPSG,
+        (SimpleCitation) OGC,
+        (SimpleCitation) ISO,
+        (SimpleCitation) ISO_19115,
+        (SimpleCitation) OGP,
+        (SimpleCitation) NETCDF,
+        (SimpleCitation) GEOTIFF,
+        (SimpleCitation) ESRI,
+        (SimpleCitation) ORACLE,
+        (SimpleCitation) PROJ4,
+        (SimpleCitation) MAP_INFO,
+        (SimpleCitation) S57,
+        (SimpleCitation) ISBN,
+        (SimpleCitation) ISSN,
+        (SimpleCitation) SIS
     };
 
     static {  // Must be after CITATIONS array construction.
@@ -250,8 +278,10 @@ public final class Citations extends Static {
      * may have changed. This method notifies all citations that they will need to refresh their content.
      */
     static void refresh() {
-        for (final CitationConstant citation : CITATIONS) {
-            citation.refresh();
+        for (final SimpleCitation citation : CITATIONS) {
+            if (citation instanceof CitationConstant) {
+                ((CitationConstant) citation).refresh();
+            }
         }
     }
 
@@ -272,16 +302,15 @@ public final class Citations extends Static {
         if (identifier == null || ((identifier = CharSequences.trimWhitespaces(identifier)).isEmpty())) {
             return null;
         }
-        for (final CitationConstant citation : CITATIONS) {
+        for (final SimpleCitation citation : CITATIONS) {
             if (equalsFiltered(identifier, citation.title)) {
                 return citation;
             }
         }
         /*
-         * Additional identifiers other than the ones declared to CitationConstant constructors. Those identifiers
-         * shall be the same than the ones added by 'ServicesForUtility.createCitation(String)'.
+         * Temporary check to be removed after we deleted the deprecated citation.
          */
-        if (equalsFiltered(identifier, ServicesForUtility.OGP)) {
+        if (equalsFiltered(identifier, Constants.IOGP)) {
             return OGP;
         }
         /*
@@ -371,23 +400,26 @@ public final class Citations extends Static {
      *
      * <ul>
      *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the citation contains at least one
-     *       non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated}
-     *       {@linkplain DefaultCitation#getIdentifiers() identifier}, then:
+     *   <li>Otherwise if the collection of {@linkplain DefaultCitation#getIdentifiers() citation identifiers}
+     *       contains at least one non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated}
+     *       identifier, then:
      *     <ul>
-     *       <li>If at least one non-deprecated identifier is a
-     *           {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier unicode identifier},
-     *           then the shortest of those identifiers is returned.</li>
-     *       <li>Otherwise the shortest non-deprecated identifier is returned,
-     *           despite not being a Unicode identifier.</li>
+     *       <li>If the code and codespace of at least one non-deprecated identifier are
+     *           {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier unicode identifiers}, then
+     *           the <strong>first</strong> of those identifiers is returned in a {@code "[codespace:]code"} format.
+     *           Only the first character of the resulting string needs to be an
+     *           {@linkplain Character#isUnicodeIdentifierStart(int) identifier start character}.</li>
+     *       <li>Otherwise the first non-empty and non-deprecated identifier is returned in a
+     *           {@code "[codespace:]code"} format, despite not being a valid Unicode identifier.</li>
      *     </ul>
      *   </li>
-     *   <li>Otherwise if the citation contains at least one {@linkplain DefaultCitation#getTitle() title} or
-     *       {@linkplain DefaultCitation#getAlternateTitles() alternate title}, then:
+     *   <li>Otherwise if the citation contains at least one non-deprecated {@linkplain DefaultCitation#getTitle() title}
+     *       or {@linkplain DefaultCitation#getAlternateTitles() alternate title}, then:
      *     <ul>
-     *       <li>If at least one title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
-     *           unicode identifier}, then the shortest of those titles is returned.</li>
-     *       <li>Otherwise the shortest title is returned, despite not being a Unicode identifier.</li>
+     *       <li>If at least one non-deprecated title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
+     *           unicode identifier}, then the <strong>first</strong> of those titles is returned.</li>
+     *       <li>Otherwise the first non-empty and non-deprecated title is returned,
+     *           despite not being a valid Unicode identifier.</li>
      *     </ul>
      *   </li>
      *   <li>Otherwise this method returns {@code null}.</li>
@@ -396,7 +428,7 @@ public final class Citations extends Static {
      * <div class="note"><b>Note:</b>
      * This method searches in alternate titles as a fallback because ISO specification said
      * that those titles are often used for abbreviations. However titles are never searched
-     * if the given citation contains at least one identifier.</div>
+     * if the given citation contains at least one non-empty and non-deprecated identifier.</div>
      *
      * This method ignores leading and trailing {@linkplain Character#isWhitespace(int) whitespaces}
      * in every character sequences. Null or empty trimmed character sequences are ignored.
@@ -419,7 +451,9 @@ public final class Citations extends Static {
      * for processing purpose. This method performs the following actions:
      *
      * <ul>
-     *   <li>First, invoke {@link #getIdentifier(Citation)}.</li>
+     *   <li>First, performs the same work than {@link #getIdentifier(Citation)} except that {@code '_'}
+     *       is used instead of {@link org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR ':'}
+     *       as the separator between the codespace and the code.</li>
      *   <li>If the result of above method call is {@code null} or is not a
      *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier valid Unicode identifier},
      *       then return {@code null}.</li>
@@ -432,8 +466,17 @@ public final class Citations extends Static {
      * Those characters are illegal in XML identifiers, and should therfore be removed if the Unicode identifier
      * may also be used as XML identifier.</div>
      *
-     * If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters
-     * ({@code µ}, {@code ª} (feminine ordinal indicator), {@code º} (masculine ordinal indicator) and {@code ⁔}).
+     * If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.
+     *
+     * <div class="note"><b>Note:</b>
+     * the following characters are invalid in XML identifiers. However since they are valid in Unicode identifiers,
+     * they could be included in the string returned by this method:
+     * <ul>
+     *   <li>{@code µ}</li>
+     *   <li>{@code ª} (feminine ordinal indicator)</li>
+     *   <li>{@code º} (masculine ordinal indicator)</li>
+     *   <li>{@code ⁔}</li>
+     * </ul></div>
      *
      * @param  citation The citation for which to get the Unicode identifier, or {@code null}.
      * @return A non-empty Unicode identifier for the given citation without leading or trailing whitespaces,

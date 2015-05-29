@@ -81,7 +81,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertEquals("authority", "IOGP", Citations.getIdentifier(identifier.getAuthority()));
+        assertEquals("authority", "OGP",  Citations.getIdentifier(identifier.getAuthority()));  // May change after resolution of SIS-200.
         assertNull  ("version",           identifier.getVersion());
         assertNull  ("description",       identifier.getDescription());
 

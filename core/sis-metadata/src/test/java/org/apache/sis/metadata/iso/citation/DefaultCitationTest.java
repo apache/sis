@@ -59,13 +59,13 @@ public final strictfp class DefaultCitationTest extends TestCase {
          */
         assertNull("ISSN shall be initially null.", citation.getISSN());
         citation.setIdentifiers(Arrays.asList(
-                new DefaultIdentifier(Citations.OGC,  "MyOGC"),
-                new DefaultIdentifier(Citations.EPSG, "MyEPSG"),
-                new DefaultIdentifier(Citations.ISBN, "MyIgnored"),
-                new DefaultIdentifier(Citations.ISSN, "MyISSN")));
+                new DefaultIdentifier(Citations.NETCDF, "MyNetCDF"),
+                new DefaultIdentifier(Citations.EPSG,   "MyEPSG"),
+                new DefaultIdentifier(Citations.ISBN,   "MyIgnored"),
+                new DefaultIdentifier(Citations.ISSN,   "MyISSN")));
 
         assertEquals("The ISBN value shall not have been overwritten.",    "MyISBN", citation.getISBN());
         assertEquals("The ISSN value shall have been added, because new.", "MyISSN", citation.getISSN());
-        assertEquals("{OGC=“MyOGC”, EPSG=“MyEPSG”, ISSN=“MyISSN”, ISBN=“MyISBN”}", identifierMap.toString());
+        assertEquals("{NetCDF=“MyNetCDF”, EPSG=“MyEPSG”, ISSN=“MyISSN”, ISBN=“MyISBN”}", identifierMap.toString());
     }
 }

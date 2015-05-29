@@ -20,13 +20,14 @@ import java.util.Locale;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -46,23 +47,24 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testFromName() throws IllegalAccessException {
-        assertSame(ISO,      fromName("ISO"));
-        assertSame(OGC,      fromName(Constants.OGC));
-        assertSame(EPSG,     fromName(Constants.EPSG));  // This one is most important.
-        assertSame(OGP,      fromName(Constants.IOGP));  // For parsing GML "codeSpace" attribute.
-        assertSame(OGP,      fromName("OGP"));           // Sometime seen in GML instead of "IOGP".
-        assertSame(SIS,      fromName(Constants.SIS));
-        assertSame(ESRI,     fromName("ESRI"));
-        assertSame(ORACLE,   fromName("Oracle"));
-        assertSame(NETCDF,   fromName("NetCDF"));
-        assertSame(GEOTIFF,  fromName("GeoTIFF"));
-        assertSame(PROJ4,    fromName("Proj.4"));
-        assertSame(PROJ4,    fromName("Proj4"));
-        assertSame(MAP_INFO, fromName("MapInfo"));
-        assertSame(S57,      fromName("S-57"));
-        assertSame(S57,      fromName("S57"));
-        assertSame(ISBN,     fromName("ISBN"));
-        assertSame(ISSN,     fromName("ISSN"));
+        assertSame(ISO,       fromName("ISO"));
+        assertSame(ISO_19115, fromName("ISO 19115"));
+        assertSame(OGC,       fromName(Constants.OGC));
+        assertSame(EPSG,      fromName(Constants.EPSG));  // This one is most important.
+        assertSame(OGP,       fromName(Constants.IOGP));  // For parsing GML "codeSpace" attribute.
+        assertSame(OGP,       fromName("OGP"));           // Sometime seen in GML instead of "IOGP".
+        assertSame(SIS,       fromName(Constants.SIS));
+        assertSame(ESRI,      fromName("ESRI"));
+        assertSame(ORACLE,    fromName("Oracle"));
+        assertSame(NETCDF,    fromName("NetCDF"));
+        assertSame(GEOTIFF,   fromName("GeoTIFF"));
+        assertSame(PROJ4,     fromName("Proj.4"));
+        assertSame(PROJ4,     fromName("Proj4"));
+        assertSame(MAP_INFO,  fromName("MapInfo"));
+        assertSame(S57,       fromName("S-57"));
+        assertSame(S57,       fromName("S57"));
+        assertSame(ISBN,      fromName("ISBN"));
+        assertSame(ISSN,      fromName("ISSN"));
         /*
          * Verify again, but using reflection for making sure that the field names
          * are consistent and that we did not forgot any citation constant.
@@ -81,20 +83,21 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testGetIdentifier() {
-        assertEquals("ISO",     getIdentifier(ISO));
-        assertEquals("OGC",     getIdentifier(OGC));
-        assertEquals("IOGP",    getIdentifier(OGP));
-        assertEquals("EPSG",    getIdentifier(EPSG));
-        assertEquals("SIS",     getIdentifier(SIS));
-        assertEquals("ESRI",    getIdentifier(ESRI));
-        assertEquals("Oracle",  getIdentifier(ORACLE));
-        assertEquals("NetCDF",  getIdentifier(NETCDF));
-        assertEquals("GeoTIFF", getIdentifier(GEOTIFF));
-        assertEquals("MapInfo", getIdentifier(MAP_INFO));
-        assertEquals("ISBN",    getIdentifier(ISBN));
-        assertEquals("ISSN",    getIdentifier(ISSN));
-        assertEquals("Proj.4",  getIdentifier(PROJ4));  // Not a valid Unicode identifier.
-        assertEquals("S-57",    getIdentifier(S57));    // Not a valid Unicode identifier.
+        assertEquals("ISO",        getIdentifier(ISO));
+        assertEquals("ISO:19115",  getIdentifier(ISO_19115));
+        assertEquals("OGC",        getIdentifier(OGC));
+        assertEquals("OGP",        getIdentifier(OGP));
+        assertEquals("EPSG",       getIdentifier(EPSG));
+        assertEquals("SIS",        getIdentifier(SIS));
+        assertEquals("ESRI",       getIdentifier(ESRI));
+        assertEquals("Oracle",     getIdentifier(ORACLE));
+        assertEquals("NetCDF",     getIdentifier(NETCDF));
+        assertEquals("GeoTIFF",    getIdentifier(GEOTIFF));
+        assertEquals("MapInfo",    getIdentifier(MAP_INFO));
+        assertEquals("ISBN",       getIdentifier(ISBN));
+        assertEquals("ISSN",       getIdentifier(ISSN));
+        assertEquals("Proj.4",     getIdentifier(PROJ4));  // Not a valid Unicode identifier.
+        assertEquals("S-57",       getIdentifier(S57));    // Not a valid Unicode identifier.
     }
 
     /**
@@ -104,20 +107,21 @@ public final strictfp class CitationsTest extends TestCase {
     @Test
     @DependsOnMethod("testGetIdentifier")
     public void testGetUnicodeIdentifier() {
-        assertEquals("ISO",     getUnicodeIdentifier(ISO));
-        assertEquals("OGC",     getUnicodeIdentifier(OGC));
-        assertEquals("IOGP",    getUnicodeIdentifier(OGP));
-        assertEquals("EPSG",    getUnicodeIdentifier(EPSG));
-        assertEquals("SIS",     getUnicodeIdentifier(SIS));
-        assertEquals("ESRI",    getUnicodeIdentifier(ESRI));
-        assertEquals("Oracle",  getUnicodeIdentifier(ORACLE));
-        assertEquals("NetCDF",  getUnicodeIdentifier(NETCDF));
-        assertEquals("GeoTIFF", getUnicodeIdentifier(GEOTIFF));
-        assertEquals("MapInfo", getUnicodeIdentifier(MAP_INFO));
-        assertEquals("ISBN",    getUnicodeIdentifier(ISBN));
-        assertEquals("ISSN",    getUnicodeIdentifier(ISSN));
-        assertNull  ("Proj4",   getUnicodeIdentifier(PROJ4));   // Not yet publicly declared as an identifier.
-        assertNull  ("S57",     getUnicodeIdentifier(S57));     // Not yet publicly declared as an identifier.
+        assertEquals("ISO",        getUnicodeIdentifier(ISO));
+        assertEquals("ISO_19115",  getUnicodeIdentifier(ISO_19115));
+        assertEquals("OGC",        getUnicodeIdentifier(OGC));
+        assertEquals("OGP",        getUnicodeIdentifier(OGP));
+        assertEquals("EPSG",       getUnicodeIdentifier(EPSG));
+        assertEquals("SIS",        getUnicodeIdentifier(SIS));
+        assertEquals("ESRI",       getUnicodeIdentifier(ESRI));
+        assertEquals("Oracle",     getUnicodeIdentifier(ORACLE));
+        assertEquals("NetCDF",     getUnicodeIdentifier(NETCDF));
+        assertEquals("GeoTIFF",    getUnicodeIdentifier(GEOTIFF));
+        assertEquals("MapInfo",    getUnicodeIdentifier(MAP_INFO));
+        assertEquals("ISBN",       getUnicodeIdentifier(ISBN));
+        assertEquals("ISSN",       getUnicodeIdentifier(ISSN));
+        assertNull  ("Proj4",      getUnicodeIdentifier(PROJ4));      // Not yet publicly declared as an identifier.
+        assertNull  ("S57",        getUnicodeIdentifier(S57));        // Not yet publicly declared as an identifier.
     }
 
     /**
@@ -127,20 +131,21 @@ public final strictfp class CitationsTest extends TestCase {
     @Test
     @DependsOnMethod("testGetUnicodeIdentifier")
     public void testGetCodeSpace() {
-        assertEquals("ISO",     org.apache.sis.internal.util.Citations.getCodeSpace(ISO));
-        assertEquals("OGC",     org.apache.sis.internal.util.Citations.getCodeSpace(OGC));
-        assertEquals("IOGP",    org.apache.sis.internal.util.Citations.getCodeSpace(OGP));
-        assertEquals("EPSG",    org.apache.sis.internal.util.Citations.getCodeSpace(EPSG));
-        assertEquals("SIS",     org.apache.sis.internal.util.Citations.getCodeSpace(SIS));
-        assertEquals("ESRI",    org.apache.sis.internal.util.Citations.getCodeSpace(ESRI));
-        assertEquals("Oracle",  org.apache.sis.internal.util.Citations.getCodeSpace(ORACLE));
-        assertEquals("NetCDF",  org.apache.sis.internal.util.Citations.getCodeSpace(NETCDF));
-        assertEquals("GeoTIFF", org.apache.sis.internal.util.Citations.getCodeSpace(GEOTIFF));
-        assertEquals("MapInfo", org.apache.sis.internal.util.Citations.getCodeSpace(MAP_INFO));
-        assertEquals("ISBN",    org.apache.sis.internal.util.Citations.getCodeSpace(ISBN));
-        assertEquals("ISSN",    org.apache.sis.internal.util.Citations.getCodeSpace(ISSN));
-        assertEquals("Proj4",   org.apache.sis.internal.util.Citations.getCodeSpace(PROJ4));
-        assertEquals("S57",     org.apache.sis.internal.util.Citations.getCodeSpace(S57));
+        assertEquals("ISO",        org.apache.sis.internal.util.Citations.getCodeSpace(ISO));
+        assertEquals("ISO_19115",  org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19115));
+        assertEquals("OGC",        org.apache.sis.internal.util.Citations.getCodeSpace(OGC));
+        assertEquals("OGP",        org.apache.sis.internal.util.Citations.getCodeSpace(OGP));
+        assertEquals("EPSG",       org.apache.sis.internal.util.Citations.getCodeSpace(EPSG));
+        assertEquals("SIS",        org.apache.sis.internal.util.Citations.getCodeSpace(SIS));
+        assertEquals("ESRI",       org.apache.sis.internal.util.Citations.getCodeSpace(ESRI));
+        assertEquals("Oracle",     org.apache.sis.internal.util.Citations.getCodeSpace(ORACLE));
+        assertEquals("NetCDF",     org.apache.sis.internal.util.Citations.getCodeSpace(NETCDF));
+        assertEquals("GeoTIFF",    org.apache.sis.internal.util.Citations.getCodeSpace(GEOTIFF));
+        assertEquals("MapInfo",    org.apache.sis.internal.util.Citations.getCodeSpace(MAP_INFO));
+        assertEquals("ISBN",       org.apache.sis.internal.util.Citations.getCodeSpace(ISBN));
+        assertEquals("ISSN",       org.apache.sis.internal.util.Citations.getCodeSpace(ISSN));
+        assertEquals("Proj4",      org.apache.sis.internal.util.Citations.getCodeSpace(PROJ4));
+        assertEquals("S57",        org.apache.sis.internal.util.Citations.getCodeSpace(S57));
     }
 
     /**
@@ -148,17 +153,33 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testGetTitles() {
-        assertEquals("International Organization for Standardization",    ISO    .getTitle().toString(Locale.US));
-        assertEquals("Open Geospatial Consortium",                        OGC    .getTitle().toString(Locale.US));
-        assertEquals("International Association of Oil & Gas producers",  OGP    .getTitle().toString(Locale.US));
-        assertEquals("EPSG Geodetic Parameter Dataset",                   EPSG   .getTitle().toString(Locale.US));
-        assertEquals("Apache Spatial Information System",                 SIS    .getTitle().toString(Locale.US));
-        assertEquals("International Standard Book Number",                ISBN   .getTitle().toString(Locale.US));
-        assertEquals("International Standard Serial Number",              ISSN   .getTitle().toString(Locale.US));
-        assertEquals("GeoTIFF",                                           GEOTIFF.getTitle().toString(Locale.US));
-        assertEquals("NetCDF",                                            NETCDF .getTitle().toString(Locale.US));
-        assertEquals("Proj.4",                                            PROJ4  .getTitle().toString(Locale.US));
-        assertEquals("S-57",                                              S57    .getTitle().toString(Locale.US));
+        assertEquals("ISO 19115 Geographic Information — Metadata",       ISO_19115.getTitle().toString(Locale.US));
+        assertEquals("Identifier in OGC namespace",                       OGC      .getTitle().toString(Locale.US));
+        assertEquals("EPSG Geodetic Parameter Dataset",                   EPSG     .getTitle().toString(Locale.US));
+        assertEquals("Apache Spatial Information System",                 SIS      .getTitle().toString(Locale.US));
+        assertEquals("International Standard Book Number",                ISBN     .getTitle().toString(Locale.US));
+        assertEquals("International Standard Serial Number",              ISSN     .getTitle().toString(Locale.US));
+        assertEquals("GeoTIFF",                                           GEOTIFF  .getTitle().toString(Locale.US));
+        assertEquals("NetCDF",                                            NETCDF   .getTitle().toString(Locale.US));
+        assertEquals("Proj.4",                                            PROJ4    .getTitle().toString(Locale.US));
+        assertEquals("S-57",                                              S57      .getTitle().toString(Locale.US));
+    }
+
+    /**
+     * Tests {@code getCitedResponsibleParties()} on some {@code Citation} constants.
+     */
+    @Test
+    public void testGetCitedResponsibleParty() {
+        assertEquals("Open Geospatial Consortium",                       getCitedResponsibleParty(OGC));
+        assertEquals("International Organization for Standardization",   getCitedResponsibleParty(ISO_19115));
+        assertEquals("International Association of Oil & Gas producers", getCitedResponsibleParty(EPSG));
+    }
+
+    /**
+     * Returns the responsible party for the given constant.
+     */
+    private static String getCitedResponsibleParty(final Citation citation) {
+        return getSingleton(getSingleton(citation.getCitedResponsibleParties()).getParties()).getName().toString(Locale.US);
     }
 
     /**
@@ -170,8 +191,7 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testEPSG() {
-        final Identifier identifier = TestUtilities.getSingleton(EPSG.getIdentifiers());
-        assertEquals("IOGP", getUnicodeIdentifier(identifier.getAuthority()));
+        final Identifier identifier = getSingleton(EPSG.getIdentifiers());
         assertEquals("EPSG", getUnicodeIdentifier(EPSG));
         assertEquals("IOGP", identifier.getCodeSpace());
         assertEquals("EPSG", identifier.getCode());
@@ -186,7 +206,7 @@ public final strictfp class CitationsTest extends TestCase {
     @DependsOnMethod("testFromName")
     public void testSerialization() throws IllegalAccessException {
         for (final Field field : Citations.class.getFields()) {
-            if (Citation.class.isAssignableFrom(field.getType())) {
+            if (CitationConstant.class.isAssignableFrom(field.getType())) {
                 final Object c = field.get(null);
                 assertSame(field.getName(), c, assertSerializedEquals(c));
             }
