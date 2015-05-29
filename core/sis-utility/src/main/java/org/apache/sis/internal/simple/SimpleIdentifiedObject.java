@@ -43,7 +43,7 @@ import java.util.Objects;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.3
+ * @version 0.5
  * @module
  *
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
@@ -251,7 +251,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         buffer.append(code).append('"');
         final String identifier = Citations.getIdentifier(authority, true);
         if (identifier != null) {
-            buffer.append(", ID[\"").append(identifier).append("\"]");
+            buffer.append(", Id[\"").append(identifier).append("\"]");   // "Id" should be consistent with WKTKeywords.Id.
         }
         return buffer.append(']').toString();
     }

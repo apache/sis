@@ -26,7 +26,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.opengis.referencing.datum.Datum.*;
 
@@ -174,7 +174,7 @@ public final strictfp class HardCodedDatum {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, name);
         if (code != null) {
-            properties.put(IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, code));
+            properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, code));
         }
         if (scope != null) {
             properties.put(SCOPE_KEY, scope);

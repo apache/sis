@@ -23,6 +23,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -97,6 +98,23 @@ public final strictfp class CodeTest extends TestCase {
         final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
         assertNotNull(value);
         assertEquals("codeSpace", Constants.IOGP, value.codeSpace);
+        assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
+    }
+
+    /**
+     * Tests {@link Code#forIdentifiedObject(Class, Iterable)} with the legacy "OGP" codespace
+     * (instead of "IOGP").
+     */
+    @Test
+    @DependsOnMethod("testForIdentifiedObject")
+    public void testLegacyCodeSpace() {
+        final DefaultCitation authority = new DefaultCitation("EPSG");
+        authority.getIdentifiers().add(new ImmutableIdentifier(null, "OGP", "EPSG"));
+
+        final Identifier id = new ImmutableIdentifier(authority, "EPSG", "4326", "8.2", null);
+        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
+        assertNotNull(value);
+        assertEquals("codeSpace", "OGP", value.codeSpace);
         assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
     }
 

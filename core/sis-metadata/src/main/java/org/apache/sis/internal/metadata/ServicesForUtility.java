@@ -16,19 +16,18 @@
  */
 package org.apache.sis.internal.metadata;
 
-import java.util.Arrays;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
-import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -77,65 +76,75 @@ public final class ServicesForUtility extends MetadataServices {
      */
     @Override
     public Citation createCitation(final String key) {
-        String   title;              // Title of the Citation to create.
-        int      storeKeyAs = 1;     // 0 to not store the key, 1 to store as alternate title, 2 to store as identifier.
-        Citation authority  = null;  // If the key is stored as an identifier (storeKeyAs = 2), the authority to use.
+        CharSequence     title;
+        CharSequence     alternateTitle        = null;
+        String           code                  = null;
+        String           codeSpace             = null;
+        CharSequence     citedResponsibleParty = null;
+        PresentationForm presentationForm      = null;
         switch (key) {
-            case "ISO"          : title = "International Organization for Standardization"; break;
-            case Constants.OGC  : title = "Open Geospatial Consortium"; break;
-            case Constants.IOGP : title = "International Association of Oil & Gas producers"; break;
-            case Constants.EPSG : title = "EPSG Geodetic Parameter Dataset"; storeKeyAs = 2; authority = Citations.OGP; break;
-            case Constants.SIS  : title = "Apache Spatial Information System"; storeKeyAs = 2; break;
-            case "ISBN"         : title = "International Standard Book Number"; break;
-            case "ISSN"         : title = "International Standard Serial Number"; break;
-            case "Proj4"        : title = "Proj.4"; storeKeyAs = 0; break;
-            case "S57"          : title = "S-57"; storeKeyAs = 0; break;
+            case "ISO 19115": {
+                title     = "ISO 19115 Geographic Information — Metadata";
+                code      = "19115";
+                codeSpace = "ISO";
+                citedResponsibleParty = "International Organization for Standardization";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case Constants.OGC: {
+                title     = "Identifier in OGC namespace";
+                code      = "OGC";
+                citedResponsibleParty = "Open Geospatial Consortium";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case Constants.EPSG: {
+                title     = "EPSG Geodetic Parameter Dataset";
+                code      = Constants.EPSG;
+                codeSpace = Constants.IOGP;
+                citedResponsibleParty = "International Association of Oil & Gas producers";
+                presentationForm = PresentationForm.TABLE_DIGITAL;
+                /*
+                 * More complete information is provided as an ISO 19115 structure
+                 * in EPSG Surveying and Positioning Guidance Note Number 7, part 1.
+                 */
+                break;
+            }
+            case Constants.SIS: {
+                title = "Apache Spatial Information System";
+                code  = key;
+                break;
+            }
+            case "ISBN": {
+                title = "International Standard Book Number";
+                alternateTitle = key;
+                break;
+            }
+            case "ISSN": {
+                title = "International Standard Serial Number";
+                alternateTitle = key;
+                break;
+            }
+            case "Proj4": {
+                title = "Proj.4";
+                break;
+            }
+            case "S57": {
+                title = "S-57";
+                break;
+            }
             default: return super.createCitation(key);
         }
         final DefaultCitation c = new DefaultCitation(title);
-        switch (storeKeyAs) {
-            case 1: c.getAlternateTitles().add(new SimpleInternationalString(key)); break;
-            case 2: c.getIdentifiers().add(new SimpleIdentifier(authority, key, false)); break;
-        }
-        /*
-         * Additional information other than the given 'key' argument. All identifiers added here shall also be
-         * understood by Citations.fromName(String) method. Constants are declared below this method for making
-         * easier to track those special cases.
-         */
-        switch (key) {
-            /*
-             * More complete information is provided as an ISO 19115 structure
-             * in EPSG Surveying and Positioning Guidance Note Number 7, part 1.
-             */
-            case Constants.EPSG: {
-                final DefaultOrganisation organisation = new DefaultOrganisation();
-                organisation.setName(Citations.OGP.getTitle());
-                c.getCitedResponsibleParties().add(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null, organisation));
-                c.getPresentationForms().add(PresentationForm.TABLE_DIGITAL);
-                break;
-            }
-            /*
-             * "OGP" and "IOGP" are used as value in the GML 'codeSpace' attribute.
-             * From this point of view, we can see them as identifiers.
-             */
-            case Constants.IOGP: {
-                c.setIdentifiers(Arrays.asList(new SimpleIdentifier[] {
-                    new SimpleIdentifier(null, Constants.IOGP, false),
-                    new SimpleIdentifier(null, OGP, true)   // Existed before "IOGP".
-                }));
-                break;
-            }
+        if (alternateTitle        != null) c.getAlternateTitles().add(Types.toInternationalString(alternateTitle));
+        if (code                  != null) c.getIdentifiers().add(new ImmutableIdentifier(null, codeSpace, code));
+        if (presentationForm      != null) c.getPresentationForms().add(presentationForm);
+        if (citedResponsibleParty != null) {
+            final DefaultOrganisation organisation = new DefaultOrganisation();
+            organisation.setName(Types.toInternationalString(citedResponsibleParty));
+            c.getCitedResponsibleParties().add(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null, organisation));
         }
         c.freeze();
         return c;
     }
-
-    /**
-     * The legacy name of {@linkplain org.apache.sis.metadata.iso.citation.Citations#IOGP},
-     * to be declared as an additional identifier by {@link #createCitation(String)}.
-     *
-     * <p>Search for usages of this constant in order to locate where a special processing
-     * is done for managing the relationship between OGP, IOGP and EPSG identifiers.</p>
-     */
-    public static final String OGP = "OGP";
 }

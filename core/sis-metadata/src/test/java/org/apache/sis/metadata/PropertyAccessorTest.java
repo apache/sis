@@ -238,7 +238,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
+        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19111, type, type),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
@@ -269,32 +269,33 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * {@preformat text
      *   DefaultCitation
      *     ├─Title…………………………………… International Organization for Standardization
-     *     ├─Alternate title………… ISO
+     *     ├─Alternate title………… ISO 19111
      *     ├─Identifier
-     *     │   └─Code…………………………… ISO
+     *     │   ├─Code…………………………… 19111
+     *     │   └─Code space…………… ISO
      *     └─Presentation form…… Document digital
      * }
      */
     @Test
     @DependsOnMethod("testConstructor")
     public void testGet() {
-        final DefaultCitation  instance = HardCodedCitations.ISO;
+        final DefaultCitation  instance = HardCodedCitations.ISO_19111;
         final PropertyAccessor accessor = createPropertyAccessor();
 
         // Singleton value (not a collection)
         final Object title = accessor.get(accessor.indexOf("title", true), instance);
         assertInstanceOf("title", InternationalString.class, title);
-        assertEquals("title", "International Organization for Standardization", title.toString());
+        assertEquals("title", "Spatial referencing by coordinates", title.toString());
 
         // Collection of InternationalStrings
         final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), instance);
         assertInstanceOf("alternateTitles", Collection.class, alternateTitles);
-        assertEquals("alternateTitles", "ISO", getSingleton((Collection<?>) alternateTitles).toString());
+        assertEquals("alternateTitles", "ISO 19111", getSingleton((Collection<?>) alternateTitles).toString());
 
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
         assertInstanceOf("identifiers", Collection.class, identifiers);
-        assertContainsIdentifierCode("ISO", (Collection<?>) identifiers);
+        assertContainsIdentifierCode("19111", (Collection<?>) identifiers);
     }
 
     /**

@@ -301,7 +301,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Sets the organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
+     * {@linkplain #getCode() code}.
      *
      * @param newValue The new authority.
      */

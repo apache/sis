@@ -28,6 +28,8 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
 
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
+
 // Branch-dependent imports
 import java.util.Objects;
 
@@ -50,6 +52,26 @@ public final class Citations extends Static {
     }
 
     /**
+     * Returns {@code true} if the given code is {@code "EPSG"} while the codespace is {@code "IOGP"} or {@code "OGP"}
+     * (ignoring case). This particular combination of code and codespace is handled in a special way.
+     *
+     * <p>This method can be used for identifying where in Apache SIS source code the relationship between
+     * EPSG authority and IOGP code space is hard-coded.</p>
+     *
+     * @param  codeSpace The identifier code space, or {@code null}.
+     * @param  code The identifier code, or {@code null}.
+     * @return {@code true} if the given identifier is {@code "IOGP:EPSG"}.
+     *
+     * @see org.apache.sis.metadata.iso.citation.Citations#EPSG
+     */
+    public static boolean isEPSG(final String codeSpace, final String code) {
+        return Constants.EPSG.equalsIgnoreCase(code) &&
+              (Constants.IOGP.equalsIgnoreCase(codeSpace) || "OGP".equalsIgnoreCase(codeSpace) ||
+               Constants.EPSG.equalsIgnoreCase(codeSpace));
+        // "OGP" is a legacy abbreviation that existed before "IOGP".
+    }
+
+    /**
      * Returns the collection iterator, or {@code null} if the given collection is null
      * or empty. We use this method as a paranoiac safety against broken implementations.
      *
@@ -69,12 +91,13 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns a "unlocalized" string representation of the given international string,
-     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation, boolean)},
-     * which is why we don't want the localized string.
+     * Returns a "unlocalized" string representation of the given international string, or {@code null} if none
+     * or if the string is deprecated. This method is used by {@link #getIdentifier(Citation, boolean)}, which
+     * is why we don't want the localized string.
      */
     private static String toString(final InternationalString title) {
-        return (title != null) ? CharSequences.trimWhitespaces(title.toString(Locale.ROOT)) : null;
+        return (title != null && !isDeprecated(title))
+               ? CharSequences.trimWhitespaces(title.toString(Locale.ROOT)) : null;
     }
 
     /**
@@ -331,32 +354,57 @@ public final class Citations extends Static {
      * @param  strict {@code true} for returning a non-null value only if the identifier is a valid Unicode identifier.
      * @return A non-empty identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-201">SIS-201</a>
      */
     public static String getIdentifier(final Citation citation, final boolean strict) {
-        boolean isUnicode = false;      // Whether 'identifier' is a Unicode identifier.
-        String identifier = null;
         if (citation != null) {
+            boolean isUnicode = false;      // Whether 'identifier' is a Unicode identifier.
+            String identifier = null;       // The best identifier found so far.
+            String codeSpace  = null;       // Code space of the identifier, or null if none.
             final Iterator<? extends Identifier> it = iterator(citation.getIdentifiers());
             if (it != null) while (it.hasNext()) {
                 final Identifier id = it.next();
                 if (id != null && !isDeprecated(id)) {
                     final String candidate = CharSequences.trimWhitespaces(id.getCode());
-                    if (candidate != null) {
-                        final int length = candidate.length();
-                        if (length != 0 && (identifier == null || length < identifier.length())) {
-                            final boolean s = CharSequences.isUnicodeIdentifier(candidate);
-                            if (s || !isUnicode) {
-                                identifier = candidate;
-                                isUnicode = s;
+                    if (candidate != null && !candidate.isEmpty()) {
+                        /*
+                         * For a non-empty identifier. Verify if both the code ans its codespace are valid
+                         * Unicode identifiers. If a codespace exist, the code does not need to begin with
+                         * a "Unicode identifier start" (it may be a "Unicode identifier part").
+                         */
+                        String cs = CharSequences.trimWhitespaces(id.getCodeSpace());
+                        if (cs == null || cs.isEmpty()) {
+                            cs = null;
+                            isUnicode = CharSequences.isUnicodeIdentifier(candidate);
+                        } else {
+                            isUnicode = CharSequences.isUnicodeIdentifier(cs);
+                            if (isUnicode) for (int i = 0; i < candidate.length();) {
+                                final int c = candidate.codePointAt(i);
+                                if (!Character.isUnicodeIdentifierPart(c)) {
+                                    isUnicode = false;
+                                    break;
+                                }
+                                i += Character.charCount(c);
                             }
+                        }
+                        /*
+                         * If we found a Unicode identifier, we are done and we can exit the loop.
+                         * Otherwise retain the first identifier and continue the search for Unicode identifier.
+                         */
+                        if (identifier == null || isUnicode) {
+                            identifier = candidate;
+                            codeSpace  = cs;
+                            if (isUnicode) break;
                         }
                     }
                 }
             }
             /*
-             * If no identifier has been found, fallback on the shortest title or alternate title.
-             * We search for alternate titles because ISO specification said that those titles are
-             * often used for abbreviations.
+             * If no identifier has been found, fallback on the first title or alternate title.
+             * We search for alternate titles because ISO specification said that those titles
+             * are often used for abbreviations. Again we give preference to Unicode identifiers,
+             * which are typically alternate titles.
              */
             if (identifier == null) {
                 identifier = toString(citation.getTitle());     // Whitepaces removed by toString(…).
@@ -367,23 +415,34 @@ public final class Citations extends Static {
                         isUnicode = CharSequences.isUnicodeIdentifier(identifier);
                     }
                 }
-                final Iterator<? extends InternationalString> iterator = iterator(citation.getAlternateTitles());
-                if (iterator != null) while (iterator.hasNext()) {
-                    final String candidate = toString(iterator.next());
-                    if (candidate != null) {
-                        final int length = candidate.length();
-                        if (length != 0 && (identifier == null || length < identifier.length())) {
-                            final boolean s = CharSequences.isUnicodeIdentifier(candidate);
-                            if (s || !isUnicode) {
+                if (!isUnicode) {
+                    final Iterator<? extends InternationalString> iterator = iterator(citation.getAlternateTitles());
+                    if (iterator != null) while (iterator.hasNext()) {
+                        final String candidate = toString(iterator.next());
+                        if (candidate != null && !candidate.isEmpty()) {
+                            isUnicode = CharSequences.isUnicodeIdentifier(candidate);
+                            if (identifier == null || isUnicode) {
                                 identifier = candidate;
-                                isUnicode = s;
+                                if (isUnicode) break;
                             }
                         }
                     }
                 }
             }
+            /*
+             * Finished searching in the identifiers, title and alternate titles. If the identifier that
+             * we found is not a valid Unicode identifier, we will return it only if the caller did not
+             * asked for strictly valid Unicode identifier.
+             */
+            if (isUnicode || !strict) {
+                if (codeSpace != null && !isEPSG(codeSpace, identifier)) {
+                    return codeSpace + (strict ? '_' : DEFAULT_SEPARATOR) + identifier;
+                } else {
+                    return identifier;
+                }
+            }
         }
-        return (isUnicode || !strict) ? identifier : null;
+        return null;
     }
 
     /**
@@ -450,9 +509,14 @@ public final class Citations extends Static {
      * Infers a code space from the given citation, or returns {@code null} if none.
      * This method is very close to {@link #getUnicodeIdentifier(Citation)}, except that it looks for
      * {@link IdentifierSpace#getName()} before to scan the identifiers and titles. The result should
-     * be the same in most cases, except some cases like the SIS citation constant for {@code "Proj.4"}
-     * in which case this method returns {@code "Proj4"} instead of {@code null}. As a side effect,
-     * using this method also avoid constructing the full {@code DefaultCitation} objects when not needed
+     * be the same in most cases, except some cases like the {@link org.apache.sis.metadata.iso.citation.Citations}
+     * constant for {@code "Proj.4"} in which case this method returns {@code "Proj4"} instead of {@code null}.
+     * As a side effect, using this method also avoid constructing {@code DefaultCitation} objects which were deferred.
+     *
+     * <p>We do not put this method in public API for now because the actions performed by this method could be
+     * revisited in any future SIS version depending on the experience gained. However we should try to keep the
+     * behavior of this method close to the behavior of {@link #getUnicodeIdentifier(Citation)}, which is the
+     * method having a public facade.</p>
      *
      * @param  citation The citation for which to infer the code space, or {@code null}.
      * @return A non-empty code space for the given citation without leading or trailing whitespaces,

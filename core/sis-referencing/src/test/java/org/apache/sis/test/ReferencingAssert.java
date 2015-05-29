@@ -40,9 +40,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.internal.util.Constants;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.util.Constants.*;
 
 
 /**
@@ -73,8 +73,11 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      */
     public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertSame("Authority", Citations.OGC, actual.getAuthority());
-        assertIdentifierEquals(null, OGC, OGC, null, expected, actual);
+        assertEquals("code",       expected,      actual.getCode());
+        assertEquals("codeSpace",  Constants.OGC, actual.getCodeSpace());
+        assertSame  ("authority",  Citations.OGC, actual.getAuthority());
+        assertEquals("identifier", Constants.OGC + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+                IdentifiedObjects.toString(actual));
     }
 
     /**
@@ -88,10 +91,10 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertEquals("code",       expected, actual.getCode());
-        assertEquals("codeSpace",  EPSG,  actual.getCodeSpace());
-        assertEquals("authority",  EPSG,  Citations.getIdentifier(actual.getAuthority()));
-        assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+        assertEquals("code",       expected,        actual.getCode());
+        assertEquals("codeSpace",  Constants.EPSG,  actual.getCodeSpace());
+        assertEquals("authority",  Constants.EPSG,  Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }
 

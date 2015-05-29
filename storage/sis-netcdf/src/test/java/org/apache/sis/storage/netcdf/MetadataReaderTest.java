@@ -155,7 +155,14 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   └─Authority\n" +
             "  │       └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
             "  └─Metadata standard\n" +
-            "      ├─Title………………………………………………………………………………………… ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
-            "      └─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n", text);
+            "      ├─Title………………………………………………………………………………………… ISO 19115 Geographic Information — Metadata\n" +
+            "      ├─Cited responsible party\n" +
+            "      │   ├─Party\n" +
+            "      │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
+            "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
+            "      ├─Identifier\n" +
+            "      │   ├─Code………………………………………………………………………………… 19115\n" +
+            "      │   └─Code space………………………………………………………………… ISO\n" +
+            "      └─Presentation form………………………………………………………… Document digital\n", text);
     }
 }

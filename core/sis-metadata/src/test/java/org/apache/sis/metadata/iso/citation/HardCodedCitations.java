@@ -22,11 +22,10 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
-
-import static java.util.Collections.singleton;
 
 
 /**
@@ -43,18 +42,16 @@ import static java.util.Collections.singleton;
  */
 public final strictfp class HardCodedCitations extends Static {
     /**
-     * The <a href="http://www.iso.org/">International Organization for Standardization</a>
-     * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
-     * citation is "ISO" (according ISO 19115, alternate titles often contain abbreviations).
+     * The ISO 19111 standard.
      */
-    public static final DefaultCitation ISO;
+    public static final DefaultCitation ISO_19111;
     static {
-        final DefaultCitation c = new DefaultCitation("International Organization for Standardization");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("ISO")));
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier("ISO")));
+        final DefaultCitation c = new DefaultCitation("Spatial referencing by coordinates");
+        c.getAlternateTitles().add(new SimpleInternationalString("ISO 19111"));
+        c.getIdentifiers().add(new ImmutableIdentifier(null, "ISO", "19111"));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.freeze();
-        ISO = c;
+        ISO_19111 = c;
     }
 
     /**
@@ -63,7 +60,7 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation ISO_19115;
     static {
         final DefaultCitation c = new DefaultCitation("ISO 19115");
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.freeze();
         ISO_19115 = c;
     }
@@ -99,9 +96,9 @@ public final strictfp class HardCodedCitations extends Static {
                 new DefaultOrganisation("International Association of Oil & Gas Producers", null, null, new DefaultContact(r)));
 
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-        c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.EPSG)));
-        c.setCitedResponsibleParties(singleton(p));
+        c.getPresentationForms().add(PresentationForm.TABLE_DIGITAL);
+        c.getIdentifiers().add(new DefaultIdentifier(Constants.EPSG));
+        c.getCitedResponsibleParties().add(p);
         c.freeze();
         EPSG = c;
     }
@@ -112,7 +109,7 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation GEOTIFF;
     static {
         final DefaultCitation c = new DefaultCitation("GeoTIFF");
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.freeze();
         GEOTIFF = c;
     }
