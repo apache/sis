@@ -932,7 +932,7 @@ final class MetadataReader {
      */
     public Metadata read() throws IOException {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setMetadataStandards(singleton(Citations.ISO_19115));
+        metadata.setMetadataStandards(Citations.ISO_19115);
         final Identifier identifier = getFileIdentifier();
         metadata.setMetadataIdentifier(identifier);
         final Date creation = decoder.dateValue(METADATA_CREATION);

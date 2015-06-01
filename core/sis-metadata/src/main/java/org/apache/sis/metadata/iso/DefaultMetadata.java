@@ -877,6 +877,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the citation(s) for the standard(s) to which the metadata conform.
+     * The collection returned by this method typically contains elements from the
+     * {@link org.apache.sis.metadata.iso.citation.Citations#ISO_19115} list.
      *
      * @return The standard(s) to which the metadata conform.
      *
