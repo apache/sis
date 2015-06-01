@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.MergedProperties;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -176,7 +176,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         }
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
-        final OperationMethod method = OperationMethods.getOperationMethod(
+        final OperationMethod method = ReferencingServices.getOperationMethod(
                 mtFactory.getAvailableMethods(SingleOperation.class), name);
         if (method != null) {
             return method;

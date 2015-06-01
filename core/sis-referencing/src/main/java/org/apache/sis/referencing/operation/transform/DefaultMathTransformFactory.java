@@ -50,7 +50,7 @@ import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.parameter.Parameters;
@@ -370,7 +370,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            method = OperationMethods.getOperationMethod(methods, identifier);
+            method = ReferencingServices.getOperationMethod(methods, identifier);
             if (method == null) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }

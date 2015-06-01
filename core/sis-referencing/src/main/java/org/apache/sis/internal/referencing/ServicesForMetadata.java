@@ -42,6 +42,7 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -413,5 +414,18 @@ public final class ServicesForMetadata extends ReferencingServices {
             setTemporalExtent(envelope, extent, crs, temporalCRS);
             target.getTemporalElements().add(extent);
         }
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} or an aliases
+     * of the given object matches the given name.
+     *
+     * @param  object The object for which to check the name or alias.
+     * @param  name The name to compare with the object name or aliases.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
+        return IdentifiedObjects.isHeuristicMatchForName(object, name);
     }
 }
