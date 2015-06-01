@@ -104,18 +104,7 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
-     */
-    public static final DefaultCitation GEOTIFF;
-    static {
-        final DefaultCitation c = new DefaultCitation("GeoTIFF");
-        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
-        c.freeze();
-        GEOTIFF = c;
-    }
-
-    /**
-     * The <a href="http://sis.apache.org">Apache SIS</a> project.
+     * Codespace for objects specific to <a href="http://sis.apache.org">Apache SIS</a>.
      */
     public static final DefaultCitation SIS;
     static {
