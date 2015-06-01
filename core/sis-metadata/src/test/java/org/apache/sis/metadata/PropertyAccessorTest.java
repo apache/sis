@@ -593,13 +593,13 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     public void testEquals() {
         DefaultCitation citation = HardCodedCitations.EPSG;
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // Same test than above, but on a copy of the EPSG constant.
         citation = new DefaultCitation(HardCodedCitations.EPSG);
-        assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(accessor.equals(citation, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (accessor.equals(citation, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // Identifiers shall be stored in different collection instances with equal content.
         final int    index  = accessor.indexOf("identifiers", true);

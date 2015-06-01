@@ -61,7 +61,7 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()} for other {@code Citation} constants.</li>
  * </ul>
  *
- * The static methods defined in this class are typically for:
+ * The static methods defined in this class are for:
  * <ul>
  *   <li>Inferring an identifier from a citation (this is useful mostly with {@code IdentifierSpace} instances).</li>
  *   <li>Determining if two instances can be considered the same {@code Citation} by comparing their titles or
@@ -101,12 +101,12 @@ public final class Citations extends Static {
      * and in the way that SIS support them. The current content is:
      *
      * <ul>
-     *   <li>At index 0, {@linkplain org.opengis.annotation.Specification#ISO_19115   ISO 19115-1:2014(E)}</li>
-     *   <li>At index 1, {@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2009(E)}</li>
+     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115   ISO 19115-1:2014(E)} at index 0.</li>
+     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2009(E)} at index 1.</li>
      * </ul>
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()}</li>
      * </ul>
@@ -174,7 +174,7 @@ public final class Citations extends Static {
      * which return only {@code "EPSG"}.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -220,7 +220,7 @@ public final class Citations extends Static {
      * {@linkplain DefaultCitation#getTitle() title} or URL according newer OGC publications.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -253,7 +253,7 @@ public final class Citations extends Static {
      * </table></div>
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -299,7 +299,7 @@ public final class Citations extends Static {
      * </table></div>
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -314,7 +314,7 @@ public final class Citations extends Static {
      * This specification identifies some map projections by their own numerical codes.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -327,7 +327,7 @@ public final class Citations extends Static {
      * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -340,7 +340,7 @@ public final class Citations extends Static {
      * The authority for identifiers of objects defined by MapInfo.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -354,7 +354,7 @@ public final class Citations extends Static {
      * for digital hydrographic data</a> specification.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
@@ -369,7 +369,7 @@ public final class Citations extends Static {
      * but the SIS library handles it like any other identifier.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link DefaultCitation#getIdentifiers()}</li>
      * </ul>
@@ -384,7 +384,7 @@ public final class Citations extends Static {
      * but the SIS library handles it like any other identifier.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link DefaultCitation#getIdentifiers()}</li>
      * </ul>
@@ -397,7 +397,7 @@ public final class Citations extends Static {
      * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
      *
      * <div class="section">Main usage</div>
-     * This value is typically returned by:
+     * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getSpecification()}</li>
      * </ul>

@@ -172,13 +172,13 @@ public final strictfp class MetadataStandardTest extends TestCase {
 
         // Self equality test
         DefaultCitation instance = HardCodedCitations.EPSG;
-        assertFalse(std.equals(instance, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (std.equals(instance, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(std.equals(instance, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (std.equals(instance, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // Test comparison with a copy
         instance = new DefaultCitation(HardCodedCitations.EPSG);
-        assertFalse(std.equals(instance, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
-        assertTrue (std.equals(instance, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
+        assertFalse(std.equals(instance, HardCodedCitations.SIS,  ComparisonMode.STRICT));
+        assertTrue (std.equals(instance, HardCodedCitations.EPSG, ComparisonMode.STRICT));
 
         // test comparison with a modified copy
         instance.setTitle(new SimpleInternationalString("A dummy title"));
