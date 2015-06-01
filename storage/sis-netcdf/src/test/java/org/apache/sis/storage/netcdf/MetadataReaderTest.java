@@ -163,7 +163,8 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
             "  │   ├─Identifier\n" +
             "  │   │   ├─Code………………………………………………………………………………… 19115-1\n" +
-            "  │   │   └─Code space………………………………………………………………… ISO\n" +
+            "  │   │   ├─Code space………………………………………………………………… ISO\n" +
+            "  │   │   └─Version………………………………………………………………………… 2014(E)\n" +
             "  │   └─Presentation form………………………………………………………… Document digital\n" +
             "  └─Metadata standard (2 of 2)\n" +
             "      ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
@@ -174,7 +175,8 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
             "      ├─Identifier\n" +
             "      │   ├─Code………………………………………………………………………………… 19115-2\n" +
-            "      │   └─Code space………………………………………………………………… ISO\n" +
+            "      │   ├─Code space………………………………………………………………… ISO\n" +
+            "      │   └─Version………………………………………………………………………… 2009(E)\n" +
             "      └─Presentation form………………………………………………………… Document digital\n", text);
     }
 }
