@@ -43,6 +43,7 @@ import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -55,6 +56,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -66,7 +68,6 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Branch-dependent imports
 import java.util.Objects;
-import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**
@@ -788,7 +789,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      */
     public boolean isHeuristicMatchForName(final String name) {
-        return IdentifiedObjects.isHeuristicMatchForName(this.name, alias, name);
+        return NameToIdentifier.isHeuristicMatchForName(this.name, alias, name);
     }
 
     /**
