@@ -81,6 +81,7 @@ public final class ServicesForUtility extends MetadataServices {
         CharSequence     edition               = null;
         String           code                  = null;
         String           codeSpace             = null;
+        String           version               = null;
         CharSequence     citedResponsibleParty = null;
         PresentationForm presentationForm      = null;
         Citation         copyFrom              = null;  // Copy citedResponsibleParty from that citation.
@@ -90,6 +91,7 @@ public final class ServicesForUtility extends MetadataServices {
                 edition   = "ISO 19115-1:2014(E)";
                 code      = "19115-1";
                 codeSpace = "ISO";
+                version   = "2014(E)";
                 citedResponsibleParty = "International Organization for Standardization";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
@@ -99,6 +101,7 @@ public final class ServicesForUtility extends MetadataServices {
                 edition   = "ISO 19115-2:2009(E)";
                 code      = "19115-2";
                 codeSpace = "ISO";
+                version   = "2009(E)";
                 copyFrom  = Citations.ISO_19115.get(0);
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
@@ -150,7 +153,7 @@ public final class ServicesForUtility extends MetadataServices {
         final DefaultCitation c = new DefaultCitation(title);
         if (alternateTitle        != null) c.getAlternateTitles().add(Types.toInternationalString(alternateTitle));
         if (edition               != null) c.setEdition(Types.toInternationalString(edition));
-        if (code                  != null) c.getIdentifiers().add(new ImmutableIdentifier(null, codeSpace, code));
+        if (code                  != null) c.getIdentifiers().add(new ImmutableIdentifier(null, codeSpace, code, version, null));
         if (copyFrom              != null) c.setCitedResponsibleParties(copyFrom.getCitedResponsibleParties());
         if (presentationForm      != null) c.getPresentationForms().add(presentationForm);
         if (citedResponsibleParty != null) {
