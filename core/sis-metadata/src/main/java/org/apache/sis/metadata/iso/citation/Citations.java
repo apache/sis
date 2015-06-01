@@ -16,12 +16,14 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.List;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;        // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
@@ -34,22 +36,37 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
 
 /**
  * A set of pre-defined constants and static methods working on {@linkplain Citation citations}.
- * The most common usage for those constants is to give information about who maintains the codes
- * that we use in identifiers.
+ * This class provides two kinds of {@code Citation} constants:
+ *
+ * <ul>
+ *   <li>Instances of {@link Citation} are references mostly for human reading.</li>
+ *   <li>Instances of {@link IdentifierSpace} provide the code spaces for identifiers
+ *       (most often {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} identifiers)
+ *       together with information about who maintains those identifiers.</li>
+ * </ul>
  *
  * <div class="note"><b>Example:</b> {@code "EPSG:4326"} is a widely-used identifier
- * for the <cite>World Geodetic System (WGS) 1984</cite> Coordinate Reference System (CRS).
+ * for the <cite>“World Geodetic System (WGS) 1984”</cite> Coordinate Reference System (CRS).
  * The {@code "4326"} part is the identifier {@linkplain DefaultIdentifier#getCode() code} and
  * the {@code "EPSG"} part is the identifier {@linkplain DefaultIdentifier#getCodeSpace() code space}.
  * The meaning of codes in that code space is controlled by an {@linkplain DefaultIdentifier#getAuthority() authority},
- * the <cite>EPSG Geodetic Parameter Dataset</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
- * reposible party} for the EPSG dataset is the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP).
+ * the <cite>“EPSG Geodetic Parameter Dataset”</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
+ * responsible party} for the EPSG dataset is the <cite>“International Association of Oil &amp; Gas producers”</cite> (IOGP).
  * </div>
  *
- * The constants defined in this class are typically values returned by
- * {@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}.
- * Citations to resources that define identifiers ({@linkplain #EPSG}, {@linkplain #ISBN}, {@linkplain #ISSN},
- * <i>etc.</i>) are instances of {@link IdentifierSpace}.
+ * The constants defined in this class are typically values returned by:
+ * <ul>
+ *   <li>{@link DefaultCitation#getIdentifiers()} for the {@link #ISBN} and {@link #ISSN} constants.</li>
+ *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
+ *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()} for other {@code Citation} constants.</li>
+ * </ul>
+ *
+ * The static methods defined in this class are typically for:
+ * <ul>
+ *   <li>Inferring an identifier from a citation (this is useful mostly with {@code IdentifierSpace} instances).</li>
+ *   <li>Determining if two instances can be considered the same {@code Citation} by comparing their titles or
+ *       their identifiers.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
@@ -66,48 +83,40 @@ public final class Citations extends Static {
     public static final Citation ISO = new SimpleCitation("ISO");
 
     /**
-     * The <cite>ISO 19115 Geographic Information — Metadata</cite> standards published by the
-     * <a href="http://www.iso.org/">International Organization for Standardization</a>.
-     * Apache SIS uses this constant for a merge of two standards:
+     * The <cite>Geographic Information — Metadata</cite> standards defined by ISO 19115.
+     * This list contains two standards published by the
+     * <a href="http://www.iso.org/">International Organization for Standardization</a>:
      *
      * <ul>
      *   <li>ISO 19115-1 Geographic Information — Metadata Part 1: Fundamentals</li>
      *   <li>ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * SIS uses a single citation that encompasses all standards of the ISO 19115 series because the SIS's API
-     * tries to provide a more unified view of some classes which are splitted between the two above standards
-     * (e.g. {@code MI_Band} versus {@code MD_Band}).</div>
+     * Apache SIS always uses those standards together (actually the SIS's API is a merge of those two standards,
+     * providing for example a unified view of {@code MI_Band} and {@code MD_Band}). This is why those standards
+     * are defined in a collection rather than as separated constants.
      *
-     * @see org.opengis.annotation.Specification#ISO_19115
-     * @see org.opengis.annotation.Specification#ISO_19115_2
+     * <div class="section">Content and future evolution</div>
+     * The content of this list may vary in future Apache SIS versions depending on the evolution of standards
+     * and in the way that SIS support them. The current content is:
+     *
+     * <ul>
+     *   <li>At index 0, {@linkplain org.opengis.annotation.Specification#ISO_19115   ISO 19115-1:2014(E)}</li>
+     *   <li>At index 1, {@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2009(E)}</li>
+     * </ul>
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()}</li>
+     * </ul>
      *
      * @since 0.6
      */
-    public static final Citation ISO_19115 = new CitationConstant("ISO 19115");
-
-    /**
-     * The authority for identifiers found in specifications from the
-     * <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a>.
-     * The specification actually referenced by this citation is implementation dependent
-     * and may change in future SIS version. Some of the specifications used are:
-     *
-     * <ul>
-     *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
-     *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
-     *   <li>Definition identifier URNs in OGC namespace</li>
-     * </ul>
-     *
-     * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
-     * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
-     * We do not commit to a particular OGC specification in order to keep the flexibility to change the
-     * {@linkplain DefaultCitation#getTitle() title} or URL according newer OGC publications.
-     *
-     * @see #EPSG
-     * @see #ESRI
-     */
-    public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
+    public static final List<Citation> ISO_19115 = UnmodifiableArrayList.wrap(new CitationConstant[] {
+        new CitationConstant("ISO 19115-1"),
+        new CitationConstant("ISO 19115-2")
+    });
 
     /**
      * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
@@ -122,55 +131,139 @@ public final class Citations extends Static {
     public static final Citation OGP = new SimpleCitation("OGP");
 
     /**
-     * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> identifier space.
+     * The authority for identifiers of objects defined by the
+     * <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a>.
      * EPSG is not an organization by itself, but is the <em>identifier space</em> managed by the
      * <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization
-     * for {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} identifiers.
+     * for {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} identifiers.
+     * EPSG is the default namespace of map projection method and parameter names in Apache SIS.
      *
      * <div class="note"><b>Historical note:</b>
-     * The EPSG acronym meaning was <cite>European Petroleum Survey Group</cite>.
+     * The EPSG acronym meaning was <cite>“European Petroleum Survey Group”</cite>.
      * But this meaning does not apply anymore since the European and American associations merged into
-     * the <cite>Association of Oil &amp; Gas producers</cite> (OGP), later renamed as IOGP.
+     * the <cite>“Association of Oil &amp; Gas producers”</cite> (OGP), later renamed as IOGP.
      * The legacy acronym now applies only to the database Coordinate Reference System definitions,
-     * known as <cite>EPSG Geodetic Parameter Dataset</cite>.</div>
+     * known as <cite>“EPSG Geodetic Parameter Dataset”</cite>.</div>
      *
      * The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible party} is
      * the IOGP organization, but the {@linkplain IdentifierSpace#getName() namespace} is {@code "EPSG"}.
-     * The {@code "EPSG"} name shall be used in URN, but the {@code codeSpace} attribute value in
-     * GML files can be “EPSG” or the authority abbreviation, either “IOGP” or the older “OGP”,
-     * as in the following example:
+     *
+     * <div class="section">When to use "EPSG" and "IOGP"</div>
+     * For all usages except GML, the {@code "EPSG"} namespace shall be used for identifying
+     * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} objects.
+     * But in the particular case of GML, both {@code "EPSG"} and {@code "IOGP"} appear in different locations.
+     * For example:
      *
      * {@preformat xml
      *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
      * }
      *
-     * @category Code space
+     * Guidelines:
+     * <ul>
+     *   <li>The {@code "EPSG"} name shall be used in URN. This part of the URN is called "the authority" and
+     *       is returned by both {@code Identifier.getAuthority()} and {@code Identifier.getCodeSpace()}.</li>
+     *   <li>The {@code "IOGP"} name appears in the GML {@code codeSpace} attribute, but despite the attribute name this
+     *       is <strong>not</strong> the {@code Identifier.getCodeSpace()} value of the {@code "EPSG:4326"} identifier.
+     *       Instead, Apache SIS considers {@code "IOGP"} as the codespace of the {@code "IOGP:EPSG"} identifier,
+     *       which is the {@linkplain DefaultCitation#getIdentifiers() identifier of this citation}.</li>
+     * </ul>
+     *
+     * In other words, Apache SIS considers "IOGP" as the codespace of the "EPSG" codespace, but there is usually
+     * no need to go to such depth in identifier hierarchy except when handling GML documents. For this reason,
+     * the {@code "IOGP:EPSG"} identifier is handled in a special way by {@link #getIdentifier(Citation)},
+     * which return only {@code "EPSG"}.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.4
      */
     public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
 
     /**
-     * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
+     * The authority for identifiers found in specifications from the
+     * <a href="http://www.opengeospatial.org">Open Geospatial Consortium</a>.
+     * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "OGC"}.
+     * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
+     * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
      *
-     * @since 0.4
+     * <div class="note"><b>Example</b>
+     * the Mercator projection can be defined by an operation method having the {@code "OGC:Mercator_1SP"} identifier
+     * and the following parameters:
+     *
+     * <table class="sis">
+     * <caption>Example of identifiers in OGC name space</caption>
+     * <tr><th>Name in OGC namespace</th>           <th>Name in default namespace (EPSG)</th></tr>
+     * <tr><td>{@code "OGC:semi_major"}</td>        <td></td></tr>
+     * <tr><td>{@code "OGC:semi_minor"}</td>        <td></td></tr>
+     * <tr><td>{@code "OGC:latitude_of_origin"}</td><td>Latitude of natural origin</td></tr>
+     * <tr><td>{@code "OGC:central_meridian"}</td>  <td>Longitude of natural origin</td></tr>
+     * <tr><td>{@code "OGC:scale_factor"}</td>      <td>Scale factor at natural origin</td></tr>
+     * <tr><td>{@code "OGC:false_easting"}</td>     <td>False easting</td></tr>
+     * <tr><td>{@code "OGC:false_northing"}</td>    <td>False northing</td></tr>
+     * </table></div>
+     *
+     * <div class="section">Specifications referenced</div>
+     * The specification actually referenced by this citation is implementation dependent
+     * and may change in future SIS version. Some of the specifications used are:
+     *
+     * <ul>
+     *   <li><a href="http://www.opengeospatial.org/standards/ct">Coordinate Transformation Service</a></li>
+     *   <li><a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a></li>
+     *   <li>Definition identifier URNs in OGC namespace</li>
+     * </ul>
+     *
+     * We do not commit to a particular OGC specification in order to keep the flexibility to change the
+     * {@linkplain DefaultCitation#getTitle() title} or URL according newer OGC publications.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
+     *
+     * @see #EPSG
+     * @see #ESRI
      */
-    public static final Citation SIS = new CitationConstant(Constants.SIS);
+    public static final IdentifierSpace<String> OGC = new CitationConstant.Authority<>(Constants.OGC);
 
     /**
-     * The authority for identifiers of objects provided by <a href="http://www.esri.com">ESRI</a>.
+     * The authority for identifiers of objects defined by <a href="http://www.esri.com">ESRI</a>.
+     * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "ESRI"}.
      * This citation is used as the authority for many map projection method and parameter names
      * other than the {@linkplain #EPSG} ones.
      *
-     * <div class="note"><b>Note:</b>
-     * Many parameter names defined by {@linkplain #OGC} are very similar to the ESRI ones, except for the case.</div>
+     * <div class="note"><b>Note</b>
+     * many parameter names defined by {@linkplain #OGC} are very similar to the ESRI ones,
+     * except for the case. Examples:
+     *
+     * <table class="sis">
+     * <caption>Example of identifiers in ESRI name space</caption>
+     * <tr><th>Name in ESRI namespace</th>           <th>Name in OGC namespace</th></tr>
+     * <tr><td>{@code "ESRI:Semi_Major"}</td>        <td>{@code "OGC:semi_major"}</td></tr>
+     * <tr><td>{@code "ESRI:Semi_Minor"}</td>        <td>{@code "OGC:semi_minor"}</td></tr>
+     * <tr><td>{@code "ESRI:Latitude_Of_Origin"}</td><td>{@code "OGC:latitude_of_origin"}</td></tr>
+     * <tr><td>{@code "ESRI:Central_Meridian"}</td>  <td>{@code "OGC:central_meridian"}</td></tr>
+     * <tr><td>{@code "ESRI:Scale_Factor"}</td>      <td>{@code "OGC:scale_factor"}</td></tr>
+     * <tr><td>{@code "ESRI:False_Easting"}</td>     <td>{@code "OGC:false_easting"}</td></tr>
+     * <tr><td>{@code "ESRI:False_Northing"}</td>    <td>{@code "OGC:false_northing"}</td></tr>
+     * </table></div>
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.4
      *
      * @see #OGC
      * @see #EPSG
      */
-    public static final Citation ESRI = new CitationConstant("ESRI");
+    public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ESRI");
 
     /**
      * The <a href="http://www.oracle.com">Oracle</a> organization.
@@ -184,15 +277,47 @@ public final class Citations extends Static {
     public static final Citation ORACLE = new CitationConstant("Oracle");
 
     /**
-     * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
+     * The authority for identifiers of objects defined by the
+     * <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
+     * The {@linkplain IdentifierSpace#getName() name} of this identifier space is fixed to {@code "NetCDF"}.
+     * This citation is used as the authority for some map projection method and parameter names
+     * as used in NetCDF files.
+     *
+     * <div class="note"><b>Example</b>
+     * the Mercator projection can be defined in a NetCDF file with the following parameters:
+     *
+     * <table class="sis">
+     * <caption>Example of identifiers in NetCDF name space</caption>
+     * <tr><th>Name in NetCDF namespace</th>                           <th>Name in default namespace (EPSG)</th></tr>
+     * <tr><td>{@code "NetCDF:semi_major_axis"}</td>                   <td></td></tr>
+     * <tr><td>{@code "NetCDF:semi_minor_axis"}</td>                   <td></td></tr>
+     * <tr><td>{@code "NetCDF:latitude_of_projection_origin"}</td>     <td>Latitude of natural origin</td></tr>
+     * <tr><td>{@code "NetCDF:longitude_of_projection_origin"}</td>    <td>Longitude of natural origin</td></tr>
+     * <tr><td>{@code "NetCDF:scale_factor_at_projection_origin"}</td> <td>Scale factor at natural origin</td></tr>
+     * <tr><td>{@code "NetCDF:false_easting"}</td>                     <td>False easting</td></tr>
+     * <tr><td>{@code "NetCDF:false_northing"}</td>                    <td>False northing</td></tr>
+     * </table></div>
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.4
      */
-    public static final Citation NETCDF = new CitationConstant("NetCDF");
+    public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>("NetCDF");
 
     /**
-     * The <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
+     * The authority for identifiers of objects defined by the
+     * the <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
      * This specification identifies some map projections by their own numerical codes.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.4
      */
@@ -201,12 +326,24 @@ public final class Citations extends Static {
     /**
      * The authority for identifiers of objects defined by the <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
      *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
+     *
      * @since 0.4
      */
     public static final IdentifierSpace<String> PROJ4 = new CitationConstant.Authority<>("Proj4");
 
     /**
      * The authority for identifiers of objects defined by MapInfo.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.6
      */
@@ -215,6 +352,12 @@ public final class Citations extends Static {
     /**
      * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
      * for digital hydrographic data</a> specification.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     * </ul>
      *
      * @since 0.6
      */
@@ -225,6 +368,12 @@ public final class Citations extends Static {
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link DefaultCitation#getIdentifiers()}</li>
+     * </ul>
+     *
      * @see DefaultCitation#getISBN()
      */
     public static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
@@ -234,9 +383,28 @@ public final class Citations extends Static {
      * The ISO-19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link DefaultCitation#getIdentifiers()}</li>
+     * </ul>
+     *
      * @see DefaultCitation#getISSN()
      */
     public static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
+
+    /**
+     * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
+     *
+     * <div class="section">Main usage</div>
+     * This value is typically returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getSpecification()}</li>
+     * </ul>
+     *
+     * @since 0.4
+     */
+    public static final Citation SIS = new CitationConstant(Constants.SIS);
 
     /**
      * List of citations declared in this class.
@@ -245,19 +413,20 @@ public final class Citations extends Static {
     private static final SimpleCitation[] CITATIONS = {
         (SimpleCitation) EPSG,
         (SimpleCitation) OGC,
-        (SimpleCitation) ISO,
-        (SimpleCitation) ISO_19115,
-        (SimpleCitation) OGP,
+        (SimpleCitation) ESRI,
         (SimpleCitation) NETCDF,
         (SimpleCitation) GEOTIFF,
-        (SimpleCitation) ESRI,
-        (SimpleCitation) ORACLE,
         (SimpleCitation) PROJ4,
         (SimpleCitation) MAP_INFO,
         (SimpleCitation) S57,
         (SimpleCitation) ISBN,
         (SimpleCitation) ISSN,
-        (SimpleCitation) SIS
+        (SimpleCitation) SIS,
+        (SimpleCitation) ISO_19115.get(0),
+        (SimpleCitation) ISO_19115.get(1),
+        (SimpleCitation) OGP,
+        (SimpleCitation) ISO,
+        (SimpleCitation) ORACLE
     };
 
     static {  // Must be after CITATIONS array construction.

@@ -154,14 +154,26 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   └─Authority\n" +
             "  │       └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
-            "  └─Metadata standard\n" +
-            "      ├─Title………………………………………………………………………………………… ISO 19115 Geographic Information — Metadata\n" +
+            "  ├─Metadata standard (1 of 2)\n" +
+            "  │   ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
+            "  │   ├─Cited responsible party\n" +
+            "  │   │   ├─Party\n" +
+            "  │   │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
+            "  │   │   └─Role………………………………………………………………………………… Principal investigator\n" +
+            "  │   ├─Edition…………………………………………………………………………………… ISO 19115-1:2014(E)\n" +
+            "  │   ├─Identifier\n" +
+            "  │   │   ├─Code………………………………………………………………………………… 19115-1\n" +
+            "  │   │   └─Code space………………………………………………………………… ISO\n" +
+            "  │   └─Presentation form………………………………………………………… Document digital\n" +
+            "  └─Metadata standard (2 of 2)\n" +
+            "      ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 2: Extensions for imagery and gridded data\n" +
             "      ├─Cited responsible party\n" +
             "      │   ├─Party\n" +
             "      │   │   └─Name……………………………………………………………………… International Organization for Standardization\n" +
             "      │   └─Role………………………………………………………………………………… Principal investigator\n" +
+            "      ├─Edition…………………………………………………………………………………… ISO 19115-2:2009(E)\n" +
             "      ├─Identifier\n" +
-            "      │   ├─Code………………………………………………………………………………… 19115\n" +
+            "      │   ├─Code………………………………………………………………………………… 19115-2\n" +
             "      │   └─Code space………………………………………………………………… ISO\n" +
             "      └─Presentation form………………………………………………………… Document digital\n", text);
     }

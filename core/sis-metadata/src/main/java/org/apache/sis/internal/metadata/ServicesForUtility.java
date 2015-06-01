@@ -78,16 +78,28 @@ public final class ServicesForUtility extends MetadataServices {
     public Citation createCitation(final String key) {
         CharSequence     title;
         CharSequence     alternateTitle        = null;
+        CharSequence     edition               = null;
         String           code                  = null;
         String           codeSpace             = null;
         CharSequence     citedResponsibleParty = null;
         PresentationForm presentationForm      = null;
+        Citation         copyFrom              = null;  // Copy citedResponsibleParty from that citation.
         switch (key) {
-            case "ISO 19115": {
-                title     = "ISO 19115 Geographic Information — Metadata";
-                code      = "19115";
+            case "ISO 19115-1": {
+                title     = "Geographic Information — Metadata Part 1: Fundamentals";
+                edition   = "ISO 19115-1:2014(E)";
+                code      = "19115-1";
                 codeSpace = "ISO";
                 citedResponsibleParty = "International Organization for Standardization";
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
+                break;
+            }
+            case "ISO 19115-2": {
+                title     = "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data";
+                edition   = "ISO 19115-2:2009(E)";
+                code      = "19115-2";
+                codeSpace = "ISO";
+                copyFrom  = Citations.ISO_19115.get(0);
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
@@ -137,7 +149,9 @@ public final class ServicesForUtility extends MetadataServices {
         }
         final DefaultCitation c = new DefaultCitation(title);
         if (alternateTitle        != null) c.getAlternateTitles().add(Types.toInternationalString(alternateTitle));
+        if (edition               != null) c.setEdition(Types.toInternationalString(edition));
         if (code                  != null) c.getIdentifiers().add(new ImmutableIdentifier(null, codeSpace, code));
+        if (copyFrom              != null) c.setCitedResponsibleParties(copyFrom.getCitedResponsibleParties());
         if (presentationForm      != null) c.getPresentationForms().add(presentationForm);
         if (citedResponsibleParty != null) {
             final DefaultOrganisation organisation = new DefaultOrganisation();
