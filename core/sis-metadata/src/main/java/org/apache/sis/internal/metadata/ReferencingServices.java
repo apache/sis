@@ -147,7 +147,7 @@ public class ReferencingServices extends SystemListener {
                                 break;
                             }
                         }
-                        Logging.unexpectedException(Logging.getLogger(logger),
+                        Logging.recoverableException(Logging.getLogger(logger),
                                 ReferencingServices.class, "getInstance", exception);
                         c = new ReferencingServices();
                     } catch (ReflectiveOperationException exception) {

@@ -65,7 +65,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultCoordinateSystemAxis
@@ -224,7 +224,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     protected AbstractCS(final CoordinateSystem cs) {
         super(cs);
         if (cs instanceof AbstractCS) {
-            axes = ((AbstractCS) cs).axes; // Share the array.
+            axes = ((AbstractCS) cs).axes;  // Share the array.
         } else {
             axes = new CoordinateSystemAxis[cs.getDimension()];
             for (int i=0; i<axes.length; i++) {
@@ -341,11 +341,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         AbstractCS cs = derived.get(convention);
         if (cs == null) {
             switch (convention) {
-                case NORMALIZED:              cs = Normalizer.normalize(this, true,  true);  break;
-                case CONVENTIONALLY_ORIENTED: cs = Normalizer.normalize(this, true,  false); break;
-                case RIGHT_HANDED:            cs = Normalizer.normalize(this, false, false); break;
-                case POSITIVE_RANGE:          cs = Normalizer.shiftAxisRange(this);          break;
+                case NORMALIZED:              // Fall through
+                case CONVENTIONALLY_ORIENTED: cs = Normalizer.normalize(this, convention, true); break;
+                case RIGHT_HANDED:            cs = Normalizer.normalize(this, null, true); break;
+                case POSITIVE_RANGE:          cs = Normalizer.shiftAxisRange(this); break;
                 default: throw new AssertionError(convention);
+            }
+            if (cs == null) {
+                cs = this;  // This coordinate system is already normalized.
             }
             for (final AbstractCS existing : derived.values()) {
                 if (cs.equals(existing)) {

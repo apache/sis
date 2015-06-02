@@ -78,7 +78,7 @@ public class MetadataServices extends SystemListener {
                     try {
                         c = (MetadataServices) Class.forName("org.apache.sis.internal.metadata.ServicesForUtility").newInstance();
                     } catch (ClassNotFoundException exception) {
-                        Logging.unexpectedException(Logging.getLogger(Modules.UTILITIES),
+                        Logging.recoverableException(Logging.getLogger(Modules.UTILITIES),
                                 MetadataServices.class, "getInstance", exception);
                         c = new MetadataServices();
                     } catch (ReflectiveOperationException exception) {

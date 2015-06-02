@@ -75,6 +75,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      */
     private DefaultEllipsoidalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
+        validateAxes(properties);
     }
 
     /**
@@ -121,13 +122,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        for (int i=0; i<2; i++) {
-            final AxisDirection direction = super.getAxis(i).getDirection();
-            if (AxisDirections.isVertical(direction)) {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                        Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
-            }
-        }
+        validateAxes(properties);
     }
 
     /**
@@ -146,6 +141,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
+        validateAxes(properties);
     }
 
     /**
@@ -199,6 +195,23 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
             return INVALID_UNIT;
         }
         return VALID;
+    }
+
+    /**
+     * Validates the set of axes after the validation of each individual axis.
+     *
+     * @param properties The properties given at construction time.
+     */
+    private void validateAxes(final Map<String,?> properties) {
+        int i = super.getDimension();
+        int n = i - 2; // Number of vertical axes allowed.
+        while (--i >= 0) {
+            final AxisDirection direction = super.getAxis(i).getDirection();
+            if (AxisDirections.isVertical(direction) && --n < 0) {
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                        Errors.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
+            }
+        }
     }
 
     /**

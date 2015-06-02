@@ -60,6 +60,8 @@ import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
@@ -695,6 +697,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final PrimeMeridian meridian   = parsePrimem(element, NonSI.DEGREE_ANGLE);
         final GeodeticDatum datum      = parseDatum (element, meridian);
         final Unit<Length>  linearUnit = parseUnit  (element, SI.METRE);
+        CartesianCS cs;
         CoordinateSystemAxis axis0, axis1 = null, axis2 = null;
         axis0 = parseAxis(element, linearUnit, false);
         try {
@@ -702,16 +705,20 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, linearUnit, true);
                 axis2 = parseAxis(element, linearUnit, true);
             }
-            if (axis0 == null || isAxisIgnored) {
-                // Those default values are part of WKT specification.
-                // TODO: use CommonCRS.
-                axis0 = createAxis("X", AxisDirection.OTHER, linearUnit);
-                axis1 = createAxis("Y", AxisDirection.EAST,  linearUnit);
-                axis2 = createAxis("Z", AxisDirection.NORTH, linearUnit);
-            }
             final Map<String,?> properties = parseAuthorityAndClose(element, name);
-            CartesianCS cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
-            cs = Legacy.forGeocentricCRS(cs, false);
+            if (axis0 != null && !isAxisIgnored) {
+                cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
+                cs = Legacy.forGeocentricCRS(cs, false);
+            } else {
+                cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+                if (!SI.METRE.equals(linearUnit)) {
+                    cs = (CartesianCS) CoordinateSystems.modifyAxes(cs, new AxisFilter() {
+                        @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
+                            return linearUnit;
+                        }
+                    });
+                }
+            }
             return crsFactory.createGeocentricCRS(properties, datum, cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
