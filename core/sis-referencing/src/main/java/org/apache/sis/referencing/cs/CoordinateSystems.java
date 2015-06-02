@@ -300,6 +300,26 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
+     * Returns a coordinate system with axes modified according the given filter.
+     *
+     * @param  cs     The coordinate system.
+     * @param  filter The modifications to apply on coordinate system axes.
+     * @return The modified coordinate system, or {@code cs} if no change was needed.
+     *
+     * @since 0.6
+     */
+    public static CoordinateSystem modifyAxes(final CoordinateSystem cs, final AxisFilter filter) {
+        ensureNonNull("filter", filter);
+        if (cs != null) {
+            final CoordinateSystem newCS = Normalizer.normalize(cs, filter, false);
+            if (newCS != null) {
+                return newCS;
+            }
+        }
+        return cs;
+    }
+
+    /**
      * Returns a coordinate system with {@linkplain AxesConvention#NORMALIZED normalized} axis order and units.
      * This method is typically used together with {@link #swapAndScaleAxes swapAndScaleAxes} for the creation
      * of a transformation step before some
@@ -317,7 +337,7 @@ public final class CoordinateSystems extends Static {
      * description of map projection package}.
      *
      * @param  cs The coordinate system.
-     * @return A constant similar to the specified {@code cs} with normalized axes.
+     * @return A coordinate system similar to the specified {@code cs} with normalized axes.
      * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
      *
      * @see AxesConvention#NORMALIZED
@@ -325,13 +345,17 @@ public final class CoordinateSystems extends Static {
      * @since 0.6
      */
     public static CoordinateSystem normalize(final CoordinateSystem cs) throws IllegalArgumentException {
-        if (cs == null) {
-            return null;
-        } else if (cs instanceof AbstractCS) {
-            // User may have overridden the 'forConvention' method.
-            return ((AbstractCS) cs).forConvention(AxesConvention.NORMALIZED);
-        } else {
-            return Normalizer.normalize(cs);
+        if (cs != null) {
+            if (cs instanceof AbstractCS) {
+                // User may have overridden the 'forConvention' method.
+                return ((AbstractCS) cs).forConvention(AxesConvention.NORMALIZED);
+            } else {
+                final CoordinateSystem newCS = Normalizer.normalize(cs, AxesConvention.NORMALIZED, true);
+                if (newCS != null) {
+                    return newCS;
+                }
+            }
         }
+        return cs;
     }
 }

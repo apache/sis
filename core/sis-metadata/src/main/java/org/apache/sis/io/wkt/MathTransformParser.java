@@ -312,7 +312,7 @@ class MathTransformParser extends Parser {
     final OperationMethod getOperationMethod() {
         if (lastMethod == null) {
             /*
-             * Safety in case come MathTransformFactory implementation do not support
+             * Safety in case some MathTransformFactory implementations do not support
              * getLastMethod(). Performs a slower and less robust check as a fallback.
              */
             if (classification != null) {

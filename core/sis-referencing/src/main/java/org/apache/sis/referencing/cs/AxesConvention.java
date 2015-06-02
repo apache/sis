@@ -16,8 +16,13 @@
  */
 package org.apache.sis.referencing.cs;
 
-import org.opengis.referencing.cs.AxisDirection;    // For javadoc
+import javax.measure.unit.Unit;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -102,13 +107,13 @@ import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see AbstractCS#forConvention(AxesConvention)
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
  */
-public enum AxesConvention {
+public enum AxesConvention implements AxisFilter {
     /**
      * Axes order, direction and units of measure are forced to commonly used pre-defined values.
      * This enum represents the following changes to apply on a coordinate system:
@@ -140,7 +145,27 @@ public enum AxesConvention {
      * @see CoordinateSystems#normalize(CoordinateSystem)
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      */
-    NORMALIZED,
+    NORMALIZED {
+        @Override
+        public Unit<?> getUnitReplacement(Unit<?> unit) {
+            if (Units.isLinear(unit)) {
+                unit = SI.METRE;
+            } else if (Units.isAngular(unit)) {
+                unit = NonSI.DEGREE_ANGLE;
+            } else if (Units.isTemporal(unit)) {
+                unit = NonSI.DAY;
+            }
+            return unit;
+        }
+
+        /*
+         * Same policy than AxesConvention.CONVENTIONALLY_ORIENTATED.
+         */
+        @Override
+        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+            return AxisDirections.isIntercardinal(direction) ? direction : AxisDirections.absolute(direction);
+        }
+    },
 
     /**
      * Axes are oriented toward conventional directions and ordered for a {@linkplain #RIGHT_HANDED right-handed}
@@ -189,7 +214,16 @@ public enum AxesConvention {
      *
      * @since 0.5
      */
-    CONVENTIONALLY_ORIENTED,
+    CONVENTIONALLY_ORIENTED {
+        /*
+         * For now we do not touch to inter-cardinal directions (e.g. "North-East")
+         * because it is not clear which normalization policy would match common usage.
+         */
+        @Override
+        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+            return AxisDirections.isIntercardinal(direction) ? direction : AxisDirections.absolute(direction);
+        }
+    },
 
     /**
      * Axes are ordered for a <cite>right-handed</cite> coordinate system. Axis directions, ranges or ordinate values
