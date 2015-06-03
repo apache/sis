@@ -49,19 +49,19 @@ import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
@@ -168,7 +168,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(AbstractIdentifiedObject.LOCALE_KEY));
+        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
@@ -327,7 +327,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             final String code = element.pullObject("code").toString();  // Accepts Integer as well as String.
             element.close(ignoredElements);
             final Citation authority = Citations.fromName(auth);
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, new NamedIdentifier(authority, code));
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, new ImmutableIdentifier(authority, auth, code));
             /*
              * Note: we could be tempted to assign the authority to the name as well, like below:
              *
@@ -338,7 +338,8 @@ final class GeodeticObjectParser extends MathTransformParser {
              *
              * However experience shows that it is often wrong in practice, because peoples often
              * declare EPSG codes but still use WKT names much shorter than the EPSG names
-             * (for example "WGS84" instead than "World Geodetic System 1984").
+             * (for example "WGS84" for the datum instead than "World Geodetic System 1984"),
+             * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
         }
         parent.close(ignoredElements);
