@@ -20,10 +20,10 @@ import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.test.referencing.ObjectFactoryTest;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -56,7 +56,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
         super(DefaultFactories.forBuildin(DatumFactory.class),
               DefaultFactories.forBuildin(CSFactory   .class),
               DefaultFactories.forBuildin(CRSFactory  .class),
-              new DefaultCoordinateOperationFactory());         // TODO: use DefaultFactories.
+              DefaultFactories.forBuildin(CoordinateOperationFactory.class));
     }
 
     @Override
