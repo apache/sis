@@ -112,6 +112,13 @@
       </fileset>
     </concat>
 
+    <!-- CoordinateOperationFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory"/>
+      </fileset>
+    </concat>
+
 
 
     <!-- ==== Apache SIS service providers ========================================================================= -->
