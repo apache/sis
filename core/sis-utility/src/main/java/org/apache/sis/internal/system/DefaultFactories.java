@@ -61,7 +61,19 @@ public final class DefaultFactories extends SystemListener {
     }
 
     /**
-     * Return the default factory implementing the given interface.
+     * Returns {@code true} if the default factory of the given type is the given instance.
+     *
+     * @param  <T>  The interface type.
+     * @param  type The interface type.
+     * @param  factory The factory implementation to test.
+     * @return {@code true} if the given factory implementation is the default instance.
+     */
+    public static synchronized <T> boolean isDefaultInstance(final Class<T> type, final T factory) {
+        return FACTORIES.get(type) == factory;
+    }
+
+    /**
+     * Returns the default factory implementing the given interface.
      * This method gives preference to Apache SIS implementation of factories if present.
      * This is a temporary mechanism while we are waiting for a real dependency injection mechanism.
      *

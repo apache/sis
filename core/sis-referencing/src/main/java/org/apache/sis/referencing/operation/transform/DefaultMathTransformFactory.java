@@ -371,7 +371,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            method = ReferencingServices.getOperationMethod(methods, identifier);
+            method = ReferencingServices.getInstance().getOperationMethod(methods, identifier);
             if (method == null) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }
