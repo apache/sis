@@ -16,11 +16,14 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -28,6 +31,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -290,6 +294,29 @@ public class ReferencingServices extends SystemListener {
     }
 
     /**
+     * Returns the coordinate operation factory to use for the given properties and math transform factory.
+     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
+     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     *
+     * @param  properties The default properties.
+     * @param  mtFactory  The math transform factory to use.
+     * @return The coordinate operation factory to use.
+     */
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
+        /*
+         * The check for 'properties' and 'mtFactory' is performed by the ServicesForMetadata subclass. If this code is
+         * executed, this means that the "sis-referencing" module is not on the classpath, in which case we do not know
+         * how to pass the 'properties' and 'mtFactory' arguments to the foreigner CoordinateOperationFactory anyway.
+         */
+        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
+        if (factory != null) {
+            return factory;
+        } else {
+            throw referencingModuleNotFound();
+        }
+    }
+
+    /**
      * Returns {@code true} if the {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName()
      * primary name} or an aliases of the given object matches the given name. The comparison ignores case,
      * some Latin diacritical signs and any characters that are not letters or digits.
@@ -303,6 +330,31 @@ public class ReferencingServices extends SystemListener {
     }
 
     /**
+     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
+     *
+     * @param  method     The method to test for a match.
+     * @param  identifier The name or identifier of the operation method to search.
+     * @return {@code true} if the given method is a match for the given identifier.
+     */
+    private boolean matches(final OperationMethod method, final String identifier) {
+        if (isHeuristicMatchForName(method, identifier)) {
+            return true;
+        }
+        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
+                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
+        {
+            final String codespace = identifier.substring(0, s).trim();
+            final String code = identifier.substring(++s).trim();
+            for (final Identifier id : method.getIdentifiers()) {
+                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either a
      * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
      *
@@ -313,7 +365,7 @@ public class ReferencingServices extends SystemListener {
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
      */
-    public static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
+    public final OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;
         for (final OperationMethod method : methods) {
             if (matches(method, identifier)) {
@@ -330,30 +382,5 @@ public class ReferencingServices extends SystemListener {
             }
         }
         return fallback;
-    }
-
-    /**
-     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
-     *
-     * @param  method     The method to test for a match.
-     * @param  identifier The name or identifier of the operation method to search.
-     * @return {@code true} if the given method is a match for the given identifier.
-     */
-    private static boolean matches(final OperationMethod method, final String identifier) {
-        if (getInstance().isHeuristicMatchForName(method, identifier)) {
-            return true;
-        }
-        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
-                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
-        {
-            final String codespace = identifier.substring(0, s).trim();
-            final String code = identifier.substring(++s).trim();
-            for (final Identifier id : method.getIdentifiers()) {
-                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

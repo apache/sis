@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 
@@ -31,6 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -46,6 +48,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
@@ -59,6 +62,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Utilities;
 
@@ -136,21 +140,6 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Returns the coordinate operation factory to be used for transforming the envelope.
-     * We will fetch a lenient factory because {@link GeographicBoundingBox} are usually for approximative
-     * bounds (e.g. the area of validity of some CRS). If a user wants accurate bounds, he should probably
-     * use an {@link Envelope} with the appropriate CRS.
-     */
-    private static CoordinateOperationFactory getFactory() throws TransformException {
-        // TODO: specify a lenient factory when the API will allow that.
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        }
-        throw new TransformException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
-    }
-
-    /**
      * Creates an exception message for a spatial, vertical or temporal dimension not found.
      */
     private static String dimensionNotFound(final short errorKey, final CoordinateReferenceSystem crs) {
@@ -183,8 +172,9 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
+                final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
                 try {
-                    operation = getFactory().createOperation(crs, normalizedCRS);
+                    operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelopeToGeodetic), e);
                 }
@@ -427,5 +417,23 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
         return IdentifiedObjects.isHeuristicMatchForName(object, name);
+    }
+
+    /**
+     * Returns the coordinate operation factory to use for the given properties and math transform factory.
+     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
+     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     *
+     * @param  properties The default properties.
+     * @param  mtFactory  The math transform factory to use.
+     * @return The coordinate operation factory to use.
+     */
+    @Override
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
+        if (Containers.isNullOrEmpty(properties) && DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory)) {
+            return DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+        } else {
+            return new DefaultCoordinateOperationFactory(properties, mtFactory);
+        }
     }
 }

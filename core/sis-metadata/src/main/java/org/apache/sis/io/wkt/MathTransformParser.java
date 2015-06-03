@@ -316,7 +316,7 @@ class MathTransformParser extends Parser {
              * getLastMethod(). Performs a slower and less robust check as a fallback.
              */
             if (classification != null) {
-                lastMethod = ReferencingServices.getOperationMethod(
+                lastMethod = ReferencingServices.getInstance().getOperationMethod(
                         mtFactory.getAvailableMethods(SingleOperation.class), classification);
             }
         }

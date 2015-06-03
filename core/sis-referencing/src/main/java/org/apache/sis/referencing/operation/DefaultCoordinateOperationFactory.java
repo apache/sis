@@ -176,7 +176,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         }
         name = CharSequences.trimWhitespaces(name);
         ArgumentChecks.ensureNonEmpty("name", name);
-        final OperationMethod method = ReferencingServices.getOperationMethod(
+        final OperationMethod method = ReferencingServices.getInstance().getOperationMethod(
                 mtFactory.getAvailableMethods(SingleOperation.class), name);
         if (method != null) {
             return method;
@@ -371,7 +371,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                                                final OperationMethod method)
             throws FactoryException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return delegate().createOperation(sourceCRS, targetCRS, method);
     }
 
     /**
@@ -388,6 +388,26 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return delegate().createOperation(sourceCRS, targetCRS);
     }
+
+    /**
+     * Temporarily returns a third-party factory for operation not yet implemented by this class.
+     * This method will be removed when the missing implementation will have been ported to SIS.
+     */
+    private synchronized CoordinateOperationFactory delegate() throws FactoryException {
+        if (delegate != null) {
+            return delegate;
+        }
+        for (final CoordinateOperationFactory factory : java.util.ServiceLoader.load(CoordinateOperationFactory.class)) {
+            if (!factory.getClass().getName().startsWith("org.apache.sis.")) {
+                delegate = factory;
+                return factory;
+            }
+        }
+        throw new FactoryException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
+    }
+
+    /** Temporary, to be deleted in a future SIS version. */
+    private transient CoordinateOperationFactory delegate;
 }

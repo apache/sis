@@ -56,9 +56,9 @@ import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -172,7 +172,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
-        opFactory     = new DefaultCoordinateOperationFactory(defaultProperties, mtFactory);  // TODO
+        opFactory     = ReferencingServices.getInstance().getCoordinateOperationFactory(defaultProperties, mtFactory);
         convention    = Convention.DEFAULT;
         isAxisIgnored = false;
     }
@@ -200,7 +200,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
-        opFactory    = new DefaultCoordinateOperationFactory(null, mtFactory);  // TODO
+        opFactory    = ReferencingServices.getInstance().getCoordinateOperationFactory(null, mtFactory);
         this.convention = convention;
         this.isAxisIgnored = isAxisIgnored;
     }
