@@ -54,6 +54,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -588,8 +589,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         final Matrix swap1, swap3;
         try {
-            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.normalize(baseCS));
-            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.normalize(derivedCS), derivedCS);
+            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.replaceAxes(baseCS, AxesConvention.NORMALIZED));
+            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(derivedCS, AxesConvention.NORMALIZED), derivedCS);
         } catch (IllegalArgumentException | ConversionException cause) {
             throw new FactoryException(cause);
         }

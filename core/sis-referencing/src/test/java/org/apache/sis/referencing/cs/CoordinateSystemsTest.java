@@ -17,11 +17,17 @@
 package org.apache.sis.referencing.cs;
 
 import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import javax.measure.unit.Unit;
 import javax.measure.converter.ConversionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.VerticalCS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.test.DependsOnMethod;
@@ -42,12 +48,13 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn({
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
-    DirectionAlongMeridianTest.class
+    DirectionAlongMeridianTest.class,
+    NormalizerTest.class
 })
 public final strictfp class CoordinateSystemsTest extends TestCase {
     /**
@@ -263,5 +270,48 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
                 1000,  0,   0,   0,
                 0,     0,   0,   1
         }), matrix, STRICT);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)}
+     * without change of coordinate system type.
+     */
+    @Test
+    public void testReplaceAxes() {
+        final EllipsoidalCS    sourceCS = HardCodedCS.GEODETIC_3D;
+        final EllipsoidalCS    targetCS = HardCodedCS.ELLIPSOIDAL_gon;  // What we want to get.
+        final CoordinateSystem actualCS = CoordinateSystems.replaceAxes(sourceCS, new AxisFilter() {
+            @Override
+            public boolean accept(final CoordinateSystemAxis axis) {
+                return Units.isAngular(axis.getUnit());
+            }
+
+            @Override
+            public Unit<?> getUnitReplacement(Unit<?> unit) {
+                if (Units.isAngular(unit)) {
+                    unit = NonSI.GRADE;
+                }
+                return unit;
+            }
+        });
+        assertEqualsIgnoreMetadata(targetCS, actualCS);
+    }
+
+    /**
+     * Tests {@link CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)}
+     * with a change of coordinate system type.
+     */
+    @Test
+    @DependsOnMethod("testReplaceAxes")
+    public void testReplaceAxesWithTypeChange() {
+        final EllipsoidalCS    sourceCS = HardCodedCS.GEODETIC_3D;
+        final VerticalCS       targetCS = HardCodedCS.ELLIPSOIDAL_HEIGHT;   // What we want to get.
+        final CoordinateSystem actualCS = CoordinateSystems.replaceAxes(sourceCS, new AxisFilter() {
+            @Override
+            public boolean accept(final CoordinateSystemAxis axis) {
+                return Units.isLinear(axis.getUnit());
+            }
+        });
+        assertEqualsIgnoreMetadata(targetCS, actualCS);
     }
 }

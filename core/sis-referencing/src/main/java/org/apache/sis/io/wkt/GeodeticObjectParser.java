@@ -712,7 +712,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             } else {
                 cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
                 if (!SI.METRE.equals(linearUnit)) {
-                    cs = (CartesianCS) CoordinateSystems.modifyAxes(cs, new AxisFilter() {
+                    cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
                         @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
                             return linearUnit;
                         }

@@ -70,10 +70,10 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
 
     /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
-    private DefaultPolarCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    DefaultPolarCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
     }
 
@@ -199,10 +199,13 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultPolarCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 2: return new DefaultPolarCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 2);
+        }
     }
 }
