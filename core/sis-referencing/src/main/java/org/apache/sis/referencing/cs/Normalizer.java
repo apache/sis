@@ -30,6 +30,7 @@ import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -194,14 +195,19 @@ final class Normalizer implements Comparable<Normalizer> {
     static AbstractCS normalize(final CoordinateSystem cs, final AxisFilter changes, final boolean reorder) {
         boolean changed = false;
         final int dimension = cs.getDimension();
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        int n = 0;
         for (int i=0; i<dimension; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
             if (changes != null) {
+                if (!changes.accept(axis)) {
+                    continue;
+                }
                 changed |= (axis != (axis = normalize(axis, changes)));
             }
-            axes[i] = axis;
+            axes[n++] = axis;
         }
+        axes = ArraysExt.resize(axes, n);
         /*
          * Sort the axes in an attempt to create a right-handed system.
          * If nothing changed, return the given Coordinate System as-is.
@@ -209,16 +215,16 @@ final class Normalizer implements Comparable<Normalizer> {
         if (reorder) {
             changed |= sort(axes);
         }
-        if (!changed) {
+        if (!changed && n == dimension) {
             return null;
         }
         /*
          * Create a new coordinate system of the same type than the given one, but with the given axes.
          * We need to change the Coordinate System name, since it is likely to not be valid anymore.
          */
-        final AbstractCS impl = (cs instanceof AbstractCS) ? (AbstractCS) cs : AbstractCS.castOrCopy(cs);
+        final AbstractCS impl = castOrCopy(cs);
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
-        return impl.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
+        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
     }
 
     /**
@@ -232,9 +238,9 @@ final class Normalizer implements Comparable<Normalizer> {
      * of -60° still locate the same point in the old and the new coordinate system. But the preferred way
      * to locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
      *
-     * @return A coordinate system using the given kind of longitude range (may be {@code axis}).
+     * @return A coordinate system using the given kind of longitude range, or {@code null} if no change is needed.
      */
-    static AbstractCS shiftAxisRange(final AbstractCS cs) {
+    private static AbstractCS shiftAxisRange(final CoordinateSystem cs) {
         boolean changed = false;
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
@@ -263,8 +269,37 @@ final class Normalizer implements Comparable<Normalizer> {
             axes[i] = axis;
         }
         if (!changed) {
-            return cs;
+            return null;
         }
-        return cs.createSameType(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
+        return castOrCopy(cs).createForAxes(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
+    }
+
+    /**
+     * Returns the given coordinate system as an {@code AbstractCS} instance. This method performs an
+     * {@code instanceof} check before to delegate to {@link AbstractCS#castOrCopy(CoordinateSystem)}
+     * because there is no need to check for all interfaces before the implementation class here.
+     * Checking the implementation class first is usually more efficient in this particular case.
+     */
+    private static AbstractCS castOrCopy(final CoordinateSystem cs) {
+        return (cs instanceof AbstractCS) ? (AbstractCS) cs : AbstractCS.castOrCopy(cs);
+    }
+
+    /**
+     * Returns a coordinate system equivalent to the given one but with axes rearranged according the given convention.
+     * If the given coordinate system is already compatible with the given convention, then returns {@code null}.
+     *
+     * @param  convention The axes convention for which a coordinate system is desired.
+     * @return A coordinate system compatible with the given convention, or {@code null} if no change is needed.
+     *
+     * @see AbstractCS#forConvention(AxesConvention)
+     */
+    static AbstractCS forConvention(final CoordinateSystem cs, final AxesConvention convention) {
+        switch (convention) {
+            case NORMALIZED:              // Fall through
+            case CONVENTIONALLY_ORIENTED: return normalize(cs, convention, true);
+            case RIGHT_HANDED:            return normalize(cs, null, true);
+            case POSITIVE_RANGE:          return shiftAxisRange(cs);
+            default: throw new AssertionError(convention);
+        }
     }
 }
