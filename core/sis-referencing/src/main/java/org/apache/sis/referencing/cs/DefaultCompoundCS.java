@@ -20,11 +20,10 @@ import java.util.Map;
 import java.util.List;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -52,7 +51,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class DefaultCompoundCS extends AbstractCS {
@@ -127,35 +126,8 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Workaround(library="JDK", version="1.7")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
-        super(singletonMap(NAME_KEY, createName(new StringBuilder(60).append("Compound CS"), axes)), axes);
+        super(singletonMap(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = UnmodifiableArrayList.wrap(components);
-    }
-
-    /**
-     * Returns a name for a coordinate system.
-     * Examples:
-     *
-     * <ul>
-     *   <li>Ellipsoidal CS: North (°), East (°).</li>
-     *   <li>Cartesian CS: East (km), North (km).</li>
-     *   <li>Compound CS: East (km), North (km), Up (m).</li>
-     * </ul>
-     *
-     * @param  buffer A buffer filled with the name header.
-     * @param  axes The axes.
-     * @return A name for the given coordinate system type and axes.
-     */
-    static String createName(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
-        String separator = ": ";
-        for (final CoordinateSystemAxis axis : axes) {
-            buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
-            separator = ", ";
-            final String symbol = Utilities.toString(axis.getUnit());
-            if (symbol != null && !symbol.isEmpty()) {
-                buffer.append(" (").append(symbol).append(')');
-            }
-        }
-        return buffer.append('.').toString();
     }
 
     /**

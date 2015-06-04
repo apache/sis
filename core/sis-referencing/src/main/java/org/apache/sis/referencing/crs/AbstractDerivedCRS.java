@@ -25,7 +25,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -90,8 +92,8 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * @param  conversion The defining conversion from a normalized base to a normalized derived CRS.
      * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
-     * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
-     *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
+     * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
+     *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      */
     AbstractDerivedCRS(final Map<String,?>    properties,
                        final SingleCRS        baseCRS,
@@ -108,6 +110,27 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             ArgumentChecks.ensureDimensionMatches("derivedCS", baseToDerived.getTargetDimensions(), derivedCS);
         }
         conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
+    }
+
+    /**
+     * For {@link DefaultDerivedCRS#DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod,
+     * MathTransform, CoordinateSystem)} constructor only (<strong>not legal for {@code ProjectedCRS}</strong>).
+     */
+    @SuppressWarnings("unchecked")
+    AbstractDerivedCRS(final Map<String,?>             properties,
+                       final SingleCRS                 baseCRS,
+                       final CoordinateReferenceSystem interpolationCRS,
+                       final OperationMethod           method,
+                       final MathTransform             baseToDerived,
+                       final CoordinateSystem          derivedCS)
+            throws MismatchedDimensionException
+    {
+        super(properties, derivedCS);
+        ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
+        ArgumentChecks.ensureNonNull("method", method);
+        ArgumentChecks.ensureNonNull("baseToDerived", baseToDerived);
+        conversionFromBase = (C) new DefaultConversion(   // Cast to (C) is valid only for DefaultDerivedCRS.
+                ConversionKeys.unprefix(properties), baseCRS, this, interpolationCRS, method, baseToDerived);
     }
 
     /**
