@@ -27,7 +27,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -124,7 +123,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
@@ -226,7 +225,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Verifies parameters validity after initialization.
+     * Verifies parameters validity after initialization of {@link DefaultGeodeticDatum}.
      */
     void verify() {
         ensureFinite("tX", tX);
@@ -249,6 +248,70 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      */
     public GeodeticDatum getTargetDatum() {
         return targetDatum;
+    }
+
+    /**
+     * Returns the parameter values. The length of the returned array depends on the values:
+     *
+     * <ul>
+     *   <li>If this instance is an {@link TimeDependentBWP}, then the array length will be 14.</li>
+     *   <li>Otherwise if this instance contains a non-zero {@link #dS} value, then the array length will be 7 with
+     *       {@link #tX}, {@link #tY}, {@link #tZ}, {@link #rX}, {@link #rY}, {@link #rZ} and {@link #dS} values
+     *       in that order.</li>
+     *   <li>Otherwise if this instance contains non-zero rotation terms,
+     *       then this method returns the first 6 of the above-cited values.</li>
+     *   <li>Otherwise (i.e. this instance {@linkplain #isTranslation() is a translation}),
+     *       this method returns only the first 3 of the above-cited values.</li>
+     * </ul>
+     *
+     * @return The parameter values as an array of length 3, 6, 7 or 14.
+     *
+     * @since 0.6
+     */
+    @SuppressWarnings("fallthrough")
+    public double[] getValues() {
+        final double[] elements = new double[(dS != 0) ? 7 : (rZ != 0 || rY != 0 || rX != 0) ? 6 : 3];
+        switch (elements.length) {
+            default: elements[6] = dS;  // Fallthrough everywhere.
+            case 6:  elements[5] = rZ;
+                     elements[4] = rY;
+                     elements[3] = rX;
+            case 3:  elements[2] = tZ;
+                     elements[1] = tY;
+                     elements[0] = tX;
+        }
+        return elements;
+    }
+
+    /**
+     * Sets the parameters to the given values. The given array can have any length. The first array elements will be
+     * assigned to the {@link #tX}, {@link #tY}, {@link #tZ}, {@link #rX}, {@link #rY}, {@link #rZ} and {@link #dS}
+     * fields in that order.
+     *
+     * <ul>
+     *   <li>If the length of the given array is not sufficient for assigning a value to every fields,
+     *       then the remaining fields are left unchanged (they are <strong>not</strong> reset to zero,
+     *       but this is not a problem if this {@code BursaWolfParameters} is a new instance).</li>
+     *   <li>If the length of the given array is greater than necessary, then extra elements are ignored by this base
+     *       class. Note however that those extra elements may be used by subclasses like {@link TimeDependentBWP}.</li>
+     * </ul>
+     *
+     * @param elements The new parameter values, as an array of any length.
+     *
+     * @since 0.6
+     */
+    @SuppressWarnings("fallthrough")
+    public void setValues(final double... elements) {
+        switch (elements.length) {
+            default: dS = elements[6];  // Fallthrough everywhere.
+            case 6:  rZ = elements[5];
+            case 5:  rY = elements[4];
+            case 4:  rX = elements[3];
+            case 3:  tZ = elements[2];
+            case 2:  tY = elements[1];
+            case 1:  tX = elements[0];
+            case 0:  break;
+         }
     }
 
     /**
@@ -302,13 +365,11 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * because the parameter values are very small (parts per millions and arc-seconds).
      */
     public void invert() {
-        tX = -tX;
-        tY = -tY;
-        tZ = -tZ;
-        rX = -rX;
-        rY = -rY;
-        rZ = -rZ;
-        dS = -dS;
+        final double[] values = getValues();
+        for (int i=0; i<values.length; i++) {
+            values[i] = -values[i];
+        }
+        setValues(values);
     }
 
     /**
@@ -556,15 +617,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final BursaWolfParameters that = (BursaWolfParameters) object;
-            return Numerics.equals(this.tX, that.tX) &&
-                   Numerics.equals(this.tY, that.tY) &&
-                   Numerics.equals(this.tZ, that.tZ) &&
-                   Numerics.equals(this.rX, that.rX) &&
-                   Numerics.equals(this.rY, that.rY) &&
-                   Numerics.equals(this.rZ, that.rZ) &&
-                   Numerics.equals(this.dS, that.dS) &&
-                    Objects.equals(this.targetDatum, that.targetDatum) &&
-                    Objects.equals(this.domainOfValidity, that.domainOfValidity);
+            return Arrays.equals(this.getValues(),      that.getValues()) &&
+                  Objects.equals(this.targetDatum,      that.targetDatum) &&
+                  Objects.equals(this.domainOfValidity, that.domainOfValidity);
         }
         return false;
     }
@@ -572,12 +627,11 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * Returns a hash value for this object.
      *
-     * @return The hash code value. This value doesn't need to be the same
-     *         in past or future versions of this class.
+     * @return The hash code value. This value does not need to be the same in past or future versions of this class.
      */
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new double[] {tX, tY, tZ, rX, rY, rZ, dS}) ^ (int) serialVersionUID;
+        return Arrays.hashCode(getValues()) ^ (int) serialVersionUID;
     }
 
     /**
@@ -599,14 +653,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        formatter.append(tX);
-        formatter.append(tY);
-        formatter.append(tZ);
-        formatter.append(rX);
-        formatter.append(rY);
-        formatter.append(rZ);
-        formatter.append(dS);
+        final double[] values = getValues();
+        for (final double value : values) {
+            formatter.append(value);
+        }
         if (isToWGS84()) {
+            if (values.length > 7) {
+                formatter.setInvalidWKT(BursaWolfParameters.class, null);
+            }
             return WKTKeywords.ToWGS84;
         }
         formatter.setInvalidWKT(BursaWolfParameters.class, null);

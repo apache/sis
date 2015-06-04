@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -31,6 +34,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
@@ -51,8 +55,11 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
@@ -444,6 +451,25 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     *
+     * @param  unit The unit of measurement for the geocentric CRS axes.
+     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     */
+    @Override
+    public CartesianCS getGeocentricCS(final Unit<Length> unit) {
+        CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+        if (!SI.METRE.equals(unit)) {
+            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+                @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
+                    return unit;
+                }
+            });
+        }
+        return cs;
+    }
+
+    /**
      * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
@@ -478,5 +504,18 @@ public final class ServicesForMetadata extends ReferencingServices {
                                        final CoordinateSystem derivedCS)
     {
         return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
+    }
+
+    /**
+     * Creates the {@code TOWGS84} element during parsing of a WKT version 1.
+     *
+     * @param  values The 7 Bursa-Wolf parameter values.
+     * @return The {@link BursaWolfParameters}.
+     */
+    @Override
+    public Object createToWGS84(final double[] values) {
+        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        info.setValues(values);
+        return info;
     }
 }

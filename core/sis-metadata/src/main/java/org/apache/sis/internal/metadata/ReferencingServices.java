@@ -17,12 +17,15 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Map;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.MathTransform;
@@ -69,6 +72,11 @@ public class ReferencingServices extends SystemListener {
      * which is {@value} metres.
      */
     public static final double AUTHALIC_RADIUS = 6371007;
+
+    /**
+     * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
+     */
+    public static final String BURSA_WOLF_KEY = "bursaWolf";
 
     /**
      * The key for specifying explicitely the value to be returned by
@@ -389,6 +397,16 @@ public class ReferencingServices extends SystemListener {
     }
 
     /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     *
+     * @param  unit The unit of measurement for the geocentric CRS axes.
+     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     */
+    public CartesianCS getGeocentricCS(final Unit<Length> unit) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
      * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
@@ -420,5 +438,16 @@ public class ReferencingServices extends SystemListener {
                                        final CoordinateSystem derivedCS)
     {
         throw referencingModuleNotFound();
+    }
+
+    /**
+     * Creates the {@code TOWGS84} element during parsing of a WKT version 1. This is an optional operation:
+     * this method is allowed to return {@code null} if the "sis-referencing" module is not in the classpath.
+     *
+     * @param  values The 7 Bursa-Wolf parameter values.
+     * @return The {@link org.apache.sis.referencing.datum.BursaWolfParameters}, or {@code null}.
+     */
+    public Object createToWGS84(final double[] values) {
+        return null;
     }
 }
