@@ -224,7 +224,7 @@ final class Normalizer implements Comparable<Normalizer> {
          */
         final AbstractCS impl = castOrCopy(cs);
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
-        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
+        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, axes)), axes);
     }
 
     /**

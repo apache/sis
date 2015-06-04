@@ -49,17 +49,16 @@ import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
@@ -118,6 +117,11 @@ final class GeodeticObjectParser extends MathTransformParser {
     private final CoordinateOperationFactory opFactory;
 
     /**
+     * Other services from "sis-referencing" module which can not be provided by the standard factories.
+     */
+    private final ReferencingServices referencing;
+
+    /**
      * The WKT convention to assume for parsing.
      *
      * <ul>
@@ -172,7 +176,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
-        opFactory     = ReferencingServices.getInstance().getCoordinateOperationFactory(defaultProperties, mtFactory);
+        referencing   = ReferencingServices.getInstance();
+        opFactory     = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
         convention    = Convention.DEFAULT;
         isAxisIgnored = false;
     }
@@ -200,7 +205,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
-        opFactory    = ReferencingServices.getInstance().getCoordinateOperationFactory(null, mtFactory);
+        referencing  = ReferencingServices.getInstance();
+        opFactory    = referencing.getCoordinateOperationFactory(null, mtFactory);
         this.convention = convention;
         this.isAxisIgnored = isAxisIgnored;
     }
@@ -670,8 +676,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             list.add(axis);
             axis = parseAxis(element, linearUnit, false);
         } while (axis != null);
-        final CoordinateSystem cs = new AbstractCS(singletonMap("name", name),
-                list.toArray(new CoordinateSystemAxis[list.size()]));
+        final CoordinateSystem cs = referencing.createAbstractCS(list.toArray(new CoordinateSystemAxis[list.size()]));
         try {
             return crsFactory.createEngineeringCRS(parseAuthorityAndClose(element, name), datum, cs);
         } catch (FactoryException exception) {
@@ -905,32 +910,37 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element                   element = parent.pullElement(WKTKeywords.Fitted_CS);
         final String                    name    = element.pullString("name");
         final MathTransform             toBase  = parseMathTransform(element, true);
-        final CoordinateReferenceSystem base    = parseCoordinateReferenceSystem(element, true);
         final OperationMethod           method  = getOperationMethod();
+        final CoordinateReferenceSystem baseCRS = parseCoordinateReferenceSystem(element, true);
+        if (!(baseCRS instanceof SingleCRS)) {
+            throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+                    new Object[] {WKTKeywords.Fitted_CS, baseCRS.getClass()}, element.offset);
+        }
         /*
-         * WKT 1 provides no informations about the underlying CS of a derived CRS.
+         * WKT 1 provides no information about the underlying CS of a derived CRS.
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
          * contains as few information as possible, in order to avoid providing wrong informations.
          */
-        final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[toBase.getSourceDimensions()];
-        final StringBuilder buffer = new StringBuilder(name);
-        buffer.append(" axis ");
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
+        final StringBuilder buffer = new StringBuilder(name).append(" axis ");
         final int start = buffer.length();
         try {
-            for (int i=0; i<axis.length; i++) {
+            for (int i=0; i<axes.length; i++) {
                 final String number = String.valueOf(i);
                 buffer.setLength(start);
                 buffer.append(number);
-                axis[i] = csFactory.createCoordinateSystemAxis(
+                axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(IdentifiedObject.NAME_KEY, buffer.toString()),
                         number, AxisDirection.OTHER, Unit.ONE);
             }
-            final Conversion conversion = new DefaultConversion(    // TODO: use opFactory
-                    singletonMap(IdentifiedObject.NAME_KEY, method.getName().getCode()),
-                    method, toBase.inverse(), null);
-            final Map<String,?> properties = parseAuthorityAndClose(element, name);
-            final CoordinateSystem cs = new AbstractCS(properties, axis);
-            return crsFactory.createDerivedCRS(properties, base, conversion, cs);
+            final Map<String,Object> properties = parseAuthorityAndClose(element, name);
+            final CoordinateSystem derivedCS = referencing.createAbstractCS(axes);
+            /*
+             * We do not know which name to give to the conversion method.
+             * For now, use the CRS name.
+             */
+            properties.put("conversion.name", name);
+            return referencing.createDerivedCRS(properties, (SingleCRS) baseCRS, method, toBase.inverse(), derivedCS);
         } catch (FactoryException | NoninvertibleTransformException exception) {
             throw element.parseFailed(exception);
         }

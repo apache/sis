@@ -21,6 +21,10 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -382,5 +386,39 @@ public class ReferencingServices extends SystemListener {
             }
         }
         return fallback;
+    }
+
+    /**
+     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
+     * since that legacy format did not specified any information about the coordinate system in use.
+     * This method should not need to be invoked for parsing WKT version 2.
+     *
+     * @param  axes The axes of the unknown coordinate system.
+     * @return An "abstract" coordinate system using the given axes.
+     */
+    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
+     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
+     * the standard factories.
+     *
+     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
+     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
+     * @param  method        The coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS     The coordinate system for the derived CRS.
+     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     */
+    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
+                                       final SingleCRS        baseCRS,
+                                       final OperationMethod  method,
+                                       final MathTransform    baseToDerived,
+                                       final CoordinateSystem derivedCS)
+    {
+        throw referencingModuleNotFound();
     }
 }

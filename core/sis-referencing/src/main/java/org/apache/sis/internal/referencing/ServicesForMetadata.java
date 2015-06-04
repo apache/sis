@@ -19,21 +19,25 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -46,6 +50,8 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
@@ -435,5 +441,42 @@ public final class ServicesForMetadata extends ReferencingServices {
         } else {
             return new DefaultCoordinateOperationFactory(properties, mtFactory);
         }
+    }
+
+    /**
+     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
+     * since that legacy format did not specified any information about the coordinate system in use.
+     * This method should not need to be invoked for parsing WKT version 2.
+     *
+     * @param  axes The axes of the unknown coordinate system.
+     * @return An "abstract" coordinate system using the given axes.
+     */
+    @Override
+    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(Collections.singletonMap(AbstractCS.NAME_KEY,
+                AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+    }
+
+    /**
+     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
+     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
+     * the standard factories.
+     *
+     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
+     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
+     * @param  method        The coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS     The coordinate system for the derived CRS.
+     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     */
+    @Override
+    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
+                                       final SingleCRS        baseCRS,
+                                       final OperationMethod  method,
+                                       final MathTransform    baseToDerived,
+                                       final CoordinateSystem derivedCS)
+    {
+        return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
     }
 }
