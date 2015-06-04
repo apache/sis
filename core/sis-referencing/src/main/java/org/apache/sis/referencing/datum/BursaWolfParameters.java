@@ -264,6 +264,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *       this method returns only the first 3 of the above-cited values.</li>
      * </ul>
      *
+     * <div class="note"><b>Note:</b>
+     * the rules about the arrays of length 3, 6 or 7 are derived from the <cite>Well Known Text</cite> (WKT)
+     * version 1 specification. The rule about the array of length 14 is an extension.</div>
+     *
      * @return The parameter values as an array of length 3, 6, 7 or 14.
      *
      * @since 0.6

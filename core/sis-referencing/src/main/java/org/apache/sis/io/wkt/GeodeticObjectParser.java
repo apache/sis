@@ -92,7 +92,10 @@ import static java.util.Collections.singletonMap;
  */
 final class GeodeticObjectParser extends MathTransformParser {
     /**
-     * The name of the 7 parameters in a {@code TOWGS84[…]} element.
+     * The names of the 7 parameters in a {@code TOWGS84[…]} element.
+     * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
+     * They are not the same than the {@link org.apache.sis.referencing.datum.BursaWolfParameters}
+     * field names, which are derived from the EPSG database.
      */
     private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
 
