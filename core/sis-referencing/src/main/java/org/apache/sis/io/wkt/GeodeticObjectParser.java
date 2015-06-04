@@ -49,9 +49,6 @@ import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -64,7 +61,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_KEY;
 
 
 /**
@@ -95,6 +91,11 @@ import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_K
  * @module
  */
 final class GeodeticObjectParser extends MathTransformParser {
+    /**
+     * The name of the 7 parameters in a {@code TOWGS84[…]} element.
+     */
+    private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
+
     /**
      * The factory to use for creating {@link CoordinateReferenceSystem} instances.
      */
@@ -465,27 +466,24 @@ final class GeodeticObjectParser extends MathTransformParser {
      * }
      *
      * @param  parent The parent element.
-     * @return The {@code "TOWGS84"} element as a {@link BursaWolfParameters} object,
+     * @return The {@code "TOWGS84"} element as a {@link org.apache.sis.referencing.datum.BursaWolfParameters} object,
      *         or {@code null} if no {@code "TOWGS84"} has been found.
      * @throws ParseException if the {@code "TOWGS84"} can not be parsed.
      */
-    private BursaWolfParameters parseToWGS84(final Element parent) throws ParseException {
+    private Object parseToWGS84(final Element parent) throws ParseException {
         final Element element = parent.pullOptionalElement(WKTKeywords.ToWGS84);
         if (element == null) {
             return null;
         }
-        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
-        info.tX = element.pullDouble("dx");
-        info.tY = element.pullDouble("dy");
-        info.tZ = element.pullDouble("dz");
-        if (element.peek() != null) {
-            info.rX = element.pullDouble("ex");
-            info.rY = element.pullDouble("ey");
-            info.rZ = element.pullDouble("ez");
-            info.dS = element.pullDouble("ppm");
+        final double[] values = new double[ToWGS84.length];
+        for (int i=0; i<values.length;) {
+            values[i] = element.pullDouble(ToWGS84[i]);
+            if ((++i % 3) == 0 && element.peek() == null) {
+                break;  // It is legal to have only 3 or 6 elements.
+            }
         }
         element.close(ignoredElements);
-        return info;
+        return referencing.createToWGS84(values);
     }
 
     /**
@@ -565,10 +563,10 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element             element    = parent.pullElement(WKTKeywords.Datum);
         final String              name       = element.pullString("name");
         final Ellipsoid           ellipsoid  = parseSpheroid(element);
-        final BursaWolfParameters toWGS84    = parseToWGS84(element);     // Optional; may be null.
+        final Object              toWGS84    = parseToWGS84(element);     // Optional; may be null.
         final Map<String,Object>  properties = parseAuthorityAndClose(element, name);
         if (toWGS84 != null) {
-            properties.put(BURSA_WOLF_KEY, toWGS84);
+            properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
         }
         try {
             return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
@@ -716,14 +714,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
                 cs = Legacy.forGeocentricCRS(cs, false);
             } else {
-                cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
-                if (!SI.METRE.equals(linearUnit)) {
-                    cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-                        @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
-                            return linearUnit;
-                        }
-                    });
-                }
+                cs = referencing.getGeocentricCS(linearUnit);
             }
             return crsFactory.createGeocentricCRS(properties, datum, cs);
         } catch (FactoryException exception) {
