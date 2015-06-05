@@ -56,7 +56,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.6
  * @module
  */
-public class DefaultConcatenatedOperation extends AbstractCoordinateOperation implements ConcatenatedOperation {
+final class DefaultConcatenatedOperation extends AbstractCoordinateOperation implements ConcatenatedOperation {
     /**
      * Serial number for inter-operability with different versions.
      */

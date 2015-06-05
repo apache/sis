@@ -91,26 +91,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     private static final long serialVersionUID = -7343644724857519090L;
 
     /**
-     * The authority for International Standard Book Number.
-     *
-     * <div class="note"><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
-     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
-     * to be updated.</div>
-     */
-    static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<String>("ISBN", NonMarshalledAuthority.ISBN);
-
-    /**
-     * The authority for International Standard Serial Number.
-     *
-     * <div class="note"><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
-     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
-     * to be updated.</div>
-     */
-    static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<String>("ISSN", NonMarshalledAuthority.ISSN);
-
-    /**
      * Name by which the cited resource is known.
      */
     private InternationalString title;
@@ -256,8 +236,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             final String id2        = object.getISSN();
             if (id1 != null || id2 != null) {
                 final IdentifierMap map = super.getIdentifierMap();
-                if (id1 != null) map.putSpecialized(ISBN, id1);
-                if (id2 != null) map.putSpecialized(ISSN, id2);
+                if (id1 != null) map.putSpecialized(Citations.ISBN, id1);
+                if (id2 != null) map.putSpecialized(Citations.ISSN, id2);
             }
         }
     }
@@ -568,7 +548,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISBN")
     public String getISBN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISBN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISBN);
     }
 
     /**
@@ -587,7 +567,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     public void setISBN(final String newValue) {
         checkWritePermission();
         if (newValue != null || !isNullOrEmpty(identifiers)) {
-            getIdentifierMap().putSpecialized(ISBN, newValue);
+            getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
         }
     }
 
@@ -607,7 +587,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISSN")
     public String getISSN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISSN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(Citations.ISSN);
     }
 
     /**
@@ -626,7 +606,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     public void setISSN(final String newValue) {
         checkWritePermission();
         if (newValue != null || !isNullOrEmpty(identifiers)) {
-            getIdentifierMap().putSpecialized(ISSN, newValue);
+            getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
         }
     }
 

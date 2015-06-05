@@ -420,12 +420,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
 
     /**
      * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
-     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace()
-     * code space}, but not necessarily.
-     *
-     * <div class="note"><b>Example:</b> Coordinate Reference System (CRS) identified by an EPSG code will return
-     * contact information for the <cite>International Association of Oil &amp; Gas producers</cite> (IOGP), since
-     * IOGP is the organization maintaining the EPSG geodetic database.</div>
+     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
+     * but not necessarily.
      *
      * @return The authority, or {@code null} if not available.
      */

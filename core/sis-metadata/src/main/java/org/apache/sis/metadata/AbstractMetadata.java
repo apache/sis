@@ -82,8 +82,15 @@ import org.apache.sis.util.logging.Logging;
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     /**
      * The logger for messages related to metadata implementations.
+     *
+     * Note that another logger is provided with public access in the {@code iso} sub-package:
+     * {@link org.apache.sis.metadata.iso.ISOMetadata#LOGGER}. This {@code LOGGER} instance is
+     * kept package-privated for avoiding confusion (other sub-packages like {@code sql} should
+     * create their own logger). This logger is declared in a static field because otherwise,
+     * any configuration done by the user may be lost when the garbage-collector collects the
+     * logger.
      */
-    protected static final Logger LOGGER = Logging.getLogger(AbstractMetadata.class);
+    static final Logger LOGGER = Logging.getLogger(AbstractMetadata.class);
 
     /**
      * Creates an initially empty metadata.

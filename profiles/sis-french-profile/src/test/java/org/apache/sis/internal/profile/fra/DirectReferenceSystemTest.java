@@ -58,7 +58,7 @@ public final strictfp class DirectReferenceSystemTest extends XMLTestCase {
     @SuppressWarnings("deprecation")
     private static DefaultMetadata createMetadata(final boolean legacy) {
         final DefaultMetadata metadata = new DefaultMetadata();
-        final DefaultCitation citation = new DefaultCitation("European Petroleum Survey Group");
+        final DefaultCitation citation = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         Collection<Responsibility> r = HardCodedCitations.EPSG.getCitedResponsibleParties();
         if (legacy) {
             r = Collections.<Responsibility>singleton(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));

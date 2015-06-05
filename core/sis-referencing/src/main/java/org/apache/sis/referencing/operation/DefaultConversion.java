@@ -132,6 +132,27 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *   </tr>
      * </table>
      *
+     * <div class="section">Relationship between datum</div>
+     * By definition, coordinate <b>conversions</b> do not change the datum. Consequently the given {@code sourceCRS}
+     * and {@code targetCRS} should use the same datum. If the datum is not the same, then the coordinate operation
+     * should probably be a {@linkplain DefaultTransformation transformation} instead.
+     * However Apache SIS does not enforce that condition, but we encourage users to follow it.
+     * The reason why SIS is tolerant is because some gray areas may exist about whether an operation
+     * should be considered as a conversion or a transformation.
+     *
+     * <div class="note"><b>Example:</b>
+     * converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
+     * the <cite>January 1st, 1950</cite> epoch to another temporal CRS using the <cite>January 1st, 1970</cite> epoch
+     * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
+     * temporal datum} definition. However such operation does not have all the accuracy issues of transformations
+     * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
+     * Consequently some users may consider sufficient to represent temporal epoch changes as conversions instead
+     * than transformations.</div>
+     *
+     * Note that while Apache SIS accepts to construct {@code DefaultConversion} instances
+     * with different source and target datum, it does not accept to use such instances for
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.
+     *
      * @param properties The properties to be given to the identified object.
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS, which shall use a datum
@@ -139,7 +160,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
      * @param method     The coordinate operation method (mandatory in all cases).
      * @param transform  Transform from positions in the source CRS to positions in the target CRS.
-     * @throws MismatchedDatumException if the source and target CRS use different datum.
      */
     public DefaultConversion(final Map<String,?>             properties,
                              final CoordinateReferenceSystem sourceCRS,
@@ -151,7 +171,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        ensureCompatibleDatum("targetCRS", sourceCRS, targetCRS);
     }
 
     /**

@@ -23,14 +23,14 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
-import java.text.ParseException;
+import java.lang.reflect.Constructor;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.converter.ConversionException;
 
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -48,22 +48,21 @@ import org.opengis.util.NoSuchIdentifierException;
 
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.Pending;     // Temporary import.
+import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -166,20 +165,20 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
 
     /**
-     * The separator character between an identifier and its namespace in the argument given to
-     * {@link #getOperationMethod(String)}. For example this is the separator in {@code "EPSG:9807"}.
-     *
-     * This is defined as a constant for now, but we may make it configurable in a future version.
-     */
-    private static final char IDENTIFIER_SEPARATOR = DefaultNameSpace.DEFAULT_SEPARATOR;
-
-    /**
      * Minimal precision of ellipsoid semi-major and semi-minor axis lengths, in metres.
      * If the length difference between the axis of two ellipsoids is greater than this threshold,
      * we will report a mismatch. This is used for logging purpose only and do not have any impact
      * on the {@code MathTransform} objects to be created by this factory.
      */
     private static final double ELLIPSOID_PRECISION = Formulas.LINEAR_TOLERANCE;
+
+    /**
+     * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
+     * same module than this class, so we will hopefully not have security issues.  But we have to
+     * use reflection because the parser class is not yet public (because we do not want to commit
+     * its API yet).
+     */
+    private static volatile Constructor<? extends WKTParser> parserConstructor;
 
     /**
      * All methods specified at construction time or found on the classpath.
@@ -217,6 +216,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * to return instances of existing math transforms when possible.
      */
     private final WeakHashSet<MathTransform> pool;
+
+    /**
+     * The <cite>Well Known Text</cite> parser for {@code MathTransform} instances.
+     * This parser is not thread-safe, so we need to prevent two threads from using
+     * the same instance in same time.
+     */
+    private final AtomicReference<WKTParser> parser;
 
     /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
@@ -288,6 +294,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         methodsByType = new IdentityHashMap<Class<?>, OperationMethodSet>();
         lastMethod    = new ThreadLocal<OperationMethod>();
         pool          = new WeakHashSet<MathTransform>(MathTransform.class);
+        parser        = new AtomicReference<WKTParser>();
     }
 
     /**
@@ -353,33 +360,21 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@linkplain DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.</p>
      *
      * <p>If more than one method match the given identifier, then the first (according iteration order)
-     * non-{@linkplain Deprecable#isDeprecated() deprecated} matching method is returned. If all matching
-     * methods are deprecated, the first one is returned.</p>
+     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
+     * If all matching methods are deprecated, the first one is returned.</p>
      *
      * @param  identifier The name or identifier of the operation method to search.
      * @return The coordinate operation method for the given name or identifier.
      * @throws NoSuchIdentifierException if there is no operation method registered for the specified identifier.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      */
     public OperationMethod getOperationMethod(String identifier) throws NoSuchIdentifierException {
         identifier = CharSequences.trimWhitespaces(identifier);
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            for (final OperationMethod m : methods) {
-                if (matches(m, identifier)) {
-                    /*
-                     * Stop the iteration at the first non-deprecated method.
-                     * If we find only deprecated methods, take the first one.
-                     */
-                    final boolean isDeprecated = (m instanceof Deprecable) && ((Deprecable) m).isDeprecated();
-                    if (!isDeprecated || method == null) {
-                        method = m;
-                        if (!isDeprecated) {
-                            break;
-                        }
-                    }
-                }
-            }
+            method = ReferencingServices.getInstance().getOperationMethod(methods, identifier);
             if (method == null) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }
@@ -392,35 +387,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
         }
         return method;
-    }
-
-    /**
-     * Returns {@code true} if the name or an identifier of the given method matches the given {@code identifier}.
-     *
-     * This function is private and static for now, but we may consider to make it a protected member
-     * in a future SIS version in order to give users a chance to override the matching criterion.
-     * We don't do that yet because we would like to have at least one use case before doing so.
-     *
-     * @param  method     The method to test for a match.
-     * @param  identifier The name or identifier of the operation method to search.
-     * @return {@code true} if the given method is a match for the given identifier.
-     */
-    private static boolean matches(final OperationMethod method, final String identifier) {
-        if (IdentifiedObjects.isHeuristicMatchForName(method, identifier)) {
-            return true;
-        }
-        for (int s = identifier.indexOf(IDENTIFIER_SEPARATOR); s >= 0;
-                 s = identifier.indexOf(IDENTIFIER_SEPARATOR, s))
-        {
-            final String codespace = identifier.substring(0, s).trim();
-            final String code = identifier.substring(++s).trim();
-            for (final Identifier id : method.getIdentifiers()) {
-                if (codespace.equalsIgnoreCase(id.getCodeSpace()) && code.equalsIgnoreCase(id.getCode())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -628,8 +594,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         final Matrix swap1, swap3;
         try {
-            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.normalize(baseCS));
-            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.normalize(derivedCS), derivedCS);
+            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.replaceAxes(baseCS, AxesConvention.NORMALIZED));
+            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(derivedCS, AxesConvention.NORMALIZED), derivedCS);
         } catch (IllegalArgumentException cause) {
             throw new FactoryException(cause);
         } catch (ConversionException cause) {
@@ -870,16 +836,26 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
-        final Pending pending = Pending.getInstance();
-        try {
-            return pending.createFromWKT(this, text);
-        } catch (ParseException exception) {
-            final Throwable cause = exception.getCause();
-            if (cause instanceof FactoryException) {
-                throw (FactoryException) cause;
+        WKTParser p = parser.getAndSet(null);
+        if (p == null) try {
+            Constructor<? extends WKTParser> c = parserConstructor;
+            if (c == null) {
+                c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(WKTParser.class)
+                         .getConstructor(MathTransformFactory.class);
+                c.setAccessible(true);
+                parserConstructor = c;
             }
-            throw new FactoryException(exception);
+            p = c.newInstance(this);
+        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+            throw new FactoryException(e);
         }
+        /*
+         * No need to check the type of the parsed object, because MathTransformParser
+         * should return only instance of MathTransform.
+         */
+        final Object object = p.createFromWKT(text);
+        parser.set(p);
+        return (MathTransform) object;
     }
 
     /**

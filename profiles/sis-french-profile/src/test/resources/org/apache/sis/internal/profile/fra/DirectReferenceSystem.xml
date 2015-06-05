@@ -39,7 +39,7 @@
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
-                <gco:CharacterString>European Petroleum Survey Group</gco:CharacterString>
+                <gco:CharacterString>EPSG Geodetic Parameter Dataset</gco:CharacterString>
               </gmd:title>
               <gmd:citedResponsibleParty>
                 <gmd:CI_ResponsibleParty>
