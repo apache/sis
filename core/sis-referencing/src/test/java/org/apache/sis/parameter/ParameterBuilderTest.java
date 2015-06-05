@@ -21,7 +21,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -79,11 +79,11 @@ public final strictfp class ParameterBuilderTest extends TestCase {
     @DependsOnMethod("testCreate")
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();
-        builder.setCodeSpace(HardCodedCitations.IOGP, "EPSG").setRequired(true);
+        builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("Longitude of natural origin")
-                   .addName(HardCodedCitations.OGC, "central_meridian")
-                   .addName(HardCodedCitations.GEOTIFF, "NatOriginLong")
+                   .addName(Citations.OGC, "central_meridian")
+                   .addName(Citations.GEOTIFF, "NatOriginLong")
                    .setRemarks("Some remarks.")               .createBounded(-180, +180, 0, NonSI.DEGREE_ANGLE),
             builder.addName("Latitude of natural origin")     .createBounded( -80,  +84, 0, NonSI.DEGREE_ANGLE),
             builder.addName("Scale factor at natural origin") .createStrictlyPositive(1, Unit.ONE),

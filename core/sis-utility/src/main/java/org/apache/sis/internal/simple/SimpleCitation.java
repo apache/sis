@@ -39,6 +39,12 @@ import java.util.Objects;
 /**
  * A trivial implementation of {@link Citation} containing only a title.
  *
+ * <div class="note"><b>Design note:</b>
+ * we do not put more field than {@link #title} in this {@code SimpleCitation} in order to keep it simple,
+ * because the title is the only "universal" property (the need for all other fields will be determined in
+ * subclasses on a case-by-case basis) and because {@code SimpleCitation} are sometime only proxy identified
+ * by the {@link #title}.</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
@@ -53,10 +59,10 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * The title to be returned by {@link #getTitle()}.
      */
-    protected final String title;
+    public final String title;
 
     /**
-     * Creates a new object for the given name.
+     * Creates a new object for the given title.
      *
      * @param title The title to be returned by {@link #getTitle()}.
      */
@@ -75,27 +81,26 @@ public class SimpleCitation implements Citation, Serializable {
     }
 
     /**
-     * Methods inherited from the {@link Citation} interface which are
-     * not of interest to this {@code SimpleCitation} implementation.
-     * Those methods will be removed in the JDK8 branch.
+     * Methods inherited from the {@link Citation} interface which are not of interest to this
+     * {@code SimpleCitation} implementation. Those methods may be removed in the JDK8 branch.
      *
      * @return An empty list.
      */
-    @Override public Collection<InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
-    @Override public Collection<CitationDate>         getDates()                   {return Collections.emptyList();}
-    @Override public InternationalString              getEdition()                 {return null;}
-    @Override public Date                             getEditionDate()             {return null;}
-    @Override public Collection<? extends Identifier> getIdentifiers()             {return Collections.emptyList();}
-    @Override public Collection<Responsibility>       getCitedResponsibleParties() {return Collections.emptyList();}
-    @Override public Collection<PresentationForm>     getPresentationForms()       {return Collections.emptyList();}
-    @Override public Series                           getSeries()                  {return null;}
-    @Override public Collection<InternationalString>  getOtherCitationDetails()    {return Collections.emptyList();}
-    @Override public String                           getISBN()                    {return null;}
-    @Override public String                           getISSN()                    {return null;}
-    @Override public Collection<OnlineResource>       getOnlineResources()         {return Collections.emptyList();}
-    @Override public Collection<BrowseGraphic>        getGraphics()                {return Collections.emptyList();}
+    @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
+    @Override public Collection<? extends CitationDate>         getDates()                   {return Collections.emptyList();}
+    @Override public InternationalString                        getEdition()                 {return null;}
+    @Override public Date                                       getEditionDate()             {return null;}
+    @Override public Collection<? extends Identifier>           getIdentifiers()             {return Collections.emptyList();}
+    @Override public Collection<? extends Responsibility>       getCitedResponsibleParties() {return Collections.emptyList();}
+    @Override public Collection<PresentationForm>               getPresentationForms()       {return Collections.emptyList();}
+    @Override public Series                                     getSeries()                  {return null;}
+    @Override public Collection<? extends InternationalString>  getOtherCitationDetails()    {return Collections.emptyList();}
+    @Override public Collection<? extends OnlineResource>       getOnlineResources()         {return Collections.emptyList();}
+    @Override public Collection<? extends BrowseGraphic>        getGraphics()                {return Collections.emptyList();}
+    @Override public String                                     getISBN()                    {return null;}
+    @Override public String                                     getISSN()                    {return null;}
     @Deprecated
-    @Override public InternationalString              getCollectiveTitle()         {return null;}
+    @Override public InternationalString                        getCollectiveTitle()         {return null;}
 
     /**
      * Compares the given object with this citation for equality.
@@ -125,6 +130,6 @@ public class SimpleCitation implements Citation, Serializable {
     @Debug
     @Override
     public String toString() {
-        return "Citation[\"" + title + "\"]";
+        return "Citation[“" + title + "”]";
     }
 }

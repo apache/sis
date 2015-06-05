@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Date;
-import java.util.Arrays;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.internal.util.Numerics;
@@ -60,7 +59,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public class TimeDependentBWP extends BursaWolfParameters {
@@ -201,7 +200,50 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
+     * Returns the parameter values. The first 14 elements are always {@link #tX tX}, {@link #tY tY}, {@link #tZ tZ},
+     * {@link #rX rX}, {@link #rY rY}, {@link #rZ rZ}, {@link #dS dS}, {@link #dtX}, {@link #dtY}, {@link #dtZ},
+     * {@link #drX}, {@link #drY}, {@link #drZ} and {@link #ddS} in that order.
+     *
+     * @return The parameter values as an array of length 14.
+     *
+     * @since 0.6
+     */
+    @Override
+    public double[] getValues() {
+        return new double[] {tX, tY, tZ, rX, rY, rZ, dS, dtX, dtY, dtZ, drX, drY, drZ, ddS};
+    }
+
+    /**
+     * Sets the parameters to the given values. The given array can have any length. The first array elements will be
+     * assigned to the {@link #tX tX}, {@link #tY tY}, {@link #tZ tZ}, {@link #rX rX}, {@link #rY rY}, {@link #rZ rZ},
+     * {@link #dS dS}, {@link #dtX}, {@link #dtY}, {@link #dtZ}, {@link #drX}, {@link #drY}, {@link #drZ} and
+     * {@link #ddS} fields in that order.
+     *
+     * @param elements The new parameter values, as an array of any length.
+     *
+     * @since 0.6
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public void setValues(final double... elements) {
+        if (elements.length >= 8) {
+            switch (elements.length) {
+                default:  ddS = elements[13];  // Fallthrough everywhere.
+                case 13:  drZ = elements[12];
+                case 12:  drY = elements[11];
+                case 11:  drX = elements[10];
+                case 10:  dtZ = elements[ 9];
+                case  9:  dtY = elements[ 8];
+                case  8:  dtX = elements[ 7];
+            }
+        }
+        super.setValues(elements);
+    }
+
+    /**
      * {@inheritDoc}
+     *
+     * @return {@code true} if the parameters describe no operation.
      */
     @Override
     public boolean isIdentity() {
@@ -210,6 +252,8 @@ public class TimeDependentBWP extends BursaWolfParameters {
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@code true} if the parameters describe a translation only.
      */
     @Override
     public boolean isTranslation() {
@@ -232,45 +276,21 @@ public class TimeDependentBWP extends BursaWolfParameters {
 
     /**
      * {@inheritDoc}
-     */
-    @Override
-    public void invert() {
-        super.invert();
-        dtX = -dtX;
-        dtY = -dtY;
-        dtZ = -dtZ;
-        drX = -drX;
-        drY = -drY;
-        drZ = -drZ;
-        ddS = -ddS;
-    }
-
-    /**
-     * {@inheritDoc}
+     *
+     * @return {@code true} if the given object is equal to this {@code TimeDependentBWP}.
      */
     @Override
     public boolean equals(final Object object) {
-        if (super.equals(object)) {
-            final TimeDependentBWP that = (TimeDependentBWP) object;
-            return timeReference == that.timeReference &&
-                   Numerics.equals(this.dtX, that.dtX) &&
-                   Numerics.equals(this.dtY, that.dtY) &&
-                   Numerics.equals(this.dtZ, that.dtZ) &&
-                   Numerics.equals(this.drX, that.drX) &&
-                   Numerics.equals(this.drY, that.drY) &&
-                   Numerics.equals(this.drZ, that.drZ) &&
-                   Numerics.equals(this.ddS, that.ddS);
-        }
-        return false;
+        return super.equals(object) && timeReference == ((TimeDependentBWP) object).timeReference;
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @return The hash code value. This value does not need to be the same in past or future versions of this class.
      */
     @Override
     public int hashCode() {
-        return ((int) serialVersionUID) ^ Arrays.hashCode(new double[] {
-            tX, tY, tZ, rX, rY, rZ, dS, dtX, dtY, dtZ, drX, drY, drZ, ddS, timeReference
-        });
+        return super.hashCode() ^ Numerics.hashCode(timeReference);
     }
 }

@@ -63,6 +63,23 @@ public final class JDK8 {
     }
 
     /**
+     * Returns the value of the given key, or the given default value if there is no value for that key.
+     *
+     * @param <V> The type of values.
+     * @param map The map from which to get the value.
+     * @param key The key for the value to fetch.
+     * @param defaultValue The value to return if the map does not contain any value for the given key.
+     * @return The value for the given key (which may be {@code null}), or {@code defaultValue}.
+     */
+    public static <V> V getOrDefault(final Map<?,V> map, final Object key, final V defaultValue) {
+        V value = map.get(key);
+        if (value == null && !map.containsKey(key)) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    /**
      * Stores the value in the given map, provided that no value were set.
      * This implementation presumes that the map can not contain null values.
      *

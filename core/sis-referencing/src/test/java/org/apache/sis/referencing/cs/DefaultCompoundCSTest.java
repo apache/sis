@@ -16,7 +16,8 @@
  */
 package org.apache.sis.referencing.cs;
 
-import org.opengis.referencing.cs.CoordinateSystemAxis;
+import java.util.Collections;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,19 +29,22 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
+@DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final strictfp class DefaultCompoundCSTest extends TestCase {
     /**
-     * Tests {@link DefaultCompoundCS#createName(StringBuilder, CoordinateSystemAxis[])}.
+     * Tests {@link DefaultCompoundCS} construction.
      */
     @Test
-    public void testCreateName() {
-        final StringBuilder buffer = new StringBuilder("Compound CS");
-        final String name = DefaultCompoundCS.createName(buffer, new CoordinateSystemAxis[] {
-            HardCodedAxes.EASTING, HardCodedAxes.NORTHING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME
-        });
-        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", name);
+    public void testConstruction() {
+        final DefaultCompoundCS cs = new DefaultCompoundCS(
+                HardCodedCS.PROJECTED,
+                new DefaultVerticalCS(Collections.singletonMap(DefaultVerticalCS.NAME_KEY,
+                        HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
+                HardCodedCS.DAYS
+        );
+        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", cs.getName().getCode());
     }
 }

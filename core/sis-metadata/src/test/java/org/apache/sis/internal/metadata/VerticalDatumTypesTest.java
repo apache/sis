@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.test.DependsOnMethod;
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class VerticalDatumTypesTest extends TestCase {

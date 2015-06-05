@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -32,7 +30,7 @@ import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArraysExt;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -127,44 +125,22 @@ final class Normalizer implements Comparable<Normalizer> {
      * Returns a new axis with the same properties (except identifiers) than given axis,
      * but with normalized axis direction and unit of measurement.
      *
-     * @param  axis The axis to normalize.
-     * @param  normalizeUnits {@code true} for normalizing units.
-     * @return An axis using normalized direction unit, or {@code axis} if the given axis already uses the given unit.
+     * @param  axis    The axis to normalize.
+     * @param  changes The change to apply on axis direction and units.
+     * @return An axis using normalized direction and units, or {@code axis} if there is no change.
      */
-    static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis, final boolean normalizeUnits) {
-        /*
-         * Normalize the axis direction. For now we do not touch to inter-cardinal directions (e.g. "North-East")
-         * because it is not clear which normalization policy would match common usage.
-         */
+    static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis, final AxisFilter changes) {
+        final Unit<?>       unit      = axis.getUnit();
         final AxisDirection direction = axis.getDirection();
-        AxisDirection newDir = direction;
-        if (!AxisDirections.isIntercardinal(direction)) {
-            newDir = AxisDirections.absolute(direction);
-        }
-        final boolean sameDirection = newDir.equals(direction);
-        /*
-         * Normalize unit of measurement.
-         */
-        final Unit<?> unit = axis.getUnit(), newUnit;
-        if (normalizeUnits) {
-            if (Units.isLinear(unit)) {
-                newUnit = SI.METRE;
-            } else if (Units.isAngular(unit)) {
-                newUnit = NonSI.DEGREE_ANGLE;
-            } else if (Units.isTemporal(unit)) {
-                newUnit = NonSI.DAY;
-            } else {
-                newUnit = unit;
-            }
-        } else {
-            newUnit = unit;
-        }
+        final Unit<?>       newUnit   = changes.getUnitReplacement(unit);
+        final AxisDirection newDir    = changes.getDirectionReplacement(direction);
         /*
          * Reuse some properties (name, remarks, etc.) from the existing axis. If the direction changed,
          * then the axis name may need change too (e.g. "Westing" → "Easting"). The new axis name may be
          * set to "Unnamed", but the caller will hopefully be able to replace the returned instance by
          * an instance from the EPSG database with appropriate name.
          */
+        final boolean sameDirection = newDir.equals(direction);
         if (sameDirection && newUnit.equals(unit)) {
             return axis;
         }
@@ -208,71 +184,47 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
-     * Reorders the axes in an attempt to get a right-handed system.
-     * If no axis change is needed, then this method returns {@code cs} unchanged.
+     * Optionally normalizes and reorders the axes in an attempt to get a right-handed system.
+     * If no axis change is needed, then this method returns {@code null}.
      *
-     * @param  cs The coordinate system to normalize.
-     * @return The normalized coordinate system.
+     * @param  cs      The coordinate system to normalize.
+     * @param  changes The change to apply on axis direction and units.
+     * @param  reorder {@code true} for reordering the axis for a right-handed coordinate system.
+     * @return The normalized coordinate system, or {@code null} if no normalization is needed.
      */
-    static CoordinateSystem normalize(final CoordinateSystem cs) {
-        final CoordinateSystemAxis[] axes = normalizeAxes(cs, true, true);
-        return (axes != null) ? createSameType(AbstractCS.castOrCopy(cs), axes) : cs;
-    }
-
-    /**
-     * Reorders the axes in an attempt to get a right-handed system.
-     * If no axis change is needed, then this method returns {@code cs} unchanged.
-     *
-     * @param  cs The coordinate system to normalize.
-     * @param  normalizeAxes  {@code true} for normalizing axis directions.
-     * @param  normalizeUnits {@code true} for normalizing units (currently ignored if {@code normalizeAxes} is {@code false}).
-     * @return The normalized coordinate system.
-     */
-    static AbstractCS normalize(final AbstractCS cs, final boolean normalizeAxes, final boolean normalizeUnits) {
-        final CoordinateSystemAxis[] axes = normalizeAxes(cs, normalizeAxes, normalizeUnits);
-        return (axes != null) ? createSameType(cs, axes) : cs;
-    }
-
-    /**
-     * Returns the normalized set of axes for the given coordinate system,
-     * or {@code null} if its axes were already normalized.
-     *
-     * @param  cs The coordinate system to normalize.
-     * @param  normalizeAxes  {@code true} for normalizing axis directions.
-     * @param  normalizeUnits {@code true} for normalizing units (currently ignored if {@code normalizeAxes} is {@code false}).
-     * @return The normalized set of coordinate system axes.
-     */
-    private static CoordinateSystemAxis[] normalizeAxes(final CoordinateSystem cs,
-            final boolean normalizeAxes, final boolean normalizeUnits)
-    {
+    static AbstractCS normalize(final CoordinateSystem cs, final AxisFilter changes, final boolean reorder) {
         boolean changed = false;
         final int dimension = cs.getDimension();
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
+        int n = 0;
         for (int i=0; i<dimension; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
-            if (normalizeAxes) {
-                changed |= (axis != (axis = normalize(axis, normalizeUnits)));
+            if (changes != null) {
+                if (!changes.accept(axis)) {
+                    continue;
+                }
+                changed |= (axis != (axis = normalize(axis, changes)));
             }
-            axes[i] = axis;
+            axes[n++] = axis;
+        }
+        axes = ArraysExt.resize(axes, n);
+        /*
+         * Sort the axes in an attempt to create a right-handed system.
+         * If nothing changed, return the given Coordinate System as-is.
+         */
+        if (reorder) {
+            changed |= sort(axes);
+        }
+        if (!changed && n == dimension) {
+            return null;
         }
         /*
-         * Sorts the axis in an attempt to create a right-handed system.
-         * Caller will create a new Coordinate System only if at least one axis changed.
+         * Create a new coordinate system of the same type than the given one, but with the given axes.
+         * We need to change the Coordinate System name, since it is likely to not be valid anymore.
          */
-        changed |= sort(axes);
-        return changed ? axes : null;
-    }
-
-    /**
-     * Creates a new coordinate system of the same type than the given one, but with the given axes.
-     *
-     * @param  cs   The coordinate system to copy.
-     * @param  axes The set of axes to give to the new coordinate system.
-     * @return A new coordinate system of the same type than {@code cs}, but using the given axes.
-     */
-    private static AbstractCS createSameType(final AbstractCS cs, final CoordinateSystemAxis[] axes) {
-        final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(cs.getInterface().getSimpleName());
-        return cs.createSameType(singletonMap(AbstractCS.NAME_KEY, DefaultCompoundCS.createName(buffer, axes)), axes);
+        final AbstractCS impl = castOrCopy(cs);
+        final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
+        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, axes)), axes);
     }
 
     /**
@@ -286,9 +238,9 @@ final class Normalizer implements Comparable<Normalizer> {
      * of -60° still locate the same point in the old and the new coordinate system. But the preferred way
      * to locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
      *
-     * @return A coordinate system using the given kind of longitude range (may be {@code axis}).
+     * @return A coordinate system using the given kind of longitude range, or {@code null} if no change is needed.
      */
-    static AbstractCS shiftAxisRange(final AbstractCS cs) {
+    private static AbstractCS shiftAxisRange(final CoordinateSystem cs) {
         boolean changed = false;
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
@@ -317,8 +269,37 @@ final class Normalizer implements Comparable<Normalizer> {
             axes[i] = axis;
         }
         if (!changed) {
-            return cs;
+            return null;
         }
-        return cs.createSameType(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
+        return castOrCopy(cs).createForAxes(IdentifiedObjects.getProperties(cs, EXCLUDES), axes);
+    }
+
+    /**
+     * Returns the given coordinate system as an {@code AbstractCS} instance. This method performs an
+     * {@code instanceof} check before to delegate to {@link AbstractCS#castOrCopy(CoordinateSystem)}
+     * because there is no need to check for all interfaces before the implementation class here.
+     * Checking the implementation class first is usually more efficient in this particular case.
+     */
+    private static AbstractCS castOrCopy(final CoordinateSystem cs) {
+        return (cs instanceof AbstractCS) ? (AbstractCS) cs : AbstractCS.castOrCopy(cs);
+    }
+
+    /**
+     * Returns a coordinate system equivalent to the given one but with axes rearranged according the given convention.
+     * If the given coordinate system is already compatible with the given convention, then returns {@code null}.
+     *
+     * @param  convention The axes convention for which a coordinate system is desired.
+     * @return A coordinate system compatible with the given convention, or {@code null} if no change is needed.
+     *
+     * @see AbstractCS#forConvention(AxesConvention)
+     */
+    static AbstractCS forConvention(final CoordinateSystem cs, final AxesConvention convention) {
+        switch (convention) {
+            case NORMALIZED:              // Fall through
+            case CONVENTIONALLY_ORIENTED: return normalize(cs, convention, true);
+            case RIGHT_HANDED:            return normalize(cs, null, true);
+            case POSITIVE_RANGE:          return shiftAxisRange(cs);
+            default: throw new AssertionError(convention);
+        }
     }
 }

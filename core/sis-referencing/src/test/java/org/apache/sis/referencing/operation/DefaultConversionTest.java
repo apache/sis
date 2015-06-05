@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -158,7 +158,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
          */
         final Map<String, Object> properties = new HashMap<>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Paris to Greenwich");
-        properties.put(OperationMethods.PARAMETERS_KEY, pg);
+        properties.put(ReferencingServices.PARAMETERS_KEY, pg);
         return new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS,
                 method, MathTransforms.linear(rotation));
     }
