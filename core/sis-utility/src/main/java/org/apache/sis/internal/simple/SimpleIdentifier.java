@@ -25,6 +25,7 @@ import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Deprecable;
 
 import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
 
@@ -40,10 +41,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
-public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
+public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -70,14 +71,21 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
     protected final String code;
 
     /**
+     * {@code true} if this identifier is deprecated.
+     */
+    protected final boolean isDeprecated;
+
+    /**
      * Creates a new reference identifier.
      *
-     * @param authority Responsible party for definition and maintenance of the code, or null.
-     * @param code Alphanumeric value identifying an instance in the namespace.
+     * @param authority     Responsible party for definition and maintenance of the code, or null.
+     * @param code          Alphanumeric value identifying an instance in the namespace.
+     * @param isDeprecated  {@code true} if this identifier is deprecated.
      */
-    public SimpleIdentifier(final Citation authority, final String code) {
-        this.authority = authority;
-        this.code = code;
+    public SimpleIdentifier(final Citation authority, final String code, final boolean isDeprecated) {
+        this.authority    = authority;
+        this.code         = code;
+        this.isDeprecated = isDeprecated;
     }
 
     /**
@@ -139,6 +147,26 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
     }
 
     /**
+     * An optional free text.
+     *
+     * @since 0.6
+     */
+    @Override
+    public InternationalString getRemarks() {
+        return null;
+    }
+
+    /**
+     * {@code true} if this identifier is deprecated.
+     *
+     * @since 0.6
+     */
+    @Override
+    public boolean isDeprecated() {
+        return isDeprecated;
+    }
+
+    /**
      * Returns {@code true} if the given object is of the same class than this
      * {@code SimpleIdentifier} and has the same values.
      *
@@ -149,7 +177,9 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
     public boolean equals(final Object obj) {
         if (obj != null && obj.getClass() == getClass()) {
             final SimpleIdentifier that = (SimpleIdentifier) obj;
-            return Objects.equals(code, that.code) && Objects.equals(authority, that.authority);
+            return Objects.equals(code, that.code) &&
+                   Objects.equals(authority, that.authority) &&
+                   isDeprecated == that.isDeprecated;
         }
         return false;
     }
@@ -161,7 +191,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(authority, code) ^ (int) serialVersionUID;
+        return Objects.hash(authority, code, isDeprecated) ^ (int) serialVersionUID;
     }
 
     /**
@@ -208,8 +238,8 @@ public class SimpleIdentifier implements ReferenceIdentifier, Serializable {
      * @return Pseudo Well Known Text for this identifier.
      */
     public String toWKT() {
-        final StringBuilder buffer = new StringBuilder(40).append("ID[");
-        append(buffer, Citations.getIdentifier(authority, true));   // Do not invoke getCodeSpace().
+        final StringBuilder buffer = new StringBuilder(40).append("Id[");   // Consistent with WKTKeywords.Id.
+        append(buffer, Citations.getIdentifier(authority, true));           // Do not invoke getCodeSpace().
         append(buffer.append(", "), code);
         return buffer.append(']').toString();
     }

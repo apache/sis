@@ -175,7 +175,8 @@ public final strictfp class ReferencingInMetadataTest extends XMLTestCase {
      * @param object The object to verify.
      */
     private static void verifyIdentifiers(final String code, final IdentifiedObject object) {
-        assertIdentifierEquals("identifier", "SIS", "SIS", null, code, getSingleton(object.getIdentifiers()));
+        assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS",
+                null, code, getSingleton(object.getIdentifiers()));
         assertIdentifierEquals("name", null, null, null, "Depth", object.getName());
     }
 }

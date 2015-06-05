@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
@@ -100,7 +101,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>Create a {@code GeodeticDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createGeodeticDatum(String)}.</li>
  *   <li>Create a {@code GeodeticDatum} by invoking the {@code DatumFactory.createGeodeticDatum(…)} method
- *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultGeodeticDatum} by invoking the
  *       {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian) constructor}.</li>
  * </ol>
@@ -141,7 +142,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
      * {@linkplain #getBursaWolfParameters() Bursa-Wolf parameters}.
      */
-    public static final String BURSA_WOLF_KEY = "bursaWolf";
+    public static final String BURSA_WOLF_KEY = ReferencingServices.BURSA_WOLF_KEY;
 
     /**
      * The array to be returned by {@link #getBursaWolfParameters()} when there is no Bursa-Wolf parameters.

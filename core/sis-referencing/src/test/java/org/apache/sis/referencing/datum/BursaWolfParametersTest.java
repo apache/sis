@@ -38,7 +38,7 @@ import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class BursaWolfParametersTest extends TestCase {
@@ -114,6 +114,34 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(null));
         assertMatrixEquals("getPositionVectorTransformation", expected, matrix, p.isTranslation() ? 0 : 1E-14);
         return matrix;
+    }
+
+    /**
+     * Tests {@link BursaWolfParameters#getValues()}.
+     */
+    @Test
+    public void testGetValues() {
+        assertArrayEquals("Translation only", new double[] {-168, -60, 320},
+                createNTF_to_WGS84().getValues(), STRICT);
+        assertArrayEquals("All 7 params", new double[] {-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143},
+                createED87_to_WGS84().getValues(), STRICT);
+        assertArrayEquals("Mixed", new double[] {0, 0, 4.5, 0, 0, 0.554, 0.219},
+                createWGS72_to_WGS84().getValues(), STRICT);
+    }
+
+    /**
+     * Tests {@link BursaWolfParameters#setValues(double[])}.
+     */
+    @Test
+    @DependsOnMethod("testGetValues")
+    public void testSetValues() {
+        final BursaWolfParameters actual =  createWGS72_to_WGS84();
+        final BursaWolfParameters expected = createED87_to_WGS84();
+        final double[] values = expected.getValues();
+        assertFalse("equals(Object) before to set the values.", actual.equals(expected));
+        actual.setValues(values);
+        assertArrayEquals("getValues() after setting the values.", values, actual.getValues(), STRICT);
+        // Can not test assertEquals(expected, actual) because of different geographic extent.
     }
 
     /**
@@ -194,9 +222,10 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * Tests the string representation of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
      */
     @Test
+    @DependsOnMethod("testGetValues")
     public void testToString() {
-        final BursaWolfParameters bursaWolf = createED87_to_WGS84();
-        assertEquals("ToWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", bursaWolf.toString());
+        assertEquals("ToWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", createED87_to_WGS84().toString());
+        assertEquals("ToWGS84[-168.0, -60.0, 320.0]", createNTF_to_WGS84().toString());
     }
 
     /**

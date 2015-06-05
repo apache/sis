@@ -22,7 +22,7 @@ import java.util.Locale;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -101,7 +101,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
         assertNull(properties.put(SCOPE_KEY, "Large scale topographic mapping and cadastre."));
         assertNull(properties.put(REMARKS_KEY, "注です。"));
         assertNull(properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
-                HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null)));
+                Citations.EPSG, "EPSG", "4326", "8.2", null)));
         assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
@@ -122,7 +122,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  Remarks[“注です。”]]",
                 object);
 
@@ -132,7 +132,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”], URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  Remarks[“注です。”]]",
                 object);
 
@@ -142,7 +142,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]],\n" +
+                "  Id[“EPSG”, 4326, “8.2”],\n" +
                 "  Remarks[“注です。”]]",
                 object);
     }

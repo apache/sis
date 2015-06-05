@@ -16,23 +16,33 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.apache.sis.internal.metadata.WKTKeywords;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -40,16 +50,25 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.geometry.Envelope;
 
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
@@ -58,6 +77,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Utilities;
 
@@ -77,77 +97,14 @@ public final class ServicesForMetadata extends ReferencingServices {
     public ServicesForMetadata() {
     }
 
-    /**
-     * Returns a fully implemented parameter descriptor.
-     *
-     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
-     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
-     */
-    @Override
-    public ParameterDescriptor<?> toImplementation(final ParameterDescriptor<?> parameter) {
-        return DefaultParameterDescriptor.castOrCopy(parameter);
-    }
 
-    /**
-     * Converts the given object in a {@code FormattableObject} instance.
-     *
-     * @param  object The object to wrap.
-     * @return The given object converted to a {@code FormattableObject} instance.
-     */
-    @Override
-    public FormattableObject toFormattableObject(final IdentifiedObject object) {
-        return AbstractIdentifiedObject.castOrCopy(object);
-    }
 
-    /**
-     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
-     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
-     * returns {@code null} if it can not convert the object.
-     *
-     * @param  object The object to wrap.
-     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
-     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
-     *
-     * @since 0.6
-     */
-    @Override
-    public FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
-        Matrix matrix;
-        final ParameterValueGroup parameters;
-        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
-            parameters = Affine.parameters(matrix);
-        } else if (object instanceof Parameterized) {
-            parameters = ((Parameterized) object).getParameterValues();
-        } else {
-            matrix = MathTransforms.getMatrix(object);
-            if (matrix == null) {
-                return null;
-            }
-            parameters = Affine.parameters(matrix);
-        }
-        return new FormattableObject() {
-            @Override
-            protected String formatTo(final Formatter formatter) {
-                WKTUtilities.appendParamMT(parameters, formatter);
-                return WKTKeywords.Param_MT;
-            }
-        };
-    }
 
-    /**
-     * Returns the coordinate operation factory to be used for transforming the envelope.
-     * We will fetch a lenient factory because {@link GeographicBoundingBox} are usually for approximative
-     * bounds (e.g. the area of validity of some CRS). If a user wants accurate bounds, he should probably
-     * use an {@link Envelope} with the appropriate CRS.
-     */
-    private static CoordinateOperationFactory getFactory() throws TransformException {
-        // TODO: specify a lenient factory when the API will allow that.
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        }
-        throw new TransformException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
-    }
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                        SERVICES FOR ISO 19115 METADATA                        ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Creates an exception message for a spatial, vertical or temporal dimension not found.
@@ -182,8 +139,9 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
+                final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
                 try {
-                    operation = getFactory().createOperation(crs, normalizedCRS);
+                    operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelopeToGeodetic), e);
                 }
@@ -413,5 +371,249 @@ public final class ServicesForMetadata extends ReferencingServices {
             setTemporalExtent(envelope, extent, crs, temporalCRS);
             target.getTemporalElements().add(extent);
         }
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                          SERVICES FOR WKT FORMATTING                          ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a fully implemented parameter descriptor.
+     *
+     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
+     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
+     */
+    @Override
+    public ParameterDescriptor<?> toImplementation(final ParameterDescriptor<?> parameter) {
+        return DefaultParameterDescriptor.castOrCopy(parameter);
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance.
+     */
+    @Override
+    public FormattableObject toFormattableObject(final IdentifiedObject object) {
+        return AbstractIdentifiedObject.castOrCopy(object);
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     *
+     * @since 0.6
+     */
+    @Override
+    public FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
+        Matrix matrix;
+        final ParameterValueGroup parameters;
+        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
+            parameters = Affine.parameters(matrix);
+        } else if (object instanceof Parameterized) {
+            parameters = ((Parameterized) object).getParameterValues();
+        } else {
+            matrix = MathTransforms.getMatrix(object);
+            if (matrix == null) {
+                return null;
+            }
+            parameters = Affine.parameters(matrix);
+        }
+        return new FormattableObject() {
+            @Override
+            protected String formatTo(final Formatter formatter) {
+                WKTUtilities.appendParamMT(parameters, formatter);
+                return WKTKeywords.Param_MT;
+            }
+        };
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                           SERVICES FOR WKT PARSING                            ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the Greenwich prime meridian.
+     *
+     * @return The Greenwich prime meridian.
+     *
+     * @since 0.6
+     */
+    @Override
+    public PrimeMeridian getGreenwich() {
+        return CommonCRS.WGS84.primeMeridian();
+    }
+
+    /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     *
+     * @param  linearUnit The unit of measurement for the geocentric CRS axes.
+     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     *
+     * @since 0.6
+     */
+    @Override
+    public CartesianCS getGeocentricCS(final Unit<Length> linearUnit) {
+        CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+        if (!SI.METRE.equals(linearUnit)) {
+            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+                @Override public boolean accept(final CoordinateSystemAxis axis) {
+                    return true;
+                }
+
+                @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
+                    return linearUnit;
+                }
+
+                @Override public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+                    return direction;
+                }
+            });
+        }
+        return cs;
+    }
+
+    /**
+     * Converts a geocentric coordinate system from the legacy WKT 1 to the current ISO 19111 standard.
+     * This method replaces the (Other, East, North) directions by (Geocentric X, Geocentric Y, Geocentric Z).
+     *
+     * @param  cs The geocentric coordinate system to upgrade.
+     * @return The upgraded coordinate system, or {@code cs} if there is no change to apply.
+     *
+     * @since 0.6
+     */
+    @Override
+    public CartesianCS upgradeGeocentricCS(final CartesianCS cs) {
+        return Legacy.forGeocentricCRS(cs, false);
+    }
+
+    /**
+     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
+     * since that legacy format did not specified any information about the coordinate system in use.
+     * This method should not need to be invoked for parsing WKT version 2.
+     *
+     * @param  axes The axes of the unknown coordinate system.
+     * @return An "abstract" coordinate system using the given axes.
+     *
+     * @since 0.6
+     */
+    @Override
+    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(Collections.singletonMap(AbstractCS.NAME_KEY,
+                AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+    }
+
+    /**
+     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
+     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
+     * the standard factories.
+     *
+     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
+     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
+     * @param  method        The coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS     The coordinate system for the derived CRS.
+     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     *
+     * @since 0.6
+     */
+    @Override
+    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
+                                       final SingleCRS        baseCRS,
+                                       final OperationMethod  method,
+                                       final MathTransform    baseToDerived,
+                                       final CoordinateSystem derivedCS)
+    {
+        return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
+    }
+
+    /**
+     * Creates the {@code TOWGS84} element during parsing of a WKT version 1.
+     *
+     * @param  values The 7 Bursa-Wolf parameter values.
+     * @return The {@link BursaWolfParameters}.
+     *
+     * @since 0.6
+     */
+    @Override
+    public Object createToWGS84(final double[] values) {
+        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        info.setValues(values);
+        return info;
+    }
+
+    /**
+     * Returns the coordinate operation factory to use for the given properties and math transform factory.
+     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
+     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     *
+     * @param  properties The default properties.
+     * @param  mtFactory  The math transform factory to use.
+     * @return The coordinate operation factory to use.
+     *
+     * @since 0.6
+     */
+    @Override
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
+        if (Containers.isNullOrEmpty(properties) && DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory)) {
+            return DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+        } else {
+            return new DefaultCoordinateOperationFactory(properties, mtFactory);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} or an aliases
+     * of the given object matches the given name.
+     *
+     * @param  object The object for which to check the name or alias.
+     * @param  name The name to compare with the object name or aliases.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     *
+     * @since 0.6
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
+        return IdentifiedObjects.isHeuristicMatchForName(object, name);
+    }
+
+    /**
+     * Returns the coordinate operation method for the given classification.
+     * This method checks if the given {@code opFactory} is a SIS implementation
+     * before to fallback on a slower fallback.
+     *
+     * @param  opFactory  The coordinate operation factory to use if it is a SIS implementation.
+     * @param  mtFactory  The math transform factory to use as a fallback.
+     * @param  identifier The name or identifier of the operation method to search.
+     * @return The coordinate operation method for the given name or identifier.
+     * @throws FactoryException if an error occurred which searching for the given method.
+     *
+     * @since 0.6
+     */
+    @Override
+    public OperationMethod getOperationMethod(final CoordinateOperationFactory opFactory,
+            final MathTransformFactory mtFactory, final String identifier) throws FactoryException
+    {
+        if (opFactory instanceof DefaultCoordinateOperationFactory) {
+            ((DefaultCoordinateOperationFactory) opFactory).getOperationMethod(identifier);
+        }
+        return super.getOperationMethod(opFactory, mtFactory, identifier);
     }
 }

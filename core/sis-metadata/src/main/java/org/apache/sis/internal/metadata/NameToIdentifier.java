@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Locale;
+import java.util.Collection;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -25,8 +26,10 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.CharSequences;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -34,6 +37,8 @@ import org.apache.sis.internal.jdk7.Objects;
 
 /**
  * Does the unobvious mapping between {@link Identifier} properties and {@link GenericName} ones.
+ * This class also implements the {@link #isHeuristicMatchForName(Identifier, Collection, CharSequence)}
+ * method since that method involves a mix of names and identifiers.
  *
  * <p><b>Limitation:</b>
  * Current version does not yet work with URN or HTTP syntax.</p>
@@ -192,5 +197,47 @@ public final class NameToIdentifier implements ReferenceIdentifier {
             return name.toString();
         }
         return null;
+    }
+
+    /**
+     * Returns {@code true} if the given {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName()
+     * primary name} or one of the given aliases matches the given name. The comparison ignores case, some Latin
+     * diacritical signs and any characters that are not letters or digits.
+     *
+     * @param  name     The name of the {@code IdentifiedObject} to check.
+     * @param  aliases  The list of alias in the {@code IdentifiedObject} (may be {@code null}). This method will never
+     *                  modify that list. Consequently, the given list can be a direct reference to an internal list.
+     * @param  toSearch The name for which to check for equality.
+     * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
+     */
+    public static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
+            CharSequence toSearch)
+    {
+        toSearch = CharSequences.toASCII(toSearch);
+        if (name != null) { // Paranoiac check.
+            final CharSequence code = CharSequences.toASCII(name.getCode());
+            if (code != null) { // Paranoiac check.
+                if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
+                    return true;
+                }
+            }
+        }
+        if (aliases != null) {
+            for (final GenericName alias : aliases) {
+                if (alias != null) { // Paranoiac check.
+                    final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
+                    if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
+                        return true;
+                    }
+                    /*
+                     * Note: a previous version compared also the scoped names. We removed that part,
+                     * because experience has shown that this method is used only for the "code" part
+                     * of an object name. If we really want to compare scoped name, it would probably
+                     * be better to take a GenericName argument instead than String.
+                     */
+                }
+            }
+        }
+        return false;
     }
 }

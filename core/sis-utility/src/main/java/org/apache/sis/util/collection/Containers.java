@@ -173,20 +173,19 @@ public final class Containers extends Static {
      *
      * <p>The {@link Map#put(Object,Object) Map.put(K,V)} method is supported only if the given
      * converters are {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
-     * An invertible converter is not mandatory for other {@code Map} operations.
-     * However some of them are likely to be faster if the inverse converters are available.</p>
+     * An invertible converter is not mandatory for other {@code Map} operations like {@link Map#get(Object)},
+     * but some of them may be faster if the inverse converters are available.</p>
      *
-     * <p>The derived map may contain fewer entries than the original map if some keys
-     * are not convertible. Non-convertible keys are <var>K</var> values for which
-     * {@code keyConverter.apply(K)} returns {@code null}. As a consequence of this sentinel
-     * value usage, the derived map can not contain {@code null} keys.
+     * <p>The derived map may contain fewer entries than the original map if some keys are not convertible.
+     * A key <var>K</var> is non-convertible if {@code keyConverter.apply(K)} returns {@code null}.
+     * As a consequence of this sentinel key usage, the derived map can not contain {@code null} keys.
      * It may contain {@code null} values however.</p>
      *
      * <p>The returned map can be serialized if the given map and converters are serializable.
      * The returned map is <strong>not</strong> thread-safe.</p>
      *
      * <p>The returned map does not implement the {@link CheckedContainer} interface since {@code Map}
-     * is not {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
+     * is not a {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
      * {@linkplain Map#entrySet() entry set} do.</p>
      *
      * @param <SK>         The type of keys   in the storage map.

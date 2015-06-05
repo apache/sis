@@ -43,6 +43,9 @@ import org.apache.sis.internal.jdk7.Objects;
 
 /**
  * Utility methods working on {@link CoordinateSystem} objects and their axes.
+ * Those methods allow for example to {@linkplain #angle estimate an angle between two axes}
+ * or {@linkplain #swapAndScaleAxes determining the change of axis directions and units}
+ * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
@@ -300,38 +303,71 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
-     * Returns a coordinate system with {@linkplain AxesConvention#NORMALIZED normalized} axis order and units.
-     * This method is typically used together with {@link #swapAndScaleAxes swapAndScaleAxes} for the creation
-     * of a transformation step before some
-     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}.
-     * Example:
+     * Returns a coordinate system derived from the given one but with a modified list of axes.
+     * The axes may be filtered (excluding some axes), reordered or have their unit and direction modified.
+     *
+     * <div class="note"><b>Example:</b>
+     * for replacing all angular units of a coordinate system to degrees (regardless what the original
+     * angular units were) while leaving other kinds of units unchanged, one can write:
      *
      * {@preformat java
-     *     Matrix step1 = swapAndScaleAxes(sourceCS, normalize(sourceCS));
-     *     Matrix step2 = ... some transform operating on standard axis ...
-     *     Matrix step3 = swapAndScaleAxes(normalize(targetCS), targetCS);
-     * }
+     *     CoordinateSystem cs = ...;
+     *     cs = CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override
+     *         public Unit<?> getUnitReplacement(Unit<?> unit) {
+     *             if (Units.isAngular(unit)) {
+     *                 unit = NonSI.DEGREE_ANGLE;
+     *             }
+     *             return unit;
+     *         }
+     *     });
+     * }</div>
      *
-     * A rational for normalized axis order and units is explained in the <cite>Axis units and
-     * direction</cite> section in the {@linkplain org.apache.sis.referencing.operation.projection
-     * description of map projection package}.
+     * <div class="section">Coordinate system normalization</div>
+     * This method is often used together with {@link #swapAndScaleAxes swapAndScaleAxes(…)} for normalizing the
+     * coordinate values given to a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
+     * math transform}.
      *
-     * @param  cs The coordinate system.
-     * @return A constant similar to the specified {@code cs} with normalized axes.
+     * <div class="note"><b>Example:</b>
+     * {@preformat java
+     *     CoordinateSystem sourceCS = ...;
+     *     CoordinateSystem targetCS = ...;
+     *     Matrix step1 = swapAndScaleAxes(sourceCS, replaceAxes(sourceCS, AxisConvention.NORMALIZED));
+     *     Matrix step2 = ...; // some transform working on coordinates with standard axis order and unit.
+     *     Matrix step3 = swapAndScaleAxes(replaceAxes(targetCS, AxisConvention.NORMALIZED), targetCS);
+     * }</div>
+     *
+     * A rational for normalized axis order and units is explained in the <cite>Axis units and direction</cite> section
+     * in the description of the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
+     *
+     * @param  cs     The coordinate system, or {@code null}.
+     * @param  filter The modifications to apply on coordinate system axes.
+     * @return The modified coordinate system as a new instance,
+     *         or {@code cs} if the given coordinate system was null or does not need any change.
      * @throws IllegalArgumentException if the specified coordinate system can not be normalized.
      *
      * @see AxesConvention#NORMALIZED
      *
      * @since 0.6
      */
-    public static CoordinateSystem normalize(final CoordinateSystem cs) throws IllegalArgumentException {
-        if (cs == null) {
-            return null;
-        } else if (cs instanceof AbstractCS) {
-            // User may have overridden the 'forConvention' method.
-            return ((AbstractCS) cs).forConvention(AxesConvention.NORMALIZED);
-        } else {
-            return Normalizer.normalize(cs);
+    public static CoordinateSystem replaceAxes(final CoordinateSystem cs, final AxisFilter filter) {
+        ensureNonNull("filter", filter);
+        if (cs != null) {
+            final CoordinateSystem newCS;
+            if (filter instanceof AxesConvention) {
+                if (cs instanceof AbstractCS) {
+                    // User may have overridden the 'forConvention' method.
+                    return ((AbstractCS) cs).forConvention((AxesConvention) filter);
+                } else {
+                    newCS = Normalizer.forConvention(cs, (AxesConvention) filter);
+                }
+            } else {
+                newCS = Normalizer.normalize(cs, filter, false);
+            }
+            if (newCS != null) {
+                return newCS;
+            }
         }
+        return cs;
     }
 }

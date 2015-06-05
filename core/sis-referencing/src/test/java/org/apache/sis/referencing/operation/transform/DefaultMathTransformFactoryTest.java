@@ -17,12 +17,15 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
+import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -32,7 +35,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -138,5 +141,25 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
         final OperationMethod deprecated = factory.getOperationMethod("EPSG:9823");
         assertSame(current, factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
         assertSame("Should share the non-deprecated implementation.", current, deprecated);
+    }
+
+    /**
+     * Test {@link DefaultMathTransformFactory#createFromWKT(String)}. We test only a very small WKT here because
+     * it is not the purpose of this class to test the parser. The main purpose of this test is to verify that
+     * {@link DefaultMathTransformFactory} has been able to instantiate the parser.
+     *
+     * @throws FactoryException if the parsing failed.
+     */
+    @Test
+    public void testCreateFromWKT() throws FactoryException {
+        final MathTransform tr = factory().createFromWKT(
+                "PARAM_MT[\"Affine\","
+                    + "PARAMETER[\"num_row\",2],"
+                    + "PARAMETER[\"num_col\",2],"
+                    + "PARAMETER[\"elt_0_1\",7]]");
+
+        assertMatrixEquals("Affine", new Matrix2(
+                1, 7,
+                0, 1), MathTransforms.getMatrix(tr), STRICT);
     }
 }

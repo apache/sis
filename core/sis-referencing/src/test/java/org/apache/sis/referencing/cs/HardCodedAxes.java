@@ -30,7 +30,7 @@ import org.opengis.referencing.cs.RangeMeaning;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class HardCodedAxes {
@@ -125,9 +125,9 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * A height in centimetres, for {@link CoordinateSystemsTest} only.
+     * A height in centimetres.
      */
-    static final DefaultCoordinateSystemAxis HEIGHT_cm = create("Height", "h",
+    public static final DefaultCoordinateSystemAxis HEIGHT_cm = create("Height", "h",
             AxisDirection.UP, SI.CENTIMETRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**

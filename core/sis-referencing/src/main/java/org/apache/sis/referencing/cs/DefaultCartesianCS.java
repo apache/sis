@@ -78,7 +78,7 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
 
     /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
     private DefaultCartesianCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
@@ -232,10 +232,14 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultCartesianCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 2: // Fall through
+            case 3: return new DefaultCartesianCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 2);
+        }
     }
 }

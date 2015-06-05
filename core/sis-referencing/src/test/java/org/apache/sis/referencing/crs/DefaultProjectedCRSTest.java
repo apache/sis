@@ -120,7 +120,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
-                "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801, Citation[“IOGP”]]],\n" +
+                "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801]],\n" +
                 "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8801]],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8802]],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],\n" +
@@ -130,7 +130,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Axis[“Easting (E)”, east, Order[1]],\n" +
                 "    Axis[“Northing (N)”, north, Order[2]],\n" +
                 "    LengthUnit[“metre”, 1],\n" +
-                "  Id[“EPSG”, 27572, Citation[“IOGP”], URI[“urn:ogc:def:crs:EPSG::27572”]]]",
+                "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
     }
 

@@ -82,6 +82,27 @@
       </fileset>
     </concat>
 
+    <!-- CRSFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.crs.CRSFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- CSFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.cs.CSFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.cs.CSFactory"/>
+      </fileset>
+    </concat>
+
+    <!-- DatumFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.datum.DatumFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.datum.DatumFactory"/>
+      </fileset>
+    </concat>
+
     <!-- MathTransformFactory implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.MathTransformFactory" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
@@ -93,6 +114,13 @@
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.OperationMethod" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
+      </fileset>
+    </concat>
+
+    <!-- CoordinateOperationFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.CoordinateOperationFactory"/>
       </fileset>
     </concat>
 
