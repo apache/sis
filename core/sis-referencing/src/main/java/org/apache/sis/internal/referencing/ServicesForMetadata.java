@@ -462,18 +462,18 @@ public final class ServicesForMetadata extends ReferencingServices {
     /**
      * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
      *
-     * @param  unit The unit of measurement for the geocentric CRS axes.
+     * @param  linearUnit The unit of measurement for the geocentric CRS axes.
      * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
      *
      * @since 0.6
      */
     @Override
-    public CartesianCS getGeocentricCS(final Unit<Length> unit) {
+    public CartesianCS getGeocentricCS(final Unit<Length> linearUnit) {
         CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
-        if (!SI.METRE.equals(unit)) {
+        if (!SI.METRE.equals(linearUnit)) {
             cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
                 @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
-                    return unit;
+                    return linearUnit;
                 }
             });
         }
