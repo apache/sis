@@ -32,7 +32,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
@@ -108,7 +108,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * However there is a few cases, for example the Molodenski transform, where we can not infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
-        parameters = Containers.property(properties, OperationMethods.PARAMETERS_KEY, ParameterValueGroup.class);
+        parameters = Containers.property(properties, ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class);
         // No clone since this is a SIS internal property and SIS does not modify those values after construction.
     }
 

@@ -24,8 +24,14 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * An identifier for a deprecated identifier.
+ * An identifier which should not be used anymore.
  * This is used mostly for deprecated EPSG codes.
+ *
+ * <div class="note"><b>Implementation note:</b>
+ * this class opportunistically recycle the {@linkplain #getDescription() description} property into a
+ * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)}
+ * and {@link #hashCode()} implementation without adding code in this class for taking in account a
+ * new field.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -39,13 +45,6 @@ final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
     private static final long serialVersionUID = 357222258307746767L;
 
     /**
-     * Information about the replacement for this identifier.
-     *
-     * @see #getRemarks()
-     */
-    private final InternationalString remarks;
-
-    /**
      * Creates a deprecated identifier.
      *
      * @param supersededBy The code that replace this one.
@@ -53,8 +52,8 @@ final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
     DeprecatedCode(final Citation authority, final String codeSpace,
             final String code, final String version, final CharSequence supersededBy)
     {
-        super(authority, codeSpace, code, version, null);
-        remarks = Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
+        super(authority, codeSpace, code, version,
+                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
     }
 
     /**
@@ -76,6 +75,17 @@ final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
      */
     @Override
     public InternationalString getRemarks() {
-        return remarks;
+        return super.getDescription();
+    }
+
+    /**
+     * Returns {@code null}, since we used the description for the superseded information.
+     * See <cite>"Implementation note"</cite> in class javadoc.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public InternationalString getDescription() {
+        return null;
     }
 }

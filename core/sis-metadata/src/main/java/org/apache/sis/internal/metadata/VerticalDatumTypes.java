@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import org.opengis.util.CodeList;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -33,7 +34,7 @@ import org.apache.sis.util.StringBuilders;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class VerticalDatumTypes implements CodeList.Filter {
@@ -115,15 +116,46 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * after XML unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      *
      * <p>This method uses heuristic rules and may be changed in any future SIS version.
-     * If the type can not be determined, default on {@link VerticalDatumType#OTHER_SURFACE}.</p>
+     * If the type can not be determined, defaults on {@link VerticalDatumType#OTHER_SURFACE}.</p>
      *
      * @param  datum The datum for which to guess a type.
      * @return A datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
      */
     public static VerticalDatumType guess(final VerticalDatum datum) {
-        final VerticalDatumType type = CodeList.valueOf(VerticalDatumType.class,
-                new VerticalDatumTypes(IdentifiedObjects.getName(datum, null)));
-        return (type != null) ? type : VerticalDatumType.OTHER_SURFACE;
+        final Identifier identifier = datum.getName();
+        if (identifier != null) {
+            final VerticalDatumType type = guess(identifier.getCode());
+            if (type != null) {
+                return type;
+            }
+        }
+        for (final GenericName alias : datum.getAlias()) {
+            final VerticalDatumType type = guess(alias.tip().toString());
+            if (type != null) {
+                return type;
+            }
+        }
+        return VerticalDatumType.OTHER_SURFACE;
+    }
+
+    /**
+     * Guesses the type of a datum of the given name. This method attempts to guess only if the given name
+     * contains at least one letter. If the type can not be determined, returns {@code null}.
+     *
+     * @param  name Name of the datum for which to guess a type, or {@code null}.
+     * @return A datum type, or {@code null} if none can be guessed.
+     */
+    private static VerticalDatumType guess(final String name) {
+        if (name != null) {
+            for (int i=0; i<name.length();) {
+                final int c = name.codePointAt(i);
+                if (Character.isLetter(c)) {
+                    return CodeList.valueOf(VerticalDatumType.class, new VerticalDatumTypes(name));
+                }
+                i += Character.charCount(c);
+            }
+        }
+        return null;
     }
 
     /**
@@ -152,7 +184,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
 
     /**
      * Returns {@code true} if the name of the given code is the prefix of a word in the datum name.
-     * We don't test the characters following the prefix because the word may be incomplete
+     * We do not test the characters following the prefix because the word may be incomplete
      * (e.g. {@code "geoid"} versus {@code "geoidal"}).
      *
      * @param code The code to test.

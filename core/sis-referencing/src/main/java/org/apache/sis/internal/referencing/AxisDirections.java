@@ -18,8 +18,11 @@ package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.iso.Types;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
 import static org.apache.sis.util.CharSequences.*;
@@ -30,7 +33,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class AxisDirections extends Static {
@@ -510,5 +513,36 @@ public final class AxisDirections extends Static {
     private static boolean equalsIgnoreCase(final String name, final int lower, final int upper, final String keyword) {
         final int length = upper - lower;
         return (length == keyword.length()) && name.regionMatches(true, lower, keyword, 0, length);
+    }
+
+    /**
+     * Builds a coordinate system name from the given array of axes.
+     * This method expects a {@code StringBuilder} pre-filled with the coordinate system name.
+     * The axis directions and abbreviations will be appended after the CS name.
+     * Examples:
+     *
+     * <ul>
+     *   <li>Ellipsoidal CS: North (°), East (°).</li>
+     *   <li>Cartesian CS: East (km), North (km).</li>
+     *   <li>Compound CS: East (km), North (km), Up (m).</li>
+     * </ul>
+     *
+     * @param  buffer A buffer pre-filled with the name header.
+     * @param  axes The axes to append in the given buffer.
+     * @return A name for the given coordinate system type and axes.
+     *
+     * @since 0.6
+     */
+    public static String appendTo(final StringBuilder buffer, final CoordinateSystemAxis[] axes) {
+        String separator = ": ";
+        for (final CoordinateSystemAxis axis : axes) {
+            buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
+            separator = ", ";
+            final String symbol = Utilities.toString(axis.getUnit());
+            if (symbol != null && !symbol.isEmpty()) {
+                buffer.append(" (").append(symbol).append(')');
+            }
+        }
+        return buffer.append('.').toString();
     }
 }

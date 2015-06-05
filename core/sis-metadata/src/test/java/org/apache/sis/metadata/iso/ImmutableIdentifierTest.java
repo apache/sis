@@ -22,8 +22,8 @@ import java.util.Locale;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
@@ -179,7 +179,14 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        final ImmutableIdentifier id = new ImmutableIdentifier(HardCodedCitations.IOGP, "EPSG", "4326", "8.2", null);
+        ImmutableIdentifier id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
+        assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”]", id);
+        assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
+        /*
+         * Same identifier, but with an authority different than the EPSG one.
+         * The Citation element should then be visible in WKT 2.
+         */
+        id = new ImmutableIdentifier(new SimpleCitation("IOGP"), "EPSG", "4326", "8.2", null);
         assertWktEquals(Convention.WKT2, "Id[“EPSG”, 4326, “8.2”, Citation[“IOGP”]]", id);
         assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);
     }

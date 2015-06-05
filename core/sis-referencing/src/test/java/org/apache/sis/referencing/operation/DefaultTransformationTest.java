@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -95,7 +95,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
          */
         final Map<String,Object> properties = new HashMap<String,Object>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
-        properties.put(OperationMethods.PARAMETERS_KEY, pg);
+        properties.put(ReferencingServices.PARAMETERS_KEY, pg);
         return new DefaultTransformation(properties,
                 createCRS(null,      HardCodedDatum.TOKYO),     // SourceCRS
                 createCRS("JGD2000", HardCodedDatum.JGD2000),   // TargetCRS
@@ -176,7 +176,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
                 "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
                 "      LengthUnit[“metre”, 1]]],\n" +
-                "  Method[“Geocentric translations”, Id[“EPSG”, 1031, Citation[“IOGP”]]],\n" +
+                "  Method[“Geocentric translations”, Id[“EPSG”, 1031]],\n" +
                 "  Parameter[“X-axis translation”, -146.414, Id[“EPSG”, 8605]],\n" +
                 "  Parameter[“Y-axis translation”, 507.337, Id[“EPSG”, 8606]],\n" +
                 "  Parameter[“Z-axis translation”, 680.507, Id[“EPSG”, 8607]]]", op);

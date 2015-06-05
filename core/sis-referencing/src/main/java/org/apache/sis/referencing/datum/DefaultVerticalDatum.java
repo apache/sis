@@ -30,7 +30,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
@@ -57,7 +57,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>Create a {@code VerticalDatum} from an identifier in a database by invoking
  *       {@link org.opengis.referencing.datum.DatumAuthorityFactory#createVerticalDatum(String)}.</li>
  *   <li>Create a {@code VerticalDatum} by invoking the {@code DatumFactory.createVerticalDatum(…)} method
- *       (implemented for example by {@link org.apache.sis.referencing.GeodeticObjectFactory}).</li>
+ *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultVerticalDatum} by invoking the
  *       {@linkplain #DefaultVerticalDatum(Map, VerticalDatumType) constructor}.</li>
  * </ol>

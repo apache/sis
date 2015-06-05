@@ -19,18 +19,10 @@ package org.apache.sis.internal.jaxb;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.io.Serializable;
-import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -65,29 +57,23 @@ import org.apache.sis.xml.IdentifierSpace;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  *
  * @see IdentifierSpace
  */
-public final class NonMarshalledAuthority<T> extends SimpleCitation implements IdentifierSpace<T>, Serializable {
+public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6299502270649111201L;
 
     /**
-     * Sets to {@code true} if {@link #getCitation(String)} has already logged a warning.
-     * This is used in order to avoid flooding the logs with the same message.
-     */
-    private static volatile boolean warningLogged;
-
-    /**
      * Ordinal values for switch statements. The constant defined here shall
      * mirror the constants defined in the {@link IdentifierSpace} interface
      * and {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      */
-    public static final int ID=0, UUID=1, HREF=2, XLINK=3, ISSN=4, ISBN=5;
+    public static final byte ID=0, UUID=1, HREF=2, XLINK=3, ISSN=4, ISBN=5;
     // If more codes are added, please update readResolve() below.
 
     /**
@@ -98,36 +84,18 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * versions of the SIS library (the attribute name is more reliable). This instance should
      * be replaced by one of the exiting constants at deserialization time anyway.</p>
      */
-    final transient int ordinal;
+    final transient byte ordinal;
 
     /**
-     * Creates a new enum for the given attribute.
+     * Creates a new citation for the given XML attribute name.
      *
      * @param attribute The XML attribute name, to be returned by {@link #getName()}.
      * @param ordinal   Ordinal value for switch statement, as one of the {@link #ID},
      *                  {@link #UUID}, <i>etc.</i> constants.
      */
-    public NonMarshalledAuthority(final String attribute, final int ordinal) {
+    public NonMarshalledAuthority(final String attribute, final byte ordinal) {
         super(attribute);
         this.ordinal = ordinal;
-    }
-
-    /**
-     * Returns the XML attribute name with its prefix. Attribute names can be {@code "gml:id"},
-     * {@code "gco:uuid"} or {@code "xlink:href"}.
-     */
-    @Override
-    public String getName() {
-        return title;
-    }
-
-    /**
-     * Returns a string representation of this identifier space.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        return "IdentifierSpace[" + title + ']';
     }
 
     /**
@@ -269,54 +237,25 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Returns one of the constants in the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class,
-     * or {@code null} if none. We need to use Java reflection because the {@code sis-metadata} module may not
-     * be in the classpath.
-     */
-    private static IdentifierSpace<?> getCitation(final String name) {
-        try {
-            final Field field = Class.forName("org.apache.sis.metadata.iso.citation.DefaultCitation").getDeclaredField(name);
-            field.setAccessible(true);
-            return (IdentifierSpace<?>) field.get(null);
-        } catch (Exception e) {
-            if (!warningLogged) {
-                warningLogged = true;
-                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING,
-                        Errors.Keys.MissingRequiredModule_1, "sis-metadata");
-                /*
-                 * Log directly the the logger rather than invoking the Context.warningOccured(…) method because
-                 * this warning does not occur during XML (un)marshalling. It may occurs only during serialization.
-                 */
-                record.setThrown(e);
-                Logging.log(NonMarshalledAuthority.class, "readResolve", record);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
+     *
+     * @return The instance to use, as an unique instance if possible.
      */
-    private Object readResolve() {
+    @Override
+    protected Object readResolve() {
+        final String name = getName();
+        IdentifierSpace<?> candidate;
         int code = 0;
-        while (true) {
-            final IdentifierSpace<?> candidate;
-            switch (code) {
+        do {
+            switch (code++) {
                 case ID:    candidate = IdentifierSpace.ID;    break;
                 case UUID:  candidate = IdentifierSpace.UUID;  break;
                 case HREF:  candidate = IdentifierSpace.HREF;  break;
                 case XLINK: candidate = IdentifierSpace.XLINK; break;
-                case ISBN:  candidate = getCitation("ISBN");   break;
-                case ISSN:  candidate = getCitation("ISSN");   break;
-                default: return this;
+                default: return super.readResolve();
             }
-            if (candidate instanceof NonMarshalledAuthority<?> &&
-                    ((NonMarshalledAuthority<?>) candidate).title.equals(title))
-            {
-                return candidate;
-            }
-            code++;
-        }
+        } while (!((NonMarshalledAuthority<?>) candidate).getName().equals(name));
+        return candidate;
     }
 }
