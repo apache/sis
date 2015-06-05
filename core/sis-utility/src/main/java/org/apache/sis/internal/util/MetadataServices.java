@@ -18,8 +18,7 @@ package org.apache.sis.internal.util;
 
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.OptionalDependency;
 
 
 /**
@@ -32,7 +31,7 @@ import org.apache.sis.util.logging.Logging;
  * @version 0.6
  * @module
  */
-public class MetadataServices extends SystemListener {
+public class MetadataServices extends OptionalDependency {
     /**
      * The services, fetched when first needed.
      */
@@ -43,8 +42,7 @@ public class MetadataServices extends SystemListener {
      * in order to force a new {@code MetadataServices} lookup if the classpath changes.
      */
     protected MetadataServices() {
-        super(Modules.UTILITIES);
-        SystemListener.add(this);
+        super(Modules.UTILITIES, "sis-metadata");
     }
 
     /**
@@ -54,7 +52,7 @@ public class MetadataServices extends SystemListener {
     @Override
     protected final void classpathChanged() {
         synchronized (MetadataServices.class) {
-            SystemListener.remove(this);
+            super.classpathChanged();
             instance = null;
         }
     }
@@ -75,15 +73,10 @@ public class MetadataServices extends SystemListener {
                      * In the particular case of this class, the intend is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    try {
-                        c = (MetadataServices) Class.forName("org.apache.sis.internal.metadata.ServicesForUtility").newInstance();
-                    } catch (ClassNotFoundException exception) {
-                        Logging.recoverableException(Logging.getLogger(Modules.UTILITIES),
-                                MetadataServices.class, "getInstance", exception);
+                    c = getInstance(MetadataServices.class, Modules.UTILITIES, "sis-metadata",
+                            "org.apache.sis.internal.metadata.ServicesForUtility");
+                    if (c == null) {
                         c = new MetadataServices();
-                    } catch (ReflectiveOperationException exception) {
-                        // Should never happen if we didn't broke our helper class.
-                        throw new AssertionError(exception);
                     }
                     instance = c;
                 }

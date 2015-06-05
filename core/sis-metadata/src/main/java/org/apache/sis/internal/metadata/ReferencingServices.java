@@ -40,12 +40,10 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Deprecable;
 
 
@@ -62,7 +60,7 @@ import org.apache.sis.util.Deprecable;
  * @version 0.6
  * @module
  */
-public class ReferencingServices extends SystemListener {
+public class ReferencingServices extends OptionalDependency {
     /**
      * The length of one nautical mile, which is {@value} metres.
      */
@@ -115,8 +113,7 @@ public class ReferencingServices extends SystemListener {
      * in order to force a new {@code ReferencingServices} lookup if the classpath changes.
      */
     protected ReferencingServices() {
-        super(Modules.METADATA);
-        SystemListener.add(this);
+        super(Modules.METADATA, "sis-referencing");
     }
 
     /**
@@ -127,7 +124,7 @@ public class ReferencingServices extends SystemListener {
     @Override
     protected final void classpathChanged() {
         synchronized (ReferencingServices.class) {
-            SystemListener.remove(this);
+            super.classpathChanged();
             instance = null;
         }
     }
@@ -148,42 +145,16 @@ public class ReferencingServices extends SystemListener {
                      * In the particular case of this class, the intend is to ensure that SystemListener.add(…)
                      * is invoked only once.
                      */
-                    try {
-                        c = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
-                    } catch (ClassNotFoundException exception) {
-                        /*
-                         * Log at the "warning" level. This method is usually invoked from a metadata class,
-                         * except org.apache.sis.io.wkt.Formatter. So we infer the logger from the stacktrace.
-                         */
-                        String logger = Modules.METADATA; // Default logger.
-                        for (final StackTraceElement e : exception.getStackTrace()) {
-                            final String name = e.getClassName();
-                            if (name.startsWith(Modules.METADATA)) break;
-                            if (name.startsWith("org.apache.sis.io.wkt")) {
-                                logger = "org.apache.sis.io.wkt";
-                                break;
-                            }
-                        }
-                        Logging.recoverableException(Logging.getLogger(logger),
-                                ReferencingServices.class, "getInstance", exception);
+                    c = getInstance(ReferencingServices.class, Modules.METADATA, "sis-referencing",
+                            "org.apache.sis.internal.referencing.ServicesForMetadata");
+                    if (c == null) {
                         c = new ReferencingServices();
-                    } catch (ReflectiveOperationException exception) {
-                        // Should never happen if we didn't broke our helper class.
-                        throw new AssertionError(exception);
                     }
                     instance = c;
                 }
             }
         }
         return c;
-    }
-
-    /**
-     * Returns the exception to throw when a method requiring the {@code sis-referencing} module is invoked
-     * but that module is not on the classpath.
-     */
-    private static UnsupportedOperationException referencingModuleNotFound() {
-        return new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-referencing"));
     }
 
 
@@ -207,7 +178,7 @@ public class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void setBounds(Envelope envelope, DefaultGeographicBoundingBox target) throws TransformException {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -220,7 +191,7 @@ public class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void setBounds(Envelope envelope, DefaultVerticalExtent target) throws TransformException {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -233,7 +204,7 @@ public class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void setBounds(Envelope envelope, DefaultTemporalExtent target) throws TransformException {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -256,7 +227,7 @@ public class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void setBounds(Envelope envelope, DefaultSpatialTemporalExtent target) throws TransformException {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -268,7 +239,7 @@ public class ReferencingServices extends SystemListener {
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */
     public void addElements(Envelope envelope, DefaultExtent target) throws TransformException {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
 
@@ -290,7 +261,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.5
      */
     public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -305,7 +276,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.4
      */
     public FormattableObject toFormattableObject(IdentifiedObject object) {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -321,7 +292,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.6
      */
     public FormattableObject toFormattableObject(MathTransform object, boolean internal) {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
 
@@ -341,7 +312,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.6
      */
     public PrimeMeridian getGreenwich() {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -353,7 +324,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.6
      */
     public CartesianCS getGeocentricCS(final Unit<Length> unit) {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -380,7 +351,7 @@ public class ReferencingServices extends SystemListener {
      * @since 0.6
      */
     public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -404,7 +375,7 @@ public class ReferencingServices extends SystemListener {
                                        final MathTransform    baseToDerived,
                                        final CoordinateSystem derivedCS)
     {
-        throw referencingModuleNotFound();
+        throw moduleNotFound();
     }
 
     /**
@@ -441,7 +412,7 @@ public class ReferencingServices extends SystemListener {
         if (factory != null) {
             return factory;
         } else {
-            throw referencingModuleNotFound();
+            throw moduleNotFound();
         }
     }
 
