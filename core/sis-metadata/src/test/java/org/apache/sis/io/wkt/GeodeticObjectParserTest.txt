@@ -1,0 +1,3 @@
+GeodeticObjectParser and MathTransformParser can not be tested here,
+because they need the "sis-referencing" module at execution time.
+Those test classes are added by the "sis-referencing" module.

@@ -145,8 +145,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *                    to a normalized derived CRS.
      * @param  derivedCS  The coordinate system for the derived CRS. The number of axes
      *         must match the target dimension of the {@code baseToDerived} transform.
-     * @throws MismatchedDimensionException if the source and target dimension of {@code baseToDerived}
-     *         do not match the dimension of {@code base} and {@code derivedCS} respectively.
+     * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
+     *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,

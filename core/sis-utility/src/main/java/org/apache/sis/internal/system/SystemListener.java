@@ -28,7 +28,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  */
 public abstract class SystemListener implements EventListener {
@@ -45,7 +45,7 @@ public abstract class SystemListener implements EventListener {
     private final String module;
 
     /**
-     * Creates a nes listener.
+     * Creates a new listener.
      *
      * @param module The OSGi module symbolic name, as declared in the {@code Bundle-SymbolicName}
      *        entry of the {@code META-INF/MANIFEST.MF} file. Shall be one of {@link Modules} constants.
@@ -134,7 +134,16 @@ public abstract class SystemListener implements EventListener {
 
     /**
      * Invoked when the classpath is likely to have changed.
-     * Any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
+     * When this method is invoked, any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
      */
     protected abstract void classpathChanged();
+
+    /**
+     * Invoked when the database content changed.
+     * When this method is invoked, EPSG and Citations database are advised to clear their cache.
+     *
+     * @since 0.6
+     */
+    protected void databaseChanged() {
+    }
 }

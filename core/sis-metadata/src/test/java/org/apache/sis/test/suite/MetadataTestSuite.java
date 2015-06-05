@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.WKTKeywordsTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
+    org.apache.sis.internal.metadata.VerticalDatumTypesTest.class,
     org.apache.sis.internal.metadata.OtherLocalesTest.class,
 
     // Classes using Java reflection.
@@ -97,6 +98,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.CharEncodingTest.class,
     org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
+    org.apache.sis.io.wkt.ElementTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {

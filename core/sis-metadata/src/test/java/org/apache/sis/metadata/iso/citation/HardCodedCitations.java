@@ -22,6 +22,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
@@ -38,39 +39,21 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {
     /**
-     * The <a href="http://www.opengeospatial.org">Open Geospatial consortium</a> organization.
-     * "Open Geospatial consortium" is the new name for "OpenGIS consortium".
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGC"
-     * (according ISO 19115, alternate titles often contain abbreviations).
+     * The ISO 19111 standard.
      */
-    public static final DefaultCitation OGC;
+    public static final DefaultCitation ISO_19111;
     static {
-        final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
-        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.OGC)));
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.OGC)));
+        final DefaultCitation c = new DefaultCitation("Spatial referencing by coordinates");
+        c.getAlternateTitles().add(new SimpleInternationalString("ISO 19111"));
+        c.getIdentifiers().add(new ImmutableIdentifier(null, "ISO", "19111"));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.freeze();
-        OGC = c;
-    }
-
-    /**
-     * The <a href="http://www.iso.org/">International Organization for Standardization</a>
-     * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
-     * citation is "ISO" (according ISO 19115, alternate titles often contain abbreviations).
-     */
-    public static final DefaultCitation ISO;
-    static {
-        final DefaultCitation c = new DefaultCitation("International Organization for Standardization");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("ISO")));
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier("ISO")));
-        c.freeze();
-        ISO = c;
+        ISO_19111 = c;
     }
 
     /**
@@ -79,38 +62,20 @@ public final strictfp class HardCodedCitations extends Static {
     public static final DefaultCitation ISO_19115;
     static {
         final DefaultCitation c = new DefaultCitation("ISO 19115");
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.freeze();
         ISO_19115 = c;
     }
 
     /**
-     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas Producers</a> organization.
-     * This organization is responsible for maintainance of {@link #EPSG} database.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "IOGP"
-     * (according ISO 19115, alternate titles often contain abbreviations).
-     */
-    public static final DefaultCitation IOGP;
-    static {
-        final DefaultCitation c = new DefaultCitation("International Association of Oil & Gas Producers");
-        c.setAlternateTitles(singleton(new SimpleInternationalString(Constants.IOGP)));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.IOGP)));
-        c.freeze();
-        IOGP = c;
-    }
-
-    /**
-     * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "EPSG"
-     * (according ISO 19115, alternate titles often contain abbreviations). In addition,
-     * this citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
+     * The <a href="http://www.epsg.org">EPSG Geodetic Parameter Dataset</a> authority.
+     * This citation contains the "EPSG" {@linkplain Citation#getIdentifiers() identifier}.
      *
      * <p>String representation:</p>
      *
      * {@preformat text
      *   Citation
-     *     ├─Title………………………………………………………… European Petroleum Survey Group
-     *     ├─Alternate title……………………………… EPSG
+     *     ├─Title………………………………………………………… EPSG Geodetic Parameter Dataset
      *     ├─Identifier
      *     │   └─Code………………………………………………… EPSG
      *     ├─Cited responsible party
@@ -130,30 +95,19 @@ public final strictfp class HardCodedCitations extends Static {
         r.setFunction(OnLineFunction.INFORMATION);
 
         final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
-        p.setParties(singleton(new DefaultOrganisation(IOGP.getTitle(), null, null, new DefaultContact(r))));
+        p.setParties(singleton(new DefaultOrganisation("International Association of Oil & Gas Producers",
+                null, null, new DefaultContact(r))));
 
-        final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
-        c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
-        c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
-        c.setIdentifiers(singleton(new DefaultIdentifier(Constants.EPSG)));
-        c.setCitedResponsibleParties(singleton(p));
+        final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
+        c.getPresentationForms().add(PresentationForm.TABLE_DIGITAL);
+        c.getIdentifiers().add(new DefaultIdentifier(Constants.EPSG));
+        c.getCitedResponsibleParties().add(p);
         c.freeze();
         EPSG = c;
     }
 
     /**
-     * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
-     */
-    public static final DefaultCitation GEOTIFF;
-    static {
-        final DefaultCitation c = new DefaultCitation("GeoTIFF");
-        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
-        c.freeze();
-        GEOTIFF = c;
-    }
-
-    /**
-     * The <a href="http://sis.apache.org">Apache SIS</a> project.
+     * Codespace for objects specific to <a href="http://sis.apache.org">Apache SIS</a>.
      */
     public static final DefaultCitation SIS;
     static {

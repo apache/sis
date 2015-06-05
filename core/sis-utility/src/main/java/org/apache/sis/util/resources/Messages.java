@@ -110,6 +110,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short NotFormalProjectionParameter_1 = 10;
 
         /**
+         * Optional module “{0}” requested but not found.
+         */
+        public static final short OptionalModuleNotFound_1 = 12;
+
+        /**
          * Property “{0}” is hidden by “{1}”.
          */
         public static final short PropertyHiddenBy_2 = 4;

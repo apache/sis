@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.AxisDirectionsTest.class,
-    org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
@@ -139,6 +138,9 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.CRSTest.class,
+
+    org.apache.sis.io.wkt.MathTransformParserTest.class,
+    org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

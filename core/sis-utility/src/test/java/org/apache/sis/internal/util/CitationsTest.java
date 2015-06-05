@@ -32,7 +32,7 @@ import static org.junit.Assume.assumeTrue;
 
 
 /**
- * Tests the {@link Citations} class.
+ * Tests the internal {@link Citations} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -45,7 +45,7 @@ public final strictfp class CitationsTest extends TestCase {
      */
      @SuppressWarnings("serial")
      private static Identifier identifier(final String codeSpace, final String code) {
-        return new SimpleIdentifier(null, code) {
+        return new SimpleIdentifier(null, code, false) {
             @Override public String getCodeSpace() {
                 return codeSpace;
             }
@@ -120,7 +120,7 @@ public final strictfp class CitationsTest extends TestCase {
     }
 
     /**
-     * A citation which is also an {@link IdentifierSpace}, for {@link #testGetUnicodeIdentifier()} purpose.
+     * A citation which is also an {@link IdentifierSpace}, for {@link #testGetCodeSpace()} purpose.
      */
      @SuppressWarnings("serial")
      private static final class Proj4 extends SimpleCitation implements IdentifierSpace<Integer> {

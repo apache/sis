@@ -704,7 +704,7 @@ public final class Types extends Static {
 
     /**
      * Returns the given characters sequence as an international string. If the given sequence is
-     * null or an instance of {@link InternationalString}, this this method returns it unchanged.
+     * null or an instance of {@link InternationalString}, then this method returns it unchanged.
      * Otherwise, this method copies the {@link InternationalString#toString()} value in a new
      * {@link SimpleInternationalString} instance and returns it.
      *

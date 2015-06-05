@@ -104,7 +104,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, XML_FILE);
-        assertIdentifierEquals("identifier", "SIS", "SIS", null, "MJ",
+        assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS", null, "MJ",
                 getSingleton(datum.getIdentifiers()));
         assertEquals("name", "Modified Julian",
                 datum.getName().getCode());

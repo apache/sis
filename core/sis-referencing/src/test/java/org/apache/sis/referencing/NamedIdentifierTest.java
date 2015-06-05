@@ -23,6 +23,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.test.Validators;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.test.DependsOnMethod;
@@ -30,8 +31,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.metadata.iso.citation.HardCodedCitations.IOGP;
-import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
 /**
@@ -49,16 +48,16 @@ public final strictfp class NamedIdentifierTest extends TestCase {
      */
     @Test
     public void testCreateFromCode() {
-        final NamedIdentifier identifier = new NamedIdentifier(IOGP, "EPSG", "4326", "8.3", null);
+        final NamedIdentifier identifier = new NamedIdentifier(Citations.EPSG, "EPSG", "4326", "8.3", null);
         Validators.validate((ReferenceIdentifier) identifier);
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
-        assertEquals("code",      "4326", identifier.getCode());
-        assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertSame  ("authority",  IOGP,  identifier.getAuthority());
-        assertEquals("version",   "8.3",  identifier.getVersion());
-        assertNull  ("description",       identifier.getDescription());
+        assertEquals("code",       "4326",         identifier.getCode());
+        assertEquals("codeSpace",  "EPSG",         identifier.getCodeSpace());
+        assertSame  ("authority",  Citations.EPSG, identifier.getAuthority());
+        assertEquals("version",    "8.3",          identifier.getVersion());
+        assertNull  ("description",                identifier.getDescription());
 
         // NamedIdentifier properties
         assertEquals("depth",  2,          identifier.depth());
@@ -82,7 +81,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         // ImmutableIdentifier properties
         assertEquals("code",      "4326", identifier.getCode());
         assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertEquals("authority", "IOGP", identifier.getAuthority().getTitle().toString());
+        assertEquals("authority", "OGP",  Citations.getIdentifier(identifier.getAuthority()));  // May change after resolution of SIS-200.
         assertNull  ("version",           identifier.getVersion());
         assertNull  ("description",       identifier.getDescription());
 
@@ -104,7 +103,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         i18n.add(Locale.ENGLISH,  "name");
         i18n.add(Locale.FRENCH,   "nom");
         i18n.add(Locale.JAPANESE, "名前");
-        return new NamedIdentifier(EPSG, i18n);
+        return new NamedIdentifier(Citations.EPSG, i18n);
     }
 
     /**
@@ -118,11 +117,11 @@ public final strictfp class NamedIdentifierTest extends TestCase {
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
-        assertEquals("code",      "name", identifier.getCode());
-        assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertSame  ("authority",  EPSG,  identifier.getAuthority());
-        assertNull  ("version",           identifier.getVersion());
-        assertNull  ("description",       identifier.getDescription());
+        assertEquals("code",      "name",         identifier.getCode());
+        assertEquals("codeSpace", "EPSG",         identifier.getCodeSpace());
+        assertSame  ("authority", Citations.EPSG, identifier.getAuthority());
+        assertNull  ("version",                   identifier.getVersion());
+        assertNull  ("description",               identifier.getDescription());
 
         // NamedIdentifier properties
         assertEquals("depth",  2,          identifier.depth());
@@ -142,7 +141,7 @@ public final strictfp class NamedIdentifierTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromInternationalString")
     public void testSerialization() {
-        NamedIdentifier unserial = assertSerializedEquals(new NamedIdentifier(EPSG, "4326"));
+        NamedIdentifier unserial = assertSerializedEquals(new NamedIdentifier(Citations.EPSG, "4326"));
         assertEquals("EPSG:4326", unserial.toInternationalString().toString(Locale.ENGLISH));
         /*
          * Try again with an international string. We would not been able to get back the

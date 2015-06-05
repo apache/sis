@@ -21,14 +21,13 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.XMLTestCase;
-import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
@@ -44,7 +43,6 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @version 0.4
  * @module
  */
-@DependsOn(org.apache.sis.internal.referencing.VerticalDatumTypesTest.class)
 public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     /**
      * An XML file in this package containing a vertical datum definition.

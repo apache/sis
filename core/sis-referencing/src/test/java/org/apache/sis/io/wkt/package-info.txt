@@ -1,0 +1,7 @@
+The "org.apache.sis.io.wkt" package is defined in the "sis-metadata" module,
+but some of their classes can not be tested there because they depend on the
+"sis-referencing" module. Those classes are tested here.
+
+The reason for this split is that formatting does not need to know classes
+in advance since we just invoke an overrideable method.  But parsing needs
+to know all classes, which is why we can test it only in this module.
