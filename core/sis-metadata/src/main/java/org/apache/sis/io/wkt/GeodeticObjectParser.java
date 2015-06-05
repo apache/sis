@@ -187,13 +187,6 @@ final class GeodeticObjectParser extends MathTransformParser {
     /**
      * Constructs a parser for the specified set of symbols using the specified set of factories.
      *
-     * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
-     *
-     * <p><b>Maintenance note:</b> this constructor is invoked through reflection by
-     * {@link WKTFormat#parse(CharSequence, ParsePosition)} because of modularization.
-     * Do not change the method signature even if it doesn't break the compilation,
-     * unless the reflection code is also updated.</p>
-     *
      * @param symbols       The set of symbols to use.
      * @param convention    The WKT convention to use.
      * @param isAxisIgnored {@code true} if {@code AXIS} elements should be ignored.
