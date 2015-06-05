@@ -28,6 +28,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -185,49 +186,14 @@ public class ReferencingServices extends SystemListener {
         return new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-referencing"));
     }
 
-    /**
-     * Returns a fully implemented parameter descriptor.
-     *
-     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
-     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     *
-     * @since 0.5
-     */
-    public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
-        throw referencingModuleNotFound();
-    }
 
-    /**
-     * Converts the given object in a {@code FormattableObject} instance.
-     *
-     * @param  object The object to wrap.
-     * @return The given object converted to a {@code FormattableObject} instance.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     *
-     * @see org.apache.sis.referencing.AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
-     *
-     * @since 0.4
-     */
-    public FormattableObject toFormattableObject(IdentifiedObject object) {
-        throw referencingModuleNotFound();
-    }
 
-    /**
-     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
-     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
-     * returns {@code null} if it can not convert the object.
-     *
-     * @param  object The object to wrap.
-     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
-     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     *
-     * @since 0.6
-     */
-    public FormattableObject toFormattableObject(MathTransform object, boolean internal) {
-        throw referencingModuleNotFound();
-    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                        SERVICES FOR ISO 19115 METADATA                        ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Sets a geographic bounding box from the specified envelope.
@@ -305,6 +271,155 @@ public class ReferencingServices extends SystemListener {
         throw referencingModuleNotFound();
     }
 
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                          SERVICES FOR WKT FORMATTING                          ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a fully implemented parameter descriptor.
+     *
+     * @param  parameter A partially implemented parameter descriptor, or {@code null}.
+     * @return A fully implemented parameter descriptor, or {@code null} if the given argument was null.
+     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     *
+     * @since 0.5
+     */
+    public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance.
+     *
+     * @param  object The object to wrap.
+     * @return The given object converted to a {@code FormattableObject} instance.
+     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
+     *
+     * @since 0.4
+     */
+    public FormattableObject toFormattableObject(IdentifiedObject object) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
+     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
+     * returns {@code null} if it can not convert the object.
+     *
+     * @param  object The object to wrap.
+     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return The given object converted to a {@code FormattableObject} instance, or {@code null}.
+     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
+     *
+     * @since 0.6
+     */
+    public FormattableObject toFormattableObject(MathTransform object, boolean internal) {
+        throw referencingModuleNotFound();
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    ////                                                                               ////
+    ////                           SERVICES FOR WKT PARSING                            ////
+    ////                                                                               ////
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the Greenwich prime meridian.
+     *
+     * @return The Greenwich prime meridian.
+     *
+     * @since 0.6
+     */
+    public PrimeMeridian getGreenwich() {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     *
+     * @param  unit The unit of measurement for the geocentric CRS axes.
+     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     *
+     * @since 0.6
+     */
+    public CartesianCS getGeocentricCS(final Unit<Length> unit) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Converts a geocentric coordinate system from the legacy WKT 1 to the current ISO 19111 standard.
+     * This method replaces the (Other, East, North) directions by (Geocentric X, Geocentric Y, Geocentric Z).
+     *
+     * @param  cs The geocentric coordinate system to upgrade.
+     * @return The upgraded coordinate system, or {@code cs} if this method can not upgrade the given CS.
+     *
+     * @since 0.6
+     */
+    public CartesianCS upgradeGeocentricCS(final CartesianCS cs) {
+        return cs;
+    }
+
+    /**
+     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
+     * since that legacy format did not specified any information about the coordinate system in use.
+     * This method should not need to be invoked for parsing WKT version 2.
+     *
+     * @param  axes The axes of the unknown coordinate system.
+     * @return An "abstract" coordinate system using the given axes.
+     *
+     * @since 0.6
+     */
+    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
+     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
+     * the standard factories.
+     *
+     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
+     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
+     * @param  method        The coordinate operation method (mandatory in all cases).
+     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
+     * @param  derivedCS     The coordinate system for the derived CRS.
+     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
+     *
+     * @since 0.6
+     */
+    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
+                                       final SingleCRS        baseCRS,
+                                       final OperationMethod  method,
+                                       final MathTransform    baseToDerived,
+                                       final CoordinateSystem derivedCS)
+    {
+        throw referencingModuleNotFound();
+    }
+
+    /**
+     * Creates the {@code TOWGS84} element during parsing of a WKT version 1. This is an optional operation:
+     * this method is allowed to return {@code null} if the "sis-referencing" module is not in the classpath.
+     *
+     * @param  values The 7 Bursa-Wolf parameter values.
+     * @return The {@link org.apache.sis.referencing.datum.BursaWolfParameters}, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public Object createToWGS84(final double[] values) {
+        return null;
+    }
+
     /**
      * Returns the coordinate operation factory to use for the given properties and math transform factory.
      * If the given properties are empty and the {@code mtFactory} is the system default, then this method
@@ -313,6 +428,8 @@ public class ReferencingServices extends SystemListener {
      * @param  properties The default properties.
      * @param  mtFactory  The math transform factory to use.
      * @return The coordinate operation factory to use.
+     *
+     * @since 0.6
      */
     public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
         /*
@@ -336,6 +453,8 @@ public class ReferencingServices extends SystemListener {
      * @param  object The object for which to check the name or alias.
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     *
+     * @since 0.6
      */
     public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
         return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
@@ -347,6 +466,8 @@ public class ReferencingServices extends SystemListener {
      * @param  method     The method to test for a match.
      * @param  identifier The name or identifier of the operation method to search.
      * @return {@code true} if the given method is a match for the given identifier.
+     *
+     * @since 0.6
      */
     private boolean matches(final OperationMethod method, final String identifier) {
         if (isHeuristicMatchForName(method, identifier)) {
@@ -376,6 +497,8 @@ public class ReferencingServices extends SystemListener {
      *
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
+     *
+     * @since 0.6
      */
     public final OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;
@@ -394,60 +517,5 @@ public class ReferencingServices extends SystemListener {
             }
         }
         return fallback;
-    }
-
-    /**
-     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
-     *
-     * @param  unit The unit of measurement for the geocentric CRS axes.
-     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
-     */
-    public CartesianCS getGeocentricCS(final Unit<Length> unit) {
-        throw referencingModuleNotFound();
-    }
-
-    /**
-     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
-     * since that legacy format did not specified any information about the coordinate system in use.
-     * This method should not need to be invoked for parsing WKT version 2.
-     *
-     * @param  axes The axes of the unknown coordinate system.
-     * @return An "abstract" coordinate system using the given axes.
-     */
-    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
-        throw referencingModuleNotFound();
-    }
-
-    /**
-     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
-     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
-     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
-     * the standard factories.
-     *
-     * @param  properties    The properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
-     * @param  baseCRS       Coordinate reference system to base the derived CRS on.
-     * @param  method        The coordinate operation method (mandatory in all cases).
-     * @param  baseToDerived Transform from positions in the base CRS to positions in this target CRS.
-     * @param  derivedCS     The coordinate system for the derived CRS.
-     * @return The newly created derived CRS, potentially implementing an additional CRS interface.
-     */
-    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
-                                       final SingleCRS        baseCRS,
-                                       final OperationMethod  method,
-                                       final MathTransform    baseToDerived,
-                                       final CoordinateSystem derivedCS)
-    {
-        throw referencingModuleNotFound();
-    }
-
-    /**
-     * Creates the {@code TOWGS84} element during parsing of a WKT version 1. This is an optional operation:
-     * this method is allowed to return {@code null} if the "sis-referencing" module is not in the classpath.
-     *
-     * @param  values The 7 Bursa-Wolf parameter values.
-     * @return The {@link org.apache.sis.referencing.datum.BursaWolfParameters}, or {@code null}.
-     */
-    public Object createToWGS84(final double[] values) {
-        return null;
     }
 }

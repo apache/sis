@@ -48,13 +48,11 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
@@ -276,7 +274,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 if (keyword.equalsIgnoreCase(WKTKeywords.Spheroid))    return parseSpheroid  (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.Vert_Datum))  return parseVertDatum (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.Local_Datum)) return parseLocalDatum(element);
-                if (keyword.equalsIgnoreCase(WKTKeywords.Datum))       return parseDatum     (element, CommonCRS.WGS84.primeMeridian());
+                if (keyword.equalsIgnoreCase(WKTKeywords.Datum))       return parseDatum     (element, referencing.getGreenwich());
             }
         }
         throw element.keywordNotFound(keyword, keyword == WKTKeywords.GeogCS);
@@ -715,7 +713,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             final Map<String,?> properties = parseAuthorityAndClose(element, name);
             if (axis0 != null && !isAxisIgnored) {
                 cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
-                cs = Legacy.forGeocentricCRS(cs, false);
+                cs = referencing.upgradeGeocentricCS(cs);
             } else {
                 cs = referencing.getGeocentricCS(linearUnit);
             }
