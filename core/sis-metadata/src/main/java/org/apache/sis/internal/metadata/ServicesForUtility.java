@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Collection;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
+import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
@@ -28,6 +30,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.util.iso.Types;
+
+import static java.util.Collections.singleton;
 
 
 /**
@@ -150,16 +154,27 @@ public final class ServicesForUtility extends MetadataServices {
             }
             default: return super.createCitation(key);
         }
+        /*
+         * Do not use the 'c.getFoo().add(foo)' pattern below. Use the 'c.setFoo(singleton(foo))' pattern instead.
+         * This is because this method may be invoked during XML serialization, in which case some getter methods
+         * may return null (for preventing JAXB to marshal some empty elements).
+         */
         final DefaultCitation c = new DefaultCitation(title);
-        if (alternateTitle        != null) c.getAlternateTitles().add(Types.toInternationalString(alternateTitle));
+        if (alternateTitle        != null) c.setAlternateTitles(singleton(Types.toInternationalString(alternateTitle)));
         if (edition               != null) c.setEdition(Types.toInternationalString(edition));
-        if (code                  != null) c.getIdentifiers().add(new ImmutableIdentifier(null, codeSpace, code, version, null));
+        if (code                  != null) c.setIdentifiers(singleton(new ImmutableIdentifier(null, codeSpace, code, version, null)));
         if (copyFrom              != null) c.setCitedResponsibleParties(copyFrom.getCitedResponsibleParties());
-        if (presentationForm      != null) c.getPresentationForms().add(presentationForm);
+        if (presentationForm      != null) c.setPresentationForms(singleton(presentationForm));
         if (citedResponsibleParty != null) {
             final DefaultOrganisation organisation = new DefaultOrganisation();
             organisation.setName(Types.toInternationalString(citedResponsibleParty));
-            c.getCitedResponsibleParties().add(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null, organisation));
+            final DefaultResponsibility r = new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null, organisation);
+            final Collection<Responsibility> parties = c.getCitedResponsibleParties();
+            if (parties != null) {
+                parties.add(r);
+            } else {
+                c.setCitedResponsibleParties(singleton(r));
+            }
         }
         c.freeze();
         return c;
