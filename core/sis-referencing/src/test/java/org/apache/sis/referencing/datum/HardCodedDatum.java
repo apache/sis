@@ -25,7 +25,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.opengis.referencing.datum.Datum.*;
