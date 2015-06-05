@@ -28,13 +28,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.lang.reflect.Constructor;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.Factory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -96,13 +94,6 @@ public class WKTFormat extends CompoundFormat<Object> {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -2909110214650709560L;
-
-    /**
-     * The constructor for WKT parsers, fetched when first needed. We have to use reflection
-     * because {@link GeodeticObjectParser} is defined in a separated module which is not
-     * guaranteed to be on the classpath.
-     */
-    private static volatile Constructor<? extends Parser> parserConstructor;
 
     /**
      * The indentation value to give to the {@link #setIndentation(int)}
@@ -508,22 +499,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        if (parser == null) try {
-            Constructor<? extends Parser> c = parserConstructor;
-            if (c == null) {
-                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(Parser.class)
-                         .getDeclaredConstructor(Symbols.class, Convention.class, Boolean.TYPE, Locale.class, Map.class);
-                parserConstructor = c;
-            }
+        if (parser == null) {
             if (factories == null) {
                 factories = new HashMap<>();
             }
-            parser = c.newInstance(symbols, convention, false, getLocale(Locale.Category.DISPLAY), factories);
-        } catch (ClassNotFoundException e) {
-            throw (ParseException) new LocalizedParseException(getLocale(Locale.Category.DISPLAY),
-                    Errors.Keys.MissingRequiredModule_1, new String[] {"sis-referencing"}, 0).initCause(e);
-        } catch (ReflectiveOperationException e) {
-            throw (ParseException) new ParseException(e.getMessage(), 0).initCause(e);
+            parser = new GeodeticObjectParser(symbols, convention, false, getLocale(Locale.Category.DISPLAY), factories);
         }
         return parser.parseObject(text.toString(), pos);
     }
