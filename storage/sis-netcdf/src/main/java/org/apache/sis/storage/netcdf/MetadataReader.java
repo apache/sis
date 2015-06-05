@@ -66,7 +66,6 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.Standards;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -933,7 +932,7 @@ final class MetadataReader {
      */
     public Metadata read() throws IOException {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setMetadataStandards(singleton(Standards.ISO_19115_2));
+        metadata.setMetadataStandards(Citations.ISO_19115);
         final Identifier identifier = getFileIdentifier();
         metadata.setMetadataIdentifier(identifier);
         final Date creation = decoder.dateValue(METADATA_CREATION);

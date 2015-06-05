@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
-import org.apache.sis.internal.referencing.OperationMethods;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.WKTParser;
@@ -263,7 +263,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
              */
             @Override
             protected Object invisibleEntry(final Object key) {
-                if (OperationMethods.MT_FACTORY.equals(key)) {
+                if (ReferencingServices.MT_FACTORY.equals(key)) {
                     return getMathTransformFactory();
                 } else {
                     return super.invisibleEntry(key);

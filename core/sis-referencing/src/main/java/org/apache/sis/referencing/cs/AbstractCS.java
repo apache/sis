@@ -65,7 +65,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultCoordinateSystemAxis
@@ -224,7 +224,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     protected AbstractCS(final CoordinateSystem cs) {
         super(cs);
         if (cs instanceof AbstractCS) {
-            axes = ((AbstractCS) cs).axes; // Share the array.
+            axes = ((AbstractCS) cs).axes;  // Share the array.
         } else {
             axes = new CoordinateSystemAxis[cs.getDimension()];
             for (int i=0; i<axes.length; i++) {
@@ -340,12 +340,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         }
         AbstractCS cs = derived.get(convention);
         if (cs == null) {
-            switch (convention) {
-                case NORMALIZED:              cs = Normalizer.normalize(this, true,  true);  break;
-                case CONVENTIONALLY_ORIENTED: cs = Normalizer.normalize(this, true,  false); break;
-                case RIGHT_HANDED:            cs = Normalizer.normalize(this, false, false); break;
-                case POSITIVE_RANGE:          cs = Normalizer.shiftAxisRange(this);          break;
-                default: throw new AssertionError(convention);
+            cs = Normalizer.forConvention(this, convention);
+            if (cs == null) {
+                cs = this;  // This coordinate system is already normalized.
             }
             for (final AbstractCS existing : derived.values()) {
                 if (cs.equals(existing)) {
@@ -359,14 +356,33 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns a coordinate system of the same type than this CS but with different axes.
+     * Returns a coordinate system usually of the same type than this CS but with different axes.
      * This method shall be overridden by all {@code AbstractCS} subclasses in this package.
+     *
+     * <p>This method returns a coordinate system of the same type if the number of axes is unchanged.
+     * But if the given {@code axes} array has less elements than this coordinate system dimension, then
+     * this method may return an other kind of coordinate system. See {@link AxisFilter} for an example.</p>
      *
      * @param  axes The set of axes to give to the new coordinate system.
      * @return A new coordinate system of the same type than {@code this}, but using the given axes.
      */
-    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         return new AbstractCS(properties, axes);
+    }
+
+    /**
+     * Convenience method for implementations of {@link #createForAxes(Map, CoordinateSystemAxis[])}
+     * when the resulting coordinate system would have an unexpected number of dimensions.
+     *
+     * @param properties The properties which was supposed to be given to the constructor.
+     * @param axes       The axes which was supposed to be given to the constructor.
+     * @param expected   The minimal expected number of dimensions (may be less than {@link #getDimension()}).
+     */
+    static IllegalArgumentException unexpectedDimension(final Map<String,?> properties,
+            final CoordinateSystemAxis[] axes, final int expected)
+    {
+        return new IllegalArgumentException(Errors.getResources(properties).getString(
+                Errors.Keys.MismatchedDimension_3, "filter(cs)", expected, axes.length));
     }
 
     /**

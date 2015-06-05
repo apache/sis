@@ -48,22 +48,17 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.Legacy;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_KEY;
 
 
 /**
@@ -95,6 +90,14 @@ import static org.apache.sis.referencing.datum.DefaultGeodeticDatum.BURSA_WOLF_K
  */
 final class GeodeticObjectParser extends MathTransformParser {
     /**
+     * The names of the 7 parameters in a {@code TOWGS84[…]} element.
+     * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
+     * They are not the same than the {@link org.apache.sis.referencing.datum.BursaWolfParameters}
+     * field names, which are derived from the EPSG database.
+     */
+    private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
+
+    /**
      * The factory to use for creating {@link CoordinateReferenceSystem} instances.
      */
     private final CRSFactory crsFactory;
@@ -114,6 +117,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Used only for map projections and derived CRS.
      */
     private final CoordinateOperationFactory opFactory;
+
+    /**
+     * Other services from "sis-referencing" module which can not be provided by the standard factories.
+     */
+    private final ReferencingServices referencing;
 
     /**
      * The WKT convention to assume for parsing.
@@ -166,11 +174,12 @@ final class GeodeticObjectParser extends MathTransformParser {
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(AbstractIdentifiedObject.LOCALE_KEY));
+        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
-        opFactory     = new DefaultCoordinateOperationFactory(defaultProperties, mtFactory);  // TODO
+        referencing   = ReferencingServices.getInstance();
+        opFactory     = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
         convention    = Convention.DEFAULT;
         isAxisIgnored = false;
     }
@@ -198,7 +207,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
-        opFactory    = new DefaultCoordinateOperationFactory(null, mtFactory);  // TODO
+        referencing  = ReferencingServices.getInstance();
+        opFactory    = referencing.getCoordinateOperationFactory(null, mtFactory);
         this.convention = convention;
         this.isAxisIgnored = isAxisIgnored;
     }
@@ -264,7 +274,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 if (keyword.equalsIgnoreCase(WKTKeywords.Spheroid))    return parseSpheroid  (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.Vert_Datum))  return parseVertDatum (element);
                 if (keyword.equalsIgnoreCase(WKTKeywords.Local_Datum)) return parseLocalDatum(element);
-                if (keyword.equalsIgnoreCase(WKTKeywords.Datum))       return parseDatum     (element, CommonCRS.WGS84.primeMeridian());
+                if (keyword.equalsIgnoreCase(WKTKeywords.Datum))       return parseDatum     (element, referencing.getGreenwich());
             }
         }
         throw element.keywordNotFound(keyword, keyword == WKTKeywords.GeogCS);
@@ -325,7 +335,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             final String code = element.pullObject("code").toString();  // Accepts Integer as well as String.
             element.close(ignoredElements);
             final Citation authority = Citations.fromName(auth);
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, new NamedIdentifier(authority, code));
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, new ImmutableIdentifier(authority, auth, code));
             /*
              * Note: we could be tempted to assign the authority to the name as well, like below:
              *
@@ -336,7 +346,8 @@ final class GeodeticObjectParser extends MathTransformParser {
              *
              * However experience shows that it is often wrong in practice, because peoples often
              * declare EPSG codes but still use WKT names much shorter than the EPSG names
-             * (for example "WGS84" instead than "World Geodetic System 1984").
+             * (for example "WGS84" for the datum instead than "World Geodetic System 1984"),
+             * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
         }
         parent.close(ignoredElements);
@@ -456,27 +467,24 @@ final class GeodeticObjectParser extends MathTransformParser {
      * }
      *
      * @param  parent The parent element.
-     * @return The {@code "TOWGS84"} element as a {@link BursaWolfParameters} object,
+     * @return The {@code "TOWGS84"} element as a {@link org.apache.sis.referencing.datum.BursaWolfParameters} object,
      *         or {@code null} if no {@code "TOWGS84"} has been found.
      * @throws ParseException if the {@code "TOWGS84"} can not be parsed.
      */
-    private BursaWolfParameters parseToWGS84(final Element parent) throws ParseException {
+    private Object parseToWGS84(final Element parent) throws ParseException {
         final Element element = parent.pullOptionalElement(WKTKeywords.ToWGS84);
         if (element == null) {
             return null;
         }
-        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
-        info.tX = element.pullDouble("dx");
-        info.tY = element.pullDouble("dy");
-        info.tZ = element.pullDouble("dz");
-        if (element.peek() != null) {
-            info.rX = element.pullDouble("ex");
-            info.rY = element.pullDouble("ey");
-            info.rZ = element.pullDouble("ez");
-            info.dS = element.pullDouble("ppm");
+        final double[] values = new double[ToWGS84.length];
+        for (int i=0; i<values.length;) {
+            values[i] = element.pullDouble(ToWGS84[i]);
+            if ((++i % 3) == 0 && element.peek() == null) {
+                break;  // It is legal to have only 3 or 6 elements.
+            }
         }
         element.close(ignoredElements);
-        return info;
+        return referencing.createToWGS84(values);
     }
 
     /**
@@ -556,10 +564,10 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element             element    = parent.pullElement(WKTKeywords.Datum);
         final String              name       = element.pullString("name");
         final Ellipsoid           ellipsoid  = parseSpheroid(element);
-        final BursaWolfParameters toWGS84    = parseToWGS84(element);     // Optional; may be null.
+        final Object              toWGS84    = parseToWGS84(element);     // Optional; may be null.
         final Map<String,Object>  properties = parseAuthorityAndClose(element, name);
         if (toWGS84 != null) {
-            properties.put(BURSA_WOLF_KEY, toWGS84);
+            properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
         }
         try {
             return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
@@ -667,8 +675,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             list.add(axis);
             axis = parseAxis(element, linearUnit, false);
         } while (axis != null);
-        final CoordinateSystem cs = new AbstractCS(singletonMap("name", name),
-                list.toArray(new CoordinateSystemAxis[list.size()]));
+        final CoordinateSystem cs = referencing.createAbstractCS(list.toArray(new CoordinateSystemAxis[list.size()]));
         try {
             return crsFactory.createEngineeringCRS(parseAuthorityAndClose(element, name), datum, cs);
         } catch (FactoryException exception) {
@@ -695,6 +702,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final PrimeMeridian meridian   = parsePrimem(element, NonSI.DEGREE_ANGLE);
         final GeodeticDatum datum      = parseDatum (element, meridian);
         final Unit<Length>  linearUnit = parseUnit  (element, SI.METRE);
+        CartesianCS cs;
         CoordinateSystemAxis axis0, axis1 = null, axis2 = null;
         axis0 = parseAxis(element, linearUnit, false);
         try {
@@ -702,16 +710,13 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, linearUnit, true);
                 axis2 = parseAxis(element, linearUnit, true);
             }
-            if (axis0 == null || isAxisIgnored) {
-                // Those default values are part of WKT specification.
-                // TODO: use CommonCRS.
-                axis0 = createAxis("X", AxisDirection.OTHER, linearUnit);
-                axis1 = createAxis("Y", AxisDirection.EAST,  linearUnit);
-                axis2 = createAxis("Z", AxisDirection.NORTH, linearUnit);
-            }
             final Map<String,?> properties = parseAuthorityAndClose(element, name);
-            CartesianCS cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
-            cs = Legacy.forGeocentricCRS(cs, false);
+            if (axis0 != null && !isAxisIgnored) {
+                cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
+                cs = referencing.upgradeGeocentricCS(cs);
+            } else {
+                cs = referencing.getGeocentricCS(linearUnit);
+            }
             return crsFactory.createGeocentricCRS(properties, datum, cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -897,32 +902,37 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element                   element = parent.pullElement(WKTKeywords.Fitted_CS);
         final String                    name    = element.pullString("name");
         final MathTransform             toBase  = parseMathTransform(element, true);
-        final CoordinateReferenceSystem base    = parseCoordinateReferenceSystem(element, true);
         final OperationMethod           method  = getOperationMethod();
+        final CoordinateReferenceSystem baseCRS = parseCoordinateReferenceSystem(element, true);
+        if (!(baseCRS instanceof SingleCRS)) {
+            throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+                    new Object[] {WKTKeywords.Fitted_CS, baseCRS.getClass()}, element.offset);
+        }
         /*
-         * WKT 1 provides no informations about the underlying CS of a derived CRS.
+         * WKT 1 provides no information about the underlying CS of a derived CRS.
          * We have to guess some reasonable one with arbitrary units. We try to construct the one which
          * contains as few information as possible, in order to avoid providing wrong informations.
          */
-        final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[toBase.getSourceDimensions()];
-        final StringBuilder buffer = new StringBuilder(name);
-        buffer.append(" axis ");
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
+        final StringBuilder buffer = new StringBuilder(name).append(" axis ");
         final int start = buffer.length();
         try {
-            for (int i=0; i<axis.length; i++) {
+            for (int i=0; i<axes.length; i++) {
                 final String number = String.valueOf(i);
                 buffer.setLength(start);
                 buffer.append(number);
-                axis[i] = csFactory.createCoordinateSystemAxis(
+                axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(IdentifiedObject.NAME_KEY, buffer.toString()),
                         number, AxisDirection.OTHER, Unit.ONE);
             }
-            final Conversion conversion = new DefaultConversion(    // TODO: use opFactory
-                    singletonMap(IdentifiedObject.NAME_KEY, method.getName().getCode()),
-                    method, toBase.inverse(), null);
-            final Map<String,?> properties = parseAuthorityAndClose(element, name);
-            final CoordinateSystem cs = new AbstractCS(properties, axis);
-            return crsFactory.createDerivedCRS(properties, base, conversion, cs);
+            final Map<String,Object> properties = parseAuthorityAndClose(element, name);
+            final CoordinateSystem derivedCS = referencing.createAbstractCS(axes);
+            /*
+             * We do not know which name to give to the conversion method.
+             * For now, use the CRS name.
+             */
+            properties.put("conversion.name", name);
+            return referencing.createDerivedCRS(properties, (SingleCRS) baseCRS, method, toBase.inverse(), derivedCS);
         } catch (FactoryException | NoninvertibleTransformException exception) {
             throw element.parseFailed(exception);
         }

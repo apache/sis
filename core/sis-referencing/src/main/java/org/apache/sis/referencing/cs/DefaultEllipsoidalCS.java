@@ -70,11 +70,12 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
 
     /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
-     * implementations of the {@link #createSameType(Map, CoordinateSystemAxis[])} method only,
+     * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
      */
     private DefaultEllipsoidalCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         super(properties, axes);
+        validateAxes(properties);
     }
 
     /**
@@ -121,13 +122,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis1)
     {
         super(properties, axis0, axis1);
-        for (int i=0; i<2; i++) {
-            final AxisDirection direction = super.getAxis(i).getDirection();
-            if (AxisDirections.isVertical(direction)) {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                        Errors.Keys.IllegalAxisDirection_2, "EllipdoicalCS (2D)", direction));
-            }
-        }
+        validateAxes(properties);
     }
 
     /**
@@ -146,6 +141,7 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
                                 final CoordinateSystemAxis axis2)
     {
         super(properties, axis0, axis1, axis2);
+        validateAxes(properties);
     }
 
     /**
@@ -202,6 +198,23 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
+     * Validates the set of axes after the validation of each individual axis.
+     *
+     * @param properties The properties given at construction time.
+     */
+    private void validateAxes(final Map<String,?> properties) {
+        int i = super.getDimension();
+        int n = i - 2; // Number of vertical axes allowed.
+        while (--i >= 0) {
+            final AxisDirection direction = super.getAxis(i).getDirection();
+            if (AxisDirections.isVertical(direction) && --n < 0) {
+                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                        Errors.Keys.IllegalAxisDirection_2, EllipsoidalCS.class, direction));
+            }
+        }
+    }
+
+    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code EllipsoidalCS.class}.
      *
@@ -228,10 +241,15 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      */
     @Override
-    final AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultEllipsoidalCS(properties, axes);
+    final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 1: return new DefaultVerticalCS(properties, axes);
+            case 2: // Fall through
+            case 3: return new DefaultEllipsoidalCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 1);
+        }
     }
 }

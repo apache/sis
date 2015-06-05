@@ -87,8 +87,8 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      * @param hasContact {@code true} for adding contact information.
      */
     private static void addCommonProperties(final Map<String,Object> expected, final boolean hasContact) {
-        assertNull(expected.put("metadataStandardName", "ISO 19115-2 Geographic Information — Metadata Part 2: Extensions for imagery and gridded data"));
-        assertNull(expected.put("metadataStandardVersion", "ISO 19115-2:2009(E)"));
+        assertNull(expected.put("metadataStandardName", "Geographic Information — Metadata Part 1: Fundamentals"));
+        assertNull(expected.put("metadataStandardVersion", "ISO 19115-1:2014(E)"));
         if (hasContact) {
             assertNull(expected.put("identificationInfo.pointOfContact.role", Role.POINT_OF_CONTACT));
             assertNull(expected.put("contact.role", Role.POINT_OF_CONTACT));

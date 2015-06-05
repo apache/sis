@@ -128,7 +128,7 @@ final class PropertyInformation<E> extends SimpleIdentifier
     PropertyInformation(final Citation standard, final String property, final Method getter,
             final Class<E> elementType, final ValueRange range)
     {
-        super(standard, property);
+        super(standard, property, getter.isAnnotationPresent(Deprecated.class));
         parent = getter.getDeclaringClass();
         this.elementType = elementType;
         final UML uml = getter.getAnnotation(UML.class);

@@ -45,8 +45,8 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.OperationMethods;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -533,7 +533,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return The accuracy estimation (always in meters), or NaN if unknown.
      */
     public double getLinearAccuracy() {
-        return OperationMethods.getLinearAccuracy(this);
+        return PositionalAccuracyConstant.getLinearAccuracy(this);
     }
 
     /**

@@ -33,9 +33,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.metadata.iso.citation.Citations; // For javadoc.
+import org.apache.sis.internal.metadata.NameToIdentifier;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.Citations.identifierMatches;
 
@@ -84,6 +84,15 @@ public final class IdentifiedObjects extends Static {
      *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
      *       <td>{@link CoordinateOperation#getCoordinateOperationAccuracy()}</td></tr>
      * </table>
+     *
+     * <div class="note"><b>Note:</b>
+     * the current implementation does not provide
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MINIMUM_VALUE_KEY},
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MAXIMUM_VALUE_KEY} or
+     * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#RANGE_MEANING_KEY} entry for
+     * {@link org.opengis.referencing.cs.CoordinateSystemAxis} instances because the minimum and maximum
+     * values depend on the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getUnit()
+     * units of measurement}.</div>
      *
      * @param  object The identified object to view as a properties map.
      * @param  excludes The keys of properties to exclude from the map.
@@ -396,51 +405,8 @@ public final class IdentifiedObjects extends Static {
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             ensureNonNull("object", object);
-            return isHeuristicMatchForName(object.getName(), object.getAlias(), name);
+            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
         }
-    }
-
-    /**
-     * Returns {@code true} if the given {@linkplain AbstractIdentifiedObject#getName() primary name} or one
-     * of the given aliases matches the given name. The comparison ignores case, some Latin diacritical signs
-     * and any characters that are not letters or digits.
-     *
-     * @param  name     The name of the {@code IdentifiedObject} to check.
-     * @param  aliases  The list of alias in the {@code IdentifiedObject} (may be {@code null}).
-     *                  This method will never modify this list. Consequently, the
-     *                  given list can be a direct reference to an internal list.
-     * @param  toSearch The name for which to check for equality.
-     * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
-     */
-    static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
-            CharSequence toSearch)
-    {
-        toSearch = CharSequences.toASCII(toSearch);
-        if (name != null) { // Paranoiac check.
-            final CharSequence code = CharSequences.toASCII(name.getCode());
-            if (code != null) { // Paranoiac check.
-                if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
-                    return true;
-                }
-            }
-        }
-        if (aliases != null) {
-            for (final GenericName alias : aliases) {
-                if (alias != null) { // Paranoiac check.
-                    final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
-                    if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
-                        return true;
-                    }
-                    /*
-                     * Note: a previous version compared also the scoped names. We removed that part,
-                     * because experience has shown that this method is used only for the "code" part
-                     * of an object name. If we really want to compare scoped name, it would probably
-                     * be better to take a GenericName argument instead than String.
-                     */
-                }
-            }
-        }
-        return false;
     }
 
     /**

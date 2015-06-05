@@ -223,11 +223,15 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
-     * Returns a coordinate system of the same class than this CS but with different axes.
+     * Returns a coordinate system with different axes.
      * This method shall be overridden by all {@code AffineCS} subclasses in this package.
      */
     @Override
-    AbstractCS createSameType(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new DefaultAffineCS(properties, axes);
+    AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        switch (axes.length) {
+            case 2: // Fall through
+            case 3: return new DefaultAffineCS(properties, axes);
+            default: throw unexpectedDimension(properties, axes, 2);
+        }
     }
 }

@@ -18,6 +18,8 @@ package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -33,7 +35,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class AxisDirectionsTest extends TestCase {
@@ -356,5 +358,19 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(-1, AxisDirections.indexOfColinear(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.DAYS));
+    }
+
+    /**
+     * Tests {@link AxisDirections#appendTo(StringBuilder, CoordinateSystemAxis[])}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testAppendTo() {
+        final StringBuilder buffer = new StringBuilder("Compound CS");
+        final String name = AxisDirections.appendTo(buffer, new CoordinateSystemAxis[] {
+            HardCodedAxes.EASTING, HardCodedAxes.NORTHING, HardCodedAxes.HEIGHT_cm, HardCodedAxes.TIME
+        });
+        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", name);
     }
 }

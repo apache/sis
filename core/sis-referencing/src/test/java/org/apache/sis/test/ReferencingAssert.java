@@ -40,9 +40,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.internal.util.Constants;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.internal.util.Constants.*;
 
 
 /**
@@ -73,13 +73,16 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      */
     public static void assertOgcIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertSame("Authority", Citations.OGC, actual.getAuthority());
-        assertIdentifierEquals(null, OGC, OGC, null, expected, actual);
+        assertEquals("code",       expected,      actual.getCode());
+        assertEquals("codeSpace",  Constants.OGC, actual.getCodeSpace());
+        assertSame  ("authority",  Citations.OGC, actual.getAuthority());
+        assertEquals("identifier", Constants.OGC + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+                IdentifiedObjects.toString(actual));
     }
 
     /**
      * Asserts that the given identifier has the expected code and the {@code "EPSG"} code space.
-     * The authority is expected to have the {@code "IOGP"} title or alternate title.
+     * The authority is expected to have the {@code "EPSG"} title, alternate title or identifier.
      *
      * @param expected The expected identifier code.
      * @param actual   The identifier to verify.
@@ -88,10 +91,10 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertEquals("code",       expected, actual.getCode());
-        assertEquals("codeSpace",  EPSG,  actual.getCodeSpace());
-        assertEquals("authority",  IOGP,  Citations.getIdentifier(actual.getAuthority()));
-        assertEquals("identifier", EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+        assertEquals("code",       expected,        actual.getCode());
+        assertEquals("codeSpace",  Constants.EPSG,  actual.getCodeSpace());
+        assertEquals("authority",  Constants.EPSG,  Citations.getIdentifier(actual.getAuthority()));
+        assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }
 
@@ -100,8 +103,8 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * EPSG code. As a special case if the given code is 0, then this method verifies that the given object has no
      * identifier.
      *
-     * @param expected    The expected EPSG code, or {@code 0} if we expect no EPSG code.
-     * @param actual The set of identifiers in which to verify the EPSG code.
+     * @param expected The expected EPSG code, or {@code 0} if we expect no EPSG code.
+     * @param actual   The set of identifiers in which to verify the EPSG code.
      */
     public static void assertEpsgIdentifierEquals(final int expected, final Collection<? extends Identifier> actual) {
         assertNotNull(actual);

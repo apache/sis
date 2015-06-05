@@ -30,7 +30,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;

@@ -36,6 +36,9 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Convenience methods for fetching parameter values despite the variations in parameter names, value types and units.
@@ -646,24 +649,19 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     public static void copy(final ParameterValueGroup values, final ParameterValueGroup destination)
             throws InvalidParameterNameException, InvalidParameterValueException
     {
-        final Integer ONE = 1;
+        final Integer ZERO = 0;
         final Map<String,Integer> occurrences = new HashMap<>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
+            final int occurrence = JDK8.getOrDefault(occurrences, name, ZERO);
             if (value instanceof ParameterValueGroup) {
                 /*
                  * Contains sub-group - invokes 'copy' recursively.
+                 * The target group may exist, but not necessarily.
                  */
-                final GeneralParameterDescriptor descriptor;
-                descriptor = destination.getDescriptor().descriptor(name);
-                if (descriptor instanceof ParameterDescriptorGroup) {
-                    final ParameterValueGroup groups = (ParameterValueGroup) descriptor.createValue();
-                    copy((ParameterValueGroup) value, groups);
-                    values.groups(name).add(groups);
-                } else {
-                    throw new InvalidParameterNameException(Errors.format(
-                            Errors.Keys.UnexpectedParameter_1, name), name);
-                }
+                final List<ParameterValueGroup> groups = destination.groups(name);
+                copy((ParameterValueGroup) value, (occurrence < groups.size())
+                        ? groups.get(occurrence) : destination.addGroup(name));
             } else {
                 /*
                  * Single parameter - copy the value, with special care for value with units
@@ -672,9 +670,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
                  */
                 final ParameterValue<?> source = (ParameterValue<?>) value;
                 final ParameterValue<?> target;
-                Integer occurrence = occurrences.get(name);
-                if (occurrence == null) {
-                    occurrence = ONE;
+                if (occurrence == 0) {
                     try {
                         target = destination.parameter(name);
                     } catch (ParameterNotFoundException cause) {
@@ -683,9 +679,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
                     }
                 } else {
                     target = (ParameterValue<?>) getOrCreate(destination, name, occurrence);
-                    occurrence++;
                 }
-                occurrences.put(name, occurrence);
                 final Object  v    = source.getValue();
                 final Unit<?> unit = source.getUnit();
                 if (unit == null) {
@@ -699,6 +693,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
                             Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
                 }
             }
+            occurrences.put(name, occurrence + 1);
         }
     }
 
