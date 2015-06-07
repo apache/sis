@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -358,6 +361,40 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(-1, AxisDirections.indexOfColinear(
                 HardCodedCS.GEODETIC_3D,
                 HardCodedCS.DAYS));
+    }
+
+    /**
+     * Tests {@link AxisDirections#suggestAbbreviation(String, AxisDirection, Unit)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testSuggestAbbreviation() {
+        assertEquals("λ",   AxisDirections.suggestAbbreviation("Geodetic longitude",     EAST,          NonSI.DEGREE_ANGLE));
+        assertEquals("φ",   AxisDirections.suggestAbbreviation("Geodetic latitude",      NORTH,         NonSI.DEGREE_ANGLE));
+        assertEquals("θ",   AxisDirections.suggestAbbreviation("Spherical longitude",    EAST,          NonSI.DEGREE_ANGLE));
+        assertEquals("φ′",  AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,         NonSI.DEGREE_ANGLE));
+        assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               SI.METRE));
+        assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               SI.METRE));
+        assertEquals("r",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               SI.METRE));
+        assertEquals("X",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_X,     SI.METRE));
+        assertEquals("Y",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Y,     SI.METRE));
+        assertEquals("Z",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Z,     SI.METRE));
+        assertEquals("D",   AxisDirections.suggestAbbreviation("not needed",             DOWN,             SI.METRE));
+        assertEquals("t",   AxisDirections.suggestAbbreviation("not needed",             FUTURE,        NonSI.DAY));
+        assertEquals("i",   AxisDirections.suggestAbbreviation("not needed",             COLUMN_NEGATIVE,  Unit.ONE));
+        assertEquals("j",   AxisDirections.suggestAbbreviation("not needed",             ROW_NEGATIVE,     Unit.ONE));
+        assertEquals("x",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_RIGHT,    Unit.ONE));
+        assertEquals("y",   AxisDirections.suggestAbbreviation("not needed",             DISPLAY_DOWN,     Unit.ONE));
+        assertEquals("N",   AxisDirections.suggestAbbreviation("not needed",             NORTH,            SI.METRE));
+        assertEquals("S",   AxisDirections.suggestAbbreviation("not needed",             SOUTH,            SI.METRE));
+        assertEquals("E",   AxisDirections.suggestAbbreviation("not needed",             EAST,             SI.METRE));
+        assertEquals("W",   AxisDirections.suggestAbbreviation("not needed",             WEST,             SI.METRE));
+        assertEquals("NE",  AxisDirections.suggestAbbreviation("not needed",             NORTH_EAST,       SI.METRE));
+        assertEquals("NW",  AxisDirections.suggestAbbreviation("not needed",             NORTH_WEST,       SI.METRE));
+        assertEquals("SE",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_EAST,       SI.METRE));
+        assertEquals("SW",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_WEST,       SI.METRE));
+//      assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, SI.METRE));
     }
 
     /**

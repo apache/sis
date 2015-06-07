@@ -55,6 +55,7 @@ import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
@@ -405,11 +406,27 @@ final class GeodeticObjectParser extends MathTransformParser {
                 return null;
             }
         }
-        final String name = element.pullString("name");
+        String name = CharSequences.trimWhitespaces(element.pullString("name"));
         final Element orientation = element.pullVoidElement("orientation");
         final AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, mandatory);
+        /*
+         * According ISO 19162, the abbreviation should be inserted between parenthesis in the name.
+         * Example: "Easting (E)", "Longitude (L)". If we do not find an abbreviation, then we will
+         * have to guess one since abbreviation is a mandatory part of axis.
+         */
+        final String abbreviation;
+        final int start, end = name.length() - 1;
+        if (end > 1 && name.charAt(end) == ')' && (start = name.lastIndexOf('(', end-1)) >= 0) {
+            abbreviation = CharSequences.trimWhitespaces(name.substring(start + 1, end));
+            name = CharSequences.trimWhitespaces(name.substring(0, start));
+            if (name.isEmpty()) {
+                name = abbreviation;
+            }
+        } else {
+            abbreviation = referencing.suggestAbbreviation(name, direction, unit);
+        }
         try {
-            return csFactory.createCoordinateSystemAxis(parseAuthorityAndClose(element, name), name, direction, unit);
+            return csFactory.createCoordinateSystemAxis(parseAuthorityAndClose(element, name), abbreviation, direction, unit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
