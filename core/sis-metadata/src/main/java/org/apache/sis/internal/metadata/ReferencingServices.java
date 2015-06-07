@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -375,6 +376,22 @@ public class ReferencingServices extends OptionalDependency {
                                        final MathTransform    baseToDerived,
                                        final CoordinateSystem derivedCS)
     {
+        throw moduleNotFound();
+    }
+
+    /**
+     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
+     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
+     * or "λ" (Longitude). The axis name is used only in last resort.
+     *
+     * @param name      The axis name for which to suggest an abbreviation.
+     * @param direction The axis direction for which to suggest an abbreviation.
+     * @param unit      The axis unit of measurement, for disambiguation.
+     * @return A suggested abbreviation.
+     *
+     * @since 0.6
+     */
+    public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
         throw moduleNotFound();
     }
 

@@ -526,7 +526,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Returns the meaning of axis value range specified by the {@linkplain #getMinimumValue() minimum}
-     * and {@linkplain #getMaximumValue() maximum} values.
+     * and {@linkplain #getMaximumValue() maximum} values. If there is no minimum and maximum values
+     * (i.e. if those values are {@linkplain Double#NEGATIVE_INFINITY negative infinity} and
+     * {@linkplain Double#POSITIVE_INFINITY positive infinity} respectively), then this method returns {@code null}.
      *
      * @return The meaning of axis value range, or {@code null} if unspecified.
      */

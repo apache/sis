@@ -404,7 +404,7 @@ public final strictfp class HardCodedAxes {
      * and the unit is dimensionless. This constant is sometime used as a placeholder
      * for axes that were not properly defined.
      */
-    public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "?",
+    public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "z",
             AxisDirection.OTHER, Unit.ONE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
