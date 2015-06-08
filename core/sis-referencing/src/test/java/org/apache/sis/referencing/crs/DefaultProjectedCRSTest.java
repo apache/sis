@@ -135,6 +135,85 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
+     * Tests WKT 1 formatting of a pseudo-projection with explicit {@code "semi-major"} and {@code "semi-minor"}
+     * parameter values. This was a way to define the Google pseudo-projection using standard projection method
+     * name before EPSG introduced the <cite>"Popular Visualisation Pseudo Mercator"</cite> projection method.
+     * The approach tested in this method is now deprecated at least for the Google projection (while it may
+     * still be useful for other projections), but we still test it for compatibility reasons.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_WithExplicitAxisLength() throws FactoryException {
+        final ProjectedCRS crs = new GeodeticObjectBuilder()
+                .setConversionMethod("Mercator (variant A)")
+                .setConversionName("Popular Visualisation Pseudo-Mercator")
+                .setParameter("semi-major", 6378137, SI.METRE)
+                .setParameter("semi-minor", 6378137, SI.METRE)
+                .addName("WGS 84 / Pseudo-Mercator")
+                .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
+
+        assertWktEquals(Convention.WKT1,
+                "PROJCS[“WGS 84 / Pseudo-Mercator”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  PROJECTION[“Mercator_1SP”, AUTHORITY[“EPSG”, “9804”]],\n" +
+                "  PARAMETER[“semi_minor”, 6378137.0],\n" +     // Non-standard: appears because its value is different than the ellipsoid value.
+                "  PARAMETER[“latitude_of_origin”, 0.0],\n" +
+                "  PARAMETER[“central_meridian”, 0.0],\n" +
+                "  PARAMETER[“scale_factor”, 1.0],\n" +
+                "  PARAMETER[“false_easting”, 0.0],\n" +
+                "  PARAMETER[“false_northing”, 0.0],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Easting”, EAST],\n" +
+                "  AXIS[“Northing”, NORTH]]",
+                crs);
+    }
+
+    /**
+     * Tests formatting of “Equidistant Cylindrical (Spherical)” projected CRS. This one is a special case
+     * because it is simplified to an affine transform. The referencing module should be able to find the
+     * original projection parameters.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_ForEquirectangular() throws FactoryException {
+        final ProjectedCRS crs = new GeodeticObjectBuilder()
+                .setConversionMethod("Equirectangular")
+                .setConversionName("Equidistant Cylindrical (Spherical)")
+                .setParameter("False easting",  1000, SI.METRE)
+                .setParameter("False northing", 2000, SI.METRE)
+                .addName("Equidistant Cylindrical (Spherical)")
+                .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "ProjectedCRS[“Equidistant Cylindrical (Spherical)”,\n" +
+                "  BaseGeodCRS[“WGS 84”,\n" +
+                "    Datum[“World Geodetic System 1984”,\n" +
+                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    Unit[“degree”, 0.017453292519943295]],\n" +
+                "  Conversion[“Equidistant Cylindrical (Spherical)”,\n" +
+                "    Method[“Equidistant Cylindrical (Spherical)”],\n" +
+                "    Parameter[“Latitude of 1st standard parallel”, 0.0],\n" +
+                "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                "    Parameter[“False easting”, 1000.0, Unit[“metre”, 1]],\n" +
+                "    Parameter[“False northing”, 2000.0, Unit[“metre”, 1]]],\n" +
+                "  CS[“Cartesian”, 2],\n" +
+                "    Axis[“Easting (E)”, east],\n" +
+                "    Axis[“Northing (N)”, north],\n" +
+                "    Unit[“metre”, 1]]",
+                crs);
+    }
+
+    /**
      * Tests (un)marshalling of a projected coordinate reference system.
      *
      * @throws FactoryException if the CRS creation failed.
