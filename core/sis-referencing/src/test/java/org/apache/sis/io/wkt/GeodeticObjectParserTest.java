@@ -163,14 +163,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     public void testGeographicCRS() throws ParseException {
-        testGeographicCRS(0,
+        verifyGeographicCRS(0, parse(GeographicCRS.class,
                "  GEOGCS[“WGS84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                "      PRIMEM[“Greenwich”, 0.0],\n" +
                "    UNIT[“degree”, 0.017453292519943295],\n" +
                "    AXIS[“Longitude”, EAST],\n" +
-               "    AXIS[“Latitude”, NORTH]]");
+               "    AXIS[“Latitude”, NORTH]]"));
     }
 
     /**
@@ -181,14 +181,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     @DependsOnMethod("testGeographicCRS")
     public void testAxisSwapping() throws ParseException {
-        testGeographicCRS(1,
+        verifyGeographicCRS(1, parse(GeographicCRS.class,
                "  GEOGCS[“WGS84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                "      PRIMEM[“Greenwich”, 0.0],\n" +
                "    UNIT[“degree”, 0.017453292519943295],\n" +
                "    AXIS[“Latitude”, NORTH],\n" +
-               "    AXIS[“Longitude”, EAST]]");
+               "    AXIS[“Longitude”, EAST]]"));
     }
 
     /**
@@ -196,8 +196,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @param swap 1 if axes are expected to be swapped, or 0 otherwise.
      */
-    private void testGeographicCRS(final int swap, final String wkt) throws ParseException {
-        final GeographicCRS crs = parse(GeographicCRS.class, wkt);
+    private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
         assertNameAndIdentifierEqual("WGS84", 0, crs);
 
         final GeodeticDatum datum = crs.getDatum();
@@ -242,6 +241,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "  AXIS[“Northing”, NORTH]]");
 
         assertNameAndIdentifierEqual("Mercator test", 0, crs);
+        verifyGeographicCRS(0, crs.getBaseCRS());
 
         final GeodeticDatum datum = crs.getDatum();
         assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
@@ -259,8 +259,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
 
         assertEquals("Mercator (variant A)", crs.getConversionFromBase().getMethod().getName().getCode());
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
-//      assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(), STRICT);
-//      assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(), 0.1);
+        assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(), STRICT);
+        assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(), 0.1);
         assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(), STRICT);
         assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(), STRICT);
         assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(), STRICT);
