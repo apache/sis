@@ -143,6 +143,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * <p>Keys in this map are names <strong>in lower cases</strong>.
      * Values are any object that allow us to differentiate latitude from longitude.</p>
      *
+     * <p>Similar strings appear in {@link #formatTo(Formatter)} and
+     * {@code org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…)}.</p>
+     *
      * @see #isHeuristicMatchForName(String)
      */
     private static final Map<String,Object> ALIASES = new HashMap<>(12);
@@ -802,6 +805,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 } else if (name.equalsIgnoreCase("Geodetic longitude")) {
                     name = "Longitude";
                 }
+                // Note: the converse of this operation is done in
+                // org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…).
             }
         }
         /*
