@@ -33,6 +33,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.apache.sis.internal.metadata.AxisNames;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -308,8 +309,8 @@ public final strictfp class GeodeticObjectVerifier {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertNotNull("axis", E);
         assertNotNull("axis", N);
-        assertEquals("axis[0].name",         "Easting",           E.getName().getCode());
-        assertEquals("axis[1].name",         "Northing",          N.getName().getCode());
+        assertEquals("axis[0].name",         AxisNames.EASTING,   E.getName().getCode());
+        assertEquals("axis[1].name",         AxisNames.NORTHING,  N.getName().getCode());
         assertEquals("axis[0].abbreviation", "E",                 E.getAbbreviation());
         assertEquals("axis[1].abbreviation", "N",                 N.getAbbreviation());
         assertEquals("axis[0].direction",    AxisDirection.EAST,  E.getDirection());
@@ -363,14 +364,14 @@ public final strictfp class GeodeticObjectVerifier {
         final CoordinateSystemAxis longitude = cs.getAxis(1);
         assertNotNull("axis", latitude);
         assertNotNull("axis", longitude);
-        assertEquals("axis[0].name",      "Geodetic latitude",  latitude .getName().getCode());
-        assertEquals("axis[1].name",      "Geodetic longitude", longitude.getName().getCode());
-        assertEquals("axis[0].direction", AxisDirection.NORTH,  latitude .getDirection());
-        assertEquals("axis[1].direction", AxisDirection.EAST,   longitude.getDirection());
-        assertEquals("axis[0].unit",      NonSI.DEGREE_ANGLE,   latitude .getUnit());
-        assertEquals("axis[1].unit",      NonSI.DEGREE_ANGLE,   longitude.getUnit());
-        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT, isRangeMandatory);
-        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND, isRangeMandatory);
+        assertEquals("axis[0].name",       AxisNames.GEODETIC_LATITUDE,  latitude .getName().getCode());
+        assertEquals("axis[1].name",       AxisNames.GEODETIC_LONGITUDE, longitude.getName().getCode());
+        assertEquals("axis[0].direction",  AxisDirection.NORTH,          latitude .getDirection());
+        assertEquals("axis[1].direction",  AxisDirection.EAST,           longitude.getDirection());
+        assertEquals("axis[0].unit",       NonSI.DEGREE_ANGLE,           latitude .getUnit());
+        assertEquals("axis[1].unit",       NonSI.DEGREE_ANGLE,           longitude.getUnit());
+        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT,           isRangeMandatory);
+        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND,      isRangeMandatory);
     }
 
     /**

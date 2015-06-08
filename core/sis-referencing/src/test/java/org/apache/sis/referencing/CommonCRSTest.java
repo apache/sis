@@ -30,6 +30,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.test.DependsOnMethod;
@@ -142,11 +143,11 @@ public final strictfp class CommonCRSTest extends TestCase {
             final VerticalDatumType datumType;
             final String axisName, datumName;
             switch (e) {
-                case BAROMETRIC:     axisName = "Barometric altitude";    datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = "Gravity-related height"; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = "Depth";                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = "Ellipsoidal height";     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                 datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
