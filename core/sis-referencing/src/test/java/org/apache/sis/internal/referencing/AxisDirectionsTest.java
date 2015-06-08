@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.lang.reflect.Field;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -370,6 +371,7 @@ public final strictfp class AxisDirectionsTest extends TestCase {
      */
     @Test
     public void testSuggestAbbreviation() {
+        assertEquals("x",   AxisDirections.suggestAbbreviation("x",                      EAST,             SI.METRE));
         assertEquals("λ",   AxisDirections.suggestAbbreviation("Geodetic longitude",     EAST,          NonSI.DEGREE_ANGLE));
         assertEquals("φ",   AxisDirections.suggestAbbreviation("Geodetic latitude",      NORTH,         NonSI.DEGREE_ANGLE));
         assertEquals("θ",   AxisDirections.suggestAbbreviation("Spherical longitude",    EAST,          NonSI.DEGREE_ANGLE));
@@ -394,7 +396,31 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("NW",  AxisDirections.suggestAbbreviation("not needed",             NORTH_WEST,       SI.METRE));
         assertEquals("SE",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_EAST,       SI.METRE));
         assertEquals("SW",  AxisDirections.suggestAbbreviation("not needed",             SOUTH_WEST,       SI.METRE));
-//      assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, SI.METRE));
+        assertEquals("SSE", AxisDirections.suggestAbbreviation("not needed",             SOUTH_SOUTH_EAST, SI.METRE));
+        assertEquals("NNW", AxisDirections.suggestAbbreviation("not needed",             NORTH_NORTH_WEST, SI.METRE));
+        assertEquals("ENE", AxisDirections.suggestAbbreviation("not needed",             EAST_NORTH_EAST,  SI.METRE));
+    }
+
+    /**
+     * Verifies that the abbreviations used in {@link HardCodedAxes} constants are consistent with the abbreviations
+     * suggested by {@link AxisDirections#suggestAbbreviation(String, AxisDirection, Unit)}.  Note that a failure in
+     * this verification does not necessarily means that the {@code suggestAbbreviation(…)}. It could also be the
+     * hard-coded constant which need a revision, or we may decide that the different abbreviations are intended and
+     * should not be compared.
+     *
+     * @throws IllegalAccessException should never happen since we inspect only for public fields.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void verifyAbbreviationConsistency() throws IllegalAccessException {
+        for (final Field field : HardCodedAxes.class.getFields()) {
+            if (CoordinateSystemAxis.class.isAssignableFrom(field.getType())) {
+                final CoordinateSystemAxis axis = (CoordinateSystemAxis) field.get(null);
+                assertEquals(field.getName(), axis.getAbbreviation(), AxisDirections.suggestAbbreviation(
+                        axis.getName().getCode(), axis.getDirection(), axis.getUnit()));
+            }
+        }
     }
 
     /**

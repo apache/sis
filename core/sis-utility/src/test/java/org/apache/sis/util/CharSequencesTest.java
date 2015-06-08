@@ -318,6 +318,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals("NE",  camelCaseToAcronym("North-East").toString());
         assertEquals("NE",  camelCaseToAcronym("NORTH_EAST").toString());
         assertEquals("NE",  camelCaseToAcronym("northEast").toString());
+        assertEquals("SSE", camelCaseToAcronym("southSouthEast").toString());
         assertNull(camelCaseToAcronym(null));
     }
 

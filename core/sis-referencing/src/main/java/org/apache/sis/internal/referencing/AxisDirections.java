@@ -527,7 +527,7 @@ public final class AxisDirections extends Static {
     /**
      * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
      * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
-     * or "λ" (Longitude). The axis name is used only in last resort.
+     * or "λ" (Longitude).
      *
      * @param name      The axis name for which to suggest an abbreviation.
      * @param direction The axis direction for which to suggest an abbreviation.
@@ -537,6 +537,9 @@ public final class AxisDirections extends Static {
      * @since 0.6
      */
     public static String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
+        if (name.length() == 1) {
+            return name;  // Most common cases are "x", "y", "z", "t", "i" and "j".
+        }
         if (isCompass(direction)) {
             /*
              * NORTH, EAST, SOUTH, WEST and all intercardinal directions (SOUTH_SOUTH_WEST, etc.):
