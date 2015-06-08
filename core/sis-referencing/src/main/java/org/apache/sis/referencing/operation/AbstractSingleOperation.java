@@ -140,15 +140,23 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * <p>This constructor is for {@link DefaultConversion} usage only,
      * in order to create a "real" conversion from a defining conversion.</p>
+     *
+     * @param definition The defining conversion.
+     * @param sourceCRS  The source CRS.
+     * @param targetCRS  The target CRS.
+     * @param transform  The math transform, optionally with the parameters used for creating it.
+     *        Bundled in a {@code Map.Entry} as an ugly workaround for RFE #4093999 in Java bug database
+     *        ("Relax constraint on placement of this()/super() call in constructors").
      */
     AbstractSingleOperation(final SingleOperation definition,
                             final CoordinateReferenceSystem sourceCRS,
                             final CoordinateReferenceSystem targetCRS,
-                            final MathTransform transform)
+                            final Map.Entry<ParameterValueGroup,MathTransform> transform)
     {
-        super(definition, sourceCRS, targetCRS, transform);
+        super(definition, sourceCRS, targetCRS, transform.getValue());
         method = definition.getMethod();
-        parameters = getParameterValues(definition);
+        final ParameterValueGroup p = transform.getKey();
+        parameters = (p != null) ? p : getParameterValues(definition);
     }
 
     /**
@@ -337,8 +345,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * {@code null} (in conformance with {@link #parameters} contract).
      */
     private static ParameterValueGroup getParameterValues(final SingleOperation operation) {
-        return (operation instanceof AbstractSingleOperation) ?
-                ((AbstractSingleOperation) operation).parameters : operation.getParameterValues();
+        return (operation instanceof AbstractSingleOperation)
+               ? ((AbstractSingleOperation) operation).parameters   // Null if inferred from MathTransform
+               : operation.getParameterValues();
     }
 
     /**

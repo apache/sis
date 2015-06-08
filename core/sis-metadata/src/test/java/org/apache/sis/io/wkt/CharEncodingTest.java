@@ -20,6 +20,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -41,10 +42,10 @@ public final strictfp class CharEncodingTest extends TestCase {
      */
     @Test
     public void testGetAbbreviation() {
-        assertAbbreviationEquals("B", new Geographic("Geodetic latitude",    "φ"));
-        assertAbbreviationEquals("U", new Geocentric("Geocentric latitude",  "φ′"));
-        assertAbbreviationEquals("L", new Geographic("Geodetic longitude",   "λ"));
-        assertAbbreviationEquals("V", new Geocentric("Geocentric longitude", "θ"));
+        assertAbbreviationEquals("B", new Geographic(AxisNames.GEODETIC_LATITUDE,   "φ"));
+        assertAbbreviationEquals("U", new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "φ′"));
+        assertAbbreviationEquals("L", new Geographic(AxisNames.GEODETIC_LONGITUDE,  "λ"));
+        assertAbbreviationEquals("V", new Geocentric(AxisNames.SPHERICAL_LONGITUDE, "θ"));
     }
 
     /**
