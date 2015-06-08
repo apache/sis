@@ -27,6 +27,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.DependsOnMethod;
@@ -124,6 +125,15 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
             final AxisDirection direction, final Unit<?> unit, final CoordinateSystemAxis axis)
     {
         assertAxisEquals(name, abbreviation, direction, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, unit, null, axis);
+    }
+
+    /**
+     * Verifies that the axes of the coordinate system are those of a projected CRS, in metres.
+     */
+    private static void verifyProjectedCS(final CartesianCS cs) {
+        assertEquals("dimension", 2, cs.getDimension());
+        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  SI.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, SI.METRE, cs.getAxis(1));
     }
 
     /**
@@ -252,23 +262,24 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     public void testProjectedCRS() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“Mercator test”,\n" +
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0],\n" +
-               "    UNIT[“degree”, 0.017453292519943295],\n" +
-               "    AXIS[“Longitude”, EAST],\n" +
-               "    AXIS[“Latitude”, NORTH]],\n" +
-               "  PROJECTION[“Mercator_1SP”],\n" +
-               "  PARAMETER[“central_meridian”, -20.0],\n" +
-               "  PARAMETER[“scale_factor”, 1.0],\n" +
-               "  PARAMETER[“false_easting”, 500000.0],\n" +
-               "  PARAMETER[“false_northing”, 0.0],\n" +
-               "  UNIT[“metre”, 1.0],\n" +
-               "  AXIS[“Easting”, EAST],\n" +
-               "  AXIS[“Northing”, NORTH]]");
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  PROJECTION[“Mercator_1SP”],\n" +
+                "  PARAMETER[“central_meridian”, -20.0],\n" +
+                "  PARAMETER[“scale_factor”, 1.0],\n" +
+                "  PARAMETER[“false_easting”, 500000.0],\n" +
+                "  PARAMETER[“false_northing”, 0.0],\n" +
+                "  UNIT[“metre”, 1.0],\n" +
+                "  AXIS[“Easting”, EAST],\n" +
+                "  AXIS[“Northing”, NORTH]]");
 
         assertNameAndIdentifierEqual("Mercator test", 0, crs);
+        verifyProjectedCS(crs.getCoordinateSystem());
         verifyGeographicCRS(0, crs.getBaseCRS());
 
         final GeodeticDatum datum = crs.getDatum();
@@ -279,11 +290,6 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
         assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
         assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
-
-        final CartesianCS cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
-        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  SI.METRE, cs.getAxis(0));
-        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, SI.METRE, cs.getAxis(1));
 
         assertEquals("Mercator (variant A)", crs.getConversionFromBase().getMethod().getName().getCode());
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
@@ -332,7 +338,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
          * This is a violation of both OGC 01-009 and ISO 19162 standards, but this is what GDAL does.
          * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
          */
-        wkt = wkt.replace("2.5969213", "2.33722917");
+        wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
         setConvention(Convention.WKT1_COMMON_UNITS, true);
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
@@ -346,7 +352,63 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Verifies some invariant of the CRS parsed by {@link #testNonGreenwichMeridian()}.
+     * Tests the parsing of a projected CRS using parameters in grades instead than degrees.
+     * The grad units are also used for the prime meridian.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod({"testNonGreenwichMeridian", "testProjectedCRS"})
+    public void testGradUnitInParameters() throws ParseException {
+        String wkt = "PROJCS[“NTF (Paris) / Lambert zone II”," +
+                     "  GEOGCS[“NTF (Paris)”," +
+                     "    DATUM[“Nouvelle Triangulation Française (Paris)”," +
+                     "      SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]," +
+                     "      TOWGS84[-168,-60,320,0,0,0,0]]," +
+                     "    PRIMEM[“Paris”, 2.5969213, AUTHORITY[“EPSG”, “8903”]]," +  // In grads.
+                     "    UNIT[“grad”, 0.01570796326794897]]," +
+                     "  PROJECTION[“Lambert Conformal Conic (1SP)”]," +  // Intentional swapping of "Conformal" and "Conic".
+                     "  PARAMETER[“latitude_of_origin”, 52.0]," +        // In grads.
+                     "  PARAMETER[“scale_factor”, 0.99987742]," +
+                     "  PARAMETER[“false_easting”, 600000]," +
+                     "  PARAMETER[“false_northing”, 2200000]," +
+                     "  UNIT[“metre”,1]]";
+
+        ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
+        assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
+        verifyProjectedCS(crs.getCoordinateSystem());
+        PrimeMeridian pm = verifyNTF(crs.getDatum());
+        assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
+        ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
+        assertEquals("angularUnit", NonSI.GRADE, param.getUnit());
+        assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
+        /*
+         * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements.
+         * See the comment in testNonGreenwichMeridian for a discussion. The new aspect
+         * tested by this method is that the unit should be ignored for the parameters
+         * in addition to the prime meridian.
+         */
+        wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
+        wkt = wkt.replace("52.0", "46.8");              // Convert unit in “latitude_of_origin” parameter.
+        setConvention(Convention.WKT1_COMMON_UNITS, true);
+        crs = parse(ProjectedCRS.class, wkt);
+        assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
+        verifyProjectedCS(crs.getCoordinateSystem());
+        pm = verifyNTF(crs.getDatum());
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        param = verifyNTF(crs.getConversionFromBase().getParameterValues());
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, param.getUnit());
+        assertEquals("latitude_of_origin",  46.8, param.doubleValue(), STRICT);
+    }
+
+    /**
+     * Verifies the properties of a datum which is expected to be “Nouvelle Triangulation Française (Paris)”.
+     * This is used by the methods in this class which test a CRS using less frequently used units and prime
+     * meridian.
+     *
+     * @return The prime meridian, to be verified by the caller because the unit of measurement depends on the test.
      */
     private static PrimeMeridian verifyNTF(final GeodeticDatum datum) {
         assertNameAndIdentifierEqual("Nouvelle Triangulation Française (Paris)", 0, datum);
@@ -359,6 +421,23 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final PrimeMeridian pm = datum.getPrimeMeridian();
         assertNameAndIdentifierEqual("Paris", 8903, pm);
         return pm;
+    }
+
+    /**
+     * Verifies the parameter values for a projected CRS which is expected to be “NTF (Paris) / Lambert zone II”.
+     * This is used by the methods in this class which test a CRS using less frequently used units and prime meridian.
+     *
+     * @return The latitude of origin, to be verified by the caller because the unit of measurement depends on the test.
+     */
+    private static ParameterValue<?> verifyNTF(final ParameterValueGroup param) {
+        assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
+        assertEquals("semi_major",     6378249.2, param.parameter("semi_major"      ).doubleValue(), STRICT);
+        assertEquals("semi_minor",     6356515.0, param.parameter("semi_minor"      ).doubleValue(), 1E-12);
+        assertEquals("central_meridian",     0.0, param.parameter("central_meridian").doubleValue(), STRICT);
+        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(), STRICT);
+        assertEquals("false_easting",   600000.0, param.parameter("false_easting"   ).doubleValue(), STRICT);
+        assertEquals("false_northing", 2200000.0, param.parameter("false_northing"  ).doubleValue(), STRICT);
+        return param.parameter("latitude_of_origin");
     }
 
     /**
@@ -462,5 +541,67 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("direction",    AxisDirection.NORTH,  axis.getDirection());
         assertEquals("minimumValue", -secondsIn90,         axis.getMinimumValue(), 1E-9);
         assertEquals("maximumValue", +secondsIn90,         axis.getMaximumValue(), 1E-9);
+    }
+
+    /**
+     * Tests parsing a WKT with a missing Geographic CRS name.
+     * This should be considered invalid, but happen in practice.
+     *
+     * <p>The WKT tested in this method contains also some other oddities compared to the usual WKT:</p>
+     * <ul>
+     *   <li>The prime meridian is declared in the {@code "central_meridian"} projection parameter instead
+     *       than in the {@code PRIMEM[…]} element.</li>
+     *   <li>Some elements are not in the usual order.</li>
+     * </ul>
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testWithMissingName() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+                "PROJCS[“FRANCE/NTF/Lambert III”," +
+                "GEOGCS[“”," + // Missing name (the purpose of this test).
+                "DATUM[“NTF=GR3DF97A”,TOWGS84[-168, -60, 320, 0, 0, 0, 0] ," + // Intentionally misplaced coma.
+                "SPHEROID[“Clarke 1880 (IGN)”,6378249.2,293.4660212936269]]," +
+                "PRIMEM[“Greenwich”,0],UNIT[“Degrees”,0.0174532925199433]," +
+                "AXIS[“Long”,East],AXIS[“Lat”,North]]," +
+                "PROJECTION[“Lambert_Conformal_Conic_1SP”]," +
+                "PARAMETER[“latitude_of_origin”,44.1]," +
+                "PARAMETER[“central_meridian”,2.33722917]," +   // Paris prime meridian.
+                "PARAMETER[“scale_factor”,0.999877499]," +
+                "PARAMETER[“false_easting”,600000]," +
+                "PARAMETER[“false_northing”,200000]," +
+                "UNIT[“Meter”,1]," +
+                "AXIS[“Easting”,East],AXIS[“Northing”,North]]");
+
+        assertNameAndIdentifierEqual("FRANCE/NTF/Lambert III", 0, crs);
+        verifyProjectedCS(crs.getCoordinateSystem());
+        final GeographicCRS geoCRS = crs.getBaseCRS();
+        assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, geoCRS);    // Inherited the datum name.
+
+        final GeodeticDatum datum = geoCRS.getDatum();
+        assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, datum);
+        assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("Clarke 1880 (IGN)", 0, ellipsoid);
+        assertEquals("semiMajor", 6378249.2, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 293.4660212936269, ellipsoid.getInverseFlattening(), STRICT);
+
+        final EllipsoidalCS cs = geoCRS.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertLongitudeAxisEquals(cs.getAxis(0));
+        assertLatitudeAxisEquals (cs.getAxis(1));
+
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
+        assertEquals("semi_major",        6378249.2, param.parameter("semi_major"        ).doubleValue(), STRICT);
+        assertEquals("semi_minor",        6356515.0, param.parameter("semi_minor"        ).doubleValue(), 1E-12);
+        assertEquals("latitude_of_origin",     44.1, param.parameter("latitude_of_origin").doubleValue(), STRICT);
+        assertEquals("central_meridian", 2.33722917, param.parameter("central_meridian"  ).doubleValue(), STRICT);
+        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(), STRICT);
+        assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(), STRICT);
+        assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(), STRICT);
     }
 }
