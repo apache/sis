@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -204,5 +204,45 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);
+    }
+
+    /**
+     * Tests WKT 2 formatting on a CRS using a prime meridian other than Greenwich.
+     *
+     * <p>This CRS used in this test is equivalent to {@code EPSG:4807} except for axis order,
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades.</p>
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_ForNonGreenwich() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "  Datum[“Nouvelle Triangulation Francaise”,\n" +           // Formatter should replace "ç" by "c".
+                "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "  CS[“ellipsoidal”, 2],\n" +
+                "    Axis[“Longitude (L)”, east],\n" +                      // See method javadoc.
+                "    Axis[“Latitude (B)”, north],\n" +
+                "    Unit[“grade”, 0.015707963267948967]]",
+                HardCodedCRS.NTF);
+    }
+
+    /**
+     * Tests WKT 1 formatting using {@link Convention#WKT1_COMMON_UNITS}. That convention ignores the unit of
+     * measurement in {@code PRIMEM} element, and rather unconditionally interpret the angle unit as degrees.
+     * This is a violation of OGC 01-009 and ISO 19162 standards, but is required for compatibility with GDAL.
+     */
+    @Test
+    @DependsOnMethod("testWKT2_ForNonGreenwich")
+    public void testWKT1_WithCommonUnits() {
+        assertWktEquals(Convention.WKT1_COMMON_UNITS,
+                "GEOGCS[“NTF (Paris)”,\n" +
+                "  DATUM[“Nouvelle Triangulation Francaise”,\n" +   // Formatter should replace "ç" by "c".
+                "    SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "    PRIMEM[“Paris”, 2.33722917],\n" +              // Would be 2.5969213 in standard-compliant WKT.
+                "  UNIT[“grade”, 0.015707963267948967],\n" +
+                "  AXIS[“Longitude”, EAST],\n" +
+                "  AXIS[“Latitude”, NORTH]]",
+                HardCodedCRS.NTF);
     }
 }

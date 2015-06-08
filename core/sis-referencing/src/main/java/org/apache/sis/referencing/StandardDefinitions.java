@@ -34,6 +34,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -277,7 +278,7 @@ final class StandardDefinitions {
         final AxisDirection dir;
         switch (code) {
             case 108:  // Used in Ellipsoidal 3D.
-            case 106:  name = "Geodetic latitude";
+            case 106:  name = AxisNames.GEODETIC_LATITUDE;
                        abrv = "φ";
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.NORTH;
@@ -286,7 +287,7 @@ final class StandardDefinitions {
                        rm   = RangeMeaning.EXACT;
                        break;
             case 109:  // Used in Ellipsoidal 3D.
-            case 107:  name = "Geodetic longitude";
+            case 107:  name = AxisNames.GEODETIC_LONGITUDE;
                        abrv = "λ";
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.EAST;
@@ -294,27 +295,27 @@ final class StandardDefinitions {
                        max  = Longitude.MAX_VALUE;
                        rm   = RangeMeaning.WRAPAROUND;
                        break;
-            case 110:  name = "Ellipsoidal height";
+            case 110:  name = AxisNames.ELLIPSOIDAL_HEIGHT;
                        abrv = "h";
                        dir  = AxisDirection.UP;
                        break;
-            case 114:  name = "Gravity-related height";
+            case 114:  name = AxisNames.GRAVITY_RELATED_HEIGHT;
                        abrv = "H";
                        dir  = AxisDirection.UP;
                        break;
-            case 113:  name = "Depth";
+            case 113:  name = AxisNames.DEPTH;
                        abrv = "D";
                        dir  = AxisDirection.DOWN;
                        break;
-            case 115:  name = "Geocentric X";
+            case 115:  name = AxisNames.GEOCENTRIC_X;
                        abrv = "X";
                        dir  = AxisDirection.GEOCENTRIC_X;
                        break;
-            case 116:  name = "Geocentric Y";
+            case 116:  name = AxisNames.GEOCENTRIC_Y;
                        abrv = "Y";
                        dir  = AxisDirection.GEOCENTRIC_Y;
                        break;
-            case 117:  name = "Geocentric Z";
+            case 117:  name = AxisNames.GEOCENTRIC_Z;
                        abrv = "Z";
                        dir  = AxisDirection.GEOCENTRIC_Z;
                        break;

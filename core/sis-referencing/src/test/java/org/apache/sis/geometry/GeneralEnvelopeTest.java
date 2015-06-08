@@ -18,6 +18,7 @@ package org.apache.sis.geometry;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -446,7 +447,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalArgumentException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 3, -5, -8, 2);
@@ -467,7 +468,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalArgumentException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 2, -5, 3, 2);
@@ -494,7 +495,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         } catch (IllegalStateException ex) {
             // This is the expected exception.
             final String message = ex.getMessage();
-            assertTrue(message, message.contains("Geodetic latitude"));
+            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
         }
         /*
          * Verify that the envelope values are unchanged.

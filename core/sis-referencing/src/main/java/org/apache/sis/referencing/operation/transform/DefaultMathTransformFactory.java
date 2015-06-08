@@ -469,6 +469,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * The {@code OperationMethod} instance used by this constructor can be obtained by a call to
      * {@link #getLastMethodUsed()}.
      *
+     * <div class="section">Modification of given parameters</div>
+     * If this method needs to set the values of {@code "semi_major"} and {@code "semi_minor"} parameters,
+     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for
+     * allowing the caller to get back the complete parameter values.
+     * However this method only fills missing values, it never modify existing values.
+     *
      * @param  baseCRS    The source coordinate reference system.
      * @param  parameters The parameter values for the transform.
      * @param  derivedCS  The target coordinate system.

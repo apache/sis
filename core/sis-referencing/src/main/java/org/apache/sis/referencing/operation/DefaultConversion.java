@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.AbstractMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.converter.ConversionException;
@@ -386,11 +387,19 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
 
     /**
      * Creates the math transform to be given to the sub-class constructor.
-     * This method is a workaround for RFE #4093999 in Sun's bug database
+     * This method is a workaround for RFE #4093999 in Java bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
+     *
+     * <p>This method may also return the parameters used for creating the math transform because those parameters
+     * may have been augmented with the semi-major and semi-minor axis lengths.  Since those parameter values have
+     * been set on a clone of {@code definition.getParameterValues()}, those values are lost (ignoring MathTransform
+     * internal) if we do not return them here.</p>
+     *
+     * @return The math transform, optionally with the parameters used for creating it.
+     *         Bundled in a {@code Map.Entry} as an ugly workaround for RFE #4093999.
      */
     @Workaround(library="JDK", version="1.7")
-    private static MathTransform createMathTransform(
+    private static Map.Entry<ParameterValueGroup,MathTransform> createMathTransform(
             final Conversion definition,
             final CoordinateReferenceSystem sourceCRS,
             final CoordinateReferenceSystem targetCRS,
@@ -398,6 +407,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     {
         final int interpDim = ReferencingUtilities.getDimension(getInterpolationCRS(definition));
         MathTransform mt = definition.getMathTransform();
+        final Map.Entry<ParameterValueGroup,MathTransform> pair;
         if (mt == null) {
             /*
              * If the user did not specified explicitely a MathTransform, we will need to create it
@@ -412,7 +422,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
             }
             mt = factory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+            pair = new AbstractMap.SimpleEntry<>(parameters, mt);
         } else {
+            pair = new AbstractMap.SimpleEntry<>(null, mt);
             /*
              * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
              * If this conversion is a defining conversion (which is usually the case when creating a new
@@ -434,13 +446,15 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  */
                 mt = swapAndScaleAxes(mt, sourceCRS, mtSource, interpDim, true,  factory);
                 mt = swapAndScaleAxes(mt, mtTarget, targetCRS, interpDim, false, factory);
-                return mt;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
+                pair.setValue(mt);
+                return pair;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
             }
         }
         if (interpDim != 0) {
             mt = factory.createPassThroughTransform(interpDim, mt, 0);
         }
-        return mt;
+        pair.setValue(mt);
+        return pair;
     }
 
     /**
