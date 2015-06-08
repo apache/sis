@@ -22,6 +22,7 @@ import javax.measure.unit.Unit;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
@@ -55,11 +56,13 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     private static final String XML_FILE = "NTF.xml";
 
     /**
-     * Creates the "NTF (Paris) / Lambert zone II" CRS.
+     * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grades,
+     * but the axes can be in degrees or in grades depending if the {@code baseCRS} argument is
+     * {@link HardCodedCRS.NTF_NORMALIZED_AXES} or {@link HardCodedCRS.NTF} respectively.
      *
      * @see HardCodedCRS#NTF
      */
-    private static ProjectedCRS create() throws FactoryException {
+    private static ProjectedCRS create(final GeographicCRS baseCRS) throws FactoryException {
         return new GeodeticObjectBuilder()
                 .setConversionMethod("Lambert Conic Conformal (1SP)")
                 .setConversionName("Lambert zone II")
@@ -70,7 +73,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 .setCodeSpace(Citations.EPSG, Constants.EPSG)
                 .addName("NTF (Paris) / Lambert zone II")
                 .addIdentifier("27572")
-                .createProjectedCRS(HardCodedCRS.NTF, HardCodedCS.PROJECTED);
+                .createProjectedCRS(baseCRS, HardCodedCS.PROJECTED);
     }
 
     /**
@@ -80,7 +83,40 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      */
     @Test
     public void testWKT1() throws FactoryException {
-        final ProjectedCRS crs = create();
+        final ProjectedCRS crs = create(HardCodedCRS.NTF);
+        assertWktEquals(Convention.WKT1,
+                "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
+                "  GEOGCS[“NTF (Paris)”,\n" +
+                "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
+                "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213],\n" +
+                "    UNIT[“grade”, 0.015707963267948967],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],\n" +
+                "  PARAMETER[“latitude_of_origin”, 52.0],\n" +
+                "  PARAMETER[“central_meridian”, 0.0],\n" +
+                "  PARAMETER[“scale_factor”, 0.99987742],\n" +
+                "  PARAMETER[“false_easting”, 600000.0],\n" +
+                "  PARAMETER[“false_northing”, 2200000.0],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Easting”, EAST],\n" +
+                "  AXIS[“Northing”, NORTH],\n" +
+                "  AUTHORITY[“EPSG”, “27572”]]",
+                crs);
+    }
+
+    /**
+     * Tests WKT 1 formatting with a somewhat convolved case where the units of the prime meridian is not
+     * the same than the unit of axes. Since the axis units is what we write in the {@code UNIT[…]} element,
+     * the WKT formatter need to convert the unit of prime meridian and all parameter angular values.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_WithMixedUnits() throws FactoryException {
+        final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         Validators.validate(crs);   // Opportunist check.
         assertWktEquals(Convention.WKT1,
                 "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
@@ -105,14 +141,15 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
-     * Tests WKT 2 formatting.
+     * Tests WKT 2 formatting. Contrarily to the WKT 1 formatting, in this case it does not matter
+     * if we mix the units of measurement because the unit is declared for each parameter and axis.
      *
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT2() throws FactoryException {
-        final ProjectedCRS crs = create();
+        final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
@@ -131,6 +168,85 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Axis[“Northing (N)”, north, Order[2]],\n" +
                 "    LengthUnit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
+                crs);
+    }
+
+    /**
+     * Tests WKT 1 formatting of a pseudo-projection with explicit {@code "semi-major"} and {@code "semi-minor"}
+     * parameter values. This was a way to define the Google pseudo-projection using standard projection method
+     * name before EPSG introduced the <cite>"Popular Visualisation Pseudo Mercator"</cite> projection method.
+     * The approach tested in this method is now deprecated at least for the Google projection (while it may
+     * still be useful for other projections), but we still test it for compatibility reasons.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_WithExplicitAxisLength() throws FactoryException {
+        final ProjectedCRS crs = new GeodeticObjectBuilder()
+                .setConversionMethod("Mercator (variant A)")
+                .setConversionName("Popular Visualisation Pseudo-Mercator")
+                .setParameter("semi-major", 6378137, SI.METRE)
+                .setParameter("semi-minor", 6378137, SI.METRE)
+                .addName("WGS 84 / Pseudo-Mercator")
+                .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
+
+        assertWktEquals(Convention.WKT1,
+                "PROJCS[“WGS 84 / Pseudo-Mercator”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  PROJECTION[“Mercator_1SP”, AUTHORITY[“EPSG”, “9804”]],\n" +
+                "  PARAMETER[“semi_minor”, 6378137.0],\n" +     // Non-standard: appears because its value is different than the ellipsoid value.
+                "  PARAMETER[“latitude_of_origin”, 0.0],\n" +
+                "  PARAMETER[“central_meridian”, 0.0],\n" +
+                "  PARAMETER[“scale_factor”, 1.0],\n" +
+                "  PARAMETER[“false_easting”, 0.0],\n" +
+                "  PARAMETER[“false_northing”, 0.0],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Easting”, EAST],\n" +
+                "  AXIS[“Northing”, NORTH]]",
+                crs);
+    }
+
+    /**
+     * Tests formatting of “Equidistant Cylindrical (Spherical)” projected CRS. This one is a special case
+     * because it is simplified to an affine transform. The referencing module should be able to find the
+     * original projection parameters.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_ForEquirectangular() throws FactoryException {
+        final ProjectedCRS crs = new GeodeticObjectBuilder()
+                .setConversionMethod("Equirectangular")
+                .setConversionName("Equidistant Cylindrical (Spherical)")
+                .setParameter("False easting",  1000, SI.METRE)
+                .setParameter("False northing", 2000, SI.METRE)
+                .addName("Equidistant Cylindrical (Spherical)")
+                .createProjectedCRS(HardCodedCRS.WGS84, HardCodedCS.PROJECTED);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "ProjectedCRS[“Equidistant Cylindrical (Spherical)”,\n" +
+                "  BaseGeodCRS[“WGS 84”,\n" +
+                "    Datum[“World Geodetic System 1984”,\n" +
+                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    Unit[“degree”, 0.017453292519943295]],\n" +
+                "  Conversion[“Equidistant Cylindrical (Spherical)”,\n" +
+                "    Method[“Equidistant Cylindrical (Spherical)”],\n" +
+                "    Parameter[“Latitude of 1st standard parallel”, 0.0],\n" +
+                "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                "    Parameter[“False easting”, 1000.0, Unit[“metre”, 1]],\n" +
+                "    Parameter[“False northing”, 2000.0, Unit[“metre”, 1]]],\n" +
+                "  CS[“Cartesian”, 2],\n" +
+                "    Axis[“Easting (E)”, east],\n" +
+                "    Axis[“Northing (N)”, north],\n" +
+                "    Unit[“metre”, 1]]",
                 crs);
     }
 
