@@ -114,7 +114,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * @return A pseudo-conversion performing a longitude rotation.
      */
     public static DefaultConversion createLongitudeRotation(final boolean useGreenwich) {
-        return createLongitudeRotation(HardCodedCRS.NTF,
+        return createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
                 createParisCRS(false, HardCodedCS.GEODETIC_2D, useGreenwich), null);
     }
 
@@ -303,7 +303,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
     @Test
     @DependsOnMethod("testDefiningConversion")
     public void testWithInterpolationCRS() throws FactoryException {
-        DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF,
+        DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
                 createParisCRS(false, HardCodedCS.GEODETIC_2D, true), HardCodedCRS.TIME);
         assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
                 1, 0, 0, 0,
@@ -334,7 +334,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final DefaultConversion op = createLongitudeRotation(true);
         try {
-            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF, factory);
+            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, factory);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -342,7 +342,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
             assertTrue(message, message.contains("Nouvelle Triangulation Française"));
         }
         try {
-            op.specialize(Conversion.class, HardCodedCRS.NTF, HardCodedCRS.WGS84, factory);
+            op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, factory);
             fail("Should not have accepted to change the geodetic datum.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
