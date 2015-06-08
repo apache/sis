@@ -50,6 +50,7 @@ import org.opengis.referencing.operation.*;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -415,10 +416,10 @@ final class GeodeticObjectParser extends MathTransformParser {
              * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
              * method performs this removal, so we apply the reverse operation here.
              */
-            if (name.equalsIgnoreCase("Latitude") || name.equalsIgnoreCase("lat")) {
-                name = "Geodetic latitude";
-            } else if (name.equalsIgnoreCase("Longitude") || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
-                name = "Geodetic longitude";
+            if (name.equalsIgnoreCase(AxisNames.LATITUDE) || name.equalsIgnoreCase("lat")) {
+                name = AxisNames.GEODETIC_LATITUDE;
+            } else if (name.equalsIgnoreCase(AxisNames.LONGITUDE) || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
+                name = AxisNames.GEODETIC_LONGITUDE;
             }
         }
         final Element orientation = element.pullVoidElement("orientation");
@@ -449,10 +450,10 @@ final class GeodeticObjectParser extends MathTransformParser {
     /**
      * Creates an axis with the same name than the abbreviation.
      */
-    private CoordinateSystemAxis createAxis(final String abbreviation,
+    private CoordinateSystemAxis createAxis(final String name, final String abbreviation,
             final AxisDirection direction, final Unit<?> unit) throws FactoryException
     {
-        return csFactory.createCoordinateSystemAxis(singletonMap(IdentifiedObject.NAME_KEY, abbreviation),
+        return csFactory.createCoordinateSystemAxis(singletonMap(IdentifiedObject.NAME_KEY, name),
                 abbreviation, direction, unit);
     }
 
@@ -767,7 +768,20 @@ final class GeodeticObjectParser extends MathTransformParser {
         CoordinateSystemAxis axis       = parseAxis(element, false, linearUnit, false);
         try {
             if (axis == null || isAxisIgnored) {
-                axis = createAxis("h", AxisDirection.UP, linearUnit);
+                String sn = "Height", abbreviation = "h";
+                AxisDirection direction = AxisDirection.UP;
+                final VerticalDatumType type = datum.getVerticalDatumType();
+                if (VerticalDatumType.GEOIDAL.equals(type)) {
+                    sn = AxisNames.GRAVITY_RELATED_HEIGHT;
+                    abbreviation = "H";
+                } else if (VerticalDatumType.DEPTH.equals(type)) {
+                    sn = AxisNames.DEPTH;
+                    abbreviation = "D";
+                    direction = AxisDirection.DOWN;
+                } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(type)) {
+                    sn = AxisNames.ELLIPSOIDAL_HEIGHT;
+                }
+                axis = createAxis(sn, abbreviation, direction, linearUnit);
             }
             return crsFactory.createVerticalCRS(parseAuthorityAndClose(element, name), datum,
                     csFactory.createVerticalCS(singletonMap("name", name), axis));
@@ -791,7 +805,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         CoordinateSystemAxis axis     = parseAxis(element, false, timeUnit, false);
         try {
             if (axis == null || isAxisIgnored) {
-                axis = createAxis("t", AxisDirection.UP, timeUnit);
+                axis = createAxis("Time", "t", AxisDirection.FUTURE, timeUnit);
             }
             return crsFactory.createTemporalCRS(parseAuthorityAndClose(element, name), datum,
                     csFactory.createTimeCS(singletonMap("name", name), axis));
@@ -832,8 +846,8 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, true, angularUnit, true);
             }
             if (axis0 == null || isAxisIgnored) {
-                axis0 = createAxis("λ", AxisDirection.EAST,  angularUnit);
-                axis1 = createAxis("φ", AxisDirection.NORTH, angularUnit);
+                axis0 = createAxis(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  angularUnit);
+                axis1 = createAxis(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, angularUnit);
             }
             final Map<String,?> properties = parseAuthorityAndClose(element, name);
             return crsFactory.createGeographicCRS(properties, datum,
@@ -871,8 +885,8 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, false, linearUnit, true);
             }
             if (axis0 == null || isAxisIgnored) {
-                axis0 = createAxis("x", AxisDirection.EAST,  linearUnit);
-                axis1 = createAxis("y", AxisDirection.NORTH, linearUnit);
+                axis0 = createAxis(AxisNames.EASTING,  "E", AxisDirection.EAST,  linearUnit);
+                axis1 = createAxis(AxisNames.NORTHING, "N", AxisDirection.NORTH, linearUnit);
             }
             final Map<String,?> properties = parseAuthorityAndClose(element, name);
             return crsFactory.createProjectedCRS(properties, geoCRS, conversion,

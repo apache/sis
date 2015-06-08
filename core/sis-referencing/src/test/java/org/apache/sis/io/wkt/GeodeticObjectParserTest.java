@@ -28,6 +28,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -96,7 +97,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLongitudeAxisEquals(final CoordinateSystemAxis axis) {
-        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, axis);
+        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, axis);
     }
 
     /**
@@ -105,7 +106,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * because {@link GeodeticObjectParser} should have done the replacement.
      */
     private static void assertLatitudeAxisEquals(final CoordinateSystemAxis axis) {
-        assertAxisEquals("Geodetic latitude", "φ", AxisDirection.NORTH, -90, +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, axis);
+        assertAxisEquals(AxisNames.GEODETIC_LATITUDE, "φ", AxisDirection.NORTH, -90, +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, axis);
     }
 
     /**
@@ -151,9 +152,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         // Verify that the OGC 01-009 axes have been relaced by ISO 19111 axes.
         final CartesianCS cs = (CartesianCS) crs.getCoordinateSystem();
         assertEquals("dimension", 3, cs.getDimension());
-        assertUnboundedAxisEquals("Geocentric X", "X", AxisDirection.GEOCENTRIC_X, SI.METRE, cs.getAxis(0));
-        assertUnboundedAxisEquals("Geocentric Y", "Y", AxisDirection.GEOCENTRIC_Y, SI.METRE, cs.getAxis(1));
-        assertUnboundedAxisEquals("Geocentric Z", "Z", AxisDirection.GEOCENTRIC_Z, SI.METRE, cs.getAxis(2));
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_X, "X", AxisDirection.GEOCENTRIC_X, SI.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Y, "Y", AxisDirection.GEOCENTRIC_Y, SI.METRE, cs.getAxis(1));
+        assertUnboundedAxisEquals(AxisNames.GEOCENTRIC_Z, "Z", AxisDirection.GEOCENTRIC_Z, SI.METRE, cs.getAxis(2));
     }
 
     /**
@@ -164,7 +165,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     public void testGeographicCRS() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS84”,\n" +
+               "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                "      PRIMEM[“Greenwich”, 0.0],\n" +
@@ -182,7 +183,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @DependsOnMethod("testGeographicCRS")
     public void testAxisSwapping() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS84”,\n" +
+               "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                "      PRIMEM[“Greenwich”, 0.0],\n" +
@@ -192,12 +193,29 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a geographic CRS from a WKT 1 string that does not declare explicitly the axes.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicCRS")
+    public void testImplicitAxes() throws ParseException {
+        verifyGeographicCRS(0, parse(GeographicCRS.class,
+               "  GEOGCS[“WGS 84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295]]"));
+    }
+
+    /**
      * Implementation of {@link #testGeographicCRS()} and {@link #testAxisSwapping()}.
+     * This test expects no {@code AUTHORITY} element on any component.
      *
      * @param swap 1 if axes are expected to be swapped, or 0 otherwise.
      */
     private void verifyGeographicCRS(final int swap, final GeographicCRS crs) throws ParseException {
-        assertNameAndIdentifierEqual("WGS84", 0, crs);
+        assertNameAndIdentifierEqual("WGS 84", 0, crs);
 
         final GeodeticDatum datum = crs.getDatum();
         assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
@@ -224,7 +242,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     public void testProjectedCRS() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“Mercator test”,\n" +
-               "  GEOGCS[“WGS84”,\n" +
+               "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
                "      PRIMEM[“Greenwich”, 0.0],\n" +
@@ -298,15 +316,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Iterator<CoordinateReferenceSystem> components = crs.getComponents().iterator();
 
         // GeographicCRS child
-        final GeographicCRS geoCRS    = (GeographicCRS) components.next();
-        final GeodeticDatum geoDatum  = geoCRS.getDatum();
-        final Ellipsoid     ellipsoid = geoDatum.getEllipsoid();
-        assertNameAndIdentifierEqual("WGS 84", 0, geoCRS);
-        assertNameAndIdentifierEqual("World Geodetic System 1984", 0, geoDatum);
-        assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
-        assertNameAndIdentifierEqual("Greenwich", 0, geoDatum.getPrimeMeridian());
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+        verifyGeographicCRS(0, (GeographicCRS) components.next());
 
         // VerticalCRS child
         final VerticalCRS vertCRS = (VerticalCRS) components.next();
