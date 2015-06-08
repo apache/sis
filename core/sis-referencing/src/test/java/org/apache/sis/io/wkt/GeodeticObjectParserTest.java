@@ -27,6 +27,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -47,6 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     MathTransformParserTest.class,
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
+    org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
@@ -89,17 +91,21 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Asserts the given axis is a longitude axis of the given name.
+     * Asserts that the given axis is a longitude axis. This method expects the name to be
+     * <cite>"Geodetic longitude"</cite> even if the WKT string contained a different name,
+     * because {@link GeodeticObjectParser} should have done the replacement.
      */
-    private static void assertLongitudeAxisEquals(final String name, final CoordinateSystemAxis axis) {
-        assertAxisEquals(name, "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, axis);
+    private static void assertLongitudeAxisEquals(final CoordinateSystemAxis axis) {
+        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, axis);
     }
 
     /**
-     * Asserts the given axis is a latitude axis of the given name.
+     * Asserts that the given axis is a latitude axis. This method expects the name to be
+     * <cite>"Geodetic latitude"</cite> even if the WKT string contained a different name,
+     * because {@link GeodeticObjectParser} should have done the replacement.
      */
-    private static void assertLatitudeAxisEquals(final String name, final CoordinateSystemAxis axis) {
-        assertAxisEquals(name, "φ", AxisDirection.NORTH, -90, +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, axis);
+    private static void assertLatitudeAxisEquals(final CoordinateSystemAxis axis) {
+        assertAxisEquals("Geodetic latitude", "φ", AxisDirection.NORTH, -90, +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, axis);
     }
 
     /**
@@ -151,11 +157,123 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a geographic CRS from a WKT 1 string using (longitude, latitude) axis order.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testGeographicCRS() throws ParseException {
+        testGeographicCRS(0,
+               "  GEOGCS[“WGS84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Longitude”, EAST],\n" +
+               "    AXIS[“Latitude”, NORTH]]");
+    }
+
+    /**
+     * Tests the parsing of a geographic CRS from a WKT 1 string using (latitude, longitude) axis order.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicCRS")
+    public void testAxisSwapping() throws ParseException {
+        testGeographicCRS(1,
+               "  GEOGCS[“WGS84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Latitude”, NORTH],\n" +
+               "    AXIS[“Longitude”, EAST]]");
+    }
+
+    /**
+     * Implementation of {@link #testGeographicCRS()} and {@link #testAxisSwapping()}.
+     *
+     * @param swap 1 if axes are expected to be swapped, or 0 otherwise.
+     */
+    private void testGeographicCRS(final int swap, final String wkt) throws ParseException {
+        final GeographicCRS crs = parse(GeographicCRS.class, wkt);
+        assertNameAndIdentifierEqual("WGS84", 0, crs);
+
+        final GeodeticDatum datum = crs.getDatum();
+        assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
+        assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
+        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+
+        final EllipsoidalCS cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertLongitudeAxisEquals(cs.getAxis(0 ^ swap));
+        assertLatitudeAxisEquals (cs.getAxis(1 ^ swap));
+    }
+
+    /**
+     * Tests the parsing of a projected CRS from a WKT 1 string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicCRS")
+    public void testProjectedCRS() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+                "PROJCS[“Mercator test”,\n" +
+               "  GEOGCS[“WGS84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Longitude”, EAST],\n" +
+               "    AXIS[“Latitude”, NORTH]],\n" +
+               "  PROJECTION[“Mercator_1SP”],\n" +
+               "  PARAMETER[“central_meridian”, -20.0],\n" +
+               "  PARAMETER[“scale_factor”, 1.0],\n" +
+               "  PARAMETER[“false_easting”, 500000.0],\n" +
+               "  PARAMETER[“false_northing”, 0.0],\n" +
+               "  UNIT[“metre”, 1.0],\n" +
+               "  AXIS[“Easting”, EAST],\n" +
+               "  AXIS[“Northing”, NORTH]]");
+
+        assertNameAndIdentifierEqual("Mercator test", 0, crs);
+
+        final GeodeticDatum datum = crs.getDatum();
+        assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
+        assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("WGS84", 0, ellipsoid);
+        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 298.257223563, ellipsoid.getInverseFlattening(), STRICT);
+
+        final CartesianCS cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  SI.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, SI.METRE, cs.getAxis(1));
+
+        assertEquals("Mercator (variant A)", crs.getConversionFromBase().getMethod().getName().getCode());
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+//      assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(), STRICT);
+//      assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(), 0.1);
+        assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(), STRICT);
+        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(), STRICT);
+        assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(), STRICT);
+        assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(), STRICT);
+    }
+
+    /**
      * Tests the parsing of a compound CRS from a WKT 1 string, except the time dimension which is WKT 2.
      *
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @DependsOnMethod("testGeographicCRS")
     public void testCompoundCRS() throws ParseException {
         final CompoundCRS crs = parse(CompoundCRS.class,
                 "COMPD_CS[“WGS 84 + height + time”,\n" +
@@ -208,8 +326,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         // Axes: we verify only the CompoundCRS ones, which should include all others.
         final CoordinateSystem cs = crs.getCoordinateSystem();
         assertEquals("dimension", 4, cs.getDimension());
-        assertLongitudeAxisEquals("Longitude", cs.getAxis(0));
-        assertLatitudeAxisEquals ("Latitude", cs.getAxis(1));
+        assertLongitudeAxisEquals(cs.getAxis(0));
+        assertLatitudeAxisEquals (cs.getAxis(1));
         assertUnboundedAxisEquals("Gravity-related height", "H", AxisDirection.UP, SI.METRE, cs.getAxis(2));
         assertUnboundedAxisEquals("Time", "t", AxisDirection.FUTURE, NonSI.DAY, cs.getAxis(3));
     }
