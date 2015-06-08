@@ -38,6 +38,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -177,8 +178,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @see #isHeuristicMatchForNameXY(String, String)
      */
     private static final String[] ALIASES_XY = {
-        "Easting", "Northing",
-        "Westing", "Southing"
+        AxisNames.EASTING, AxisNames.NORTHING,
+        AxisNames.WESTING, AxisNames.SOUTHING
     };
 
     /**
@@ -800,10 +801,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 name = IdentifiedObjects.getName(this, null);
             }
             if (name != null && !isInternal) {
-                if (name.equalsIgnoreCase("Geodetic latitude")) {
-                    name = "Latitude";    // ISO 19162 §7.5.3(ii)
-                } else if (name.equalsIgnoreCase("Geodetic longitude")) {
-                    name = "Longitude";
+                if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE)) {
+                    name = AxisNames.LATITUDE;    // ISO 19162 §7.5.3(ii)
+                } else if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) {
+                    name = AxisNames.LONGITUDE;
                 }
                 // Note: the converse of this operation is done in
                 // org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…).

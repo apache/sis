@@ -23,6 +23,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.internal.metadata.AxisNames;
 
 
 /**
@@ -46,7 +47,7 @@ public final strictfp class HardCodedAxes {
      * @see #SPHERICAL_LONGITUDE
      * @see #GEODETIC_LATITUDE
      */
-    public static final DefaultCoordinateSystemAxis GEODETIC_LONGITUDE = create("Geodetic longitude", "λ",
+    public static final DefaultCoordinateSystemAxis GEODETIC_LONGITUDE = create(AxisNames.GEODETIC_LONGITUDE, "λ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
 
     /**
@@ -61,13 +62,13 @@ public final strictfp class HardCodedAxes {
      * @see #SPHERICAL_LATITUDE
      * @see #GEODETIC_LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis GEODETIC_LATITUDE = create("Geodetic latitude", "φ",
+    public static final DefaultCoordinateSystemAxis GEODETIC_LATITUDE = create(AxisNames.GEODETIC_LATITUDE, "φ",
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**
      * Identical to {@link #GEODETIC_LONGITUDE} except for the range of longitude values.
      */
-    public static final DefaultCoordinateSystemAxis SHIFTED_LONGITUDE = create("Geodetic longitude", "λ",
+    public static final DefaultCoordinateSystemAxis SHIFTED_LONGITUDE = create(AxisNames.GEODETIC_LONGITUDE, "λ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, 0, 360, RangeMeaning.WRAPAROUND);
 
     /**
@@ -79,7 +80,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis LONGITUDE_gon = create("Longitude", "λ",
+    public static final DefaultCoordinateSystemAxis LONGITUDE_gon = create(AxisNames.LONGITUDE, "λ",
             AxisDirection.EAST, NonSI.GRADE, -200, 200, RangeMeaning.WRAPAROUND);
 
     /**
@@ -91,7 +92,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LATITUDE
      */
-    public static final DefaultCoordinateSystemAxis LATITUDE_gon = create("Latitude", "φ",
+    public static final DefaultCoordinateSystemAxis LATITUDE_gon = create(AxisNames.LATITUDE, "φ",
             AxisDirection.NORTH, NonSI.GRADE, -100, 100, RangeMeaning.EXACT);
 
     /**
@@ -108,7 +109,7 @@ public final strictfp class HardCodedAxes {
      * @see #GRAVITY_RELATED_HEIGHT
      * @see #DEPTH
      */
-    public static final DefaultCoordinateSystemAxis ELLIPSOIDAL_HEIGHT = create("Ellipsoidal height", "h",
+    public static final DefaultCoordinateSystemAxis ELLIPSOIDAL_HEIGHT = create(AxisNames.ELLIPSOIDAL_HEIGHT, "h",
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -121,7 +122,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEOCENTRIC_RADIUS
      * @see #DEPTH
      */
-    public static final DefaultCoordinateSystemAxis GRAVITY_RELATED_HEIGHT = create("Gravity-related height", "H",
+    public static final DefaultCoordinateSystemAxis GRAVITY_RELATED_HEIGHT = create(AxisNames.GRAVITY_RELATED_HEIGHT, "H",
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -156,7 +157,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEOCENTRIC_RADIUS
      * @see #GRAVITY_RELATED_HEIGHT
      */
-    public static final DefaultCoordinateSystemAxis DEPTH = create("Depth", "D",
+    public static final DefaultCoordinateSystemAxis DEPTH = create(AxisNames.DEPTH, "D",
             AxisDirection.DOWN, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -173,7 +174,7 @@ public final strictfp class HardCodedAxes {
      * @see #GRAVITY_RELATED_HEIGHT
      * @see #DEPTH
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create("Geocentric radius", "r",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create(AxisNames.GEOCENTRIC_RADIUS, "r",
             AxisDirection.UP, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
@@ -189,7 +190,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
      */
-    public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create("Spherical longitude", "θ",
+    public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create(AxisNames.SPHERICAL_LONGITUDE, "θ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
 
     /**
@@ -197,7 +198,7 @@ public final strictfp class HardCodedAxes {
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
-     * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "φ′" (phi).
+     * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "φ′" (phi prime).
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -205,7 +206,7 @@ public final strictfp class HardCodedAxes {
      * @see #GEODETIC_LATITUDE
      * @see #SPHERICAL_LONGITUDE
      */
-    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create("Spherical latitude", "φ′",
+    public static final DefaultCoordinateSystemAxis SPHERICAL_LATITUDE = create(AxisNames.SPHERICAL_LATITUDE, "φ′",
             AxisDirection.NORTH, NonSI.DEGREE_ANGLE, -90, 90, RangeMeaning.EXACT);
 
     /**
@@ -262,7 +263,7 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_X = create("Geocentric X", "X",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_X = create(AxisNames.GEOCENTRIC_X, "X",
             AxisDirection.GEOCENTRIC_X, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -277,7 +278,7 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Y = create("Geocentric Y", "Y",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Y = create(AxisNames.GEOCENTRIC_Y, "Y",
             AxisDirection.GEOCENTRIC_Y, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -292,7 +293,7 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is usually part of a {@link #GEOCENTRIC_X}, {@link #GEOCENTRIC_Y}, {@link #GEOCENTRIC_Z} set.</p>
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Z = create("Geocentric Z", "Z",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_Z = create(AxisNames.GEOCENTRIC_Z, "Z",
             AxisDirection.GEOCENTRIC_Z, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -306,7 +307,7 @@ public final strictfp class HardCodedAxes {
      * @see #EASTING
      * @see #WESTING
      */
-    public static final DefaultCoordinateSystemAxis EASTING = create("Easting", "E",
+    public static final DefaultCoordinateSystemAxis EASTING = create(AxisNames.EASTING, "E",
             AxisDirection.EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -318,7 +319,7 @@ public final strictfp class HardCodedAxes {
      * @see #EASTING
      * @see #WESTING
      */
-    public static final DefaultCoordinateSystemAxis WESTING = create("Westing", "W",
+    public static final DefaultCoordinateSystemAxis WESTING = create(AxisNames.WESTING, "W",
             AxisDirection.WEST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -332,7 +333,7 @@ public final strictfp class HardCodedAxes {
      * @see #NORTHING
      * @see #SOUTHING
      */
-    public static final DefaultCoordinateSystemAxis NORTHING = create("Northing", "N",
+    public static final DefaultCoordinateSystemAxis NORTHING = create(AxisNames.NORTHING, "N",
             AxisDirection.NORTH, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
@@ -344,7 +345,7 @@ public final strictfp class HardCodedAxes {
      * @see #NORTHING
      * @see #SOUTHING
      */
-    public static final DefaultCoordinateSystemAxis SOUTHING = create("Southing", "S",
+    public static final DefaultCoordinateSystemAxis SOUTHING = create(AxisNames.SOUTHING, "S",
             AxisDirection.SOUTH, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
