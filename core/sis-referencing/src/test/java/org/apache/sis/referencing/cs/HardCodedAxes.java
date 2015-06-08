@@ -73,7 +73,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for longitudes in gradian units.
-     * The axis name is {@code "Longitude"} (the {@code "Geodetic" } prefix is omitted for testing purpose).
+     * The axis name is {@code "Longitude"} (the {@code "Geodetic"} prefix is omitted for testing purpose).
      * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@link NonSI#GRADE}.
      * The abbreviation is "λ" (lambda). The unit symbol is "gon".
      *
@@ -85,7 +85,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for latitudes in gradian units.
-     * The axis name is {@code "Latitude"} (the {@code "Geodetic" } prefix is omitted for testing purpose).
+     * The axis name is {@code "Latitude"} (the {@code "Geodetic"} prefix is omitted for testing purpose).
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@link NonSI#GRADE}.
      * The abbreviation is "φ" (phi). The unit symbol is "gon".
      *

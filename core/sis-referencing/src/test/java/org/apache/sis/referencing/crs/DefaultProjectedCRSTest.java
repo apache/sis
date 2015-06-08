@@ -22,6 +22,7 @@ import javax.measure.unit.Unit;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
@@ -55,11 +56,13 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     private static final String XML_FILE = "NTF.xml";
 
     /**
-     * Creates the "NTF (Paris) / Lambert zone II" CRS.
+     * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grades,
+     * but the axes can be in degrees or in grades depending if the {@code baseCRS} argument is
+     * {@link HardCodedCRS.NTF_NORMALIZED_AXES} or {@link HardCodedCRS.NTF} respectively.
      *
      * @see HardCodedCRS#NTF
      */
-    private static ProjectedCRS create() throws FactoryException {
+    private static ProjectedCRS create(final GeographicCRS baseCRS) throws FactoryException {
         return new GeodeticObjectBuilder()
                 .setConversionMethod("Lambert Conic Conformal (1SP)")
                 .setConversionName("Lambert zone II")
@@ -70,7 +73,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 .setCodeSpace(Citations.EPSG, Constants.EPSG)
                 .addName("NTF (Paris) / Lambert zone II")
                 .addIdentifier("27572")
-                .createProjectedCRS(HardCodedCRS.NTF, HardCodedCS.PROJECTED);
+                .createProjectedCRS(baseCRS, HardCodedCS.PROJECTED);
     }
 
     /**
@@ -80,7 +83,40 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      */
     @Test
     public void testWKT1() throws FactoryException {
-        final ProjectedCRS crs = create();
+        final ProjectedCRS crs = create(HardCodedCRS.NTF);
+        assertWktEquals(Convention.WKT1,
+                "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
+                "  GEOGCS[“NTF (Paris)”,\n" +
+                "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
+                "      SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213],\n" +
+                "    UNIT[“grade”, 0.015707963267948967],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  PROJECTION[“Lambert_Conformal_Conic_1SP”, AUTHORITY[“EPSG”, “9801”]],\n" +
+                "  PARAMETER[“latitude_of_origin”, 52.0],\n" +
+                "  PARAMETER[“central_meridian”, 0.0],\n" +
+                "  PARAMETER[“scale_factor”, 0.99987742],\n" +
+                "  PARAMETER[“false_easting”, 600000.0],\n" +
+                "  PARAMETER[“false_northing”, 2200000.0],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Easting”, EAST],\n" +
+                "  AXIS[“Northing”, NORTH],\n" +
+                "  AUTHORITY[“EPSG”, “27572”]]",
+                crs);
+    }
+
+    /**
+     * Tests WKT 1 formatting with a somewhat convolved case where the units of the prime meridian is not
+     * the same than the unit of axes. Since the axis units is what we write in the {@code UNIT[…]} element,
+     * the WKT formatter need to convert the unit of prime meridian and all parameter angular values.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_WithMixedUnits() throws FactoryException {
+        final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         Validators.validate(crs);   // Opportunist check.
         assertWktEquals(Convention.WKT1,
                 "PROJCS[“NTF (Paris) / Lambert zone II”,\n" +
@@ -105,14 +141,15 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
-     * Tests WKT 2 formatting.
+     * Tests WKT 2 formatting. Contrarily to the WKT 1 formatting, in this case it does not matter
+     * if we mix the units of measurement because the unit is declared for each parameter and axis.
      *
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT2() throws FactoryException {
-        final ProjectedCRS crs = create();
+        final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
