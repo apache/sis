@@ -16,6 +16,9 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.text.ParseException;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -23,15 +26,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link WKTFormat}. This class can test only formatting operations.
- * WKT parsing operations require the {@code "sis-referencing"} module, so
- * they will be tested in {@link GeodeticObjectParserTest}.
+ * Tests {@link WKTFormat}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
+@DependsOn(GeodeticObjectParserTest.class)
 public final strictfp class WKTFormatTest extends TestCase {
     /**
      * Verifies the condition documented in {@link WKTFormat#SHORT_DATE_PATTERN} javadoc.
@@ -39,5 +41,26 @@ public final strictfp class WKTFormatTest extends TestCase {
     @Test
     public void testDatePatterns() {
         assertTrue(WKTFormat.DATE_PATTERN.startsWith(WKTFormat.SHORT_DATE_PATTERN));
+    }
+
+    /**
+     * Tests integration in {@link WKTFormat#parse(CharSequence, ParsePosition)}.
+     * This method tests only a simple WKT because it is not the purpose of this
+     * method to test the parser itself. We only want to tests its integration in
+     * the {@link WKTFormat} class.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testParse() throws ParseException {
+        final WKTFormat format = new WKTFormat(null, null);
+        final VerticalCRS crs = (VerticalCRS) format.parseObject(
+                "VERT_CS[“Gravity-related height”,\n" +
+                "  VERT_DATUM[“Mean Sea Level”, 2005],\n" +
+                "  UNIT[“metre”, 1],\n" +
+                "  AXIS[“Gravity-related height”, UP]]");
+
+        GeodeticObjectParserTest.assertNameAndIdentifierEqual("Gravity-related height", 0, crs);
+        GeodeticObjectParserTest.assertNameAndIdentifierEqual("Mean Sea Level", 0, crs.getDatum());
     }
 }

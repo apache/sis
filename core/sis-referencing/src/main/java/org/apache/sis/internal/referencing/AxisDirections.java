@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -23,6 +24,7 @@ import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
 import static org.apache.sis.util.CharSequences.*;
@@ -513,6 +515,77 @@ public final class AxisDirections extends Static {
     private static boolean equalsIgnoreCase(final String name, final int lower, final int upper, final String keyword) {
         final int length = upper - lower;
         return (length == keyword.length()) && name.regionMatches(true, lower, keyword, 0, length);
+    }
+
+    /**
+     * Returns {@code true} if the given name starts with the given keyword, ignoring case.
+     */
+    private static boolean startsWith(final String name, final String keyword) {
+        return name.regionMatches(true, 0, keyword, 0, keyword.length());
+    }
+
+    /**
+     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
+     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
+     * or "λ" (Longitude).
+     *
+     * @param name      The axis name for which to suggest an abbreviation.
+     * @param direction The axis direction for which to suggest an abbreviation.
+     * @param unit      The axis unit of measurement, for disambiguation.
+     * @return A suggested abbreviation.
+     *
+     * @since 0.6
+     */
+    public static String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
+        if (name.length() == 1) {
+            return name;  // Most common cases are "x", "y", "z", "t", "i" and "j".
+        }
+        if (isCompass(direction)) {
+            /*
+             * NORTH, EAST, SOUTH, WEST and all intercardinal directions (SOUTH_SOUTH_WEST, etc.):
+             * we will use the acronym (e.g. "SE" for SOUTH_EAST), unless the axis is likely to be
+             * a longitude or latitude axis. We detect those later cases by the unit of measurement.
+             */
+            if (!isIntercardinal(direction) && Units.isAngular(unit)) {
+                if (startsWith(name, "Spherical")) {
+                    return NORTH.equals(absolute(direction)) ? "φ′" : "θ";
+                } else {
+                    return NORTH.equals(absolute(direction)) ? "φ" : "λ";
+                }
+            }
+        } else {
+            /*
+             * All cases other than NORTH, SOUTH, etc. The most common direction is UP, in which case the
+             * abbreviation shall be "H" for Gravity-related height and "h" for ellipsoidal height. Those
+             * two names are specified by ISO 19111, but we will use "Gravity" as a criterion because we
+             * use "h" as the fallback for unknown vertical axis.
+             */
+            if (UP.equals(direction)) {
+                return startsWith(name, "Gravity") ? "H" : startsWith(name, "Geocentric") ? "r": "h";
+            } else if (DOWN.equals(direction)) {
+                return "D"; // "Depth"
+            } else if (isGeocentric(direction)) {
+                // For GEOCENTRIC_X, GEOCENTRIC_Y or GEOCENTRIC_Z, just take the last letter.
+                final String dir = direction.name();
+                return dir.substring(dir.length() - 1).trim();
+            }
+            final AxisDirection a = absolute(direction);
+            if (FUTURE.equals(a)) {
+                return "t";
+            } else if (COLUMN_POSITIVE.equals(a)) {
+                return "i";
+            } else if (ROW_POSITIVE.equals(a)) {
+                return "j";
+            } else if (DISPLAY_RIGHT.equals(a)) {
+                return "x";
+            } else if (DISPLAY_UP.equals(a)) {
+                return "y";
+            } else if (OTHER.equals(a)) {
+                return "z";  // Arbitrary abbreviation, may change in any future SIS version.
+            }
+        }
+        final String id = direction.identifier();   // UML identifier, or null if none.
+        return camelCaseToAcronym(id != null ? id : direction.name()).toString().intern();
     }
 
     /**

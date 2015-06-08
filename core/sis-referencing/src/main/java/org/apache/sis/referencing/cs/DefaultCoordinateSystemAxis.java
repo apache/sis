@@ -38,6 +38,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -143,6 +144,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * <p>Keys in this map are names <strong>in lower cases</strong>.
      * Values are any object that allow us to differentiate latitude from longitude.</p>
      *
+     * <p>Similar strings appear in {@link #formatTo(Formatter)} and
+     * {@code org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…)}.</p>
+     *
      * @see #isHeuristicMatchForName(String)
      */
     private static final Map<String,Object> ALIASES = new HashMap<String,Object>(12);
@@ -174,8 +178,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @see #isHeuristicMatchForNameXY(String, String)
      */
     private static final String[] ALIASES_XY = {
-        "Easting", "Northing",
-        "Westing", "Southing"
+        AxisNames.EASTING, AxisNames.NORTHING,
+        AxisNames.WESTING, AxisNames.SOUTHING
     };
 
     /**
@@ -526,7 +530,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Returns the meaning of axis value range specified by the {@linkplain #getMinimumValue() minimum}
-     * and {@linkplain #getMaximumValue() maximum} values.
+     * and {@linkplain #getMaximumValue() maximum} values. If there is no minimum and maximum values
+     * (i.e. if those values are {@linkplain Double#NEGATIVE_INFINITY negative infinity} and
+     * {@linkplain Double#POSITIVE_INFINITY positive infinity} respectively), then this method returns {@code null}.
      *
      * @return The meaning of axis value range, or {@code null} if unspecified.
      */
@@ -795,11 +801,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 name = IdentifiedObjects.getName(this, null);
             }
             if (name != null && !isInternal) {
-                if (name.equalsIgnoreCase("Geodetic latitude")) {
-                    name = "Latitude";    // ISO 19162 §7.5.3(ii)
-                } else if (name.equalsIgnoreCase("Geodetic longitude")) {
-                    name = "Longitude";
+                if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE)) {
+                    name = AxisNames.LATITUDE;    // ISO 19162 §7.5.3(ii)
+                } else if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) {
+                    name = AxisNames.LONGITUDE;
                 }
+                // Note: the converse of this operation is done in
+                // org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…).
             }
         }
         /*

@@ -75,6 +75,8 @@ public final strictfp class HardCodedCS {
      * <var>{@linkplain HardCodedAxes#LONGITUDE_gon longitude}</var>,
      * <var>{@linkplain HardCodedAxes#LATITUDE_gon latitude}</var>
      * axes (without "Geodetic" prefix) in gradians.
+     *
+     * <p>This coordinate system is used for testing unit conversions without axes swapping.</p>
      */
     public static final DefaultEllipsoidalCS ELLIPSOIDAL_gon = new DefaultEllipsoidalCS(
             singletonMap(NAME_KEY, "Ellipsoidal (gon)"),
