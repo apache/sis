@@ -228,6 +228,26 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     }
 
     /**
+     * Tests WKT 1 formatting on a CRS using a prime meridian other than Greenwich.
+     *
+     * <p>This CRS used in this test is equivalent to {@code EPSG:4807} except for axis order,
+     * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades.</p>
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT1_ForNonGreenwich() {
+        assertWktEquals(Convention.WKT1,
+                "GEOGCS[“NTF (Paris)”,\n" +
+                "  DATUM[“Nouvelle Triangulation Francaise”,\n" +   // Formatter should replace "ç" by "c".
+                "    SPHEROID[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "    PRIMEM[“Paris”, 2.5969213],\n" +
+                "  UNIT[“grade”, 0.015707963267948967],\n" +
+                "  AXIS[“Longitude”, EAST],\n" +
+                "  AXIS[“Latitude”, NORTH]]",
+                HardCodedCRS.NTF);
+    }
+
+    /**
      * Tests WKT 1 formatting using {@link Convention#WKT1_COMMON_UNITS}. That convention ignores the unit of
      * measurement in {@code PRIMEM} element, and rather unconditionally interpret the angle unit as degrees.
      * This is a violation of OGC 01-009 and ISO 19162 standards, but is required for compatibility with GDAL.
