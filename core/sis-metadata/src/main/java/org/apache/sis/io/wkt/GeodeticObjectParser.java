@@ -875,9 +875,10 @@ final class GeodeticObjectParser extends MathTransformParser {
         final String        name       = element.pullString("name");
         final GeographicCRS geoCRS     = parseGeoGCS(element);
         final Unit<Length>  linearUnit = parseUnit(element, SI.METRE);
-        final Conversion    conversion = parseProjection(element, linearUnit,
-                (convention == Convention.WKT1_COMMON_UNITS) ? NonSI.DEGREE_ANGLE :
-                geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
+        final boolean  usesCommonUnits = convention.usesCommonUnits();
+        final Conversion    conversion = parseProjection(element,
+                usesCommonUnits ? SI.METRE : linearUnit,
+                usesCommonUnits ? NonSI.DEGREE_ANGLE : geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
         CoordinateSystemAxis axis0 = parseAxis(element, false, linearUnit, false);
         CoordinateSystemAxis axis1 = null;
         try {

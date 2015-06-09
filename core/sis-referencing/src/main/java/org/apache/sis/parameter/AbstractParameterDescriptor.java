@@ -17,7 +17,6 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import javax.measure.unit.Unit;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
@@ -344,12 +343,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
             if (defaultValue != null) {
                 formatter.appendAny(defaultValue);
             }
-            final Unit<?> unit = ((ParameterDescriptor<?>) this).getUnit();
-            if (unit != null) {
-                if (!formatter.getConvention().isSimplified() || !unit.equals(formatter.toContextualUnit(unit))) {
-                    formatter.append(unit);
-                }
-            }
+            formatter.append(((ParameterDescriptor<?>) this).getUnit());
         }
         return WKTKeywords.Parameter;
     }
