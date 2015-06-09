@@ -23,6 +23,7 @@ import java.text.ParseException;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -128,12 +129,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Verifies that the axes of the coordinate system are those of a projected CRS, in metres.
+     * Verifies that the axes of the coordinate system are those of a projected CRS,
+     * with (East, North) axis directions.
      */
-    private static void verifyProjectedCS(final CartesianCS cs) {
+    private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
         assertEquals("dimension", 2, cs.getDimension());
-        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  SI.METRE, cs.getAxis(0));
-        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, SI.METRE, cs.getAxis(1));
+        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
     }
 
     /**
@@ -199,7 +201,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testAxisSwapping() throws ParseException {
+    public void testWithAxisSwapping() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
@@ -215,11 +217,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      *
-     * @see #testImplicitAxesInSeconds()
+     * @see #testWithImplicitAxesInSeconds()
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testImplicitAxes() throws ParseException {
+    public void testWithImplicitAxes() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
@@ -229,7 +231,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testGeographicCRS()} and {@link #testAxisSwapping()}.
+     * Implementation of {@link #testGeographicCRS()} and {@link #testWithAxisSwapping()}.
      * This test expects no {@code AUTHORITY} element on any component.
      *
      * @param swap 1 if axes are expected to be swapped, or 0 otherwise.
@@ -279,7 +281,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 "  AXIS[“Northing”, NORTH]]");
 
         assertNameAndIdentifierEqual("Mercator test", 0, crs);
-        verifyProjectedCS(crs.getCoordinateSystem());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.METRE);
         verifyGeographicCRS(0, crs.getBaseCRS());
 
         final GeodeticDatum datum = crs.getDatum();
@@ -293,12 +295,12 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
 
         assertEquals("Mercator (variant A)", crs.getConversionFromBase().getMethod().getName().getCode());
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
-        assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(), STRICT);
-        assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(), 0.1);
-        assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(), STRICT);
-        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(), STRICT);
-        assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(), STRICT);
-        assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(), STRICT);
+        assertEquals("semi_major",   6378137.0, param.parameter("semi_major"      ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("semi_minor",   6356752.3, param.parameter("semi_minor"      ).doubleValue(SI   .METRE),        0.1);
+        assertEquals("central_meridian", -20.0, param.parameter("central_meridian").doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(Unit .ONE),          STRICT);
+        assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(SI   .METRE),        STRICT);
     }
 
     /**
@@ -309,7 +311,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testNonGreenwichMeridian() throws ParseException {
+    public void testWithNonGreenwichMeridian() throws ParseException {
         String wkt = "GEOGCS[“NTF (Paris)”,\n" +
                      "  DATUM[“Nouvelle Triangulation Française (Paris)”,\n" +
                      "    SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
@@ -352,14 +354,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the parsing of a projected CRS using parameters in grades instead than degrees.
-     * The grad units are also used for the prime meridian.
+     * Tests the parsing of a projected CRS using angular values in grades instead than degrees
+     * and in lengths in kilometres instead than metres.
      *
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod({"testNonGreenwichMeridian", "testProjectedCRS"})
-    public void testGradUnitInParameters() throws ParseException {
+    @DependsOnMethod({"testWithNonGreenwichMeridian", "testProjectedCRS"})
+    public void testWithLessCommonUnits() throws ParseException {
         String wkt = "PROJCS[“NTF (Paris) / Lambert zone II”," +
                      "  GEOGCS[“NTF (Paris)”," +
                      "    DATUM[“Nouvelle Triangulation Française (Paris)”," +
@@ -370,13 +372,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                      "  PROJECTION[“Lambert Conformal Conic (1SP)”]," +  // Intentional swapping of "Conformal" and "Conic".
                      "  PARAMETER[“latitude_of_origin”, 52.0]," +        // In grads.
                      "  PARAMETER[“scale_factor”, 0.99987742]," +
-                     "  PARAMETER[“false_easting”, 600000]," +
-                     "  PARAMETER[“false_northing”, 2200000]," +
-                     "  UNIT[“metre”,1]]";
+                     "  PARAMETER[“false_easting”, 600.0]," +
+                     "  PARAMETER[“false_northing”, 2200.0]," +
+                     "  UNIT[“metre”,1000]]";
 
         ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
-        verifyProjectedCS(crs.getCoordinateSystem());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
         PrimeMeridian pm = verifyNTF(crs.getDatum());
         assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
@@ -385,16 +387,18 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
         /*
          * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements.
-         * See the comment in testNonGreenwichMeridian for a discussion. The new aspect
-         * tested by this method is that the unit should be ignored for the parameters
-         * in addition to the prime meridian.
+         * See the comment in 'testWithNonGreenwichMeridian()' method for a discussion.
+         * The new aspect tested by this method is that the unit should be ignored
+         * for the parameters in addition to the prime meridian.
          */
-        wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
-        wkt = wkt.replace("52.0", "46.8");              // Convert unit in “latitude_of_origin” parameter.
+        wkt = wkt.replace("2.5969213", "2.33722917");       // Convert unit in prime meridian.
+        wkt = wkt.replace("52.0",      "46.8");             // Convert unit in “latitude_of_origin” parameter.
+        wkt = wkt.replace("600.0",     "600000");           // Convert unit in “false_easting” parameter.
+        wkt = wkt.replace("2200.0",    "2200000");          // Convert unit in “false_northing” parameter.
         setConvention(Convention.WKT1_COMMON_UNITS, true);
         crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
-        verifyProjectedCS(crs.getCoordinateSystem());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
         pm = verifyNTF(crs.getDatum());
         assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
@@ -431,12 +435,12 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private static ParameterValue<?> verifyNTF(final ParameterValueGroup param) {
         assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
-        assertEquals("semi_major",     6378249.2, param.parameter("semi_major"      ).doubleValue(), STRICT);
-        assertEquals("semi_minor",     6356515.0, param.parameter("semi_minor"      ).doubleValue(), 1E-12);
-        assertEquals("central_meridian",     0.0, param.parameter("central_meridian").doubleValue(), STRICT);
-        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(), STRICT);
-        assertEquals("false_easting",   600000.0, param.parameter("false_easting"   ).doubleValue(), STRICT);
-        assertEquals("false_northing", 2200000.0, param.parameter("false_northing"  ).doubleValue(), STRICT);
+        assertEquals("semi_major",     6378249.2, param.parameter("semi_major"      ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("semi_minor",     6356515.0, param.parameter("semi_minor"      ).doubleValue(SI   .METRE),        1E-12);
+        assertEquals("central_meridian",     0.0, param.parameter("central_meridian").doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("scale_factor",  0.99987742, param.parameter("scale_factor"    ).doubleValue(Unit .ONE),          STRICT);
+        assertEquals("false_easting",   600000.0, param.parameter("false_easting"   ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("false_northing", 2200000.0, param.parameter("false_northing"  ).doubleValue(SI   .METRE),        STRICT);
         return param.parameter("latitude_of_origin");
     }
 
@@ -502,11 +506,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      *
-     * @see #testImplicitAxes()
+     * @see #testWithImplicitAxes()
      */
     @Test
-    @DependsOnMethod("testImplicitAxes")
-    public void testImplicitAxesInSeconds() throws ParseException {
+    @DependsOnMethod("testWithImplicitAxes")
+    public void testWithImplicitAxesInSeconds() throws ParseException {
         final GeographicCRS crs = parse(GeographicCRS.class,
                 "GEOGCS[“NAD83 / NFIS Seconds”," +
                 "DATUM[“North_American_Datum_1983”,\n" +
@@ -576,7 +580,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 "AXIS[“Easting”,East],AXIS[“Northing”,North]]");
 
         assertNameAndIdentifierEqual("FRANCE/NTF/Lambert III", 0, crs);
-        verifyProjectedCS(crs.getCoordinateSystem());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.METRE);
         final GeographicCRS geoCRS = crs.getBaseCRS();
         assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, geoCRS);    // Inherited the datum name.
 
@@ -596,12 +600,12 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
 
         final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
         assertEquals("Lambert Conic Conformal (1SP)", param.getDescriptor().getName().getCode());
-        assertEquals("semi_major",        6378249.2, param.parameter("semi_major"        ).doubleValue(), STRICT);
-        assertEquals("semi_minor",        6356515.0, param.parameter("semi_minor"        ).doubleValue(), 1E-12);
-        assertEquals("latitude_of_origin",     44.1, param.parameter("latitude_of_origin").doubleValue(), STRICT);
-        assertEquals("central_meridian", 2.33722917, param.parameter("central_meridian"  ).doubleValue(), STRICT);
-        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(), STRICT);
-        assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(), STRICT);
-        assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(), STRICT);
+        assertEquals("semi_major",        6378249.2, param.parameter("semi_major"        ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("semi_minor",        6356515.0, param.parameter("semi_minor"        ).doubleValue(SI   .METRE),        1E-12);
+        assertEquals("latitude_of_origin",     44.1, param.parameter("latitude_of_origin").doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("central_meridian", 2.33722917, param.parameter("central_meridian"  ).doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
+        assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
+        assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
     }
 }
