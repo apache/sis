@@ -348,16 +348,24 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         super.formatTo(formatter);
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
-        Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
-        if (targetUnit == null) {
-            targetUnit = NonSI.DEGREE_ANGLE;
-        }
+        final Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
         formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
         if (isWKT1) {
             return WKTKeywords.PrimeM;
         }
         final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
-        if (!convention.isSimplified() || !targetUnit.equals(angularUnit)) {
+        if (!convention.isSimplified() || !targetUnit.equals(angularUnit) || !targetUnit.equals(NonSI.DEGREE_ANGLE)) {
+            /*
+             * Note on the equals(NonSI.DEGREE_ANGLE) check:
+             *
+             * In theory, that last check is not necessary since it would be legal to format the value in the
+             * unit of the axes of the enclosing GeographicCRS. However the relationship between the CRS axes
+             * and the prime meridian is less obvious in WKT2 than it was in WKT1, because the WKT2's UNIT[…]
+             * element is far from the PRIMEM[…] element while it was just below it in WKT1. Furthermore, the
+             * PRIMEM[…] unit is one source of incompatibility between various WKT1 parsers (e.g. GDAL is not
+             * conform to OGC 01-009 and ISO 19162). So we are safer to unconditionally format any unit other
+             * than degrees here, even if we could legally omit them.
+             */
             formatter.append(angularUnit);
         }
         return WKTKeywords.PrimeMeridian;

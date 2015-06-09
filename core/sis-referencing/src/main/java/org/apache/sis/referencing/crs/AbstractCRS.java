@@ -524,8 +524,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatter.append(unit);
             formatter.indent(-1);
         }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
+        formatter.restoreContextualUnit(unit, oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
     }
 }

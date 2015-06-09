@@ -241,8 +241,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Method[“Equidistant Cylindrical (Spherical)”],\n" +
                 "    Parameter[“Latitude of 1st standard parallel”, 0.0],\n" +
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
-                "    Parameter[“False easting”, 1000.0, Unit[“metre”, 1]],\n" +
-                "    Parameter[“False northing”, 2000.0, Unit[“metre”, 1]]],\n" +
+                "    Parameter[“False easting”, 1000.0],\n" +
+                "    Parameter[“False northing”, 2000.0]],\n" +
                 "  CS[“Cartesian”, 2],\n" +
                 "    Axis[“Easting (E)”, east],\n" +
                 "    Axis[“Northing (N)”, north],\n" +

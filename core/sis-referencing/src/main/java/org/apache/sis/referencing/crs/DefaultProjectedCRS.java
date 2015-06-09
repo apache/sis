@@ -44,7 +44,6 @@ import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 
@@ -383,11 +382,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             return super.formatTo(formatter);
         }
         WKTUtilities.appendName(this, formatter, null);
-        final Convention    convention = formatter.getConvention();
-        final boolean       isWKT1     = (convention.majorVersion() == 1);
-        final GeographicCRS baseCRS    = getBaseCRS();
-        final Unit<Angle>   unit       = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
-        final Unit<Angle>   oldUnit    = formatter.addContextualUnit(unit);
+        final boolean       isWKT1  = (formatter.getConvention().majorVersion() == 1);
+        final GeographicCRS baseCRS = getBaseCRS();
+        final Unit<Angle>   unit    = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
+        final Unit<Angle>   oldUnit = formatter.addContextualUnit(unit);
         /*
          * Format the enclosing base CRS. Note that WKT 1 formats a full GeographicCRS while WKT 2 formats only
          * the datum with the prime meridian (no coordinate system) and uses a different keyword ("BaseGeodCRS"
@@ -413,8 +411,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         if (!isBaseCRS) {
             formatCS(formatter, getCoordinateSystem(), isWKT1);
         }
-        formatter.removeContextualUnit(unit);
-        formatter.addContextualUnit(oldUnit);
+        formatter.restoreContextualUnit(unit, oldUnit);
         return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS : WKTKeywords.ProjectedCRS;
     }
 
