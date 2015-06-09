@@ -45,6 +45,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -537,7 +538,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 }
             });
             if (!isBaseCRS(formatter)) {
-                formatCS(formatter, getCoordinateSystem(), isWKT1);
+                final CoordinateSystem cs = getCoordinateSystem();
+                formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
             }
             return keyword();
         }

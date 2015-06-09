@@ -27,6 +27,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.Measure;
@@ -81,7 +82,7 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
@@ -337,6 +338,57 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
+     * Returns {@code true} if the given formatter is in the process of formatting the prime meridian of a base CRS
+     * of an {@link AbstractDerivedCRS}. In such case, base CRS coordinate system axes shall not be formatted, which
+     * has the consequence of bringing the {@code UNIT[…]} element right below the {@code PRIMEM[…]} one. Example:
+     *
+     * {@preformat wkt
+     *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
+     *     BaseGeodCRS[“NTF (Paris)”,
+     *       Datum[“Nouvelle Triangulation Francaise”,
+     *         Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],
+     *       PrimeMeridian[“Paris”, 2.5969213],
+     *       AngleUnit[“grade”, 0.015707963267948967]],
+     *     Conversion[“Lambert zone II”,
+     *       etc...
+     * }
+     *
+     * If we were not formatting a base CRS, we would have many lines between {@code PrimeMeridian[…]} and
+     * {@code AngleUnit[…]} in the above example, which would make less obvious that the angle unit applies
+     * also to the prime meridian. It does not bring any ambiguity from an ISO 19162 standard point of view,
+     * but historically some other softwares interpreted the {@code PRIMEM[…]} units wrongly, which is why
+     * we try to find a compromise between keeping the WKT simple and avoiding an historical ambiguity.
+     *
+     * @see org.apache.sis.referencing.crs.AbstractCRS#isBaseCRS(Formatter)
+     */
+    private static boolean isElementOfBaseCRS(final Formatter formatter) {
+        return formatter.getEnclosingElement(2) instanceof GeneralDerivedCRS;
+    }
+
+    /**
+     * Returns {@code true} if {@link #formatTo(Formatter)} should conservatively format the angular unit
+     * even if it would be legal to omit it.
+     *
+     * <div class="section">Rational</div>
+     * According the ISO 19162 standard, it is legal to omit the {@code PrimeMeridian} angular unit when
+     * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However the
+     * relationship between the CRS axes and the prime meridian is less obvious in WKT2 than it was in WKT1,
+     * because the WKT2 {@code UNIT[…]} element is far from the {@code PRIMEM[…]} element while it was just
+     * below it in WKT1.   Furthermore, the {@code PRIMEM[…]} unit is one source of incompatibility between
+     * various WKT1 parsers (i.e. some popular libraries are not conform to OGC 01-009 and ISO 19162).
+     * So we are safer to unconditionally format any unit other than degrees, even if we could legally
+     * omit them.
+     *
+     * <p>However in order to keep the WKT slightly simpler in {@link Convention#WKT2_SIMPLIFIED} mode,
+     * we make an exception to the above-cited safety if the {@code UNIT[…]} element is formatted right
+     * below the {@code PRIMEM[…]} one, which happen if we are inside a base CRS.
+     * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.
+     */
+    private static boolean beConservative(final Formatter formatter, final Unit<Angle> targetUnit) {
+        return !targetUnit.equals(NonSI.DEGREE_ANGLE) && !isElementOfBaseCRS(formatter);
+    }
+
+    /**
      * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
      *
      * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
@@ -354,18 +406,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
             return WKTKeywords.PrimeM;
         }
         final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
-        if (!convention.isSimplified() || !targetUnit.equals(angularUnit) || !targetUnit.equals(NonSI.DEGREE_ANGLE)) {
-            /*
-             * Note on the equals(NonSI.DEGREE_ANGLE) check:
-             *
-             * In theory, that last check is not necessary since it would be legal to format the value in the
-             * unit of the axes of the enclosing GeographicCRS. However the relationship between the CRS axes
-             * and the prime meridian is less obvious in WKT2 than it was in WKT1, because the WKT2's UNIT[…]
-             * element is far from the PRIMEM[…] element while it was just below it in WKT1. Furthermore, the
-             * PRIMEM[…] unit is one source of incompatibility between various WKT1 parsers (e.g. GDAL is not
-             * conform to OGC 01-009 and ISO 19162). So we are safer to unconditionally format any unit other
-             * than degrees here, even if we could legally omit them.
-             */
+        if (!convention.isSimplified() || !targetUnit.equals(angularUnit) || beConservative(formatter, targetUnit)) {
             formatter.append(angularUnit);
         }
         return WKTKeywords.PrimeMeridian;

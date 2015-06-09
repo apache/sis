@@ -41,7 +41,6 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -323,7 +322,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @throws IllegalStateException If the coordinate system has already been set.
      */
     final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
-        if (cs != null && canSetProperty(AbstractCRS.class, "setCoordinateSystem", name, coordinateSystem != null)) {
+        if (cs != null && ReferencingUtilities.canSetProperty(AbstractCRS.class,
+                "setCoordinateSystem", name, coordinateSystem != null))
+        {
             coordinateSystem = cs;
         }
     }
@@ -468,13 +469,14 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.newLine();
         final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
         if (isWKT1 || !isBaseCRS(formatter)) {
-            formatCS(formatter, getCoordinateSystem(), isWKT1);
+            final CoordinateSystem cs = getCoordinateSystem();
+            formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
         }
         return keyword;
     }
 
     /**
-     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of a
+     * Returns {@code true} if the given formatter is in the process of formatting the base CRS of an
      * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
      *
      * <p>This method should return {@code true} when {@code this} CRS is the value returned by
@@ -495,15 +497,19 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
      * coordinate systems.</p>
      *
+     * <div class="note"><b>Note:</b> the {@code unit} and {@code isWKT1} arguments could be computed by this method,
+     * but are requested in order to avoid computing them twice, because the caller usually have them anyway.</div>
+     *
      * @param formatter The formatter where to append the coordinate system.
      * @param cs        The coordinate system to append.
+     * @param unit      The value of {@code ReferencingUtilities.getUnit(cs)}.
      * @param isWKT1    {@code true} if formatting WKT 1, or {@code false} for WKT 2.
      */
-    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final boolean isWKT1) {
+    final void formatCS(final Formatter formatter, final CoordinateSystem cs, final Unit<?> unit, final boolean isWKT1) {
+        assert unit == ReferencingUtilities.getUnit(cs) : unit;
         assert (formatter.getConvention().majorVersion() == 1) == isWKT1 : isWKT1;
         assert isWKT1 || !isBaseCRS(formatter) : isWKT1;    // Condition documented in javadoc.
 
-        final Unit<?> unit    = ReferencingUtilities.getUnit(cs);
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.
             formatter.append(unit);
