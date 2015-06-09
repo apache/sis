@@ -1306,7 +1306,7 @@ public class Formatter implements Localized {
     /**
      * Adds a unit to use for the next measurements of the quantity {@code Q}. The given unit will apply to
      * all WKT elements containing a value of quantity {@code Q} without their own {@code UNIT[…]} element,
-     * until the {@link #removeContextualUnit(Unit)} method is invoked with a unit of the same quantity.
+     * until the {@link #restoreContextualUnit(Unit, Unit)} method is invoked.
      *
      * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
@@ -1328,11 +1328,55 @@ public class Formatter implements Localized {
     }
 
     /**
+     * Restores the contextual unit to its previous state before the call to {@link #addContextualUnit(Unit)}.
+     * This method is used in the following pattern:
+     *
+     * {@preformat java
+     *   final Unit<?> previous = formatter.addContextualUnit(unit);
+     *   // ... format some WKT elements here.
+     *   formatter.restoreContextualUnit(unit, previous);
+     * }
+     *
+     * @param  unit The value given in argument to {@code addContextualUnit(unit)} (can be {@code null}).
+     * @param  previous The value returned by {@code addContextualUnit(unit)} (can be {@code null}).
+     * @throws IllegalStateException if this method has not been invoked in the pattern documented above.
+     *
+     * @since 0.6
+     */
+    public void restoreContextualUnit(final Unit<?> unit, final Unit<?> previous) {
+        if (previous == null) {
+            if (unit != null && units.remove(unit.toSI()) != unit) {
+                /*
+                 * The unit that we removed was not the expected one. Probably the user has invoked
+                 * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
+                 * However this check does not work in Convention.WKT1_COMMON_UNITS mode, since the
+                 * map is always empty in that mode.
+                 */
+                if (!convention.usesCommonUnits()) {
+                    throw new IllegalStateException();
+                }
+            }
+        } else if (units.put(previous.toSI(), previous) != unit) {
+            /*
+             * The unit that we replaced was not the expected one. Probably the user has invoked
+             * addContextualUnit(…) again without a matching call to restoreContextualUnit(…).
+             * Note that this case should never happen in Convention.WKT1_COMMON_UNITS mode,
+             * since 'previous' should never be non-null in that mode (if the user followed
+             * the documented pattern).
+             */
+            throw new IllegalStateException();
+        }
+    }
+
+    /**
      * Removes the unit previously added by a call to {@code addContextualUnit(unit)}.
      * If the given unit is null, then this method does nothing.
      *
      * @param unit The contextual unit to remove, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #restoreContextualUnit(Unit, Unit)}.
      */
+    @Deprecated
     public void removeContextualUnit(final Unit<?> unit) {
         if (unit != null) {
             units.remove(unit.toSI());
@@ -1340,14 +1384,14 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the unit to use instead than the given one, or {@code null} if there is no replacement
-     * for {@code unit}. This method searches for a unit specified by {@link #addContextualUnit(Unit)}
+     * Returns the unit to use instead than the given one, or {@code unit} if there is no replacement.
+     * This method searches for a unit specified by {@link #addContextualUnit(Unit)}
      * which {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.
      *
      * @param  <Q>  The quantity of the unit.
      * @param  unit The unit to replace by the contextual unit, or {@code null}.
      * @return A contextual unit compatible with the given unit, or {@code unit}
-     *         if no contextual unit has been found.
+     *         (which may be null) if no contextual unit has been found.
      */
     public <Q extends Quantity> Unit<Q> toContextualUnit(final Unit<Q> unit) {
         if (unit != null) {
@@ -1357,7 +1401,7 @@ public class Formatter implements Localized {
                 return candidate;
             }
         }
-        return null;
+        return unit;
     }
 
     /**
