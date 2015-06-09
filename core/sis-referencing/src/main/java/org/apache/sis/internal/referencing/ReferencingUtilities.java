@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.Collection;
 import java.util.logging.Logger;
 import javax.measure.unit.Unit;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
@@ -112,12 +111,12 @@ public final class ReferencingUtilities extends Static {
      * The preference will be given to the longitude axis, if found.
      *
      * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
-     * @return The angular unit, of {@link NonSI#DEGREE_ANGLE} if no angular unit was found.
+     * @return The angular unit, of {@code null} if no angular unit was found.
      *
      * @since 0.6
      */
     public static Unit<Angle> getAngularUnit(final CoordinateSystem cs) {
-        Unit<Angle> unit = NonSI.DEGREE_ANGLE;
+        Unit<Angle> unit = null;
         if (cs != null) {
             for (int i = cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
