@@ -102,7 +102,8 @@ public final strictfp class WKTFormatTest extends TestCase {
     public void testConsistencyOfWKT1_WithCommonUnits() throws ParseException {
         format = new WKTFormat(null, null);
         format.setConvention(Convention.WKT1_COMMON_UNITS);
-        parser = format;
+        parser = new WKTFormat(null, null);
+        parser.setConvention(Convention.WKT1);
         testConsistency();
     }
 
@@ -147,15 +148,14 @@ public final strictfp class WKTFormatTest extends TestCase {
                 +   "AXIS[“Long”,EAST],"
                 +   "AUTHORITY[“EPSG”,“4807”]],"
                 + "PROJECTION[“Lambert_Conformal_Conic_1SP”],"
-                + "PARAMETER[“latitude_of_origin”,49.5],"
+                + "PARAMETER[“latitude_of_origin”,55],"             // 55 grads = 49.5 degrees
                 + "PARAMETER[“central_meridian”,0],"
                 + "PARAMETER[“scale_factor”,0.999877341],"
-                + "PARAMETER[“false_easting”,600000],"
-                + "PARAMETER[“false_northing”,1200000],"
-                + "UNIT[“metre”,1,AUTHORITY[“EPSG”,“9001”]],"
+                + "PARAMETER[“false_easting”,600],"
+                + "PARAMETER[“false_northing”,1200],"
+                + "UNIT[“km”,1000],"
                 + "AXIS[“X”,EAST],"
-                + "AXIS[“Y”,NORTH],"
-                + "AUTHORITY[“EPSG”,“27581”]]");
+                + "AXIS[“Y”,NORTH]]");
 
         testConsistency(
                 "VERT_CS[“mean sea level depth”,"
