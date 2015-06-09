@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -178,6 +180,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         WKTUtilities.appendName(this, formatter, null);
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = (convention.majorVersion() == 1);
+        CoordinateSystem cs = getCoordinateSystem();
         /*
          * Unconditionally format the datum element, followed by the prime meridian.
          * The prime meridian is part of datum according ISO 19111, but is formatted
@@ -188,13 +191,16 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         formatter.append(toFormattable(datum));
         formatter.newLine();
         final PrimeMeridian pm = datum.getPrimeMeridian();
+        final Unit<Angle> angularUnit = ReferencingUtilities.getAngularUnit(cs);
         if (convention != Convention.WKT2_SIMPLIFIED ||
                 ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
         {
+            final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
             formatter.indent(1);
             formatter.append(toFormattable(pm));
             formatter.indent(-1);
             formatter.newLine();
+            formatter.restoreContextualUnit(angularUnit, oldUnit);
         }
         /*
          * Get the coordinate system to format. This will also determine the units to write and the keyword to
@@ -205,7 +211,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * NOT create an instance of a subclass (because the distinction between geographic and geocentric CRS
          * is not anymore in ISO 19111:2007).
          */
-        CoordinateSystem cs = getCoordinateSystem();
         final boolean isBaseCRS;
         if (isWKT1) {
             if (!(cs instanceof EllipsoidalCS)) { // Tested first because this is the most common case.
@@ -228,12 +233,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * Note that even if we do not format the CS, we may still write the units if we are formatting in "simplified"
          * mode (as opposed to the more verbose mode). This looks like the opposite of what we would expect, but this is
          * because formatting the unit here allow us to avoid repeating the unit in projection parameters when this CRS
-         * is part of a ProjectedCRS.
+         * is part of a ProjectedCRS. Note however that in such case, the units to format are the angular units because
+         * the linear units will be formatted in the enclosing PROJCS[…] element.
          */
         if (!isBaseCRS) {
-            formatCS(formatter, cs, isWKT1);    // Will also format the axis unit.
+            formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);    // Will also format the axes unit.
         } else if (convention.isSimplified()) {
-            formatter.append(formatter.toContextualUnit(ReferencingUtilities.getAngularUnit(cs)));
+            formatter.append(formatter.toContextualUnit(angularUnit));
         }
         /*
          * For WKT 1, the keyword depends on the subclass: "GeogCS" for GeographicCRS or "GeocCS" for GeocentricCRS.

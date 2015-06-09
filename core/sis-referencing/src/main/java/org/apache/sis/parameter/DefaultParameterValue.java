@@ -481,6 +481,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
+     * Returns {@code true} if the given value is an instance of one of the types documented in {@link #valueFile()}.
+     */
+    private static boolean isFile(final Object value) {
+        return (value instanceof URI || value instanceof URL || value instanceof File || value instanceof Path);
+    }
+
+    /**
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
     private IllegalStateException incompatibleValue(final Object value) {
@@ -819,9 +826,47 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
      * }
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * Version 1 of WKT format did not specified the parameter unit explicitely.
-     * Instead, the unit was inherited from the enclosing element.</div>
+     * <div class="section">Unit of measurement</div>
+     * The units of measurement were never specified in WKT 1 format, and are optional in WKT 2 format.
+     * If the units are not specified, then they are inferred from the context.
+     * Typically, parameter values that are lengths are given in the unit for the projected CRS axes
+     * while parameter values that are angles are given in the unit for the base geographic CRS.
+     *
+     * <div class="note"><b>Example:</b>
+     * The snippet below show WKT representations of the map projection parameters of a projected CRS
+     * (most other elements are omitted). The map projection uses a <cite>"Latitude of natural origin"</cite>
+     * parameters which is set to 52 <strong>grads</strong>, as defined in the {@code UNIT[…]} element of the
+     * enclosing CRS. A similar rule applies to <cite>“False easting”</cite> and <cite>“False northing”</cite>
+     * parameters, which are in kilometres in this example.
+     *
+     * <p><b>WKT 1:</b></p>
+     * {@preformat wkt
+     *   PROJCS[…,
+     *     GEOGCS[…,
+     *       UNIT[“grad”, 0.015707963267948967]],       // Unit for all angles
+     *     PROJECTION[“Lambert_Conformal_Conic_1SP”]
+     *     PARAMETER[“latitude_of_origin”, 52.0],       // In grads
+     *     PARAMETER[“scale_factor”, 0.99987742],
+     *     PARAMETER[“false_easting”, 600.0],           // In kilometres
+     *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
+     *     UNIT[“km”, 1000]]                            // Unit for all lengths
+     * }
+     *
+     * <p><b>WKT 2:</b></p>
+     * {@preformat wkt
+     *   ProjectedCRS[…
+     *     BaseGeodCRS[…
+     *       AngleUnit[“grad”, 0.015707963267948967]],
+     *     Conversion["Lambert zone II",
+     *       Method["Lambert Conic Conformal (1SP)"],
+     *       Parameter["Latitude of natural origin", 52.0],
+     *       Parameter["Scale factor at natural origin", 0.99987742],
+     *       Parameter["False easting", 600.0],
+     *       Parameter["False northing", 2200.0]],
+     *     CS["Cartesian", 2],
+     *       LengthUnit["km", 1000]]
+     * }
+     * </div>
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterFile"}.
@@ -840,38 +885,55 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
          * If this parameter value does not use the same unit, then we must convert it.
          * Otherwise we can write the value as-is.
          */
-        final Unit<?> unit = getUnit();  // Gives to users a chance to override this property.
-        if (isWKT1 && targetUnit != null) {
-            double convertedValue;
-            try {
-                convertedValue = doubleValue(targetUnit);
-            } catch (IllegalStateException exception) {
-                // May happen if a parameter is mandatory (e.g. "semi-major")
-                // but no value has been set for this parameter.
-                formatter.setInvalidWKT(descriptor, exception);
-                convertedValue = Double.NaN;
-            }
+        final T       value = getValue();   // Gives to users a chance to override this property.
+        final Unit<?> unit  = getUnit();    // Gives to users a chance to override this property.
+        double convertedValue = Double.NaN;
+        boolean sameUnit = Objects.equals(unit, targetUnit);
+        if (!sameUnit) try {
+            convertedValue = doubleValue(targetUnit);
+            sameUnit = (value instanceof Number) && ((Number) value).doubleValue() == convertedValue;
+        } catch (IllegalStateException exception) {
+            // May happen if a parameter is mandatory (e.g. "semi-major")
+            // but no value has been set for this parameter.
+            formatter.setInvalidWKT(descriptor, exception);
+        }
+        if (isWKT1 && !sameUnit) {
             formatter.append(convertedValue);
+        } else if (!isWKT1 && (unit == null) && isFile(value)) {
+            formatter.append(value.toString(), null);
+            return WKTKeywords.ParameterFile;
         } else {
-            final T value = getValue();  // Gives to users a chance to override this property.
-            if (!isWKT1 && (unit == null) && (value instanceof URI || value instanceof URL
-                    || value instanceof File || value instanceof Path))
-            {
-                formatter.append(value.toString(), null);
-                return WKTKeywords.ParameterFile;
-            }
             formatter.appendAny(value);
         }
         /*
          * In the WKT 2 specification, the unit and the identifier are optional but recommended.
          * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
          * The only exception is when the parameter unit is not the same than the contextual unit,
-         * in which case we have no choice: we must format that unit.
+         * in which case we have no choice: we must format that unit, unless the numerical value
+         * is identical in both units (typically the 0 value).
          */
-        if (unit != null && !isWKT1 && (!convention.isSimplified() || !unit.equals(targetUnit))) {
+        if (!isWKT1 && (!sameUnit || !convention.isSimplified() || !hasContextualUnit(formatter))) {
             formatter.append(unit);
             // ID will be added by the Formatter itself.
         }
         return WKTKeywords.Parameter;
+    }
+
+    /**
+     * Returns {@code true} if the given formatter has contextual units, in which case the WKT format can omit
+     * the unit of measurement. The contextual units may be defined either in the direct parent or in the parent
+     * of the parent, depending if we are formatting WKT1 or WKT2 respectively. This is because WKT2 wraps the
+     * parameters in an additional {@code CONVERSION[…]} element which is not present in WKT1.
+     *
+     * <p>Taking the example documented in {@link #formatTo(Formatter)}:</p>
+     * <ul>
+     *   <li>in WKT 1, {@code PROJCS[…]} is the immediate parent of {@code PARAMETER[…]}, but</li>
+     *   <li>in WKT 2, {@code ProjectedCRS[…]} is the parent of {@code Conversion[…]},
+     *       which is the parent of {@code Parameter[…]}.</li>
+     * </ul>
+     */
+    private static boolean hasContextualUnit(final Formatter formatter) {
+        return formatter.hasContextualUnit(1) ||    // In WKT1
+               formatter.hasContextualUnit(2);      // In WKT2
     }
 }
