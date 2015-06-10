@@ -503,7 +503,10 @@ public class WKTFormat extends CompoundFormat<Object> {
             if (factories == null) {
                 factories = new HashMap<>();
             }
-            parser = new GeodeticObjectParser(symbols, convention, false, getLocale(Locale.Category.DISPLAY), factories);
+            parser = new GeodeticObjectParser(symbols,
+                    (NumberFormat) getFormat(Number.class),
+                    (DateFormat)   getFormat(Date.class),
+                    convention, false, getLocale(Locale.Category.DISPLAY), factories);
         }
         return parser.parseObject(text.toString(), pos);
     }
