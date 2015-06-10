@@ -17,12 +17,15 @@
 package org.apache.sis.internal.referencing;
 
 import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.util.Static;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -32,12 +35,15 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * Utilities related to version 1 of Well Known Text format.
  * Defined in a separated classes for reducing classes loading when not necessary.
  *
+ * <p>This class implements the {@link AxisFilter} interface for opportunistic reasons.
+ * Callers should ignore this implementation detail.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
-public final class Legacy extends Static {
+public final class Legacy implements AxisFilter {
     /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
@@ -56,16 +62,13 @@ public final class Legacy extends Static {
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, SI.METRE));
 
     /**
-     * Do not allow instantiation of this class.
-     */
-    private Legacy() {
-    }
-
-    /**
      * The standard three-dimensional Cartesian CS as defined by ISO 19111.
+     *
+     * @param  unit The linear unit of the desired coordinate system, or {@code null} for metres.
+     * @return The ISO 19111 coordinate system.
      */
-    private static CartesianCS standard() {
-        return (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+    public static CartesianCS standard(final Unit<?> unit) {
+        return replaceUnit((CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem(), unit);
     }
 
     /**
@@ -79,7 +82,7 @@ public final class Legacy extends Static {
      *         or {@code cs} if the CS axes should be used as-is.
      */
     public static CartesianCS forGeocentricCRS(final CartesianCS cs, final boolean toLegacy) {
-        final CartesianCS check = toLegacy ? standard() : LEGACY;
+        final CartesianCS check = toLegacy ? standard(null) : LEGACY;
         final int dimension = check.getDimension();
         if (cs.getDimension() != dimension) {
             return cs;
@@ -89,6 +92,63 @@ public final class Legacy extends Static {
                 return cs;
             }
         }
-        return toLegacy ? LEGACY : standard();
+        final Unit<?> unit = ReferencingUtilities.getUnit(cs);
+        return toLegacy ? replaceUnit(LEGACY, unit) : standard(unit);
+    }
+
+    /**
+     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
+     * This method presume that the given {@code cs} uses {@link SI#METRE} (this is not verified).
+     *
+     * @param  cs The coordinate system for which to perform the unit replacement.
+     * @param  unit The unit of measurement for the geocentric CRS axes.
+     * @return The coordinate system for a geocentric CRS with axes using the given unit of measurement.
+     *
+     * @since 0.6
+     */
+    public static CartesianCS replaceUnit(CartesianCS cs, final Unit<?> unit) {
+        if (unit != null && !unit.equals(SI.METRE)) {
+            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new Legacy(unit));
+        }
+        return cs;
+    }
+
+    /**
+     * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
+     */
+    private Legacy(final Unit<?> unit) {
+        this.unit = unit;
+    }
+
+    /**
+     * The value to be returned by {@link #getUnitReplacement(Unit)}.
+     */
+    private final Unit<?> unit;
+
+    /**
+     * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
+     *
+     * @param  unit ignored.
+     * @return The unit of the new coordinate system.
+     */
+    @Override
+    public Unit<?> getUnitReplacement(final Unit<?> unit) {
+        return this.unit;
+    }
+
+    /**
+     * Returns the given axis unchanged.
+     */
+    @Override
+    public boolean accept(final CoordinateSystemAxis axis) {
+        return true;
+    }
+
+    /**
+     * Returns the given direction unchanged.
+     */
+    @Override
+    public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+        return direction;
     }
 }

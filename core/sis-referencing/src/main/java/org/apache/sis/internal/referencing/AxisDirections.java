@@ -20,7 +20,7 @@ import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
@@ -611,7 +611,7 @@ public final class AxisDirections extends Static {
         for (final CoordinateSystemAxis axis : axes) {
             buffer.append(separator).append(Types.getCodeLabel(axis.getDirection()));
             separator = ", ";
-            final String symbol = Utilities.toString(axis.getUnit());
+            final String symbol = PatchedUnitFormat.toString(axis.getUnit());
             if (symbol != null && !symbol.isEmpty()) {
                 buffer.append(" (").append(symbol).append(')');
             }

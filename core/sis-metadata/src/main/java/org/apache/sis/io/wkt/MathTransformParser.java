@@ -17,6 +17,8 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Locale;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
@@ -92,18 +94,22 @@ class MathTransformParser extends Parser {
      * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), mtFactory, null);
+        this(Symbols.getDefault(), null, null, mtFactory, null);
     }
 
     /**
      * Creates a parser using the specified set of symbols and factory.
      *
-     * @param symbols     The set of symbols to use.
-     * @param mtFactory   The factory to use to create {@link MathTransform} objects.
-     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param symbols       The set of symbols to use.
+     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param mtFactory     The factory to use to create {@link MathTransform} objects.
+     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    public MathTransformParser(final Symbols symbols, final MathTransformFactory mtFactory, final Locale errorLocale) {
-        super(symbols, errorLocale);
+    MathTransformParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
+            final MathTransformFactory mtFactory, final Locale errorLocale)
+    {
+        super(symbols, numberFormat, dateFormat, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
     }
