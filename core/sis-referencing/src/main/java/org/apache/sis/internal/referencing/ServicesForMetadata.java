@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 
@@ -34,7 +33,6 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -58,8 +56,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -471,23 +467,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      */
     @Override
     public CartesianCS getGeocentricCS(final Unit<Length> linearUnit) {
-        CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
-        if (!SI.METRE.equals(linearUnit)) {
-            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-                @Override public boolean accept(final CoordinateSystemAxis axis) {
-                    return true;
-                }
-
-                @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
-                    return linearUnit;
-                }
-
-                @Override public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-                    return direction;
-                }
-            });
-        }
-        return cs;
+        return Legacy.standard(linearUnit);
     }
 
     /**

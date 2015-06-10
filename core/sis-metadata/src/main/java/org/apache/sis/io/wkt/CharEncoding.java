@@ -111,7 +111,7 @@ public abstract class CharEncoding implements Serializable {
         if (a != null && !a.isEmpty() && a.length() <= 2) {
             switch (a.charAt(0)) {
                 /*
-                 * ISO 19162 §7.5.3 recommendations:
+                 * ISO 19162:2015 §7.5.3 recommendations:
                  *
                  *   a) For PolarCS using Greek letter θ for direction, the letter ‘U’ should be used in WKT.
                  *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
@@ -122,7 +122,7 @@ public abstract class CharEncoding implements Serializable {
                     break;
                 }
                 /*
-                 * ISO 19162 §7.5.3 requirement (ii) and recommendation (b):
+                 * ISO 19162:2015 §7.5.3 requirement (ii) and recommendation (b):
                  *
                  *  ii) Greek letters φ and λ for geodetic latitude and longitude must be replaced by Latin char.
                  *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.

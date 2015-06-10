@@ -31,6 +31,8 @@ import org.opengis.referencing.datum.*;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -85,7 +87,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void setConvention(final Convention convention, final boolean isAxisIgnored) {
         final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, convention, isAxisIgnored, p.errorLocale, null);
+        parser = new GeodeticObjectParser(p.symbols, null, null, convention, isAxisIgnored, p.errorLocale, null);
     }
 
     /**
@@ -322,7 +324,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
 
         GeographicCRS crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
-        PrimeMeridian pm = verifyNTF(crs.getDatum());
+        PrimeMeridian pm = verifyNTF(crs.getDatum(), false);
         assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
         EllipsoidalCS cs = crs.getCoordinateSystem();
@@ -344,7 +346,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         setConvention(Convention.WKT1_COMMON_UNITS, true);
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
-        pm = verifyNTF(crs.getDatum());
+        pm = verifyNTF(crs.getDatum(), false);
         assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
         cs = crs.getCoordinateSystem();
@@ -379,7 +381,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
-        PrimeMeridian pm = verifyNTF(crs.getDatum());
+        PrimeMeridian pm = verifyNTF(crs.getDatum(), true);
         assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
         ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
@@ -399,7 +401,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
-        pm = verifyNTF(crs.getDatum());
+        pm = verifyNTF(crs.getDatum(), true);
         assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
         param = verifyNTF(crs.getConversionFromBase().getParameterValues());
@@ -412,10 +414,18 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * This is used by the methods in this class which test a CRS using less frequently used units and prime
      * meridian.
      *
+     * @param  datum The datum to verify.
+     * @param  hasToWGS84 Whether the datum is expected to have a {@code TOWGS84[…]} element.
      * @return The prime meridian, to be verified by the caller because the unit of measurement depends on the test.
      */
-    private static PrimeMeridian verifyNTF(final GeodeticDatum datum) {
+    private static PrimeMeridian verifyNTF(final GeodeticDatum datum, final boolean hasToWGS84) {
         assertNameAndIdentifierEqual("Nouvelle Triangulation Française (Paris)", 0, datum);
+
+        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) datum).getBursaWolfParameters();
+        assertEquals("BursaWolfParameters", hasToWGS84 ? 1 : 0, bwp.length);
+        if (hasToWGS84) {
+            assertArrayEquals("BursaWolfParameters", new double[] {-168, -60, 320}, bwp[0].getValues(), STRICT);
+        }
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("Clarke 1880 (IGN)", 0, ellipsoid);
@@ -566,7 +576,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“FRANCE/NTF/Lambert III”," +
                 "GEOGCS[“”," + // Missing name (the purpose of this test).
-                "DATUM[“NTF=GR3DF97A”,TOWGS84[-168, -60, 320, 0, 0, 0, 0] ," + // Intentionally misplaced coma.
+                "DATUM[“NTF=GR3DF97A”,TOWGS84[-168, -60, 320] ," + // Intentionally misplaced coma.
                 "SPHEROID[“Clarke 1880 (IGN)”,6378249.2,293.4660212936269]]," +
                 "PRIMEM[“Greenwich”,0],UNIT[“Degrees”,0.0174532925199433]," +
                 "AXIS[“Long”,East],AXIS[“Lat”,North]]," +
@@ -587,6 +597,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final GeodeticDatum datum = geoCRS.getDatum();
         assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, datum);
         assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
+        assertArrayEquals("BursaWolfParameters", new double[] {-168, -60, 320},
+                ((DefaultGeodeticDatum) datum).getBursaWolfParameters()[0].getValues(), STRICT);
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("Clarke 1880 (IGN)", 0, ellipsoid);

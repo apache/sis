@@ -16,7 +16,11 @@
  */
 package org.apache.sis.referencing.crs;
 
+import javax.measure.unit.SI;
+import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -30,7 +34,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -54,6 +58,30 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "  AXIS[“Y”, EAST],\n" +
                 "  AXIS[“Z”, NORTH]]",
                 HardCodedCRS.GEOCENTRIC);
+    }
+
+    /**
+     * Tests WKT 1 formatting using axes in kilometres. The intend of this test is to verify that
+     * the coordinate system replacement documented in {@link #testWKT1()} preserves the axis units.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_kilometres() {
+        DefaultGeocentricCRS crs = HardCodedCRS.GEOCENTRIC;
+        crs = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(crs), crs.getDatum(),
+                Legacy.replaceUnit((CartesianCS) crs.getCoordinateSystem(), SI.KILOMETRE));
+        assertWktEquals(Convention.WKT1,
+                "GEOCCS[“Geocentric”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
+                "  UNIT[“km”, 1000],\n" +
+                "  AXIS[“X”, OTHER],\n" +
+                "  AXIS[“Y”, EAST],\n" +
+                "  AXIS[“Z”, NORTH]]",
+                crs);
     }
 
     /**
