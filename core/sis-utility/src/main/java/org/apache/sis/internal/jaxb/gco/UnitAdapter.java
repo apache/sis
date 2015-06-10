@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.measure.unit.Unit;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 
 
 /**
@@ -55,7 +55,7 @@ public class UnitAdapter extends XmlAdapter<String, Unit<?>> {
      */
     @Override
     public String marshal(final Unit<?> value) {
-        return Utilities.toString(value);
+        return PatchedUnitFormat.toString(value);
     }
 
     /**
