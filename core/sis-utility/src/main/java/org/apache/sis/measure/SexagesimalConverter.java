@@ -24,6 +24,7 @@ import javax.measure.quantity.Angle;
 import javax.measure.converter.UnitConverter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 
 import static org.apache.sis.math.MathFunctions.truncate;
 
@@ -43,7 +44,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  */
 class SexagesimalConverter extends UnitConverter { // Intentionally not final.
@@ -114,6 +115,13 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
      */
     static final Unit<Angle> DMS_SCALED = NonSI.DEGREE_ANGLE.transform(
             new SexagesimalConverter(true, 1).inverse()).asType(Angle.class);//.alternate("DMS");
+
+    /*
+     * Declares the units that we were not able to declare in calls to Unit.alternate(String).
+     */
+    static {
+        PatchedUnitFormat.init(DM, "D.M", DMS, "D.MS", DMS_SCALED, "DMS");
+    }
 
     /**
      * {@code true} if the seconds field is present.
