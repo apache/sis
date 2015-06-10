@@ -37,7 +37,7 @@ import org.apache.sis.io.wkt.Formatter;
  * This class does not know whether the meridian is relative to Greenwich or any other reference meridian.
  * The reference meridian shall be inferred from the geodetic datum of the {@code GeographicCRS} instance
  * that contains (through its coordinate system) the axes having those directions. This is consistent with
- * ISO 19162 §7.5.4(iv) - WKT 2 formatting.
+ * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
  * <div class="section">Immutability and thread safety</div>
  * This final class is immutable and thus inherently thread-safe.

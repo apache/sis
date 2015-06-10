@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -481,7 +481,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
      * or an empty string (never {@code null}) if none.
      */
     private static String getUnit(final ParameterDescriptor<?> param) {
-        final String unit = Utilities.toString(param.getUnit());
+        final String unit = PatchedUnitFormat.toString(param.getUnit());
         if (unit != null && !unit.isEmpty()) {
             return " " + unit;
         }

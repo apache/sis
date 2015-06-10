@@ -66,6 +66,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -219,7 +220,7 @@ public class Formatter implements Localized {
     /**
      * The object to use for formatting unit symbols.
      */
-    private final UnitFormat unitFormat;
+    private final PatchedUnitFormat unitFormat;
 
     /**
      * Dummy field position.
@@ -338,7 +339,7 @@ public class Formatter implements Localized {
         this.indentation   = (byte) indentation;
         this.numberFormat  = symbols.createNumberFormat();
         this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN + "'Z'", symbols.getLocale());
-        this.unitFormat    = UnitFormat.getInstance(symbols.getLocale());
+        this.unitFormat    = new PatchedUnitFormat(UnitFormat.getInstance(symbols.getLocale()));
         this.buffer        = new StringBuffer();
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
@@ -358,7 +359,7 @@ public class Formatter implements Localized {
         this.indentation   = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat  = numberFormat; // No clone needed.
         this.dateFormat    = dateFormat;   // No clone needed.
-        this.unitFormat    = unitFormat;   // No clone needed.
+        this.unitFormat    = new PatchedUnitFormat(unitFormat);
         // Do not set the buffer. It will be set by WKTFormat.format(…).
     }
 
