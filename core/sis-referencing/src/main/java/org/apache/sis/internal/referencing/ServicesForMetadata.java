@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 
@@ -57,8 +56,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -470,15 +467,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      */
     @Override
     public CartesianCS getGeocentricCS(final Unit<Length> linearUnit) {
-        CartesianCS cs = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
-        if (!SI.METRE.equals(linearUnit)) {
-            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-                @Override public Unit<?> getUnitReplacement(final Unit<?> unit) {
-                    return linearUnit;
-                }
-            });
-        }
-        return cs;
+        return Legacy.standard(linearUnit);
     }
 
     /**
