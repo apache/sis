@@ -802,7 +802,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             }
             if (name != null && !isInternal) {
                 if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE)) {
-                    name = AxisNames.LATITUDE;    // ISO 19162 §7.5.3(ii)
+                    name = AxisNames.LATITUDE;    // ISO 19162:2015 §7.5.3(ii)
                 } else if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) {
                     name = AxisNames.LONGITUDE;
                 }
@@ -811,7 +811,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             }
         }
         /*
-         * ISO 19162 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
+         * ISO 19162:2015 §7.5.3 suggests to put abbreviation in parentheses, e.g. "Easting (x)".
          * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
          * special case of Geocentric axis, and disallows Greek letters.
          */

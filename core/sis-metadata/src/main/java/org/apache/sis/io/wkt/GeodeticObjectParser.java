@@ -411,8 +411,8 @@ final class GeodeticObjectParser extends MathTransformParser {
         String name = CharSequences.trimWhitespaces(element.pullString("name"));
         if (isGeographic) {
             /*
-             * The longitude and latitude axis names are explicitly fixed by ISO 19111 to "Geodetic longitude"
-             * and "Geodetic latitude". But ISO 19162 §7.5.3(ii) said that the "Geodetic" part in those names
+             * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
+             * and "Geodetic latitude". But ISO 19162:2015 §7.5.3(ii) said that the "Geodetic" part in those names
              * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
              * method performs this removal, so we apply the reverse operation here.
              */
