@@ -87,7 +87,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void setConvention(final Convention convention, final boolean isAxisIgnored) {
         final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, convention, isAxisIgnored, p.errorLocale, null);
+        parser = new GeodeticObjectParser(p.symbols, null, null, convention, isAxisIgnored, p.errorLocale, null);
     }
 
     /**

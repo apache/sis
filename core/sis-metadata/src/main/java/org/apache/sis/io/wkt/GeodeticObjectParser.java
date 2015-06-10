@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
@@ -156,7 +158,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Creates a parser using the default set of symbols and factories.
      */
     public GeodeticObjectParser() {
-        this(Symbols.getDefault(), Convention.DEFAULT, false, null, null);
+        this(Symbols.getDefault(), null, null, Convention.DEFAULT, false, null, null);
     }
 
     /**
@@ -176,7 +178,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
+        super(Symbols.getDefault(), null, null, mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
@@ -188,17 +190,21 @@ final class GeodeticObjectParser extends MathTransformParser {
 
     /**
      * Constructs a parser for the specified set of symbols using the specified set of factories.
+     * This constructor is for {@link WKTFormat} usage only.
      *
      * @param symbols       The set of symbols to use.
+     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param convention    The WKT convention to use.
      * @param isAxisIgnored {@code true} if {@code AXIS} elements should be ignored.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      * @param factories     On input, the factories to use. On output, the factories used. Can be null.
      */
-    GeodeticObjectParser(final Symbols symbols, final Convention convention, final boolean isAxisIgnored,
-            final Locale errorLocale, final Map<Class<?>,Factory> factories)
+    GeodeticObjectParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
+            final Convention convention, final boolean isAxisIgnored, final Locale errorLocale,
+            final Map<Class<?>,Factory> factories)
     {
-        super(symbols, getFactory(MathTransformFactory.class, factories), errorLocale);
+        super(symbols, numberFormat, dateFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
