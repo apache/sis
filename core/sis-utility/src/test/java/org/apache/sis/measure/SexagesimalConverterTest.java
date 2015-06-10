@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Quantity;
 import javax.measure.converter.UnitConverter;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final strictfp class SexagesimalConverterTest extends TestCase {
@@ -91,5 +92,16 @@ public final strictfp class SexagesimalConverterTest extends TestCase {
         checkConversion(10.50,              DEGREE_ANGLE, 103000,     DMS_SCALED);
         checkConversion(10.99,              DEGREE_ANGLE, 105924,     DMS_SCALED);
         checkConversion(44.505590277777777, DEGREE_ANGLE, 443020.125, DMS_SCALED);
+    }
+
+    /**
+     * Tests {@link PatchedUnitFormat#toString(Unit)}.
+     * Tested here because it can be tested only after {@link SexagesimalConverter} initialization.
+     */
+    @Test
+    public void testPatchedUnitFormat() {
+        assertEquals("D.M",  PatchedUnitFormat.toString(DM));
+        assertEquals("D.MS", PatchedUnitFormat.toString(DMS));
+        assertEquals("DMS",  PatchedUnitFormat.toString(DMS_SCALED));
     }
 }
