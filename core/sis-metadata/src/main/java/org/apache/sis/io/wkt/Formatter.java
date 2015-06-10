@@ -1123,16 +1123,16 @@ public class Formatter implements Localized {
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            String keyword = "Unit";
+            String keyword = WKTKeywords.Unit;
             if (!convention.isSimplified()) {
                 if (Units.isLinear(unit)) {
-                    keyword = "LengthUnit";
+                    keyword = WKTKeywords.LengthUnit;
                 } else if (Units.isAngular(unit)) {
-                    keyword = "AngleUnit";
+                    keyword = WKTKeywords.AngleUnit;
                 } else if (Units.isScale(unit)) {
-                    keyword = "ScaleUnit";
+                    keyword = WKTKeywords.ScaleUnit;
                 } else if (Units.isTemporal(unit)) {
-                    keyword = "TimeUnit";
+                    keyword = WKTKeywords.TimeUnit;
                 }
             }
             openElement(false, keyword);
