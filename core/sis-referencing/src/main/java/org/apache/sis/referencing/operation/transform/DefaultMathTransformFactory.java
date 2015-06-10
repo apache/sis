@@ -53,7 +53,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -677,7 +676,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getLastMethodUsed()
      */
     @Override
-    public MathTransform createParameterizedTransform(ParameterValueGroup parameters)
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
         final String methodName = parameters.getDescriptor().getName().getCode();
@@ -688,26 +687,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
                         Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
             }
-            /*
-             * If the "official" parameter descriptor was used, that descriptor should have already
-             * enforced argument validity. Consequently, there is no need to performs the check and
-             * we will avoid it as a performance enhancement.
-             */
-            final ParameterDescriptorGroup expected = method.getParameters();
-            final boolean isConform = expected.equals(parameters.getDescriptor());
             MathTransform transform;
             try {
-                if (!isConform) {
-                    /*
-                     * Copies all values from the user-supplied group to the provider-supplied group.
-                     * The later should perform all needed checks. It is supplier's responsibility to
-                     * know about alias (e.g. OGC, EPSG, ESRI),  since the caller probably used names
-                     * from only one authority.
-                     */
-                    final ParameterValueGroup copy = expected.createValue();
-                    Parameters.copy(parameters, copy);
-                    parameters = copy;
-                }
                 transform  = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException exception) {
                 /*

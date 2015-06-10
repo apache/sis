@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see MathTransformFactory
@@ -144,6 +144,52 @@ public final class MathTransforms extends Static {
             return candidate;
         }
         return new ProjectiveTransform(matrix);
+    }
+
+    /**
+     * Puts together a list of independent math transforms, each of them operating on a subset of ordinate values.
+     * This method is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
+     * transform as an aggregation of 3 simpler transforms operating on (<var>x</var>,<var>y</var>), (<var>z</var>)
+     * and (<var>t</var>) values respectively.
+     *
+     * <p>Invariants:</p>
+     * <ul>
+     *   <li>The {@linkplain AbstractMathTransform#getSourceDimensions() source dimensions} of the returned transform
+     *       is equals to the sum of the source dimensions of all given transforms.</li>
+     *   <li>The {@linkplain AbstractMathTransform#getTargetDimensions() target dimensions} of the returned transform
+     *       is equals to the sum of the target dimensions of all given transforms.</li>
+     * </ul>
+     *
+     * @param  transforms The transforms to aggregate in a single transform, in the given order.
+     * @return The aggregation of all given transforms, or {@code null} if the given {@code transforms} array was empty.
+     *
+     * @see PassThroughTransform
+     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
+     *
+     * @since 0.6
+     */
+    public static MathTransform compound(final MathTransform... transforms) {
+        ensureNonNull("transforms", transforms);
+        int sum = 0;
+        final int[] dimensions = new int[transforms.length];
+        for (int i=0; i<transforms.length; i++) {
+            final MathTransform tr = transforms[i];
+            ensureNonNullElement("transforms", i, tr);
+            sum += (dimensions[i] = tr.getSourceDimensions());
+        }
+        MathTransform compound = null;
+        int firstAffectedOrdinate = 0;
+        for (int i=0; i<transforms.length; i++) {
+            MathTransform tr = transforms[i];
+            tr = PassThroughTransform.create(firstAffectedOrdinate, tr, sum - (firstAffectedOrdinate += dimensions[i]));
+            if (compound == null) {
+                compound = tr;
+            } else {
+                compound = ConcatenatedTransform.create(compound, tr);
+            }
+        }
+        assert isValid(getSteps(compound)) : compound;
+        return compound;
     }
 
     /**

@@ -100,14 +100,20 @@ abstract class Parser implements WKTParser {
     /**
      * Constructs a parser using the specified set of symbols.
      *
-     * @param symbols     The set of symbols to use.
-     * @param errorLocale The locale for error messages (not for parsing), or {@code null} for the system default.
+     * @param symbols       The set of symbols to use.
+     * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    Parser(final Symbols symbols, final Locale errorLocale) {
-        this.errorLocale = errorLocale;
+    Parser(final Symbols symbols, NumberFormat numberFormat, final DateFormat dateFormat, final Locale errorLocale) {
         ensureNonNull("symbols", symbols);
-        this.symbols = symbols;
-        numberFormat = symbols.createNumberFormat();
+        if (numberFormat == null) {
+            numberFormat = symbols.createNumberFormat();
+        }
+        this.symbols      = symbols;
+        this.numberFormat = numberFormat;
+        this.dateFormat   = dateFormat;
+        this.errorLocale  = errorLocale;
         if (SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
             final DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
             exponentSymbol = decimalFormat.getDecimalFormatSymbols().getExponentSeparator();

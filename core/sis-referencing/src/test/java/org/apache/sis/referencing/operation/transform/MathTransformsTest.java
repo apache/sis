@@ -18,6 +18,9 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -30,7 +33,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class MathTransformsTest extends TestCase {
@@ -85,5 +88,36 @@ public final strictfp class MathTransformsTest extends TestCase {
         assertMatrixEquals("Step 1", scale, MathTransforms.getMatrix(steps.get(0)), STRICT);
         assertMatrixEquals("Step 3", swap,  MathTransforms.getMatrix(steps.get(2)), STRICT);
         assertInstanceOf  ("Step 2", PassThroughTransform.class, steps.get(1));
+    }
+
+    /**
+     * Tests {@link MathTransforms#compound(MathTransform...)}.
+     * This test uses linear transforms because they are easy to test, but the
+     * {@code MathTransforms.compound(…)} method should work with any transforms.
+     */
+    @Test
+    public void testCompound() {
+        final MathTransform t1 = MathTransforms.linear(new Matrix2(
+            3, -1,   // Random numbers (no real meaning)
+            0,  1));
+        final MathTransform t2 = MathTransforms.linear(new Matrix4(
+            0,  8,  0,  9,
+            5,  0,  0, -7,
+            0,  0,  2,  0,
+            0,  0,  0,  1));
+        final MathTransform t3 = MathTransforms.linear(new Matrix3(
+            0, -5, -3,
+            7,  0, -9,
+            0,  0,  1));
+        final MathTransform r = MathTransforms.compound(t1, t2, t3);
+        assertMatrixEquals("compound", Matrices.create(7, 7, new double[] {
+            3,  0,  0,  0,  0,  0, -1,
+            0,  0,  8,  0,  0,  0,  9,
+            0,  5,  0,  0,  0,  0, -7,
+            0,  0,  0,  2,  0,  0,  0,
+            0,  0,  0,  0,  0, -5, -3,
+            0,  0,  0,  0,  7,  0, -9,
+            0,  0,  0,  0,  0,  0,  1
+        }), MathTransforms.getMatrix(r), STRICT);
     }
 }
