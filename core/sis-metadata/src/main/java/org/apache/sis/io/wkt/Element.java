@@ -494,7 +494,7 @@ final class Element {
      * @throws ParseException if no more element is available.
      */
     public Element pullElement(final String key) throws ParseException {
-        final Element element = pullOptionalElement(key);
+        final Element element = pullOptionalElement(key, null);
         if (element != null) {
             return element;
         }
@@ -504,16 +504,19 @@ final class Element {
     /**
      * Removes the next {@link Element} from the list and returns it.
      *
-     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
+     * @param  key    The element name (e.g. {@code "PrimeMeridian"}).
+     * @param  aktKey An alternative key, or {@code null} if none.
      * @return The next {@link Element} on the list, or {@code null} if no more element is available.
      */
-    public Element pullOptionalElement(final String key) {
+    public Element pullOptionalElement(final String key, final String altKey) {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list != null && key.equalsIgnoreCase(element.keyword)) {
+                if (element.list != null && (key.equalsIgnoreCase(element.keyword) ||
+                       (altKey != null && altKey.equalsIgnoreCase(element.keyword))))
+                {
                     iterator.remove();
                     return element;
                 }
@@ -553,6 +556,15 @@ final class Element {
      */
     public Object peek() {
         return list.isEmpty() ? null : list.getFirst();
+    }
+
+    /**
+     * Returns {@code true} if this element does not contains any remaining child.
+     *
+     * @return {@code true} if there is no child remaining.
+     */
+    public boolean isEmpty() {
+        return list.isEmpty();
     }
 
     /**
