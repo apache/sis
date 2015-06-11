@@ -137,7 +137,7 @@ class MathTransformParser extends Parser {
     final MathTransform parseMathTransform(final Element element, final boolean mandatory) throws ParseException {
         lastMethod = null;
         classification = null;
-        String keyword = WKTKeywords.Param_MT;
+        String keyword = null;
         final Object child = element.peek();
         if (child instanceof Element) {
             keyword = ((Element) child).keyword;
@@ -149,7 +149,7 @@ class MathTransformParser extends Parser {
             }
         }
         if (mandatory) {
-            throw element.keywordNotFound(keyword, keyword == WKTKeywords.Param_MT);
+            throw element.keywordNotFound(keyword);
         }
         return null;
     }

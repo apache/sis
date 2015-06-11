@@ -1487,9 +1487,15 @@ public class Formatter implements Localized {
     /**
      * Returns the error message {@link #isInvalidWKT()} is set, or {@code null} otherwise.
      * If non-null, a cause may be available in the {@link #getErrorCause()} method.
+     *
+     * <div class="note"><b>Note:</b> the message is returned as an {@link InternationalString}
+     * in order to defer the actual message formatting until needed.</div>
      */
-    final String getErrorMessage() {
-        return isInvalidWKT() ? Errors.format(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement) : null;
+    final InternationalString getErrorMessage() {
+        if (!isInvalidWKT()) {
+            return null;
+        }
+        return Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement);
     }
 
     /**

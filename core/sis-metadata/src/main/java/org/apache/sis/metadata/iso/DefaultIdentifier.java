@@ -149,7 +149,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *   <li>A {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() citation identifier}
      *       which is a valid
      *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
-     *   <li>Only if the citation had no identifier, a citation title or
+     *   <li>Only if the citation has no identifier, a citation title or
      *       {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getAlternateTitles() alternate title}
      *       which is a valid
      *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>

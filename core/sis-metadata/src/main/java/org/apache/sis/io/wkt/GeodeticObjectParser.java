@@ -270,7 +270,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         if (value != null) {
             return value;
         }
-        String keyword = WKTKeywords.GeogCS;
+        String keyword = null;
         final Object child = element.peek();
         if (child instanceof Element) {
             keyword = ((Element) child).keyword;
@@ -284,7 +284,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 if (keyword.equalsIgnoreCase(WKTKeywords.Datum))       return parseDatum     (element, referencing.getGreenwich());
             }
         }
-        throw element.keywordNotFound(keyword, keyword == WKTKeywords.GeogCS);
+        throw element.keywordNotFound(keyword);
     }
 
     /**
@@ -298,7 +298,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element element, final boolean mandatory)
             throws ParseException
     {
-        String keyword = WKTKeywords.GeogCS;
+        String keyword = null;
         final Object child = element.peek();
         if (child instanceof Element) {
             keyword = ((Element) child).keyword;
@@ -314,7 +314,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             }
         }
         if (mandatory) {
-            throw element.keywordNotFound(keyword, keyword == WKTKeywords.GeogCS);
+            throw element.keywordNotFound(keyword);
         }
         return null;
     }
@@ -431,7 +431,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                     if (extent == null) extent = new DefaultExtent();
                     extent.getTemporalElements().add(t);
                 } catch (UnsupportedOperationException e) {
-                    warning(parent, WKTKeywords.TimeExtent, e);
+                    warning(parent, element, e);
                 }
             }
         }
