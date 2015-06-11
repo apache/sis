@@ -18,12 +18,14 @@ package org.apache.sis.io.wkt;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -78,6 +80,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
+        assertNull("warning", parser.getAndClearWarning());
+        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
     }
@@ -619,5 +623,31 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
+    }
+
+    /**
+     * Tests the production of a warning message when the WKT contains unknown elements.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testWithImplicitAxes")
+    public void testWarningMessage() throws ParseException {
+        parser = new GeodeticObjectParser();
+        final ParsePosition position = new ParsePosition(0);
+        verifyGeographicCRS(0, (GeographicCRS) parser.parseObject(
+               "  GEOGCS[“WGS 84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
+               "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position));
+
+        assertEquals("errorIndex", -1, position.getErrorIndex());
+        final InternationalString warning = parser.getAndClearWarning();
+        assertNotNull("warning", warning);
+        assertMultilinesEquals("The text contains unknown elements:\n" +
+                               "  • “Intruder” in PRIMEM, GEOGCS.\n" +
+                               "  • “Ext1” in SPHEROID.\n" +
+                               "  • “Ext2” in SPHEROID.", warning.toString(Locale.ENGLISH));
     }
 }

@@ -31,6 +31,7 @@ import java.text.ParseException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.Factory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
@@ -186,9 +187,12 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient Map<Class<?>,Factory> factories;
 
     /**
-     * Whether the last operation was a parsing or formatting operation.
+     * The warning produced by the last parsing or formatting operation, or {@code null} if none.
+     * Stored as an {@link InternationalString} in order to defer the actual message formatting until needed.
+     *
+     * @see #getWarning()
      */
-    private transient boolean lastOperationIsParsing;
+    private transient InternationalString warning;
 
     /**
      * Creates a format for the given locale and timezone. The given locale will be used for
@@ -506,17 +510,21 @@ public class WKTFormat extends CompoundFormat<Object> {
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         ArgumentChecks.ensureNonNull("text", text);
         ArgumentChecks.ensureNonNull("pos",  pos);
+        Parser parser = this.parser;
         if (parser == null) {
             if (factories == null) {
                 factories = new HashMap<>();
             }
-            parser = new GeodeticObjectParser(symbols,
+            this.parser = parser = new GeodeticObjectParser(symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
-                    convention, false, getLocale(Locale.Category.DISPLAY), factories);
+                    convention, false, getLocale(), factories);
         }
-        lastOperationIsParsing = true;
-        return parser.parseObject(text.toString(), pos);
+        try {
+            return parser.parseObject(text.toString(), pos);
+        } finally {
+            warning = parser.getAndClearWarning();
+        }
     }
 
     /**
@@ -562,14 +570,14 @@ public class WKTFormat extends CompoundFormat<Object> {
             updateFormatter(formatter);
             this.formatter = formatter;
         }
-        formatter.clear();
-        lastOperationIsParsing = false;
         final boolean valid;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
+            warning = formatter.getErrorMessage();  // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
+            formatter.clear();
         }
         if (!valid) {
             throw new ClassCastException(Errors.format(
@@ -610,11 +618,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @return The last warning, or {@code null} if none.
      */
     public String getWarning() {
-        if (lastOperationIsParsing) {
-            return (parser != null) ? parser.getWarning() : null;
-        } else {
-            return (formatter != null) ? formatter.getErrorMessage() : null;
-        }
+        return (warning != null) ? warning.toString(getLocale()) : null;
     }
 
     /**

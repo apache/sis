@@ -281,17 +281,16 @@ final class Element {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a {@link ParseException} for a child keyword which is either missing or unknown.
+     * Returns a {@link ParseException} for a child keyword which is unknown.
      *
-     * @param  child The missing or unknown child keyword.
-     * @return {@code true} if the given keyword is missing, or {@code false} if it is unknown.
+     * @param  child The unknown child keyword, or {@code null}.
      * @return The exception to be thrown.
      */
-    final ParseException keywordNotFound(final String child, final boolean missing) {
-        return new LocalizedParseException(locale,
-                missing ? Errors.Keys.MissingComponentInElement_2
-                        : Errors.Keys.UnknownKeywordInElement_2,
-                new String[] {keyword, child}, offset);
+    final ParseException keywordNotFound(String child) {
+        if (child == null) {
+            child = "";
+        }
+        return new LocalizedParseException(locale, Errors.Keys.UnknownKeyword_1, new String[] {child}, offset);
     }
 
     /**

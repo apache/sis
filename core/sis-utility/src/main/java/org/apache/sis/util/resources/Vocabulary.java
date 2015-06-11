@@ -211,6 +211,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Implementation = 21;
 
         /**
+         *  in 
+         */
+        public static final short InBetweenWords = 87;
+
+        /**
          * Index
          */
         public static final short Index = 22;
@@ -349,6 +354,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Paths
          */
         public static final short Paths = 46;
+
+        /**
+         * “{0}”
+         */
+        public static final short Quoted_1 = 86;
 
         /**
          * Root
