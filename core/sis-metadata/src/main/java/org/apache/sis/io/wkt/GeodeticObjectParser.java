@@ -411,6 +411,7 @@ final class GeodeticObjectParser extends MathTransformParser {
              * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
              *
              * TODO: syntax like TIMEEXTENT[“Jurassic”, “Quaternary”] is not yet supported.
+             * See https://issues.apache.org/jira/browse/SIS-163
              */
             while ((element = parent.pullOptionalElement(WKTKeywords.TimeExtent, null)) != null) {
                 final Date startTime = element.pullDate("startTime");
