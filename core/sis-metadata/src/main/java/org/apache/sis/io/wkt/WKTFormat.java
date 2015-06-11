@@ -186,6 +186,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient Map<Class<?>,Factory> factories;
 
     /**
+     * Whether the last operation was a parsing or formatting operation.
+     */
+    private transient boolean lastOperationIsParsing;
+
+    /**
      * Creates a format for the given locale and timezone. The given locale will be used for
      * {@link org.opengis.util.InternationalString} localization; this is <strong>not</strong>
      * the locale for number format.
@@ -499,6 +504,8 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
+        ArgumentChecks.ensureNonNull("text", text);
+        ArgumentChecks.ensureNonNull("pos",  pos);
         if (parser == null) {
             if (factories == null) {
                 factories = new HashMap<>();
@@ -508,6 +515,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                     (DateFormat)   getFormat(Date.class),
                     convention, false, getLocale(Locale.Category.DISPLAY), factories);
         }
+        lastOperationIsParsing = true;
         return parser.parseObject(text.toString(), pos);
     }
 
@@ -554,13 +562,14 @@ public class WKTFormat extends CompoundFormat<Object> {
             updateFormatter(formatter);
             this.formatter = formatter;
         }
+        formatter.clear();
+        lastOperationIsParsing = false;
         final boolean valid;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
             formatter.setBuffer(null);
-            formatter.clear();
         }
         if (!valid) {
             throw new ClassCastException(Errors.format(
@@ -594,13 +603,18 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * If a warning occurred during the last WKT {@linkplain #format(Object, Appendable) formatting}, returns
-     * the warning. Otherwise returns {@code null}. The warning is cleared every time a new object is formatted.
+     * If a warning occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
+     * {@linkplain #format(Object, Appendable) formatting}, returns the warning. Otherwise returns {@code null}.
+     * The warning is cleared every time a new object is parsed or formatted.
      *
      * @return The last warning, or {@code null} if none.
      */
     public String getWarning() {
-        return (formatter != null) ? formatter.getErrorMessage() : null;
+        if (lastOperationIsParsing) {
+            return (parser != null) ? parser.getWarning() : null;
+        } else {
+            return (formatter != null) ? formatter.getErrorMessage() : null;
+        }
     }
 
     /**
@@ -612,6 +626,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
         clone.formatter = null; // Do not share the formatter.
+        clone.parser = null;
         return clone;
     }
 }

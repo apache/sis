@@ -358,7 +358,15 @@ final class GeodeticObjectParser extends MathTransformParser {
              * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
         }
-        if (!parent.isEmpty()) {    // Optimization for a common case, since most elements do not contain any of the childs below.
+        /*
+         * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
+         * but our parser accepts an arbitrary amount of some kinds of metadata. They can be recognized by the
+         * 'while' loop.
+         *
+         * Most WKT do not contain any of those metadata, so we perform an 'isEmpty()' check as an optimization
+         * for those common cases.
+         */
+        if (!parent.isEmpty()) {
             /*
              * Example: SCOPE["Large scale topographic mapping and cadastre."]
              */
@@ -369,19 +377,16 @@ final class GeodeticObjectParser extends MathTransformParser {
             }
             /*
              * Example: AREA["Netherlands offshore."]
-             *
-             * ISO 19162 said that at most one of each type shall be present,
-             * but our parser accepts an arbitrary amount of any extent below.
              */
             DefaultExtent extent = null;
             while ((element = parent.pullOptionalElement(WKTKeywords.Area, null)) != null) {
                 final String area = element.pullString("area");
                 element.close(ignoredElements);
                 if (extent == null) extent = new DefaultExtent();
-                extent.getGeographicElements().add(new DefaultGeographicDescription(null, area));
+                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
             }
             /*
-             * Example: BBOX[51.43,2.54,55.77,6.40]
+             * Example: BBOX[51.43, 2.54, 55.77, 6.40]
              */
             while ((element = parent.pullOptionalElement(WKTKeywords.BBox, null)) != null) {
                 final double southBoundLatitude = element.pullDouble("southBoundLatitude");
@@ -412,15 +417,22 @@ final class GeodeticObjectParser extends MathTransformParser {
              *
              * TODO: syntax like TIMEEXTENT[“Jurassic”, “Quaternary”] is not yet supported.
              * See https://issues.apache.org/jira/browse/SIS-163
+             *
+             * This operation requires the the sis-temporal module. If not available,
+             * we will report a warning and leave the temporal extent missing.
              */
             while ((element = parent.pullOptionalElement(WKTKeywords.TimeExtent, null)) != null) {
                 final Date startTime = element.pullDate("startTime");
                 final Date endTime   = element.pullDate("endTime");
                 element.close(ignoredElements);
-                final DefaultTemporalExtent time = new DefaultTemporalExtent();
-                time.setBounds(startTime, endTime);
-                if (extent == null) extent = new DefaultExtent();
-                extent.getTemporalElements().add(time);
+                try {
+                    final DefaultTemporalExtent t = new DefaultTemporalExtent();
+                    t.setBounds(startTime, endTime);
+                    if (extent == null) extent = new DefaultExtent();
+                    extent.getTemporalElements().add(t);
+                } catch (UnsupportedOperationException e) {
+                    warning(parent, WKTKeywords.TimeExtent, e);
+                }
             }
         }
         parent.close(ignoredElements);
@@ -438,9 +450,9 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Unit was a mandatory element in WKT 1, but became optional in WKT 2 because the unit may be specified
      * in each {@code AXIS[…]} element instead than for the whole coordinate system.
      *
-     * @param  parent  The parent element.
-     * @param  keyword The unit keyword.
-     * @param  unit    The contextual unit, usually {@code SI.METRE} or {@code SI.RADIAN}.
+     * @param  parent   The parent element.
+     * @param  keyword  The unit keyword.
+     * @param  baseUnit The base unit, usually {@code SI.METRE} or {@code SI.RADIAN}.
      * @return The {@code "UNIT"} element as an {@link Unit} object.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      *
@@ -448,17 +460,17 @@ final class GeodeticObjectParser extends MathTransformParser {
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
     @SuppressWarnings("unchecked")
-    private <Q extends Quantity> Unit<Q> parseUnit(final Element parent, final String keyword, final Unit<Q> unit)
+    private <Q extends Quantity> Unit<Q> parseUnit(final Element parent, final String keyword, final Unit<Q> baseUnit)
             throws ParseException
     {
         final Element element = parent.pullOptionalElement(keyword, WKTKeywords.Unit);
         if (element == null) {
-            return unit.equals(SI.RADIAN) ? (Unit<Q>) NonSI.DEGREE_ANGLE : unit;
+            return baseUnit.equals(SI.RADIAN) ? (Unit<Q>) NonSI.DEGREE_ANGLE : baseUnit;
         }
         final String  name   = element.pullString("name");
         final double  factor = element.pullDouble("factor");
         parseMetadataAndClose(element, name);
-        return Units.multiply(unit, factor);
+        return Units.multiply(baseUnit, factor);
     }
 
     /**

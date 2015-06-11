@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Citations;
 
 
 /**
@@ -76,7 +77,7 @@ import org.opengis.util.InternationalString;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see ImmutableIdentifier
@@ -139,15 +140,32 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Creates an identifier initialized to the given authority and code.
+     * This constructor automatically initializes the {@linkplain #getCodeSpace() code space} to a value inferred
+     * from the given {@code authority}, if a suitable value can be found. This constructor proceeds by searching
+     * for the first suitable property in the following list:
+     *
+     * <ol>
+     *   <li>The value of {@link org.apache.sis.xml.IdentifierSpace#getName()}.</li>
+     *   <li>A {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() citation identifier}
+     *       which is a valid
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
+     *   <li>Only if the citation had no identifier, a citation title or
+     *       {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getAlternateTitles() alternate title}
+     *       which is a valid
+     *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
+     * </ol>
      *
      * @param authority The organization or party responsible for definition and maintenance
      *                  of the code, or {@code null} if none.
      * @param code      The alphanumeric value identifying an instance in the namespace,
      *                  or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
      */
     public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;
         this.code = code;
+        codeSpace = Citations.getCodeSpace(authority);
     }
 
     /**
@@ -197,6 +215,12 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Returns the alphanumeric value identifying an instance in the namespace.
+     * The code is optionally from a controlled list or pattern.
+     *
+     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     *
+     * The code is mandatory according ISO specification, but this {@code DefaultIdentifier}
+     * implementation does not enforce this restriction.
      *
      * @return Value identifying an instance in the namespace.
      */
@@ -218,6 +242,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Returns the identifier or namespace in which the code is valid.
+     * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
+     *
+     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
      * @return The identifier code space, or {@code null} if none.
      *
@@ -246,6 +273,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * uses versions. When appropriate, the edition is identified by the effective date,
      * coded using ISO 8601 date format.
      *
+     * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
+     *
      * @return The version, or {@code null} if not available.
      */
     @Override
@@ -265,6 +294,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Returns the natural language description of the meaning of the code value.
+     *
+     * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
      *
      * @return The natural language description, or {@code null} if none.
      *
@@ -288,8 +319,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}.
+     * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
+     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
+     * but not necessarily.
      *
      * @return The authority, or {@code null} if not available.
      */
@@ -300,8 +332,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Sets the organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}.
+     * Sets the organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
      *
      * @param newValue The new authority.
      */

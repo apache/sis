@@ -574,8 +574,9 @@ final class Element {
      * If the given {@code ignored} map is non-null, then this method will add the keywords
      * of ignored elements in that map as below:
      * <ul>
-     *   <li>Keyword of ignored elements are the keys. Note that a key may be null.</li>
-     *   <li>Keywords of the elements that contained ignored elements are the values.</li>
+     *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
+     *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
+     *       This list is used for helping the users to locate the ignored elements.</li>
      * </ul>
      *
      * @param  ignoredElements The collection where to declare ignored elements, or {@code null}.
