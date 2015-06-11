@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import org.opengis.metadata.citation.Citation;  // For javadoc.
 import org.apache.sis.util.resources.Errors;
 
 
@@ -266,10 +267,11 @@ public final class Characters extends Static {
      * <div class="section">Relationship with international standards</div>
      * ISO 19162:2015 §B.5.2 recommends to ignore spaces, case and the following characters when comparing two
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() identified object names}:
-     * “_” (underscore), “-” (minus sign), “/” (solidus), “(” (left parenthesis) and “)” (right parenthesis).
+     * “{@code _}” (underscore), “{@code -}” (minus sign), “{@code /}” (solidus),
+     * “{@code (}” (left parenthesis) and “{@code )}” (right parenthesis).
      * The same specification also limits the set of valid characters in a name to the following (§6.3.1):
      *
-     * <blockquote>{@literal A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</blockquote>
+     * <blockquote>{@code A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</blockquote>
      * <div class="note"><b>Note:</b> SIS does not enforce this restriction in its programmatic API,
      * but may perform some character substitutions at <cite>Well Known Text</cite> (WKT) formatting time.</div>
      *
@@ -296,19 +298,23 @@ public final class Characters extends Static {
         /**
          * The subset of all characters for which {@link Character#isLetterOrDigit(int)}
          * returns {@code true}. This subset includes the following general categories:
+         *
+         * <blockquote>
          * {@link Character#LOWERCASE_LETTER},
          * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
          * {@link Character#TITLECASE_LETTER     TITLECASE_LETTER},
          * {@link Character#MODIFIER_LETTER      MODIFIER_LETTER},
          * {@link Character#OTHER_LETTER         OTHER_LETTER} and
          * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER}.
+         * </blockquote>
          *
-         * <p>SIS uses this filter when comparing two
+         * SIS uses this filter when comparing two
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() identified object names}.
          * See the <cite>Relationship with international standards</cite> section in this class javadoc
-         * for more information.</p>
+         * for more information.
          *
          * @see org.apache.sis.referencing.AbstractIdentifiedObject#isHeuristicMatchForName(String)
+         * @see org.apache.sis.metadata.iso.citation.Citations#identifierMatches(Citation, String)
          */
         public static final Filter LETTERS_AND_DIGITS = new LettersAndDigits();
 
@@ -317,10 +323,13 @@ public final class Characters extends Static {
          * returns {@code true}, excluding {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters.
          * This subset includes all the {@link #LETTERS_AND_DIGITS} categories with the addition of the following
          * ones:
+         *
+         * <blockquote>
          * {@link Character#LETTER_NUMBER},
          * {@link Character#CONNECTOR_PUNCTUATION CONNECTOR_PUNCTUATION},
          * {@link Character#NON_SPACING_MARK NON_SPACING_MARK} and
          * {@link Character#COMBINING_SPACING_MARK COMBINING_SPACING_MARK}.
+         * </blockquote>
          */
         public static final Filter UNICODE_IDENTIFIER = new UnicodeIdentifier();
 

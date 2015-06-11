@@ -29,6 +29,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.WKTParser;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -90,8 +92,19 @@ abstract class Parser implements WKTParser {
     /**
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
      * but we will nevertheless report them as warnings.
+     * The meaning of this map is:
+     * <ul>
+     *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
+     *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
+     *       This list is used for helping the users to locate the ignored elements.</li>
+     * </ul>
      */
     final Map<String, List<String>> ignoredElements;
+
+    /**
+     * The first warning (other than {@link #ignoredElements}) that occurred during the parsing.
+     */
+    private String warning;
 
     /**
      * Constructs a parser using the specified set of symbols.
@@ -162,6 +175,7 @@ abstract class Parser implements WKTParser {
      * @throws ParseException if the string can not be parsed.
      */
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
+        warning = null;
         ignoredElements.clear();
         final Element element = new Element(new Element(this, text, position));
         final Object object = parseObject(element);
@@ -209,5 +223,29 @@ abstract class Parser implements WKTParser {
             dateFormat = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
         }
         return dateFormat.parse(text, position);
+    }
+
+    /**
+     * Reports a non-fatal warning while parsing a WKT.
+     *
+     * @param parent  The parent element.
+     * @param keyword The keyword of the element that we can not parse.
+     * @param e The exception that occurred while parsing a WKT.
+     */
+    final void warning(final Element parent, final String keyword, final Exception e) {
+        if (warning != null) {
+            warning = Errors.getResources(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, parent.keyword, keyword);
+            final String message = Exceptions.getLocalizedMessage(e, errorLocale);
+            if (message != null) {
+                warning = warning + ' ' + message;
+            }
+        }
+    }
+
+    /**
+     * Returns the warnings that occurred during the last parsing, or {@code null} if none.
+     */
+    final String getWarning() {
+        return warning;
     }
 }
