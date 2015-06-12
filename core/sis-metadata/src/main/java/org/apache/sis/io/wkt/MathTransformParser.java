@@ -58,7 +58,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  */
-class MathTransformParser extends Parser {
+class MathTransformParser extends AbstractParser {
     /**
      * The factory to use for creating math transforms.
      */
@@ -313,7 +313,7 @@ class MathTransformParser extends Parser {
 
     /**
      * Returns the operation method for the last math transform parsed. This is used by
-     * {@link Parser} in order to built {@link org.opengis.referencing.crs.DerivedCRS}.
+     * {@link GeodeticObjectParser} in order to built {@link org.opengis.referencing.crs.DerivedCRS}.
      */
     final OperationMethod getOperationMethod() {
         if (lastMethod == null) {

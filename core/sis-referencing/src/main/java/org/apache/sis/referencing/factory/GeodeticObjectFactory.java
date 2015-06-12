@@ -43,12 +43,12 @@ import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
 
@@ -180,14 +180,14 @@ import org.apache.sis.xml.XML;
  * @version 0.6
  * @module
  */
-public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
+public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
     /**
      * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
      * same module than this class, so we will hopefully not have security issues.  But we have to
      * use reflection because the parser class is not yet public (because we do not want to commit
      * its API yet).
      */
-    private static volatile Constructor<? extends WKTParser> parserConstructor;
+    private static volatile Constructor<? extends Parser> parserConstructor;
 
     /**
      * The default properties, or an empty map if none. This map shall not change after construction in
@@ -214,7 +214,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
      * This parser is not thread-safe, so we need to prevent two threads from using the same instance in same time.
      */
-    private final AtomicReference<WKTParser> parser;
+    private final AtomicReference<Parser> parser;
 
     /**
      * Constructs a factory with no default properties.
@@ -1347,11 +1347,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
-        WKTParser p = parser.getAndSet(null);
+        Parser p = parser.getAndSet(null);
         if (p == null) try {
-            Constructor<? extends WKTParser> c = parserConstructor;
+            Constructor<? extends Parser> c = parserConstructor;
             if (c == null) {
-                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(WKTParser.class)
+                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(Parser.class)
                          .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
                 c.setAccessible(true);
                 parserConstructor = c;
