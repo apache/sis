@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -77,9 +78,15 @@ import org.apache.sis.util.resources.Errors;
  * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
  * </div>
  *
- * <div class="section">Thread safety</div>
- * {@code WKTFormat}s are not synchronized. It is recommended to create separated format instances for each thread.
- * If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       It is recommended to create separated format instances for each thread.
+ *       If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
@@ -188,16 +195,14 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * The warning produced by the last parsing or formatting operation, or {@code null} if none.
-     * Stored as an {@link InternationalString} in order to defer the actual message formatting until needed.
      *
-     * @see #getWarning()
+     * @see #getWarnings()
      */
-    private transient InternationalString warning;
+    private transient Warnings warnings;
 
     /**
      * Creates a format for the given locale and timezone. The given locale will be used for
-     * {@link org.opengis.util.InternationalString} localization; this is <strong>not</strong>
-     * the locale for number format.
+     * {@link InternationalString} localization; this is <strong>not</strong> the locale for number format.
      *
      * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param timezone The timezone, or {@code null} for UTC.
@@ -217,7 +222,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li>{@link java.util.Locale.Category#FORMAT}: the value of {@link Symbols#getLocale()},
      *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
      *   <li>{@link java.util.Locale.Category#DISPLAY}: the {@code locale} given at construction time,
-     *       used for {@link org.opengis.util.InternationalString} localization.</li>
+     *       used for {@link InternationalString} localization.</li>
      * </ul>
      *
      * @param  category The category for which a locale is desired.
@@ -508,6 +513,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
+        warnings = null;
         ArgumentChecks.ensureNonNull("text", text);
         ArgumentChecks.ensureNonNull("pos",  pos);
         Parser parser = this.parser;
@@ -523,7 +529,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         try {
             return parser.parseObject(text.toString(), pos);
         } finally {
-            warning = parser.getAndClearWarning();
+            warnings = parser.getAndClearWarnings();
         }
     }
 
@@ -544,6 +550,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        warnings = null;
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
@@ -571,6 +578,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.formatter = formatter;
         }
         final boolean valid;
+        final InternationalString warning;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
@@ -578,6 +586,10 @@ public class WKTFormat extends CompoundFormat<Object> {
             warning = formatter.getErrorMessage();  // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
+        }
+        if (warning != null) {
+            warnings = new Warnings(getLocale(), Collections.emptyMap());
+            warnings.add(warning, formatter.getErrorCause(), null);
         }
         if (!valid) {
             throw new ClassCastException(Errors.format(
@@ -611,14 +623,34 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * If warnings occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
+     * {@linkplain #format(Object, Appendable) formatting}, returns the warnings. Otherwise returns {@code null}.
+     * The warnings are cleared every time a new object is parsed or formatted.
+     *
+     * @return The warnings of the last parsing of formatting operation, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    public Warnings getWarnings() {
+        final Warnings w = warnings;
+        if (w != null) {
+            w.publish();
+        }
+        return w;
+    }
+
+    /**
      * If a warning occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
      * {@linkplain #format(Object, Appendable) formatting}, returns the warning. Otherwise returns {@code null}.
      * The warning is cleared every time a new object is parsed or formatted.
      *
      * @return The last warning, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getWarnings()}.
      */
+    @Deprecated
     public String getWarning() {
-        return (warning != null) ? warning.toString(getLocale()) : null;
+        return (warnings != null) ? warnings.toString() : null;
     }
 
     /**
@@ -630,7 +662,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
         clone.formatter = null; // Do not share the formatter.
-        clone.parser = null;
+        clone.parser    = null;
+        clone.warnings  = null;
         return clone;
     }
 }

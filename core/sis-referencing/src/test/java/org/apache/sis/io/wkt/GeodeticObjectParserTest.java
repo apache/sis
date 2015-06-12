@@ -25,7 +25,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -80,7 +79,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
-        assertNull("warning", parser.getAndClearWarning());
+        assertNull("warnings", parser.getAndClearWarnings());
         assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
@@ -626,13 +625,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the production of a warning message when the WKT contains unknown elements.
+     * Tests the production of a warning messages when the WKT contains unknown elements.
      *
      * @throws ParseException if the parsing failed.
      */
     @Test
     @DependsOnMethod("testWithImplicitAxes")
-    public void testWarningMessage() throws ParseException {
+    public void testWarnings() throws ParseException {
         parser = new GeodeticObjectParser();
         final ParsePosition position = new ParsePosition(0);
         verifyGeographicCRS(0, (GeographicCRS) parser.parseObject(
@@ -643,11 +642,36 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position));
 
         assertEquals("errorIndex", -1, position.getErrorIndex());
-        final InternationalString warning = parser.getAndClearWarning();
-        assertNotNull("warning", warning);
-        assertMultilinesEquals("The text contains unknown elements:\n" +
-                               "  • “Intruder” in PRIMEM, GEOGCS.\n" +
-                               "  • “Ext1” in SPHEROID.\n" +
-                               "  • “Ext2” in SPHEROID.", warning.toString(Locale.ENGLISH));
+        final Warnings warnings = parser.getAndClearWarnings();
+        assertNotNull("warnings", warnings);
+
+        assertTrue("warnings.getExceptions()",
+                warnings.getExceptions().isEmpty());
+
+        assertArrayEquals("warnings.getUnknownElements()",
+                new String[] {"Intruder", "Ext1", "Ext2"},
+                warnings.getUnknownElements().toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"PRIMEM", "GEOGCS"},
+                warnings.getUnknownElementLocations("Intruder").toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"SPHEROID"},
+                warnings.getUnknownElementLocations("Ext1").toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"SPHEROID"},
+                warnings.getUnknownElementLocations("Ext2").toArray());
+
+        assertMultilinesEquals(" • The text contains unknown elements:\n" +
+                               "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
+                               "    ‣ “Ext1” in SPHEROID.\n" +
+                               "    ‣ “Ext2” in SPHEROID.\n", warnings.toString(Locale.US));
+
+        assertMultilinesEquals(" • Le texte contient des éléments inconnus :\n" +
+                               "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
+                               "    ‣ « Ext1 » dans SPHEROID.\n" +
+                               "    ‣ « Ext2 » dans SPHEROID.\n", warnings.toString(Locale.FRANCE));
     }
 }

@@ -1424,7 +1424,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Marks the current WKT representation of the given object as not strictly compliant to the WKT specification.
+     * Marks the current WKT representation of the given object as not strictly compliant with the WKT specification.
      * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
@@ -1449,7 +1449,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Marks the current WKT representation of the given class as not strictly compliant to the WKT specification.
+     * Marks the current WKT representation of the given class as not strictly compliant with the WKT specification.
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
      * problematic object is not an instance of {@code IdentifiedObject}.
      *
