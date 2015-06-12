@@ -28,13 +28,8 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.opengis.util.FactoryException;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.metadata.WKTParser;
-import org.apache.sis.util.iso.AbstractInternationalString;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -105,11 +100,10 @@ abstract class Parser implements WKTParser {
     final Map<String, List<String>> ignoredElements;
 
     /**
-     * The first warning (other than {@link #ignoredElements}) that occurred during the parsing.
-     * Stored as an {@link InternationalString} in order to defer the actual message formatting until needed.
-     * This is reset to {@code null} when a new parsing start.
+     * The warning (other than {@link #ignoredElements}) that occurred during the parsing.
+     * Created when first needed and reset to {@code null} when a new parsing start.
      */
-    private InternationalString warning;
+    private Warnings warnings;
 
     /**
      * Constructs a parser using the specified set of symbols.
@@ -180,7 +174,7 @@ abstract class Parser implements WKTParser {
      * @throws ParseException if the string can not be parsed.
      */
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
-        warning = null;
+        warnings = null;
         ignoredElements.clear();
         final Element element = new Element(new Element(this, text, position));
         final Object object = parseObject(element);
@@ -235,70 +229,28 @@ abstract class Parser implements WKTParser {
      *
      * @param parent  The parent element.
      * @param keyword The element that we can not parse.
-     * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null} if none.
+     * @param ex      The non-fatal exception that occurred while parsing the element.
      */
     final void warning(final Element parent, final Element element, final Exception ex) {
-        if (warning == null) {
-            warning = new AbstractInternationalString() {
-                /**
-                 * Formats the error message only when requested.
-                 * In many cases, this method is never invoked.
-                 */
-                @Override
-                public String toString(final Locale locale) {
-                    CharSequence  text   = null;
-                    StringBuilder buffer = null;
-                    final Errors resources = Errors.getResources(locale);
-                    if (element != null) {  // Should be null only if 'warning' has been invoked by 'getAndClearWarning'.
-                        text = resources.getString(Errors.Keys.UnparsableStringInElement_2, parent.keyword, element.keyword);
-                        final String message = Exceptions.getLocalizedMessage(ex, locale);
-                        if (message != null) {
-                            text = buffer = new StringBuilder(text).append(' ').append(message);
-                        }
-                    }
-                    /*
-                     * If the parser has found some unknown elements, formats a bullet list for them.
-                     */
-                    if (!ignoredElements.isEmpty()) {
-                        final String lineSeparator = System.lineSeparator();
-                        if (buffer == null) {
-                            buffer = new StringBuilder(250);
-                            if (text != null) {
-                                buffer.append(text).append(lineSeparator);
-                            }
-                            text = buffer;
-                        } else {
-                            buffer.append(lineSeparator);
-                        }
-                        final Vocabulary vocabulary = Vocabulary.getResources(locale);
-                        buffer.append(resources.getString(Errors.Keys.UnknownElementsInText));
-                        for (final Map.Entry<String, List<String>> entry : ignoredElements.entrySet()) {
-                            buffer.append(lineSeparator).append("  • ")
-                                    .append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));
-                            String separator = vocabulary.getString(Vocabulary.Keys.InBetweenWords);
-                            for (final String p : entry.getValue()) {
-                                buffer.append(separator).append(p);
-                                separator = ", ";
-                            }
-                            buffer.append('.');
-                        }
-                    }
-                    return String.valueOf(text);
-                }
-            };
+        if (warnings == null) {
+            warnings = new Warnings(errorLocale, ignoredElements);
         }
+        warnings.add(null, ex, new String[] {parent.keyword, element.keyword});
     }
 
     /**
-     * Returns the warning, or {@code null} if none.
-     * This method clears the warning message after the call.
+     * Returns the warnings, or {@code null} if none.
+     * This method clears the warnings after the call.
+     *
+     * <p>The returned object is valid only until a new parsing starts. If a longer lifetime is desired,
+     * then the callers <strong>must</strong> invoke {@link Warnings#publish()}.</p>
      */
-    final InternationalString getAndClearWarning() {
-        if (warning == null && !ignoredElements.isEmpty()) {
-            warning(null, null, null);  // Force the creation of the warning object.
+    final Warnings getAndClearWarnings() {
+        Warnings w = warnings;
+        warnings = null;
+        if (w == null && !ignoredElements.isEmpty()) {
+            w = new Warnings(errorLocale, ignoredElements);
         }
-        InternationalString m = warning;
-        warning = null;
-        return m;
+        return w;
     }
 }
