@@ -38,15 +38,19 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *       according the OGC 01-009 (<cite>Coordinate transformation services</cite>) specification.</li>
  *   <li>An older specification — <cite>Simple Features</cite> — was unclear on this matter and has been
  *       interpreted by many softwares as fixing the unit to decimal degrees.</li>
+ *   <li>Some softwares support only (<var>longitude</var>, <var>latitude</var>) axis order
+ *       and ignore completely all {@code AXIS[…]} elements in the WKT.</li>
  * </ul>
  *
  * Despite the first interpretation being specified by both OGC 01-009 and ISO 19162 standards, the second
  * interpretation appears to be in wide use for WKT 1. Apache SIS uses the standard interpretation by default,
  * but the {@link #WKT1_COMMON_UNITS} enumeration allows parsing and formatting using the older interpretation.
+ * The {@link #WKT1_IGNORE_AXES} enumeration mimics the most minimalist WKT 1 parsers,
+ * but should be avoided when not imposed by compatibility reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see WKTFormat#getConvention()
@@ -66,7 +70,7 @@ public enum Convention {
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      */
-    WKT2(false),
+    WKT2(false, false),
 
     /**
      * The ISO 19162 format with omission of some optional elements. This convention is identical
@@ -91,7 +95,7 @@ public enum Convention {
      *
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
-    WKT2_SIMPLIFIED(false),
+    WKT2_SIMPLIFIED(false, false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
@@ -119,7 +123,7 @@ public enum Convention {
      *
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
-    WKT1(true),
+    WKT1(true, false),
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
@@ -136,7 +140,24 @@ public enum Convention {
      *       (e.g. <cite>"meter"</cite> instead than <cite>"metre"</cite>).</li>
      * </ul>
      */
-    WKT1_COMMON_UNITS(true),
+    WKT1_COMMON_UNITS(true, true),
+
+    /**
+     * The <cite>Simple Feature</cite> format without parsing of axis elements.
+     * This convention is identical to {@link #WKT1_COMMON_UNITS} except that all {@code AXIS[…]} elements are ignored.
+     * Since the WKT 1 specification said that the default axis order shall be (<var>x</var>,<var>y</var>) or
+     * (<var>longitude</var>, <var>latitude</var>), ignoring {@code AXIS[…]} elements is equivalent to forcing
+     * the coordinate systems to that default order.
+     *
+     * <p>Note that {@code AXIS[…]} elements still need to be well formed even when parsing a text with this convention.
+     * Malformed axis elements will continue to cause a {@link java.text.ParseException} despite their content being ignored.</p>
+     *
+     * <p>This convention may be useful for compatibility with some other softwares that do not handle axis order correctly.
+     * But except when imposed by such compatibility reasons, this convention should be avoided as much as possible.</p>
+     *
+     * @since 0.6
+     */
+    WKT1_IGNORE_AXES(true, true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
@@ -167,7 +188,7 @@ public enum Convention {
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#getParameterValues()
      */
     @Debug
-    INTERNAL(false);
+    INTERNAL(false, false);
 
     /**
      * The default conventions.
@@ -180,10 +201,24 @@ public enum Convention {
     private final boolean isWKT1;
 
     /**
+     * {@code true} for a frequently-used convention about units instead than the standard one.
+     * <ul>
+     *   <li>If {@code true}, forces {@code PRIMEM} and {@code PARAMETER} angular units to degrees
+     *       instead than inferring the unit from the context. The standard value is {@code false},
+     *       which means that the angular units are inferred from the context as required by the
+     *       WKT 1 specification.</li>
+     *   <li>If {@code true}, uses US unit names instead of the international names.
+     *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
+     * </ul>
+     */
+    final boolean usesCommonUnits;
+
+    /**
      * Creates a new enumeration value.
      */
-    private Convention(final boolean isWKT1) {
+    private Convention(final boolean isWKT1, final boolean usesCommonUnits) {
         this.isWKT1 = isWKT1;
+        this.usesCommonUnits = usesCommonUnits;
     }
 
     /**
@@ -214,21 +249,6 @@ public enum Convention {
      */
     final boolean showIdentifiers() {
         return this == WKT2_SIMPLIFIED || this == INTERNAL;
-    }
-
-    /**
-     * {@code true} for a frequently-used convention about units instead than the standard one.
-     * <ul>
-     *   <li>If {@code true}, forces {@code PRIMEM} and {@code PARAMETER} angular units to degrees
-     *       instead than inferring the unit from the context. The standard value is {@code false},
-     *       which means that the angular units are inferred from the context as required by the
-     *       WKT 1 specification.</li>
-     *   <li>If {@code true}, uses US unit names instead of the international names.
-     *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
-     * </ul>
-     */
-    final boolean usesCommonUnits() {
-        return this == WKT1_COMMON_UNITS;
     }
 
     /**

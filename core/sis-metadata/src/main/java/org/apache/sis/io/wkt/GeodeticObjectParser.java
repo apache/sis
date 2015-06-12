@@ -145,16 +145,6 @@ final class GeodeticObjectParser extends MathTransformParser {
     private final Convention convention;
 
     /**
-     * {@code true} if {@code AXIS[...]} elements should be ignored.
-     * This is sometime used for simulating a "force longitude first axis order" behavior.
-     * This is also used for compatibility with softwares that ignore axis elements.
-     *
-     * <p>Note that {@code AXIS} elements still need to be well formed even when this flag is set to {@code true}.
-     * Malformed axis elements will continue to cause a {@link ParseException} despite their content being ignored.</p>
-     */
-    private final boolean isAxisIgnored;
-
-    /**
      * A map of properties to be given the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
@@ -164,7 +154,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Creates a parser using the default set of symbols and factories.
      */
     public GeodeticObjectParser() {
-        this(Symbols.getDefault(), null, null, Convention.DEFAULT, false, null, null);
+        this(Symbols.getDefault(), null, null, Convention.DEFAULT, null, null);
     }
 
     /**
@@ -191,7 +181,6 @@ final class GeodeticObjectParser extends MathTransformParser {
         referencing   = ReferencingServices.getInstance();
         opFactory     = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
         convention    = Convention.DEFAULT;
-        isAxisIgnored = false;
     }
 
     /**
@@ -202,13 +191,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param convention    The WKT convention to use.
-     * @param isAxisIgnored {@code true} if {@code AXIS} elements should be ignored.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      * @param factories     On input, the factories to use. On output, the factories used. Can be null.
      */
     GeodeticObjectParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final Convention convention, final boolean isAxisIgnored, final Locale errorLocale,
-            final Map<Class<?>,Factory> factories)
+            final Convention convention, final Locale errorLocale, final Map<Class<?>,Factory> factories)
     {
         super(symbols, numberFormat, dateFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
         crsFactory   = getFactory(CRSFactory.class,   factories);
@@ -217,7 +204,6 @@ final class GeodeticObjectParser extends MathTransformParser {
         referencing  = ReferencingServices.getInstance();
         opFactory    = referencing.getCoordinateOperationFactory(null, mtFactory);
         this.convention = convention;
-        this.isAxisIgnored = isAxisIgnored;
     }
 
     /**
@@ -556,6 +542,16 @@ final class GeodeticObjectParser extends MathTransformParser {
     }
 
     /**
+     * Returns {@code true} if axes should be ignored.
+     *
+     * @param  axis The first parsed axis (can be {@code null}).
+     * @return {@code true} for ignoring the given axis and all other ones in the current coordinate system.
+     */
+    private boolean isAxisIgnored(final CoordinateSystemAxis axis) {
+        return (axis == null) || (convention == Convention.WKT1_IGNORE_AXES);
+    }
+
+    /**
      * Parses a {@code "PRIMEM"} element. This element has the following pattern:
      *
      * {@preformat text
@@ -568,7 +564,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "PRIMEM"} element can not be parsed.
      */
     private PrimeMeridian parsePrimem(final Element parent, Unit<Angle> angularUnit) throws ParseException {
-        if (convention == Convention.WKT1_COMMON_UNITS) {
+        if (convention.usesCommonUnits) {
             angularUnit = NonSI.DEGREE_ANGLE;
         }
         final Element element   = parent.pullElement(WKTKeywords.PrimeM);
@@ -834,7 +830,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis2 = parseAxis(element, false, linearUnit, true);
             }
             final Map<String,?> properties = parseMetadataAndClose(element, name);
-            if (axis0 != null && !isAxisIgnored) {
+            if (!isAxisIgnored(axis0)) {
                 cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
                 cs = referencing.upgradeGeocentricCS(cs);
             } else {
@@ -865,7 +861,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Unit<Length>   linearUnit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         CoordinateSystemAxis axis       = parseAxis(element, false, linearUnit, false);
         try {
-            if (axis == null || isAxisIgnored) {
+            if (isAxisIgnored(axis)) {
                 String sn = "Height", abbreviation = "h";
                 AxisDirection direction = AxisDirection.UP;
                 final VerticalDatumType type = datum.getVerticalDatumType();
@@ -902,7 +898,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Unit<Duration> timeUnit = parseUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
         CoordinateSystemAxis axis     = parseAxis(element, false, timeUnit, false);
         try {
-            if (axis == null || isAxisIgnored) {
+            if (isAxisIgnored(axis)) {
                 axis = createAxis("Time", "t", AxisDirection.FUTURE, timeUnit);
             }
             return crsFactory.createTemporalCRS(parseMetadataAndClose(element, name), datum,
@@ -943,7 +939,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             if (axis0 != null) {
                 axis1 = parseAxis(element, true, angularUnit, true);
             }
-            if (axis0 == null || isAxisIgnored) {
+            if (isAxisIgnored(axis0)) {
                 axis0 = createAxis(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  angularUnit);
                 axis1 = createAxis(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, angularUnit);
             }
@@ -973,7 +969,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final String        name       = element.pullString("name");
         final GeographicCRS geoCRS     = parseGeoGCS(element);
         final Unit<Length>  linearUnit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-        final boolean  usesCommonUnits = convention.usesCommonUnits();
+        final boolean  usesCommonUnits = convention.usesCommonUnits;
         final Conversion    conversion = parseProjection(element,
                 usesCommonUnits ? SI.METRE : linearUnit,
                 usesCommonUnits ? NonSI.DEGREE_ANGLE : geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
@@ -983,7 +979,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             if (axis0 != null) {
                 axis1 = parseAxis(element, false, linearUnit, true);
             }
-            if (axis0 == null || isAxisIgnored) {
+            if (isAxisIgnored(axis0)) {
                 axis0 = createAxis(AxisNames.EASTING,  "E", AxisDirection.EAST,  linearUnit);
                 axis1 = createAxis(AxisNames.NORTHING, "N", AxisDirection.NORTH, linearUnit);
             }

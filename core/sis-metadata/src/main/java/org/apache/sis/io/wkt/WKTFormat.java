@@ -524,7 +524,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.parser = parser = new GeodeticObjectParser(symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
-                    convention, false, getLocale(), factories);
+                    convention, getLocale(), factories);
         }
         try {
             return parser.parseObject(text.toString(), pos);
