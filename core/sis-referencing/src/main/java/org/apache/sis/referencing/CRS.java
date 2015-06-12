@@ -180,10 +180,8 @@ public final class CRS extends Static {
 
     /**
      * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
-     * This convenience method delegates to
-     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
-     * using a default factory instance. The Apache SIS parser understands both the version 1
-     * (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162) of the WKT format.
+     * The default {@linkplain org.apache.sis.io.wkt Apache SIS parser} understands both
+     * version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162) of the WKT format.
      *
      * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
      * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
@@ -207,11 +205,25 @@ public final class CRS extends Static {
      * }
      * </div>
      *
+     * <div class="section">Usage and performance considerations</div>
+     * This convenience method delegates to
+     * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
+     * using a default factory instance. This is okay for occasional use, but has the following limitations:
+     *
+     * <ul>
+     *   <li>Performance may be sub-optimal in a multi-thread environment.</li>
+     *   <li>No control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions} in use.</li>
+     *   <li>No control on the handling of {@linkplain org.apache.sis.io.wkt.warnings}.</li>
+     * </ul>
+     *
+     * Applications which need to parse a large amount of WKT strings should consider to use
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
+     *
      * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return The parsed Coordinate Reference System.
      * @throws FactoryException if the given WKT can not be parsed.
      *
-     * @see org.apache.sis.io.wkt.WKTFormat
+     * @see org.apache.sis.io.wkt
      * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      *

@@ -1341,7 +1341,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
 
     /**
      * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
-     * This method understands both the version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
+     * This method understands both version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
      * of the WKT format.
      *
      * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
@@ -1366,10 +1366,19 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * }
      * </div>
      *
+     * <div class="section">Usage and performance considerations</div>
+     * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}
+     * with the addition of thread-safety. This is okay for occasional use,
+     * but is sub-optimal if this method is extensively used in a multi-thread environment.
+     * Furthermore this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
+     * in use and on the handling of {@linkplain org.apache.sis.io.wkt.warnings}.
+     * Applications which need to parse a large amount of WKT strings should consider to use
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
+     *
      * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.
      *
-     * @see org.apache.sis.io.wkt.WKTFormat
+     * @see org.apache.sis.io.wkt
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */

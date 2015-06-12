@@ -20,12 +20,20 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Interfaces of parsers or factories creating a math transform or geodetic object from a WKT.
+ * A parser or a factory capable to create an object from a string in the WKT format.
+ * The created objects may be {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems},
+ * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transforms} or geometric
+ * objects for instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see org.opengis.referencing.crs.CRSFactory#createFromWKT(String)
+ * @see org.opengis.referencing.operation.MathTransformFactory#createFromWKT(String)
+ * @see org.apache.sis.referencing.CRS#fromWKT(String)
+ * @see org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)
  */
 public interface Parser {
     /**

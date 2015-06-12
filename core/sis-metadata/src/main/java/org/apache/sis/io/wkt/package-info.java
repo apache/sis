@@ -17,21 +17,30 @@
 
 /**
  * <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * This package implements the services provided by the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
- * and {@link org.opengis.referencing.IdentifiedObject#toWKT()} convenience methods, with more control.
+ * This package implements the services provided by various convenience methods:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.CRS#fromWKT(String)} (SIS parsing static method)</li>
+ *   <li>{@link org.opengis.referencing.crs.CRSFactory#createFromWKT(String)} (GeoAPI parsing method)</li>
+ *   <li>{@link org.opengis.referencing.operation.MathTransformFactory#createFromWKT(String)} (GeoAPI parsing method)</li>
+ *   <li>{@link org.opengis.referencing.IdentifiedObject#toWKT()} (GeoAPI formatting method)</li>
+ * </ul>
+ *
+ * However the {@link org.apache.sis.io.wkt.WKTFormat} class provided in this package gives more control.
  * For example this package allows to:
  *
  * <ul>
- *   <li>Format projection and parameters using the names of a chosen authority. For example the
- *       <cite>"Mercator (variant A)"</cite> projection is named {@code "Mercator_1SP"} by OGC 01-009
- *       and {@code "CT_Mercator"} by GeoTIFF.</li>
- *   <li>Format the elements with curly brackets instead than square ones.
+ *   <li>Format projection and parameters using the names of a chosen authority.
+ *       For example the <cite>"Mercator (variant A)"</cite> projection is named
+ *       {@code "Mercator_1SP"} by OGC 01-009 and {@code "CT_Mercator"} by GeoTIFF.</li>
+ *   <li>Format the elements with different quote characters or brackets style.
  *       For example both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>
  *   <li>Format with a different indentation or format the whole WKT on a single line.</li>
  *   <li>Apply syntactic coloring on terminal supporting <cite>ANSI escape codes</cite>
  *       (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
- *   <li>Ignore the {@code AXIS[…]} elements at parsing time. This approach can be used as a way to force
- *       the (<var>longitude</var>, <var>latitude</var>) axes order.</li>
+ *   <li>Alter the parsing in a way compatible with non-standard (but commonly used) WKT.
+ *       For example some others softwares ignore the {@code AXIS[…]} elements at parsing time.</li>
+ *   <li>Report warnings that occurred during parsing or formatting.</li>
  * </ul>
  *
  * <div class="section">Referencing WKT</div>
@@ -55,6 +64,20 @@
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
  * A description for this WKT format can be found on <a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
+ *
+ * <div class="section">Where to find WKT examples</div>
+ * An excellent source of well-formed WKT is the online <cite>EPSG Geodetic Parameter Registry</cite>.
+ * The WKT of many Coordinate Reference System object can be viewed using the pattern below
+ * (replace {@code 3395} by the EPSG code of the desired CRS):
+ *
+ * <blockquote><b>Example</b>: <cite>"WGS 84 / World Mercator"</cite>:
+ * <a href="http://epsg-registry.org/export.htm?wkt=urn:ogc:def:crs:EPSG::3395">http://epsg-registry.org/export.htm?wkt=urn:ogc:def:crs:EPSG::3395</a>
+ * </blockquote>
+ *
+ * Readers should be aware that some popular other sources of WKT are actually invalid,
+ * since many of them do not comply with EPSG definitions (especially on axis order).
+ * The above-cited EPSG registry is <strong>the</strong> authoritative source
+ * of CRS definitions in the EPSG namespace.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)
