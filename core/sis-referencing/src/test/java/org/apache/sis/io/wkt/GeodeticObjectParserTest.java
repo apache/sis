@@ -88,9 +88,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Uses a new parser for the given convention.
      */
-    private void setConvention(final Convention convention, final boolean isAxisIgnored) {
+    private void setConvention(final Convention convention) {
         final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, null, null, convention, isAxisIgnored, p.errorLocale, null);
+        parser = new GeodeticObjectParser(p.symbols, null, null, convention, p.errorLocale, null);
     }
 
     /**
@@ -346,7 +346,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
          * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
          */
         wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
-        setConvention(Convention.WKT1_COMMON_UNITS, true);
+        setConvention(Convention.WKT1_IGNORE_AXES);
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
         pm = verifyNTF(crs.getDatum(), false);
@@ -400,7 +400,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         wkt = wkt.replace("52.0",      "46.8");             // Convert unit in “latitude_of_origin” parameter.
         wkt = wkt.replace("600.0",     "600000");           // Convert unit in “false_easting” parameter.
         wkt = wkt.replace("2200.0",    "2200000");          // Convert unit in “false_northing” parameter.
-        setConvention(Convention.WKT1_COMMON_UNITS, true);
+        setConvention(Convention.WKT1_IGNORE_AXES);
         crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);

@@ -1143,7 +1143,7 @@ public class Formatter implements Localized {
             } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
+                buffer.append(convention.usesCommonUnits ? "meter" : "metre");
             } else if (Units.PPM.equals(unit)) {
                 buffer.append("parts per million");
             } else {
@@ -1321,7 +1321,7 @@ public class Formatter implements Localized {
      */
     @SuppressWarnings("unchecked")
     public <Q extends Quantity> Unit<Q> addContextualUnit(final Unit<Q> unit) {
-        if (unit == null || convention.usesCommonUnits()) {
+        if (unit == null || convention.usesCommonUnits) {
             return null;
         }
         hasContextualUnit |= 1;
@@ -1353,7 +1353,7 @@ public class Formatter implements Localized {
                  * However this check does not work in Convention.WKT1_COMMON_UNITS mode, since the
                  * map is always empty in that mode.
                  */
-                if (!convention.usesCommonUnits()) {
+                if (!convention.usesCommonUnits) {
                     throw new IllegalStateException();
                 }
             }

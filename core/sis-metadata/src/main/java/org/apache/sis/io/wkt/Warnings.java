@@ -166,7 +166,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * Returns the non-fatal exceptions that occurred during the parsing or formatting.
-     * If no exception occurred, then returns an empty set.
+     * If no exception occurred, returns an empty set.
      *
      * @return The non-fatal exceptions that occurred.
      */
