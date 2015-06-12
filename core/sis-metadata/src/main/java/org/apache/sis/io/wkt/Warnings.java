@@ -93,11 +93,11 @@ public final class Warnings implements Localized, Serializable {
     private Map<Exception, String[]> exceptionSources;
 
     /**
-     * Keyword of unknown elements. This is initially a direct reference to the {@link Parser#ignoredElements} map,
-     * which is okay only until a new parsing start. If this {@code Warnings} instance is given to the user, then
+     * Keyword of unknown elements. This is initially a direct reference to the {@link AbstractParser#ignoredElements}
+     * map, which is okay only until a new parsing start. If this {@code Warnings} instance is given to the user, then
      * the {@link #publish()} method must be invoked in order to copy this map.
      *
-     * @see Parser#ignoredElements
+     * @see AbstractParser#ignoredElements
      */
     private Map<String, List<String>> ignoredElements;
 

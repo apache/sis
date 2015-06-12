@@ -142,8 +142,8 @@ public enum AxesConvention implements AxisFilter {
      * changes are more difficult to handle by coordinate operation factories.
      * </div>
      *
-     * @see CoordinateSystems#normalize(CoordinateSystem)
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
+     * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
      */
     NORMALIZED {
         @Override
