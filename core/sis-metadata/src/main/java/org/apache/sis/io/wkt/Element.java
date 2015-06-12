@@ -113,7 +113,7 @@ final class Element {
      * @param position On input, the position where to start parsing from.
      *                 On output, the first character after the separator.
      */
-    Element(final Parser parser, final String text, final ParsePosition position) throws ParseException {
+    Element(final AbstractParser parser, final String text, final ParsePosition position) throws ParseException {
         /*
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.

@@ -186,7 +186,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The parser. Will be created when first needed.
      */
-    private transient Parser parser;
+    private transient AbstractParser parser;
 
     /**
      * The factories needed by the parser. Will be created when first needed.
@@ -516,7 +516,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         warnings = null;
         ArgumentChecks.ensureNonNull("text", text);
         ArgumentChecks.ensureNonNull("pos",  pos);
-        Parser parser = this.parser;
+        AbstractParser parser = this.parser;
         if (parser == null) {
             if (factories == null) {
                 factories = new HashMap<>();
