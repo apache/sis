@@ -17,7 +17,7 @@
 
 /**
  * <cite>Well Known Text</cite> (WKT) parsing and formatting.
- * This package implements the services provided by the {@link org.apache.sis.referencing.CRS#parseWKT(String)}
+ * This package implements the services provided by the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
  * and {@link org.opengis.referencing.IdentifiedObject#toWKT()} convenience methods, with more control.
  * For example this package allows to:
  *
@@ -60,7 +60,7 @@
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>

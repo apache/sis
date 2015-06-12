@@ -546,7 +546,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  toAppendTo Where the text is to be appended.
      * @throws IOException If an error occurred while writing to {@code toAppendTo}.
      *
-     * @see #getWarning()
+     * @see FormattableObject#toWKT()
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {

@@ -1340,10 +1340,38 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a coordinate reference system object from a string.
+     * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
+     * This method understands both the version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
+     * of the WKT format.
+     *
+     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
+     *
+     * {@preformat wkt
+     *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
+     *     BaseGeodCRS["SIRGAS 2000",
+     *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
+     *         Ellipsoid["GRS 1980", 6378137, 298.257222101]]],
+     *     Conversion["Petrobras Mercator",
+     *       Method["Mercator (variant B)", Id["EPSG",9805]],
+     *       Parameter["Latitude of 1st standard parallel", -2],
+     *       Parameter["Longitude of natural origin", -43],
+     *       Parameter["False easting", 5000000],
+     *       Parameter["False northing", 10000000]],
+     *     CS[cartesian,2],
+     *       Axis["easting (E)", east],
+     *       Axis["northing (N)", north],
+     *       LengthUnit["metre", 1],
+     *     Id["EPSG",5641]]
+     * }
+     * </div>
      *
      * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.
+     *
+     * @see org.apache.sis.io.wkt.WKTFormat
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
