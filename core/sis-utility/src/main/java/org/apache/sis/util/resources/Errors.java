@@ -911,11 +911,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnknownCommand_1 = 113;
 
         /**
-         * The text contains unknown elements:
-         */
-        public static final short UnknownElementsInText = 193;
-
-        /**
          * “{1}” is not a known or supported value for the ‘{0}’ enumeration.
          */
         public static final short UnknownEnumValue_2 = 114;

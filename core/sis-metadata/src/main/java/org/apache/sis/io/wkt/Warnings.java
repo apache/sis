@@ -26,22 +26,46 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.io.Serializable;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
  * Warnings that occurred during a <cite>Well Known Text</cite> (WKT) parsing or formatting.
- * Some example of information provided by this object are:
+ * Information provided by this object include:
  *
  * <ul>
  *   <li>Recoverable exceptions.</li>
  *   <li>At formatting time, object that can not be formatted in a standard-compliant WKT.</li>
  *   <li>At parsing time, unknown keywords.</li>
  * </ul>
+ *
+ * <div class="note"><b>Example:</b> after parsing the following WKT:
+ *
+ * {@preformat wkt
+ *   GeographicCRS[“WGS 84”,
+ *     Datum[“World Geodetic System 1984”,
+ *       Ellipsoid[“WGS84”, 6378137.0, 298.257223563, Intruder[“some text here”]]],
+ *       PrimeMeridian[“Greenwich”, 0.0, Intruder[“other text here”]],
+ *     AngularUnit[“degree”, 0.017453292519943295]]
+ * }
+ *
+ * a call to {@link WKTFormat#getWarnings()} would return a {@code Warnings} instance with the following informations:
+ *
+ * <ul>
+ *   <li>{@link #getRootElement()} returns <code>"WGS 84"</code>,</li>
+ *   <li>{@link #getUnknownElements()} returns <code>{"Intruder"}</code>, and</li>
+ *   <li><code>{@linkplain #getUnknownElementLocations(String) getUnknownElementLocations}("Intruder")</code>
+ *       returns <code>{"Ellipsoid", "PrimeMeridian"}</code>.</li>
+ * </ul>
+ * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -63,6 +87,19 @@ public final class Warnings implements Localized, Serializable {
      * @see #getLocale()
      */
     private final Locale errorLocale;
+
+    /**
+     * {@code 0} if the warnings occurred while formatting, or
+     * {@code 1} if they occurred while parsing.
+     */
+    private final byte operation;
+
+    /**
+     * Name identifier or class name of the root object being parsed or formatted.
+     *
+     * @see #setRoot(Object)
+     */
+    private String root;
 
     /**
      * Warning messages or exceptions emitted during parsing or formatting.
@@ -110,11 +147,53 @@ public final class Warnings implements Localized, Serializable {
      * Creates a new object for declaring warnings.
      *
      * @param locale The locale for reporting warning messages.
+     * @param operation {@code 0} if formatting, or {@code 1} if parsing.
      * @param ignoredElements The {@link Parser#ignoredElements} map, or an empty map (can not be null).
      */
-    Warnings(final Locale locale, final Map<String, List<String>> ignoredElements) {
+    Warnings(final Locale locale, final byte operation, final Map<String, List<String>> ignoredElements) {
         this.errorLocale     = locale;
+        this.operation       = operation;
         this.ignoredElements = ignoredElements;
+    }
+
+    /**
+     * Invoked after construction for setting the identifier name or class name of the root object being
+     * parsed or formatted. Defined as a separated method instead than as an argument for the constructor
+     * because this information is more easily provided by {@link WKTFormat} rather than by the parser or
+     * formatter that created the {@code Warnings} object.
+     */
+    final void setRoot(final Object obj) {
+        if (obj instanceof IdentifiedObject) {
+            final Identifier id = ((IdentifiedObject) obj).getName();
+            if (id != null && (root = id.getCode()) != null) {
+                return;
+            }
+        }
+        root = Classes.getShortClassName(obj);
+    }
+
+    /**
+     * Adds a warning. At least one of {@code message} or {@code cause} shall be non-null.
+     *
+     * @param message The message, or {@code null}.
+     * @param cause   The exception that caused the warning, or {@code null}
+     * @param source  The location of the exception, or {@code null}. If non-null, then {@code source[0]} shall be
+     *                the keyword of the WKT element where the exception occurred, and {@code source[1]} the keyword
+     *                of the parent of {@code source[0]}.
+     */
+    final void add(final InternationalString message, final Exception cause, final String[] source) {
+        assert (message != null) || (cause != null);
+        if (messages == null) {
+            messages = new ArrayList<>(4);  // We expect few items.
+        }
+        messages.add(message);
+        messages.add(cause);
+        if (cause != null) {
+            if (exceptionSources == null) {
+                exceptionSources = new LinkedHashMap<>(4);  // We expect few items.
+            }
+            exceptionSources.put(cause, source);
+        }
     }
 
     /**
@@ -141,27 +220,15 @@ public final class Warnings implements Localized, Serializable {
     }
 
     /**
-     * Adds a warning. At least one of {@code message} or {@code cause} shall be non-null.
+     * Returns the name of the root element being parsed or formatted.
+     * If the parsed of formatted object implement the {@link IdentifiedObject} interface,
+     * then this method returns the value of {@code IdentifiedObject.getName().getCode()}.
+     * Otherwise this method returns a simple class name.
      *
-     * @param message The message, or {@code null}.
-     * @param cause   The exception that caused the warning, or {@code null}
-     * @param source  The location of the exception, or {@code null}. If non-null, then {@code source[0]} shall be
-     *                the keyword of the WKT element where the exception occurred, and {@code source[1]} the keyword
-     *                of the parent of {@code source[0]}.
+     * @return The name of the root element, or {@code null} if unknown.
      */
-    final void add(final InternationalString message, final Exception cause, final String[] source) {
-        assert (message != null) || (cause != null);
-        if (messages == null) {
-            messages = new ArrayList<>(4);  // We expect few items.
-        }
-        messages.add(message);
-        messages.add(cause);
-        if (cause != null) {
-            if (exceptionSources == null) {
-                exceptionSources = new LinkedHashMap<>(4);  // We expect few items.
-            }
-            exceptionSources.put(cause, source);
-        }
+    public String getRootElement() {
+        return root;
     }
 
     /**
@@ -236,7 +303,9 @@ public final class Warnings implements Localized, Serializable {
     public String toString(final Locale locale) {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
-        final Errors resources = Errors.getResources(locale);
+        final Messages resources   = Messages.getResources(locale);
+        buffer.append(resources.getString(Messages.Keys.IncompleteFormattingOrParsing_2, operation, root))
+              .append(lineSeparator);
         if (messages != null) {
             for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
                 InternationalString i18n = (InternationalString) it.next();
@@ -246,12 +315,12 @@ public final class Warnings implements Localized, Serializable {
                     message = i18n.toString(locale);
                 } else {
                     /*
-                     * If there is no message, then we must have at least one exception.
-                     * Consequently a NullPointerException below would be a bug.
+                     * If there is no message, then we must have at least an exception.
+                     * Consequently a NullPointerException in following line would be a bug.
                      */
                     final String[] sources = exceptionSources.get(cause);
                     if (sources != null) {
-                        message = resources.getString(Errors.Keys.UnparsableStringInElement_2, sources);
+                        message = Errors.getResources(locale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
                     } else {
                         message = cause.toString();
                         cause = null;
@@ -272,7 +341,7 @@ public final class Warnings implements Localized, Serializable {
          */
         if (!ignoredElements.isEmpty()) {
             final Vocabulary vocabulary = Vocabulary.getResources(locale);
-            buffer.append(" • ").append(resources.getString(Errors.Keys.UnknownElementsInText)).append(lineSeparator);
+            buffer.append(" • ").append(resources.getString(Messages.Keys.UnknownElementsInText)).append(lineSeparator);
             for (final Map.Entry<String, List<String>> entry : ignoredElements.entrySet()) {
                 buffer.append("    ‣ ").append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));
                 String separator = vocabulary.getString(Vocabulary.Keys.InBetweenWords);

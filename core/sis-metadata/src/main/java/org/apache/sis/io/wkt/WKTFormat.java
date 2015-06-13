@@ -526,10 +526,11 @@ public class WKTFormat extends CompoundFormat<Object> {
                     (DateFormat)   getFormat(Date.class),
                     convention, getLocale(), factories);
         }
+        Object object = null;
         try {
-            return parser.parseObject(text.toString(), pos);
+            return object = parser.parseObject(text.toString(), pos);
         } finally {
-            warnings = parser.getAndClearWarnings();
+            warnings = parser.getAndClearWarnings(object);
         }
     }
 
@@ -588,8 +589,9 @@ public class WKTFormat extends CompoundFormat<Object> {
             formatter.clear();
         }
         if (warning != null) {
-            warnings = new Warnings(getLocale(), Collections.emptyMap());
+            warnings = new Warnings(getLocale(), (byte) 0, Collections.emptyMap());
             warnings.add(warning, formatter.getErrorCause(), null);
+            warnings.setRoot(object);
         }
         if (!valid) {
             throw new ClassCastException(Errors.format(

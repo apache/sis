@@ -232,7 +232,7 @@ abstract class AbstractParser implements Parser {
      */
     final void warning(final Element parent, final Element element, final Exception ex) {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, ignoredElements);
+            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
         }
         warnings.add(null, ex, new String[] {parent.keyword, element.keyword});
     }
@@ -243,13 +243,19 @@ abstract class AbstractParser implements Parser {
      *
      * <p>The returned object is valid only until a new parsing starts. If a longer lifetime is desired,
      * then the callers <strong>must</strong> invoke {@link Warnings#publish()}.</p>
+     *
+     * @param object The object that resulted from the parsing operation, or {@code null}.
      */
-    final Warnings getAndClearWarnings() {
+    final Warnings getAndClearWarnings(final Object object) {
         Warnings w = warnings;
         warnings = null;
-        if (w == null && !ignoredElements.isEmpty()) {
-            w = new Warnings(errorLocale, ignoredElements);
+        if (w == null) {
+            if (ignoredElements.isEmpty()) {
+                return null;
+            }
+            w = new Warnings(errorLocale, (byte) 1, ignoredElements);
         }
+        w.setRoot(object);
         return w;
     }
 }
