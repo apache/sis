@@ -79,7 +79,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
-        assertNull("warnings", parser.getAndClearWarnings());
+        assertNull("warnings", parser.getAndClearWarnings(obj));
         assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
@@ -634,19 +634,23 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     public void testWarnings() throws ParseException {
         parser = new GeodeticObjectParser();
         final ParsePosition position = new ParsePosition(0);
-        verifyGeographicCRS(0, (GeographicCRS) parser.parseObject(
+        final GeographicCRS crs = (GeographicCRS) parser.parseObject(
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
                "      PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
-               "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position));
+               "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position);
 
+        verifyGeographicCRS(0, crs);
         assertEquals("errorIndex", -1, position.getErrorIndex());
-        final Warnings warnings = parser.getAndClearWarnings();
+        final Warnings warnings = parser.getAndClearWarnings(crs);
         assertNotNull("warnings", warnings);
 
         assertTrue("warnings.getExceptions()",
                 warnings.getExceptions().isEmpty());
+
+        assertEquals("warnings.getRootElement()", "WGS 84",
+                warnings.getRootElement());
 
         assertArrayEquals("warnings.getUnknownElements()",
                 new String[] {"Intruder", "Ext1", "Ext2"},
@@ -664,12 +668,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 new String[] {"SPHEROID"},
                 warnings.getUnknownElementLocations("Ext2").toArray());
 
-        assertMultilinesEquals(" • The text contains unknown elements:\n" +
+        assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
+                               " • The text contains unknown elements:\n" +
                                "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
                                "    ‣ “Ext1” in SPHEROID.\n" +
                                "    ‣ “Ext2” in SPHEROID.\n", warnings.toString(Locale.US));
 
-        assertMultilinesEquals(" • Le texte contient des éléments inconnus :\n" +
+        assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
+                               " • Le texte contient des éléments inconnus :\n" +
                                "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
                                "    ‣ « Ext1 » dans SPHEROID.\n" +
                                "    ‣ « Ext2 » dans SPHEROID.\n", warnings.toString(Locale.FRANCE));

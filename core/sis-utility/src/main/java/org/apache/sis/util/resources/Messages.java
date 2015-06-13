@@ -93,6 +93,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertyAssociatedTo_1 = 7;
 
         /**
+         * {0,choice,0#Formatting|1#Parsing} of “{1}” done, but some elements were ignored.
+         */
+        public static final short IncompleteFormattingOrParsing_2 = 14;
+
+        /**
          * Text were discarded for some locales.
          */
         public static final short LocalesDiscarded = 3;
@@ -118,6 +123,11 @@ public final class Messages extends IndexedResourceBundle {
          * Property “{0}” is hidden by “{1}”.
          */
         public static final short PropertyHiddenBy_2 = 4;
+
+        /**
+         * The text contains unknown elements:
+         */
+        public static final short UnknownElementsInText = 13;
 
         /**
          * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but

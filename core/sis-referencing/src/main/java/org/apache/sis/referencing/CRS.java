@@ -213,7 +213,7 @@ public final class CRS extends Static {
      * <ul>
      *   <li>Performance may be sub-optimal in a multi-thread environment.</li>
      *   <li>No control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions} in use.</li>
-     *   <li>No control on the handling of {@linkplain org.apache.sis.io.wkt.warnings}.</li>
+     *   <li>No control on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.</li>
      * </ul>
      *
      * Applications which need to parse a large amount of WKT strings should consider to use
