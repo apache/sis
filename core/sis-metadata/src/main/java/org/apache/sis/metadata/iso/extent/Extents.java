@@ -28,6 +28,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
@@ -54,7 +56,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.geometry.Envelopes
@@ -132,31 +134,59 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns the union of all vertical ranges found in the given extent, or {@code null} if none.
-     * Depths have negative height values: if the {@linkplain CoordinateSystemAxis#getDirection() axis direction}
+     * Returns the union of chosen vertical ranges found in the given extent, or {@code null} if none.
+     * This method gives preference to heights above the Mean Sea Level when possible.
+     * Depths have negative height values: if the
+     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis direction}
      * is toward down, then this method reverses the sign of minimum and maximum values.
      *
      * <div class="section">Multi-occurrences</div>
      * If the given {@code Extent} object contains more than one vertical extent, then this method
-     * performs the following choices:
+     * performs a choice based on the vertical datum and the unit of measurement:
      *
      * <ul>
-     *   <li>If no range specify a unit of measurement, return the first range and ignore all others.</li>
-     *   <li>Otherwise take the first range having a unit of measurement. Then:<ul>
-     *     <li>All other ranges having an incompatible unit of measurement will be ignored.</li>
-     *     <li>All other ranges having a compatible unit of measurement will be converted to
-     *         the unit of the first retained range, and their union will be computed.</li>
-     *   </ul></li>
-     * </ul>
+     *   <li><p><b>Choice based on vertical datum</b><br>
+     *   Only the extents associated (indirectly, through their CRS) to the same non-null {@link VerticalDatumType}
+     *   will be taken in account. If all datum types are null, then this method conservatively uses only the first
+     *   vertical extent. Otherwise the datum type used for filtering the vertical extents is:</p>
      *
-     * <div class="note"><b>Example:</b>
-     * Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
-     * An {@code Extent} could contain two vertical elements: one with the height measurements in hPa,
-     * and the other element with heights transformed to metres using an empirical formula.
-     * In such case this method will select the first vertical element on the assumption that it is
-     * the "main" one that the metadata producer intended to show. Next, this method will search for
-     * other vertical elements using pressure unit. In our example there is none, but if such elements
-     * were found, this method would compute their union.</div>
+     *   <ul>
+     *     <li>{@link VerticalDatumType#GEOIDAL} or {@link VerticalDatumType#DEPTH DEPTH} if at least one extent
+     *         uses those datum types. For this method, {@code DEPTH} is considered as equivalent to {@code GEOIDAL}
+     *         except for the axis direction.</li>
+     *     <li>Otherwise, the first non-null datum type found in iteration order.</li>
+     *   </ul>
+     *
+     *   <div class="note"><b>Rational:</b> like {@linkplain #getGeographicBoundingBox(Extent) geographic bounding box},
+     *   the vertical range is an approximative information; the range returned by this method does not carry any
+     *   information about the vertical CRS and this method does not attempt to perform coordinate transformation.
+     *   But this method is more useful if the returned ranges are close so a frequently used surface, like the
+     *   Mean Sea Level. The same simplification is applied in the
+     *   <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#31">{@code VerticalExtent} element of
+     *   Well Known Text (WKT) format</a>, which specifies that <cite>“Vertical extent is an approximate description
+     *   of location; heights are relative to an unspecified mean sea level.”</cite></div></li>
+     *
+     *   <li><p><b>Choice based on units of measurement</b><br>
+     *   If, after the choice based on the vertical datum described above, there is still more than one vertical
+     *   extent to consider, then the next criterion checks for the units of measurement.</p>
+     *   <ul>
+     *     <li>If no range specify a unit of measurement, return the first range and ignore all others.</li>
+     *     <li>Otherwise take the first range having a unit of measurement. Then:<ul>
+     *       <li>All other ranges having an incompatible unit of measurement will be ignored.</li>
+     *       <li>All other ranges having a compatible unit of measurement will be converted to
+     *           the unit of the first retained range, and their union will be computed.</li>
+     *     </ul></li>
+     *   </ul>
+     *
+     *   <div class="note"><b>Example:</b>
+     *   Heights or depths are often measured using some pressure units, for example hectopascals (hPa).
+     *   An {@code Extent} could contain two vertical elements: one with the height measurements in hPa,
+     *   and the other element with heights transformed to metres using an empirical formula.
+     *   In such case this method will select the first vertical element on the assumption that it is
+     *   the "main" one that the metadata producer intended to show. Next, this method will search for
+     *   other vertical elements using pressure unit. In our example there is none, but if such elements
+     *   were found, this method would compute their union.</div></li>
+     * </ul>
      *
      * @param  extent The extent to convert to a vertical measurement range, or {@code null}.
      * @return A vertical measurement range created from the given extent, or {@code null} if none.
@@ -165,13 +195,22 @@ public final class Extents extends Static {
      */
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
+        VerticalDatumType selectedType = null;
         if (extent != null) {
             for (final VerticalExtent element : extent.getVerticalElements()) {
                 double min = element.getMinimumValue();
                 double max = element.getMaximumValue();
                 final VerticalCRS crs = element.getVerticalCRS();
+                VerticalDatumType type = null;
                 Unit<?> unit = null;
                 if (crs != null) {
+                    final VerticalDatum datum = crs.getDatum();
+                    if (datum != null) {
+                        type = datum.getVerticalDatumType();
+                        if (VerticalDatumType.DEPTH.equals(type)) {
+                            type = VerticalDatumType.GEOIDAL;
+                        }
+                    }
                     final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
                     unit = axis.getUnit();
                     if (AxisDirection.DOWN.equals(axis.getDirection())) {
@@ -182,27 +221,39 @@ public final class Extents extends Static {
                 }
                 if (range != null) {
                     /*
-                     * If the new range does not specify any unit, then we do not know how to convert
-                     * the values before to perform the union operation. Conservatively do nothing.
+                     * If the new range does not specify any datum type or unit, then we do not know how to
+                     * convert the values before to perform the union operation. Conservatively do nothing.
                      */
-                    if (unit == null) {
+                    if (type == null || unit == null) {
                         continue;
                     }
                     /*
-                     * If previous range did not specify any unit, then unconditionally replace it by
-                     * the new range since it provides more information. If both ranges specify units,
-                     * then we will compute the union if we can, or ignore the new range otherwise.
+                     * If the new range is not measured relative to the same kind of surface than the previous range,
+                     * then we do not know how to combine those ranges. Do nothing, unless the new range is a Mean Sea
+                     * Level Height in which case we forget all previous ranges and use the new one instead.
                      */
-                    final Unit<?> previous = range.unit();
-                    if (previous != null) {
-                        if (previous.isCompatible(unit)) {
-                            range = (MeasurementRange<Double>) range.union(
-                                    MeasurementRange.create(min, true, max, true, unit));
+                    if (!type.equals(selectedType)) {
+                        if (!type.equals(VerticalDatumType.GEOIDAL)) {
+                            continue;
                         }
-                        continue;
+                    } else if (selectedType != null) {
+                        /*
+                         * If previous range did not specify any unit, then unconditionally replace it by
+                         * the new range since it provides more information. If both ranges specify units,
+                         * then we will compute the union if we can, or ignore the new range otherwise.
+                         */
+                        final Unit<?> previous = range.unit();
+                        if (previous != null) {
+                            if (previous.isCompatible(unit)) {
+                                range = (MeasurementRange<Double>) range.union(
+                                        MeasurementRange.create(min, true, max, true, unit));
+                            }
+                            continue;
+                        }
                     }
                 }
                 range = MeasurementRange.create(min, true, max, true, unit);
+                selectedType = type;
             }
         }
         return range;
