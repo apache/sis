@@ -28,6 +28,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -95,6 +96,8 @@ abstract class AbstractParser implements Parser {
      *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
      *       This list is used for helping the users to locate the ignored elements.</li>
      * </ul>
+     *
+     * @see #getAndClearWarnings(Object)
      */
     final Map<String, List<String>> ignoredElements;
 
@@ -227,7 +230,7 @@ abstract class AbstractParser implements Parser {
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
      * @param parent  The parent element.
-     * @param keyword The element that we can not parse.
+     * @param element The element that we can not parse.
      * @param ex      The non-fatal exception that occurred while parsing the element.
      */
     final void warning(final Element parent, final Element element, final Exception ex) {
@@ -238,11 +241,24 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
+     * Reports a non-fatal warning that occurred while parsing a WKT.
+     *
+     * @param message The message. Can not be {@code null}.
+     * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
+     */
+    final void warning(final InternationalString message, final Exception ex) {
+        if (warnings == null) {
+            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
+        }
+        warnings.add(message, ex, null);
+    }
+
+    /**
      * Returns the warnings, or {@code null} if none.
      * This method clears the warnings after the call.
      *
-     * <p>The returned object is valid only until a new parsing starts. If a longer lifetime is desired,
-     * then the callers <strong>must</strong> invoke {@link Warnings#publish()}.</p>
+     * <p>The returned object is valid only before a new parsing starts. If a longer lifetime is desired,
+     * then the caller <strong>must</strong> invokes {@link Warnings#publish()}.</p>
      *
      * @param object The object that resulted from the parsing operation, or {@code null}.
      */

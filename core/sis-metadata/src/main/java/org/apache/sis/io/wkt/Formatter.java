@@ -822,6 +822,10 @@ public class Formatter implements Localized {
      *   <li>“{@code VerticalExtent[102, 108, LengthUnit["m", 1]]}”       (Δz =   6)</li>
      *   <li>“{@code VerticalExtent[100.2, 100.8, LengthUnit["m", 1]]}”   (Δz = 0.6)</li>
      * </ul>
+     *
+     * Note that according ISO 19162, heights are positive toward up and relative to an unspecified mean sea level.
+     * It is caller's responsibility to ensure that the given range complies with that specification as much as
+     * possible.
      */
     private void appendVerticalExtent(final MeasurementRange<Double> range) {
         if (range != null) {

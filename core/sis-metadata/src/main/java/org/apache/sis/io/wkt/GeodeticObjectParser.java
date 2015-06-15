@@ -145,10 +145,27 @@ final class GeodeticObjectParser extends MathTransformParser {
     private final Convention convention;
 
     /**
-     * A map of properties to be given the factory constructor methods.
+     * A map of properties to be given to the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
     private final Map<String,Object> properties = new HashMap<>(4);
+
+    /**
+     * The last vertical CRS found during the parsing, or {@code null} if none.
+     * This information is needed for creating {@link DefaultVerticalExtent} instances.
+     *
+     * <p>ISO 19162 said that we should have at most one vertical CRS per WKT. Apache SIS does
+     * not enforce this constraint, but if a WKT contains more than one vertical CRS then the
+     * instance used for completing the {@link DefaultVerticalExtent} instances is unspecified.</p>
+     */
+    private transient VerticalCRS verticalCRS;
+
+    /**
+     * A chained list of temporary information needed for completing the construction of {@link DefaultVerticalExtent}
+     * instances. In particular, stores the unit of measurement until the {@link VerticalCRS} instance to associate to
+     * the extents is known.
+     */
+    private transient VerticalInfo verticalElements;
 
     /**
      * Creates a parser using the default set of symbols and factories.
@@ -232,11 +249,38 @@ final class GeodeticObjectParser extends MathTransformParser {
      */
     @Override
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
+        final Object object;
         try {
-            return super.parseObject(text, position);
+            object = super.parseObject(text, position);
+            /*
+             * After parsing the object, we may have been unable to set the VerticalCRS of VerticalExtent instances.
+             * First, try to set a default VerticalCRS for Mean Sea Level Height in metres. In the majority of cases
+             * that should be enough. If not (typically because the vertical extent uses other unit than metre), try
+             * to create a new CRS using the unit declared in the WKT.
+             */
+            if (verticalElements != null) {
+                Exception ex = null;
+                try {
+                    verticalElements = verticalElements.resolve(referencing.getMSLH());     // Optional operation.
+                } catch (UnsupportedOperationException e) {
+                    ex = e;
+                }
+                if (verticalElements != null) try {
+                    verticalElements = verticalElements.complete(crsFactory, csFactory);
+                } catch (FactoryException e) {
+                    if (ex == null) ex = e;
+                }
+                if (verticalElements != null) {
+                    warning(Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
+                            WKTKeywords.VerticalExtent, verticalElements.unit), ex);
+                }
+            }
         } finally {
+            verticalCRS = null;
+            verticalElements = null;
             properties.clear();     // for letting the garbage collector do its work.
         }
+        return object;
     }
 
     /**
@@ -393,10 +437,9 @@ final class GeodeticObjectParser extends MathTransformParser {
                 final double minimum = element.pullDouble("minimum");
                 final double maximum = element.pullDouble("maximum");
                 final Unit<Length> unit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-                final VerticalCRS crs = null; // TODO: create here a vertical CRS above mean sea level using the given units.
                 element.close(ignoredElements);
                 if (extent == null) extent = new DefaultExtent();
-                extent.getVerticalElements().add(new DefaultVerticalExtent(minimum, maximum, crs));
+                verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
             }
             /*
              * Example: TIMEEXTENT[2013-01-01, 2013-12-31]
@@ -877,8 +920,16 @@ final class GeodeticObjectParser extends MathTransformParser {
                 }
                 axis = createAxis(sn, abbreviation, direction, linearUnit);
             }
-            return crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum,
-                    csFactory.createVerticalCS(singletonMap("name", name), axis));
+            verticalCRS = crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum,
+                           csFactory.createVerticalCS(singletonMap("name", name), axis));
+            /*
+             * Some DefaultVerticalExtent objects may be waiting for the VerticalCRS before to complete
+             * their construction. If this is the case, try to complete them now.
+             */
+            if (verticalElements != null) {
+                verticalElements = verticalElements.resolve(verticalCRS);
+            }
+            return verticalCRS;
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
