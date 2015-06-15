@@ -160,7 +160,7 @@ public final class Extents extends Static {
      *   <div class="note"><b>Rational:</b> like {@linkplain #getGeographicBoundingBox(Extent) geographic bounding box},
      *   the vertical range is an approximative information; the range returned by this method does not carry any
      *   information about the vertical CRS and this method does not attempt to perform coordinate transformation.
-     *   But this method is more useful if the returned ranges are close so a frequently used surface, like the
+     *   But this method is more useful if the returned ranges are close to a frequently used surface, like the
      *   Mean Sea Level. The same simplification is applied in the
      *   <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#31">{@code VerticalExtent} element of
      *   Well Known Text (WKT) format</a>, which specifies that <cite>“Vertical extent is an approximate description
