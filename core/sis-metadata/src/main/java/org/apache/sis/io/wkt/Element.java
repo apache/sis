@@ -77,6 +77,14 @@ final class Element {
     final int offset;
 
     /**
+     * Index of the keyword in the array given to the {@link #pullElement(String...)}
+     * or {@link #pullOptionalElement(String...)} method.
+     *
+     * @see #getKeywordIndex()
+     */
+    private byte keywordIndex;
+
+    /**
      * Keyword of this entity. For example: {@code "PrimeMeridian"}.
      */
     public final String keyword;
@@ -344,11 +352,11 @@ final class Element {
     }
 
     /**
-     * Returns an exception saying that a component is missing.
+     * Returns an exception saying that a sub-element is missing.
      *
-     * @param key The name of the missing component.
+     * @param key The name of the missing sub-element.
      */
-    private ParseException missingParameter(final String key) {
+    final ParseException missingComponent(final String key) {
         int error = offset;
         if (keyword != null) {
             error += keyword.length();
@@ -382,7 +390,7 @@ final class Element {
                 return (Date) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -401,7 +409,7 @@ final class Element {
                 return ((Number) object).doubleValue();
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -425,7 +433,7 @@ final class Element {
                 return number.intValue();
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -444,7 +452,7 @@ final class Element {
                 return (Boolean) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -463,7 +471,7 @@ final class Element {
                 return (String) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -482,42 +490,46 @@ final class Element {
                 return object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
      * Removes the next {@link Element} from the list and returns it.
+     * If the parameter is missing, then the first element in the given {@code keys} array
+     * will be taken as the name of the missing element to report in the exception message.
      *
-     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
+     * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
      * @return The next {@link Element} on the list.
      * @throws ParseException if no more element is available.
      */
-    public Element pullElement(final String key) throws ParseException {
-        final Element element = pullOptionalElement(key, null);
+    public Element pullElement(final String... keys) throws ParseException {
+        final Element element = pullOptionalElement(keys);
         if (element != null) {
             return element;
         }
-        throw missingParameter(key);
+        throw missingComponent(keys[0]);
     }
 
     /**
      * Removes the next {@link Element} from the list and returns it.
      *
-     * @param  key    The element name (e.g. {@code "PrimeMeridian"}).
-     * @param  aktKey An alternative key, or {@code null} if none.
+     * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
      * @return The next {@link Element} on the list, or {@code null} if no more element is available.
      */
-    public Element pullOptionalElement(final String key, final String altKey) {
+    public Element pullOptionalElement(final String... keys) {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list != null && (key.equalsIgnoreCase(element.keyword) ||
-                       (altKey != null && altKey.equalsIgnoreCase(element.keyword))))
-                {
-                    iterator.remove();
-                    return element;
+                if (element.list != null) {
+                    for (int i=0; i<keys.length; i++) {
+                        if (element.keyword.equalsIgnoreCase(keys[i])) {
+                            keywordIndex = (byte) i;
+                            iterator.remove();
+                            return element;
+                        }
+                    }
                 }
             }
         }
@@ -544,7 +556,7 @@ final class Element {
                 }
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -564,6 +576,14 @@ final class Element {
      */
     public boolean isEmpty() {
         return list.isEmpty();
+    }
+
+    /**
+     * Returns the index of the keyword in the array given to the {@link #pullElement(String...)}
+     * or {@link #pullOptionalElement(String...)} method.
+     */
+    final int getKeywordIndex() {
+        return keywordIndex;
     }
 
     /**

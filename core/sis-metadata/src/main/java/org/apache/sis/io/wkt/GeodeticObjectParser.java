@@ -27,6 +27,7 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
@@ -77,21 +78,6 @@ import static java.util.Collections.singletonMap;
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transform} objects.
  * Note that math transforms are part of the WKT 1 {@code "FITTED_CS"} element.
  *
- * <div class="section">Default axis names</div>
- * The WKT 1 specification defined axis names different than the ISO 19111 ones.
- * This parser replaces the WKT 1 names by the ISO names and abbreviations when possible.
- *
- * <table class="sis">
- *   <tr><th>CRS type</th>   <th>WKT1 names</th> <th>ISO abbreviations</th></tr>
- *   <tr><td>Geographic</td> <td>Lon, Lat</td>   <td>λ, φ</td></tr>
- *   <tr><td>Vertical</td>   <td>H</td>          <td>h</td></tr>
- *   <tr><td>Projected</td>  <td>X, Y</td>       <td>x, y</td></tr>
- *   <tr><td>Geocentric</td> <td>X, Y, Z</td>    <td>X, Y, Z</td></tr>
- * </table>
- *
- * The default behavior is to use the ISO identifiers.
- * This behavior can be changed by setting the parsing conventions to {@link Convention#WKT1}.
- *
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -99,6 +85,22 @@ import static java.util.Collections.singletonMap;
  * @module
  */
 final class GeodeticObjectParser extends MathTransformParser {
+    /**
+     * The keywords of unit elements. Most frequently used keywords should be first.
+     */
+    private static final String[] UNIT_KEYWORDS = {
+        WKTKeywords.Unit,   // Ignored since it does not allow us to know the quantity dimension.
+        WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit
+    };
+
+    /**
+     * The base unit associated to the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
+     * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i]}.
+     */
+    private static final Unit<?>[] BASE_UNITS = {
+        SI.METRE, SI.RADIAN, Unit.ONE, SI.SECOND
+    };
+
     /**
      * The names of the 7 parameters in a {@code TOWGS84[…]} element.
      * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
@@ -140,6 +142,9 @@ final class GeodeticObjectParser extends MathTransformParser {
      *   <li>{@link Convention#WKT1_COMMON_UNITS} means that {@code PRIMEM} and {@code PARAMETER} angular units
      *       need to be forced to {@code NonSI.DEGREE_ANGLE} instead than inferred from the context.
      *       Note that this rule does not apply to {@code AXIS} elements.</li>
+     *
+     *   <li>{@link Convention#WKT1_IGNORE_AXES} means that axes should be parsed only for verifying the syntax,
+     *       but otherwise parsing should behave as if axes were not declared.</li>
      * </ul>
      */
     private final Convention convention;
@@ -163,7 +168,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     /**
      * A chained list of temporary information needed for completing the construction of {@link DefaultVerticalExtent}
      * instances. In particular, stores the unit of measurement until the {@link VerticalCRS} instance to associate to
-     * the extents is known.
+     * the extents become known.
      */
     private transient VerticalInfo verticalElements;
 
@@ -171,7 +176,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Creates a parser using the default set of symbols and factories.
      */
     public GeodeticObjectParser() {
-        this(Symbols.getDefault(), null, null, Convention.DEFAULT, null, null);
+        this(Symbols.getDefault(), null, null, null, Convention.DEFAULT, null, null);
     }
 
     /**
@@ -191,7 +196,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), null, null, mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
+        super(Symbols.getDefault(), null, null, null, mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory    = (CRSFactory)   factories;
         csFactory     = (CSFactory)    factories;
         datumFactory  = (DatumFactory) factories;
@@ -207,14 +212,16 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @param symbols       The set of symbols to use.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param convention    The WKT convention to use.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      * @param factories     On input, the factories to use. On output, the factories used. Can be null.
      */
     GeodeticObjectParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final Convention convention, final Locale errorLocale, final Map<Class<?>,Factory> factories)
+            final UnitFormat unitFormat, final Convention convention, final Locale errorLocale,
+            final Map<Class<?>,Factory> factories)
     {
-        super(symbols, numberFormat, dateFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
+        super(symbols, numberFormat, dateFormat, unitFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
@@ -269,6 +276,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                     verticalElements = verticalElements.complete(crsFactory, csFactory);
                 } catch (FactoryException e) {
                     if (ex == null) ex = e;
+                    else ex.addSuppressed(e);
                 }
                 if (verticalElements != null) {
                     warning(Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
@@ -400,7 +408,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             /*
              * Example: SCOPE["Large scale topographic mapping and cadastre."]
              */
-            element = parent.pullOptionalElement(WKTKeywords.Scope, null);
+            element = parent.pullOptionalElement(WKTKeywords.Scope);
             if (element != null) {
                 properties.put(ReferenceSystem.SCOPE_KEY, element.pullString("scope"));  // Other types like Datum use the same key.
                 element.close(ignoredElements);
@@ -409,7 +417,7 @@ final class GeodeticObjectParser extends MathTransformParser {
              * Example: AREA["Netherlands offshore."]
              */
             DefaultExtent extent = null;
-            while ((element = parent.pullOptionalElement(WKTKeywords.Area, null)) != null) {
+            while ((element = parent.pullOptionalElement(WKTKeywords.Area)) != null) {
                 final String area = element.pullString("area");
                 element.close(ignoredElements);
                 if (extent == null) extent = new DefaultExtent();
@@ -418,7 +426,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             /*
              * Example: BBOX[51.43, 2.54, 55.77, 6.40]
              */
-            while ((element = parent.pullOptionalElement(WKTKeywords.BBox, null)) != null) {
+            while ((element = parent.pullOptionalElement(WKTKeywords.BBox)) != null) {
                 final double southBoundLatitude = element.pullDouble("southBoundLatitude");
                 final double westBoundLongitude = element.pullDouble("westBoundLongitude");
                 final double northBoundLatitude = element.pullDouble("northBoundLatitude");
@@ -433,11 +441,12 @@ final class GeodeticObjectParser extends MathTransformParser {
              *
              * Units are optional, default to metres (no "contextual units" here).
              */
-            while ((element = parent.pullOptionalElement(WKTKeywords.VerticalExtent, null)) != null) {
+            while ((element = parent.pullOptionalElement(WKTKeywords.VerticalExtent)) != null) {
                 final double minimum = element.pullDouble("minimum");
                 final double maximum = element.pullDouble("maximum");
-                final Unit<Length> unit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                Unit<Length> unit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
                 element.close(ignoredElements);
+                if (unit   == null) unit   = SI.METRE;
                 if (extent == null) extent = new DefaultExtent();
                 verticalElements = new VerticalInfo(verticalElements, extent, minimum, maximum, unit).resolve(verticalCRS);
             }
@@ -450,7 +459,7 @@ final class GeodeticObjectParser extends MathTransformParser {
              * This operation requires the the sis-temporal module. If not available,
              * we will report a warning and leave the temporal extent missing.
              */
-            while ((element = parent.pullOptionalElement(WKTKeywords.TimeExtent, null)) != null) {
+            while ((element = parent.pullOptionalElement(WKTKeywords.TimeExtent)) != null) {
                 final Date startTime = element.pullDate("startTime");
                 final Date endTime   = element.pullDate("endTime");
                 element.close(ignoredElements);
@@ -469,7 +478,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     }
 
     /**
-     * Parses an optional {@code "UNIT"} element.
+     * Parses an optional {@code "UNIT"} element of a known dimension.
      * This element has the following pattern:
      *
      * {@preformat text
@@ -480,26 +489,49 @@ final class GeodeticObjectParser extends MathTransformParser {
      * in each {@code AXIS[…]} element instead than for the whole coordinate system.
      *
      * @param  parent   The parent element.
-     * @param  keyword  The unit keyword.
+     * @param  keyword  The unit keyword (e.g. {@code "LengthUnit"} or {@code "AngleUnit"}).
      * @param  baseUnit The base unit, usually {@code SI.METRE} or {@code SI.RADIAN}.
-     * @return The {@code "UNIT"} element as an {@link Unit} object.
+     * @return The {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      *
      * @todo Authority code is currently ignored. We may consider to create a subclass of
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
-    @SuppressWarnings("unchecked")
-    private <Q extends Quantity> Unit<Q> parseUnit(final Element parent, final String keyword, final Unit<Q> baseUnit)
-            throws ParseException
+    private <Q extends Quantity> Unit<Q> parseDerivedUnit(final Element parent,
+            final String keyword, final Unit<Q> baseUnit) throws ParseException
     {
         final Element element = parent.pullOptionalElement(keyword, WKTKeywords.Unit);
         if (element == null) {
-            return baseUnit.equals(SI.RADIAN) ? (Unit<Q>) NonSI.DEGREE_ANGLE : baseUnit;
+            return null;
         }
-        final String  name   = element.pullString("name");
-        final double  factor = element.pullDouble("factor");
+        final String name   = element.pullString("name");
+        final double factor = element.pullDouble("factor");
         parseMetadataAndClose(element, name);
         return Units.multiply(baseUnit, factor);
+    }
+
+    /**
+     * Parses an optional {@code "UNIT"} element of unknown dimension.
+     * This method tries to infer the quantity dimension from the unit keyword.
+     *
+     * @param  parent The parent element.
+     * @return The {@code "UNIT"} element, or {@code null} if none.
+     * @throws ParseException if the {@code "UNIT"} can not be parsed.
+     */
+    private Unit<?> parseUnit(final Element parent) throws ParseException {
+        final Element element = parent.pullOptionalElement(UNIT_KEYWORDS);
+        if (element == null) {
+            return null;
+        }
+        final String name   = element.pullString("name");
+        final double factor = element.pullDouble("factor");
+        final int    index  = element.getKeywordIndex();
+        parseMetadataAndClose(element, name);
+        if (index != 0) {
+            return Units.multiply(BASE_UNITS[index - 1], factor);
+        }
+        // If we can not infer the base type, we have to rely on the name.
+        return parseUnit(name);
     }
 
     /**
@@ -517,20 +549,20 @@ final class GeodeticObjectParser extends MathTransformParser {
      *
      * @param  parent       The parent element.
      * @param  isGeographic {@code true} if the parent element is a geodetic CRS having an ellipsoidal coordinate system.
-     * @param  unit         The contextual unit, usually {@code SI.METRE} or {@code SI.RADIAN}.
+     * @param  defaultUnit  The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
      * @param  mandatory    {@code true} if the axis is mandatory, or {@code false} if it is optional.
      * @return The {@code "AXIS"} element as a {@link CoordinateSystemAxis} object, or {@code null}
      *         if the axis was not required and there is no axis object.
      * @throws ParseException if the {@code "AXIS"} element can not be parsed.
      */
     private CoordinateSystemAxis parseAxis(final Element parent, final boolean isGeographic,
-            final Unit<?> unit, final boolean mandatory) throws ParseException
+            final Unit<?> defaultUnit, final boolean mandatory) throws ParseException
     {
         final Element element;
         if (mandatory) {
             element = parent.pullElement(WKTKeywords.Axis);
         } else {
-            element = parent.pullOptionalElement(WKTKeywords.Axis, null);
+            element = parent.pullOptionalElement(WKTKeywords.Axis);
             if (element == null) {
                 return null;
             }
@@ -550,6 +582,13 @@ final class GeodeticObjectParser extends MathTransformParser {
             }
         }
         final Element orientation = element.pullVoidElement("orientation");
+        Unit<?> unit = parseUnit(element);
+        if (unit == null) {
+            if (defaultUnit == null) {
+                throw element.missingComponent(WKTKeywords.Unit);
+            }
+            unit = defaultUnit;
+        }
         final AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, mandatory);
         /*
          * According ISO 19162, the abbreviation should be inserted between parenthesis in the name.
@@ -613,6 +652,9 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element element   = parent.pullElement(WKTKeywords.PrimeM);
         final String  name      = element.pullString("name");
         final double  longitude = element.pullDouble("longitude");
+        if (angularUnit == null) {
+            throw element.missingComponent(WKTKeywords.AngleUnit);
+        }
         try {
             return datumFactory.createPrimeMeridian(parseMetadataAndClose(element, name), longitude, angularUnit);
         } catch (FactoryException exception) {
@@ -634,7 +676,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @throws ParseException if the {@code "TOWGS84"} can not be parsed.
      */
     private Object parseToWGS84(final Element parent) throws ParseException {
-        final Element element = parent.pullOptionalElement(WKTKeywords.ToWGS84, null);
+        final Element element = parent.pullOptionalElement(WKTKeywords.ToWGS84);
         if (element == null) {
             return null;
         }
@@ -830,7 +872,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element          element    = parent.pullElement(WKTKeywords.Local_CS);
         final String           name       = element.pullString("name");
         final EngineeringDatum datum      = parseLocalDatum(element);
-        final Unit<Length>     linearUnit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final Unit<Length>     linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         CoordinateSystemAxis   axis       = parseAxis(element, false, linearUnit, true);
         final List<CoordinateSystemAxis> list = new ArrayList<>();
         do {
@@ -863,7 +905,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final String        name       = element.pullString("name");
         final PrimeMeridian meridian   = parsePrimem(element, NonSI.DEGREE_ANGLE);
         final GeodeticDatum datum      = parseDatum (element, meridian);
-        final Unit<Length>  linearUnit = parseUnit  (element, WKTKeywords.LengthUnit, SI.METRE);
+        final Unit<Length>  linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         CartesianCS cs;
         CoordinateSystemAxis axis0, axis1 = null, axis2 = null;
         axis0 = parseAxis(element, false, linearUnit, false);
@@ -877,6 +919,9 @@ final class GeodeticObjectParser extends MathTransformParser {
                 cs = csFactory.createCartesianCS(properties, axis0, axis1, axis2);
                 cs = referencing.upgradeGeocentricCS(cs);
             } else {
+                if (linearUnit == null) {
+                    throw element.missingComponent(WKTKeywords.Unit);
+                }
                 cs = referencing.getGeocentricCS(linearUnit);
             }
             return crsFactory.createGeocentricCRS(properties, datum, cs);
@@ -901,10 +946,13 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element        element    = parent.pullElement(WKTKeywords.Vert_CS);
         final String         name       = element.pullString("name");
         final VerticalDatum  datum      = parseVertDatum(element);
-        final Unit<Length>   linearUnit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final Unit<Length>   linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         CoordinateSystemAxis axis       = parseAxis(element, false, linearUnit, false);
         try {
             if (isAxisIgnored(axis)) {
+                if (linearUnit == null) {
+                    throw element.missingComponent(WKTKeywords.Unit);
+                }
                 String sn = "Height", abbreviation = "h";
                 AxisDirection direction = AxisDirection.UP;
                 final VerticalDatumType type = datum.getVerticalDatumType();
@@ -946,10 +994,13 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element        element  = parent.pullElement(WKTKeywords.TimeCRS);
         final String         name     = element.pullString("name");
         final TemporalDatum  datum    = parseTimeDatum(element);
-        final Unit<Duration> timeUnit = parseUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
+        final Unit<Duration> timeUnit = parseDerivedUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
         CoordinateSystemAxis axis     = parseAxis(element, false, timeUnit, false);
         try {
             if (isAxisIgnored(axis)) {
+                if (timeUnit == null) {
+                    throw element.missingComponent(WKTKeywords.TimeUnit);
+                }
                 axis = createAxis("Time", "t", AxisDirection.FUTURE, timeUnit);
             }
             return crsFactory.createTemporalCRS(parseMetadataAndClose(element, name), datum,
@@ -973,7 +1024,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     private GeographicCRS parseGeoGCS(final Element parent) throws ParseException {
         final Element       element     = parent.pullElement(WKTKeywords.GeogCS);
               Object        name        = element.pullString("name");
-        final Unit<Angle>   angularUnit = parseUnit  (element, WKTKeywords.AngleUnit, SI.RADIAN);
+        final Unit<Angle>   angularUnit = parseDerivedUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
         final PrimeMeridian meridian    = parsePrimem(element, angularUnit);
         final GeodeticDatum datum       = parseDatum (element, meridian);
         if (((String) name).isEmpty()) {
@@ -991,6 +1042,9 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, true, angularUnit, true);
             }
             if (isAxisIgnored(axis0)) {
+                if (angularUnit == null) {
+                    throw element.missingComponent(WKTKeywords.AngleUnit);
+                }
                 axis0 = createAxis(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  angularUnit);
                 axis1 = createAxis(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, angularUnit);
             }
@@ -1019,7 +1073,7 @@ final class GeodeticObjectParser extends MathTransformParser {
         final Element       element    = parent.pullElement(WKTKeywords.ProjCS);
         final String        name       = element.pullString("name");
         final GeographicCRS geoCRS     = parseGeoGCS(element);
-        final Unit<Length>  linearUnit = parseUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final Unit<Length>  linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         final boolean  usesCommonUnits = convention.usesCommonUnits;
         final Conversion    conversion = parseProjection(element,
                 usesCommonUnits ? SI.METRE : linearUnit,
@@ -1031,6 +1085,9 @@ final class GeodeticObjectParser extends MathTransformParser {
                 axis1 = parseAxis(element, false, linearUnit, true);
             }
             if (isAxisIgnored(axis0)) {
+                if (linearUnit == null) {
+                    throw element.missingComponent(WKTKeywords.LengthUnit);
+                }
                 axis0 = createAxis(AxisNames.EASTING,  "E", AxisDirection.EAST,  linearUnit);
                 axis1 = createAxis(AxisNames.NORTHING, "N", AxisDirection.NORTH, linearUnit);
             }

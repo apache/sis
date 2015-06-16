@@ -45,7 +45,11 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
  * But {@code DefaultVerticalExtent} has no {@code unit} property. Instead, {@code DefaultVerticalExtent} has a
  * {@code verticalCRS} property. The WKT specification said that heights are positive toward up and relative to
  * an unspecified mean sea level, but we will try to use the parsed vertical CRS instance if we find a suitable
- * one.
+ * one (i.e. one that defines gravity-related heights or depths), on the assumption that the vertical extent is
+ * likely to be defined in the same vertical CRS.
+ *
+ * <p>This class can be understood as the converse of
+ * {@link org.apache.sis.metadata.iso.extent.Extents#getVerticalRange}</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6

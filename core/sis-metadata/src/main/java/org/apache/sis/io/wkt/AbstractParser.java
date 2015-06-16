@@ -27,8 +27,11 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -88,6 +91,11 @@ abstract class AbstractParser implements Parser {
     private DateFormat dateFormat;
 
     /**
+     * The object to use for parsing unit symbols, created when first needed.
+     */
+    private UnitFormat unitFormat;
+
+    /**
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
      * but we will nevertheless report them as warnings.
      * The meaning of this map is:
@@ -113,9 +121,12 @@ abstract class AbstractParser implements Parser {
      * @param symbols       The set of symbols to use.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    AbstractParser(final Symbols symbols, NumberFormat numberFormat, final DateFormat dateFormat, final Locale errorLocale) {
+    AbstractParser(final Symbols symbols, NumberFormat numberFormat, final DateFormat dateFormat,
+            final UnitFormat unitFormat, final Locale errorLocale)
+    {
         ensureNonNull("symbols", symbols);
         if (numberFormat == null) {
             numberFormat = symbols.createNumberFormat();
@@ -123,6 +134,7 @@ abstract class AbstractParser implements Parser {
         this.symbols      = symbols;
         this.numberFormat = numberFormat;
         this.dateFormat   = dateFormat;
+        this.unitFormat   = unitFormat;
         this.errorLocale  = errorLocale;
         if (SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
             final DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
@@ -224,6 +236,31 @@ abstract class AbstractParser implements Parser {
             dateFormat = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
         }
         return dateFormat.parse(text, position);
+    }
+
+    /**
+     * Parses the given unit symbol.
+     */
+    final Unit<?> parseUnit(final String text) throws ParseException {
+        if (unitFormat == null) {
+            if (symbols.getLocale() == Locale.ROOT) {
+                return Units.valueOf(text); // Most common case, avoid the convolved code below.
+            }
+            unitFormat = UnitFormat.getInstance(symbols.getLocale());
+        }
+        /*
+         * This convolved code tries to workaround JSR-275 limitations.
+         */
+        try {
+            return (Unit<?>) unitFormat.parseObject(text);
+        } catch (ParseException e) {
+            try {
+                return Units.valueOf(text);
+            } catch (IllegalArgumentException e2) {
+                e.addSuppressed(e2);
+                throw e;
+            }
+        }
     }
 
     /**

@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -94,7 +95,7 @@ class MathTransformParser extends AbstractParser {
      * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), null, null, mtFactory, null);
+        this(Symbols.getDefault(), null, null, null, mtFactory, null);
     }
 
     /**
@@ -103,13 +104,14 @@ class MathTransformParser extends AbstractParser {
      * @param symbols       The set of symbols to use.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param mtFactory     The factory to use to create {@link MathTransform} objects.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
     MathTransformParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final MathTransformFactory mtFactory, final Locale errorLocale)
+            final UnitFormat unitFormat, final MathTransformFactory mtFactory, final Locale errorLocale)
     {
-        super(symbols, numberFormat, dateFormat, errorLocale);
+        super(symbols, numberFormat, dateFormat, unitFormat, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
     }
@@ -168,7 +170,7 @@ class MathTransformParser extends AbstractParser {
     {
         Element param = element;
         try {
-            while ((param = element.pullOptionalElement(WKTKeywords.Parameter, null)) != null) {
+            while ((param = element.pullOptionalElement(WKTKeywords.Parameter)) != null) {
                 final String                 name       = param.pullString("name");
                 final ParameterValue<?>      parameter  = parameters.parameter(name);
                 final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
