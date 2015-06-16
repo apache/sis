@@ -153,7 +153,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
                 "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
                 "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903],\n" +
-                "  Remarks[“Equivalent to 2°20′14.025″.”]]", pm);
+                "  Remark[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:meridian:EPSG::8903</gml:identifier>\n" +

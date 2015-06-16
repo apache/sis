@@ -107,12 +107,14 @@ public enum Convention {
      * names when available.</p>
      *
      * <div class="section">Differences compared to WKT 2</div>
-     * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding parameter
-     * and code list values. For {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes which were
-     * defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
-     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead than the geocentric ones,
-     * as shown in the following table:
+     * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
+     * parameter and code list values. For example in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
+     * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
+     * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead than the geocentric ones.
+     * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by
+     * the ISO ones when possible.
      *
+     * <table class="compact" summary="Differences between current and legacy specifications"><tr><td>
      * <table class="sis">
      *   <caption>Geocentric axis directions</caption>
      *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
@@ -120,6 +122,16 @@ public enum Convention {
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
+     * </td><td>
+     * <table class="sis">
+     *   <caption>Coordinate system axis names</caption>
+     *   <tr><th>CRS type</th>   <th>WKT1 names</th>                               <th>ISO abbreviations</th></tr>
+     *   <tr><td>Geographic</td> <td>Lon, Lat</td>                                 <td>λ, φ</td></tr>
+     *   <tr><td>Vertical</td>   <td><var>H</var></td>                             <td><var>H</var> or <var>h</var></td></tr>
+     *   <tr><td>Projected</td>  <td><var>X</var>, <var>Y</var></td>               <td><var>E</var>, <var>N</var></td></tr>
+     *   <tr><td>Geocentric</td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td></tr>
+     * </table>
+     * </td></tr></table>
      *
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */

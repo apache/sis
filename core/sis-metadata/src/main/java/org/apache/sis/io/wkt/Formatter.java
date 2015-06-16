@@ -745,7 +745,7 @@ public class Formatter implements Localized {
             }
         }
         if (showRemarks) {
-            appendOnNewLine(WKTKeywords.Remarks, object.getRemarks(), ElementKind.REMARKS);
+            appendOnNewLine(WKTKeywords.Remark, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }

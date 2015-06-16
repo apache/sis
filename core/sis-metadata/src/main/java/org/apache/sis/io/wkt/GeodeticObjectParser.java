@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -375,13 +376,25 @@ final class GeodeticObjectParser extends MathTransformParser {
         assert (name instanceof String) || (name instanceof Identifier);
         properties.clear();
         properties.put(IdentifiedObject.NAME_KEY, name);
-        Element element = parent.pullOptionalElement(WKTKeywords.Id, WKTKeywords.Authority);
-        if (element != null) {
-            final String auth = element.pullString("name");
-            final String code = element.pullObject("code").toString();  // Accepts Integer as well as String.
+        Element element;
+        while ((element = parent.pullOptionalElement(WKTKeywords.Id, WKTKeywords.Authority)) != null) {
+            final String   codeSpace = element.pullString("name");
+            final String   code      = element.pullObject("code").toString();   // Accepts Integer as well as String.
+            final Object   version   = element.pullOptional(Object.class);      // Accepts Number as well as String.
+            final Element  citation  = element.pullOptionalElement(WKTKeywords.Citation);
+            final String   authority;
+            if (citation != null) {
+                authority = citation.pullString("authority");
+                citation.close(ignoredElements);
+            } else {
+                authority = codeSpace;
+            }
+            final Element uri = element.pullOptionalElement(WKTKeywords.URI);
+            if (uri != null) {
+                uri.pullString("URI");      // TODO: not yet stored, since often redundant with other informations.
+                uri.close(ignoredElements);
+            }
             element.close(ignoredElements);
-            final Citation authority = Citations.fromName(auth);
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, new ImmutableIdentifier(authority, auth, code));
             /*
              * Note: we could be tempted to assign the authority to the name as well, like below:
              *
@@ -395,6 +408,21 @@ final class GeodeticObjectParser extends MathTransformParser {
              * (for example "WGS84" for the datum instead than "World Geodetic System 1984"),
              * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
+            final ImmutableIdentifier id = new ImmutableIdentifier(Citations.fromName(authority),
+                    codeSpace, code, (version != null) ? version.toString() : null, null);
+            final Object previous = properties.put(IdentifiedObject.IDENTIFIERS_KEY, id);
+            if (previous != null) {
+                Identifier[] identifiers;
+                if (previous instanceof Identifier) {
+                    identifiers = new Identifier[] {(Identifier) previous, id};
+                } else {
+                    identifiers = (Identifier[]) previous;
+                    final int n = identifiers.length;
+                    identifiers = Arrays.copyOf(identifiers, n + 1);
+                    identifiers[n] = id;
+                }
+                properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifiers);
+            }
         }
         /*
          * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
@@ -471,6 +499,14 @@ final class GeodeticObjectParser extends MathTransformParser {
                 } catch (UnsupportedOperationException e) {
                     warning(parent, element, e);
                 }
+            }
+            /*
+             * Example: REMARK["Замечание на русском языке"]
+             */
+            element = parent.pullOptionalElement(WKTKeywords.Remark);
+            if (element != null) {
+                properties.put(IdentifiedObject.REMARKS_KEY, element.pullString("remarks"));
+                element.close(ignoredElements);
             }
         }
         parent.close(ignoredElements);

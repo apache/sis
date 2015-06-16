@@ -37,19 +37,6 @@ import org.opengis.util.FactoryException;
  *   <li>{@link org.apache.sis.geometry.Envelopes#fromWKT(CharSequence)}</li>
  * </ul>
  *
- * <div class="section">Axis names</div>
- * The WKT 1 specification defined axis names different than the ISO 19111 ones.
- * This SIS parser replaces the WKT 1 names by the ISO names and abbreviations when possible.
- *
- * <table class="sis">
- *   <caption>Coordinate system axis names</caption>
- *   <tr><th>CRS type</th>   <th>WKT1 names</th>                               <th>ISO abbreviations</th></tr>
- *   <tr><td>Geographic</td> <td>Lon, Lat</td>                                 <td>λ, φ</td></tr>
- *   <tr><td>Vertical</td>   <td><var>H</var></td>                             <td><var>H</var> or <var>h</var></td></tr>
- *   <tr><td>Projected</td>  <td><var>X</var>, <var>Y</var></td>               <td><var>E</var>, <var>N</var></td></tr>
- *   <tr><td>Geocentric</td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td></tr>
- * </table>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
