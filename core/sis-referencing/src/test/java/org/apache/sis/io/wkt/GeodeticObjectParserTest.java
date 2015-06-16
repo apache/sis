@@ -69,6 +69,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Parses the given text.
      *
+     * @param  type The expected object type.
+     * @param  text The WKT string to parse.
+     * @return The parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
     private <T> T parse(final Class<T> type, final String text) throws ParseException {

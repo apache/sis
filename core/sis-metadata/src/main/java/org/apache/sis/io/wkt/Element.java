@@ -560,6 +560,25 @@ final class Element {
     }
 
     /**
+     * Removes the next object of the given type from the list and returns it, if presents.
+     *
+     * @param  type The object type.
+     * @return The next object on the list, or {@code null} if none.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T pullOptional(final Class<T> type) {
+        final Iterator<Object> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            final Object object = iterator.next();
+            if (type.isInstance(object)) {
+                iterator.remove();
+                return (T) object;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the next element, or {@code null} if there is no more element.
      * The element is <strong>not</strong> removed from the list.
      *

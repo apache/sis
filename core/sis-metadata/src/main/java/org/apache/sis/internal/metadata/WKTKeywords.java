@@ -60,7 +60,7 @@ public final class WKTKeywords extends Static {
             Anchor    = "Anchor",
             Scope     = "Scope",
             Area      = "Area",
-            Remarks   = "Remarks";
+            Remark    = "Remark";
 
     /**
      * Related to unit of measurements.
