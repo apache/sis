@@ -90,7 +90,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void setConvention(final Convention convention) {
         final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, null, null, convention, p.errorLocale, null);
+        parser = new GeodeticObjectParser(p.symbols, null, null, null, convention, p.errorLocale, null);
     }
 
     /**
