@@ -38,7 +38,6 @@ import javax.measure.quantity.Duration;
 
 import org.opengis.util.Factory;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
@@ -91,7 +90,8 @@ final class GeodeticObjectParser extends MathTransformParser {
      */
     private static final String[] UNIT_KEYWORDS = {
         WKTKeywords.Unit,   // Ignored since it does not allow us to know the quantity dimension.
-        WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit
+        WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit,
+        WKTKeywords.ParametricUnit  // Ignored for the same reason than "Unit".
     };
 
     /**
@@ -561,9 +561,9 @@ final class GeodeticObjectParser extends MathTransformParser {
         }
         final String name   = element.pullString("name");
         final double factor = element.pullDouble("factor");
-        final int    index  = element.getKeywordIndex();
+        final int    index  = element.getKeywordIndex() - 1;
         parseMetadataAndClose(element, name);
-        if (index != 0) {
+        if (index >= 0 && index < BASE_UNITS.length) {
             return Units.multiply(BASE_UNITS[index - 1], factor);
         }
         // If we can not infer the base type, we have to rely on the name.
