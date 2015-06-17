@@ -1121,23 +1121,27 @@ public class Formatter implements Localized {
      * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
      *
      * <div class="note"><b>Example:</b>
-     * {@code append(SI.KILOMETRE)} will append "{@code LENGTHUNIT["km", 1000]}" to the WKT.</div>
+     * {@code append(SI.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.</div>
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            String keyword = WKTKeywords.Unit;
-            if (!convention.isSimplified()) {
-                if (Units.isLinear(unit)) {
-                    keyword = WKTKeywords.LengthUnit;
-                } else if (Units.isAngular(unit)) {
-                    keyword = WKTKeywords.AngleUnit;
-                } else if (Units.isScale(unit)) {
-                    keyword = WKTKeywords.ScaleUnit;
-                } else if (Units.isTemporal(unit)) {
-                    keyword = WKTKeywords.TimeUnit;
-                }
+            final boolean isSimplified = convention.isSimplified();
+            final Unit<?> base = unit.toSI();
+            final String keyword;
+            if (base.equals(SI.METRE)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.LengthUnit;
+            } else if (base.equals(SI.RADIAN)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.AngleUnit;
+            } else if (base.equals(Unit.ONE)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.ScaleUnit;
+            } else if (base.equals(SI.SECOND)) {
+                keyword = WKTKeywords.TimeUnit;  // "Unit" alone is not allowed for time units according ISO 19162.
+            } else {
+                keyword = WKTKeywords.ParametricUnit;
             }
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
@@ -1156,11 +1160,15 @@ public class Formatter implements Localized {
             closeQuote(fromIndex);
             resetColor();
             final double conversion = Units.toStandardUnit(unit);
-            if (!(conversion > 0)) { // ISO 19162 requires the conversion factor to be positive.
-                setInvalidWKT(Unit.class, null);
-            }
             appendExact(conversion);
             closeElement(false);
+            /*
+             * ISO 19162 requires the conversion factor to be positive.
+             * In addition, keywords other than "Unit" are not valid in WKt 1.
+             */
+            if (!(conversion > 0) || (keyword != WKTKeywords.Unit && convention.majorVersion() == 1)) {
+                setInvalidWKT(Unit.class, null);
+            }
         }
     }
 

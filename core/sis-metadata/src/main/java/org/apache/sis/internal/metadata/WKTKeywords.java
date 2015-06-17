@@ -66,11 +66,12 @@ public final class WKTKeywords extends Static {
      * Related to unit of measurements.
      */
     public static final String
-            Unit       = "Unit",
-            LengthUnit = "LengthUnit",
-            AngleUnit  = "AngleUnit",
-            ScaleUnit  = "ScaleUnit",
-            TimeUnit   = "TimeUnit";
+            Unit           = "Unit",
+            LengthUnit     = "LengthUnit",
+            AngleUnit      = "AngleUnit",
+            ScaleUnit      = "ScaleUnit",
+            TimeUnit       = "TimeUnit",
+            ParametricUnit = "ParametricUnit";
 
     /**
      * Related to {@link org.apache.sis.referencing.cs.AbstractCS}
