@@ -289,19 +289,6 @@ final class Element {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a {@link ParseException} for a child keyword which is unknown.
-     *
-     * @param  child The unknown child keyword, or {@code null}.
-     * @return The exception to be thrown.
-     */
-    final ParseException keywordNotFound(String child) {
-        if (child == null) {
-            child = "";
-        }
-        return new LocalizedParseException(locale, Errors.Keys.UnknownKeyword_1, new String[] {child}, offset);
-    }
-
-    /**
      * Returns a {@link ParseException} with the specified cause. A localized string
      * <code>"Error in &lt;{@link #keyword}&gt;"</code> will be prepend to the message.
      * The error index will be the starting index of this {@code Element}.
@@ -363,6 +350,34 @@ final class Element {
         }
         return new LocalizedParseException(locale, Errors.Keys.MissingComponentInElement_2,
                 new String[] {keyword, key}, error);
+    }
+
+    /**
+     * Returns a {@link ParseException} for a child keyword which is unknown.
+     *
+     * @param  expected Keyword of a typical element. Used only if this element contains no child element.
+     * @return The exception to be thrown.
+     */
+    final ParseException missingOrUnknownComponent(final String expected) {
+        String name = null;
+        for (final Object child : list) {
+            if (child instanceof Element) {
+                name = ((Element) child).keyword;
+                if (name != null) {
+                    break;
+                }
+            }
+        }
+        final short res;
+        final String[] args;
+        if (name != null) {
+            res  = Errors.Keys.UnknownKeyword_1;
+            args = new String[] {name};
+        } else {
+            res  = Errors.Keys.MissingComponentInElement_2;
+            args = new String[] {keyword, expected};
+        }
+        return new LocalizedParseException(locale, res, args, offset);
     }
 
 
@@ -494,29 +509,24 @@ final class Element {
     }
 
     /**
-     * Removes the next {@link Element} from the list and returns it.
-     * If the parameter is missing, then the first element in the given {@code keys} array
-     * will be taken as the name of the missing element to report in the exception message.
+     * Removes the next {@link Element} of the given name from the list and returns it.
+     * If the element was mandatory but is missing, then the first entry in the given {@code keys}
+     * array will be taken as the name of the missing element to report in the exception message.
      *
-     * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
-     * @return The next {@link Element} on the list.
-     * @throws ParseException if no more element is available.
-     */
-    public Element pullElement(final String... keys) throws ParseException {
-        final Element element = pullOptionalElement(keys);
-        if (element != null) {
-            return element;
-        }
-        throw missingComponent(keys[0]);
-    }
-
-    /**
-     * Removes the next {@link Element} from the list and returns it.
+     * <p>The given {@code mode} argument can be one of the following constants:</p>
+     * <ul>
+     *   <li>{@link AbstractParser#MANDATORY} throw an exception if no matching element is found.</li>
+     *   <li>{@link AbstractParser#OPTIONAL} return {@code null} if no matching element is found.</li>
+     *   <li>{@link AbstractParser#FIRST} return {@code null} if the first element (ignoring all others)
+     *       does not match.</li>
+     * </ul>
      *
+     * @param  mode {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
      * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
-     * @return The next {@link Element} on the list, or {@code null} if no more element is available.
+     * @return The next {@link Element} of the given names found on the list, or {@code null} if none.
+     * @throws ParseException if {@code mode} is {@code MANDATORY} and no element of the given names was found.
      */
-    public Element pullOptionalElement(final String... keys) {
+    public Element pullElement(final int mode, final String... keys) throws ParseException {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
@@ -530,10 +540,16 @@ final class Element {
                             return element;
                         }
                     }
+                    if (mode == AbstractParser.FIRST) {
+                        return null;
+                    }
                 }
             }
         }
-        return null;
+        if (mode != AbstractParser.MANDATORY) {
+            return null;
+        }
+        throw missingComponent(keys[0]);
     }
 
     /**
@@ -576,16 +592,6 @@ final class Element {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the next element, or {@code null} if there is no more element.
-     * The element is <strong>not</strong> removed from the list.
-     *
-     * @return The next element, or {@code null} if there is no more elements.
-     */
-    public Object peek() {
-        return list.isEmpty() ? null : list.getFirst();
     }
 
     /**

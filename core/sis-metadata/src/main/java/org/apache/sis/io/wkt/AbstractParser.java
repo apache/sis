@@ -55,6 +55,26 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  */
 abstract class AbstractParser implements Parser {
     /**
+     * A mode for the {@link Element#pullElement(int, String...)} method meaning that only the first element
+     * should be checked. If the name of the first element does not match one of the specified names, then
+     * {@code pullElement(…)} returns {@code null}.
+     */
+    static final int FIRST = 0;
+
+    /**
+     * A mode for the {@link Element#pullElement(int, String...)} method meaning that the requested element
+     * is optional but is not necessarily first. If no element have a name matching one of the requested names,
+     * then {@code pullElement(…)} returns {@code null}.
+     */
+    static final int OPTIONAL = 1;
+
+    /**
+     * A mode for the {@link Element#pullElement(int, String...)} method meaning that an exception shall be
+     * thrown if no element have a name matching one of the requested names.
+     */
+    static final int MANDATORY = 2;
+
+    /**
      * Set to {@code true} if parsing of number in scientific notation is allowed.
      * The way to achieve that is currently a hack, because {@link NumberFormat}
      * has no API for managing that as of JDK 1.8.

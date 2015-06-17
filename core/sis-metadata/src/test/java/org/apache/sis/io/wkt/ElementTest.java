@@ -223,7 +223,7 @@ public final strictfp class ElementTest extends TestCase {
         Element element = parse("TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]]");
         assertEquals("keyword", "TimeDatum", element.keyword);
         assertEquals("name", "Modified Julian", element.pullString("name"));
-        Element inner = element.pullElement("TimeOrigin");
+        Element inner = element.pullElement(AbstractParser.MANDATORY, "TimeOrigin");
         assertEquals("keyword", "TimeOrigin", inner.keyword);
         assertEquals("date", TestUtilities.date("1858-11-17 00:00:00"), inner.pullDate("date"));
         inner.close(null);
