@@ -291,12 +291,36 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} array is promoted from the
+     * {@code Object[]} type to the {@code Property[]} type.
      *
      * @return A hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * Arrays.hashCode(properties);
+        int code = 1;
+        if (properties != null) {
+            if (properties instanceof Property[]) {
+                for (final Property p : (Property[]) properties) {
+                    code = 31 * code;
+                    final Object value;
+                    if (p instanceof Attribute<?>) {
+                        value = getAttributeValue((Attribute<?>) p);
+                    } else if (p instanceof FeatureAssociation) {
+                        value = getAssociationValue((FeatureAssociation) p);
+                    } else {
+                        continue;
+                    }
+                    if (value != null) {
+                        code += value.hashCode();
+                    }
+                }
+            } else {
+                code = Arrays.hashCode(properties);
+            }
+        }
+        return type.hashCode() + code;
     }
 
     /**

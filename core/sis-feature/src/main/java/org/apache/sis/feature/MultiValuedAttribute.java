@@ -90,10 +90,13 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         final Class<V> valueClass = type.getValueClass();
         if (values == null) {
             this.values = new CheckedArrayList<>(valueClass);
-        } else if (((CheckedArrayList<?>) values).getElementType() == valueClass) {
-            this.values = (CheckedArrayList<V>) values;
         } else {
-            throw new ClassCastException();
+            final Class<?> actual = ((CheckedArrayList<?>) values).getElementType();
+            if (actual == valueClass) {
+                this.values = (CheckedArrayList<V>) values;
+            } else {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3, "values", valueClass, actual));
+            }
         }
     }
 
