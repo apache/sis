@@ -23,6 +23,8 @@ import java.io.Serializable;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.PropertyNotFoundException;
+import org.opengis.feature.FeatureInstantiationException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
@@ -35,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {
@@ -86,11 +88,11 @@ final class NamedFeatureType implements FeatureType, Serializable {
     }
 
     /**
-     * Always throws {@link IllegalArgumentException} since this feature type has no declared property yet.
+     * Always throws {@link PropertyNotFoundException} since this feature type has no declared property yet.
      */
     @Override
-    public PropertyType getProperty(final String name) throws IllegalArgumentException {
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+    public PropertyType getProperty(final String name) throws PropertyNotFoundException {
+        throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
@@ -121,8 +123,8 @@ final class NamedFeatureType implements FeatureType, Serializable {
      * Unsupported operation, since the feature has not yet been resolved.
      */
     @Override
-    public Feature newInstance() throws IllegalStateException {
-        throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+    public Feature newInstance() throws FeatureInstantiationException {
+        throw new FeatureInstantiationException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
     }
 
     /**

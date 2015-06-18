@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract strictfp class FeatureTestCase extends TestCase {
@@ -57,23 +57,6 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * For sub-class constructors only.
      */
     FeatureTestCase() {
-    }
-
-    /**
-     * Creates a feature for twin towns.
-     */
-    static AbstractFeature twinTown(final boolean isSparse) {
-        final DefaultFeatureType twinTown = DefaultAssociationRoleTest.twinTownCity(false);
-
-        final AbstractFeature leMans = isSparse ? new SparseFeature(twinTown) : new DenseFeature(twinTown);
-        leMans.setPropertyValue("city", "Le Mans");
-        leMans.setPropertyValue("population", 143240); // In 2011.
-
-        final AbstractFeature paderborn = isSparse ? new SparseFeature(twinTown) : new DenseFeature(twinTown);
-        paderborn.setPropertyValue("city", "Paderborn");
-        paderborn.setPropertyValue("population", 143174); // December 31th, 2011
-        paderborn.setPropertyValue("twin town", leMans);
-        return paderborn;
     }
 
     /**
@@ -369,5 +352,32 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      */
     private void testSerialization() {
         assertNotSame(feature, assertSerializedEquals(feature));
+    }
+
+    /**
+     * Tests {@code equals(Object)}.
+     *
+     * @throws CloneNotSupportedException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSimpleProperties")
+    public void testEquals() throws CloneNotSupportedException {
+        feature = createFeature(DefaultFeatureTypeTest.city());
+        feature.setPropertyValue("city", "Tokyo");
+        final AbstractFeature clone = cloneFeature();
+        assertEquals(feature, clone);
+        /*
+         * Force the conversion of a property value into a full Property object on one and only one of
+         * the Features to be compared. The implementation shall be able to wrap or unwrap the values.
+         */
+        assertEquals("Tokyo", clone.getProperty("city").getValue());
+        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
+        assertEquals("equals", feature, clone);
+        /*
+         * For the other Feature instance to contain full Property object and test again.
+         */
+        assertEquals("Tokyo", feature.getProperty("city").getValue());
+        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
+        assertEquals("equals", feature, clone);
     }
 }

@@ -36,7 +36,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @SuppressWarnings("serial")
@@ -47,31 +47,36 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
      * Height in metres.
      */
     public static final VerticalCRS HEIGHT = new VerticalCRSMock("Height",
-            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, true);
+            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, true);
 
     /**
      * Height in feet.
      */
     public static final VerticalCRS HEIGHT_ft = new VerticalCRSMock("Height",
-            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, NonSI.FOOT, true);
+            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, NonSI.FOOT, true);
 
     /**
      * Height estimated from hPa.
      */
     public static final VerticalCRS BAROMETRIC_HEIGHT = new VerticalCRSMock("Barometric height",
-            0, Double.POSITIVE_INFINITY, SI.MetricPrefix.HECTO(SI.PASCAL), true);
+            VerticalDatumType.BAROMETRIC, 0, Double.POSITIVE_INFINITY, SI.MetricPrefix.HECTO(SI.PASCAL), true);
 
     /**
      * Depth in metres.
      */
     public static final VerticalCRS DEPTH = new VerticalCRSMock("Depth",
-            0, Double.POSITIVE_INFINITY, SI.METRE, false);
+            VerticalDatumType.DEPTH, 0, Double.POSITIVE_INFINITY, SI.METRE, false);
 
     /**
      * Depth as a fraction of the sea floor depth at the location of the point for which the depth is evaluated.
      */
     public static final VerticalCRS SIGMA_LEVEL = new VerticalCRSMock("Sigma level",
-            0, 1, Unit.ONE, false);
+            VerticalDatumType.OTHER_SURFACE, 0, 1, Unit.ONE, false);
+
+    /**
+     * The datum type (geoidal, barometric, etc.).
+     */
+    private final VerticalDatumType type;
 
     /**
      * The minimum and maximum values.
@@ -97,10 +102,11 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
      * @param minimumValue The minium value.
      * @param maximumValue The maximum value.
      */
-    private VerticalCRSMock(final String name, final double minimumValue, final double maximumValue,
-            final Unit<?> unit, final boolean up)
+    private VerticalCRSMock(final String name, VerticalDatumType type,
+            final double minimumValue, final double maximumValue, final Unit<?> unit, final boolean up)
     {
         super(name);
+        this.type         = type;
         this.minimumValue = minimumValue;
         this.maximumValue = maximumValue;
         this.unit         = unit;
@@ -120,7 +126,7 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
     @Override public InternationalString  getAnchorPoint()       {return null;}
     @Override public Date                 getRealizationEpoch()  {return null;}
     @Override public Extent               getDomainOfValidity()  {return null;}
-    @Override public VerticalDatumType    getVerticalDatumType() {return VerticalDatumType.GEOIDAL;}
+    @Override public VerticalDatumType    getVerticalDatumType() {return type;}
     @Override public VerticalDatum        getDatum()             {return this;}
     @Override public VerticalCS           getCoordinateSystem()  {return this;}
     @Override public int                  getDimension()         {return 1;}

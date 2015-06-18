@@ -745,7 +745,7 @@ public class Formatter implements Localized {
             }
         }
         if (showRemarks) {
-            appendOnNewLine(WKTKeywords.Remarks, object.getRemarks(), ElementKind.REMARKS);
+            appendOnNewLine(WKTKeywords.Remark, object.getRemarks(), ElementKind.REMARKS);
         }
         isComplement = false;
     }
@@ -822,6 +822,10 @@ public class Formatter implements Localized {
      *   <li>“{@code VerticalExtent[102, 108, LengthUnit["m", 1]]}”       (Δz =   6)</li>
      *   <li>“{@code VerticalExtent[100.2, 100.8, LengthUnit["m", 1]]}”   (Δz = 0.6)</li>
      * </ul>
+     *
+     * Note that according ISO 19162, heights are positive toward up and relative to an unspecified mean sea level.
+     * It is caller's responsibility to ensure that the given range complies with that specification as much as
+     * possible.
      */
     private void appendVerticalExtent(final MeasurementRange<Double> range) {
         if (range != null) {
@@ -1117,23 +1121,27 @@ public class Formatter implements Localized {
      * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
      *
      * <div class="note"><b>Example:</b>
-     * {@code append(SI.KILOMETRE)} will append "{@code LENGTHUNIT["km", 1000]}" to the WKT.</div>
+     * {@code append(SI.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.</div>
      *
      * @param unit The unit to append to the WKT, or {@code null} if none.
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            String keyword = "Unit";
-            if (!convention.isSimplified()) {
-                if (Units.isLinear(unit)) {
-                    keyword = "LengthUnit";
-                } else if (Units.isAngular(unit)) {
-                    keyword = "AngleUnit";
-                } else if (Units.isScale(unit)) {
-                    keyword = "ScaleUnit";
-                } else if (Units.isTemporal(unit)) {
-                    keyword = "TimeUnit";
-                }
+            final boolean isSimplified = convention.isSimplified();
+            final Unit<?> base = unit.toSI();
+            final String keyword;
+            if (base.equals(SI.METRE)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.LengthUnit;
+            } else if (base.equals(SI.RADIAN)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.AngleUnit;
+            } else if (base.equals(Unit.ONE)) {
+                keyword = isSimplified ? WKTKeywords.Unit : WKTKeywords.ScaleUnit;
+            } else if (base.equals(SI.SECOND)) {
+                keyword = WKTKeywords.TimeUnit;  // "Unit" alone is not allowed for time units according ISO 19162.
+            } else {
+                keyword = WKTKeywords.ParametricUnit;
             }
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
@@ -1143,7 +1151,7 @@ public class Formatter implements Localized {
             } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
                 buffer.append("degree");
             } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.usesCommonUnits() ? "meter" : "metre");
+                buffer.append(convention.usesCommonUnits ? "meter" : "metre");
             } else if (Units.PPM.equals(unit)) {
                 buffer.append("parts per million");
             } else {
@@ -1152,11 +1160,15 @@ public class Formatter implements Localized {
             closeQuote(fromIndex);
             resetColor();
             final double conversion = Units.toStandardUnit(unit);
-            if (!(conversion > 0)) { // ISO 19162 requires the conversion factor to be positive.
-                setInvalidWKT(Unit.class, null);
-            }
             appendExact(conversion);
             closeElement(false);
+            /*
+             * ISO 19162 requires the conversion factor to be positive.
+             * In addition, keywords other than "Unit" are not valid in WKt 1.
+             */
+            if (!(conversion > 0) || (keyword != WKTKeywords.Unit && convention.majorVersion() == 1)) {
+                setInvalidWKT(Unit.class, null);
+            }
         }
     }
 
@@ -1321,7 +1333,7 @@ public class Formatter implements Localized {
      */
     @SuppressWarnings("unchecked")
     public <Q extends Quantity> Unit<Q> addContextualUnit(final Unit<Q> unit) {
-        if (unit == null || convention.usesCommonUnits()) {
+        if (unit == null || convention.usesCommonUnits) {
             return null;
         }
         hasContextualUnit |= 1;
@@ -1353,7 +1365,7 @@ public class Formatter implements Localized {
                  * However this check does not work in Convention.WKT1_COMMON_UNITS mode, since the
                  * map is always empty in that mode.
                  */
-                if (!convention.usesCommonUnits()) {
+                if (!convention.usesCommonUnits) {
                     throw new IllegalStateException();
                 }
             }
@@ -1424,7 +1436,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Marks the current WKT representation of the given object as not strictly compliant to the WKT specification.
+     * Marks the current WKT representation of the given object as not strictly compliant with the WKT specification.
      * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
@@ -1449,7 +1461,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Marks the current WKT representation of the given class as not strictly compliant to the WKT specification.
+     * Marks the current WKT representation of the given class as not strictly compliant with the WKT specification.
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
      * problematic object is not an instance of {@code IdentifiedObject}.
      *
@@ -1487,9 +1499,15 @@ public class Formatter implements Localized {
     /**
      * Returns the error message {@link #isInvalidWKT()} is set, or {@code null} otherwise.
      * If non-null, a cause may be available in the {@link #getErrorCause()} method.
+     *
+     * <div class="note"><b>Note:</b> the message is returned as an {@link InternationalString}
+     * in order to defer the actual message formatting until needed.</div>
      */
-    final String getErrorMessage() {
-        return isInvalidWKT() ? Errors.format(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement) : null;
+    final InternationalString getErrorMessage() {
+        if (!isInvalidWKT()) {
+            return null;
+        }
+        return Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement);
     }
 
     /**

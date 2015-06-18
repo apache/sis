@@ -25,6 +25,7 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
@@ -44,7 +45,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAssociationRole
@@ -89,14 +90,14 @@ final class MultiValuedAssociation extends AbstractAssociation {
      * Returns the feature, or {@code null} if none.
      *
      * @return The feature (may be {@code null}).
-     * @throws IllegalStateException if this association contains more than one value.
+     * @throws MultiValuedPropertyException if this association contains more than one value.
      */
     @Override
     public Feature getValue() {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new IllegalStateException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new MultiValuedPropertyException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
         }
     }
 

@@ -80,6 +80,14 @@ final class Element {
     final int offset;
 
     /**
+     * Index of the keyword in the array given to the {@link #pullElement(String...)}
+     * or {@link #pullOptionalElement(String...)} method.
+     *
+     * @see #getKeywordIndex()
+     */
+    private byte keywordIndex;
+
+    /**
      * Keyword of this entity. For example: {@code "PrimeMeridian"}.
      */
     public final String keyword;
@@ -116,7 +124,7 @@ final class Element {
      * @param position On input, the position where to start parsing from.
      *                 On output, the first character after the separator.
      */
-    Element(final Parser parser, final String text, final ParsePosition position) throws ParseException {
+    Element(final AbstractParser parser, final String text, final ParsePosition position) throws ParseException {
         /*
          * Find the first keyword in the specified string. If a keyword is found, then
          * the position is set to the index of the first character after the keyword.
@@ -284,20 +292,6 @@ final class Element {
     ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns a {@link ParseException} for a child keyword which is either missing or unknown.
-     *
-     * @param  child The missing or unknown child keyword.
-     * @return {@code true} if the given keyword is missing, or {@code false} if it is unknown.
-     * @return The exception to be thrown.
-     */
-    final ParseException keywordNotFound(final String child, final boolean missing) {
-        return new LocalizedParseException(locale,
-                missing ? Errors.Keys.MissingComponentInElement_2
-                        : Errors.Keys.UnknownKeywordInElement_2,
-                new String[] {keyword, child}, offset);
-    }
-
-    /**
      * Returns a {@link ParseException} with the specified cause. A localized string
      * <code>"Error in &lt;{@link #keyword}&gt;"</code> will be prepend to the message.
      * The error index will be the starting index of this {@code Element}.
@@ -348,17 +342,45 @@ final class Element {
     }
 
     /**
-     * Returns an exception saying that a component is missing.
+     * Returns an exception saying that a sub-element is missing.
      *
-     * @param key The name of the missing component.
+     * @param key The name of the missing sub-element.
      */
-    private ParseException missingParameter(final String key) {
+    final ParseException missingComponent(final String key) {
         int error = offset;
         if (keyword != null) {
             error += keyword.length();
         }
         return new LocalizedParseException(locale, Errors.Keys.MissingComponentInElement_2,
                 new String[] {keyword, key}, error);
+    }
+
+    /**
+     * Returns a {@link ParseException} for a child keyword which is unknown.
+     *
+     * @param  expected Keyword of a typical element. Used only if this element contains no child element.
+     * @return The exception to be thrown.
+     */
+    final ParseException missingOrUnknownComponent(final String expected) {
+        String name = null;
+        for (final Object child : list) {
+            if (child instanceof Element) {
+                name = ((Element) child).keyword;
+                if (name != null) {
+                    break;
+                }
+            }
+        }
+        final short res;
+        final String[] args;
+        if (name != null) {
+            res  = Errors.Keys.UnknownKeyword_1;
+            args = new String[] {name};
+        } else {
+            res  = Errors.Keys.MissingComponentInElement_2;
+            args = new String[] {keyword, expected};
+        }
+        return new LocalizedParseException(locale, res, args, offset);
     }
 
 
@@ -386,7 +408,7 @@ final class Element {
                 return (Date) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -405,7 +427,7 @@ final class Element {
                 return ((Number) object).doubleValue();
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -429,7 +451,7 @@ final class Element {
                 return number.intValue();
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -448,7 +470,7 @@ final class Element {
                 return (Boolean) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -467,7 +489,7 @@ final class Element {
                 return (String) object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
@@ -486,43 +508,51 @@ final class Element {
                 return object;
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
-     * Removes the next {@link Element} from the list and returns it.
+     * Removes the next {@link Element} of the given name from the list and returns it.
+     * If the element was mandatory but is missing, then the first entry in the given {@code keys}
+     * array will be taken as the name of the missing element to report in the exception message.
      *
-     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
-     * @return The next {@link Element} on the list.
-     * @throws ParseException if no more element is available.
-     */
-    public Element pullElement(final String key) throws ParseException {
-        final Element element = pullOptionalElement(key);
-        if (element != null) {
-            return element;
-        }
-        throw missingParameter(key);
-    }
-
-    /**
-     * Removes the next {@link Element} from the list and returns it.
+     * <p>The given {@code mode} argument can be one of the following constants:</p>
+     * <ul>
+     *   <li>{@link AbstractParser#MANDATORY} throw an exception if no matching element is found.</li>
+     *   <li>{@link AbstractParser#OPTIONAL} return {@code null} if no matching element is found.</li>
+     *   <li>{@link AbstractParser#FIRST} return {@code null} if the first element (ignoring all others)
+     *       does not match.</li>
+     * </ul>
      *
-     * @param  key The element name (e.g. {@code "PrimeMeridian"}).
-     * @return The next {@link Element} on the list, or {@code null} if no more element is available.
+     * @param  mode {@link AbstractParser#FIRST}, {@link AbstractParser#OPTIONAL} or {@link AbstractParser#MANDATORY}.
+     * @param  keys The element names (e.g. {@code "PrimeMeridian"}).
+     * @return The next {@link Element} of the given names found on the list, or {@code null} if none.
+     * @throws ParseException if {@code mode} is {@code MANDATORY} and no element of the given names was found.
      */
-    public Element pullOptionalElement(final String key) {
+    public Element pullElement(final int mode, final String... keys) throws ParseException {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Element) {
                 final Element element = (Element) object;
-                if (element.list != null && key.equalsIgnoreCase(element.keyword)) {
-                    iterator.remove();
-                    return element;
+                if (element.list != null) {
+                    for (int i=0; i<keys.length; i++) {
+                        if (element.keyword.equalsIgnoreCase(keys[i])) {
+                            keywordIndex = (byte) i;
+                            iterator.remove();
+                            return element;
+                        }
+                    }
+                    if (mode == AbstractParser.FIRST) {
+                        return null;
+                    }
                 }
             }
         }
-        return null;
+        if (mode != AbstractParser.MANDATORY) {
+            return null;
+        }
+        throw missingComponent(keys[0]);
     }
 
     /**
@@ -545,17 +575,43 @@ final class Element {
                 }
             }
         }
-        throw missingParameter(key);
+        throw missingComponent(key);
     }
 
     /**
-     * Returns the next element, or {@code null} if there is no more element.
-     * The element is <strong>not</strong> removed from the list.
+     * Removes the next object of the given type from the list and returns it, if presents.
      *
-     * @return The next element, or {@code null} if there is no more elements.
+     * @param  type The object type.
+     * @return The next object on the list, or {@code null} if none.
      */
-    public Object peek() {
-        return list.isEmpty() ? null : list.getFirst();
+    @SuppressWarnings("unchecked")
+    public <T> T pullOptional(final Class<T> type) {
+        final Iterator<Object> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            final Object object = iterator.next();
+            if (type.isInstance(object)) {
+                iterator.remove();
+                return (T) object;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if this element does not contains any remaining child.
+     *
+     * @return {@code true} if there is no child remaining.
+     */
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+
+    /**
+     * Returns the index of the keyword in the array given to the {@link #pullElement(String...)}
+     * or {@link #pullOptionalElement(String...)} method.
+     */
+    final int getKeywordIndex() {
+        return keywordIndex;
     }
 
     /**
@@ -565,8 +621,9 @@ final class Element {
      * If the given {@code ignored} map is non-null, then this method will add the keywords
      * of ignored elements in that map as below:
      * <ul>
-     *   <li>Keyword of ignored elements are the keys. Note that a key may be null.</li>
-     *   <li>Keywords of the elements that contained ignored elements are the values.</li>
+     *   <li><b>Keys</b>: keyword of ignored elements. Note that a key may be null.</li>
+     *   <li><b>Values</b>: keywords of all elements containing an element identified by the above-cited key.
+     *       This list is used for helping the users to locate the ignored elements.</li>
      * </ul>
      *
      * @param  ignoredElements The collection where to declare ignored elements, or {@code null}.
