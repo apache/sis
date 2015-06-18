@@ -16,6 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
@@ -60,7 +63,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
@@ -267,19 +270,28 @@ header: for (int i=0; ; i++) {
              * Column 3 - Value or default value.
              */
             if (value != null) {
-                final Format format = getFormat(valueClass);
-                if (format != null) {
-                    value = format.format(value, buffer, dummyFP);
-                } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
-                    final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
-                    if (p != null) {
-                        value = ((AbstractFeature) value).getPropertyValue(p);
+                final boolean isInstance = valueClass != null && valueClass.isInstance(value);
+                final Format format = isInstance ? getFormat(valueClass) : null;
+                final Iterator<?> it = (!isInstance && (value instanceof Collection<?>)
+                        ? (Collection<?>) value : Collections.singleton(value)).iterator();
+                String separator = "";
+                while (it.hasNext()) {
+                    value = it.next();
+                    if (value != null) {
+                        if (format != null) {
+                            value = format.format(value, buffer, dummyFP);
+                        } else if (value instanceof AbstractFeature && propertyType instanceof DefaultAssociationRole) {
+                            final String p = DefaultAssociationRole.getTitleProperty((DefaultAssociationRole) propertyType);
+                            if (p != null) {
+                                value = ((AbstractFeature) value).getPropertyValue(p);
+                                if (value == null) continue;
+                            }
+                        }
+                        table.append(separator).append(formatValue(value));
+                        buffer.setLength(0);
+                        separator = ", ";
                     }
                 }
-                if (value != null) {
-                    table.append(formatValue(value));
-                }
-                buffer.setLength(0);
             }
             /*
              * Column 4 - Characteristics.

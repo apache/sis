@@ -780,7 +780,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </ul>
      *
      * <div class="section">Future evolutions</div>
-     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * This method implements recommendations from the
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">§B.5.2 of WKT 2 specification</a>,
+     * together with heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
      *
@@ -788,6 +790,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
+     * @see org.apache.sis.util.Characters.Filter#LETTERS_AND_DIGITS
      */
     public boolean isHeuristicMatchForName(final String name) {
         return NameToIdentifier.isHeuristicMatchForName(this.name, alias, name);

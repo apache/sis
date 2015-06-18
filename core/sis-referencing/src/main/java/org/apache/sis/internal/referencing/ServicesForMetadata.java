@@ -446,6 +446,18 @@ public final class ServicesForMetadata extends ReferencingServices {
     ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns a coordinate reference system for heights above the mean seal level.
+     *
+     * @return The "Mean Seal Level (MSL) height" coordinate reference system.
+     *
+     * @since 0.6
+     */
+    @Override
+    public VerticalCRS getMSLH() {
+        return CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+    }
+
+    /**
      * Returns the Greenwich prime meridian.
      *
      * @return The Greenwich prime meridian.

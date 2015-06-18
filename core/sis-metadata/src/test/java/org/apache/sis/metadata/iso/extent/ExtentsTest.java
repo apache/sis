@@ -16,13 +16,20 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
+import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
+import javax.measure.converter.UnitConverter;
+import javax.measure.converter.ConversionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
@@ -34,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
@@ -46,22 +53,41 @@ public final strictfp class ExtentsTest extends TestCase {
 
     /**
      * Tests {@link Extents#getVerticalRange(Extent)}.
+     *
+     * @throws ConversionException should never happen in this test.
      */
     @Test
-    public void testGetVerticalRange() {
-        final DefaultExtent extent = new DefaultExtent();
-        extent.setVerticalElements(Arrays.asList(
+    @SuppressWarnings("null")
+    public void testGetVerticalRange() throws ConversionException {
+        final List<DefaultVerticalExtent> extents = Arrays.asList(
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),
                 new DefaultVerticalExtent(  150,   300, VerticalCRSMock.DEPTH),
                 new DefaultVerticalExtent(  0.1,   0.2, VerticalCRSMock.SIGMA_LEVEL),
-                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 182.88] metres
+                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 … 182.88] metres
                 new DefaultVerticalExtent(10130, 20260, VerticalCRSMock.BAROMETRIC_HEIGHT)
-        ));
+        );
+        Collections.shuffle(extents, TestUtilities.createRandomNumberGenerator());
+        /*
+         * Since we have shuffled the vertical extents in random order, the range that we will
+         * test may be either in metres or in feet depending on which vertical extent is first.
+         * So we need to check which linear unit is first.
+         */
+        Unit<?> unit = null;
+        for (final DefaultVerticalExtent e : extents) {
+            unit = e.getVerticalCRS().getCoordinateSystem().getAxis(0).getUnit();
+            if (Units.isLinear(unit)) break;
+        }
+        final UnitConverter c = unit.getConverterToAny(SI.METRE);
+        /*
+         * The actual test. Arbitrarily compare the heights in metres, converting them if needed.
+         */
+        final DefaultExtent extent = new DefaultExtent();
+        extent.setVerticalElements(extents);
         final MeasurementRange<Double> range = Extents.getVerticalRange(extent);
         assertNotNull("getVerticalRange", range);
-        assertEquals("unit", SI.METRE,  range.unit());
-        assertEquals("minimum", -300,   range.getMinDouble(), 0.001);
-        assertEquals("maximum", -91.44, range.getMaxDouble(), 0.001);
+        assertSame   ("unit",    unit,    range.unit());
+        assertEquals ("minimum", -300,    c.convert(range.getMinDouble()), 0.001);
+        assertEquals ("maximum", -91.44,  c.convert(range.getMaxDouble()), 0.001);
     }
 
     /**

@@ -123,7 +123,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
                 "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
-                "  Remarks[“注です。”]]",
+                "  Remark[“注です。”]]",
                 object);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
@@ -133,7 +133,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
                 "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
-                "  Remarks[“注です。”]]",
+                "  Remark[“注です。”]]",
                 object);
 
         assertWktEquals(Convention.INTERNAL,
@@ -143,7 +143,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
                 "  Id[“EPSG”, 4326, “8.2”],\n" +
-                "  Remarks[“注です。”]]",
+                "  Remark[“注です。”]]",
                 object);
     }
 }

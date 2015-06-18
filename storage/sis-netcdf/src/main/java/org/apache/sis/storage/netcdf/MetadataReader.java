@@ -748,7 +748,7 @@ final class MetadataReader {
             if (extent == null) {
                 extent = new DefaultExtent();
             }
-            extent.setGeographicElements(singleton(new DefaultGeographicDescription(null, identifier)));
+            extent.setGeographicElements(singleton(new DefaultGeographicDescription(identifier)));
         }
         return extent;
     }

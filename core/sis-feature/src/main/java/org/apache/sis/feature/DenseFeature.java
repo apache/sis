@@ -79,7 +79,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * @param  name The property name.
      * @return The index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     private int getIndex(final String name) throws IllegalArgumentException {
         final Integer index = indices.get(name);
@@ -127,7 +127,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  property The property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature.
+     *         known to this feature, or if the property can not be set or another reason.
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
@@ -202,7 +202,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @throws IllegalArgumentException If the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
@@ -285,12 +285,36 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} array is promoted from the
+     * {@code Object[]} type to the {@code Property[]} type.
      *
      * @return A hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * Arrays.hashCode(properties);
+        int code = 1;
+        if (properties != null) {
+            if (properties instanceof Property[]) {
+                for (final Property p : (Property[]) properties) {
+                    code = 31 * code;
+                    final Object value;
+                    if (p instanceof AbstractAttribute<?>) {
+                        value = getAttributeValue((AbstractAttribute<?>) p);
+                    } else if (p instanceof AbstractAssociation) {
+                        value = getAssociationValue((AbstractAssociation) p);
+                    } else {
+                        continue;
+                    }
+                    if (value != null) {
+                        code += value.hashCode();
+                    }
+                }
+            } else {
+                code = Arrays.hashCode(properties);
+            }
+        }
+        return type.hashCode() + code;
     }
 
     /**
@@ -305,7 +329,17 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof DenseFeature) {
             final DenseFeature that = (DenseFeature) obj;
-            return type.equals(that.type) && Arrays.equals(properties, that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (properties instanceof Property[]);
+                if (asProperties != (that.properties instanceof Property[])) {
+                    if (asProperties) {
+                        that.wrapValuesInProperties();
+                    } else {
+                        wrapValuesInProperties();
+                    }
+                }
+                return Arrays.equals(properties, that.properties);
+            }
         }
         return false;
     }

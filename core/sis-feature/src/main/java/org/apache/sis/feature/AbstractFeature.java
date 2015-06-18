@@ -124,7 +124,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name The property name.
      * @return The property of the given name (never {@code null}).
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      *
      * @see #getPropertyValue(String)
      * @see DefaultFeatureType#getProperty(String)
@@ -155,8 +155,9 @@ public abstract class AbstractFeature implements Serializable {
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
      *
      * @param  property The property to set.
-     * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature, or if the property can not be set of an other reason.
+     * @throws IllegalArgumentException if the name of the given property is not a property name of this feature.
+     * @throws IllegalArgumentException if the value of the given property is not valid.
+     * @throws IllegalArgumentException if the property can not be set for another reason.
      *
      * @see #setPropertyValue(String, Object)
      */
@@ -188,10 +189,9 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name The name of the property to create.
      * @return A {@code Property} of the given name.
-     * @throws IllegalArgumentException If the given argument is not the name of an attribute or
+     * @throws IllegalArgumentException if the given argument is not the name of an attribute or
      *         feature association of this feature.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
     final Property createProperty(final String name) throws IllegalArgumentException {
         final AbstractIdentifiedType pt = type.getProperty(name);
         if (pt instanceof DefaultAttributeType<?>) {
@@ -257,7 +257,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name The name of the property for which to get the default value.
      * @return The default value for the {@code Property} of the given name.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      */
     final Object getDefaultValue(final String name) throws IllegalArgumentException {
         final AbstractIdentifiedType pt = type.getProperty(name);
@@ -303,7 +303,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name The property name.
      * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      *
      * @see AbstractAttribute#getValue()
      */
@@ -320,8 +320,9 @@ public abstract class AbstractFeature implements Serializable {
      *
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @throws IllegalArgumentException if the given name is not an attribute or association name of this feature.
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value is not valid for a reason other than its type.
      *
      * @see AbstractAttribute#setValue(Object)
      */
@@ -449,9 +450,11 @@ public abstract class AbstractFeature implements Serializable {
             throw illegalPropertyType(base.getName(), property.getClass());
         }
         if (pt != base) {
-            throw new IllegalArgumentException(base == null
-                    ? Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name)
-                    : Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+            if (base == null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+            } else {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPropertyType_1, name));
+            }
         }
     }
 
@@ -560,9 +563,9 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Returns the exception for a property type which neither an attribute or an association.
+     * Returns the exception for a property type which is neither an attribute or an association.
      * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
-     * but that property can not be stored in a {@link Property} instance.
+     * but that property can not be stored in or extracted from a {@link Property} instance.
      */
     static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
         return new IllegalArgumentException(Errors.format(Errors.Keys.CanNotInstantiate_1, name));

@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAssociationRole#newInstance()
@@ -134,7 +134,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract AbstractFeature getValue();
+    public abstract AbstractFeature getValue() throws IllegalStateException;
 
     /**
      * Returns all features, or an empty collection if none.

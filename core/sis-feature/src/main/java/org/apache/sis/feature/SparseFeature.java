@@ -26,6 +26,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk7.Objects;
+
 
 /**
  * A feature in which only a small fraction of properties are expected to be provided. This implementation uses
@@ -197,7 +200,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  property The property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature.
+     *         known to this feature, or if the property can not be set for another reason.
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
@@ -252,7 +255,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @throws IllegalArgumentException If the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
@@ -355,12 +358,32 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} map is (conceptually)
+     * promoted from the {@code Map<Integer,Object>} type to the {@code Map<Integer,Property>} type.
      *
      * @return A hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * properties.hashCode();
+        int code = type.hashCode() * 37;
+        if (valuesKind == PROPERTIES) {
+            for (final Map.Entry<Integer,Object> entry : properties.entrySet()) {
+                final Object p = entry.getValue();
+                final Object value;
+                if (p instanceof AbstractAttribute<?>) {
+                    value = getAttributeValue((AbstractAttribute<?>) p);
+                } else if (p instanceof AbstractAssociation) {
+                    value = getAssociationValue((AbstractAssociation) p);
+                } else {
+                    value = null;
+                }
+                code += Objects.hashCode(entry.getKey()) ^ Objects.hashCode(value);
+            }
+        } else {
+            code += properties.hashCode();
+        }
+        return code;
     }
 
     /**
@@ -375,7 +398,17 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof SparseFeature) {
             final SparseFeature that = (SparseFeature) obj;
-            return type.equals(that.type) && properties.equals(that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (valuesKind == PROPERTIES);
+                if (asProperties != (that.valuesKind == PROPERTIES)) {
+                    if (asProperties) {
+                        that.requireMapOfProperties();
+                    } else {
+                        requireMapOfProperties();
+                    }
+                }
+                return properties.equals(that.properties);
+            }
         }
         return false;
     }

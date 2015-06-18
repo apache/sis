@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {
