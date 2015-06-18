@@ -35,6 +35,8 @@ import org.apache.sis.util.ArgumentChecks;
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
@@ -67,7 +69,7 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAttributeType#newInstance()
@@ -206,12 +208,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * of attribute values is restricted to 1 or 0.
      *
      * @return The attribute value (may be {@code null}).
-     * @throws IllegalStateException if this attribute contains more than one value.
+     * @throws MultiValuedPropertyException if this attribute contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract V getValue() throws IllegalStateException;
+    public abstract V getValue() throws MultiValuedPropertyException;
 
     /**
      * Returns all attribute values, or an empty collection if none.
@@ -251,10 +253,10 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * then delegates to {@link #setValue(Object)}.</p>
      *
      * @param  values The new values.
-     * @throws IllegalArgumentException if the given collection contains too many elements.
+     * @throws InvalidPropertyValueException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
+    public void setValues(final Collection<? extends V> values) throws InvalidPropertyValueException {
         super.setValues(values);
     }
 

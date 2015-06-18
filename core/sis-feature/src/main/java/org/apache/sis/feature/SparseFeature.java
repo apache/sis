@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.feature.Property;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.FeatureAssociation;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -118,14 +119,14 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * @param  name The property name.
      * @return The index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
      */
-    private int getIndex(final String name) throws IllegalArgumentException {
+    private int getIndex(final String name) throws PropertyNotFoundException {
         final Integer index = indices.get(name);
         if (index != null) {
             return index;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
@@ -170,10 +171,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  name The property name.
      * @return The property of the given name.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
      */
     @Override
-    public Property getProperty(final String name) throws IllegalArgumentException {
+    public Property getProperty(final String name) throws PropertyNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         requireMapOfProperties();
         return getPropertyInstance(name);
@@ -183,7 +184,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * Implementation of {@link #getProperty(String)} invoked when we know that the {@link #properties}
      * map contains {@code Property} instances (as opposed to their value).
      */
-    private Property getPropertyInstance(final String name) throws IllegalArgumentException {
+    private Property getPropertyInstance(final String name) throws PropertyNotFoundException {
         assert valuesKind == PROPERTIES : valuesKind;
         final Integer index = getIndex(name);
         if (index < 0) {
@@ -202,7 +203,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  property The property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
-     *         known to this feature.
+     *         known to this feature, or if the property can not be set for another reason.
      */
     @Override
     public void setProperty(final Property property) throws IllegalArgumentException {
@@ -222,10 +223,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      *
      * @param  name The property name.
      * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @throws PropertyNotFoundException If the given argument is not an attribute or association name of this feature.
      */
     @Override
-    public Object getPropertyValue(final String name) throws IllegalArgumentException {
+    public Object getPropertyValue(final String name) throws PropertyNotFoundException {
         ArgumentChecks.ensureNonNull("name", name);
         final Integer index = getIndex(name);
         if (index < 0) {
@@ -257,7 +258,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * @param  name  The attribute name.
      * @param  value The new value for the given attribute (may be {@code null}).
      * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for an other reason.
+     * @throws IllegalArgumentException If the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
