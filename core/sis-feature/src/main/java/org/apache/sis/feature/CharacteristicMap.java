@@ -27,6 +27,8 @@ import org.apache.sis.internal.util.AbstractMapEntry;
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -35,7 +37,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implements Cloneable {
@@ -166,13 +168,13 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      *
      * @param  key The name for which to get the characteristic index.
      * @return The index for the characteristic of the given name.
-     * @throws IllegalArgumentException if the given key is not the name of a characteristic in this map.
+     * @throws PropertyNotFoundException if the given key is not the name of a characteristic in this map.
      */
     private int indexOf(final String key) {
         ArgumentChecks.ensureNonNull("key", key);
         final Integer index = types.indices.get(key);
         if (index == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, source.getName(), key));
+            throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, source.getName(), key));
         }
         return index;
     }
@@ -190,7 +192,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
         if (!expected.equals(type)) {
             final GenericName en = expected.getName();
             final GenericName an = type.getName();
-            throw new IllegalArgumentException(String.valueOf(en).equals(String.valueOf(an))
+            throw new InvalidPropertyValueException(String.valueOf(en).equals(String.valueOf(an))
                     ? Errors.format(Errors.Keys.MismatchedPropertyType_1, en)
                     : Errors.format(Errors.Keys.CanNotAssign_2, en.push(source.getName()), an));
         }

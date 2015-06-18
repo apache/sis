@@ -158,7 +158,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "    AXIS[“Gravity-related height”, UP]],\n" +
                 "  TIMECRS[“Time”,\n" +
                 "    TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
-                "    UNIT[“day”, 86400],\n" +
+                "    TIMEUNIT[“day”, 86400],\n" +
                 "    AXIS[“Time”, FUTURE]]]",
                 HardCodedCRS.GEOID_4D);
     }

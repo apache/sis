@@ -40,7 +40,7 @@ public final strictfp class ElementTest extends TestCase {
     /**
      * A dummy parser to be given to the {@link Element} constructor.
      */
-    private final Parser parser = new Parser(Symbols.SQUARE_BRACKETS, null, null, Locale.ENGLISH) {
+    private final AbstractParser parser = new AbstractParser(Symbols.SQUARE_BRACKETS, null, null, null, Locale.ENGLISH) {
         @Override Object parseObject(Element element) throws ParseException {
             throw new UnsupportedOperationException();
         }
@@ -223,7 +223,7 @@ public final strictfp class ElementTest extends TestCase {
         Element element = parse("TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]]");
         assertEquals("keyword", "TimeDatum", element.keyword);
         assertEquals("name", "Modified Julian", element.pullString("name"));
-        Element inner = element.pullElement("TimeOrigin");
+        Element inner = element.pullElement(AbstractParser.MANDATORY, "TimeOrigin");
         assertEquals("keyword", "TimeOrigin", inner.keyword);
         assertEquals("date", TestUtilities.date("1858-11-17 00:00:00"), inner.pullDate("date"));
         inner.close(null);

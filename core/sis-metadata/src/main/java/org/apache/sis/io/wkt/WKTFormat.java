@@ -21,6 +21,8 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -31,6 +33,7 @@ import java.text.ParseException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.Factory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
@@ -76,9 +79,15 @@ import org.apache.sis.util.resources.Errors;
  * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
  * </div>
  *
- * <div class="section">Thread safety</div>
- * {@code WKTFormat}s are not synchronized. It is recommended to create separated format instances for each thread.
- * If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.
+ * <div class="section">Limitations</div>
+ * <ul>
+ *   <li>Instances of this class are not synchronized for multi-threading.
+ *       It is recommended to create separated format instances for each thread.
+ *       If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.</li>
+ *   <li>Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ *       Serialization support is appropriate for short term storage or RMI between applications running the
+ *       same version of Apache SIS.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
@@ -178,7 +187,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * The parser. Will be created when first needed.
      */
-    private transient Parser parser;
+    private transient AbstractParser parser;
 
     /**
      * The factories needed by the parser. Will be created when first needed.
@@ -186,9 +195,15 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient Map<Class<?>,Factory> factories;
 
     /**
+     * The warning produced by the last parsing or formatting operation, or {@code null} if none.
+     *
+     * @see #getWarnings()
+     */
+    private transient Warnings warnings;
+
+    /**
      * Creates a format for the given locale and timezone. The given locale will be used for
-     * {@link org.opengis.util.InternationalString} localization; this is <strong>not</strong>
-     * the locale for number format.
+     * {@link InternationalString} localization; this is <strong>not</strong> the locale for number format.
      *
      * @param locale   The locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param timezone The timezone, or {@code null} for UTC.
@@ -208,7 +223,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li>{@link java.util.Locale.Category#FORMAT}: the value of {@link Symbols#getLocale()},
      *       normally fixed to {@link Locale#ROOT}, used for number formatting.</li>
      *   <li>{@link java.util.Locale.Category#DISPLAY}: the {@code locale} given at construction time,
-     *       used for {@link org.opengis.util.InternationalString} localization.</li>
+     *       used for {@link InternationalString} localization.</li>
      * </ul>
      *
      * @param  category The category for which a locale is desired.
@@ -499,16 +514,26 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
+        warnings = null;
+        ArgumentChecks.ensureNonNull("text", text);
+        ArgumentChecks.ensureNonNull("pos",  pos);
+        AbstractParser parser = this.parser;
         if (parser == null) {
             if (factories == null) {
                 factories = new HashMap<>();
             }
-            parser = new GeodeticObjectParser(symbols,
+            this.parser = parser = new GeodeticObjectParser(symbols,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
-                    convention, false, getLocale(Locale.Category.DISPLAY), factories);
+                    (UnitFormat)   getFormat(Unit.class),
+                    convention, getLocale(), factories);
         }
-        return parser.parseObject(text.toString(), pos);
+        Object object = null;
+        try {
+            return object = parser.parseObject(text.toString(), pos);
+        } finally {
+            warnings = parser.getAndClearWarnings(object);
+        }
     }
 
     /**
@@ -524,10 +549,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  toAppendTo Where the text is to be appended.
      * @throws IOException If an error occurred while writing to {@code toAppendTo}.
      *
-     * @see #getWarning()
+     * @see FormattableObject#toWKT()
      */
     @Override
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
+        warnings = null;
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
         /*
@@ -555,12 +581,19 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.formatter = formatter;
         }
         final boolean valid;
+        final InternationalString warning;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
+            warning = formatter.getErrorMessage();  // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
+        }
+        if (warning != null) {
+            warnings = new Warnings(getLocale(), (byte) 0, Collections.<String, List<String>>emptyMap());
+            warnings.add(warning, formatter.getErrorCause(), null);
+            warnings.setRoot(object);
         }
         if (!valid) {
             throw new ClassCastException(Errors.format(
@@ -594,13 +627,34 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * If a warning occurred during the last WKT {@linkplain #format(Object, Appendable) formatting}, returns
-     * the warning. Otherwise returns {@code null}. The warning is cleared every time a new object is formatted.
+     * If warnings occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
+     * {@linkplain #format(Object, Appendable) formatting}, returns the warnings. Otherwise returns {@code null}.
+     * The warnings are cleared every time a new object is parsed or formatted.
+     *
+     * @return The warnings of the last parsing of formatting operation, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    public Warnings getWarnings() {
+        final Warnings w = warnings;
+        if (w != null) {
+            w.publish();
+        }
+        return w;
+    }
+
+    /**
+     * If a warning occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
+     * {@linkplain #format(Object, Appendable) formatting}, returns the warning. Otherwise returns {@code null}.
+     * The warning is cleared every time a new object is parsed or formatted.
      *
      * @return The last warning, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getWarnings()}.
      */
+    @Deprecated
     public String getWarning() {
-        return (formatter != null) ? formatter.getErrorMessage() : null;
+        return (warnings != null) ? warnings.toString() : null;
     }
 
     /**
@@ -612,6 +666,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     public WKTFormat clone() {
         final WKTFormat clone = (WKTFormat) super.clone();
         clone.formatter = null; // Do not share the formatter.
+        clone.parser    = null;
+        clone.warnings  = null;
         return clone;
     }
 }
