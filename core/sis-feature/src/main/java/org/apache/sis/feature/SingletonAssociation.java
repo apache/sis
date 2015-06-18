@@ -34,7 +34,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAssociationRole
@@ -92,7 +92,7 @@ final class SingletonAssociation extends AbstractAssociation {
      * @throws IllegalArgumentException If the given feature is not valid for this association.
      */
     @Override
-    public void setValue(final AbstractFeature value) {
+    public void setValue(final AbstractFeature value) throws IllegalArgumentException {
         if (value != null) {
             ensureValid(role.getValueType(), value.getType());
         }

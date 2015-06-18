@@ -21,6 +21,7 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
+import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  */
-class MathTransformParser extends Parser {
+class MathTransformParser extends AbstractParser {
     /**
      * The factory to use for creating math transforms.
      */
@@ -94,7 +95,7 @@ class MathTransformParser extends Parser {
      * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), null, null, mtFactory, null);
+        this(Symbols.getDefault(), null, null, null, mtFactory, null);
     }
 
     /**
@@ -103,13 +104,14 @@ class MathTransformParser extends Parser {
      * @param symbols       The set of symbols to use.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
+     * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param mtFactory     The factory to use to create {@link MathTransform} objects.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
     MathTransformParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final MathTransformFactory mtFactory, final Locale errorLocale)
+            final UnitFormat unitFormat, final MathTransformFactory mtFactory, final Locale errorLocale)
     {
-        super(symbols, numberFormat, dateFormat, errorLocale);
+        super(symbols, numberFormat, dateFormat, unitFormat, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
     }
@@ -137,21 +139,17 @@ class MathTransformParser extends Parser {
     final MathTransform parseMathTransform(final Element element, final boolean mandatory) throws ParseException {
         lastMethod = null;
         classification = null;
-        String keyword = WKTKeywords.Param_MT;
-        final Object child = element.peek();
-        if (child instanceof Element) {
-            keyword = ((Element) child).keyword;
-            if (keyword != null) {
-                if (keyword.equalsIgnoreCase(WKTKeywords.Param_MT))       return parseParamMT      (element);
-                if (keyword.equalsIgnoreCase(WKTKeywords.Concat_MT))      return parseConcatMT     (element);
-                if (keyword.equalsIgnoreCase(WKTKeywords.Inverse_MT))     return parseInverseMT    (element);
-                if (keyword.equalsIgnoreCase(WKTKeywords.PassThrough_MT)) return parsePassThroughMT(element);
+        MathTransform tr;
+        if ((tr = parseParamMT       (element)) == null &&
+            (tr = parseConcatMT      (element)) == null &&
+            (tr = parseInverseMT     (element)) == null &&
+            (tr = parsePassThroughMT (element)) == null)
+        {
+            if (mandatory) {
+                throw element.missingOrUnknownComponent(WKTKeywords.Param_MT);
             }
         }
-        if (mandatory) {
-            throw element.keywordNotFound(keyword, keyword == WKTKeywords.Param_MT);
-        }
-        return null;
+        return tr;
     }
 
     /**
@@ -168,7 +166,7 @@ class MathTransformParser extends Parser {
     {
         Element param = element;
         try {
-            while ((param = element.pullOptionalElement(WKTKeywords.Parameter)) != null) {
+            while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
                 final String                 name       = param.pullString("name");
                 final ParameterValue<?>      parameter  = parameters.parameter(name);
                 final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
@@ -211,8 +209,11 @@ class MathTransformParser extends Parser {
      * @return The {@code "PARAM_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "PARAM_MT"} element can not be parsed.
      */
-    final MathTransform parseParamMT(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(WKTKeywords.Param_MT);
+    private MathTransform parseParamMT(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(FIRST, WKTKeywords.Param_MT);
+        if (element == null) {
+            return null;
+        }
         classification = element.pullString("classification");
         final ParameterValueGroup parameters;
         try {
@@ -250,8 +251,11 @@ class MathTransformParser extends Parser {
      * @return The {@code "INVERSE_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "INVERSE_MT"} element can not be parsed.
      */
-    final MathTransform parseInverseMT(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(WKTKeywords.Inverse_MT);
+    private MathTransform parseInverseMT(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(FIRST, WKTKeywords.Inverse_MT);
+        if (element == null) {
+            return null;
+        }
         MathTransform transform = parseMathTransform(element, true);
         try {
             transform = transform.inverse();
@@ -273,8 +277,11 @@ class MathTransformParser extends Parser {
      * @return The {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "PASSTHROUGH_MT"} element can not be parsed.
      */
-    final MathTransform parsePassThroughMT(final Element parent) throws ParseException {
-        final Element element           = parent.pullElement(WKTKeywords.PassThrough_MT);
+    private MathTransform parsePassThroughMT(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(FIRST, WKTKeywords.PassThrough_MT);
+        if (element == null) {
+            return null;
+        }
         final int firstAffectedOrdinate = parent.pullInteger("firstAffectedOrdinate");
         final MathTransform transform   = parseMathTransform(element, true);
         element.close(ignoredElements);
@@ -292,12 +299,16 @@ class MathTransformParser extends Parser {
      *     CONCAT_MT[<math transform> {,<math transform>}*]
      * }
      *
+     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
      * @return The {@code "CONCAT_MT"} element as an {@link MathTransform} object.
      * @throws ParseException if the {@code "CONCAT_MT"} element can not be parsed.
      */
-    final MathTransform parseConcatMT(final Element parent) throws ParseException {
-        final Element element = parent.pullElement(WKTKeywords.Concat_MT);
+    private MathTransform parseConcatMT(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(FIRST, WKTKeywords.Concat_MT);
+        if (element == null) {
+            return null;
+        }
         MathTransform transform = parseMathTransform(element, true);
         MathTransform optionalTransform;
         while ((optionalTransform = parseMathTransform(element, false)) != null) {
@@ -313,7 +324,7 @@ class MathTransformParser extends Parser {
 
     /**
      * Returns the operation method for the last math transform parsed. This is used by
-     * {@link Parser} in order to built {@link org.opengis.referencing.crs.DerivedCRS}.
+     * {@link GeodeticObjectParser} in order to built {@link org.opengis.referencing.crs.DerivedCRS}.
      */
     final OperationMethod getOperationMethod() {
         if (lastMethod == null) {

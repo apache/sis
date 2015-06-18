@@ -60,7 +60,18 @@ public final class WKTKeywords extends Static {
             Anchor    = "Anchor",
             Scope     = "Scope",
             Area      = "Area",
-            Remarks   = "Remarks";
+            Remark    = "Remark";
+
+    /**
+     * Related to unit of measurements.
+     */
+    public static final String
+            Unit           = "Unit",
+            LengthUnit     = "LengthUnit",
+            AngleUnit      = "AngleUnit",
+            ScaleUnit      = "ScaleUnit",
+            TimeUnit       = "TimeUnit",
+            ParametricUnit = "ParametricUnit";
 
     /**
      * Related to {@link org.apache.sis.referencing.cs.AbstractCS}
@@ -86,6 +97,7 @@ public final class WKTKeywords extends Static {
             Datum       = "Datum",
             GeodeticCRS = "GeodeticCRS",
             BaseGeodCRS = "BaseGeodCRS",
+            GeodCRS     = "GeodCRS",
             GeogCS      = "GeogCS",
             GeocCS      = "GeocCS";
 

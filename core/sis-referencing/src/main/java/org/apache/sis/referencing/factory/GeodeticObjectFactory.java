@@ -43,12 +43,12 @@ import org.apache.sis.referencing.datum.*;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
 
@@ -180,14 +180,14 @@ import org.apache.sis.xml.XML;
  * @version 0.6
  * @module
  */
-public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory {
+public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
     /**
      * The constructor for WKT parsers, fetched when first needed. The WKT parser is defined in the
      * same module than this class, so we will hopefully not have security issues.  But we have to
      * use reflection because the parser class is not yet public (because we do not want to commit
      * its API yet).
      */
-    private static volatile Constructor<? extends WKTParser> parserConstructor;
+    private static volatile Constructor<? extends Parser> parserConstructor;
 
     /**
      * The default properties, or an empty map if none. This map shall not change after construction in
@@ -214,7 +214,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
      * This parser is not thread-safe, so we need to prevent two threads from using the same instance in same time.
      */
-    private final AtomicReference<WKTParser> parser;
+    private final AtomicReference<Parser> parser;
 
     /**
      * Constructs a factory with no default properties.
@@ -238,7 +238,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         }
         defaultProperties = properties;
         pool = new WeakHashSet<IdentifiedObject>(IdentifiedObject.class);
-        parser = new AtomicReference<WKTParser>();
+        parser = new AtomicReference<Parser>();
     }
 
     /**
@@ -1340,18 +1340,55 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a coordinate reference system object from a string.
+     * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
+     * This method understands both version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
+     * of the WKT format.
+     *
+     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
+     *
+     * {@preformat wkt
+     *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
+     *     BaseGeodCRS["SIRGAS 2000",
+     *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
+     *         Ellipsoid["GRS 1980", 6378137, 298.257222101]]],
+     *     Conversion["Petrobras Mercator",
+     *       Method["Mercator (variant B)", Id["EPSG",9805]],
+     *       Parameter["Latitude of 1st standard parallel", -2],
+     *       Parameter["Longitude of natural origin", -43],
+     *       Parameter["False easting", 5000000],
+     *       Parameter["False northing", 10000000]],
+     *     CS[cartesian,2],
+     *       Axis["easting (E)", east],
+     *       Axis["northing (N)", north],
+     *       LengthUnit["metre", 1],
+     *     Id["EPSG",5641]]
+     * }
+     * </div>
+     *
+     * <div class="section">Usage and performance considerations</div>
+     * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}
+     * with the addition of thread-safety. This is okay for occasional use,
+     * but is sub-optimal if this method is extensively used in a multi-thread environment.
+     * Furthermore this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
+     * in use and on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.
+     * Applications which need to parse a large amount of WKT strings should consider to use
+     * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
      *
      * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @throws FactoryException if the object creation failed.
+     *
+     * @see org.apache.sis.io.wkt
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+     * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
     @Override
     public CoordinateReferenceSystem createFromWKT(final String text) throws FactoryException {
-        WKTParser p = parser.getAndSet(null);
+        Parser p = parser.getAndSet(null);
         if (p == null) try {
-            Constructor<? extends WKTParser> c = parserConstructor;
+            Constructor<? extends Parser> c = parserConstructor;
             if (c == null) {
-                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(WKTParser.class)
+                c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(Parser.class)
                          .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
                 c.setAccessible(true);
                 parserConstructor = c;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 import org.apache.sis.test.DependsOn;
@@ -31,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn({
@@ -66,7 +67,47 @@ public final strictfp class FeatureFormatTest extends TestCase {
     @Test
     public void testFeature() {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final AbstractFeature feature = FeatureTestCase.twinTown(random.nextBoolean());
+        final boolean isSparse = random.nextBoolean();
+
+        final DefaultFeatureType type = DefaultFeatureTypeTest.worldMetropolis();
+        final AbstractFeature feature = isSparse ? new SparseFeature(type) : new DenseFeature(type);
+        feature.setPropertyValue("city", "Tokyo");
+        feature.setPropertyValue("population", 13185502); // In 2011.
+        feature.setPropertyValue("universities", Arrays.asList("Waseda", "Keio"));
+
+        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final String text = format.format(feature);
+        assertMultilinesEquals("World metropolis\n" +
+                "┌──────────────┬─────────────────────┬─────────────┬──────────────┬─────────────────┐\n" +
+                "│ Name         │ Type                │ Cardinality │ Value        │ Characteristics │\n" +
+                "├──────────────┼─────────────────────┼─────────────┼──────────────┼─────────────────┤\n" +
+                "│ city         │ String              │ [1 … 1]     │ Tokyo        │                 │\n" +
+                "│ population   │ Integer             │ [1 … 1]     │ 13,185,502   │                 │\n" +
+                "│ region       │ InternationalString │ [1 … 1]     │              │                 │\n" +
+                "│ isGlobal     │ Boolean             │ [1 … 1]     │              │                 │\n" +
+                "│ universities │ String              │ [0 … ∞]     │ Waseda, Keio │                 │\n" +
+                "│ temperature  │ Float               │ [1 … 1]     │              │ accuracy, units │\n" +
+                "└──────────────┴─────────────────────┴─────────────┴──────────────┴─────────────────┘\n", text);
+    }
+
+    /**
+     * Tests the formatting of an {@link AbstractFeature} with an association to another feature of the same type.
+     */
+    @Test
+    public void testFeatureWithAssociation() {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final boolean isSparse = random.nextBoolean();
+
+        final DefaultFeatureType type = DefaultAssociationRoleTest.twinTownCity(false);
+        final AbstractFeature twinTown = isSparse ? new SparseFeature(type) : new DenseFeature(type);
+        twinTown.setPropertyValue("city", "Le Mans");
+        twinTown.setPropertyValue("population", 143240); // In 2011.
+
+        final AbstractFeature feature = isSparse ? new SparseFeature(type) : new DenseFeature(type);
+        feature.setPropertyValue("city", "Paderborn");
+        feature.setPropertyValue("population", 143174); // December 31th, 2011
+        feature.setPropertyValue("twin town", twinTown);
+
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
         assertMultilinesEquals("Twin town\n" +

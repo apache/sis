@@ -42,7 +42,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public class AbstractIdentifiedType implements Serializable {
@@ -169,9 +169,7 @@ public class AbstractIdentifiedType implements Serializable {
      * @param  identification The name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    protected AbstractIdentifiedType(final Map<String,?> identification)
-            throws IllegalArgumentException
-    {
+    protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
         ensureNonNull("identification", identification);
         Object value = identification.get(NAME_KEY);
         if (value == null) {
