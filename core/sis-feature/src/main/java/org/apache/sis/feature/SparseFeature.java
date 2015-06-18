@@ -27,6 +27,7 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import java.util.Objects;
 import org.opengis.feature.Property;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.FeatureAssociation;
@@ -361,12 +362,32 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * Returns a hash code value for this feature.
+     * This implementation computes the hash code using only the property values, not the {@code Property} instances,
+     * in order to keep the hash code value stable before and after the {@code properties} map is (conceptually)
+     * promoted from the {@code Map<Integer,Object>} type to the {@code Map<Integer,Property>} type.
      *
      * @return A hash code value.
      */
     @Override
     public int hashCode() {
-        return type.hashCode() + 37 * properties.hashCode();
+        int code = type.hashCode() * 37;
+        if (valuesKind == PROPERTIES) {
+            for (final Map.Entry<Integer,Object> entry : properties.entrySet()) {
+                final Object p = entry.getValue();
+                final Object value;
+                if (p instanceof Attribute<?>) {
+                    value = getAttributeValue((Attribute<?>) p);
+                } else if (p instanceof FeatureAssociation) {
+                    value = getAssociationValue((FeatureAssociation) p);
+                } else {
+                    value = null;
+                }
+                code += Objects.hashCode(entry.getKey()) ^ Objects.hashCode(value);
+            }
+        } else {
+            code += properties.hashCode();
+        }
+        return code;
     }
 
     /**

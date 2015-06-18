@@ -371,11 +371,13 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * the Features to be compared. The implementation shall be able to wrap or unwrap the values.
          */
         assertEquals("Tokyo", clone.getProperty("city").getValue());
-        assertEquals(feature, clone);
+        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
+        assertEquals("equals", feature, clone);
         /*
          * For the other Feature instance to contain full Property object and test again.
          */
         assertEquals("Tokyo", feature.getProperty("city").getValue());
-        assertEquals(feature, clone);
+        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
+        assertEquals("equals", feature, clone);
     }
 }

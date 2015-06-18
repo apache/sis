@@ -573,7 +573,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Returns the exception for a property type which is neither an attribute or an association.
      * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
-     * but that property can not be stored in a {@link Property} instance.
+     * but that property can not be stored in or extracted from a {@link Property} instance.
      */
     static IllegalArgumentException unsupportedPropertyType(final GenericName name) {
         return new IllegalArgumentException(Errors.format(Errors.Keys.CanNotInstantiate_1, name));
