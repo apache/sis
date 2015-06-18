@@ -20,6 +20,7 @@ package org.apache.sis.feature;
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.InvalidPropertyValueException;
 
 
 /**
@@ -36,7 +37,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAssociationRole
@@ -91,10 +92,10 @@ final class SingletonAssociation extends AbstractAssociation {
      * Sets the associated feature.
      *
      * @param  value The new value, or {@code null}.
-     * @throws IllegalArgumentException If the given feature is not valid for this association.
+     * @throws InvalidPropertyValueException If the given feature is not valid for this association.
      */
     @Override
-    public void setValue(final Feature value) {
+    public void setValue(final Feature value) throws InvalidPropertyValueException {
         if (value != null) {
             ensureValid(role.getValueType(), value.getType());
         }

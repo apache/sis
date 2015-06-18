@@ -23,6 +23,7 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
@@ -45,7 +46,7 @@ import org.opengis.feature.AttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAttributeType
@@ -89,10 +90,13 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         final Class<V> valueClass = type.getValueClass();
         if (values == null) {
             this.values = new CheckedArrayList<V>(valueClass);
-        } else if (((CheckedArrayList<?>) values).getElementType() == valueClass) {
-            this.values = (CheckedArrayList<V>) values;
         } else {
-            throw new ClassCastException();
+            final Class<?> actual = ((CheckedArrayList<?>) values).getElementType();
+            if (actual == valueClass) {
+                this.values = (CheckedArrayList<V>) values;
+            } else {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3, "values", valueClass, actual));
+            }
         }
     }
 
@@ -100,14 +104,14 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * Returns the attribute value, or {@code null} if none.
      *
      * @return The attribute value (may be {@code null}).
-     * @throws IllegalStateException if this attribute contains more than one value.
+     * @throws MultiValuedPropertyException if this attribute contains more than one value.
      */
     @Override
     public V getValue() {
         switch (values.size()) {
             case 0:  return null;
             case 1:  return values.get(0);
-            default: throw new IllegalStateException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
+            default: throw new MultiValuedPropertyException(Errors.format(Errors.Keys.NotASingleton_1, getName()));
         }
     }
 

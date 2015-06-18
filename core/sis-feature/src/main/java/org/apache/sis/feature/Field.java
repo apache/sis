@@ -23,6 +23,9 @@ import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.Property;
+import org.opengis.feature.MultiValuedPropertyException;
+import org.opengis.feature.InvalidPropertyValueException;
+
 
 /**
  * Base class of property that can be stored in a {@link AbstractFeature} instance.
@@ -30,7 +33,7 @@ import org.opengis.feature.Property;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 abstract class Field<V> implements Property {
@@ -55,12 +58,12 @@ abstract class Field<V> implements Property {
      * Returns the field feature or attribute value, or {@code null} if none.
      *
      * @return The feature or attribute value (may be {@code null}).
-     * @throws IllegalStateException if this field contains more than one value.
+     * @throws MultiValuedPropertyException if this field contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract V getValue() throws IllegalStateException;
+    public abstract V getValue() throws MultiValuedPropertyException;
 
     /**
      * Returns all features or attribute values, or an empty collection if none.
@@ -89,16 +92,16 @@ abstract class Field<V> implements Property {
      * then delegates to {@link #setValue(Object)}.</p>
      *
      * @param values The new values.
-     * @throws IllegalArgumentException if the given collection contains too many elements.
+     * @throws InvalidPropertyValueException if the given collection contains too many elements.
      */
-    public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
+    public void setValues(final Collection<? extends V> values) throws InvalidPropertyValueException {
         V value = null;
         ArgumentChecks.ensureNonNull("values", values);
         final Iterator<? extends V> it = values.iterator();
         if (it.hasNext()) {
             value = it.next();
             if (it.hasNext()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, 1, getName()));
+                throw new InvalidPropertyValueException(Errors.format(Errors.Keys.TooManyOccurrences_2, 1, getName()));
             }
         }
         setValue(value);

@@ -47,6 +47,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
+import org.opengis.feature.FeatureInstantiationException;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -607,7 +609,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             final PropertyType other;
             try {
                 other = type.getProperty(entry.getKey());
-            } catch (IllegalArgumentException e) {
+            } catch (PropertyNotFoundException e) {
                 /*
                  * A property in this FeatureType does not exist in the given FeatureType.
                  * Catching exceptions is not an efficient way to perform this check, but
@@ -713,17 +715,17 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @param  name The name of the property to search.
      * @return The property for the given name, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
      *
      * @see AbstractFeature#getProperty(String)
      */
     @Override
-    public PropertyType getProperty(final String name) throws IllegalArgumentException {
+    public PropertyType getProperty(final String name) throws PropertyNotFoundException {
         final PropertyType pt = byName.get(name);
         if (pt != null) {
             return pt;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
+        throw new PropertyNotFoundException(Errors.format(Errors.Keys.PropertyNotFound_2, getName(), name));
     }
 
     /**
@@ -742,12 +744,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * then this method is equivalent to {@link Class#newInstance()}.</div>
      *
      * @return A new feature instance.
-     * @throws IllegalStateException if this feature type {@linkplain #isAbstract() is abstract}.
+     * @throws FeatureInstantiationException if this feature type {@linkplain #isAbstract() is abstract}.
      */
     @Override
-    public Feature newInstance() throws IllegalStateException {
+    public Feature newInstance() throws FeatureInstantiationException {
         if (isAbstract) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.AbstractType_1, getName()));
+            throw new FeatureInstantiationException(Errors.format(Errors.Keys.AbstractType_1, getName()));
         }
         return isSparse ? new SparseFeature(this) : new DenseFeature(this);
     }

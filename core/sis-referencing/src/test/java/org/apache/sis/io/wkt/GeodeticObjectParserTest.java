@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.SI;
@@ -68,6 +69,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Parses the given text.
      *
+     * @param  type The expected object type.
+     * @param  text The WKT string to parse.
+     * @return The parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
     private <T> T parse(final Class<T> type, final String text) throws ParseException {
@@ -78,6 +82,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
+        assertNull("warnings", parser.getAndClearWarnings(obj));
+        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
     }
@@ -85,9 +91,9 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * Uses a new parser for the given convention.
      */
-    private void setConvention(final Convention convention, final boolean isAxisIgnored) {
+    private void setConvention(final Convention convention) {
         final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, null, null, convention, isAxisIgnored, p.errorLocale, null);
+        parser = new GeodeticObjectParser(p.symbols, null, null, null, convention, p.errorLocale, null);
     }
 
     /**
@@ -343,7 +349,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
          * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
          */
         wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
-        setConvention(Convention.WKT1_COMMON_UNITS, true);
+        setConvention(Convention.WKT1_IGNORE_AXES);
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
         pm = verifyNTF(crs.getDatum(), false);
@@ -397,7 +403,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         wkt = wkt.replace("52.0",      "46.8");             // Convert unit in “latitude_of_origin” parameter.
         wkt = wkt.replace("600.0",     "600000");           // Convert unit in “false_easting” parameter.
         wkt = wkt.replace("2200.0",    "2200000");          // Convert unit in “false_northing” parameter.
-        setConvention(Convention.WKT1_COMMON_UNITS, true);
+        setConvention(Convention.WKT1_IGNORE_AXES);
         crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
@@ -619,5 +625,62 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
+    }
+
+    /**
+     * Tests the production of a warning messages when the WKT contains unknown elements.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testWithImplicitAxes")
+    public void testWarnings() throws ParseException {
+        parser = new GeodeticObjectParser();
+        final ParsePosition position = new ParsePosition(0);
+        final GeographicCRS crs = (GeographicCRS) parser.parseObject(
+               "  GEOGCS[“WGS 84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
+               "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position);
+
+        verifyGeographicCRS(0, crs);
+        assertEquals("errorIndex", -1, position.getErrorIndex());
+        final Warnings warnings = parser.getAndClearWarnings(crs);
+        assertNotNull("warnings", warnings);
+
+        assertTrue("warnings.getExceptions()",
+                warnings.getExceptions().isEmpty());
+
+        assertEquals("warnings.getRootElement()", "WGS 84",
+                warnings.getRootElement());
+
+        assertArrayEquals("warnings.getUnknownElements()",
+                new String[] {"Intruder", "Ext1", "Ext2"},
+                warnings.getUnknownElements().toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"PRIMEM", "GEOGCS"},
+                warnings.getUnknownElementLocations("Intruder").toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"SPHEROID"},
+                warnings.getUnknownElementLocations("Ext1").toArray());
+
+        assertArrayEquals("warnings.getUnknownElementLocations(…)",
+                new String[] {"SPHEROID"},
+                warnings.getUnknownElementLocations("Ext2").toArray());
+
+        assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
+                               " • The text contains unknown elements:\n" +
+                               "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
+                               "    ‣ “Ext1” in SPHEROID.\n" +
+                               "    ‣ “Ext2” in SPHEROID.\n", warnings.toString(Locale.US));
+
+        assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
+                               " • Le texte contient des éléments inconnus :\n" +
+                               "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
+                               "    ‣ « Ext1 » dans SPHEROID.\n" +
+                               "    ‣ « Ext2 » dans SPHEROID.\n", warnings.toString(Locale.FRANCE));
     }
 }

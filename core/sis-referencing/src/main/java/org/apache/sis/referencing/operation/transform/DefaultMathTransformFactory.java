@@ -46,9 +46,9 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 
+import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.metadata.WKTParser;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -155,7 +155,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @see MathTransformProvider
  * @see AbstractMathTransform
  */
-public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory {
+public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
      * NOTE FOR JAVADOC WRITER:
      * The "method" word is ambiguous here, because it can be "Java method" or "coordinate operation method".
@@ -177,7 +177,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * use reflection because the parser class is not yet public (because we do not want to commit
      * its API yet).
      */
-    private static volatile Constructor<? extends WKTParser> parserConstructor;
+    private static volatile Constructor<? extends Parser> parserConstructor;
 
     /**
      * All methods specified at construction time or found on the classpath.
@@ -221,7 +221,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * This parser is not thread-safe, so we need to prevent two threads from using
      * the same instance in same time.
      */
-    private final AtomicReference<WKTParser> parser;
+    private final AtomicReference<Parser> parser;
 
     /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
@@ -293,7 +293,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         methodsByType = new IdentityHashMap<Class<?>, OperationMethodSet>();
         lastMethod    = new ThreadLocal<OperationMethod>();
         pool          = new WeakHashSet<MathTransform>(MathTransform.class);
-        parser        = new AtomicReference<WKTParser>();
+        parser        = new AtomicReference<Parser>();
     }
 
     /**
@@ -823,11 +823,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform createFromWKT(final String text) throws FactoryException {
         lastMethod.remove();
-        WKTParser p = parser.getAndSet(null);
+        Parser p = parser.getAndSet(null);
         if (p == null) try {
-            Constructor<? extends WKTParser> c = parserConstructor;
+            Constructor<? extends Parser> c = parserConstructor;
             if (c == null) {
-                c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(WKTParser.class)
+                c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(Parser.class)
                          .getConstructor(MathTransformFactory.class);
                 c.setAccessible(true);
                 parserConstructor = c;
