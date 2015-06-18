@@ -30,6 +30,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.MultiValuedPropertyException;
 
 
 /**
@@ -47,7 +49,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultAssociationRole#newInstance()
@@ -130,12 +132,12 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * features is restricted to 1 or 0.
      *
      * @return The associated feature (may be {@code null}).
-     * @throws IllegalStateException if this association contains more than one value.
+     * @throws MultiValuedPropertyException if this association contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
     @Override
-    public abstract Feature getValue();
+    public abstract Feature getValue() throws MultiValuedPropertyException;
 
     /**
      * Returns all features, or an empty collection if none.
@@ -162,12 +164,12 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
      * @param  value The new value, or {@code null}.
-     * @throws IllegalArgumentException If the given feature is not valid for this association.
+     * @throws InvalidPropertyValueException If the given feature is not valid for this association.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
     @Override
-    public abstract void setValue(final Feature value) throws IllegalArgumentException;
+    public abstract void setValue(final Feature value) throws InvalidPropertyValueException;
 
     /**
      * Sets the features. All previous values are replaced by the given collection.
@@ -176,10 +178,10 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * then delegates to {@link #setValue(Feature)}.</p>
      *
      * @param  values The new values.
-     * @throws IllegalArgumentException if the given collection contains too many elements.
+     * @throws InvalidPropertyValueException if the given collection contains too many elements.
      */
     @Override
-    public void setValues(final Collection<? extends Feature> values) throws IllegalArgumentException {
+    public void setValues(final Collection<? extends Feature> values) throws InvalidPropertyValueException {
         super.setValues(values);
     }
 
@@ -189,7 +191,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      */
     final void ensureValid(final FeatureType base, final FeatureType type) {
         if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
-            throw new IllegalArgumentException(
+            throw new InvalidPropertyValueException(
                     Errors.format(Errors.Keys.IllegalArgumentClass_3, getName(), base.getName(), type.getName()));
         }
     }
