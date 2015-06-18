@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract strictfp class FeatureTestCase extends TestCase {
@@ -352,5 +352,30 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      */
     private void testSerialization() {
         assertNotSame(feature, assertSerializedEquals(feature));
+    }
+
+    /**
+     * Tests {@code equals(Object)}.
+     *
+     * @throws CloneNotSupportedException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSimpleProperties")
+    public void testEquals() throws CloneNotSupportedException {
+        feature = createFeature(DefaultFeatureTypeTest.city());
+        feature.setPropertyValue("city", "Tokyo");
+        final AbstractFeature clone = cloneFeature();
+        assertEquals(feature, clone);
+        /*
+         * Force the conversion of a property value into a full Property object on one and only one of
+         * the Features to be compared. The implementation shall be able to wrap or unwrap the values.
+         */
+        assertEquals("Tokyo", clone.getProperty("city").getValue());
+        assertEquals(feature, clone);
+        /*
+         * For the other Feature instance to contain full Property object and test again.
+         */
+        assertEquals("Tokyo", feature.getProperty("city").getValue());
+        assertEquals(feature, clone);
     }
 }

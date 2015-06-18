@@ -381,7 +381,17 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof SparseFeature) {
             final SparseFeature that = (SparseFeature) obj;
-            return type.equals(that.type) && properties.equals(that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (valuesKind == PROPERTIES);
+                if (asProperties != (that.valuesKind == PROPERTIES)) {
+                    if (asProperties) {
+                        that.requireMapOfProperties();
+                    } else {
+                        requireMapOfProperties();
+                    }
+                }
+                return properties.equals(that.properties);
+            }
         }
         return false;
     }

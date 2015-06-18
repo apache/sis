@@ -311,7 +311,17 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
         }
         if (obj instanceof DenseFeature) {
             final DenseFeature that = (DenseFeature) obj;
-            return type.equals(that.type) && Arrays.equals(properties, that.properties);
+            if (type.equals(that.type)) {
+                final boolean asProperties = (properties instanceof Property[]);
+                if (asProperties != (that.properties instanceof Property[])) {
+                    if (asProperties) {
+                        that.wrapValuesInProperties();
+                    } else {
+                        wrapValuesInProperties();
+                    }
+                }
+                return Arrays.equals(properties, that.properties);
+            }
         }
         return false;
     }
