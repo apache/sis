@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -304,6 +305,17 @@ public class ReferencingServices extends OptionalDependency {
     ////                           SERVICES FOR WKT PARSING                            ////
     ////                                                                               ////
     ///////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns a coordinate reference system for heights above the mean seal level.
+     *
+     * @return The "Mean Seal Level (MSL) height" coordinate reference system, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public VerticalCRS getMSLH() {
+        throw moduleNotFound();
+    }
 
     /**
      * Returns the Greenwich prime meridian.

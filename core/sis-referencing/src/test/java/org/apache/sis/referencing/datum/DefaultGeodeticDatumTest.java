@@ -274,13 +274,13 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
         assertWktEquals(Convention.INTERNAL,
                 "Datum[“World Geodetic System 1984”,\n" +
                 "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030],\n" +
-                "    Remarks[“Defining parameters cited in EPSG database.”]],\n" +
+                "    Remark[“Defining parameters cited in EPSG database.”]],\n" +
                 "  Anchor[“Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.”],\n" +
                 "  Scope[“Satellite navigation.”],\n" +
                 "  Area[“World.”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
                 "  Id[“EPSG”, 6326],\n" +
-                "  Remarks[“No distinction between the original and subsequent WGS 84 frames.”]]",
+                "  Remark[“No distinction between the original and subsequent WGS 84 frames.”]]",
                 datum);
     }
 }

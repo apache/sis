@@ -166,12 +166,12 @@ public final class Units extends Static {
      *
      * @see #isAngular(Unit)
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static Unit<Angle> ensureAngular(final Unit<?> unit) throws IllegalArgumentException {
         if (unit != null && !isAngular(unit)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NonAngularUnit_1, unit));
         }
-        return (Unit) unit;
+        return (Unit<Angle>) unit;
     }
 
     /**
@@ -184,12 +184,12 @@ public final class Units extends Static {
      *
      * @see #isLinear(Unit)
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static Unit<Length> ensureLinear(final Unit<?> unit) throws IllegalArgumentException {
         if (unit != null && !isLinear(unit)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NonLinearUnit_1, unit));
         }
-        return (Unit) unit;
+        return (Unit<Length>) unit;
     }
 
     /**
@@ -202,12 +202,12 @@ public final class Units extends Static {
      *
      * @see #isTemporal(Unit)
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static Unit<Duration> ensureTemporal(final Unit<?> unit) throws IllegalArgumentException {
         if (unit != null && !isTemporal(unit)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NonTemporalUnit_1, unit));
         }
-        return (Unit) unit;
+        return (Unit<Duration>) unit;
     }
 
     /**
@@ -220,12 +220,12 @@ public final class Units extends Static {
      *
      * @see #isScale(Unit)
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static Unit<Dimensionless> ensureScale(final Unit<?> unit) throws IllegalArgumentException {
         if (unit != null && !isScale(unit)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NonScaleUnit_1, unit));
         }
-        return (Unit) unit;
+        return (Unit<Dimensionless>) unit;
     }
 
     /**
@@ -248,14 +248,14 @@ public final class Units extends Static {
      * @return The unit multiplied by the given factor.
      */
     @Workaround(library="JSR-275", version="0.9.3")
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static <A extends Quantity> Unit<A> multiply(Unit<A> unit, final double factor) {
         if (SI.RADIAN.equals(unit)) {
             if (abs(factor - (PI / 180)) <= (EPS * PI/180)) {
-                return (Unit) NonSI.DEGREE_ANGLE;
+                return (Unit<A>) NonSI.DEGREE_ANGLE;
             }
             if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
-                return (Unit) NonSI.GRADE;
+                return (Unit<A>) NonSI.GRADE;
             }
         }
         if (abs(factor - 1) > EPS) {

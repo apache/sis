@@ -921,9 +921,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnknownFormatFor_1 = 115;
 
         /**
-         * Keyword “{1}” in element “{0}” is unknown.
+         * Keyword “{0}” is unknown.
          */
-        public static final short UnknownKeywordInElement_2 = 192;
+        public static final short UnknownKeyword_1 = 192;
 
         /**
          * Option “{0}” is not recognized.
