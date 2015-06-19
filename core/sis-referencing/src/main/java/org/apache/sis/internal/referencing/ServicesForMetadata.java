@@ -501,15 +501,15 @@ public final class ServicesForMetadata extends ReferencingServices {
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
      *
+     * @param  properties The coordinate system name, and optionally other properties.
      * @param  axes The axes of the unknown coordinate system.
      * @return An "abstract" coordinate system using the given axes.
      *
      * @since 0.6
      */
     @Override
-    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
-        return new AbstractCS(Collections.singletonMap(AbstractCS.NAME_KEY,
-                AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+    public CoordinateSystem createAbstractCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(properties, axes);
     }
 
     /**
@@ -535,6 +535,21 @@ public final class ServicesForMetadata extends ReferencingServices {
                                        final CoordinateSystem derivedCS)
     {
         return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
+    }
+
+    /**
+     * Suggests a coordinate system name.
+     * Example: "Compound CS: East (km), North (km), Up (m)."
+     *
+     * @param  type The CS type (Cartesian | ellipsoidal | vertical | etc…) or null or empty if unknown.
+     * @param  axes The coordinate system axes (can not be {@code null}).
+     * @return The suggested coordinate system name (never {@code null}).
+     *
+     * @since 0.6
+     */
+    @Override
+    public CharSequence nameForCS(final String type, final CoordinateSystemAxis[] axes) {
+        return AxisDirections.appendTo((StringBuilder) super.nameForCS(type, axes), axes);
     }
 
     /**

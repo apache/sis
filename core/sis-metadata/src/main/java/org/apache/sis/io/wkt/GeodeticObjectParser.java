@@ -566,6 +566,222 @@ final class GeodeticObjectParser extends MathTransformParser {
     }
 
     /**
+     * Parses a {@code "CS"} element followed by all {@code "AXIS"} elements.
+     * This element has the following pattern (simplified):
+     *
+     * {@preformat text
+     *     CS["<type>", dimension],
+     *     UNIT["<name>", <conversion factor>],
+     *     AXIS["<name>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER],
+     *     etc.
+     * }
+     *
+     * This element is different from all other elements parsed by {@code GeodeticObjectParser}
+     * in that its components are sibling elements rather than child elements of the CS element.
+     *
+     * <p>The optional {@code "UNIT[…]"} element shall be parsed by the caller. That element may appear after the
+     * {@code "CS[…]"} element (not inside). The unit may be forced to some dimension (e.g. {@code "LengthUnit"})
+     * or be any kind of unit, depending on the context in which this {@code parseCoordinateSystem(…)} method is
+     * invoked.</p>
+     *
+     * @param  parent      The parent element.
+     * @param  expected    The expected type (Cartesian | ellipsoidal | vertical | etc…) or null if unknown.
+     * @param  dimension   The minimal number of dimensions. If unknown, pass 1.
+     * @param  defaultUnit The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
+     * @param  datum       The datum of the enclosing CRS.
+     * @return The {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
+     * @throws ParseException if an element can not be parsed.
+     * @throws FactoryException if the factory can not create the coordinate system.
+     */
+    private CoordinateSystem parseCoordinateSystem(final Element parent, final String expected, int dimension,
+            final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
+    {
+        String type;
+        Map<String,Object> csProperties;
+        { // For keeping the 'element' variable local to this block, for reducing the risk of accidental reuse.
+            final Element element = parent.pullElement(OPTIONAL, WKTKeywords.CS);
+            if (element != null) {
+                type         = CharSequences.trimWhitespaces(element.pullString("type"));
+                dimension    = element.pullInteger("dimension");
+                csProperties = new HashMap<>(parseMetadataAndClose(element, "CS"));
+                if (dimension <= 0 || dimension >= 10000) {  // Arbitrary upper limit against badly formed CS.
+                    final short key;
+                    final Object[] args;
+                    if (dimension <= 0) {
+                        key = Errors.Keys.ValueNotGreaterThanZero_2;
+                        args = new Object[] {"dimension", dimension};
+                    } else {
+                        key = Errors.Keys.ExcessiveNumberOfDimensions_1;
+                        args = new Object[] {dimension};
+                    }
+                    throw new LocalizedParseException(errorLocale, key, args, element.offset);
+                }
+                type = type.equalsIgnoreCase(WKTKeywords.Cartesian) ?
+                       WKTKeywords.Cartesian : type.toLowerCase(symbols.getLocale());
+                if (expected != null) {
+                    if (!expected.equals(type)) {
+                        throw new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
+                                new String[] {WKTKeywords.CS, type}, element.offset);
+                    }
+                }
+            } else {
+                type = expected;
+                csProperties = null;
+            }
+        }
+        /*
+         * AXIS[…] elements are optional, but if we find one we will request that there is as many axes
+         * as the number of dimensions. If there is more axes than expected, we may emit an error later
+         * depending on the CS type.
+         *
+         * AXIS[…] elements will be parsed for verifying the syntax, but otherwise ignored if the parsing
+         * convention is WKT1_IGNORE_AXES. This is for compatibility with the way some other libraries
+         * parse WKT 1.
+         */
+        CoordinateSystemAxis[] axes = null;
+        final boolean isGeographic = WKTKeywords.ellipsoidal.equals(type);
+        CoordinateSystemAxis axis = parseAxis(type == null ? MANDATORY : OPTIONAL, parent, isGeographic, defaultUnit);
+        if (axis != null) {
+            final List<CoordinateSystemAxis> list = new ArrayList<>(dimension + 2);
+            do {
+                list.add(axis);
+                axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, isGeographic, defaultUnit);
+            } while (axis != null);
+            if (convention != Convention.WKT1_IGNORE_AXES) {
+                axes = list.toArray(new CoordinateSystemAxis[list.size()]);
+            }
+        }
+        /*
+         * If there is no explicit AXIS[…] elements, or if the user asked to ignore them, then we need to
+         * create default axes. This is possible only if we know the type of the CS to create.
+         */
+        if (axes == null) {
+            if (type == null) {
+                throw parent.missingComponent(WKTKeywords.Axis);
+            }
+            switch (type) {
+                default: {
+                    throw parent.missingComponent(WKTKeywords.Axis);
+                }
+                case WKTKeywords.ellipsoidal: {
+                    if (defaultUnit == null) {
+                        throw parent.missingComponent(WKTKeywords.AngleUnit);
+                    }
+                    axes = new CoordinateSystemAxis[2];  // TODO: case of 3D CS.
+                    axes[0] = createAxis(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  defaultUnit);
+                    axes[1] = createAxis(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, defaultUnit);
+                    break;
+                }
+                case WKTKeywords.vertical: {
+                    if (defaultUnit == null) {
+                        throw parent.missingComponent(WKTKeywords.Unit);
+                    }
+                    String name = "Height", abbreviation = "h";
+                    AxisDirection direction = AxisDirection.UP;
+                    final VerticalDatumType vt = ((VerticalDatum) datum).getVerticalDatumType();
+                    if (VerticalDatumType.GEOIDAL.equals(vt)) {
+                        name = AxisNames.GRAVITY_RELATED_HEIGHT;
+                        abbreviation = "H";
+                    } else if (VerticalDatumType.DEPTH.equals(vt)) {
+                        name = AxisNames.DEPTH;
+                        abbreviation = "D";
+                        direction = AxisDirection.DOWN;
+                    } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(vt)) {
+                        name = AxisNames.ELLIPSOIDAL_HEIGHT;
+                    }
+                    axes = new CoordinateSystemAxis[] {
+                        createAxis(name, abbreviation, direction, defaultUnit)
+                    };
+                    break;
+                }
+                case WKTKeywords.temporal: {
+                    if (defaultUnit == null) {
+                        throw parent.missingComponent(WKTKeywords.TimeUnit);
+                    }
+                    axes = new CoordinateSystemAxis[] {
+                        createAxis("Time", "t", AxisDirection.FUTURE, defaultUnit)
+                    };
+                    break;
+                }
+            }
+        }
+        /*
+         * Now create the Coordinate System from its type.
+         * The CS name will be inferred from the axes if possible.
+         * Example: "Compound CS: East (km), North (km), Up (m)."
+         */
+        final String name = referencing.nameForCS(type, axes).toString();
+        if (csProperties == null) {
+            csProperties = singletonMap(CoordinateSystem.NAME_KEY, name);
+        } else {
+            csProperties.put(CoordinateSystem.NAME_KEY, name);
+        }
+        if (type == null) {
+            return referencing.createAbstractCS(csProperties, axes);
+        }
+        switch (type) {
+            case WKTKeywords.ellipsoidal: {
+                switch (axes.length) {
+                    case 2: return csFactory.createEllipsoidalCS(csProperties, axes[0], axes[1]);
+                    case 3: return csFactory.createEllipsoidalCS(csProperties, axes[0], axes[1], axes[2]);
+                }
+                dimension = (axes.length < 2) ? 2 : 3;  // For error message.
+                break;
+            }
+            case WKTKeywords.Cartesian: {
+                switch (axes.length) {
+                    case 2: return csFactory.createCartesianCS(csProperties, axes[0], axes[1]);
+                    case 3: return csFactory.createCartesianCS(csProperties, axes[0], axes[1], axes[2]);
+                }
+                dimension = (axes.length < 2) ? 2 : 3;  // For error message.
+                break;
+            }
+            case WKTKeywords.affine: {
+                switch (axes.length) {
+                    case 2: return csFactory.createAffineCS(csProperties, axes[0], axes[1]);
+                    case 3: return csFactory.createAffineCS(csProperties, axes[0], axes[1], axes[2]);
+                }
+                dimension = (axes.length < 2) ? 2 : 3;  // For error message.
+                break;
+            }
+            case WKTKeywords.vertical: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createVerticalCS(csProperties, axes[0]);
+            }
+            case WKTKeywords.temporal: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createTimeCS(csProperties, axes[0]);
+            }
+            case WKTKeywords.linear: {
+                if (axes.length != (dimension = 1)) break;
+                return csFactory.createLinearCS(csProperties, axes[0]);
+            }
+            case WKTKeywords.polar: {
+                if (axes.length != (dimension = 2)) break;
+                return csFactory.createPolarCS(csProperties, axes[0], axes[1]);
+            }
+            case WKTKeywords.cylindrical: {
+                if (axes.length != (dimension = 3)) break;
+                return csFactory.createCylindricalCS(csProperties, axes[0], axes[1], axes[2]);
+            }
+            case WKTKeywords.spherical: {
+                if (axes.length != (dimension = 3)) break;
+                return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
+            }
+            case WKTKeywords.parametric: {  // TODO: not yet supported.
+                return referencing.createAbstractCS(csProperties, axes);
+            }
+            default: {
+                warning(Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
+                return referencing.createAbstractCS(csProperties, axes);
+            }
+        }
+        throw new LocalizedParseException(errorLocale, (axes.length > dimension)
+                ? Errors.Keys.TooManyOccurrences_2 : Errors.Keys.TooFewOccurrences_2,
+                new Object[] {dimension, WKTKeywords.Axis}, parent.offset);
+    }
+
+    /**
      * Parses an {@code "AXIS"} element.
      * This element has the following pattern:
      *
@@ -640,12 +856,12 @@ final class GeodeticObjectParser extends MathTransformParser {
     }
 
     /**
-     * Creates an axis with the same name than the abbreviation.
+     * Creates an axis with the given name and abbreviation.
      */
     private CoordinateSystemAxis createAxis(final String name, final String abbreviation,
             final AxisDirection direction, final Unit<?> unit) throws FactoryException
     {
-        return csFactory.createCoordinateSystemAxis(singletonMap(IdentifiedObject.NAME_KEY, name),
+        return csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, name),
                 abbreviation, direction, unit);
     }
 
@@ -922,27 +1138,17 @@ final class GeodeticObjectParser extends MathTransformParser {
      * @param  parent The parent element.
      * @return The {@code "LOCAL_CS"} element as an {@link EngineeringCRS} object.
      * @throws ParseException if the {@code "LOCAL_CS"} element can not be parsed.
-     *
-     * @todo The coordinate system used is always a SIS implementation, since we don't
-     *       know which method to invokes in the {@link CSFactory} (is it a Cartesian
-     *       coordinate system? a spherical one? etc.).
      */
     private EngineeringCRS parseEngineeringCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.EngineeringCRS, WKTKeywords.Local_CS);
         if (element == null) {
             return null;
         }
-        final String           name       = element.pullString("name");
-        final EngineeringDatum datum      = parseEngineeringDatum(MANDATORY, element);
-        final Unit<Length>     linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-        CoordinateSystemAxis   axis       = parseAxis(MANDATORY, element, false, linearUnit);
-        final List<CoordinateSystemAxis> list = new ArrayList<>();
-        do {
-            list.add(axis);
-            axis = parseAxis(OPTIONAL, element, false, linearUnit);
-        } while (axis != null);
-        final CoordinateSystem cs = referencing.createAbstractCS(list.toArray(new CoordinateSystemAxis[list.size()]));
+        final String           name  = element.pullString("name");
+        final EngineeringDatum datum = parseEngineeringDatum(MANDATORY, element);
+        final Unit<?>          unit  = parseUnit(element);
         try {
+            final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, unit, datum);
             return crsFactory.createEngineeringCRS(parseMetadataAndClose(element, name), datum, cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -1017,29 +1223,9 @@ final class GeodeticObjectParser extends MathTransformParser {
         final String         name       = element.pullString("name");
         final VerticalDatum  datum      = parseVerticalDatum(MANDATORY, element);
         final Unit<Length>   linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-        CoordinateSystemAxis axis       = parseAxis(OPTIONAL, element, false, linearUnit);
         try {
-            if (isAxisIgnored(axis)) {
-                if (linearUnit == null) {
-                    throw element.missingComponent(WKTKeywords.Unit);
-                }
-                String sn = "Height", abbreviation = "h";
-                AxisDirection direction = AxisDirection.UP;
-                final VerticalDatumType type = datum.getVerticalDatumType();
-                if (VerticalDatumType.GEOIDAL.equals(type)) {
-                    sn = AxisNames.GRAVITY_RELATED_HEIGHT;
-                    abbreviation = "H";
-                } else if (VerticalDatumType.DEPTH.equals(type)) {
-                    sn = AxisNames.DEPTH;
-                    abbreviation = "D";
-                    direction = AxisDirection.DOWN;
-                } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(type)) {
-                    sn = AxisNames.ELLIPSOIDAL_HEIGHT;
-                }
-                axis = createAxis(sn, abbreviation, direction, linearUnit);
-            }
-            verticalCRS = crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum,
-                           csFactory.createVerticalCS(singletonMap("name", name), axis));
+            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, linearUnit, datum);
+            verticalCRS = crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum, (VerticalCS) cs);
             /*
              * Some DefaultVerticalExtent objects may be waiting for the VerticalCRS before to complete
              * their construction. If this is the case, try to complete them now.
@@ -1069,16 +1255,9 @@ final class GeodeticObjectParser extends MathTransformParser {
         final String         name     = element.pullString("name");
         final TemporalDatum  datum    = parseTimeDatum(MANDATORY, element);
         final Unit<Duration> timeUnit = parseDerivedUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
-        CoordinateSystemAxis axis     = parseAxis(OPTIONAL, element, false, timeUnit);
         try {
-            if (isAxisIgnored(axis)) {
-                if (timeUnit == null) {
-                    throw element.missingComponent(WKTKeywords.TimeUnit);
-                }
-                axis = createAxis("Time", "t", AxisDirection.FUTURE, timeUnit);
-            }
-            return crsFactory.createTemporalCRS(parseMetadataAndClose(element, name), datum,
-                    csFactory.createTimeCS(singletonMap("name", name), axis));
+            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, timeUnit, datum);
+            return crsFactory.createTemporalCRS(parseMetadataAndClose(element, name), datum, (TimeCS) cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1113,22 +1292,9 @@ final class GeodeticObjectParser extends MathTransformParser {
              */
             name = datum.getName();
         }
-        CoordinateSystemAxis axis0 = parseAxis(OPTIONAL, element, true, angularUnit);
-        CoordinateSystemAxis axis1 = null;
         try {
-            if (axis0 != null) {
-                axis1 = parseAxis(MANDATORY, element, true, angularUnit);
-            }
-            if (isAxisIgnored(axis0)) {
-                if (angularUnit == null) {
-                    throw element.missingComponent(WKTKeywords.AngleUnit);
-                }
-                axis0 = createAxis(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  angularUnit);
-                axis1 = createAxis(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, angularUnit);
-            }
-            final Map<String,?> properties = parseMetadataAndClose(element, name);
-            return crsFactory.createGeographicCRS(properties, datum,
-                    csFactory.createEllipsoidalCS(properties, axis0, axis1));
+            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.ellipsoidal, 2, angularUnit, datum);
+            return crsFactory.createGeographicCRS(parseMetadataAndClose(element, name), datum, (EllipsoidalCS) cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1253,11 +1419,12 @@ final class GeodeticObjectParser extends MathTransformParser {
                 buffer.setLength(start);
                 buffer.append(number);
                 axes[i] = csFactory.createCoordinateSystemAxis(
-                        singletonMap(IdentifiedObject.NAME_KEY, buffer.toString()),
+                        singletonMap(CoordinateSystemAxis.NAME_KEY, buffer.toString()),
                         number, AxisDirection.OTHER, Unit.ONE);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name);
-            final CoordinateSystem derivedCS = referencing.createAbstractCS(axes);
+            final CoordinateSystem derivedCS = referencing.createAbstractCS(
+                    singletonMap(CoordinateSystem.NAME_KEY, referencing.nameForCS(null, axes)), axes);
             /*
              * We do not know which name to give to the conversion method.
              * For now, use the CRS name.
