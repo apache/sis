@@ -358,12 +358,13 @@ public class ReferencingServices extends OptionalDependency {
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
      *
+     * @param  properties The coordinate system name, and optionally other properties.
      * @param  axes The axes of the unknown coordinate system.
      * @return An "abstract" coordinate system using the given axes.
      *
      * @since 0.6
      */
-    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+    public CoordinateSystem createAbstractCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         throw moduleNotFound();
     }
 
@@ -389,6 +390,26 @@ public class ReferencingServices extends OptionalDependency {
                                        final CoordinateSystem derivedCS)
     {
         throw moduleNotFound();
+    }
+
+    /**
+     * Suggests a coordinate system name.
+     * Example: "Compound CS: East (km), North (km), Up (m)."
+     *
+     * @param  type The CS type (Cartesian | ellipsoidal | vertical | etc…) or null or empty if unknown.
+     * @param  axes The coordinate system axes (can not be {@code null}).
+     * @return The suggested coordinate system name (never {@code null}).
+     *
+     * @since 0.6
+     */
+    public CharSequence nameForCS(final String type, final CoordinateSystemAxis[] axes) {
+        final StringBuilder buffer = new StringBuilder();
+        if (type != null && !type.isEmpty()) {
+            final int c = type.codePointAt(0);
+            buffer.appendCodePoint(Character.toUpperCase(c))
+                    .append(type, Character.charCount(c), type.length()).append(' ');
+        }
+        return buffer.append("CS");
     }
 
     /**
