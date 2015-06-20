@@ -26,7 +26,7 @@ import org.apache.sis.util.CharSequences;
 
 
 /**
- * Controls the replacement on Unicode characters during WKT formatting.
+ * Controls the replacement of name, abbreviation and Unicode characters during WKT parsing and formatting.
  * The ISO 19162 standard restricts <cite>Well Known Text</cite> to the following characters in all
  * {@linkplain Formatter#append(String, ElementKind) quoted texts} except in {@code REMARKS["…"]} elements:
  *
@@ -72,7 +72,7 @@ public abstract class CharEncoding implements Serializable {
      * A character encoding that does not perform any replacement.
      * All methods let Unicode characters pass-through unchanged.
      */
-    public static final CharEncoding UNICODE = new Unicode();
+    public static final CharEncoding IDENTITY = new Unicode();
 
     /**
      * For sub-class constructors.
@@ -86,7 +86,7 @@ public abstract class CharEncoding implements Serializable {
      *
      * <p>Implementations shall not care about {@linkplain Symbols#getOpeningQuote(int) opening} or
      * {@linkplain Symbols#getClosingQuote(int) closing quotes}. The quotes will be doubled by the
-     * caller if needed.</p>
+     * caller if needed after this method has been invoked.</p>
      *
      * @param  text The text to format without non-ASCII characters.
      * @return The text to write in <cite>Well Known Text</cite>.
@@ -97,8 +97,12 @@ public abstract class CharEncoding implements Serializable {
 
     /**
      * Returns the axis abbreviation to format, or {@code null} if none. The abbreviation is obtained by
-     * {@link CoordinateSystemAxis#getAbbreviation()}, but may contain Greek letters (in particular φ, λ
-     * and θ).
+     * {@link CoordinateSystemAxis#getAbbreviation()}, but the value returned by that method may contain
+     * Greek letters (in particular φ, λ and θ). This {@code CharEncoding.getAbbreviation(…)} method is
+     * responsible for replacing Greek letters by Latin letters for ISO 19162 compliance, if desired.
+     *
+     * <p>Note that while this method may return a string of any length, ISO 19162 requires abbreviations
+     * to be a single Latin character.</p>
      *
      * @param  cs   The enclosing coordinate system, or {@code null} if unknown.
      * @param  axis The axis for which to get the abbreviation to format.
@@ -167,7 +171,7 @@ public abstract class CharEncoding implements Serializable {
     }
 
     /**
-     * The {@link CharEncoding#UNICODE} implementation.
+     * The {@link CharEncoding#IDENTITY} implementation.
      */
     private static final class Unicode extends CharEncoding {
         /** For cross-version compatibility. */
@@ -185,12 +189,12 @@ public abstract class CharEncoding implements Serializable {
 
         /** Returns a string representation similar to enum. */
         @Override public String toString() {
-            return "UNICODE";
+            return "IDENTITY";
         }
 
         /** Replaces deserialized instances by the unique instance. */
         Object readResolve() {
-            return UNICODE;
+            return IDENTITY;
         }
     }
 }

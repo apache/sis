@@ -68,7 +68,8 @@ public final class CoordinateSystems extends Static {
      *   <li>Inter-cardinal directions <cite>"north-east"</cite> and <cite>"south-south-east"</cite>,
      *       using either {@code '-'}, {@code '_'} or spaces as separator between the cardinal points.</li>
      *   <li>Directions from a pole like <cite>"South along 180 deg"</cite> and <cite>"South along 90° East"</cite>,
-     *       using either the {@code "deg"} or {@code "°"} symbol.</li>
+     *       using either the {@code "deg"} or {@code "°"} symbol. Note that the meridian is not necessarily relative
+     *       to Greenwich (see {@link #directionAlongMeridian directionAlongMeridian(…)} for more information).</li>
      * </ul>
      *
      * @param  name The direction name (e.g. "north", "north-east", <i>etc.</i>).
@@ -101,6 +102,33 @@ public final class CoordinateSystems extends Static {
     }
 
     /**
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
+     * <cite>“South along 90°W”</cite>.</div>
+     *
+     * <div class="section">Reference meridian</div>
+     * The reference meridian depends on the context. It is usually the prime meridian of the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} of the
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
+     * that contains (through its coordinate system) the axes having those directions.
+     * This policy is consistent with
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting</a>.
+     *
+     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return The axis direction along the given meridian.
+     *
+     * @since 0.6
+     */
+    public static AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        return new DirectionAlongMeridian(baseDirection, meridian).getDirection();
+    }
+
+    /**
      * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction.
      * This method returns a value between -180° and +180°, or {@code null} if no angle can be computed.
      *
@@ -113,6 +141,11 @@ public final class CoordinateSystems extends Static {
      *   <li>The angle from {@link AxisDirection#SOUTH SOUTH} to {@link AxisDirection#WEST WEST} is -90°</li>
      *   <li>The angle from <cite>"North along 90° East"</cite> to <cite>"North along 0°"</cite> is 90°.</li>
      * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * in the case of directions like <cite>“South along 90°W”</cite>, the caller is responsible to make sure
+     * that the meridians are relative to the same prime meridian. This is the case if the axes are part of
+     * the same {@code CoordinateSystem} instance.</div>
      *
      * <div class="section">Horizontal and vertical directions</div>
      * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}

@@ -173,7 +173,7 @@ public class Formatter implements Localized {
     private Citation authority;
 
     /**
-     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
+     * {@link CharEncoding#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
      * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
      */
@@ -389,7 +389,7 @@ public class Formatter implements Localized {
         this.colors       = colors;
         this.toUpperCase  = toUpperCase;
         this.indentation  = indentation;
-        this.encoding     = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+        this.encoding     = (convention == Convention.INTERNAL) ? CharEncoding.IDENTITY : CharEncoding.DEFAULT;
     }
 
     /**
@@ -412,7 +412,7 @@ public class Formatter implements Localized {
      * <ul>
      *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>{@link CharEncoding#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *

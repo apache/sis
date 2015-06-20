@@ -20,8 +20,10 @@ import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -84,7 +86,7 @@ import static java.util.Collections.singletonMap;
  * @version 0.6
  * @module
  */
-final class GeodeticObjectParser extends MathTransformParser {
+final class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
     /**
      * The keywords of unit elements. Most frequently used keywords should be first.
      */
@@ -155,6 +157,11 @@ final class GeodeticObjectParser extends MathTransformParser {
      * This map will be recycled for each object to be parsed.
      */
     private final Map<String,Object> properties = new HashMap<>(4);
+
+    /**
+     * Order of coordinate system axes. Used only if {@code AXIS[…]} elements contain {@code ORDER[…]} sub-element.
+     */
+    private final Map<CoordinateSystemAxis,Integer> axisOrder = new IdentityHashMap<>(4);
 
     /**
      * The last vertical CRS found during the parsing, or {@code null} if none.
@@ -285,8 +292,9 @@ final class GeodeticObjectParser extends MathTransformParser {
                 }
             }
         } finally {
-            verticalCRS = null;
             verticalElements = null;
+            verticalCRS = null;
+            axisOrder.clear();
             properties.clear();     // for letting the garbage collector do its work.
         }
         return object;
@@ -571,8 +579,8 @@ final class GeodeticObjectParser extends MathTransformParser {
      *
      * {@preformat text
      *     CS["<type>", dimension],
-     *     UNIT["<name>", <conversion factor>],
      *     AXIS["<name>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER],
+     *     UNIT["<name>", <conversion factor>],
      *     etc.
      * }
      *
@@ -590,7 +598,7 @@ final class GeodeticObjectParser extends MathTransformParser {
      * Current implementation uses the following rules:
      *
      * <ul>
-     *   <li>If the datum is not geodetic, then the axes are unknown.</li>
+     *   <li>If the datum is not geodetic, then the axes of the Cartesian CS are unknown.</li>
      *   <li>Otherwise if {@code dimension is 2}, then the CS is assumed to be for a projected CRS.</li>
      *   <li>Otherwise if {@code dimension is 3}, then the CS is assumed to be for a geocentric CRS.</li>
      * </ul>
@@ -607,6 +615,7 @@ final class GeodeticObjectParser extends MathTransformParser {
     private CoordinateSystem parseCoordinateSystem(final Element parent, String type, int dimension,
             final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
     {
+        axisOrder.clear();
         final boolean is3D = (dimension >= 3);
         Map<String,Object> csProperties = null;
         { // For keeping the 'element' variable local to this block, for reducing the risk of accidental reuse.
@@ -622,7 +631,7 @@ final class GeodeticObjectParser extends MathTransformParser {
                                 new String[] {WKTKeywords.CS, type}, element.offset);
                     }
                 }
-                if (dimension <= 0 || dimension >= 10000) {  // Arbitrary upper limit against badly formed CS.
+                if (dimension <= 0 || dimension > 1000) {  // Arbitrary upper limit against badly formed CS.
                     final short key;
                     final Object[] args;
                     if (dimension <= 0) {
@@ -658,6 +667,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             } while (axis != null);
             if (convention != Convention.WKT1_IGNORE_AXES) {
                 axes = list.toArray(new CoordinateSystemAxis[list.size()]);
+                Arrays.sort(axes, this);  // Take ORDER[n] elements in account.
             }
         }
         /*
@@ -765,6 +775,7 @@ final class GeodeticObjectParser extends MathTransformParser {
             if (x != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, nx), x, AxisDirection.EAST,  defaultUnit);
             if (y != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, ny), y, AxisDirection.NORTH, defaultUnit);
             if (z != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, nz), z, direction, unit);
+            // Not a problem if the array does not have the expected length for the CS type. This will be verified below in this method.
         }
         /*
          * Now create the Coordinate System from its type.
@@ -844,16 +855,11 @@ final class GeodeticObjectParser extends MathTransformParser {
 
     /**
      * Parses an {@code "AXIS"} element.
-     * This element has the following pattern:
+     * This element has the following pattern (simplified):
      *
      * {@preformat text
-     *     AXIS["<name>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER]
+     *     AXIS["<name (abbr.)>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER, ORDER[n], UNIT[…], ID[…]]
      * }
-     *
-     * <div class="note"><b>Note:</b>
-     * There is no AUTHORITY element for AXIS element in WKT 1 specification. However, we accept it anyway in order
-     * to make the parser more tolerant to non-100% compliant WKT. Note that AXIS is really the only element without
-     * such AUTHORITY clause and the EPSG database provides authority code for all axis.</div>
      *
      * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent       The parent element.
@@ -870,20 +876,14 @@ final class GeodeticObjectParser extends MathTransformParser {
         if (element == null) {
             return null;
         }
+        /*
+         * Name, orientation (usually NORTH, SOUTH, EAST or WEST) and units are the main components of AXIS[…].
+         * The name may contain an abbreviation, which will be handle later in this method. In the special case
+         * of coordinate system over a pole, the orientation may be of the form “South along 90°W”, which is
+         * expressed by a syntax like AXIS[“South along 90°W”, SOUTH, MERIDIAN[-90, UNIT["deg"]]]. Note that
+         * the meridian is relative to the prime meridian of the enclosing geodetic CRS.
+         */
         String name = CharSequences.trimWhitespaces(element.pullString("name"));
-        if (isGeographic) {
-            /*
-             * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
-             * and "Geodetic latitude". But ISO 19162:2015 §7.5.3(ii) said that the "Geodetic" part in those names
-             * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
-             * method performs this removal, so we apply the reverse operation here.
-             */
-            if (name.equalsIgnoreCase(AxisNames.LATITUDE) || name.equalsIgnoreCase("lat")) {
-                name = AxisNames.GEODETIC_LATITUDE;
-            } else if (name.equalsIgnoreCase(AxisNames.LONGITUDE) || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
-                name = AxisNames.GEODETIC_LONGITUDE;
-            }
-        }
         final Element orientation = element.pullVoidElement("orientation");
         Unit<?> unit = parseUnit(element);
         if (unit == null) {
@@ -892,7 +892,17 @@ final class GeodeticObjectParser extends MathTransformParser {
             }
             unit = defaultUnit;
         }
-        final AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, mode == MANDATORY);
+        AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, true);
+        final Element meridian = element.pullElement(OPTIONAL, WKTKeywords.Meridian);
+        if (meridian != null) {
+            double angle = meridian.pullDouble("meridian");
+            final Unit<Angle> m = parseDerivedUnit(meridian, WKTKeywords.AngleUnit, SI.RADIAN);
+            meridian.close(ignoredElements);
+            if (m != null) {
+                angle = m.getConverterTo(NonSI.DEGREE_ANGLE).convert(angle);
+            }
+            direction = referencing.directionAlongMeridian(direction, angle);
+        }
         /*
          * According ISO 19162, the abbreviation should be inserted between parenthesis in the name.
          * Example: "Easting (E)", "Longitude (L)". If we do not find an abbreviation, then we will
@@ -909,11 +919,72 @@ final class GeodeticObjectParser extends MathTransformParser {
         } else {
             abbreviation = referencing.suggestAbbreviation(name, direction, unit);
         }
+        /*
+         * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
+         * and "Geodetic latitude". But ISO 19162:2015 §7.5.3(ii) said that the "Geodetic" part in those names
+         * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
+         * method performs this removal, so we apply the reverse operation here.
+         */
+        if (isGeographic) {
+            if (name.equalsIgnoreCase(AxisNames.LATITUDE) || name.equalsIgnoreCase("lat")) {
+                name = AxisNames.GEODETIC_LATITUDE;
+            } else if (name.equalsIgnoreCase(AxisNames.LONGITUDE) || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
+                name = AxisNames.GEODETIC_LONGITUDE;
+            }
+        } else if (name.equals(abbreviation)) {
+            if      (direction.equals(AxisDirection.GEOCENTRIC_X)) name = AxisNames.GEOCENTRIC_X;
+            else if (direction.equals(AxisDirection.GEOCENTRIC_Y)) name = AxisNames.GEOCENTRIC_Y;
+            else if (direction.equals(AxisDirection.GEOCENTRIC_Z)) name = AxisNames.GEOCENTRIC_Z;
+        }
+        /*
+         * At this point we are done and ready to create the CoordinateSystemAxis. But there is one last element
+         * specified by ISO 19162 but not in Apache SIS representation of axis: ORDER[n], which specify the axis
+         * ordering. If present we will store that value for processing by the 'parseCoordinateSystem(…)' method.
+         */
+        final Element order = element.pullElement(OPTIONAL, WKTKeywords.Order);
+        Integer n = null;
+        if (order != null) {
+            n = order.pullInteger("order");
+            order.close(ignoredElements);
+        }
+        final CoordinateSystemAxis axis;
         try {
-            return csFactory.createCoordinateSystemAxis(parseMetadataAndClose(element, name), abbreviation, direction, unit);
+            axis = csFactory.createCoordinateSystemAxis(parseMetadataAndClose(element, name), abbreviation, direction, unit);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
+        if (axisOrder.put(axis, n) != null) {
+            throw new LocalizedParseException(errorLocale, Errors.Keys.DuplicatedElement_1,
+                    new Object[] {WKTKeywords.Axis + "[“" + name + "”]"}, element.offset);
+        }
+        return axis;
+    }
+
+    /**
+     * Compares axes for order. This method is used for ordering axes according their {@code ORDER} element,
+     * if present. If no {@code ORDER} element were present, then the axis order is left unchanged. If only
+     * some axes have an {@code ORDER} element (which is illegal according ISO 19162), then those axes will
+     * be sorted before the axes without {@code ORDER} element.
+     *
+     * @param  o1 The first axis to compare.
+     * @param  o2 The second axis to compare.
+     * @return -1 if {@code o1} should be before {@code o2},
+     *         +1 if {@code o2} should be before {@code o1}, or
+     *          0 if undetermined (no axis order change).
+     */
+    @Override
+    public int compare(final CoordinateSystemAxis o1, final CoordinateSystemAxis o2) {
+        final Integer n1 = axisOrder.get(o1);
+        final Integer n2 = axisOrder.get(o2);
+        if (n1 != null) {
+            if (n2 != null) {
+                return n1 - n2;
+            }
+            return -1;  // Axis 1 before Axis 2 since the later has no 'ORDER' element.
+        } else if (n2 != null) {
+            return +1;  // Axis 2 before Axis 1 since the later has no 'ORDER' element.
+        }
+        return 0;
     }
 
     /**

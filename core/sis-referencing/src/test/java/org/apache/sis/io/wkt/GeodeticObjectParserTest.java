@@ -32,6 +32,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.test.DependsOnMethod;
@@ -137,13 +138,47 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Verifies that the axes of the coordinate system are those of a projected CRS,
-     * with (East, North) axis directions.
+     * Tests the parsing of an axis.
+     *
+     * @throws ParseException if the parsing failed.
      */
-    private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
-        assertEquals("dimension", 2, cs.getDimension());
-        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
-        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
+    @Test
+    public void testAxis() throws ParseException {
+        CoordinateSystemAxis axis = parse(CoordinateSystemAxis.class, "AXIS[“(Y)”, geocentricY]");
+        assertEquals("name", "Geocentric Y", axis.getName().getCode());
+        assertEquals("abbreviation", "Y", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.GEOCENTRIC_Y, axis.getDirection());
+        assertEquals("unit", SI.METRE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“latitude”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]]");
+        assertEquals("name", "latitude", axis.getName().getCode());
+        assertEquals("abbreviation", "φ", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.NORTH, axis.getDirection());
+        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433]]");
+        assertEquals("name", "longitude", axis.getName().getCode());
+        assertEquals("abbreviation", "λ", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.EAST, axis.getDirection());
+        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“ellipsoidal height (h)”,up,ORDER[3],LengthUnit[“kilometre”,1000]]");
+        assertEquals("name", "ellipsoidal height", axis.getName().getCode());
+        assertEquals("abbreviation", "h", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.UP, axis.getDirection());
+        assertEquals("unit", SI.KILOMETRE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“time (t)”,future,TimeUnit[“hour”,3600]]");
+        assertEquals("name", "time", axis.getName().getCode());
+        assertEquals("abbreviation", "t", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.FUTURE, axis.getDirection());
+        assertEquals("unit", NonSI.HOUR, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“easting (X)”,south,MERIDIAN[90,UNIT[“degree”,0.0174532925199433]]]");
+        assertEquals("name", "easting", axis.getName().getCode());
+        assertEquals("abbreviation", "X", axis.getAbbreviation());
+        assertEquals("direction", CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection());
+        assertEquals("unit", SI.METRE, axis.getUnit());
     }
 
     /**
@@ -154,6 +189,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @DependsOnMethod("testAxis")
     public void testGeocentricCRS() throws ParseException {
         final GeocentricCRS crs = parse(GeocentricCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
@@ -260,6 +296,16 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("dimension", 2, cs.getDimension());
         assertLongitudeAxisEquals(cs.getAxis(0 ^ swap));
         assertLatitudeAxisEquals (cs.getAxis(1 ^ swap));
+    }
+
+    /**
+     * Verifies that the axes of the coordinate system are those of a projected CRS,
+     * with (East, North) axis directions.
+     */
+    private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
+        assertEquals("dimension", 2, cs.getDimension());
+        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
     }
 
     /**
