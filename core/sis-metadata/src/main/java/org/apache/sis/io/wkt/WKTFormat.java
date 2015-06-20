@@ -162,7 +162,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
-     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
+     * {@link CharEncoding#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
      * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
      *
@@ -267,7 +267,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * <ul>
      *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>{@link CharEncoding#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
@@ -278,7 +278,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     public CharEncoding getCharEncoding() {
         CharEncoding result = encoding;
         if (result == null) {
-            result = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+            result = (convention == Convention.INTERNAL) ? CharEncoding.IDENTITY : CharEncoding.DEFAULT;
         }
         return result;
     }
@@ -313,7 +313,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Deprecated
     public boolean isNonAsciiAllowed() {
-        return getCharEncoding() == CharEncoding.UNICODE;
+        return getCharEncoding() == CharEncoding.IDENTITY;
     }
 
     /**
@@ -329,7 +329,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Deprecated
     public void setNonAsciiAllowed(final boolean allowed) {
-        setCharEncoding(allowed ? CharEncoding.UNICODE : CharEncoding.DEFAULT);
+        setCharEncoding(allowed ? CharEncoding.IDENTITY : CharEncoding.DEFAULT);
     }
 
     /**

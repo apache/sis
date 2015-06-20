@@ -429,6 +429,21 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
+     *
+     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return The axis direction along the given meridian.
+     *
+     * @since 0.6
+     */
+    public AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        throw moduleNotFound();
+    }
+
+    /**
      * Creates the {@code TOWGS84} element during parsing of a WKT version 1. This is an optional operation:
      * this method is allowed to return {@code null} if the "sis-referencing" module is not in the classpath.
      *

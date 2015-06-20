@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 
@@ -56,6 +55,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -567,6 +567,22 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
         return AxisDirections.suggestAbbreviation(name, direction, unit);
+    }
+
+    /**
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
+     *
+     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return The axis direction along the given meridian.
+     *
+     * @since 0.6
+     */
+    @Override
+    public AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        return CoordinateSystems.directionAlongMeridian(baseDirection, meridian);
     }
 
     /**
