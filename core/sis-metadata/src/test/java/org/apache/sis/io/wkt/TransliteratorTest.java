@@ -20,13 +20,12 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -39,21 +38,46 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class TransliteratorTest extends TestCase {
     /**
-     * Tests {@link Transliterator#toUnicodeAbbreviation(String, String, String, AxisDirection)}.
+     * Tests {@link Transliterator#toLongAxisName(String, AxisDirection, String)}.
+     */
+    @Test
+    public void testToLongAxisName() {
+        final Transliterator t = Transliterator.DEFAULT;
+        assertEquals("Geodetic latitude",   t.toLongAxisName("ellipsoidal", AxisDirection.NORTH, "lat"));
+        assertEquals("Geodetic longitude",  t.toLongAxisName("ellipsoidal", AxisDirection.EAST,  "long"));
+        assertEquals("Geodetic latitude",   t.toLongAxisName("ellipsoidal", AxisDirection.NORTH, "latitude"));
+        assertEquals("Geodetic longitude",  t.toLongAxisName("ellipsoidal", AxisDirection.EAST,  "longitude"));
+        assertEquals("Spherical latitude",  t.toLongAxisName("spherical",   AxisDirection.NORTH, "lat"));
+        assertEquals("Spherical longitude", t.toLongAxisName("spherical",   AxisDirection.EAST,  "long"));
+    }
+
+    /**
+     * Tests {@link Transliterator#toShortAxisName(CoordinateSystem, AxisDirection, String)}.
+     */
+    @Test
+    public void testToShortAxisName() {
+        assertShortAxisNameEquals("Latitude",            new Geographic(AxisNames.GEODETIC_LATITUDE,   "φ"));
+        assertShortAxisNameEquals("Spherical latitude",  new Geocentric(AxisNames.SPHERICAL_LATITUDE,  "φ′"));
+        assertShortAxisNameEquals("Longitude",           new Geographic(AxisNames.GEODETIC_LONGITUDE,  "λ"));
+        assertShortAxisNameEquals("Spherical longitude", new Geocentric(AxisNames.SPHERICAL_LONGITUDE, "θ"));
+    }
+
+    /**
+     * Tests {@link Transliterator#toUnicodeAbbreviation(String, AxisDirection, String)}.
      */
     @Test
     public void testToUnicodeAbbreviation() {
         final Transliterator t = Transliterator.DEFAULT;
-        assertEquals("P", "φ",  t.toUnicodeAbbreviation("ellipsoidal", "latitude",  "P", AxisDirection.NORTH));
-        assertEquals("B", "φ",  t.toUnicodeAbbreviation("ellipsoidal", "latitude",  "B", AxisDirection.NORTH));
-        assertEquals("L", "λ",  t.toUnicodeAbbreviation("ellipsoidal", "longitude", "L", AxisDirection.EAST));
-        assertEquals("U", "θ",  t.toUnicodeAbbreviation("polar",       "bearing",   "U", AxisDirection.OTHER));
-        assertEquals("U", "φ′", t.toUnicodeAbbreviation("spherical",   "latitude",  "U", AxisDirection.NORTH));
-        assertEquals("V", "θ",  t.toUnicodeAbbreviation("spherical",   "longitude", "V", AxisDirection.EAST));
+        assertEquals("P", "φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "P"));
+        assertEquals("B", "φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "B"));
+        assertEquals("L", "λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,  "L"));
+        assertEquals("U", "θ",  t.toUnicodeAbbreviation("polar",       AxisDirection.OTHER, "U"));
+        assertEquals("U", "φ′", t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"));
+        assertEquals("V", "θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,  "V"));
     }
 
     /**
-     * Tests {@link Transliterator#toLatinAbbreviation(CoordinateSystem, CoordinateSystemAxis)}.
+     * Tests {@link Transliterator#toLatinAbbreviation(CoordinateSystem, AxisDirection, String)}.
      */
     @Test
     public void testToLatinAbbreviation() {
@@ -64,11 +88,21 @@ public final strictfp class TransliteratorTest extends TestCase {
     }
 
     /**
+     * Asserts that the name of the given axis, after replacement by a short name,
+     * is equals to the expected string.
+     */
+    private static void assertShortAxisNameEquals(final String expected, final CoordinateSystemAxisMock axis) {
+        assertEquals("name", expected, Transliterator.DEFAULT.toShortAxisName(axis,
+                axis.getDirection(), axis.getName().getCode()));
+    }
+
+    /**
      * Asserts that the abbreviation of the given axis, after replacement of Greek letters,
      * is equals to the expected string.
      */
     private static void assertAbbreviationEquals(final String expected, final CoordinateSystemAxisMock axis) {
-        assertEquals("abbreviation", expected, Transliterator.DEFAULT.toLatinAbbreviation(axis, axis));
+        assertEquals("abbreviation", expected, Transliterator.DEFAULT.toLatinAbbreviation(axis,
+                axis.getDirection(), axis.getAbbreviation()));
     }
 
     /**

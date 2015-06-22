@@ -21,8 +21,8 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 
@@ -32,7 +32,7 @@ import org.apache.sis.util.CharSequences;
  * WKT representations. The mapping is not necessarily one-to-one, for example the replacement of a Unicode
  * character by an ASCII character may not be reversible. The mapping may also depend on the element to transliterate,
  * for example some Greek letters like φ, λ and θ are mapped differently when they are used as mathematical symbols in
- * axis abbreviations rather than text. Some mappings may also apply to words instead than characters, when the word
+ * axis abbreviations rather than texts. Some mappings may also apply to words instead than characters, when the word
  * come from a controlled vocabulary.
  *
  * <div class="section">Permitted characters in Well Known Text</div>
@@ -50,7 +50,7 @@ import org.apache.sis.util.CharSequences;
  * set of permitted characters.</p>
  *
  * <div class="section">Application to mathematical symbols</div>
- * For Greek letters used as mathematical symbols or
+ * For Greek letters used as mathematical symbols in
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getAbbreviation() coordinate axis abbreviations},
  * the ISO 19162 standard recommends:
  *
@@ -64,8 +64,8 @@ import org.apache.sis.util.CharSequences;
  * </ul>
  *
  * <div class="note"><b>Note:</b> at least two conventions exist about the meaning of (<var>r</var>, θ, φ) in a
- * spherical coordinate system (<a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Wikipedia</a>,
- * <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">MathWorld</a>).
+ * spherical coordinate system (see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Wikipedia</a>
+ * or <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">MathWorld</a> for more information).
  * When using the <em>mathematics</em> convention, θ is the azimuthal angle in the
  * equatorial plane (roughly equivalent to longitude λ) while φ is an angle measured from a pole (also known as
  * colatitude). But when using the <em>physics</em> convention, the meaning of θ and φ are interchanged.
@@ -74,12 +74,14 @@ import org.apache.sis.util.CharSequences;
  * is that φ is mapped to <var>U</var> and θ is mapped to <var>V</var>, regardless of their meaning.</div>
  *
  * The {@link #toLatinAbbreviation toLatinAbbreviation(…)} and {@link #toUnicodeAbbreviation toUnicodeAbbreviation(…)}
- * methods are responsible for doing the transliteration and formatting and parsing time, respectively.
+ * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
  * <div class="section">Replacement of names</div>
  * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to <cite>"Geodetic longitude"</cite>
  * and <cite>"Geodetic latitude"</cite>. But ISO 19162:2015 §7.5.3(ii) said that the <cite>"Geodetic"</cite> part in
- * those names shall be omitted at WKT formatting time. This class allows to control such replacements.
+ * those names shall be omitted at WKT formatting time.
+ * The {@link #toShortAxisName toShortAxisName(…)} and {@link #toLongAxisName toLongAxisName(…)}
+ * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -129,10 +131,102 @@ public abstract class Transliterator implements Serializable {
     }
 
     /**
-     * Returns the axis abbreviation to format in WKT, or {@code null} if none. The abbreviation obtained by
-     * {@link CoordinateSystemAxis#getAbbreviation()} may contain Greek letters, in particular φ, λ and θ.
-     * This {@code toLatinAbbreviation(…)} method is responsible for replacing Greek letters by Latin letters
-     * for ISO 19162 compliance, if desired.
+     * Returns the axis name to format in WKT. This method performs the mapping between the names of axes in
+     * memory (designated by <cite>"long axis names"</cite> in this class) by the names to format in the WKT
+     * (designated by <cite>"short axis names"</cite>).
+     *
+     * <div class="note"><b>Note:</b>
+     * the <cite>"long axis names"</cite> are defined by ISO 19111 — <cite>referencing by coordinates</cite>
+     * while the <cite>"short axis names"</cite> are defined by ISO 19162 — <cite>Well-known text representation
+     * of coordinate reference systems</cite>.</div>
+     *
+     * The default implementation performs at least the following replacements:
+     * <ul>
+     *   <li>Replace <cite>“Geodetic latitude”</cite> (case insensitive) by <cite>“latitude”</cite>.</li>
+     *   <li>Replace <cite>“Geodetic longitude”</cite> (case insensitive) by <cite>“longitude”</cite>.</li>
+     * </ul>
+     *
+     * @param  cs        The enclosing coordinate system, or {@code null} if unknown.
+     * @param  direction The direction of the axis to format.
+     * @param  name      The axis name, to be eventually replaced by this method.
+     * @return The axis name to format.
+     *
+     * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
+     */
+    public String toShortAxisName(final CoordinateSystem cs, final AxisDirection direction, final String name) {
+        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE )) return AxisNames.LATITUDE;  // ISO 19162:2015 §7.5.3(ii)
+        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) return AxisNames.LONGITUDE;
+        return name;
+    }
+
+    /**
+     * Returns the axis name to use in memory for an axis parsed from a WKT.
+     * Since this method is invoked before the {@code CoordinateSystem} instance is created,
+     * most coordinate system characteristics are known only as {@code String}.
+     * In particular the {@code csType} argument, if non-null, should be one of the following values:
+     *
+     * <blockquote>{@code "affine"} | {@code "Cartesian"} (note the upper-case {@code "C"}) | {@code "cylindrical"} |
+     * {@code "ellipsoidal"} | {@code "linear"} | {@code "parametric"} | {@code "polar"} | {@code "spherical"} |
+     * {@code "temporal"} | {@code "vertical"}</blockquote>
+     *
+     * This method is the converse of {@link #toShortAxisName(CoordinateSystem, AxisDirection, String)}.
+     * The default implementation performs at least the following replacements:
+     * <ul>
+     *   <li>Replace <cite>“Lat”</cite> or <cite>“Latitude”</cite>
+     *       (case insensitive) by <cite>“Geodetic latitude”</cite> or <cite>“Spherical latitude”</cite>,
+     *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
+     *   <li>Replace <cite>“Lon”</cite>, <cite>“Long”</cite> or <cite>“Longitude”</cite>
+     *       (case insensitive) by <cite>“Geodetic longitude”</cite> or <cite>“Spherical longitude”</cite>,
+     *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
+     *   <li>Return <cite>“Geocentric X”</cite>, <cite>“Geocentric Y”</cite> and <cite>“Geocentric Z”</cite>
+     *       for {@link AxisDirection#GEOCENTRIC_X}, {@cod GEOCENTRIC_Y} and {@code GEOCENTRIC_Z} respectively
+     *       in a Cartesian CS, if the given axis name is only an abbreviation.</li>
+     * </ul>
+     *
+     * @param  csType    The type of the coordinate system, or {@code null} if unknown.
+     * @param  direction The parsed axis direction.
+     * @param  name      The parsed axis abbreviation, to be eventually replaced by this method.
+     * @return The axis name to use. Can not be null.
+     */
+    public String toLongAxisName(final String csType, final AxisDirection direction, final String name) {
+        if (csType != null) switch (csType) {
+            case WKTKeywords.ellipsoidal: {
+                if (isLatLong(AxisNames.LATITUDE,  name)) return AxisNames.GEODETIC_LATITUDE;
+                if (isLatLong(AxisNames.LONGITUDE, name)) return AxisNames.GEODETIC_LONGITUDE;
+                break;
+            }
+            case WKTKeywords.spherical: {
+                if (isLatLong(AxisNames.LATITUDE,  name)) return AxisNames.SPHERICAL_LATITUDE;
+                if (isLatLong(AxisNames.LONGITUDE, name)) return AxisNames.SPHERICAL_LONGITUDE;
+                break;
+            }
+            case WKTKeywords.Cartesian: {
+                if (name.length() <= 1) {
+                    if      (direction.equals(AxisDirection.GEOCENTRIC_X)) return AxisNames.GEOCENTRIC_X;
+                    else if (direction.equals(AxisDirection.GEOCENTRIC_Y)) return AxisNames.GEOCENTRIC_Y;
+                    else if (direction.equals(AxisDirection.GEOCENTRIC_Z)) return AxisNames.GEOCENTRIC_Z;
+                }
+                break;
+            }
+        }
+        return name;
+    }
+
+    /**
+     * Returns {@code true} if the given axis name is at least part of the given expected axis name.
+     *
+     * @param expected {@link AxisNames#LATITUDE} or {@link AxisNames#LONGITUDE}.
+     * @param name The parsed axis name.
+     */
+    private static boolean isLatLong(final String expected, final String name) {
+        final int length = name.length();
+        return (length >= 3) && (length <= name.length()) && CharSequences.startsWith(expected, name, true);
+    }
+
+    /**
+     * Returns the axis abbreviation to format in WKT, or {@code null} if none. The given abbreviation may contain
+     * Greek letters, in particular φ, λ and θ. This {@code toLatinAbbreviation(…)} method is responsible
+     * for replacing Greek letters by Latin letters for ISO 19162 compliance, if desired.
      *
      * <p>The default implementation performs at least the following mapping:</p>
      * <ul>
@@ -148,16 +242,16 @@ public abstract class Transliterator implements Serializable {
      * Note that while this method may return a string of any length, ISO 19162 requires abbreviations
      * to be a single Latin character.
      *
-     * @param  cs   The enclosing coordinate system, or {@code null} if unknown.
-     * @param  axis The axis for which to get the abbreviation to format.
+     * @param  cs           The enclosing coordinate system, or {@code null} if unknown.
+     * @param  direction    The direction of the axis to format.
+     * @param  abbreviation The axis abbreviation, to be eventually replaced by this method.
      * @return The axis abbreviation to format.
      *
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
-    public String toLatinAbbreviation(final CoordinateSystem cs, final CoordinateSystemAxis axis) {
-        String a = axis.getAbbreviation();
-        if (a != null && !a.isEmpty() && a.length() <= 2) {
-            switch (a.charAt(0)) {
+    public String toLatinAbbreviation(final CoordinateSystem cs, final AxisDirection direction, String abbreviation) {
+        if (abbreviation != null && !abbreviation.isEmpty() && abbreviation.length() <= 2) {
+            switch (abbreviation.charAt(0)) {
                 /*
                  * ISO 19162:2015 §7.5.3 recommendations:
                  *
@@ -165,8 +259,8 @@ public abstract class Transliterator implements Serializable {
                  *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
                  */
                 case 'θ': {
-                    if  (cs instanceof SphericalCS) a ="V";
-                    else if (cs instanceof PolarCS) a ="U";
+                    if  (cs instanceof SphericalCS) abbreviation ="V";
+                    else if (cs instanceof PolarCS) abbreviation ="U";
                     break;
                 }
                 /*
@@ -179,21 +273,21 @@ public abstract class Transliterator implements Serializable {
                  */
                 case 'φ': {
                     if (cs instanceof SphericalCS) {
-                        a = "U";
+                        abbreviation = "U";
                     } else if (cs instanceof EllipsoidalCS) {
-                        a = "B";    // From German "Breite", used in academic texts worldwide.
+                        abbreviation = "B";    // From German "Breite", used in academic texts worldwide.
                     }
                     break;
                 }
                 case 'λ': {
                     if (cs instanceof EllipsoidalCS) {
-                        a = "L";    // From German "Länge", used in academic texts worldwide.
+                        abbreviation = "L";    // From German "Länge", used in academic texts worldwide.
                     }
                     break;
                 }
             }
         }
-        return a;
+        return abbreviation;
     }
 
     /**
@@ -206,7 +300,7 @@ public abstract class Transliterator implements Serializable {
      * {@code "ellipsoidal"} | {@code "linear"} | {@code "parametric"} | {@code "polar"} | {@code "spherical"} |
      * {@code "temporal"} | {@code "vertical"}</blockquote>
      *
-     * This method is the converse of {@link #toLatinAbbreviation(CoordinateSystem, CoordinateSystemAxis)}.
+     * This method is the converse of {@link #toLatinAbbreviation(CoordinateSystem, AxisDirection, String)}.
      * The default implementation performs at least the following mapping:
      * <ul>
      *   <li><var>P</var> or <var>L</var> → λ if {@code csType} is {@code "ellipsoidal"}.</li>
@@ -217,12 +311,11 @@ public abstract class Transliterator implements Serializable {
      * </ul>
      *
      * @param  csType       The type of the coordinate system, or {@code null} if unknown.
-     * @param  name         The coordinate system axis name.
-     * @param  abbreviation The parsed axis abbreviation.
-     * @param  direction    The axis direction.
+     * @param  direction    The parsed axis direction.
+     * @param  abbreviation The parsed axis abbreviation, to be eventually replaced by this method.
      * @return The axis abbreviation to use. Can not be null.
      */
-    public String toUnicodeAbbreviation(final String csType, final String name, String abbreviation, final AxisDirection direction) {
+    public String toUnicodeAbbreviation(final String csType, final AxisDirection direction, String abbreviation) {
         if (abbreviation.length() == 1) {
             final String replacement;
             final String condition;
@@ -272,14 +365,24 @@ public abstract class Transliterator implements Serializable {
             return text;
         }
 
+        /** Returns the axis name as-is. */
+        @Override public String toShortAxisName(CoordinateSystem cs, AxisDirection direction, String name) {
+            return name;
+        }
+
+        /** Returns the axis name as-is. */
+        @Override public String toLongAxisName(String csType, AxisDirection direction, String name) {
+            return name;
+        }
+
         /** Returns the abbreviation as-is. */
-        @Override public String toLatinAbbreviation(CoordinateSystem cs, CoordinateSystemAxis axis) {
-            return axis.getAbbreviation();
+        @Override public String toLatinAbbreviation(CoordinateSystem cs, AxisDirection direction, String abbreviation) {
+            return abbreviation;
         }
 
         /** Returns the abbreviation as-is. */
         @Override
-        public String toUnicodeAbbreviation(String csType, String name, String abbreviation, AxisDirection direction) {
+        public String toUnicodeAbbreviation(String csType, AxisDirection direction, String abbreviation) {
             return abbreviation;
         }
 

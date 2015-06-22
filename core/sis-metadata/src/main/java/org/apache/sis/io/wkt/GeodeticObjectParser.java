@@ -918,24 +918,14 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         } else {
             abbreviation = referencing.suggestAbbreviation(name, direction, unit);
         }
-        abbreviation = transliterator.toUnicodeAbbreviation(csType, name, abbreviation, direction);
         /*
          * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
          * and "Geodetic latitude". But ISO 19162:2015 §7.5.3(ii) said that the "Geodetic" part in those names
          * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
          * method performs this removal, so we apply the reverse operation here.
          */
-        if (WKTKeywords.ellipsoidal.equals(csType)) {
-            if (name.equalsIgnoreCase(AxisNames.LATITUDE) || name.equalsIgnoreCase("lat")) {
-                name = AxisNames.GEODETIC_LATITUDE;
-            } else if (name.equalsIgnoreCase(AxisNames.LONGITUDE) || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
-                name = AxisNames.GEODETIC_LONGITUDE;
-            }
-        } else if (name.equals(abbreviation)) {
-            if      (direction.equals(AxisDirection.GEOCENTRIC_X)) name = AxisNames.GEOCENTRIC_X;
-            else if (direction.equals(AxisDirection.GEOCENTRIC_Y)) name = AxisNames.GEOCENTRIC_Y;
-            else if (direction.equals(AxisDirection.GEOCENTRIC_Z)) name = AxisNames.GEOCENTRIC_Z;
-        }
+        name         = transliterator.toLongAxisName       (csType, direction, name);
+        abbreviation = transliterator.toUnicodeAbbreviation(csType, direction, abbreviation);
         /*
          * At this point we are done and ready to create the CoordinateSystemAxis. But there is one last element
          * specified by ISO 19162 but not in Apache SIS representation of axis: ORDER[n], which specify the axis
@@ -953,7 +943,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
-        if (axisOrder.put(axis, n) != null) {
+        if (axisOrder.put(axis, n) != null) {   // Opportunist check, effective for instances created by SIS factory.
             throw new LocalizedParseException(errorLocale, Errors.Keys.DuplicatedElement_1,
                     new Object[] {WKTKeywords.Axis + "[“" + name + "”]"}, element.offset);
         }
