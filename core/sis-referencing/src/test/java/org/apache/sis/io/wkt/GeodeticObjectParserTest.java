@@ -144,7 +144,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     public void testAxis() throws ParseException {
         CoordinateSystemAxis axis = parse(CoordinateSystemAxis.class, "AXIS[“(Y)”, geocentricY]");
-        assertEquals("name", "Geocentric Y", axis.getName().getCode());
+        assertEquals("name", "Y", axis.getName().getCode());
         assertEquals("abbreviation", "Y", axis.getAbbreviation());
         assertEquals("direction", AxisDirection.GEOCENTRIC_Y, axis.getDirection());
         assertEquals("unit", SI.METRE, axis.getUnit());
