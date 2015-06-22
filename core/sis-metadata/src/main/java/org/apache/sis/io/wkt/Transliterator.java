@@ -177,9 +177,9 @@ public abstract class Transliterator implements Serializable {
      * most coordinate system characteristics are known only as {@code String}.
      * In particular the {@code csType} argument, if non-null, should be one of the following values:
      *
-     * <blockquote>{@code "affine"} | {@code "Cartesian"} (note the upper-case {@code "C"}) | {@code "cylindrical"} |
-     * {@code "ellipsoidal"} | {@code "linear"} | {@code "parametric"} | {@code "polar"} | {@code "spherical"} |
-     * {@code "temporal"} | {@code "vertical"}</blockquote>
+     * <blockquote>{@code "affine"}, {@code "Cartesian"} (note the upper-case {@code "C"}), {@code "cylindrical"},
+     * {@code "ellipsoidal"}, {@code "linear"}, {@code "parametric"}, {@code "polar"}, {@code "spherical"},
+     * {@code "temporal"} or {@code "vertical"}</blockquote>
      *
      * This method is the converse of {@link #toShortAxisName(CoordinateSystem, AxisDirection, String)}.
      * The default implementation performs at least the following replacements:
@@ -308,9 +308,9 @@ public abstract class Transliterator implements Serializable {
      * most coordinate system characteristics are known only as {@code String}.
      * In particular the {@code csType} argument, if non-null, should be one of the following values:
      *
-     * <blockquote>{@code "affine"} | {@code "Cartesian"} (note the upper-case {@code "C"}) | {@code "cylindrical"} |
-     * {@code "ellipsoidal"} | {@code "linear"} | {@code "parametric"} | {@code "polar"} | {@code "spherical"} |
-     * {@code "temporal"} | {@code "vertical"}</blockquote>
+     * <blockquote>{@code "affine"}, {@code "Cartesian"} (note the upper-case {@code "C"}), {@code "cylindrical"},
+     * {@code "ellipsoidal"}, {@code "linear"}, {@code "parametric"}, {@code "polar"}, {@code "spherical"},
+     * {@code "temporal"} or {@code "vertical"}</blockquote>
      *
      * This method is the converse of {@link #toLatinAbbreviation(CoordinateSystem, AxisDirection, String)}.
      * The default implementation performs at least the following mapping:
