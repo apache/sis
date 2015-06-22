@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
  *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
  *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
- *   <li>The {@linkplain CharEncoding character encoding} (i.e. replacements to use for Unicode characters).</li>
+ *   <li>The {@link Transliterator transliterator} (i.e. replacements to use for Unicode characters).</li>
  *   <li>Whether ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
@@ -162,13 +162,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
-     * {@link CharEncoding#IDENTITY} for preserving non-ASCII characters. The default value is
-     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
+     * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
      *
      * <p>A {@code null} value means to infer this property from the {@linkplain #convention}.</p>
      */
-    private CharEncoding encoding;
+    private Transliterator transliterator;
 
     /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
@@ -265,9 +265,9 @@ public class WKTFormat extends CompoundFormat<Object> {
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
-     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#IDENTITY} for preserving non-ASCII characters.</li>
+     *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
@@ -275,10 +275,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.6
      */
-    public CharEncoding getCharEncoding() {
-        CharEncoding result = encoding;
+    public Transliterator getTransliterator() {
+        Transliterator result = transliterator;
         if (result == null) {
-            result = (convention == Convention.INTERNAL) ? CharEncoding.IDENTITY : CharEncoding.DEFAULT;
+            result = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         }
         return result;
     }
@@ -287,15 +287,15 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets the mapper between Java character sequences and the characters to write in WKT.
      *
      * <p>If this method is never invoked, or if this method is invoked with a {@code null} value,
-     * then the default mapper is {@link CharEncoding#DEFAULT} except for WKT formatted according
+     * then the default mapper is {@link Transliterator#DEFAULT} except for WKT formatted according
      * the {@linkplain Convention#INTERNAL internal convention}.</p>
      *
-     * @param encoding The new mapper to use, or {@code null} for restoring the default value.
+     * @param transliterator The new mapper to use, or {@code null} for restoring the default value.
      *
      * @since 0.6
      */
-    public void setCharEncoding(final CharEncoding encoding) {
-        this.encoding = encoding;
+    public void setTransliterator(final Transliterator transliterator) {
+        this.transliterator = transliterator;
     }
 
     /**
@@ -309,11 +309,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@link #getCharEncoding()}.
+     * @deprecated Replaced by {@link #getTransliterator()}.
      */
     @Deprecated
     public boolean isNonAsciiAllowed() {
-        return getCharEncoding() == CharEncoding.IDENTITY;
+        return getTransliterator() == Transliterator.IDENTITY;
     }
 
     /**
@@ -325,11 +325,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@link #setCharEncoding(CharEncoding)}.
+     * @deprecated Replaced by {@link #setTransliterator(Transliterator)}.
      */
     @Deprecated
     public void setNonAsciiAllowed(final boolean allowed) {
-        setCharEncoding(allowed ? CharEncoding.IDENTITY : CharEncoding.DEFAULT);
+        setTransliterator(allowed ? Transliterator.IDENTITY : Transliterator.DEFAULT);
     }
 
     /**
@@ -463,8 +463,8 @@ public class WKTFormat extends CompoundFormat<Object> {
                 default: toUpperCase = (convention.majorVersion() == 1); break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
-            if (encoding != null) {
-                formatter.encoding = encoding;
+            if (transliterator != null) {
+                formatter.transliterator = transliterator;
             }
         }
     }

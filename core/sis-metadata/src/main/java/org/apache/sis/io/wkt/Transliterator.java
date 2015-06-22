@@ -56,28 +56,28 @@ import org.apache.sis.util.CharSequences;
  * @version 0.6
  * @module
  */
-public abstract class CharEncoding implements Serializable {
+public abstract class Transliterator implements Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7115456393795045932L;
 
     /**
-     * A character encoding compliant with ISO 19162 on a <cite>"best effort"</cite> basis.
-     * All methods perform the default implementation documented in this {@code CharEncoding} class.
+     * A transliterator compliant with ISO 19162 on a <cite>"best effort"</cite> basis.
+     * All methods perform the default implementation documented in this {@code Transliterator} class.
      */
-    public static final CharEncoding DEFAULT = new Default();
+    public static final Transliterator DEFAULT = new Default();
 
     /**
-     * A character encoding that does not perform any replacement.
+     * A transliterator that does not perform any replacement.
      * All methods let Unicode characters pass-through unchanged.
      */
-    public static final CharEncoding IDENTITY = new Unicode();
+    public static final Transliterator IDENTITY = new Unicode();
 
     /**
      * For sub-class constructors.
      */
-    protected CharEncoding() {
+    protected Transliterator() {
     }
 
     /**
@@ -98,7 +98,7 @@ public abstract class CharEncoding implements Serializable {
     /**
      * Returns the axis abbreviation to format, or {@code null} if none. The abbreviation is obtained by
      * {@link CoordinateSystemAxis#getAbbreviation()}, but the value returned by that method may contain
-     * Greek letters (in particular φ, λ and θ). This {@code CharEncoding.getAbbreviation(…)} method is
+     * Greek letters (in particular φ, λ and θ). This {@code Transliterator.getAbbreviation(…)} method is
      * responsible for replacing Greek letters by Latin letters for ISO 19162 compliance, if desired.
      *
      * <p>Note that while this method may return a string of any length, ISO 19162 requires abbreviations
@@ -153,9 +153,9 @@ public abstract class CharEncoding implements Serializable {
     }
 
     /**
-     * The {@link CharEncoding#DEFAULT} implementation.
+     * The {@link Transliterator#DEFAULT} implementation.
      */
-    private static final class Default extends CharEncoding {
+    private static final class Default extends Transliterator {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 4869597020294928525L;
 
@@ -171,9 +171,9 @@ public abstract class CharEncoding implements Serializable {
     }
 
     /**
-     * The {@link CharEncoding#IDENTITY} implementation.
+     * The {@link Transliterator#IDENTITY} implementation.
      */
-    private static final class Unicode extends CharEncoding {
+    private static final class Unicode extends Transliterator {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 7392131912748253956L;
 

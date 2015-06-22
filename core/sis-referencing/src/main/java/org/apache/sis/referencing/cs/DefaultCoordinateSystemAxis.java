@@ -55,7 +55,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.io.wkt.CharEncoding;
+import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static java.lang.Double.doubleToLongBits;
@@ -783,7 +783,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * </ul>
      *
      * The above-cited replacements of Greek letters can be modified by calls to
-     * {@link org.apache.sis.io.wkt.WKTFormat#setCharEncoding(CharEncoding)}.
+     * {@link org.apache.sis.io.wkt.WKTFormat#setTransliterator(Transliterator)}.
      *
      * @return {@code "Axis"}.
      *
@@ -820,7 +820,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             cs = null;
         } else {
             cs = getEnclosingCS(formatter);
-            final String a = formatter.getCharEncoding().getAbbreviation(cs, this);
+            final String a = formatter.getTransliterator().getAbbreviation(cs, this);
             if (a != null && !a.equals(name)) {
                 final StringBuilder buffer = new StringBuilder();
                 if (name != null) {
