@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.PolarCS;
@@ -736,16 +735,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns {@code true} if writing an axis in the given formatter should omit the axis name.
-     * From ISO 19162: For geodetic CRSs having a geocentric Cartesian coordinate system,
-     * the axis name should be omitted as it is given through the mandatory axis direction,
-     * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.
-     */
-    private boolean omitName(final Formatter formatter) {
-        return AxisDirections.isGeocentric(direction) && formatter.getEnclosingElement(1) instanceof GeodeticCRS;
-    }
-
-    /**
      * Returns the enclosing coordinate system, or {@code null} if none. In ISO 19162 compliant WKT the coordinate
      * <strong>reference</strong> system should be the first parent ({@code formatter.getEnclosingElement(1)}) and
      * the coordinate system shall be obtained from that CRS (yes, this is convolved. This is because of historical
@@ -796,14 +785,15 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         final boolean    isInternal = (convention == Convention.INTERNAL);
         final CoordinateSystem cs   = getEnclosingCS(formatter);
         AxisDirection dir = getDirection();
-        String name = null;
-        if (isWKT1 || isInternal || !omitName(formatter)) {
-            name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
-            if (name == null) {
-                name = IdentifiedObjects.getName(this, null);
-            }
-            if (name != null && !isInternal) {
-                name = formatter.getTransliterator().toShortAxisName(cs, dir, name);
+        String name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
+        if (name == null) {
+            name = IdentifiedObjects.getName(this, null);
+        }
+        if (name != null && !isInternal) {
+            final String old = name;
+            name = formatter.getTransliterator().toShortAxisName(cs, dir, name);
+            if (name == null && isWKT1) {
+                name = old; // WKT 1 does not allow omission of name.
             }
         }
         /*
@@ -821,9 +811,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 name = buffer.append('(').append(a).append(')').toString();
             }
         }
-        if (name != null) {
-            formatter.append(name, ElementKind.AXIS);
-        }
+        formatter.append(name, ElementKind.AXIS);
         /*
          * Format the axis direction, optionally followed by a MERIDIAN[…] element
          * if the direction is of the kind "South along 90°N" for instance.
