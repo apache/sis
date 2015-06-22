@@ -29,16 +29,16 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the {@link CharEncoding} class.
+ * Tests the {@link Transliterator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-public final strictfp class CharEncodingTest extends TestCase {
+public final strictfp class TransliteratorTest extends TestCase {
     /**
-     * Tests {@link CharEncoding#getAbbreviation(CoordinateSystem, CoordinateSystemAxis)}.
+     * Tests {@link Transliterator#getAbbreviation(CoordinateSystem, CoordinateSystemAxis)}.
      */
     @Test
     public void testGetAbbreviation() {
@@ -53,7 +53,7 @@ public final strictfp class CharEncodingTest extends TestCase {
      * is equals to the expected string.
      */
     private static void assertAbbreviationEquals(final String expected, final CoordinateSystemAxisMock axis) {
-        assertEquals("abbreviation", expected, CharEncoding.DEFAULT.getAbbreviation(axis, axis));
+        assertEquals("abbreviation", expected, Transliterator.DEFAULT.getAbbreviation(axis, axis));
     }
 
     /**

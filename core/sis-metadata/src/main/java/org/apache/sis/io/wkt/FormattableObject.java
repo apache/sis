@@ -175,7 +175,7 @@ public abstract class FormattableObject {
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
                 convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
         if (!strict) {
-            formatter.encoding = CharEncoding.IDENTITY;
+            formatter.transliterator = Transliterator.IDENTITY;
         }
         final String wkt;
         try {

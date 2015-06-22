@@ -173,11 +173,11 @@ public class Formatter implements Localized {
     private Citation authority;
 
     /**
-     * {@link CharEncoding#IDENTITY} for preserving non-ASCII characters. The default value is
-     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
+     * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
      */
-    CharEncoding encoding;
+    Transliterator transliterator;
 
     /**
      * The enclosing WKT element being formatted.
@@ -389,7 +389,7 @@ public class Formatter implements Localized {
         this.colors       = colors;
         this.toUpperCase  = toUpperCase;
         this.indentation  = indentation;
-        this.encoding     = (convention == Convention.INTERNAL) ? CharEncoding.IDENTITY : CharEncoding.DEFAULT;
+        this.transliterator     = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
     }
 
     /**
@@ -410,20 +410,20 @@ public class Formatter implements Localized {
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
-     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#IDENTITY} for preserving non-ASCII characters.</li>
+     *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
      * @return The mapper between Java character sequences and the characters to write in WKT.
      *
-     * @see WKTFormat#setCharEncoding(CharEncoding)
+     * @see WKTFormat#setTransliterator(Transliterator)
      *
      * @since 0.6
      */
-    public final CharEncoding getCharEncoding() {
-        return encoding;
+    public final Transliterator getTransliterator() {
+        return transliterator;
     }
 
     /**
@@ -968,7 +968,7 @@ public class Formatter implements Localized {
         if (type == ElementKind.REMARKS) {
             buffer.append(text);
         } else {
-            buffer.append(encoding.filter(text));
+            buffer.append(transliterator.filter(text));
         }
         closeQuote(base);
         resetColor();
