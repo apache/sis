@@ -295,7 +295,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @since 0.6
      */
     public void setTransliterator(final Transliterator transliterator) {
-        this.transliterator = transliterator;
+        if (this.transliterator != transliterator) {
+            this.transliterator = transliterator;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
@@ -398,9 +402,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public void setConvention(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        this.convention = convention;
-        updateFormatter(formatter);
-        parser = null;
+        if (this.convention != convention) {
+            this.convention = convention;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
@@ -525,7 +531,10 @@ public class WKTFormat extends CompoundFormat<Object> {
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
-                    convention, getLocale(), factories);
+                    convention,
+                    (transliterator != null) ? transliterator : Transliterator.DEFAULT,
+                    getLocale(),
+                    factories);
         }
         Object object = null;
         try {

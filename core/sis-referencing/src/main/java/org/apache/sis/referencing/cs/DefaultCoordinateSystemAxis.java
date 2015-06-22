@@ -820,7 +820,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             cs = null;
         } else {
             cs = getEnclosingCS(formatter);
-            final String a = formatter.getTransliterator().getAbbreviation(cs, this);
+            final String a = formatter.getTransliterator().toLatinAbbreviation(cs, this);
             if (a != null && !a.equals(name)) {
                 final StringBuilder buffer = new StringBuilder();
                 if (name != null) {

@@ -153,6 +153,11 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     private final Convention convention;
 
     /**
+     * The object to use for replacing WKT axis names and abbreviations by ISO 19111 names and abbreviations.
+     */
+    private final Transliterator transliterator;
+
+    /**
      * A map of properties to be given to the factory constructor methods.
      * This map will be recycled for each object to be parsed.
      */
@@ -181,13 +186,6 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     private transient VerticalInfo verticalElements;
 
     /**
-     * Creates a parser using the default set of symbols and factories.
-     */
-    public GeodeticObjectParser() {
-        this(Symbols.getDefault(), null, null, null, Convention.DEFAULT, null, null);
-    }
-
-    /**
      * Constructs a parser for the specified set of symbols using the specified set of factories.
      *
      * This constructor is for internal usage by Apache SIS only — <b>do not use!</b>
@@ -205,12 +203,13 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
         super(Symbols.getDefault(), null, null, null, mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
-        crsFactory   = (CRSFactory)   factories;
-        csFactory    = (CSFactory)    factories;
-        datumFactory = (DatumFactory) factories;
-        referencing  = ReferencingServices.getInstance();
-        opFactory    = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
-        convention   = Convention.DEFAULT;
+        crsFactory     = (CRSFactory)   factories;
+        csFactory      = (CSFactory)    factories;
+        datumFactory   = (DatumFactory) factories;
+        referencing    = ReferencingServices.getInstance();
+        opFactory      = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
+        convention     = Convention.DEFAULT;
+        transliterator = Transliterator.DEFAULT;
     }
 
     /**
@@ -226,16 +225,17 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param factories     On input, the factories to use. On output, the factories used. Can be null.
      */
     GeodeticObjectParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final UnitFormat unitFormat, final Convention convention, final Locale errorLocale,
-            final Map<Class<?>,Factory> factories)
+            final UnitFormat unitFormat, final Convention convention, final Transliterator transliterator,
+            final Locale errorLocale, final Map<Class<?>,Factory> factories)
     {
         super(symbols, numberFormat, dateFormat, unitFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
+        this.convention = convention;
+        this.transliterator = transliterator;
         crsFactory   = getFactory(CRSFactory.class,   factories);
         csFactory    = getFactory(CSFactory.class,    factories);
         datumFactory = getFactory(DatumFactory.class, factories);
         referencing  = ReferencingServices.getInstance();
         opFactory    = referencing.getCoordinateOperationFactory(null, mtFactory);
-        this.convention = convention;
     }
 
     /**
@@ -318,7 +318,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             return value;
         }
         Object object;
-        if ((object = parseAxis             (FIRST, element, false, SI.METRE)) == null &&
+        if ((object = parseAxis             (FIRST, element, null, SI.METRE)) == null &&
             (object = parsePrimeMeridian    (FIRST, element, NonSI.DEGREE_ANGLE)) == null &&
             (object = parseDatum            (FIRST, element, null)) == null &&
             (object = parseEllipsoid        (FIRST, element)) == null &&
@@ -657,13 +657,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * parse WKT 1.
          */
         CoordinateSystemAxis[] axes = null;
-        final boolean isGeographic = WKTKeywords.ellipsoidal.equals(type);
-        CoordinateSystemAxis axis = parseAxis(type == null ? MANDATORY : OPTIONAL, parent, isGeographic, defaultUnit);
+        CoordinateSystemAxis axis = parseAxis(type == null ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
         if (axis != null) {
             final List<CoordinateSystemAxis> list = new ArrayList<>(dimension + 2);
             do {
                 list.add(axis);
-                axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, isGeographic, defaultUnit);
+                axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
             } while (axis != null);
             if (convention != Convention.WKT1_IGNORE_AXES) {
                 axes = list.toArray(new CoordinateSystemAxis[list.size()]);
@@ -861,15 +860,15 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *     AXIS["<name (abbr.)>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER, ORDER[n], UNIT[…], ID[…]]
      * }
      *
-     * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent       The parent element.
-     * @param  isGeographic {@code true} if the parent element is a geodetic CRS having an ellipsoidal coordinate system.
-     * @param  defaultUnit  The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
+     * @param  mode        {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent      The parent element.
+     * @param  csType      The coordinate system type (Cartesian | ellipsoidal | vertical | etc…), or null if unknown.
+     * @param  defaultUnit The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
      * @return The {@code "AXIS"} element as a {@link CoordinateSystemAxis} object, or {@code null}
      *         if the axis was not required and there is no axis object.
      * @throws ParseException if the {@code "AXIS"} element can not be parsed.
      */
-    private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final boolean isGeographic,
+    private CoordinateSystemAxis parseAxis(final int mode, final Element parent, final String csType,
             final Unit<?> defaultUnit) throws ParseException
     {
         final Element element = parent.pullElement(mode, WKTKeywords.Axis);
@@ -908,7 +907,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * Example: "Easting (E)", "Longitude (L)". If we do not find an abbreviation, then we will
          * have to guess one since abbreviation is a mandatory part of axis.
          */
-        final String abbreviation;
+        String abbreviation;
         final int start, end = name.length() - 1;
         if (end > 1 && name.charAt(end) == ')' && (start = name.lastIndexOf('(', end-1)) >= 0) {
             abbreviation = CharSequences.trimWhitespaces(name.substring(start + 1, end));
@@ -919,13 +918,14 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         } else {
             abbreviation = referencing.suggestAbbreviation(name, direction, unit);
         }
+        abbreviation = transliterator.toUnicodeAbbreviation(csType, name, abbreviation, direction);
         /*
          * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
          * and "Geodetic latitude". But ISO 19162:2015 §7.5.3(ii) said that the "Geodetic" part in those names
          * shall be omitted at WKT formatting time. SIS's DefaultCoordinateSystemAxis.formatTo(Formatter)
          * method performs this removal, so we apply the reverse operation here.
          */
-        if (isGeographic) {
+        if (WKTKeywords.ellipsoidal.equals(csType)) {
             if (name.equalsIgnoreCase(AxisNames.LATITUDE) || name.equalsIgnoreCase("lat")) {
                 name = AxisNames.GEODETIC_LATITUDE;
             } else if (name.equalsIgnoreCase(AxisNames.LONGITUDE) || name.equalsIgnoreCase("long") || name.equalsIgnoreCase("lon")) {
