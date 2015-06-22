@@ -22,9 +22,11 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 
 
 /**
@@ -140,22 +142,32 @@ public abstract class Transliterator implements Serializable {
      * while the <cite>"short axis names"</cite> are defined by ISO 19162 — <cite>Well-known text representation
      * of coordinate reference systems</cite>.</div>
      *
-     * The default implementation performs at least the following replacements:
+     * This method can return {@code null} if the name should be omitted.
+     * ISO 19162 recommends to omit the axis name when it is already given through the mandatory axis direction.
+     *
+     * <p>The default implementation performs at least the following replacements:</p>
      * <ul>
      *   <li>Replace <cite>“Geodetic latitude”</cite> (case insensitive) by <cite>“latitude”</cite>.</li>
      *   <li>Replace <cite>“Geodetic longitude”</cite> (case insensitive) by <cite>“longitude”</cite>.</li>
+     *   <li>Return {@code null} if the axis direction is {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
+     *       or {@code GEOCENTRIC_Z} and the name is the same than the axis direction (ignoring case).</li>
      * </ul>
      *
      * @param  cs        The enclosing coordinate system, or {@code null} if unknown.
      * @param  direction The direction of the axis to format.
      * @param  name      The axis name, to be eventually replaced by this method.
-     * @return The axis name to format.
+     * @return The axis name to format, or {@code null} if the name shall be omitted.
      *
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
     public String toShortAxisName(final CoordinateSystem cs, final AxisDirection direction, final String name) {
         if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE )) return AxisNames.LATITUDE;  // ISO 19162:2015 §7.5.3(ii)
         if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) return AxisNames.LONGITUDE;
+        if (AxisDirections.isGeocentric(direction) && CharSequences.equalsFiltered(
+                name, direction.name(), Characters.Filter.LETTERS_AND_DIGITS, true))
+        {
+            return null;
+        }
         return name;
     }
 
@@ -179,7 +191,7 @@ public abstract class Transliterator implements Serializable {
      *       (case insensitive) by <cite>“Geodetic longitude”</cite> or <cite>“Spherical longitude”</cite>,
      *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
      *   <li>Return <cite>“Geocentric X”</cite>, <cite>“Geocentric Y”</cite> and <cite>“Geocentric Z”</cite>
-     *       for {@link AxisDirection#GEOCENTRIC_X}, {@cod GEOCENTRIC_Y} and {@code GEOCENTRIC_Z} respectively
+     *       for {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y} and {@code GEOCENTRIC_Z} respectively
      *       in a Cartesian CS, if the given axis name is only an abbreviation.</li>
      * </ul>
      *
