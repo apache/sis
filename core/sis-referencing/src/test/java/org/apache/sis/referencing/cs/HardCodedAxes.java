@@ -184,11 +184,17 @@ public final strictfp class HardCodedAxes {
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "θ" (theta).
      *
+     * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
+     * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.</p>
+     *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
      *
      * @see #GEODETIC_LONGITUDE
      * @see #SPHERICAL_LATITUDE
+     *
+     * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+     * @see <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
      */
     public static final DefaultCoordinateSystemAxis SPHERICAL_LONGITUDE = create(AxisNames.SPHERICAL_LONGITUDE, "θ",
             AxisDirection.EAST, NonSI.DEGREE_ANGLE, -180, 180, RangeMeaning.WRAPAROUND);
@@ -199,6 +205,10 @@ public final strictfp class HardCodedAxes {
      * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain NonSI#DEGREE_ANGLE degrees}.
      * The ISO 19111 name is <cite>"spherical latitude"</cite> and the abbreviation is "φ′" (phi prime).
+     *
+     * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
+     * which is replaced by "φ′". Note that other conventions exist, in which the meaning of φ and θ are
+     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>

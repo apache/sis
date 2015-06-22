@@ -384,12 +384,12 @@ public class Formatter implements Localized {
     final void configure(Convention convention, final Citation authority, final Colors colors,
             final boolean toUpperCase, final byte indentation)
     {
-        this.convention   = convention;
-        this.authority    = (authority != null) ? authority : convention.getNameAuthority();
-        this.colors       = colors;
-        this.toUpperCase  = toUpperCase;
-        this.indentation  = indentation;
-        this.transliterator     = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
+        this.convention     = convention;
+        this.authority      = (authority != null) ? authority : convention.getNameAuthority();
+        this.colors         = colors;
+        this.toUpperCase    = toUpperCase;
+        this.indentation    = indentation;
+        this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
     }
 
     /**
