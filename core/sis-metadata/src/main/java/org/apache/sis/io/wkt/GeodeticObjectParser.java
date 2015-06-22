@@ -61,6 +61,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
@@ -777,11 +778,19 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             // Not a problem if the array does not have the expected length for the CS type. This will be verified below in this method.
         }
         /*
-         * Now create the Coordinate System from its type.
-         * The CS name will be inferred from the axes if possible.
+         * Infer a CS name will be inferred from the axes if possible.
          * Example: "Compound CS: East (km), North (km), Up (m)."
          */
-        final String name = referencing.nameForCS(type, axes).toString();
+        final String name;
+        { // For keeping the 'buffer' variable local to this block.
+            final StringBuilder buffer = new StringBuilder();
+            if (type != null && !type.isEmpty()) {
+                final int c = type.codePointAt(0);
+                buffer.appendCodePoint(Character.toUpperCase(c))
+                        .append(type, Character.charCount(c), type.length()).append(' ');
+            }
+            name = AxisDirections.appendTo(buffer.append("CS"), axes);
+        }
         if (csProperties == null) {
             csProperties = singletonMap(CoordinateSystem.NAME_KEY, name);
         } else {
@@ -790,6 +799,9 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (type == null) {
             return referencing.createAbstractCS(csProperties, axes);
         }
+        /*
+         * Finally, delegate to the factory method corresponding to the CS type and the number of axes.
+         */
         switch (type) {
             case WKTKeywords.ellipsoidal: {
                 switch (axes.length) {
@@ -916,7 +928,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 name = abbreviation;
             }
         } else {
-            abbreviation = referencing.suggestAbbreviation(name, direction, unit);
+            abbreviation = AxisDirections.suggestAbbreviation(name, direction, unit);
         }
         /*
          * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to "Geodetic longitude"
@@ -1497,7 +1509,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name);
             final CoordinateSystem derivedCS = referencing.createAbstractCS(
-                    singletonMap(CoordinateSystem.NAME_KEY, referencing.nameForCS(null, axes)), axes);
+                    singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
             /*
              * We do not know which name to give to the conversion method.
              * For now, use the CRS name.

@@ -59,7 +59,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class
+    org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class
 })
 public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**

@@ -393,42 +393,6 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Suggests a coordinate system name.
-     * Example: "Compound CS: East (km), North (km), Up (m)."
-     *
-     * @param  type The CS type (Cartesian | ellipsoidal | vertical | etc…) or null or empty if unknown.
-     * @param  axes The coordinate system axes (can not be {@code null}).
-     * @return The suggested coordinate system name (never {@code null}).
-     *
-     * @since 0.6
-     */
-    public CharSequence nameForCS(final String type, final CoordinateSystemAxis[] axes) {
-        final StringBuilder buffer = new StringBuilder();
-        if (type != null && !type.isEmpty()) {
-            final int c = type.codePointAt(0);
-            buffer.appendCodePoint(Character.toUpperCase(c))
-                    .append(type, Character.charCount(c), type.length()).append(' ');
-        }
-        return buffer.append("CS");
-    }
-
-    /**
-     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
-     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
-     * or "λ" (Longitude).
-     *
-     * @param name      The axis name for which to suggest an abbreviation.
-     * @param direction The axis direction for which to suggest an abbreviation.
-     * @param unit      The axis unit of measurement, for disambiguation.
-     * @return A suggested abbreviation.
-     *
-     * @since 0.6
-     */
-    public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
-        throw moduleNotFound();
-    }
-
-    /**
      * Returns an axis direction from a pole along a meridian.
      * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
      *

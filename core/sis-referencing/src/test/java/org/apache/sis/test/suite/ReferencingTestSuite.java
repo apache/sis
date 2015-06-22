@@ -30,9 +30,9 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
