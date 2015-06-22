@@ -242,12 +242,15 @@ public abstract class Transliterator implements Serializable {
      *
      * <p>The default implementation performs at least the following mapping:</p>
      * <ul>
-     *   <li>λ → <var>L</var> (from German <cite>Länge</cite>) if used in an ellipsoidal CS.</li>
-     *   <li>φ → <var>B</var> (from German <cite>Breite</cite>) if used in an ellipsoidal CS.</li>
-     *   <li>φ or φ′ or φc → <var>U</var> if used in an spherical CS (regardless of whether the coordinate system
-     *     follows <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">physics, mathematics or other
-     *     conventions</a>).</li>
-     *   <li>θ → <var>V</var> if used in a spherical CS (regardless of above-cited coordinate system convention).</li>
+     *   <li>λ → <var>L</var> (from German <cite>Länge</cite>) if used in an
+     *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
+     *   <li>φ → <var>B</var> (from German <cite>Breite</cite>) if used in an
+     *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
+     *   <li>φ or φ′ or φ<sub>c</sub> → <var>U</var> if used in a
+     *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}, regardless of whether the
+     *       coordinate system follows <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">physics,
+     *       mathematics or other conventions</a>.</li>
+     *   <li>θ → <var>V</var> if used in a {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS} (regardless of above-cited coordinate system convention).</li>
      *   <li>θ → <var>U</var> if used in a polar CS.</li>
      * </ul>
      *
