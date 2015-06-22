@@ -52,7 +52,6 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
     DirectionAlongMeridianTest.class,
     NormalizerTest.class
 })

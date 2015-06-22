@@ -71,6 +71,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -535,38 +536,6 @@ public final class ServicesForMetadata extends ReferencingServices {
                                        final CoordinateSystem derivedCS)
     {
         return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
-    }
-
-    /**
-     * Suggests a coordinate system name.
-     * Example: "Compound CS: East (km), North (km), Up (m)."
-     *
-     * @param  type The CS type (Cartesian | ellipsoidal | vertical | etc…) or null or empty if unknown.
-     * @param  axes The coordinate system axes (can not be {@code null}).
-     * @return The suggested coordinate system name (never {@code null}).
-     *
-     * @since 0.6
-     */
-    @Override
-    public CharSequence nameForCS(final String type, final CoordinateSystemAxis[] axes) {
-        return AxisDirections.appendTo((StringBuilder) super.nameForCS(type, axes), axes);
-    }
-
-    /**
-     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
-     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
-     * or "λ" (Longitude).
-     *
-     * @param name      The axis name for which to suggest an abbreviation.
-     * @param direction The axis direction for which to suggest an abbreviation.
-     * @param unit      The axis unit of measurement, for disambiguation.
-     * @return A suggested abbreviation.
-     *
-     * @since 0.6
-     */
-    @Override
-    public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
-        return AxisDirections.suggestAbbreviation(name, direction, unit);
     }
 
     /**
