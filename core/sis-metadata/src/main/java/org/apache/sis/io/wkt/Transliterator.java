@@ -106,7 +106,7 @@ public abstract class Transliterator implements Serializable {
 
     /**
      * A transliterator that does not perform any replacement.
-     * All methods let Unicode characters pass-through unchanged.
+     * All methods let names, abbreviations and Unicode characters pass-through unchanged.
      */
     public static final Transliterator IDENTITY = new Unicode();
 
@@ -135,9 +135,9 @@ public abstract class Transliterator implements Serializable {
     }
 
     /**
-     * Returns the axis name to format in WKT. This method performs the mapping between the names of axes in
-     * memory (designated by <cite>"long axis names"</cite> in this class) by the names to format in the WKT
-     * (designated by <cite>"short axis names"</cite>).
+     * Returns the axis name to format in WKT, or {@code null} if none. This method performs the mapping
+     * between the names of axes in memory (designated by <cite>"long axis names"</cite> in this class)
+     * and the names to format in the WKT (designated by <cite>"short axis names"</cite>).
      *
      * <div class="note"><b>Note:</b>
      * the <cite>"long axis names"</cite> are defined by ISO 19111 — <cite>referencing by coordinates</cite>
@@ -149,8 +149,8 @@ public abstract class Transliterator implements Serializable {
      *
      * <p>The default implementation performs at least the following replacements:</p>
      * <ul>
-     *   <li>Replace <cite>“Geodetic latitude”</cite> (case insensitive) by <cite>“latitude”</cite>.</li>
-     *   <li>Replace <cite>“Geodetic longitude”</cite> (case insensitive) by <cite>“longitude”</cite>.</li>
+     *   <li>Replace <cite>“Geodetic latitude”</cite> (case insensitive) by <cite>“Latitude”</cite>.</li>
+     *   <li>Replace <cite>“Geodetic longitude”</cite> (case insensitive) by <cite>“Longitude”</cite>.</li>
      *   <li>Return {@code null} if the axis direction is {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y}
      *       or {@code GEOCENTRIC_Z} and the name is the same than the axis direction (ignoring case).</li>
      * </ul>
