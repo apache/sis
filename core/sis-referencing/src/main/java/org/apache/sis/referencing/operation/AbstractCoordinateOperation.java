@@ -740,7 +740,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @param  formatter The formatter to use.
      * @return {@code "CoordinateOperation"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
