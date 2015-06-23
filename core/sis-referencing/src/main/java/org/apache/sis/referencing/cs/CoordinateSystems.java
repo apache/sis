@@ -115,7 +115,7 @@ public final class CoordinateSystems extends Static {
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
      * that contains (through its coordinate system) the axes having those directions.
      * This policy is consistent with
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting</a>.
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4(iv)</a>.
      *
      * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
      * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.

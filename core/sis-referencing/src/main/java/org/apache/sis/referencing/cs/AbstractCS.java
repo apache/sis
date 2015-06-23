@@ -456,7 +456,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @return {@code "CS"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

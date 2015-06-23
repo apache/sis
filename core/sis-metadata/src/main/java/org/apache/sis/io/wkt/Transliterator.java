@@ -90,7 +90,7 @@ import org.apache.sis.util.Characters;
  * @version 0.6
  * @module
  *
- * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification</a>
+ * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
  */
 public abstract class Transliterator implements Serializable {
     /**
