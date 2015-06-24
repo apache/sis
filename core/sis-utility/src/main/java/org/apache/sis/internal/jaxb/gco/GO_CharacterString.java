@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
@@ -40,7 +41,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
@@ -158,6 +159,12 @@ public class GO_CharacterString {
         if (type == 0) {
             final CharSequence text = this.text;
             if (text != null && !(text instanceof Anchor)) {
+                if (text instanceof InternationalString) {
+                    final Context context = Context.current();
+                    if (context != null) {
+                        return ((InternationalString) text).toString(context.getLocale());
+                    }
+                }
                 return text.toString();
             }
         }
