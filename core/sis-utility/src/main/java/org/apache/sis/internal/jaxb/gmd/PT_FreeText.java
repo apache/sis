@@ -57,7 +57,7 @@ import org.apache.sis.util.ArraysExt;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
@@ -106,14 +106,10 @@ public final class PT_FreeText extends GO_CharacterString {
      * if it contains at least one non-root locale. Otherwise returns {@code null}, meaning that
      * the simpler {@link GO_CharacterString} construct should be used instead.
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param text    An international string which could have several translations
-     *                embedded for the same text.
-     * @return A {@code PT_FreeText} instance if the given text has several translations,
-     *         or {@code null} otherwise.
+     * @param text An international string which could have several translations embedded for the same text.
+     * @return A {@code PT_FreeText} instance if the given text has several translations, or {@code null} otherwise.
      */
-    @SuppressWarnings("fallthrough")
-    public static PT_FreeText create(final Context context, final InternationalString text) {
+    public static PT_FreeText create(final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
             final DefaultInternationalString df = (DefaultInternationalString) text;
             final Set<Locale> locales = df.getLocales();
@@ -131,6 +127,7 @@ public final class PT_FreeText extends GO_CharacterString {
                  * default. It is usually safer to avoid null value, but in this particular case
                  * the implementation (DefaultInternationalString) is known to support null.
                  */
+                final Context context = Context.current();
                 return new PT_FreeText(df.toString(context != null ? context.getLocale() : null),
                         ArraysExt.resize(textGroup, n));
             }
@@ -168,6 +165,8 @@ public final class PT_FreeText extends GO_CharacterString {
 
     /**
      * Returns the content of this {@code <gco:CharacterString>} as an {@code InternationalString}.
+     *
+     * @return The character sequence for this {@code <gco:CharacterString>}.
      */
     @Override
     public CharSequence toCharSequence() {

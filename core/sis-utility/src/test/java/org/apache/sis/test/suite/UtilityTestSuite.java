@@ -117,6 +117,7 @@ import org.junit.BeforeClass;
     org.apache.sis.io.TableAppenderTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
+    org.apache.sis.internal.util.StandardDateFormatTest.class,
 
     // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,

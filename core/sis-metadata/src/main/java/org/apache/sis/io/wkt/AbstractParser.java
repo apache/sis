@@ -26,11 +26,11 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
@@ -250,10 +250,12 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the date at the given position.
      * This is a helper method for {@link Element} only.
+     *
+     * <p>The WKT 2 format expects dates formatted according the ISO 9075-2 standard.</p>
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
+            dateFormat = new StandardDateFormat(symbols.getLocale());
         }
         return dateFormat.parse(text, position);
     }

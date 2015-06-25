@@ -184,7 +184,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
         assertWktEquals(
-                "Datum[“WGS84”,\n" +
+                "GeodeticDatum[“WGS84”,\n" +
                 "  Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]]",
                 datum);
     }
@@ -266,13 +266,13 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 datum);
 
         assertWktEquals(Convention.WKT2,
-                "Datum[“World Geodetic System 1984”,\n" +
+                "GeodeticDatum[“World Geodetic System 1984”,\n" +
                 "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]],\n" +
                 "  Id[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
                 datum);
 
         assertWktEquals(Convention.INTERNAL,
-                "Datum[“World Geodetic System 1984”,\n" +
+                "GeodeticDatum[“World Geodetic System 1984”,\n" +
                 "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, Id[“EPSG”, 7030],\n" +
                 "    Remark[“Defining parameters cited in EPSG database.”]],\n" +
                 "  Anchor[“Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.”],\n" +

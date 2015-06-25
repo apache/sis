@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing;
+package org.apache.sis.internal.metadata;
 
 import java.lang.reflect.Field;
 import javax.measure.unit.SI;
@@ -36,6 +36,9 @@ import static org.opengis.referencing.cs.AxisDirection.*;
 
 /**
  * Tests the {@link AxisDirections} class.
+ *
+ * <p>The {@code AxisDirections} class is defined in the {@code sis-metadata} module, but tested in the
+ * {@code sis-referencing} module because those tests use {@link HardCodedAxes} constants.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

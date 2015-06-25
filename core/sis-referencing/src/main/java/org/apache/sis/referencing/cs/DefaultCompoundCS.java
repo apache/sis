@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.List;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;

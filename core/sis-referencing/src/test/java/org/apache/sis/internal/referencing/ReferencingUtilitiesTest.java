@@ -25,6 +25,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -110,16 +111,16 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
      */
     @Test
     public void testType() {
-        assertNull  (               toWKTType(CoordinateSystem.class, CoordinateSystem.class));
-        assertEquals("affine",      toWKTType(CoordinateSystem.class, AffineCS        .class));
-        assertEquals("Cartesian",   toWKTType(CoordinateSystem.class, CartesianCS     .class));
-        assertEquals("cylindrical", toWKTType(CoordinateSystem.class, CylindricalCS   .class));
-        assertEquals("ellipsoidal", toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
-        assertEquals("linear",      toWKTType(CoordinateSystem.class, LinearCS        .class));
-//      assertEquals("parametric",  toWKTType(CoordinateSystem.class, ParametricCS    .class));
-        assertEquals("polar",       toWKTType(CoordinateSystem.class, PolarCS         .class));
-        assertEquals("spherical",   toWKTType(CoordinateSystem.class, SphericalCS     .class));
-        assertEquals("temporal",    toWKTType(CoordinateSystem.class, TimeCS          .class));
-        assertEquals("vertical",    toWKTType(CoordinateSystem.class, VerticalCS      .class));
+        assertNull  (                         toWKTType(CoordinateSystem.class, CoordinateSystem.class));
+        assertEquals(WKTKeywords.affine,      toWKTType(CoordinateSystem.class, AffineCS        .class));
+        assertEquals(WKTKeywords.Cartesian,   toWKTType(CoordinateSystem.class, CartesianCS     .class));
+        assertEquals(WKTKeywords.cylindrical, toWKTType(CoordinateSystem.class, CylindricalCS   .class));
+        assertEquals(WKTKeywords.ellipsoidal, toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
+        assertEquals(WKTKeywords.linear,      toWKTType(CoordinateSystem.class, LinearCS        .class));
+//      assertEquals(WKTKeywords.parametric,  toWKTType(CoordinateSystem.class, ParametricCS    .class));
+        assertEquals(WKTKeywords.polar,       toWKTType(CoordinateSystem.class, PolarCS         .class));
+        assertEquals(WKTKeywords.spherical,   toWKTType(CoordinateSystem.class, SphericalCS     .class));
+        assertEquals(WKTKeywords.temporal,    toWKTType(CoordinateSystem.class, TimeCS          .class));
+        assertEquals(WKTKeywords.vertical,    toWKTType(CoordinateSystem.class, VerticalCS      .class));
     }
 }

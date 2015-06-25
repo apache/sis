@@ -32,6 +32,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;

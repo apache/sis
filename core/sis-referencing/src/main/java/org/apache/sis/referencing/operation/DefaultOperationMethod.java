@@ -643,7 +643,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @return {@code "Method"} (WKT 2) or {@code "Projection"} (WKT 1).
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification §17.2.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
