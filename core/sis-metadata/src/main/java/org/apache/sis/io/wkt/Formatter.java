@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -66,6 +65,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.PatchedUnitFormat;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -337,10 +337,9 @@ public class Formatter implements Localized {
         this.lineSeparator = this.symbols.lineSeparator();
         this.indentation   = (byte) indentation;
         this.numberFormat  = symbols.createNumberFormat();
-        this.dateFormat    = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
+        this.dateFormat    = new StandardDateFormat(symbols.getLocale());
         this.unitFormat    = new PatchedUnitFormat(UnitFormat.getInstance(symbols.getLocale()));
         this.buffer        = new StringBuffer();
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     /**
@@ -870,11 +869,11 @@ public class Formatter implements Localized {
                 String pattern = null;
                 if (dateFormat instanceof SimpleDateFormat && (max.getTime() - min.getTime()) >= TEMPORAL_THRESHOLD) {
                     final String p = ((SimpleDateFormat) dateFormat).toPattern();
-                    if (p.length() > WKTFormat.SHORT_DATE_PATTERN.length() &&
-                        p.startsWith(WKTFormat.SHORT_DATE_PATTERN))
+                    if (p.length() > StandardDateFormat.SHORT_PATTERN.length() &&
+                        p.startsWith(StandardDateFormat.SHORT_PATTERN))
                     {
                         pattern = p;
-                        ((SimpleDateFormat) dateFormat).applyPattern(WKTFormat.SHORT_DATE_PATTERN);
+                        ((SimpleDateFormat) dateFormat).applyPattern(StandardDateFormat.SHORT_PATTERN);
                     }
                 }
                 openElement(true, WKTKeywords.TimeExtent);
