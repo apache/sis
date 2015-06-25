@@ -928,7 +928,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * the replacement of Greek letters is a more complex task than what this method can do,
      * since it depends on the context. For example if the Greek letters are abbreviations
      * for coordinate system axes like φ and λ, then the replacements depend on the enclosing
-     * coordinate system. See {@link org.apache.sis.io.wkt.CharEncoding} for more information.</div>
+     * coordinate system. See {@link org.apache.sis.io.wkt.Transliterator} for more information.</div>
      *
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
@@ -936,7 +936,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *         has been applied, or {@code null} if the given text was null.
      *
      * @see StringBuilders#toASCII(StringBuilder)
-     * @see org.apache.sis.io.wkt.CharEncoding#filter(String)
+     * @see org.apache.sis.io.wkt.Transliterator#filter(String)
      */
     public static CharSequence toASCII(final CharSequence text) {
         return StringBuilders.toASCII(text, null);

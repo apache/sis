@@ -22,7 +22,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 
 

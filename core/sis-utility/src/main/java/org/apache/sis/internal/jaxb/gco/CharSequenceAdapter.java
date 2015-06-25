@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * for ISO-19139 compliance. A {@link CharSequenceAdapter} can handle the following types:
  *
  * <ul>
- *   <li>{@link InternationalString}, which will be mapped to {@link PT_FreeText} elements.</li>
+ *   <li>{@link InternationalString}, which may be mapped to {@link PT_FreeText} elements.</li>
  *   <li>{@link String} (actually any character sequences other than {@code InternationalString}).</li>
  *   <li>{@link Anchor}, which can be substituted to any of the above if the {@link ReferenceResolver}
  *       in the current marshalling context maps the given text to a {@code xlink}.</li>
@@ -41,7 +41,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see StringAdapter
@@ -98,7 +98,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
          * </gmd:someElement>
          */
         if (value instanceof InternationalString) {
-            final PT_FreeText ft = PT_FreeText.create(Context.current(), (InternationalString) value);
+            final PT_FreeText ft = PT_FreeText.create((InternationalString) value);
             if (ft != null) {
                 return ft;
             }

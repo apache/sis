@@ -1,0 +1,3 @@
+The AxisDirections class is defined in the 'sis-metadata' module,
+but tested in the 'sis-referencing' module because the tests use
+constants defined in the referencing module.

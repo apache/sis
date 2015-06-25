@@ -29,7 +29,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
 // Branch-dependent imports
