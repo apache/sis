@@ -346,9 +346,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             throws ParseException
     {
         CoordinateReferenceSystem crs;
-        if ((crs = parseGeographicCRS  (FIRST, element)) == null &&
+        if ((crs = parseGeodeticCRS    (FIRST, element)) == null &&
             (crs = parseProjectedCRS   (FIRST, element)) == null &&
-            (crs = parseGeocentricCRS  (FIRST, element)) == null &&
             (crs = parseVerticalCRS    (FIRST, element)) == null &&
             (crs = parseTimeCRS        (FIRST, element)) == null &&
             (crs = parseEngineeringCRS (FIRST, element)) == null &&
@@ -476,7 +475,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             while ((element = parent.pullElement(OPTIONAL, WKTKeywords.VerticalExtent)) != null) {
                 final double minimum = element.pullDouble("minimum");
                 final double maximum = element.pullDouble("maximum");
-                Unit<Length> unit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
                 element.close(ignoredElements);
                 if (unit   == null) unit   = SI.METRE;
                 if (extent == null) extent = new DefaultExtent();
@@ -537,7 +536,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @todo Authority code is currently ignored. We may consider to create a subclass of
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
-    private <Q extends Quantity> Unit<Q> parseDerivedUnit(final Element parent,
+    private <Q extends Quantity> Unit<Q> parseScaledUnit(final Element parent,
             final String keyword, final Unit<Q> baseUnit) throws ParseException
     {
         final Element element = parent.pullElement(OPTIONAL, keyword, WKTKeywords.Unit);
@@ -568,7 +567,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final int    index  = element.getKeywordIndex() - 1;
         parseMetadataAndClose(element, name);
         if (index >= 0 && index < BASE_UNITS.length) {
-            return Units.multiply(BASE_UNITS[index - 1], factor);
+            return Units.multiply(BASE_UNITS[index], factor);
         }
         // If we can not infer the base type, we have to rely on the name.
         return parseUnit(name);
@@ -907,7 +906,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final Element meridian = element.pullElement(OPTIONAL, WKTKeywords.Meridian);
         if (meridian != null) {
             double angle = meridian.pullDouble("meridian");
-            final Unit<Angle> m = parseDerivedUnit(meridian, WKTKeywords.AngleUnit, SI.RADIAN);
+            final Unit<Angle> m = parseScaledUnit(meridian, WKTKeywords.AngleUnit, SI.RADIAN);
             meridian.close(ignoredElements);
             if (m != null) {
                 angle = m.getConverterTo(NonSI.DEGREE_ANGLE).convert(angle);
@@ -990,7 +989,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "PRIMEM"} element. This element has the following pattern:
+     * Parses a {@code "PrimeMeridian"} element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#53">WKT 2 specification §8.2.2</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     PRIMEM["<name>", <longitude> {,<authority>}]
@@ -999,8 +1001,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
      * @param  angularUnit The contextual unit.
-     * @return The {@code "PRIMEM"} element as a {@link PrimeMeridian} object.
-     * @throws ParseException if the {@code "PRIMEM"} element can not be parsed.
+     * @return The {@code "PrimeMeridian"} element as a {@link PrimeMeridian} object.
+     * @throws ParseException if the {@code "PrimeMeridian"} element can not be parsed.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian#formatTo(Formatter)
      */
     private PrimeMeridian parsePrimeMeridian(final int mode, final Element parent, Unit<Angle> angularUnit)
             throws ParseException
@@ -1026,7 +1030,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
 
     /**
      * Parses an <strong>optional</strong> {@code "TOWGS84"} element.
-     * This element has the following pattern:
+     * This element is specific to WKT 1 and has the following pattern:
      *
      * {@preformat text
      *     TOWGS84[<dx>, <dy>, <dz>, <ex>, <ey>, <ez>, <ppm>]
@@ -1055,7 +1059,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "SPHEROID"} element. This element has the following pattern:
+     * Parses an {@code "Ellipsoid"} element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#52">WKT 2 specification §8.2.1</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     SPHEROID["<name>", <semi-major axis>, <inverse flattening> {,<authority>}]
@@ -1063,8 +1070,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "SPHEROID"} element as an {@link Ellipsoid} object.
-     * @throws ParseException if the {@code "SPHEROID"} element can not be parsed.
+     * @return The {@code "Ellipsoid"} element as an {@link Ellipsoid} object.
+     * @throws ParseException if the {@code "Ellipsoid"} element can not be parsed.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#formatTo(Formatter)
      */
     private Ellipsoid parseEllipsoid(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.Ellipsoid, WKTKeywords.Spheroid);
@@ -1074,12 +1083,17 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final String name          = element.pullString("name");
         final double semiMajorAxis = element.pullDouble("semiMajorAxis");
         double inverseFlattening   = element.pullDouble("inverseFlattening");
-        if (inverseFlattening == 0) {   // OGC convention for a sphere.
-            inverseFlattening = Double.POSITIVE_INFINITY;
+        Unit<Length> unit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        if (unit == null) {
+            unit = SI.METRE;
         }
+        final Map<String,?> properties = parseMetadataAndClose(element, name);
         try {
-            return datumFactory.createFlattenedSphere(parseMetadataAndClose(element, name),
-                    semiMajorAxis, inverseFlattening, SI.METRE);
+            if (inverseFlattening == 0) {   // OGC convention for a sphere.
+                return datumFactory.createEllipsoid(properties, semiMajorAxis, semiMajorAxis, unit);
+            } else {
+                return datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
+            }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1122,7 +1136,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "DATUM"} element. This element has the following pattern:
+     * Parses a {@code "Datum"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#54">WKT 2 specification §8.2.4</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     DATUM["<name>", <spheroid> {,<to wgs84>} {,<authority>}]
@@ -1131,20 +1148,27 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
      * @param  meridian the prime meridian, or {@code null} for Greenwich.
-     * @return The {@code "DATUM"} element as a {@link GeodeticDatum} object.
-     * @throws ParseException if the {@code "DATUM"} element can not be parsed.
+     * @return The {@code "Datum"} element as a {@link GeodeticDatum} object.
+     * @throws ParseException if the {@code "Datum"} element can not be parsed.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum#formatTo(Formatter)
      */
     private GeodeticDatum parseDatum(final int mode, final Element parent, PrimeMeridian meridian) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.Datum);
+        final Element element = parent.pullElement(mode, WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
         if (element == null) {
             return null;
         }
         final String             name       = element.pullString("name");
         final Ellipsoid          ellipsoid  = parseEllipsoid(MANDATORY, element);
+        final Element            anchor     = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
         final Map<String,Object> properties = parseMetadataAndClose(element, name);
         if (meridian == null) {
             meridian = referencing.getGreenwich();
+        }
+        if (anchor != null) {
+            properties.put(GeodeticDatum.ANCHOR_POINT_KEY, anchor.pullString("anchorDefinition"));
+            anchor.close(ignoredElements);
         }
         if (toWGS84 != null) {
             properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
@@ -1173,8 +1197,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (element == null) {
             return null;
         }
-        final String  name  = element.pullString ("name");
-        final int     datum = element.pullInteger("datum");
+        final String name  = element.pullString ("name");
+        final int    datum = element.pullInteger("datum");
         final VerticalDatumType type = VerticalDatumTypes.fromLegacy(datum);
         // TODO: need to find a default value if null.
         try {
@@ -1270,35 +1294,96 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "GEOCCS"} element.
-     * This element has the following pattern:
+     * Parses a {@code "GeodeticCRS"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>.
+     *
+     * The legacy WKT 1 specification had two elements for this:
      *
      * {@preformat text
-     *     GEOCCS["<name>", <datum>, <prime meridian>, <linear unit>
-     *            {,<axis> ,<axis> ,<axis>} {,<authority>}]
+     *     GEOGCS["<name>", <datum>, <prime meridian>, <angular unit>  {,<twin axes>} {,<authority>}]
+     * }
+     *
+     * and
+     *
+     * {@preformat text
+     *     GEOCCS["<name>", <datum>, <prime meridian>, <linear unit> {,<axis> ,<axis> ,<axis>} {,<authority>}]
      * }
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "GEOCCS"} element as a {@link GeocentricCRS} object.
-     * @throws ParseException if the {@code "GEOCCS"} element can not be parsed.
+     * @return The {@code "GeodeticCRS"} element as a {@link GeocentricCRS} object.
+     * @throws ParseException if the {@code "GeodeticCRS"} element can not be parsed.
+     *
+     * @see org.apache.sis.referencing.crs.DefaultGeographicCRS#formatTo(Formatter)
+     * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS#formatTo(Formatter)
      */
-    private GeocentricCRS parseGeocentricCRS(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.GeocCS);
+    private GeodeticCRS parseGeodeticCRS(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.GeodeticCRS,    // [0]  WKT 2
+                WKTKeywords.GeodCRS,        // [1]  WKT 2
+                WKTKeywords.BaseGeodCRS,    // [2]  WKT 2
+                WKTKeywords.GeogCS,         // [3]  WKT 1
+                WKTKeywords.GeocCS);        // [4]  WKT 1
         if (element == null) {
             return null;
         }
-        final String        name       = element.pullString("name");
-        final PrimeMeridian meridian   = parsePrimeMeridian(MANDATORY, element, NonSI.DEGREE_ANGLE);
-        final GeodeticDatum datum      = parseDatum(MANDATORY, element, meridian);
-        final Unit<Length>  linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final String      csType;
+        final Unit<Angle> angularUnit;
+        final Unit<?>     defaultUnit;
+        final int         dimension;
+        switch (element.getKeywordIndex()) {
+            default: {      // WKT2 element.
+                csType      = null;
+                defaultUnit = parseUnit(element);
+                angularUnit = Units.isAngular(defaultUnit) ? defaultUnit.asType(Angle.class) : NonSI.DEGREE_ANGLE;
+                dimension   = 2;
+                break;
+            }
+            case 3: {       // WKT1 "GeogCS" element.
+                csType      = WKTKeywords.ellipsoidal;
+                angularUnit = parseScaledUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
+                defaultUnit = angularUnit;
+                dimension   = 2;
+                break;
+            }
+            case 4: {       // WKT1 "GeocCS" element.
+                csType      = WKTKeywords.Cartesian;
+                angularUnit = NonSI.DEGREE_ANGLE;
+                defaultUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                dimension   = 3;
+                break;
+            }
+        }
+        Object              name     = element.pullString("name");
+        final PrimeMeridian meridian = parsePrimeMeridian(MANDATORY, element, angularUnit);
+        final GeodeticDatum datum    = parseDatum(MANDATORY, element, meridian);
+        if (((String) name).isEmpty()) {
+            /*
+             * GeographicCRS name is a mandatory property, but some invalid WKT with an empty string exist.
+             * In such case, we will use the name of the enclosed datum. Indeed, it is not uncommon to have
+             * the same name for a geographic CRS and its geodetic datum.
+             */
+            name = datum.getName();
+        }
+        final CoordinateSystem cs;
         try {
-            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 3, linearUnit, datum);
-            return crsFactory.createGeocentricCRS(parseMetadataAndClose(element, name), datum,
-                    referencing.upgradeGeocentricCS((CartesianCS) cs));
+            cs = parseCoordinateSystem(element, csType, dimension, defaultUnit, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name);
+            if (cs instanceof EllipsoidalCS) {
+                return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
+            }
+            if (cs instanceof CartesianCS) {
+                return crsFactory.createGeocentricCRS(properties, datum,
+                        referencing.upgradeGeocentricCS((CartesianCS) cs));
+            }
+            if (cs instanceof SphericalCS) {
+                return crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+            }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
+        throw new LocalizedParseException(errorLocale, Errors.Keys.IllegalCoordinateSystem_1,
+                new Object[] {cs.getClass()}, element.offset);
     }
 
     /**
@@ -1319,9 +1404,9 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (element == null) {
             return null;
         }
-        final String         name       = element.pullString("name");
-        final VerticalDatum  datum      = parseVerticalDatum(MANDATORY, element);
-        final Unit<Length>   linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final String        name       = element.pullString("name");
+        final VerticalDatum datum      = parseVerticalDatum(MANDATORY, element);
+        final Unit<Length>  linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, linearUnit, datum);
             verticalCRS = crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum, (VerticalCS) cs);
@@ -1353,47 +1438,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         }
         final String         name     = element.pullString("name");
         final TemporalDatum  datum    = parseTimeDatum(MANDATORY, element);
-        final Unit<Duration> timeUnit = parseDerivedUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
+        final Unit<Duration> timeUnit = parseScaledUnit(element, WKTKeywords.TimeUnit, SI.SECOND);
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, timeUnit, datum);
             return crsFactory.createTemporalCRS(parseMetadataAndClose(element, name), datum, (TimeCS) cs);
-        } catch (FactoryException exception) {
-            throw element.parseFailed(exception);
-        }
-    }
-
-    /**
-     * Parses a {@code "GEOGCS"} element. This element has the following pattern:
-     *
-     * {@preformat text
-     *     GEOGCS["<name>", <datum>, <prime meridian>, <angular unit>  {,<twin axes>} {,<authority>}]
-     * }
-     *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "GEOGCS"} element as a {@link GeographicCRS} object.
-     * @throws ParseException if the {@code "GEOGCS"} element can not be parsed.
-     */
-    private GeographicCRS parseGeographicCRS(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.GeodeticCRS, WKTKeywords.GeodCRS, WKTKeywords.GeogCS);
-        if (element == null) {
-            return null;
-        }
-        Object              name        = element.pullString("name");
-        final Unit<Angle>   angularUnit = parseDerivedUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
-        final PrimeMeridian meridian    = parsePrimeMeridian(MANDATORY, element, angularUnit);
-        final GeodeticDatum datum       = parseDatum(MANDATORY, element, meridian);
-        if (((String) name).isEmpty()) {
-            /*
-             * GeographicCRS name is a mandatory property, but some invalid WKT with an empty string exist.
-             * In such case, we will use the name of the enclosed datum. Indeed, it is not uncommon to have
-             * the same name for a geographic CRS and its geodetic datum.
-             */
-            name = datum.getName();
-        }
-        try {
-            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.ellipsoidal, 2, angularUnit, datum);
-            return crsFactory.createGeographicCRS(parseMetadataAndClose(element, name), datum, (EllipsoidalCS) cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1418,15 +1466,19 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (element == null) {
             return null;
         }
-        final String        name       = element.pullString("name");
-        final GeographicCRS geoCRS     = parseGeographicCRS(MANDATORY, element);
-        final Unit<Length>  linearUnit = parseDerivedUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-        final boolean  usesCommonUnits = convention.usesCommonUnits;
-        final Conversion    conversion = parseProjection(MANDATORY, element, usesCommonUnits ? SI.METRE : linearUnit,
+        final String      name   = element.pullString("name");
+        final GeodeticCRS geoCRS = parseGeodeticCRS(MANDATORY, element);
+        if (!(geoCRS instanceof GeographicCRS)) {
+            throw new LocalizedParseException(errorLocale, Errors.Keys.IllegalCRSType_1,
+                    new Object[] {geoCRS.getClass()}, element.offset);
+        }
+        final Unit<Length> linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final boolean usesCommonUnits = convention.usesCommonUnits;
+        final Conversion conversion = parseProjection(MANDATORY, element, usesCommonUnits ? SI.METRE : linearUnit,
                 usesCommonUnits ? NonSI.DEGREE_ANGLE : geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, linearUnit, geoCRS.getDatum());
-            return crsFactory.createProjectedCRS(parseMetadataAndClose(element, name), geoCRS, conversion, (CartesianCS) cs);
+            return crsFactory.createProjectedCRS(parseMetadataAndClose(element, name), (GeographicCRS) geoCRS, conversion, (CartesianCS) cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }

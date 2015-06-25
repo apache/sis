@@ -93,13 +93,14 @@ public final class WKTKeywords extends Static {
      * and {@link org.apache.sis.referencing.crs.DefaultGeographicCRS}.
      */
     public static final String
-            BBox        = "BBox",
-            Datum       = "Datum",
-            GeodeticCRS = "GeodeticCRS",
-            BaseGeodCRS = "BaseGeodCRS",
-            GeodCRS     = "GeodCRS",
-            GeogCS      = "GeogCS",
-            GeocCS      = "GeocCS";
+            BBox          = "BBox",
+            Datum         = "Datum",
+            GeodeticDatum = "GeodeticDatum",
+            GeodeticCRS   = "GeodeticCRS",
+            BaseGeodCRS   = "BaseGeodCRS",
+            GeodCRS       = "GeodCRS",
+            GeogCS        = "GeogCS",
+            GeocCS        = "GeocCS";
 
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultVerticalCRS}.

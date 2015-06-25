@@ -181,6 +181,29 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a geodetic datum from a WKT 2 string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testDatum() throws ParseException {
+        final GeodeticDatum datum = parse(GeodeticDatum.class,
+                "DATUM[“Tananarive 1925”,\n" +
+                "  ELLIPSOID[“International 1924”, 6378.388, 297.0, LENGTHUNIT[“km”, 1000]],\n" +
+                "  ANCHOR[“Tananarive observatory”]]");
+
+        assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
+        assertEquals("anchor", "Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("International 1924", 0, ellipsoid);
+        assertEquals("unit", SI.KILOMETRE, ellipsoid.getAxisUnit());
+        assertEquals("semiMajor", 6378.388, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 297, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals("greenwichLongitude", 0, datum.getPrimeMeridian().getGreenwichLongitude(), STRICT);
+    }
+
+    /**
      * Tests the parsing of a geocentric CRS from a WKT 1 string. The parser
      * shall replace the OGC 01-009 axis directions (OTHER, EAST, NORTH) by
      * ISO 19111 axis directions (Geocentric X, Geocentric Y, Geocentric Z).
@@ -188,7 +211,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testAxis")
+    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeocentricCRS() throws ParseException {
         final GeocentricCRS crs = parse(GeocentricCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
@@ -226,6 +249,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeographicCRS() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
