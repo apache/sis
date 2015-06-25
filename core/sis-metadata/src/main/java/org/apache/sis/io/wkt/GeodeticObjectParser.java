@@ -622,7 +622,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             final Element element = parent.pullElement(OPTIONAL, WKTKeywords.CS);
             if (element != null) {
                 final String expected = type;
-                type         = CharSequences.trimWhitespaces(element.pullString("type"));
+                type         = CharSequences.trimWhitespaces(element.pullVoidElement("type").keyword);
                 dimension    = element.pullInteger("dimension");
                 csProperties = new HashMap<>(parseMetadataAndClose(element, "CS"));
                 if (expected != null) {
@@ -1355,7 +1355,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
         }
         Object              name     = element.pullString("name");
-        final PrimeMeridian meridian = parsePrimeMeridian(MANDATORY, element, angularUnit);
+        final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, angularUnit);
         final GeodeticDatum datum    = parseDatum(MANDATORY, element, meridian);
         if (((String) name).isEmpty()) {
             /*

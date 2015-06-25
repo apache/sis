@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
@@ -38,6 +37,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.StandardDateFormat;
 
 
 /**
@@ -113,22 +113,6 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The default indentation value.
      */
     static final byte DEFAULT_INDENTATION = 2;
-
-    /**
-     * The pattern of dates.
-     *
-     * @see #createFormat(Class)
-     */
-    static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SX";
-
-    /**
-     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
-     * if the duration is at least {@link Formatter#TEMPORAL_THRESHOLD}. This pattern must
-     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
-     * if this pattern is really shorter (the user could have created his own date format
-     * with a different pattern).
-     */
-    static final String SHORT_DATE_PATTERN = "yyyy-MM-dd";
 
     /**
      * The symbols to use for this formatter.
@@ -627,9 +611,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             return symbols.createNumberFormat();
         }
         if (valueType == Date.class) {
-            final DateFormat format = new SimpleDateFormat(DATE_PATTERN, symbols.getLocale());
-            format.setTimeZone(getTimeZone());
-            return format;
+            return new StandardDateFormat(symbols.getLocale(), getTimeZone());
         }
         return super.createFormat(valueType);
     }
