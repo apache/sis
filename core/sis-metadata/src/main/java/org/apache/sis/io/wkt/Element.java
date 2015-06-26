@@ -538,7 +538,7 @@ final class Element {
                 if (element.list != null) {
                     for (int i=0; i<keys.length; i++) {
                         if (element.keyword.equalsIgnoreCase(keys[i])) {
-                            keywordIndex = (byte) i;
+                            element.keywordIndex = (byte) i;
                             iterator.remove();
                             return element;
                         }
@@ -607,8 +607,7 @@ final class Element {
     }
 
     /**
-     * Returns the index of the keyword in the array given to the {@link #pullElement(String...)}
-     * or {@link #pullOptionalElement(String...)} method.
+     * Returns the index of the keyword in the array given to the {@link #pullElement(int, String...)} method.
      */
     final int getKeywordIndex() {
         return keywordIndex;

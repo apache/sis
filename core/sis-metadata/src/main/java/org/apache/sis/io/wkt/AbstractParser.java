@@ -21,18 +21,16 @@ import java.util.List;
 import java.util.Date;
 import java.util.Locale;
 import java.util.LinkedHashMap;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
@@ -252,43 +250,14 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the date at the given position.
      * This is a helper method for {@link Element} only.
+     *
+     * <p>The WKT 2 format expects dates formatted according the ISO 9075-2 standard.</p>
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat(WKTFormat.DATE_PATTERN, symbols.getLocale());
+            dateFormat = new StandardDateFormat(symbols.getLocale());
         }
-        /*
-         * Following is a workaround specific to the JDK6 branch. Since JDK6 does not understand the 'Z' suffix,
-         * we handle it in this method. The Apache SIS branch for JDK7 does not need this hack since JDK7 supports
-         * parsing the 'Z' suffix.
-         */
-        final Date date = dateFormat.parse(text, position);
-        if (date != null) {
-            final int p = position.getIndex();
-            if (p < text.length() && text.charAt(p) == 'Z') {
-                position.setIndex(p + 1);
-                final Calendar cal = dateFormat.getCalendar();
-                final int year   = cal.get(Calendar.YEAR);
-                final int month  = cal.get(Calendar.MONTH);
-                final int day    = cal.get(Calendar.DAY_OF_MONTH);
-                final int hour   = cal.get(Calendar.HOUR_OF_DAY);
-                final int minute = cal.get(Calendar.MINUTE);
-                final int second = cal.get(Calendar.SECOND);
-                final int millis = cal.get(Calendar.MILLISECOND);
-                final TimeZone timezone = cal.getTimeZone();
-                final long time;
-                try {
-                    cal.setTimeZone(TimeZone.getTimeZone("UTC"));
-                    cal.set(year, month, day, hour, minute, second);
-                    cal.set(Calendar.MILLISECOND, millis);
-                    time = cal.getTimeInMillis();
-                } finally {
-                    cal.setTimeZone(timezone);
-                }
-                date.setTime(time);
-            }
-        }
-        return date;
+        return dateFormat.parse(text, position);
     }
 
     /**

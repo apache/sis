@@ -358,12 +358,13 @@ public class ReferencingServices extends OptionalDependency {
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
      *
+     * @param  properties The coordinate system name, and optionally other properties.
      * @param  axes The axes of the unknown coordinate system.
      * @return An "abstract" coordinate system using the given axes.
      *
      * @since 0.6
      */
-    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
+    public CoordinateSystem createAbstractCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         throw moduleNotFound();
     }
 
@@ -392,18 +393,17 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
-     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
-     * or "λ" (Longitude).
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
      *
-     * @param name      The axis name for which to suggest an abbreviation.
-     * @param direction The axis direction for which to suggest an abbreviation.
-     * @param unit      The axis unit of measurement, for disambiguation.
-     * @return A suggested abbreviation.
+     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return The axis direction along the given meridian.
      *
      * @since 0.6
      */
-    public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
+    public AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
         throw moduleNotFound();
     }
 

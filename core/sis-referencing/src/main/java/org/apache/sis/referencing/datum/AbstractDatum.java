@@ -280,8 +280,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       {@linkplain DefaultTemporalDatum#getOrigin() origin} instead.</li>
      * </ul>
      *
-     * @return Description, possibly including coordinates, of the point or points used to anchor the datum
-     *         to the Earth.
+     * @return Description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      */
     @Override
     public InternationalString getAnchorPoint() {

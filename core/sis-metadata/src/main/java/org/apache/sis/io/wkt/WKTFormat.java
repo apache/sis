@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.unit.Unit;
@@ -39,6 +38,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.StandardDateFormat;
 
 
 /**
@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
  *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
  *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
- *   <li>The {@linkplain CharEncoding character encoding} (i.e. replacements to use for Unicode characters).</li>
+ *   <li>The {@link Transliterator transliterator} (i.e. replacements to use for Unicode characters).</li>
  *   <li>Whether ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
@@ -116,26 +116,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     static final byte DEFAULT_INDENTATION = 2;
 
     /**
-     * The pattern of dates.
-     *
-     * The JDK7 branch have a 'X' pattern at the end of this format. But JDK6 does not support that pattern.
-     * As a workaround, code using this pattern will append a hard-coded {@code "'Z'"} if the timezone is
-     * known to be UTC.
-     *
-     * @see #createFormat(Class)
-     */
-    static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.S";
-
-    /**
-     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
-     * if the duration is at least {@link Formatter#TEMPORAL_THRESHOLD}. This pattern must
-     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
-     * if this pattern is really shorter (the user could have created his own date format
-     * with a different pattern).
-     */
-    static final String SHORT_DATE_PATTERN = "yyyy-MM-dd";
-
-    /**
      * The symbols to use for this formatter.
      * The same object is also referenced in the {@linkplain #parser} and {@linkplain #formatter}.
      * It appears here for serialization purpose.
@@ -167,13 +147,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
-     * {@link CharEncoding#UNICODE} for preserving non-ASCII characters. The default value is
-     * {@link CharEncoding#DEFAULT}, which causes replacements like "é" → "e" in all elements
-     * except {@code REMARKS["…"]}. May also be a user-supplied encoding.
+     * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
+     * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
+     * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
      *
      * <p>A {@code null} value means to infer this property from the {@linkplain #convention}.</p>
      */
-    private CharEncoding encoding;
+    private Transliterator transliterator;
 
     /**
      * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
@@ -249,9 +229,9 @@ public class WKTFormat extends CompoundFormat<Object> {
      * according ISO 19162 specification. Return values can be:
      *
      * <ul>
-     *   <li>{@link CharEncoding#DEFAULT} for performing replacements like "é" → "e"
+     *   <li>{@link Transliterator#DEFAULT} for performing replacements like "é" → "e"
      *       in all WKT elements except {@code REMARKS["…"]}.</li>
-     *   <li>{@link CharEncoding#UNICODE} for preserving non-ASCII characters.</li>
+     *   <li>{@link Transliterator#IDENTITY} for preserving non-ASCII characters.</li>
      *   <li>Any other user-supplied mapping.</li>
      * </ul>
      *
@@ -259,10 +239,10 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.6
      */
-    public CharEncoding getCharEncoding() {
-        CharEncoding result = encoding;
+    public Transliterator getTransliterator() {
+        Transliterator result = transliterator;
         if (result == null) {
-            result = (convention == Convention.INTERNAL) ? CharEncoding.UNICODE : CharEncoding.DEFAULT;
+            result = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         }
         return result;
     }
@@ -271,15 +251,19 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Sets the mapper between Java character sequences and the characters to write in WKT.
      *
      * <p>If this method is never invoked, or if this method is invoked with a {@code null} value,
-     * then the default mapper is {@link CharEncoding#DEFAULT} except for WKT formatted according
+     * then the default mapper is {@link Transliterator#DEFAULT} except for WKT formatted according
      * the {@linkplain Convention#INTERNAL internal convention}.</p>
      *
-     * @param encoding The new mapper to use, or {@code null} for restoring the default value.
+     * @param transliterator The new mapper to use, or {@code null} for restoring the default value.
      *
      * @since 0.6
      */
-    public void setCharEncoding(final CharEncoding encoding) {
-        this.encoding = encoding;
+    public void setTransliterator(final Transliterator transliterator) {
+        if (this.transliterator != transliterator) {
+            this.transliterator = transliterator;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
@@ -293,11 +277,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@link #getCharEncoding()}.
+     * @deprecated Replaced by {@link #getTransliterator()}.
      */
     @Deprecated
     public boolean isNonAsciiAllowed() {
-        return getCharEncoding() == CharEncoding.UNICODE;
+        return getTransliterator() == Transliterator.IDENTITY;
     }
 
     /**
@@ -309,11 +293,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@link #setCharEncoding(CharEncoding)}.
+     * @deprecated Replaced by {@link #setTransliterator(Transliterator)}.
      */
     @Deprecated
     public void setNonAsciiAllowed(final boolean allowed) {
-        setCharEncoding(allowed ? CharEncoding.UNICODE : CharEncoding.DEFAULT);
+        setTransliterator(allowed ? Transliterator.IDENTITY : Transliterator.DEFAULT);
     }
 
     /**
@@ -382,9 +366,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public void setConvention(final Convention convention) {
         ArgumentChecks.ensureNonNull("convention", convention);
-        this.convention = convention;
-        updateFormatter(formatter);
-        parser = null;
+        if (this.convention != convention) {
+            this.convention = convention;
+            updateFormatter(formatter);
+            parser = null;
+        }
     }
 
     /**
@@ -447,8 +433,8 @@ public class WKTFormat extends CompoundFormat<Object> {
                 default: toUpperCase = (convention.majorVersion() == 1); break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
-            if (encoding != null) {
-                formatter.encoding = encoding;
+            if (transliterator != null) {
+                formatter.transliterator = transliterator;
             }
         }
     }
@@ -509,7 +495,10 @@ public class WKTFormat extends CompoundFormat<Object> {
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
-                    convention, getLocale(), factories);
+                    convention,
+                    (transliterator != null) ? transliterator : Transliterator.DEFAULT,
+                    getLocale(),
+                    factories);
         }
         Object object = null;
         try {
@@ -602,11 +591,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             return symbols.createNumberFormat();
         }
         if (valueType == Date.class) {
-            final TimeZone timezone = getTimeZone();
-            final DateFormat format = new SimpleDateFormat("UTC".equals(timezone.getID()) ?
-                    DATE_PATTERN + "'Z'" : DATE_PATTERN, symbols.getLocale());
-            format.setTimeZone(timezone);
-            return format;
+            return new StandardDateFormat(symbols.getLocale(), getTimeZone());
         }
         return super.createFormat(valueType);
     }

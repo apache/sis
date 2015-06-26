@@ -197,8 +197,7 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * in UTC timezone.
+     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      *
      * @param  date The date as a {@link String}.
      * @return The date as a {@link Date}.

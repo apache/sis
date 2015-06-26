@@ -118,7 +118,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     public void testMeridianWKT() {
         assertWktEquals("Axis[“South along 90°W (x)”, south, Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]], LengthUnit[“metre”, 1]]",
                 new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
-                        "x", DirectionAlongMeridian.parse("South along 90°W").getDirection(), SI.METRE));
+                        "x", new DirectionAlongMeridian(AxisDirection.SOUTH, -90).getDirection(), SI.METRE));
     }
 
     /**
