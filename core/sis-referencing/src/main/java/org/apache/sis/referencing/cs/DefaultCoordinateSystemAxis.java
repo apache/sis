@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.PolarCS;
@@ -40,7 +39,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -55,7 +54,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.io.wkt.CharEncoding;
+import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static java.lang.Double.doubleToLongBits;
@@ -736,16 +735,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns {@code true} if writing an axis in the given formatter should omit the axis name.
-     * From ISO 19162: For geodetic CRSs having a geocentric Cartesian coordinate system,
-     * the axis name should be omitted as it is given through the mandatory axis direction,
-     * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.
-     */
-    private boolean omitName(final Formatter formatter) {
-        return AxisDirections.isGeocentric(direction) && formatter.getEnclosingElement(1) instanceof GeodeticCRS;
-    }
-
-    /**
      * Returns the enclosing coordinate system, or {@code null} if none. In ISO 19162 compliant WKT the coordinate
      * <strong>reference</strong> system should be the first parent ({@code formatter.getEnclosingElement(1)}) and
      * the coordinate system shall be obtained from that CRS (yes, this is convolved. This is because of historical
@@ -770,7 +759,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
      * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are
      * compliant; we assume that the user created a valid axis.
-     * The only actions (derived from ISO 19162 rules) taken by this method are:
+     * The only actions (derived from ISO 19162 rules) taken by this method (by default) are:
      *
      * <ul>
      *   <li>Replace <cite>“Geodetic latitude”</cite> and <cite>“Geodetic longitude”</cite> names (case insensitive)
@@ -782,32 +771,29 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *   <li>In {@link PolarCS}, replace “θ” abbreviation by <var>“U”</var>.</li>
      * </ul>
      *
-     * The above-cited replacements of Greek letters can be modified by calls to
-     * {@link org.apache.sis.io.wkt.WKTFormat#setCharEncoding(CharEncoding)}.
+     * The above-cited replacements of name and Greek letters can be controlled by a call to
+     * {@link org.apache.sis.io.wkt.WKTFormat#setTransliterator(Transliterator)}.
      *
      * @return {@code "Axis"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         final Convention convention = formatter.getConvention();
         final boolean    isWKT1     = (convention.majorVersion() == 1);
         final boolean    isInternal = (convention == Convention.INTERNAL);
-        String name = null;
-        if (isWKT1 || isInternal || !omitName(formatter)) {
-            name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
-            if (name == null) {
-                name = IdentifiedObjects.getName(this, null);
-            }
-            if (name != null && !isInternal) {
-                if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE)) {
-                    name = AxisNames.LATITUDE;    // ISO 19162:2015 §7.5.3(ii)
-                } else if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) {
-                    name = AxisNames.LONGITUDE;
-                }
-                // Note: the converse of this operation is done in
-                // org.apache.sis.io.wkt.GeodeticObjectParser.parseAxis(…).
+        final CoordinateSystem cs   = getEnclosingCS(formatter);
+        AxisDirection dir = getDirection();
+        String name = IdentifiedObjects.getName(this, formatter.getNameAuthority());
+        if (name == null) {
+            name = IdentifiedObjects.getName(this, null);
+        }
+        if (name != null && !isInternal) {
+            final String old = name;
+            name = formatter.getTransliterator().toShortAxisName(cs, dir, name);
+            if (name == null && isWKT1) {
+                name = old; // WKT 1 does not allow omission of name.
             }
         }
         /*
@@ -815,12 +801,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * The specification also suggests to write only the abbreviation (e.g. "(X)") in the
          * special case of Geocentric axis, and disallows Greek letters.
          */
-        final CoordinateSystem cs;
-        if (isWKT1) {
-            cs = null;
-        } else {
-            cs = getEnclosingCS(formatter);
-            final String a = formatter.getCharEncoding().getAbbreviation(cs, this);
+        if (!isWKT1) {
+            final String a = formatter.getTransliterator().toLatinAbbreviation(cs, dir, getAbbreviation());
             if (a != null && !a.equals(name)) {
                 final StringBuilder buffer = new StringBuilder();
                 if (name != null) {
@@ -829,14 +811,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 name = buffer.append('(').append(a).append(')').toString();
             }
         }
-        if (name != null) {
-            formatter.append(name, ElementKind.AXIS);
-        }
+        formatter.append(name, ElementKind.AXIS);
         /*
          * Format the axis direction, optionally followed by a MERIDIAN[…] element
          * if the direction is of the kind "South along 90°N" for instance.
          */
-        AxisDirection dir = getDirection();
         DirectionAlongMeridian meridian = null;
         if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);

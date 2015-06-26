@@ -780,7 +780,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <div class="section">Future evolutions</div>
      * This method implements recommendations from the
-     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">§B.5.2 of WKT 2 specification</a>,
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5.2</a>,
      * together with heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
@@ -1038,7 +1038,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
      *         for the WKT element, or {@code null} if unknown.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#21">WKT 2 specification §7</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -22,6 +22,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -34,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
@@ -86,5 +87,34 @@ public final strictfp class DefaultExtentTest extends XMLTestCase {
          * Final comparison: ensure that we didn't lost any information.
          */
         assertEquals(extent, unmarshal(DefaultExtent.class, xml));
+    }
+
+    /**
+     * Tests XML marshalling of the {@link Extents#WORLD} constant, which is a {@code DefaultExtent} instance.
+     *
+     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testWorldConstant() throws JAXBException {
+        final String xml = marshal(Extents.WORLD);
+        assertXmlEquals("<gmd:EX_Extent" +
+                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                " xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:description>\n" +
+                "    <gco:CharacterString>World</gco:CharacterString>\n" +
+                "  </gmd:description>\n" +
+                "  <gmd:geographicElement>\n" +
+                "    <gmd:EX_GeographicBoundingBox>\n" +
+                "      <gmd:extentTypeCode>    <gco:Boolean> true </gco:Boolean></gmd:extentTypeCode>\n" +
+                "      <gmd:westBoundLongitude><gco:Decimal> -180 </gco:Decimal></gmd:westBoundLongitude>\n" +
+                "      <gmd:eastBoundLongitude><gco:Decimal>  180 </gco:Decimal></gmd:eastBoundLongitude>\n" +
+                "      <gmd:southBoundLatitude><gco:Decimal>  -90 </gco:Decimal></gmd:southBoundLatitude>\n" +
+                "      <gmd:northBoundLatitude><gco:Decimal>   90 </gco:Decimal></gmd:northBoundLatitude>\n" +
+                "    </gmd:EX_GeographicBoundingBox>\n" +
+                "  </gmd:geographicElement>\n" +
+                "</gmd:EX_Extent>",
+                xml, "xmlns:*", "xsi:schemaLocation");
     }
 }

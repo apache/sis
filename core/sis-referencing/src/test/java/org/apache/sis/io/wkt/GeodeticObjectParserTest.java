@@ -32,6 +32,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.test.DependsOnMethod;
@@ -58,13 +59,20 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
-    org.apache.sis.internal.referencing.AxisDirectionsTest.class
+    org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class
 })
 public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */
     private GeodeticObjectParser parser;
+
+    /**
+     * Instantiates the parser to test.
+     */
+    private void newParser(final Convention convention) {
+        parser = new GeodeticObjectParser(Symbols.getDefault(), null, null, null, convention, Transliterator.DEFAULT, null, null);
+    }
 
     /**
      * Parses the given text.
@@ -76,7 +84,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private <T> T parse(final Class<T> type, final String text) throws ParseException {
         if (parser == null) {
-            parser = new GeodeticObjectParser();
+            newParser(Convention.DEFAULT);
         }
         final ParsePosition position = new ParsePosition(0);
         final Object obj = parser.parseObject(text, position);
@@ -86,14 +94,6 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
-    }
-
-    /**
-     * Uses a new parser for the given convention.
-     */
-    private void setConvention(final Convention convention) {
-        final GeodeticObjectParser p = parser;
-        parser = new GeodeticObjectParser(p.symbols, null, null, null, convention, p.errorLocale, null);
     }
 
     /**
@@ -137,13 +137,70 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Verifies that the axes of the coordinate system are those of a projected CRS,
-     * with (East, North) axis directions.
+     * Tests the parsing of an axis.
+     *
+     * @throws ParseException if the parsing failed.
      */
-    private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
-        assertEquals("dimension", 2, cs.getDimension());
-        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
-        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
+    @Test
+    public void testAxis() throws ParseException {
+        CoordinateSystemAxis axis = parse(CoordinateSystemAxis.class, "AXIS[“(Y)”, geocentricY]");
+        assertEquals("name", "Y", axis.getName().getCode());
+        assertEquals("abbreviation", "Y", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.GEOCENTRIC_Y, axis.getDirection());
+        assertEquals("unit", SI.METRE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“latitude”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]]");
+        assertEquals("name", "latitude", axis.getName().getCode());
+        assertEquals("abbreviation", "φ", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.NORTH, axis.getDirection());
+        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“longitude”,EAST,order[2],UNIT[“degree”,0.0174532925199433]]");
+        assertEquals("name", "longitude", axis.getName().getCode());
+        assertEquals("abbreviation", "λ", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.EAST, axis.getDirection());
+        assertEquals("unit", NonSI.DEGREE_ANGLE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“ellipsoidal height (h)”,up,ORDER[3],LengthUnit[“kilometre”,1000]]");
+        assertEquals("name", "ellipsoidal height", axis.getName().getCode());
+        assertEquals("abbreviation", "h", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.UP, axis.getDirection());
+        assertEquals("unit", SI.KILOMETRE, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“time (t)”,future,TimeUnit[“hour”,3600]]");
+        assertEquals("name", "time", axis.getName().getCode());
+        assertEquals("abbreviation", "t", axis.getAbbreviation());
+        assertEquals("direction", AxisDirection.FUTURE, axis.getDirection());
+        assertEquals("unit", NonSI.HOUR, axis.getUnit());
+
+        axis = parse(CoordinateSystemAxis.class, "AXIS[“easting (X)”,south,MERIDIAN[90,UNIT[“degree”,0.0174532925199433]]]");
+        assertEquals("name", "easting", axis.getName().getCode());
+        assertEquals("abbreviation", "X", axis.getAbbreviation());
+        assertEquals("direction", CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 90), axis.getDirection());
+        assertEquals("unit", SI.METRE, axis.getUnit());
+    }
+
+    /**
+     * Tests the parsing of a geodetic datum from a WKT 2 string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testDatum() throws ParseException {
+        final GeodeticDatum datum = parse(GeodeticDatum.class,
+                "DATUM[“Tananarive 1925”,\n" +
+                "  ELLIPSOID[“International 1924”, 6378.388, 297.0, LENGTHUNIT[“km”, 1000]],\n" +
+                "  ANCHOR[“Tananarive observatory”]]");
+
+        assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
+        assertEquals("anchor", "Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("International 1924", 0, ellipsoid);
+        assertEquals("unit", SI.KILOMETRE, ellipsoid.getAxisUnit());
+        assertEquals("semiMajor", 6378.388, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 297, ellipsoid.getInverseFlattening(), STRICT);
+        assertEquals("greenwichLongitude", 0, datum.getPrimeMeridian().getGreenwichLongitude(), STRICT);
     }
 
     /**
@@ -154,6 +211,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeocentricCRS() throws ParseException {
         final GeocentricCRS crs = parse(GeocentricCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
@@ -191,6 +249,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeographicCRS() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
@@ -260,6 +319,16 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("dimension", 2, cs.getDimension());
         assertLongitudeAxisEquals(cs.getAxis(0 ^ swap));
         assertLatitudeAxisEquals (cs.getAxis(1 ^ swap));
+    }
+
+    /**
+     * Verifies that the axes of the coordinate system are those of a projected CRS,
+     * with (East, North) axis directions.
+     */
+    private static void verifyProjectedCS(final CartesianCS cs, final Unit<Length> unit) {
+        assertEquals("dimension", 2, cs.getDimension());
+        assertUnboundedAxisEquals("Easting",  "E", AxisDirection.EAST,  unit, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "N", AxisDirection.NORTH, unit, cs.getAxis(1));
     }
 
     /**
@@ -349,7 +418,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
          * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
          */
         wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
-        setConvention(Convention.WKT1_IGNORE_AXES);
+        newParser(Convention.WKT1_IGNORE_AXES);
         crs = parse(GeographicCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
         pm = verifyNTF(crs.getDatum(), false);
@@ -403,7 +472,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         wkt = wkt.replace("52.0",      "46.8");             // Convert unit in “latitude_of_origin” parameter.
         wkt = wkt.replace("600.0",     "600000");           // Convert unit in “false_easting” parameter.
         wkt = wkt.replace("2200.0",    "2200000");          // Convert unit in “false_northing” parameter.
-        setConvention(Convention.WKT1_IGNORE_AXES);
+        newParser(Convention.WKT1_IGNORE_AXES);
         crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
@@ -635,7 +704,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     @DependsOnMethod("testWithImplicitAxes")
     public void testWarnings() throws ParseException {
-        parser = new GeodeticObjectParser();
+        newParser(Convention.DEFAULT);
         final ParsePosition position = new ParsePosition(0);
         final GeographicCRS crs = (GeographicCRS) parser.parseObject(
                "  GEOGCS[“WGS 84”,\n" +

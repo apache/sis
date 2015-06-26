@@ -49,14 +49,6 @@ public final strictfp class WKTFormatTest extends TestCase {
     private WKTFormat parser;
 
     /**
-     * Verifies the condition documented in {@link WKTFormat#SHORT_DATE_PATTERN} javadoc.
-     */
-    @Test
-    public void testDatePatterns() {
-        assertTrue(WKTFormat.DATE_PATTERN.startsWith(WKTFormat.SHORT_DATE_PATTERN));
-    }
-
-    /**
      * Tests integration in {@link WKTFormat#parse(CharSequence, ParsePosition)}.
      * This method tests only a simple WKT because it is not the purpose of this
      * method to test the parser itself. We only want to tests its integration in

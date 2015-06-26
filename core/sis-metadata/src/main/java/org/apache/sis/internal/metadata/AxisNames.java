@@ -47,12 +47,20 @@ public final class AxisNames {
     public static final String GEODETIC_LATITUDE = "Geodetic latitude";
 
     /**
-     * The ISO 19111 <cite>"spherical longitude"</cite> name. Abbreviation is "θ" (theta).
+     * The ISO 19111 <cite>"spherical longitude"</cite> name. Abbreviation used by SIS is "θ" (theta)
+     * for consistency with the EPSG "long" abbreviation, but some other conventions use "φ" instead.
+     * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
+     *
+     * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
+     * @see <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical coordinate system on MathWorld</a>
      */
     public static final String SPHERICAL_LONGITUDE = "Spherical longitude";
 
     /**
-     * The ISO 19111 <cite>"spherical latitude"</cite> name. Abbreviation is "φ′" (phi prime).
+     * The ISO 19111 <cite>"spherical latitude"</cite> name. Abbreviation used by SIS is "φ′" (phi prime)
+     * for consistency with the EPSG "lat" abbreviation, but some other conventions use "θ" instead.
+     * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
+     * axis named "elevation".
      */
     public static final String SPHERICAL_LATITUDE = "Spherical latitude";
 

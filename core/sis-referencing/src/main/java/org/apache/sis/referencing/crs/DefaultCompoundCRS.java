@@ -447,7 +447,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @return {@code "CompoundCRS"} (WKT 2) or {@code "Compd_CS"} (WKT 1).
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
