@@ -323,9 +323,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalBitsPattern_1 = 33;
 
         /**
+         * Coordinate reference system can not be of type ‘{0}’.
+         */
+        public static final short IllegalCRSType_1 = 194;
+
+        /**
          * Class ‘{1}’ is illegal. It must be ‘{0}’ or a derived class.
          */
         public static final short IllegalClass_2 = 34;
+
+        /**
+         * Coordinate system can not be “{0}”.
+         */
+        public static final short IllegalCoordinateSystem_1 = 193;
 
         /**
          * The “{1}” pattern can not be applied to formating of objects of type ‘{0}’.

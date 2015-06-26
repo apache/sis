@@ -93,13 +93,14 @@ public final class WKTKeywords extends Static {
      * and {@link org.apache.sis.referencing.crs.DefaultGeographicCRS}.
      */
     public static final String
-            BBox        = "BBox",
-            Datum       = "Datum",
-            GeodeticCRS = "GeodeticCRS",
-            BaseGeodCRS = "BaseGeodCRS",
-            GeodCRS     = "GeodCRS",
-            GeogCS      = "GeogCS",
-            GeocCS      = "GeocCS";
+            BBox          = "BBox",
+            Datum         = "Datum",
+            GeodeticDatum = "GeodeticDatum",
+            GeodeticCRS   = "GeodeticCRS",
+            BaseGeodCRS   = "BaseGeodCRS",
+            GeodCRS       = "GeodCRS",
+            GeogCS        = "GeogCS",
+            GeocCS        = "GeocCS";
 
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultVerticalCRS}.
@@ -178,4 +179,20 @@ public final class WKTKeywords extends Static {
             Concat_MT      = "Concat_MT",
             PassThrough_MT = "PassThrough_MT",
             Fitted_CS      = "Fitted_CS";
+
+    /**
+     * Coordinate system types. They are not WKT keywords, but are legal values for the "type"
+     * element in a {@code "CS[…]"} element.
+     */
+    public static final String
+            affine      = "affine",
+            Cartesian   = "Cartesian",      // Upper case 'C' is intentional.
+            cylindrical = "cylindrical",
+            ellipsoidal = "ellipsoidal",
+            linear      = "linear",
+            parametric  = "parametric",
+            polar       = "polar",
+            spherical   = "spherical",
+            temporal    = "temporal",
+            vertical    = "vertical";
 }

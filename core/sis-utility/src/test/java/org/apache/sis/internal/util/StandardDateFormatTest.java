@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.cs;
+package org.apache.sis.internal.util;
 
-import java.util.Collections;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -25,26 +23,19 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link DefaultCompoundCS} class.
+ * Tests the {@link StandardDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
+ * @since   0.6
  * @version 0.6
  * @module
  */
-@DependsOn(org.apache.sis.internal.metadata.AxisDirectionsTest.class)
-public final strictfp class DefaultCompoundCSTest extends TestCase {
+public final strictfp class StandardDateFormatTest extends TestCase {
     /**
-     * Tests {@link DefaultCompoundCS} construction.
+     * Verifies the condition documented in {@link StandardDateFormat#SHORT_PATTERN} javadoc.
      */
     @Test
-    public void testConstruction() {
-        final DefaultCompoundCS cs = new DefaultCompoundCS(
-                HardCodedCS.PROJECTED,
-                new DefaultVerticalCS(Collections.singletonMap(DefaultVerticalCS.NAME_KEY,
-                        HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
-                HardCodedCS.DAYS
-        );
-        assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", cs.getName().getCode());
+    public void testDatePatterns() {
+        assertTrue(StandardDateFormat.PATTERN.startsWith(StandardDateFormat.SHORT_PATTERN));
     }
 }
