@@ -113,7 +113,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * Creates a new test case.
      */
     protected MathTransformTestCase() {
-        this(NO_FACTORY);
+        this(new Factory[0]);
     }
 
     /**
