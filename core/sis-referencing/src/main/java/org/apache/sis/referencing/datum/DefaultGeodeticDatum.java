@@ -26,6 +26,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -535,16 +536,17 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
      *
-     * @return {@code "Datum"}.
+     * @return {@code "Datum"} or {@code "GeodeticDatum"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#51">WKT 2 specification §8.2</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
         formatter.append(toFormattable(getEllipsoid()));
-        if (formatter.getConvention().majorVersion() == 1) {
+        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
+        if (isWKT1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),
              * WKT of geodetic datum do not have a numerical code for the datum type.
@@ -560,7 +562,19 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         // For the WKT 2 case, the ANCHOR[…] element is added by Formatter itself.
+
         formatter.newLine(); // For writing the ID[…] element on its own line.
+        if (!isWKT1) {
+            /*
+             * In WKT 2, both "Datum" and "GeodeticDatum" keywords are permitted. The standard recommends
+             * to use "Datum" for simplicity. We will follow this advice when the Datum element is inside
+             * a GeodeticCRS element since the "Geodetic" aspect is more obvious in such case. But if the
+             * Datum appears in another context, then we will use "GeodeticDatum" for clarity.
+             */
+            if (!(formatter.getEnclosingElement(1) instanceof GeodeticCRS)) {
+                return WKTKeywords.GeodeticDatum;
+            }
+        }
         return WKTKeywords.Datum;
     }
 }

@@ -34,7 +34,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -456,7 +456,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @return {@code "CS"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

@@ -26,7 +26,7 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;

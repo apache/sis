@@ -263,7 +263,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @return {@code "ImageCRS"}.
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

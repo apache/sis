@@ -487,7 +487,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *
      * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
      *
-     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#93">WKT 2 specification</a>
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#93">WKT 2 specification §15</a>
      */
     @Override
     protected String formatTo(final Formatter formatter) {

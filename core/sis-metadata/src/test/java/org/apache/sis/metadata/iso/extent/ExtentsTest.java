@@ -37,7 +37,10 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link Extents}.
+ * Tests {@link Extents} static methods.
+ *
+ * <p><b>Note:</b> the {@link Extents#WORLD} constant is tested in another class,
+ * {@link DefaultExtentTest#testWorldConstant()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 
@@ -56,6 +55,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -71,6 +71,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -501,15 +502,15 @@ public final class ServicesForMetadata extends ReferencingServices {
      * since that legacy format did not specified any information about the coordinate system in use.
      * This method should not need to be invoked for parsing WKT version 2.
      *
+     * @param  properties The coordinate system name, and optionally other properties.
      * @param  axes The axes of the unknown coordinate system.
      * @return An "abstract" coordinate system using the given axes.
      *
      * @since 0.6
      */
     @Override
-    public CoordinateSystem createAbstractCS(final CoordinateSystemAxis[] axes) {
-        return new AbstractCS(Collections.singletonMap(AbstractCS.NAME_KEY,
-                AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+    public CoordinateSystem createAbstractCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
+        return new AbstractCS(properties, axes);
     }
 
     /**
@@ -538,20 +539,19 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Suggests an abbreviation for the given axis direction. The unit of measurement may be used
-     * for resolving some ambiguities like whether {@link AxisDirection#EAST} is for "x" (Easting)
-     * or "λ" (Longitude).
+     * Returns an axis direction from a pole along a meridian.
+     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
      *
-     * @param name      The axis name for which to suggest an abbreviation.
-     * @param direction The axis direction for which to suggest an abbreviation.
-     * @param unit      The axis unit of measurement, for disambiguation.
-     * @return A suggested abbreviation.
+     * @param  baseDirection The base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
+     * @param  meridian The meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
+     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
+     * @return The axis direction along the given meridian.
      *
      * @since 0.6
      */
     @Override
-    public String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
-        return AxisDirections.suggestAbbreviation(name, direction, unit);
+    public AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
+        return CoordinateSystems.directionAlongMeridian(baseDirection, meridian);
     }
 
     /**
