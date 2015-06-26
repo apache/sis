@@ -49,9 +49,9 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SX";
 
     /**
-     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
+     * Short version of {@link #PATTERN}, to be used when formatting temporal extents
      * if the duration is greater than some threshold (typically one day). This pattern must
-     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
+     * be a prefix of {@link #PATTERN}, since we will use that condition for deciding
      * if this pattern is really shorter (the user could have created his own date format
      * with a different pattern).
      */
@@ -86,27 +86,27 @@ public final class StandardDateFormat extends SimpleDateFormat {
      */
     @Override
     public Date parse(final String text, final ParsePosition position) {
-        Date time = super.parse(text, position);
-        if (time == null) {
+        Date date = super.parse(text, position);
+        if (date == null) {
             /*
              * The "yyyy-MM-dd'T'HH:mm:ss.SX" pattern may fail if the user did not specified the time part.
              * So if we fail to parse using the full pattern, try again with only the "yyyy-MM-dd" pattern.
              */
             final String pattern = toPattern();
-            if (PATTERN.startsWith(pattern)) {
+            if (pattern.startsWith(SHORT_PATTERN)) {
                 final int errorIndex = position.getErrorIndex();
                 position.setErrorIndex(-1);
                 applyPattern(SHORT_PATTERN);
                 try {
-                    time = parse(text, position);
+                    date = parse(text, position);
                 } finally {
                     applyPattern(pattern);
                 }
-                if (time == null) {
+                if (date == null) {
                     position.setErrorIndex(errorIndex); // Reset original error index.
                 }
             }
         }
-        return time;
+        return date;
     }
 }

@@ -685,12 +685,6 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             Unit<?> unit = defaultUnit;     // Depth, height or time axis unit.
             switch (type) {
                 /*
-                 * Unknown CS type — we can not guess which axes to create.
-                 */
-                default: {
-                    throw parent.missingComponent(WKTKeywords.Axis);
-                }
-                /*
                  * Cartesian — we can create axes only for geodetic datum, in which case the axes are for
                  * two-dimensional Projected or three-dimensional Geocentric CRS.
                  */
@@ -767,6 +761,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     nz = "Time";
                     z = "t";
                     break;
+                }
+                /*
+                 * Unknown CS type — we can not guess which axes to create.
+                 */
+                default: {
+                    throw parent.missingComponent(WKTKeywords.Axis);
                 }
             }
             int i = 0;
