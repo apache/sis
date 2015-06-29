@@ -193,9 +193,17 @@ public abstract class Transliterator implements Serializable {
      *       (case insensitive) by <cite>“Geodetic longitude”</cite> or <cite>“Spherical longitude”</cite>,
      *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
      *   <li>Return <cite>“Geocentric X”</cite>, <cite>“Geocentric Y”</cite> and <cite>“Geocentric Z”</cite>
-     *       for {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y} and {@code GEOCENTRIC_Z} respectively
-     *       in a Cartesian CS, if the given axis name is only an abbreviation.</li>
+     *       for {@link AxisDirection#GEOCENTRIC_X}, {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}
+     *       and {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z} respectively in a Cartesian CS,
+     *       if the given axis name is only an abbreviation.</li>
+     *   <li>Use unique camel-case names for axis names defined by ISO 19111 and ISO 19162. For example this method
+     *       replaces <cite>“<b>e</b>llipsoidal height”</cite> by <cite>“<b>E</b>llipsoidal height”</cite>.</li>
      * </ul>
+     *
+     * <div class="note"><b>Rational:</b>
+     * Axis names are not really free text. They are specified by ISO 19111 and ISO 19162.
+     * SIS does not put restriction on axis names, but we nevertheless try to use a unique
+     * name when we recognize it.</div>
      *
      * @param  csType    The type of the coordinate system, or {@code null} if unknown.
      * @param  direction The parsed axis direction.

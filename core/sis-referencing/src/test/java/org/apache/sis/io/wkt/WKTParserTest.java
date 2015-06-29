@@ -100,6 +100,30 @@ public class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
+    public void testGeographicWithId() throws FactoryException {
+        super.testGeographicWithId();
+        verifyEllipsoidalCS();
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testGeographicWithGradUnits() throws FactoryException {
+        super.testGeographicWithGradUnits();
+        verifyEllipsoidalCS();
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
     public void testGeocentric() throws FactoryException {
         super.testGeocentric();
         final CoordinateSystem cs = object.getCoordinateSystem();
