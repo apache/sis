@@ -150,6 +150,7 @@ public final class WKTKeywords extends Static {
     public static final String
             ProjectedCRS = "ProjectedCRS",
             BaseProjCRS  = "BaseProjCRS",
+            ProjCRS      = "ProjCRS",
             ProjCS       = "ProjCS";
 
     /**

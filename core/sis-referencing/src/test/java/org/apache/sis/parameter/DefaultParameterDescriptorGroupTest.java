@@ -202,7 +202,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          * Test below is identical to DefaultParameterDescriptorTest.testIdentifiedParameterWKT(),
          * but is reproduced here for easier comparison with the test following it.
          */
-        final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0);
+        final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0);
         assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
         /*
          * When the parameter is part of a larger element, we expect a simplification.
