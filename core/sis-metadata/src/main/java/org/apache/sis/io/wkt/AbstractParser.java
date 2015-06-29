@@ -151,13 +151,12 @@ abstract class AbstractParser implements Parser {
         if (numberFormat == null) {
             numberFormat = symbols.createNumberFormat();
         }
-        this.symbols      = symbols;
-        this.numberFormat = numberFormat;
-        this.dateFormat   = dateFormat;
-        this.unitFormat   = unitFormat;
-        this.errorLocale  = errorLocale;
+        this.symbols     = symbols;
+        this.dateFormat  = dateFormat;
+        this.unitFormat  = unitFormat;
+        this.errorLocale = errorLocale;
         if (SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
-            final DecimalFormat decimalFormat = (DecimalFormat) numberFormat;
+            final DecimalFormat decimalFormat = (DecimalFormat) ((DecimalFormat) numberFormat).clone();
             exponentSymbol = decimalFormat.getDecimalFormatSymbols().getExponentSeparator();
             String pattern = decimalFormat.toPattern();
             if (!pattern.contains("E0")) {
@@ -169,7 +168,9 @@ abstract class AbstractParser implements Parser {
                 buffer.append("E0");
                 decimalFormat.applyPattern(buffer.toString());
             }
+            this.numberFormat = decimalFormat;
         } else {
+            this.numberFormat = numberFormat;
             exponentSymbol = null;
         }
         ignoredElements = new LinkedHashMap<>();
