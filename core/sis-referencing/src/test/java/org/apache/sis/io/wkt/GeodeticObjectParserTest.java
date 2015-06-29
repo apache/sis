@@ -298,6 +298,27 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a geographic CRS from a WKT string with axes in wrong order according the
+     * {@code ORDER} elements. The {@code ORDER} elements are defined in WKT 2 (they did not existed in WKT 1),
+     * but the rest of the string is WKT 1. The SIS parser should sort the axes in the order declared
+     * in the {@code ORDER} elements.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testWithAxisSwapping")
+    public void testAxisSorting() throws ParseException {
+        verifyGeographicCRS(1, parse(GeographicCRS.class,
+               "  GEOGCS[“WGS 84”,\n" +
+               "    DATUM[“World Geodetic System 1984”,\n" +
+               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Longitude”, EAST, order[2]],\n" +
+               "    AXIS[“Latitude”, NORTH, order[1]]]"));
+    }
+
+    /**
      * Implementation of {@link #testGeographicCRS()} and {@link #testWithAxisSwapping()}.
      * This test expects no {@code AUTHORITY} element on any component.
      *
