@@ -223,7 +223,7 @@ public abstract class Transliterator implements Serializable {
                 break;
             }
         }
-        return name;
+        return AxisNames.toCamelCase(name);
     }
 
     /**
@@ -348,6 +348,9 @@ public abstract class Transliterator implements Serializable {
             if (condition.equals(csType)) {
                 return replacement;
             }
+        } else {
+            if (isLatLong(AxisNames.LATITUDE,  abbreviation)) return "φ";
+            if (isLatLong(AxisNames.LONGITUDE, abbreviation)) return "λ";
         }
         return abbreviation;
     }
