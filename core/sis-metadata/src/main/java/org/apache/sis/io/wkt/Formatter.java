@@ -389,7 +389,7 @@ public class Formatter implements Localized {
         this.toUpperCase    = toUpperCase;
         this.indentation    = indentation;
         this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
-        unitFormat.usesCommonUnits = convention.usesCommonUnits;
+        unitFormat.isLocaleUS = convention.usesCommonUnits;
     }
 
     /**
