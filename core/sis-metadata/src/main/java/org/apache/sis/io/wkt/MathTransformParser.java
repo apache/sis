@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Angle;
@@ -30,6 +31,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -39,6 +41,7 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.LocalizedParseException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
@@ -60,6 +63,28 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  */
 class MathTransformParser extends AbstractParser {
+    /**
+     * The keywords for {@code ID} or {@code AUTHORITY} elements, as a static array because frequently used.
+     */
+    static final String[] ID_KEYWORDS = {WKTKeywords.Id, WKTKeywords.Authority};
+
+    /**
+     * The keywords of unit elements. Most frequently used keywords should be first.
+     */
+    private static final String[] UNIT_KEYWORDS = {
+        WKTKeywords.Unit,   // Ignored since it does not allow us to know the quantity dimension.
+        WKTKeywords.LengthUnit, WKTKeywords.AngleUnit, WKTKeywords.ScaleUnit, WKTKeywords.TimeUnit,
+        WKTKeywords.ParametricUnit  // Ignored for the same reason than "Unit".
+    };
+
+    /**
+     * The base unit associated to the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
+     * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i]}.
+     */
+    private static final Unit<?>[] BASE_UNITS = {
+        SI.METRE, SI.RADIAN, Unit.ONE, SI.SECOND
+    };
+
     /**
      * The factory to use for creating math transforms.
      */
@@ -153,6 +178,73 @@ class MathTransformParser extends AbstractParser {
     }
 
     /**
+     * Parses the {@code ID["authority", "code"]} element inside a {@code UNIT} element.
+     * If such element is found, the authority is {@code "EPSG"} and the code is one of
+     * the codes known to the {@link Units#valueOfEPSG(int)}, then that unit is returned.
+     * Otherwise this method returns null.
+     *
+     * <div class="note"><b>Note:</b>
+     * this method is a slight departure of ISO 19162, which said <cite>"Should any attributes or values given
+     * in the cited identifier be in conflict with attributes or values given explicitly in the WKT description,
+     * the WKT values shall prevail."</cite> But some units can hardly be expressed by the {@code UNIT} element,
+     * because the later can contain only a conversion factor. For example sexagesimal units (EPSG:9108, 9110
+     * and 9111) can hardly be expressed in an other way than by their EPSG code. Thankfully, identifiers in
+     * {@code UNIT} elements are rare, so risk of conflicts should be low.</div>
+     *
+     * @param  parent The parent {@code "UNIT"} element.
+     * @return The unit from the identifier code, or {@code null} if none.
+     * @throws ParseException if the {@code "ID"} can not be parsed.
+     */
+    final Unit<?> parseUnitID(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(OPTIONAL, ID_KEYWORDS);
+        if (element != null) {
+            final String codeSpace = element.pullString("codeSpace");
+            final Object code      = element.pullObject("code");   // Accepts Integer as well as String.
+            element.close(ignoredElements);
+            if (Constants.EPSG.equalsIgnoreCase(codeSpace)) try {
+                final int n;
+                if (Numbers.isInteger(code.getClass())) {
+                    n = ((Number) code).intValue();
+                } else {
+                    n = Integer.parseInt(code.toString());
+                }
+                return Units.valueOfEPSG(n);
+            } catch (NumberFormatException e) {
+                warning(parent, element, e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses an optional {@code "UNIT"} element of unknown dimension.
+     * This method tries to infer the quantity dimension from the unit keyword.
+     *
+     * @param  parent The parent element.
+     * @return The {@code "UNIT"} element, or {@code null} if none.
+     * @throws ParseException if the {@code "UNIT"} can not be parsed.
+     */
+    final Unit<?> parseUnit(final Element parent) throws ParseException {
+        final Element element = parent.pullElement(OPTIONAL, UNIT_KEYWORDS);
+        if (element == null) {
+            return null;
+        }
+        final String  name   = element.pullString("name");
+        final double  factor = element.pullDouble("factor");
+        final int     index  = element.getKeywordIndex() - 1;
+        final Unit<?> unit   = parseUnitID(element);
+        element.close(ignoredElements);
+        if (unit != null) {
+            return unit;
+        }
+        if (index >= 0 && index < BASE_UNITS.length) {
+            return Units.multiply(BASE_UNITS[index], factor);
+        }
+        // If we can not infer the base type, we have to rely on the name.
+        return parseUnit(name);
+    }
+
+    /**
      * Parses a sequence of {@code "PARAMETER"} elements.
      *
      * @param  element     The parent element containing the parameters to parse.
@@ -167,34 +259,48 @@ class MathTransformParser extends AbstractParser {
         Element param = element;
         try {
             while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
-                final String                 name       = param.pullString("name");
+                final String name = param.pullString("name");
+                Unit<?> unit = parseUnit(param);
+                param.pullElement(OPTIONAL, ID_KEYWORDS);
+                /*
+                 * DEPARTURE FROM ISO 19162: the specification recommends that we use the identifier instead
+                 * than the parameter name. However we do not yet have a "get parameter by ID" in Apache SIS
+                 * or in GeoAPI interfaces. This was not considered necessary since SIS is lenient (hopefully
+                 * without introducing ambiguity) regarding parameter names, but we may revisit in a future
+                 * version if it become no longer the case. See https://issues.apache.org/jira/browse/SIS-163
+                 */
                 final ParameterValue<?>      parameter  = parameters.parameter(name);
                 final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
                 final Class<?>               valueClass = descriptor.getValueClass();
-                if (Number.class.isAssignableFrom(valueClass)) {
-                    Unit<?> unit = descriptor.getUnit();
+                final boolean                isNumeric  = Number.class.isAssignableFrom(valueClass);
+                if (isNumeric && unit == null) {
+                    unit = descriptor.getUnit();
                     if (Units.isLinear(unit)) {
                         unit = linearUnit;
                     } else if (Units.isAngular(unit)) {
                         unit = angularUnit;
                     }
-                    if (unit != null) {
-                        parameter.setValue(param.pullDouble("value"), unit);
-                    } else if (Numbers.isInteger(valueClass)) {
-                        parameter.setValue(param.pullInteger("value"));
+                }
+                if (unit != null) {
+                    parameter.setValue(param.pullDouble("doubleValue"), unit);
+                } else if (isNumeric) {
+                    if (Numbers.isInteger(valueClass)) {
+                        parameter.setValue(param.pullInteger("intValue"));
                     } else {
-                        parameter.setValue(param.pullDouble("value"));
+                        parameter.setValue(param.pullDouble("doubleValue"));
                     }
                 } else if (valueClass == Boolean.class) {
-                    parameter.setValue(param.pullBoolean("value"));
+                    parameter.setValue(param.pullBoolean("booleanValue"));
                 } else {
-                    parameter.setValue(param.pullString("value"));
+                    parameter.setValue(param.pullString("stringValue"));
                 }
                 param.close(ignoredElements);
             }
-        } catch (ParameterNotFoundException exception) {
+        } catch (ParameterNotFoundException e) {
             throw (ParseException) new LocalizedParseException(errorLocale, Errors.Keys.UnexpectedParameter_1,
-                    new String[] {exception.getParameterName()}, param.offset).initCause(exception);
+                    new String[] {e.getParameterName()}, param.offset).initCause(e);
+        } catch (InvalidParameterValueException e) {
+            throw (ParseException) new ParseException(e.getLocalizedMessage(), param.offset).initCause(e);
         }
     }
 

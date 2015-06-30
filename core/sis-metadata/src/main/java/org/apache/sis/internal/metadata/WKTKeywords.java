@@ -110,7 +110,9 @@ public final class WKTKeywords extends Static {
             VerticalDatum  = "VerticalDatum",
             VerticalCRS    = "VerticalCRS",
             BaseVertCRS    = "BaseVertCRS",
+            VDatum         = "VDatum",
             Vert_Datum     = "Vert_Datum",
+            VertCRS        = "VertCRS",
             Vert_CS        = "Vert_CS";
 
     /**
@@ -120,6 +122,7 @@ public final class WKTKeywords extends Static {
             TimeExtent  = "TimeExtent",
             TimeOrigin  = "TimeOrigin",
             TimeDatum   = "TimeDatum",
+            TDatum      = "TDatum",
             TimeCRS     = "TimeCRS",
             BaseTimeCRS = "BaseTimeCRS";
 
@@ -134,6 +137,8 @@ public final class WKTKeywords extends Static {
             EngineeringDatum = "EngineeringDatum",
             EngineeringCRS   = "EngineeringCRS",
             BaseEngCRS       = "BaseEngCRS",
+            EngCRS           = "EngCRS",
+            EDatum           = "EDatum",
             Local_Datum      = "Local_Datum",
             Local_CS         = "Local_CS";
 
@@ -150,6 +155,7 @@ public final class WKTKeywords extends Static {
     public static final String
             ProjectedCRS = "ProjectedCRS",
             BaseProjCRS  = "BaseProjCRS",
+            ProjCRS      = "ProjCRS",
             ProjCS       = "ProjCS";
 
     /**

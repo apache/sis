@@ -218,7 +218,7 @@ span.deprecated {
   text-decoration: line-through;
 }
 
-div.block {
+div.details div.block {
   text-align: justify;
 }
 
