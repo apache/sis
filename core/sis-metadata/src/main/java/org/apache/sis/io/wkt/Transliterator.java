@@ -16,6 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.Serializable;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
@@ -97,6 +99,25 @@ public abstract class Transliterator implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7115456393795045932L;
+
+    /**
+     * Default names to associate to axis directions in a Cartesian coordinate system.
+     * Those names do not apply to other kind of coordinate systems.
+     *
+     * <p>For thread safety reasons, this map shall not be modified after construction.</p>
+     */
+    private static final Map<AxisDirection,String> CARTESIAN;
+    static {
+        final Map<AxisDirection,String> m = new HashMap<>(12);
+        m.put(AxisDirection.EAST,         AxisNames.EASTING);
+        m.put(AxisDirection.WEST,         AxisNames.WESTING);
+        m.put(AxisDirection.NORTH,        AxisNames.NORTHING);
+        m.put(AxisDirection.SOUTH,        AxisNames.SOUTHING);
+        m.put(AxisDirection.GEOCENTRIC_X, AxisNames.GEOCENTRIC_X);
+        m.put(AxisDirection.GEOCENTRIC_Y, AxisNames.GEOCENTRIC_Y);
+        m.put(AxisDirection.GEOCENTRIC_Z, AxisNames.GEOCENTRIC_Z);
+        CARTESIAN = m;
+    }
 
     /**
      * A transliterator compliant with ISO 19162 on a <cite>"best effort"</cite> basis.
@@ -224,9 +245,10 @@ public abstract class Transliterator implements Serializable {
             }
             case WKTKeywords.Cartesian: {
                 if (name.length() <= 1) {
-                    if      (direction.equals(AxisDirection.GEOCENTRIC_X)) return AxisNames.GEOCENTRIC_X;
-                    else if (direction.equals(AxisDirection.GEOCENTRIC_Y)) return AxisNames.GEOCENTRIC_Y;
-                    else if (direction.equals(AxisDirection.GEOCENTRIC_Z)) return AxisNames.GEOCENTRIC_Z;
+                    final String c = CARTESIAN.get(direction);
+                    if (c != null) {
+                        return c;
+                    }
                 }
                 break;
             }
