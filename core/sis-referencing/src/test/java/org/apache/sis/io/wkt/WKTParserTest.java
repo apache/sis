@@ -18,6 +18,8 @@ package org.apache.sis.io.wkt;
 
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.internal.metadata.AxisNames;
@@ -128,9 +130,9 @@ public class WKTParserTest extends CRSParserTest {
     public void testGeocentric() throws FactoryException {
         super.testGeocentric();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals(AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode());
-        assertEquals(AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode());
-        assertEquals(AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode());
+        assertEquals("name", AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode());
+        assertEquals("name", AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode());
     }
 
     /**
@@ -154,8 +156,8 @@ public class WKTParserTest extends CRSParserTest {
     public void testProjectedWithFootUnits() throws FactoryException {
         super.testProjectedWithFootUnits();
         final CoordinateSystem cs = object.getCoordinateSystem();
-        assertEquals(AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
-        assertEquals(AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+        assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
     }
 
     /**
@@ -166,6 +168,20 @@ public class WKTParserTest extends CRSParserTest {
     @Test
     @Override
     @Ignore("Transverse Mercator projection method not yet implemented.")
-    public void testProjectedWithImplicitUnits() throws FactoryException {
+    public void testProjectedWithImplicitParameterUnits() throws FactoryException {
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis name and vertical datum type.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testVertical() throws FactoryException {
+        super.testVertical();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(0).getName().getCode());
+        assertEquals("datumType", VerticalDatumType.GEOIDAL, ((VerticalCRS) object).getDatum().getVerticalDatumType());
     }
 }

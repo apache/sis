@@ -590,6 +590,19 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
+     * Returns the properties of the given object.
+     *
+     * @param  object The object from which to get the properties.
+     * @return The properties of the given object.
+     *
+     * @since 0.6
+     */
+    @Override
+    public Map<String,?> getProperties(final IdentifiedObject object) {
+        return IdentifiedObjects.getProperties(object);
+    }
+
+    /**
      * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} or an aliases
      * of the given object matches the given name.
      *

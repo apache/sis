@@ -317,7 +317,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             (object = parseDatum            (FIRST, element, null)) == null &&
             (object = parseEllipsoid        (FIRST, element)) == null &&
             (object = parseToWGS84          (FIRST, element)) == null &&
-            (object = parseVerticalDatum    (FIRST, element)) == null &&
+            (object = parseVerticalDatum    (FIRST, element, false)) == null &&
             (object = parseTimeDatum        (FIRST, element)) == null &&
             (object = parseEngineeringDatum (FIRST, element)) == null &&
             (object = parseConversion       (FIRST, element, false, SI.METRE, NonSI.DEGREE_ANGLE)) == null)
@@ -518,6 +518,20 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
         }
         parent.close(ignoredElements);
+        return properties;
+    }
+
+    /**
+     * Parses the datum {@code ANCHOR[]} element and invoke {@link #parseMetadataAndClose(Element, Object)}.
+     * If an anchor has been found, its value is stored in the returned map.
+     */
+    private Map<String,Object> parseAnchorAndClose(final Element element, final String name) throws ParseException {
+        final Element anchor = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
+        final Map<String,Object> properties = parseMetadataAndClose(element, name);
+        if (anchor != null) {
+            properties.put(Datum.ANCHOR_POINT_KEY, anchor.pullString("anchorDefinition"));
+            anchor.close(ignoredElements);
+        }
         return properties;
     }
 
@@ -1216,15 +1230,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         }
         final String             name       = element.pullString("name");
         final Ellipsoid          ellipsoid  = parseEllipsoid(MANDATORY, element);
-        final Element            anchor     = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
-        final Map<String,Object> properties = parseMetadataAndClose(element, name);
+        final Map<String,Object> properties = parseAnchorAndClose(element, name);
         if (meridian == null) {
             meridian = referencing.getGreenwich();
-        }
-        if (anchor != null) {
-            properties.put(GeodeticDatum.ANCHOR_POINT_KEY, anchor.pullString("anchorDefinition"));
-            anchor.close(ignoredElements);
         }
         if (toWGS84 != null) {
             properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
@@ -1243,22 +1252,29 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *     VERT_DATUM["<name>", <datum type> {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
+     * @param  isWKT1 {@code true} if the parent is a WKT 1 element.
      * @return The {@code "VERT_DATUM"} element as a {@link VerticalDatum} object.
      * @throws ParseException if the {@code "VERT_DATUM"} element can not be parsed.
      */
-    private VerticalDatum parseVerticalDatum(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.VerticalDatum, WKTKeywords.Vert_Datum);
+    private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final boolean isWKT1)
+            throws ParseException
+    {
+        final Element element = parent.pullElement(mode, WKTKeywords.VerticalDatum, WKTKeywords.VDatum, WKTKeywords.Vert_Datum);
         if (element == null) {
             return null;
         }
-        final String name  = element.pullString ("name");
-        final int    datum = element.pullInteger("datum");
-        final VerticalDatumType type = VerticalDatumTypes.fromLegacy(datum);
-        // TODO: need to find a default value if null.
+        final String name = element.pullString("name");
+        VerticalDatumType type = null;
+        if (isWKT1) {
+            type = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
+        }
+        if (type == null) {
+            type = VerticalDatumTypes.guess(name, null, null);
+        }
         try {
-            return datumFactory.createVerticalDatum(parseMetadataAndClose(element, name), type);
+            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), type);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1380,9 +1396,9 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final Element element = parent.pullElement(mode,
                 WKTKeywords.GeodeticCRS,    // [0]  WKT 2
                 WKTKeywords.GeodCRS,        // [1]  WKT 2
-                WKTKeywords.BaseGeodCRS,    // [2]  WKT 2
-                WKTKeywords.GeogCS,         // [3]  WKT 1
-                WKTKeywords.GeocCS);        // [4]  WKT 1
+                WKTKeywords.GeogCS,         // [2]  WKT 1
+                WKTKeywords.GeocCS,         // [3]  WKT 1
+                WKTKeywords.BaseGeodCRS);   // [4]  WKT 2 in ProjectedCRS or DerivedCRS
         if (element == null) {
             return null;
         }
@@ -1409,7 +1425,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 }
                 break;
             }
-            case 3: {       // WKT1 "GeogCS" element.
+            case 2: {       // WKT1 "GeogCS" element.
                 isWKT1      = true;
                 csType      = WKTKeywords.ellipsoidal;
                 angularUnit = parseScaledUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
@@ -1417,7 +1433,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 dimension   = 2;
                 break;
             }
-            case 4: {       // WKT1 "GeocCS" element.
+            case 3: {       // WKT1 "GeocCS" element.
                 isWKT1      = true;
                 csType      = WKTKeywords.Cartesian;
                 angularUnit = NonSI.DEGREE_ANGLE;
@@ -1472,16 +1488,31 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @throws ParseException if the {@code "VERT_CS"} element can not be parsed.
      */
     private VerticalCRS parseVerticalCRS(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.VerticalCRS, WKTKeywords.Vert_CS);
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.VerticalCRS,    // [0]  WKT 2
+                WKTKeywords.VertCRS,        // [1]  WKT 2
+                WKTKeywords.Vert_CS,        // [2]  WKT 1
+                WKTKeywords.BaseVertCRS);   // [3]  WKT 2 in DerivedCRS
         if (element == null) {
             return null;
         }
-        final boolean       isWKT1     = element.getKeywordIndex() == 1;  // Index of "Vert_CS" above.
-        final String        name       = element.pullString("name");
-        final VerticalDatum datum      = parseVerticalDatum(MANDATORY, element);
-        final Unit<Length>  linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final boolean isWKT1 = element.getKeywordIndex() == 2;  // Index of "Vert_CS" above.
+        final String  name   = element.pullString("name");
+        VerticalDatum datum  = parseVerticalDatum(MANDATORY, element, isWKT1);
+        final Unit<?> unit   = parseUnit(element);
         try {
-            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, linearUnit, datum);
+            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, datum);
+            /*
+             * The 'parseVerticalDatum(…)' method may have been unable to resolve the datum type.
+             * But sometime the axis (which was not available when we created the datum) provides
+             * more information. Verify if we can have a better type now, and if so rebuild the datum.
+             */
+            if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
+                final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
+                if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
+                    datum = datumFactory.createVerticalDatum(referencing.getProperties(datum), type);
+                }
+            }
             verticalCRS = crsFactory.createVerticalCRS(parseMetadataAndClose(element, name), datum, (VerticalCS) cs);
             /*
              * Some DefaultVerticalExtent objects may be waiting for the VerticalCRS before to complete
@@ -1540,12 +1571,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final Element element = parent.pullElement(mode,
                 WKTKeywords.ProjectedCRS,   // [0]  WKT 2
                 WKTKeywords.ProjCRS,        // [1]  WKT 2
-                WKTKeywords.BaseProjCRS,    // [2]  WKT 2
-                WKTKeywords.ProjCS);        // [3]  WKT 1
+                WKTKeywords.ProjCS,         // [2]  WKT 1
+                WKTKeywords.BaseProjCRS);   // [3]  WKT 2 in DerivedCRS
         if (element == null) {
             return null;
         }
-        final boolean     isWKT1 = element.getKeywordIndex() == 3;  // Index of "ProjCS" above.
+        final boolean     isWKT1 = element.getKeywordIndex() == 2;  // Index of "ProjCS" above.
         final String      name   = element.pullString("name");
         final GeodeticCRS geoCRS = parseGeodeticCRS(MANDATORY, element, WKTKeywords.ellipsoidal);
         if (!(geoCRS instanceof GeographicCRS)) {

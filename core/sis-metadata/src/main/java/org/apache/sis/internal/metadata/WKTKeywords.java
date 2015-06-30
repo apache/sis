@@ -110,7 +110,9 @@ public final class WKTKeywords extends Static {
             VerticalDatum  = "VerticalDatum",
             VerticalCRS    = "VerticalCRS",
             BaseVertCRS    = "BaseVertCRS",
+            VDatum         = "VDatum",
             Vert_Datum     = "Vert_Datum",
+            VertCRS        = "VertCRS",
             Vert_CS        = "Vert_CS";
 
     /**
