@@ -16,6 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.Serializable;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
@@ -97,6 +99,25 @@ public abstract class Transliterator implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7115456393795045932L;
+
+    /**
+     * Default names to associate to axis directions in a Cartesian coordinate system.
+     * Those names do not apply to other kind of coordinate systems.
+     *
+     * <p>For thread safety reasons, this map shall not be modified after construction.</p>
+     */
+    private static final Map<AxisDirection,String> CARTESIAN;
+    static {
+        final Map<AxisDirection,String> m = new HashMap<>(12);
+        m.put(AxisDirection.EAST,         AxisNames.EASTING);
+        m.put(AxisDirection.WEST,         AxisNames.WESTING);
+        m.put(AxisDirection.NORTH,        AxisNames.NORTHING);
+        m.put(AxisDirection.SOUTH,        AxisNames.SOUTHING);
+        m.put(AxisDirection.GEOCENTRIC_X, AxisNames.GEOCENTRIC_X);
+        m.put(AxisDirection.GEOCENTRIC_Y, AxisNames.GEOCENTRIC_Y);
+        m.put(AxisDirection.GEOCENTRIC_Z, AxisNames.GEOCENTRIC_Z);
+        CARTESIAN = m;
+    }
 
     /**
      * A transliterator compliant with ISO 19162 on a <cite>"best effort"</cite> basis.
@@ -193,9 +214,17 @@ public abstract class Transliterator implements Serializable {
      *       (case insensitive) by <cite>“Geodetic longitude”</cite> or <cite>“Spherical longitude”</cite>,
      *       depending on whether the axis is part of an ellipsoidal or spherical CS respectively.</li>
      *   <li>Return <cite>“Geocentric X”</cite>, <cite>“Geocentric Y”</cite> and <cite>“Geocentric Z”</cite>
-     *       for {@link AxisDirection#GEOCENTRIC_X}, {@code GEOCENTRIC_Y} and {@code GEOCENTRIC_Z} respectively
-     *       in a Cartesian CS, if the given axis name is only an abbreviation.</li>
+     *       for {@link AxisDirection#GEOCENTRIC_X}, {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}
+     *       and {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z} respectively in a Cartesian CS,
+     *       if the given axis name is only an abbreviation.</li>
+     *   <li>Use unique camel-case names for axis names defined by ISO 19111 and ISO 19162. For example this method
+     *       replaces <cite>“<b>e</b>llipsoidal height”</cite> by <cite>“<b>E</b>llipsoidal height”</cite>.</li>
      * </ul>
+     *
+     * <div class="note"><b>Rational:</b>
+     * Axis names are not really free text. They are specified by ISO 19111 and ISO 19162.
+     * SIS does not put restriction on axis names, but we nevertheless try to use a unique
+     * name when we recognize it.</div>
      *
      * @param  csType    The type of the coordinate system, or {@code null} if unknown.
      * @param  direction The parsed axis direction.
@@ -216,14 +245,15 @@ public abstract class Transliterator implements Serializable {
             }
             case WKTKeywords.Cartesian: {
                 if (name.length() <= 1) {
-                    if      (direction.equals(AxisDirection.GEOCENTRIC_X)) return AxisNames.GEOCENTRIC_X;
-                    else if (direction.equals(AxisDirection.GEOCENTRIC_Y)) return AxisNames.GEOCENTRIC_Y;
-                    else if (direction.equals(AxisDirection.GEOCENTRIC_Z)) return AxisNames.GEOCENTRIC_Z;
+                    final String c = CARTESIAN.get(direction);
+                    if (c != null) {
+                        return c;
+                    }
                 }
                 break;
             }
         }
-        return name;
+        return AxisNames.toCamelCase(name);
     }
 
     /**
@@ -348,6 +378,9 @@ public abstract class Transliterator implements Serializable {
             if (condition.equals(csType)) {
                 return replacement;
             }
+        } else {
+            if (isLatLong(AxisNames.LATITUDE,  abbreviation)) return "φ";
+            if (isLatLong(AxisNames.LONGITUDE, abbreviation)) return "λ";
         }
         return abbreviation;
     }

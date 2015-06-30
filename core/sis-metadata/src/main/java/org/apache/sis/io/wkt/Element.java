@@ -390,6 +390,22 @@ final class Element {
     //////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Returns the next value (not a child element) without removing it.
+     *
+     * @return The next value, or {@code null} if none.
+     */
+    public Object peekValue() {
+        final Iterator<Object> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            final Object object = iterator.next();
+            if (!(object instanceof Element)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Removes the next {@link Date} from the list and returns it.
      *
      * @param  key The parameter name. Used for formatting an error message if no date is found.

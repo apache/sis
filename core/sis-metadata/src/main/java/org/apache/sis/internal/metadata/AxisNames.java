@@ -16,6 +16,14 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.lang.reflect.Field;
+import org.apache.sis.util.logging.Logging;
+
+// Branch-specific imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Constants for axis names specified by ISO 19111 and ISO 19162.
@@ -120,8 +128,75 @@ public final class AxisNames {
     public static final String SOUTHING = "Southing";
 
     /**
+     * A ISO 19162 frequently used name.
+     */
+    public static final String TIME = "Time";
+
+    /**
+     * The map of all of the above values, used for fixing the case.
+     * Shall not be modified after construction.
+     */
+    private static final Map<String,String> VALUES;
+    static {
+        final Map<String,String> values = new HashMap<>(22);    // 18 elements + 25%, rounded to highest integer.
+        final StringBuilder buffer = new StringBuilder(22);     // Length of the longuest string: "Gravity-related height"
+        try {
+            for (final Field f : AxisNames.class.getFields()) {
+                final String name = (String) f.get(null);
+                values.put(toUpperCase(name, buffer).intern(), name);
+                buffer.setLength(0);
+                /*
+                 * The call to 'intern()' is because many upper-case strings match the field name
+                 * (e.g. "LATITUDE", "NORTHING", "DEPTH", etc.), so we use the same String instance.
+                 */
+            }
+        } catch (IllegalAccessException e) {
+            /*
+             * Should never happen. But if it happen anyway, do not kill the application for that.
+             * We will take the values that we have been able to map so far. The other values will
+             * just not have their case fixed.
+             */
+            Logging.unexpectedException(AxisNames.class, "<cinit>", e);
+        }
+        VALUES = values;
+    }
+
+    /**
      * Do not allow instantiation of this class.
      */
     private AxisNames() {
+    }
+
+    /**
+     * Returns the given axis name in upper case without punctuation characters.
+     *
+     * @param  name   The axis name to return in upper-case.
+     * @param  buffer A temporary buffer to use. Must be initially empty.
+     * @return The given name converted to upper-case.
+     */
+    private static String toUpperCase(final String name, final StringBuilder buffer) {
+        for (int i=0; i<name.length(); i++) {
+            final char c = name.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                buffer.append(Character.toUpperCase(c));
+            }
+        }
+        return buffer.toString();
+    }
+
+    /**
+     * Returns the given name in camel case if it is one of the know names.
+     * This method canonicalizes also the use of {@code '_'}, {@code '-'} and {@code ' '}.
+     *
+     * <div class="note"><b>Rational:</b>
+     * Axis names are not really free text. They are specified by ISO 19111 and ISO 19162.
+     * SIS does not put restriction on axis names, but we nevertheless try to use a unique
+     * name when we recognize it.</div>
+     *
+     * @param  name The name in any case.
+     * @return The given name in camel case.
+     */
+    public static String toCamelCase(final String name) {
+        return JDK8.getOrDefault(VALUES, toUpperCase(name, new StringBuilder(name.length())), name);
     }
 }
