@@ -136,6 +136,8 @@ public final class WKTKeywords extends Static {
             EngineeringDatum = "EngineeringDatum",
             EngineeringCRS   = "EngineeringCRS",
             BaseEngCRS       = "BaseEngCRS",
+            EngCRS           = "EngCRS",
+            EDatum           = "EDatum",
             Local_Datum      = "Local_Datum",
             Local_CS         = "Local_CS";
 

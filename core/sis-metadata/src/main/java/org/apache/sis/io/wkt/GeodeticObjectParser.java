@@ -314,12 +314,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         Object object;
         if ((object = parseAxis             (FIRST, element, null, SI.METRE)) == null &&
             (object = parsePrimeMeridian    (FIRST, element, false, NonSI.DEGREE_ANGLE)) == null &&
-            (object = parseDatum            (FIRST, element, null)) == null &&
-            (object = parseEllipsoid        (FIRST, element)) == null &&
-            (object = parseToWGS84          (FIRST, element)) == null &&
+            (object = parseDatum            (FIRST, element, null )) == null &&
+            (object = parseEllipsoid        (FIRST, element       )) == null &&
+            (object = parseToWGS84          (FIRST, element       )) == null &&
             (object = parseVerticalDatum    (FIRST, element, false)) == null &&
-            (object = parseTimeDatum        (FIRST, element)) == null &&
-            (object = parseEngineeringDatum (FIRST, element)) == null &&
+            (object = parseTimeDatum        (FIRST, element       )) == null &&
+            (object = parseEngineeringDatum (FIRST, element, false)) == null &&
             (object = parseConversion       (FIRST, element, false, SI.METRE, NonSI.DEGREE_ANGLE)) == null)
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
@@ -496,16 +496,23 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
              * we will report a warning and leave the temporal extent missing.
              */
             while ((element = parent.pullElement(OPTIONAL, WKTKeywords.TimeExtent)) != null) {
-                final Date startTime = element.pullDate("startTime");
-                final Date endTime   = element.pullDate("endTime");
-                element.close(ignoredElements);
-                try {
-                    final DefaultTemporalExtent t = new DefaultTemporalExtent();
-                    t.setBounds(startTime, endTime);
-                    if (extent == null) extent = new DefaultExtent();
-                    extent.getTemporalElements().add(t);
-                } catch (UnsupportedOperationException e) {
-                    warning(parent, element, e);
+                if (element.peekValue() instanceof String) {
+                    element.pullString("startTime");
+                    element.pullString("endTime");
+                    element.close(ignoredElements);
+                    warning(Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
+                } else {
+                    final Date startTime = element.pullDate("startTime");
+                    final Date endTime   = element.pullDate("endTime");
+                    element.close(ignoredElements);
+                    try {
+                        final DefaultTemporalExtent t = new DefaultTemporalExtent();
+                        t.setBounds(startTime, endTime);
+                        if (extent == null) extent = new DefaultExtent();
+                        extent.getTemporalElements().add(t);
+                    } catch (UnsupportedOperationException e) {
+                        warning(parent, element, e);
+                    }
                 }
             }
             /*
@@ -1246,7 +1253,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "VERT_DATUM"} element. This element has the following pattern:
+     * Parses a {@code "VerticalDatum"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#71">WKT 2 specification §10.2</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     VERT_DATUM["<name>", <datum type> {,<authority>}]
@@ -1255,13 +1265,16 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
      * @param  isWKT1 {@code true} if the parent is a WKT 1 element.
-     * @return The {@code "VERT_DATUM"} element as a {@link VerticalDatum} object.
-     * @throws ParseException if the {@code "VERT_DATUM"} element can not be parsed.
+     * @return The {@code "VerticalDatum"} element as a {@link VerticalDatum} object.
+     * @throws ParseException if the {@code "VerticalDatum"} element can not be parsed.
      */
     private VerticalDatum parseVerticalDatum(final int mode, final Element parent, final boolean isWKT1)
             throws ParseException
     {
-        final Element element = parent.pullElement(mode, WKTKeywords.VerticalDatum, WKTKeywords.VDatum, WKTKeywords.Vert_Datum);
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.VerticalDatum,
+                WKTKeywords.VDatum,
+                WKTKeywords.Vert_Datum);
         if (element == null) {
             return null;
         }
@@ -1309,26 +1322,35 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "LOCAL_DATUM"} element. This element has the following pattern:
+     * Parses a {@code "EngineeringDatum"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     LOCAL_DATUM["<name>", <datum type> {,<authority>}]
      * }
      *
-     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent The parent element.
-     * @return The {@code "LOCAL_DATUM"} element as an {@link EngineeringDatum} object.
-     * @throws ParseException if the {@code "LOCAL_DATUM"} element can not be parsed.
+     * The datum type (WKT 1 only) is currently ignored.
      *
-     * @todo The vertical datum type is currently ignored.
+     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent The parent element.
+     * @param  isWKT1 {@code true} if the parent is a WKT 1 element.
+     * @return The {@code "EngineeringDatum"} element as an {@link EngineeringDatum} object.
+     * @throws ParseException if the {@code "EngineeringDatum"} element can not be parsed.
      */
-    private EngineeringDatum parseEngineeringDatum(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.EngineeringDatum, WKTKeywords.Local_Datum);
+    private EngineeringDatum parseEngineeringDatum(final int mode, final Element parent, final boolean isWKT1) throws ParseException {
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.EngineeringDatum,
+                WKTKeywords.EDatum,
+                WKTKeywords.Local_Datum);
         if (element == null) {
             return null;
         }
         final String name  = element.pullString ("name");
-        final int    datum = element.pullInteger("datum");   // Ignored for now.
+        if (isWKT1) {
+            element.pullInteger("datum");   // Ignored for now.
+        }
         try {
             return datumFactory.createEngineeringDatum(parseMetadataAndClose(element, name));
         } catch (FactoryException exception) {
@@ -1337,8 +1359,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "LOCAL_CS"} element.
-     * This element has the following pattern:
+     * Parses a {@code "EngineeringCRS"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#74">WKT 2 specification §11</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     LOCAL_CS["<name>", <local datum>, <unit>, <axis>, {,<axis>}* {,<authority>}]
@@ -1346,17 +1370,21 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "LOCAL_CS"} element as an {@link EngineeringCRS} object.
-     * @throws ParseException if the {@code "LOCAL_CS"} element can not be parsed.
+     * @return The {@code "EngineeringCRS"} element as an {@link EngineeringCRS} object.
+     * @throws ParseException if the {@code "EngineeringCRS"} element can not be parsed.
      */
     private EngineeringCRS parseEngineeringCRS(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.EngineeringCRS, WKTKeywords.Local_CS);
+        final Element element = parent.pullElement(mode,
+                WKTKeywords.EngineeringCRS,   // [0]  WKT 2
+                WKTKeywords.EngCRS,           // [1]  WKT 2
+                WKTKeywords.Local_CS,         // [2]  WKT 1
+                WKTKeywords.BaseEngCRS);      // [3]  WKT 2 in DerivedCRS
         if (element == null) {
             return null;
         }
-        final boolean          isWKT1 = element.getKeywordIndex() == 1;  // Index of "Local_CS" above.
+        final boolean          isWKT1 = element.getKeywordIndex() == 2;  // Index of "Local_CS" above.
         final String           name   = element.pullString("name");
-        final EngineeringDatum datum  = parseEngineeringDatum(MANDATORY, element);
+        final EngineeringDatum datum  = parseEngineeringDatum(MANDATORY, element, isWKT1);
         final Unit<?>          unit   = parseUnit(element);
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
@@ -1475,8 +1503,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses an <strong>optional</strong> {@code "VERT_CS"} element.
-     * This element has the following pattern:
+     * Parses a {@code "VerticalCRS"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#69">WKT 2 specification §10</a>.
+     *
+     * The legacy WKT 1 pattern was:
      *
      * {@preformat text
      *     VERT_CS["<name>", <vert datum>, <linear unit>, {<axis>,} {,<authority>}]
@@ -1484,8 +1514,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "VERT_CS"} element as a {@link VerticalCRS} object.
-     * @throws ParseException if the {@code "VERT_CS"} element can not be parsed.
+     * @return The {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
+     * @throws ParseException if the {@code "VerticalCRS"} element can not be parsed.
      */
     private VerticalCRS parseVerticalCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode,
