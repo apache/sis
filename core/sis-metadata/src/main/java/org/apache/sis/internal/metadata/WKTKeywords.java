@@ -122,6 +122,7 @@ public final class WKTKeywords extends Static {
             TimeExtent  = "TimeExtent",
             TimeOrigin  = "TimeOrigin",
             TimeDatum   = "TimeDatum",
+            TDatum      = "TDatum",
             TimeCRS     = "TimeCRS",
             BaseTimeCRS = "BaseTimeCRS";
 
