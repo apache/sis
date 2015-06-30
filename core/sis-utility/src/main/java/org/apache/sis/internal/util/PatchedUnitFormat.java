@@ -81,9 +81,10 @@ public final class PatchedUnitFormat extends Format {
     private final UnitFormat format;
 
     /**
-     * Value of {@link org.apache.sis.io.wkt.Convention#usesCommonUnits}.
+     * {@code true} for formatting the unit names using US spelling.
+     * Example: "meter" instead of "metre".
      */
-    public boolean usesCommonUnits;
+    public boolean isLocaleUS;
 
     /**
      * Creates a new {@code PatchedUnitFormat} instance wrapping the given format.
@@ -153,7 +154,7 @@ public final class PatchedUnitFormat extends Format {
         } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
             return toAppendTo.append("degree");
         } else if (SI.METRE.equals(unit)) {
-            return toAppendTo.append(usesCommonUnits ? "meter" : "metre");
+            return toAppendTo.append(isLocaleUS ? "meter" : "metre");
         } else if (Units.PPM.equals(unit)) {
             return toAppendTo.append("parts per million");
         }
