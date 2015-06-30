@@ -109,7 +109,7 @@ final class MatrixParametersAlphaNum extends MatrixParameters {
          */
         if (isEPSG(indices)) {
             name = EPSGName.create(name.tip().toString()); // Put the name in EPSG namespace.
-            final int code = (indices[0] == 0 ? Constants.A0 : Constants.B0) + indices[1];
+            final int code = (indices[0] == 0 ? Constants.EPSG_A0 : Constants.EPSG_B0) + indices[1];
             properties.put(ParameterDescriptor.IDENTIFIERS_KEY, EPSGName.identifier(code));
         }
         properties.put(ParameterDescriptor.NAME_KEY, name);

@@ -31,7 +31,6 @@ import java.text.FieldPosition;
 import java.lang.reflect.Array;
 import java.math.RoundingMode;
 import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Quantity;
@@ -64,6 +63,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
@@ -389,6 +389,7 @@ public class Formatter implements Localized {
         this.toUpperCase    = toUpperCase;
         this.indentation    = indentation;
         this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
+        unitFormat.isLocaleUS = convention.usesCommonUnits;
     }
 
     /**
@@ -947,7 +948,7 @@ public class Formatter implements Localized {
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
      *
      * @param text The string to format to the WKT, or {@code null} if none.
-     * @param type The key of the colors to apply if syntax coloring is enabled.
+     * @param type The key of the colors to apply if syntax coloring is enabled, or {@code null} if none.
      */
     public void append(final String text, final ElementKind type) {
         if (text != null) {
@@ -1129,6 +1130,7 @@ public class Formatter implements Localized {
     public void append(final Unit<?> unit) {
         if (unit != null) {
             final boolean isSimplified = convention.isSimplified();
+            final boolean isWKT1 = convention.majorVersion() == 1;
             final Unit<?> base = unit.toSI();
             final String keyword;
             if (base.equals(SI.METRE)) {
@@ -1145,27 +1147,39 @@ public class Formatter implements Localized {
             openElement(false, keyword);
             setColor(ElementKind.UNIT);
             final int fromIndex = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-            if (Unit.ONE.equals(unit)) {
-                buffer.append("unity");
-            } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
-                buffer.append("degree");
-            } else if (SI.METRE.equals(unit)) {
-                buffer.append(convention.usesCommonUnits ? "meter" : "metre");
-            } else if (Units.PPM.equals(unit)) {
-                buffer.append("parts per million");
-            } else {
-                unitFormat.format(unit, buffer, dummy);
-            }
+            unitFormat.format(unit, buffer, dummy);
             closeQuote(fromIndex);
             resetColor();
             final double conversion = Units.toStandardUnit(unit);
             appendExact(conversion);
+            /*
+             * The EPSG code in UNIT elements is generally not recommended.
+             * But we make an exception for unit that have no exact representation in WKT.
+             */
+            final Integer code = Units.getEpsgCode(unit, false);
+            if (code != null) {
+                final int n = code;
+                switch (n) {
+                    case Constants.EPSG_DM:
+                    case Constants.EPSG_DMS:
+                    case Constants.EPSG_DMSH: {
+                        openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
+                        append(Constants.EPSG, null);
+                        if (isWKT1) {
+                            append(Integer.toString(n), null);
+                        } else {
+                            append(n);
+                        }
+                        closeElement(false);
+                    }
+                }
+            }
             closeElement(false);
             /*
              * ISO 19162 requires the conversion factor to be positive.
              * In addition, keywords other than "Unit" are not valid in WKt 1.
              */
-            if (!(conversion > 0) || (keyword != WKTKeywords.Unit && convention.majorVersion() == 1)) {
+            if (!(conversion > 0) || (keyword != WKTKeywords.Unit && isWKT1)) {
                 setInvalidWKT(Unit.class, null);
             }
         }

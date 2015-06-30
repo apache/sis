@@ -142,13 +142,30 @@ public final class Constants extends Static {
      * EPSG code of the {@code A0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code A1} to {@code A8} inclusive follow, but the affine coefficients stop at {@code A2}.
      */
-    public static final short A0 = 8623;
+    public static final short EPSG_A0 = 8623;
 
     /**
      * EPSG code of the {@code B0} coefficient used in affine (general parametric) and polynomial transformations.
      * Codes for parameters {@code B1} to {@code B3} inclusive follow, but the affine coefficients stop at {@code B2}.
      */
-    public static final short B0 = 8639;
+    public static final short EPSG_B0 = 8639;
+
+    /**
+     * The EPSG code of the "degree minute second hemisphere" pseudo-unit.
+     * Different symbol sets (º ' ") may be in use as field separators.
+     * Ends with hemisphere abbreviation (single character N S E or W).
+     */
+    public static final short EPSG_DMSH = 9108;
+
+    /**
+     * The EPSG code of the "sexagesimal DMS" pseudo-unit.
+     */
+    public static final short EPSG_DMS = 9110;
+
+    /**
+     * The EPSG code of the "sexagesimal DM" pseudo-unit.
+     */
+    public static final short EPSG_DM = 9111;
 
     /**
      * Do not allow instantiation of this class.

@@ -257,6 +257,13 @@ public final class Units extends Static {
             if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
                 return (Unit<A>) NonSI.GRADE;
             }
+        } else if (SI.METRE.equals(unit)) {
+            if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
+                return (Unit<A>) NonSI.FOOT;
+            }
+            if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
+                return (Unit<A>) NonSI.FOOT_SURVEY_US;
+            }
         }
         if (abs(factor - 1) > EPS) {
             final long fl = (long) factor;
@@ -550,11 +557,11 @@ public final class Units extends Static {
             case 9103: return NonSI.MINUTE_ANGLE;
             case 9104: return NonSI.SECOND_ANGLE;
             case 9105: return NonSI.GRADE;
-            case 9107: // Fall through
-            case 9108: return SexagesimalConverter.DMS_SCALED;
             case 9109: return SI.MetricPrefix.MICRO(SI.RADIAN);
-            case 9111: return SexagesimalConverter.DM;
-            case 9110: return SexagesimalConverter.DMS;
+            case 9107: // Fall through
+            case Constants.EPSG_DMSH: return SexagesimalConverter.DMS_SCALED;
+            case Constants.EPSG_DM:   return SexagesimalConverter.DM;
+            case Constants.EPSG_DMS:  return SexagesimalConverter.DMS;
             case 9203: // Fall through
             case 9201: return Unit .ONE;
             case 9202: return Units.PPM;

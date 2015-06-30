@@ -54,9 +54,9 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String PATTERN = "yyyy-MM-dd'T'HH:mm:ss.S";
 
     /**
-     * Short version of {@link #DATE_PATTERN}, to be used when formatting temporal extents
+     * Short version of {@link #PATTERN}, to be used when formatting temporal extents
      * if the duration is greater than some threshold (typically one day). This pattern must
-     * be a prefix of {@link #DATE_PATTERN}, since we will use that condition for deciding
+     * be a prefix of {@link #PATTERN}, since we will use that condition for deciding
      * if this pattern is really shorter (the user could have created his own date format
      * with a different pattern).
      */
