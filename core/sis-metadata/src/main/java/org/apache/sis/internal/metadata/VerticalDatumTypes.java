@@ -16,12 +16,15 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Collection;
+import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
-import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -112,27 +115,51 @@ public final class VerticalDatumTypes implements CodeList.Filter {
     }
 
     /**
-     * Guesses the type of the given datum using its name or identifiers. This is sometime needed
-     * after XML unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
+     * Guesses the type of a datum from its name, aliases or a given vertical axis. This is sometime needed
+     * after XML unmarshalling or WKT parsing, since GML 3.2 and ISO 19162 do not contain any attribute for
+     * the datum type.
      *
      * <p>This method uses heuristic rules and may be changed in any future SIS version.
-     * If the type can not be determined, defaults on {@link VerticalDatumType#OTHER_SURFACE}.</p>
+     * If the type can not be determined, defaults to {@link VerticalDatumType#OTHER_SURFACE}.</p>
      *
-     * @param  datum The datum for which to guess a type.
+     * @param  name    The name of the datum for which to guess a type, or {@code null} if unknown.
+     * @param  aliases The aliases of the datum for which to guess a type, or {@code null} if unknown.
+     * @param  axis    The vertical axis for which to guess a type, or {@code null} if unknown.
      * @return A datum type, or {@link VerticalDatumType#OTHER_SURFACE} if none can be guessed.
      */
-    public static VerticalDatumType guess(final VerticalDatum datum) {
-        final Identifier identifier = datum.getName();
-        if (identifier != null) {
-            final VerticalDatumType type = guess(identifier.getCode());
-            if (type != null) {
-                return type;
+    public static VerticalDatumType guess(final String name, final Collection<? extends GenericName> aliases,
+            final CoordinateSystemAxis axis)
+    {
+        VerticalDatumType type = guess(name);
+        if (type != null) {
+            return type;
+        }
+        if (aliases != null) {
+            for (final GenericName alias : aliases) {
+                type = guess(alias.tip().toString());
+                if (type != null) {
+                    return type;
+                }
             }
         }
-        for (final GenericName alias : datum.getAlias()) {
-            final VerticalDatumType type = guess(alias.tip().toString());
-            if (type != null) {
-                return type;
+        if (axis != null) {
+            final Unit<?> unit = axis.getUnit();
+            if (Units.isLinear(unit)) {
+                final String abbreviation = axis.getAbbreviation();
+                if (abbreviation.length() == 1) {
+                    AxisDirection dir = AxisDirection.UP;   // Expected direction for accepting the type.
+                    switch (abbreviation.charAt(0)) {
+                        case 'h': type = ELLIPSOIDAL; break;
+                        case 'H': type = VerticalDatumType.GEOIDAL; break;
+                        case 'D': type = VerticalDatumType.DEPTH; dir = AxisDirection.DOWN; break;
+                        default:  return VerticalDatumType.OTHER_SURFACE;
+                    }
+                    if (dir.equals(axis.getDirection())) {
+                        return type;
+                    }
+                }
+            } else if (Units.isPressure(unit)) {
+                return VerticalDatumType.BAROMETRIC;
             }
         }
         return VerticalDatumType.OTHER_SURFACE;

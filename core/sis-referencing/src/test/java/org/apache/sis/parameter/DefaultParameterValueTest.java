@@ -603,7 +603,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
-        final Watcher<Double> parameter = new Watcher<Double>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.A0));
+        final Watcher<Double> parameter = new Watcher<Double>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
         assertWktEquals("Parameter[“A0”, null, Id[“EPSG”, 8623]]", parameter);
     }
 }

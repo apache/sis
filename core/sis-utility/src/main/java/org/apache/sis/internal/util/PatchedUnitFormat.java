@@ -21,8 +21,11 @@ import java.util.HashMap;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
 
@@ -76,6 +79,12 @@ public final class PatchedUnitFormat extends Format {
      * The {@link UnitFormat} to patch.
      */
     private final UnitFormat format;
+
+    /**
+     * {@code true} for formatting the unit names using US spelling.
+     * Example: "meter" instead of "metre".
+     */
+    public boolean isLocaleUS;
 
     /**
      * Creates a new {@code PatchedUnitFormat} instance wrapping the given format.
@@ -134,6 +143,20 @@ public final class PatchedUnitFormat extends Format {
             if (symbol != null) {
                 return toAppendTo.append(symbol);
             }
+        }
+        /*
+         * Following are specific to the WKT format, which is currently the only user of this method.
+         * If we invoke this method for other purposes, then we would need to provide more control on
+         * what kind of formatting is desired.
+         */
+        if (Unit.ONE.equals(unit)) {
+            return toAppendTo.append("unity");
+        } else if (NonSI.DEGREE_ANGLE.equals(unit)) {
+            return toAppendTo.append("degree");
+        } else if (SI.METRE.equals(unit)) {
+            return toAppendTo.append(isLocaleUS ? "meter" : "metre");
+        } else if (Units.PPM.equals(unit)) {
+            return toAppendTo.append("parts per million");
         }
         return format.format(unit, toAppendTo, pos);
     }

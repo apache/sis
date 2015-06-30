@@ -322,7 +322,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
-        final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.A0);
+        final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.EPSG_A0);
         assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
     }
 }
