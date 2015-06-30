@@ -234,7 +234,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private VerticalDatumType type() {
         VerticalDatumType t = type;
         if (t == null) {
-            type = t = VerticalDatumTypes.guess(this);
+            final ReferenceIdentifier name = super.getName();
+            type = t = VerticalDatumTypes.guess(name != null ? name.getCode() : null, super.getAlias(), null);
         }
         return t;
     }

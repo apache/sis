@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Map;
+import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -447,6 +448,18 @@ public class ReferencingServices extends OptionalDependency {
         } else {
             throw moduleNotFound();
         }
+    }
+
+    /**
+     * Returns the properties of the given object.
+     *
+     * @param  object The object from which to get the properties.
+     * @return The properties of the given object.
+     *
+     * @since 0.6
+     */
+    public Map<String,?> getProperties(final IdentifiedObject object) {
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, object.getName());
     }
 
     /**

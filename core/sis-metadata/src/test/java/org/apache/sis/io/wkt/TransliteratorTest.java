@@ -49,6 +49,8 @@ public final strictfp class TransliteratorTest extends TestCase {
         assertEquals("Geodetic longitude",  t.toLongAxisName("ellipsoidal", AxisDirection.EAST,  "longitude"));
         assertEquals("Spherical latitude",  t.toLongAxisName("spherical",   AxisDirection.NORTH, "lat"));
         assertEquals("Spherical longitude", t.toLongAxisName("spherical",   AxisDirection.EAST,  "long"));
+        assertEquals("Ellipsoidal height",  t.toLongAxisName("ellipsoidal", AxisDirection.UP,    "ellipsoidal_height"));
+        assertEquals("Unknown name",        t.toLongAxisName("ellipsoidal", AxisDirection.UP,    "Unknown name"));
     }
 
     /**
