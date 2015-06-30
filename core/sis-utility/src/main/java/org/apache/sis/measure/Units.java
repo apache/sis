@@ -257,6 +257,13 @@ public final class Units extends Static {
             if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
                 return (Unit<A>) NonSI.GRADE;
             }
+        } else if (SI.METRE.equals(unit)) {
+            if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
+                return (Unit<A>) NonSI.FOOT;
+            }
+            if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
+                return (Unit<A>) NonSI.FOOT_SURVEY_US;
+            }
         }
         if (abs(factor - 1) > EPS) {
             final long fl = (long) factor;

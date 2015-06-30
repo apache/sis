@@ -23,6 +23,7 @@ import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -130,5 +131,41 @@ public class WKTParserTest extends CRSParserTest {
         assertEquals(AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode());
         assertEquals(AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode());
         assertEquals(AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode());
+    }
+
+    /**
+     * Ignored for now, because the Lambert Azimuthal Equal Area projection method is not yet implemented.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    @Ignore("Lambert Azimuthal Equal Area projection method not yet implemented.")
+    public void testProjected() throws FactoryException {
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testProjectedWithFootUnits() throws FactoryException {
+        super.testProjectedWithFootUnits();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals(AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
+        assertEquals(AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+    }
+
+    /**
+     * Ignored for now, because the Transverse Mercator projection method is not yet implemented.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    @Ignore("Transverse Mercator projection method not yet implemented.")
+    public void testProjectedWithImplicitUnits() throws FactoryException {
     }
 }

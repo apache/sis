@@ -196,7 +196,7 @@ abstract class AbstractParser implements Parser {
             if (cause instanceof FactoryException) {
                 throw (FactoryException) cause;
             }
-            throw new FactoryException(exception);
+            throw new FactoryException(exception.getMessage(), exception);
         }
     }
 
