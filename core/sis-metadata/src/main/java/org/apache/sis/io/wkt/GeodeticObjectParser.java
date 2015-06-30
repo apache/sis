@@ -1306,7 +1306,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @throws ParseException if the {@code "TimeDatum"} element can not be parsed.
      */
     private TemporalDatum parseTimeDatum(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.TimeDatum);
+        final Element element = parent.pullElement(mode, WKTKeywords.TimeDatum, WKTKeywords.TDatum);
         if (element == null) {
             return null;
         }
@@ -1558,15 +1558,15 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses an <strong>optional</strong> {@code "TIMECRS"} element.
+     * Parses {@code "TimeCRS"} element.
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "TIMECRS"} element as a {@link TemporalCRS} object.
-     * @throws ParseException if the {@code "TIMECRS"} element can not be parsed.
+     * @return The {@code "TimeCRS"} element as a {@link TemporalCRS} object.
+     * @throws ParseException if the {@code "TimeCRS"} element can not be parsed.
      */
     private TemporalCRS parseTimeCRS(final int mode, final Element parent) throws ParseException {
-        final Element element = parent.pullElement(mode, WKTKeywords.TimeCRS);
+        final Element element = parent.pullElement(mode, WKTKeywords.TimeCRS, WKTKeywords.BaseTimeCRS);
         if (element == null) {
             return null;
         }
