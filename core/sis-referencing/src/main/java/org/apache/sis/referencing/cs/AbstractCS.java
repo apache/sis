@@ -36,6 +36,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -464,7 +465,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
         if (type == null) {
             formatter.setInvalidWKT(this, null);
         }
-        formatter.append(type, null);
+        formatter.append(type, ElementKind.CODE_LIST);
         formatter.append(getDimension());
         return WKTKeywords.CS;
     }

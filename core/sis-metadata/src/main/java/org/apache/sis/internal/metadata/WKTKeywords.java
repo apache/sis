@@ -134,6 +134,7 @@ public final class WKTKeywords extends Static {
     public static final String
             ImageDatum       = "ImageDatum",
             ImageCRS         = "ImageCRS",
+            IDatum           = "IDatum",
             EngineeringDatum = "EngineeringDatum",
             EngineeringCRS   = "EngineeringCRS",
             BaseEngCRS       = "BaseEngCRS",
