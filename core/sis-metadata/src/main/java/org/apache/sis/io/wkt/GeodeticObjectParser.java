@@ -320,6 +320,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             (object = parseVerticalDatum    (FIRST, element, false)) == null &&
             (object = parseTimeDatum        (FIRST, element       )) == null &&
             (object = parseEngineeringDatum (FIRST, element, false)) == null &&
+            (object = parseImageDatum       (FIRST, element       )) == null &&
             (object = parseConversion       (FIRST, element, false, SI.METRE, NonSI.DEGREE_ANGLE)) == null)
         {
             throw element.missingOrUnknownComponent(WKTKeywords.GeodeticCRS);
@@ -344,6 +345,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             (crs = parseVerticalCRS    (FIRST, element)) == null &&
             (crs = parseTimeCRS        (FIRST, element)) == null &&
             (crs = parseEngineeringCRS (FIRST, element)) == null &&
+            (crs = parseImageCRS       (FIRST, element)) == null &&
             (crs = parseCompoundCRS    (FIRST, element)) == null &&
             (crs = parseFittedCS       (FIRST, element)) == null)
         {
@@ -1315,7 +1317,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final Date    epoch  = origin .pullDate("origin");
         origin.close(ignoredElements);
         try {
-            return datumFactory.createTemporalDatum(parseMetadataAndClose(element, name), epoch);
+            return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), epoch);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1352,7 +1354,31 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             element.pullInteger("datum");   // Ignored for now.
         }
         try {
-            return datumFactory.createEngineeringDatum(parseMetadataAndClose(element, name));
+            return datumFactory.createEngineeringDatum(parseAnchorAndClose(element, name));
+        } catch (FactoryException exception) {
+            throw element.parseFailed(exception);
+        }
+    }
+
+    /**
+     * Parses an {@code "ImageDatum"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#81">WKT 2 specification §12.2</a>.
+     *
+     * @param  mode   {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent The parent element.
+     * @return The {@code "ImageDatum"} element as an {@link ImageDatum} object.
+     * @throws ParseException if the {@code "ImageDatum"} element can not be parsed.
+     */
+    private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
+        if (element == null) {
+            return null;
+        }
+        final String name = element.pullString("name");
+        final PixelInCell pixelInCell = Types.forCodeName(PixelInCell.class,
+                element.pullVoidElement("pixelInCell").keyword, true);
+        try {
+            return datumFactory.createImageDatum(parseAnchorAndClose(element, name), pixelInCell);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1389,6 +1415,31 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
             return crsFactory.createEngineeringCRS(parseMetadataAndClose(element, name), datum, cs);
+        } catch (FactoryException exception) {
+            throw element.parseFailed(exception);
+        }
+    }
+
+    /**
+     * Parses an {@code "ImageCRS"} (WKT 2) element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>.
+     *
+     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent The parent element.
+     * @return The {@code "ImageCRS"} element as an {@link ImageCRS} object.
+     * @throws ParseException if the {@code "ImageCRS"} element can not be parsed.
+     */
+    private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
+        if (element == null) {
+            return null;
+        }
+        final String     name   = element.pullString("name");
+        final ImageDatum datum  = parseImageDatum(MANDATORY, element);
+        final Unit<?>    unit   = parseUnit(element);
+        try {
+            final CoordinateSystem cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
+            return crsFactory.createImageCRS(parseMetadataAndClose(element, name), datum, (CartesianCS) cs);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
