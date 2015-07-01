@@ -54,7 +54,7 @@ public final strictfp class DefaultTemporalCRSTest extends TestCase {
         assertWktEquals(Convention.WKT2,
                 "TimeCRS[“Time”,\n" +
                 "  TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
-                "  CS[“temporal”, 1],\n" +
+                "  CS[temporal, 1],\n" +
                 "    Axis[“Time (t)”, future, Order[1]],\n" +
                 "    TimeUnit[“day”, 86400]]",
                 HardCodedCRS.TIME);

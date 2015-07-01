@@ -25,6 +25,7 @@ import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
+import javax.measure.quantity.Quantity;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
 
@@ -93,6 +94,24 @@ public final class PatchedUnitFormat extends Format {
      */
     public PatchedUnitFormat(final UnitFormat format) {
         this.format = format;
+    }
+
+    /**
+     * If the given unit is one of the unit that can not be formatted without ambiguity in WKT format,
+     * return a proposed replacement. Otherwise returns {@code unit} unchanged.
+     *
+     * @param  <Q> The unit dimension.
+     * @param  unit The unit to test.
+     * @return The replacement to format, or {@code unit} if not needed.
+     */
+    @SuppressWarnings("unchecked")
+    public static <Q extends Quantity> Unit<Q> toFormattable(Unit<Q> unit) {
+        final Map<Unit<?>,String> symbols = SYMBOLS;
+        if (symbols != null && symbols.containsKey(unit)) {
+            assert Units.isAngular(unit);
+            unit = (Unit<Q>) NonSI.DEGREE_ANGLE;
+        }
+        return unit;
     }
 
     /**

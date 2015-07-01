@@ -194,7 +194,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
                 "    Parameter[“False northing”, 2200000.0]],\n" +
-                "  CS[“Cartesian”, 2],\n" +
+                "  CS[Cartesian, 2],\n" +
                 "    Axis[“Easting (E)”, east],\n" +
                 "    Axis[“Northing (N)”, north],\n" +
                 "    Unit[“metre”, 1],\n" +
@@ -219,7 +219,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
                 "    Parameter[“False easting”, 600000.0],\n" +
                 "    Parameter[“False northing”, 2200000.0]],\n" +
-                "  CS[“Cartesian”, 2],\n" +
+                "  CS[Cartesian, 2],\n" +
                 "    Axis[“Easting (E)”, east],\n" +
                 "    Axis[“Northing (N)”, north],\n" +
                 "    Unit[“metre”, 1],\n" +
@@ -250,7 +250,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],\n" +
                 "    Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],\n" +
                 "    Parameter[“False northing”, 2200000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8807]]],\n" +
-                "  CS[“Cartesian”, 2],\n" +
+                "  CS[Cartesian, 2],\n" +
                 "    Axis[“Easting (E)”, east, Order[1]],\n" +
                 "    Axis[“Northing (N)”, north, Order[2]],\n" +
                 "    LengthUnit[“metre”, 1],\n" +
@@ -330,7 +330,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Parameter[“Longitude of natural origin”, 0.0],\n" +
                 "    Parameter[“False easting”, 1000.0],\n" +
                 "    Parameter[“False northing”, 2000.0]],\n" +
-                "  CS[“Cartesian”, 2],\n" +
+                "  CS[Cartesian, 2],\n" +
                 "    Axis[“Easting (E)”, east],\n" +
                 "    Axis[“Northing (N)”, north],\n" +
                 "    Unit[“metre”, 1]]",
