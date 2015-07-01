@@ -47,6 +47,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
@@ -1154,24 +1155,20 @@ public class Formatter implements Localized {
             appendExact(conversion);
             /*
              * The EPSG code in UNIT elements is generally not recommended.
-             * But we make an exception for unit that have no exact representation in WKT.
+             * But we make an exception for sexagesimal units (EPSG:9108, 9110 and 9111)
+             * because they can not be represented by a simple scale factor in WKT.
              */
-            final Integer code = Units.getEpsgCode(unit, false);
-            if (code != null) {
-                final int n = code;
-                switch (n) {
-                    case Constants.EPSG_DM:
-                    case Constants.EPSG_DMS:
-                    case Constants.EPSG_DMSH: {
-                        openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
-                        append(Constants.EPSG, null);
-                        if (isWKT1) {
-                            append(Integer.toString(n), null);
-                        } else {
-                            append(n);
-                        }
-                        closeElement(false);
+            if (convention == Convention.INTERNAL || PatchedUnitFormat.toFormattable(unit) != unit) {
+                final Integer code = Units.getEpsgCode(unit, getEnclosingElement(1) instanceof CoordinateSystemAxis);
+                if (code != null) {
+                    openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
+                    append(Constants.EPSG, null);
+                    if (isWKT1) {
+                        append(code.toString(), null);
+                    } else {
+                        append(code);
                     }
+                    closeElement(false);
                 }
             }
             closeElement(false);
