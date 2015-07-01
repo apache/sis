@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.datum;
 
 import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
@@ -24,6 +25,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.measure.Units;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.XMLTestCase;
@@ -31,6 +33,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
@@ -59,6 +62,41 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertIsGreenwich(pm);
         assertWktEquals("PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]", pm);
+    }
+
+    /**
+     * Tests WKT formatting of a prime meridian in grad units.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testToWKT")
+    public void testWKT_inGrads() {
+        final DefaultPrimeMeridian pm = HardCodedDatum.PARIS;
+        assertWktEquals(Convention.WKT1, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967],"
+                + " Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+    }
+
+    /**
+     * Tests WKT formatting of a prime meridian with sexagesimal units.
+     * Since those units can not be formatted in a {@code UNIT["name", scale]} element,
+     * the formatter should convert them to a formattable unit like degrees.
+     *
+     * @since 0.6
+     */
+    @Test
+    @DependsOnMethod("testWKT_inGrads")
+    public void testWKT_withUnformattableUnit() {
+        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(singletonMap(DefaultPrimeMeridian.NAME_KEY, "Test"),
+                10.3, Units.valueOfEPSG(9111).asType(Angle.class));
+        /*
+         * In WKT 1 format, if there is no contextual unit (which is the case of this test),
+         * the formatter default to decimal degrees. In WKT 2 format it depends on the PM unit.
+         */
+        assertWktEquals(Convention.WKT1,            "PRIMEM[“Test”, 10.5]", pm);  // 10.3 DM  ==  10.5°
+        assertWktEquals(Convention.WKT2,     "PrimeMeridian[“Test”, 10.5, AngleUnit[“degree”, 0.017453292519943295]]", pm);
+        assertWktEquals(Convention.INTERNAL, "PrimeMeridian[“Test”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", pm);
     }
 
     /**
@@ -140,7 +178,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
      * @throws JAXBException If an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod({"testUnmarshall", "testMarshall"})
+    @DependsOnMethod({"testUnmarshall", "testMarshall", "testWKT_inGrads"})
     public void testParisMeridian() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "Paris.xml");
         assertIsParis(pm);
@@ -152,7 +190,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertWktEquals(Convention.WKT2,
                 "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
-                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903],\n" +
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8903],\n" +
                 "  Remark[“Equivalent to 2°20′14.025″.”]]", pm);
         assertXmlEquals(
                 "<gml:PrimeMeridian xmlns:gml=\"" + Namespaces.GML + "\">\n" +

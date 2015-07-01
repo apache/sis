@@ -29,6 +29,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.Measure;
 import org.apache.sis.internal.util.Numerics;
@@ -235,11 +236,11 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(NonSI.DEGREE_ANGLE);
      * }
      *
-     * @param targetUnit The unit in which to express longitude.
+     * @param unit The unit in which to express longitude.
      * @return The Greenwich longitude in the given units.
      */
-    public double getGreenwichLongitude(final Unit<Angle> targetUnit) {
-        return getAngularUnit().getConverterTo(targetUnit).convert(getGreenwichLongitude());
+    public double getGreenwichLongitude(final Unit<Angle> unit) {
+        return getAngularUnit().getConverterTo(unit).convert(getGreenwichLongitude());
     }
 
     /**
@@ -384,8 +385,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * below the {@code PRIMEM[…]} one, which happen if we are inside a base CRS.
      * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.
      */
-    private static boolean beConservative(final Formatter formatter, final Unit<Angle> targetUnit) {
-        return !targetUnit.equals(NonSI.DEGREE_ANGLE) && !isElementOfBaseCRS(formatter);
+    private static boolean beConservative(final Formatter formatter, final Unit<Angle> contextualUnit) {
+        return !contextualUnit.equals(NonSI.DEGREE_ANGLE) && !isElementOfBaseCRS(formatter);
     }
 
     /**
@@ -398,16 +399,22 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        final Convention convention = formatter.getConvention();
-        final boolean isWKT1 = convention.majorVersion() == 1;
-        final Unit<Angle> targetUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
-        formatter.append(isWKT1 ? getGreenwichLongitude(targetUnit) : getGreenwichLongitude());
+        final Convention  convention = formatter.getConvention();
+        final boolean     isWKT1 = (convention.majorVersion() == 1);
+        final Unit<Angle> contextualUnit = formatter.toContextualUnit(NonSI.DEGREE_ANGLE);
+        Unit<Angle> unit = contextualUnit;
+        if (!isWKT1) {
+            unit = getAngularUnit();
+            if (convention != Convention.INTERNAL) {
+                unit = PatchedUnitFormat.toFormattable(unit);
+            }
+        }
+        formatter.append(getGreenwichLongitude(unit));
         if (isWKT1) {
             return WKTKeywords.PrimeM;
         }
-        final Unit<Angle> angularUnit = getAngularUnit();   // Gives to users a chance to override properties.
-        if (!convention.isSimplified() || !targetUnit.equals(angularUnit) || beConservative(formatter, targetUnit)) {
-            formatter.append(angularUnit);
+        if (!convention.isSimplified() || !contextualUnit.equals(unit) || beConservative(formatter, contextualUnit)) {
+            formatter.append(unit);
         }
         return WKTKeywords.PrimeMeridian;
     }

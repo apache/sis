@@ -28,11 +28,13 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**
@@ -40,7 +42,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class TypesTest extends TestCase {
@@ -129,6 +131,16 @@ public final strictfp class TypesTest extends TestCase {
         assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi darkness", false));
         assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi-darkness", false));
         assertNull(Types.forCodeName(ImagingCondition.class, "darkness", false));
+
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cell corner", false));
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  false));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", false));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  false));
+
+        if (PENDING_NEXT_GEOAPI_RELEASE) {
+            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", false));
+            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  false));
+        }
     }
 
     /**

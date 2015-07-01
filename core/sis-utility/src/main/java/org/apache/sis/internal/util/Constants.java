@@ -151,23 +151,6 @@ public final class Constants extends Static {
     public static final short EPSG_B0 = 8639;
 
     /**
-     * The EPSG code of the "degree minute second hemisphere" pseudo-unit.
-     * Different symbol sets (º ' ") may be in use as field separators.
-     * Ends with hemisphere abbreviation (single character N S E or W).
-     */
-    public static final short EPSG_DMSH = 9108;
-
-    /**
-     * The EPSG code of the "sexagesimal DMS" pseudo-unit.
-     */
-    public static final short EPSG_DMS = 9110;
-
-    /**
-     * The EPSG code of the "sexagesimal DM" pseudo-unit.
-     */
-    public static final short EPSG_DM = 9111;
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Constants() {
