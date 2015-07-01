@@ -200,7 +200,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  CS[“ellipsoidal”, 2],\n" +
                 "    Axis[“Geodetic longitude (λ)”, east],\n" +
                 "    Axis[“Geodetic latitude (φ)”, north],\n" +
-                "    Unit[“degree”, 0.017453292519943295],\n" +
+                "    Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);

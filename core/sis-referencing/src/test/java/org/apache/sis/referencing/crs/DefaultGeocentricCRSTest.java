@@ -143,7 +143,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
                 "    Axis[“Geocentric X (X)”, geocentricX],\n" +
                 "    Axis[“Geocentric Y (Y)”, geocentricY],\n" +
                 "    Axis[“Geocentric Z (Z)”, geocentricZ],\n" +
-                "    Unit[“metre”, 1]]",
+                "    Unit[“metre”, 1, Id[“EPSG”, 9001]]]",
                 HardCodedCRS.GEOCENTRIC);
     }
 }
