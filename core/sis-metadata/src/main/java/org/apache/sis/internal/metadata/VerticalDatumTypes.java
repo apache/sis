@@ -25,6 +25,8 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 
 
 /**
@@ -174,6 +176,9 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      */
     private static VerticalDatumType guess(final String name) {
         if (name != null) {
+            if (CharSequences.equalsFiltered("Mean Sea Level", name, Characters.Filter.LETTERS_AND_DIGITS, true)) {
+                return VerticalDatumType.GEOIDAL;
+            }
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);
                 if (Character.isLetter(c)) {

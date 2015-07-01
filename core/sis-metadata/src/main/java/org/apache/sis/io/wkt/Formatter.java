@@ -956,7 +956,18 @@ public class Formatter implements Localized {
     public void append(final String text, final ElementKind type) {
         if (text != null) {
             appendSeparator();
-            quote(text, type);
+            if (type != ElementKind.CODE_LIST) {
+                quote(text, type);
+            } else {
+                /*
+                 * Code lists have no quotes. They are normally formatted by the append(Enumerated) method,
+                 * but an important exception is the CS[type] element in which the type is defined by the
+                 * interface implemented by the CoordinateSystem rather than a CodeList instance.
+                 */
+                setColor(type);
+                buffer.append(text);
+                resetColor();
+            }
         }
     }
 
