@@ -156,7 +156,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
+                "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (L)”, east, Order[1]],\n" +
                 "    Axis[“Latitude (B)”, north, Order[2]],\n" +
                 "    AngleUnit[“degree”, 0.017453292519943295],\n" +
@@ -175,7 +175,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "GeodeticCRS[“WGS 84”,\n" +
                 "  Datum[“World Geodetic System 1984”,\n" +
                 "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
+                "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (L)”, east],\n" +
                 "    Axis[“Latitude (B)”, north],\n" +
                 "    Unit[“degree”, 0.017453292519943295],\n" +
@@ -197,10 +197,10 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "    Scope[“Satellite navigation.”],\n" +
                 "    Id[“EPSG”, 6326]],\n" +
                 "    PrimeMeridian[“Greenwich”, 0.0, Id[“EPSG”, 8901]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
+                "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Geodetic longitude (λ)”, east],\n" +
                 "    Axis[“Geodetic latitude (φ)”, north],\n" +
-                "    Unit[“degree”, 0.017453292519943295],\n" +
+                "    Unit[“degree”, 0.017453292519943295, Id[“EPSG”, 9102]],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);
@@ -220,7 +220,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  Datum[“Nouvelle Triangulation Francaise”,\n" +           // Formatter should replace "ç" by "c".
                 "    Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
                 "    PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
+                "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Longitude (L)”, east],\n" +                      // See method javadoc.
                 "    Axis[“Latitude (B)”, north],\n" +
                 "    Unit[“grade”, 0.015707963267948967]]",

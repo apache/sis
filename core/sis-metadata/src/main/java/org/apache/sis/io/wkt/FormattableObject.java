@@ -173,7 +173,7 @@ public abstract class FormattableObject {
             formatter = new Formatter();
         }
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
-                convention.majorVersion() == 1, WKTFormat.DEFAULT_INDENTATION);
+                (convention.majorVersion() == 1) ? (byte) 1 : 0, WKTFormat.DEFAULT_INDENTATION);
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }

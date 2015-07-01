@@ -107,10 +107,9 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
         assertIsMeanSeaLevel(datum, true);
         /*
          * Following attribute does not exist in GML 3.2, so it has been inferred.
-         * Our datum name is "Mean Sea Level", which for now is not yet mapped to
-         * the geoidal type (this could change in any future SIS version).
+         * Our datum name is "Mean Sea Level", which is mapped to the geoidal type.
          */
-        assertEquals("vertDatumType", VerticalDatumType.OTHER_SURFACE, datum.getVerticalDatumType());
+        assertEquals("vertDatumType", VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.

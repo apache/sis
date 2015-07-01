@@ -47,6 +47,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
@@ -244,11 +245,11 @@ public class Formatter implements Localized {
     private int elementStart;
 
     /**
-     * {@code true} if keywords shall be converted to upper cases.
+     * {@code 1} if keywords shall be converted to upper cases, or {@code -1} for lower cases.
      *
      * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
-    private boolean toUpperCase;
+    private byte toUpperCase;
 
     /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
@@ -381,7 +382,7 @@ public class Formatter implements Localized {
      *                    or {@link WKTFormat#SINGLE_LINE}.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
-            final boolean toUpperCase, final byte indentation)
+            final byte toUpperCase, final byte indentation)
     {
         this.convention     = convention;
         this.authority      = (authority != null) ? authority : convention.getNameAuthority();
@@ -539,8 +540,9 @@ public class Formatter implements Localized {
             newLine();
         }
         appendSeparator();
-        if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+        if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
@@ -629,8 +631,9 @@ public class Formatter implements Localized {
                 setInvalidWKT(object.getClass(), null);
                 keyword = invalidElement;
             }
-        } else if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+        } else if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
@@ -953,7 +956,18 @@ public class Formatter implements Localized {
     public void append(final String text, final ElementKind type) {
         if (text != null) {
             appendSeparator();
-            quote(text, type);
+            if (type != ElementKind.CODE_LIST) {
+                quote(text, type);
+            } else {
+                /*
+                 * Code lists have no quotes. They are normally formatted by the append(Enumerated) method,
+                 * but an important exception is the CS[type] element in which the type is defined by the
+                 * interface implemented by the CoordinateSystem rather than a CodeList instance.
+                 */
+                setColor(type);
+                buffer.append(text);
+                resetColor();
+            }
         }
     }
 
@@ -1154,24 +1168,20 @@ public class Formatter implements Localized {
             appendExact(conversion);
             /*
              * The EPSG code in UNIT elements is generally not recommended.
-             * But we make an exception for unit that have no exact representation in WKT.
+             * But we make an exception for sexagesimal units (EPSG:9108, 9110 and 9111)
+             * because they can not be represented by a simple scale factor in WKT.
              */
-            final Integer code = Units.getEpsgCode(unit, false);
-            if (code != null) {
-                final int n = code;
-                switch (n) {
-                    case Constants.EPSG_DM:
-                    case Constants.EPSG_DMS:
-                    case Constants.EPSG_DMSH: {
-                        openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
-                        append(Constants.EPSG, null);
-                        if (isWKT1) {
-                            append(Integer.toString(n), null);
-                        } else {
-                            append(n);
-                        }
-                        closeElement(false);
+            if (convention == Convention.INTERNAL || PatchedUnitFormat.toFormattable(unit) != unit) {
+                final Integer code = Units.getEpsgCode(unit, getEnclosingElement(1) instanceof CoordinateSystemAxis);
+                if (code != null) {
+                    openElement(false, isWKT1 ? WKTKeywords.Authority : WKTKeywords.Id);
+                    append(Constants.EPSG, null);
+                    if (isWKT1) {
+                        append(code.toString(), null);
+                    } else {
+                        append(code);
                     }
+                    closeElement(false);
                 }
             }
             closeElement(false);

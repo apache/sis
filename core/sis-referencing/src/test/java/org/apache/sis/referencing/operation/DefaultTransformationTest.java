@@ -162,7 +162,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "    Datum[“Tokyo 1918”,\n" +
                 "      Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "    CS[“Cartesian”, 3],\n" +
+                "    CS[Cartesian, 3],\n" +
                 "      Axis[“(X)”, geocentricX, Order[1]],\n" +
                 "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
                 "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
@@ -171,7 +171,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "    Datum[“Japanese Geodetic Datum 2000”,\n" +
                 "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101, LengthUnit[“metre”, 1]]],\n" +
                 "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "    CS[“Cartesian”, 3],\n" +
+                "    CS[Cartesian, 3],\n" +
                 "      Axis[“(X)”, geocentricX, Order[1]],\n" +
                 "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
                 "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
@@ -186,7 +186,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "  SourceCRS[GeodeticCRS[“Tokyo 1918”,\n" +
                 "    Datum[“Tokyo 1918”,\n" +
                 "      Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128]],\n" +
-                "    CS[“Cartesian”, 3],\n" +
+                "    CS[Cartesian, 3],\n" +
                 "      Axis[“(X)”, geocentricX],\n" +
                 "      Axis[“(Y)”, geocentricY],\n" +
                 "      Axis[“(Z)”, geocentricZ],\n" +
@@ -194,7 +194,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "  TargetCRS[GeodeticCRS[“JGD2000”,\n" +
                 "    Datum[“Japanese Geodetic Datum 2000”,\n" +
                 "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101]],\n" +
-                "    CS[“Cartesian”, 3],\n" +
+                "    CS[Cartesian, 3],\n" +
                 "      Axis[“(X)”, geocentricX],\n" +
                 "      Axis[“(Y)”, geocentricY],\n" +
                 "      Axis[“(Z)”, geocentricZ],\n" +

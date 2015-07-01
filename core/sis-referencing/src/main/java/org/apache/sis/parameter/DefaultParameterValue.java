@@ -35,6 +35,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
@@ -240,7 +241,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof Boolean) {
             return (Boolean) value;
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -267,7 +268,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 return integer;
             }
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -291,7 +292,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof int[]) {
             return ((int[]) value).clone();
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -317,7 +318,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -342,7 +343,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof double[]) {
             return ((double[]) value).clone();
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -437,7 +438,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         if (value instanceof CharSequence) {
             return value.toString();
         }
-        throw incompatibleValue(value);
+        throw missingOrIncompatibleValue(value);
     }
 
     /**
@@ -486,7 +487,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
-    private IllegalStateException incompatibleValue(final Object value) {
+    private IllegalStateException missingOrIncompatibleValue(final Object value) {
         final String name = Verifier.getName(descriptor);
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
@@ -873,45 +874,70 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     protected String formatTo(final Formatter formatter) {
         final ParameterDescriptor<T> descriptor = getDescriptor();  // Gives to users a chance to override this property.
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
-        final Unit<?> targetUnit = formatter.toContextualUnit(descriptor.getUnit());
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
-        /*
-         * In the WKT 1 specification, the unit of measurement is given by the context.
-         * If this parameter value does not use the same unit, then we must convert it.
-         * Otherwise we can write the value as-is.
-         */
-        final T       value = getValue();   // Gives to users a chance to override this property.
-        final Unit<?> unit  = getUnit();    // Gives to users a chance to override this property.
-        double convertedValue = Double.NaN;
-        boolean sameUnit = Objects.equals(unit, targetUnit);
-        if (!sameUnit) try {
-            convertedValue = doubleValue(targetUnit);
-            sameUnit = (value instanceof Number) && ((Number) value).doubleValue() == convertedValue;
-        } catch (IllegalStateException exception) {
-            // May happen if a parameter is mandatory (e.g. "semi-major")
-            // but no value has been set for this parameter.
-            formatter.setInvalidWKT(descriptor, exception);
-        }
-        if (isWKT1 && !sameUnit) {
-            formatter.append(convertedValue);
-        } else if (!isWKT1 && (unit == null) && isFile(value)) {
-            formatter.append(value.toString(), null);
-            return WKTKeywords.ParameterFile;
+        Unit<?> unit = getUnit();   // Gives to users a chance to override this property.
+        if (unit == null) {
+            final T value = getValue();   // Gives to users a chance to override this property.
+            if (!isWKT1 && isFile(value)) {
+                formatter.append(value.toString(), null);
+                return WKTKeywords.ParameterFile;
+            } else {
+                formatter.appendAny(value);
+            }
         } else {
-            formatter.appendAny(value);
+            /*
+             * In the WKT 1 specification, the unit of measurement is given by the context.
+             * If this parameter value does not use the same unit, we will need to convert it.
+             * Otherwise we can write the value as-is.
+             *
+             * Note that we take the descriptor unit as a starting point instead than this parameter unit
+             * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
+             */
+            Unit<?> contextualUnit = descriptor.getUnit();
+            if (contextualUnit == null) { // Should be very rare (probably a buggy descriptor), but we try to be safe.
+                contextualUnit = unit;
+            }
+            contextualUnit = formatter.toContextualUnit(contextualUnit);
+            boolean ignoreUnits;
+            if (isWKT1) {
+                unit = contextualUnit;
+                ignoreUnits = true;
+            } else {
+                if (convention != Convention.INTERNAL) {
+                    unit = PatchedUnitFormat.toFormattable(unit);
+                }
+                ignoreUnits = unit.equals(contextualUnit);
+            }
+            double value;
+            try {
+                value = doubleValue(unit);
+            } catch (IllegalStateException exception) {
+                // May happen if a parameter is mandatory (e.g. "semi-major")
+                // but no value has been set for this parameter.
+                formatter.setInvalidWKT(descriptor, exception);
+                value = Double.NaN;
+            }
+            formatter.append(value);
+            /*
+             * In the WKT 2 specification, the unit and the identifier are optional but recommended.
+             * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
+             * The only exception is when the parameter unit is not the same than the contextual unit,
+             * in which case we have no choice: we must format that unit, unless the numerical value
+             * is identical in both units (typically the 0 value).
+             */
+            if (!ignoreUnits && !Double.isNaN(value)) {
+                ignoreUnits = Numerics.equals(value, doubleValue(contextualUnit));
+            }
+            if (!ignoreUnits || !convention.isSimplified() || !hasContextualUnit(formatter)) {
+                if (!isWKT1) {
+                    formatter.append(unit);
+                } else if (!ignoreUnits) {
+                    formatter.setInvalidWKT(descriptor, null);
+                }
+            }
         }
-        /*
-         * In the WKT 2 specification, the unit and the identifier are optional but recommended.
-         * We follow that recommendation in strict WKT2 mode, but omit them in non-strict modes.
-         * The only exception is when the parameter unit is not the same than the contextual unit,
-         * in which case we have no choice: we must format that unit, unless the numerical value
-         * is identical in both units (typically the 0 value).
-         */
-        if (!isWKT1 && (!sameUnit || !convention.isSimplified() || !hasContextualUnit(formatter))) {
-            formatter.append(unit);
-            // ID will be added by the Formatter itself.
-        }
+        // ID will be added by the Formatter itself.
         return WKTKeywords.Parameter;
     }
 

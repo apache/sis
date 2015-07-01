@@ -175,7 +175,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
                 "  DerivingConversion[“Paris to Greenwich”,\n" +
                 "    Method[“Longitude rotation”, Id[“EPSG”, 9601]],\n" +
                 "    Parameter[“Longitude offset”, 2.33722917, Id[“EPSG”, 8602]]],\n" +
-                "  CS[“ellipsoidal”, 2],\n" +
+                "  CS[ellipsoidal, 2],\n" +
                 "    Axis[“Latitude (B)”, north, Order[1]],\n" +
                 "    Axis[“Longitude (L)”, east, Order[2]],\n" +
                 "    AngleUnit[“degree”, 0.017453292519943295]]",
