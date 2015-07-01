@@ -446,11 +446,12 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     private void updateFormatter(final Formatter formatter) {
         if (formatter != null) {
-            final boolean toUpperCase;
+            final byte toUpperCase;
             switch (keywordCase) {
-                case UPPER_CASE: toUpperCase = true;  break;
-                case CAMEL_CASE: toUpperCase = false; break;
-                default: toUpperCase = (convention.majorVersion() == 1); break;
+                case LOWER_CASE: toUpperCase = -1; break;
+                case UPPER_CASE: toUpperCase = +1; break;
+                case CAMEL_CASE: toUpperCase =  0; break;
+                default: toUpperCase = (convention.majorVersion() == 1) ? (byte) 1 : 0; break;
             }
             formatter.configure(convention, authority, colors, toUpperCase, indentation);
             if (transliterator != null) {

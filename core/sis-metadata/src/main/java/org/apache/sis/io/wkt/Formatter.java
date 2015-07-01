@@ -245,11 +245,11 @@ public class Formatter implements Localized {
     private int elementStart;
 
     /**
-     * {@code true} if keywords shall be converted to upper cases.
+     * {@code 1} if keywords shall be converted to upper cases, or {@code -1} for lower cases.
      *
      * @see #configure(Convention, Citation, Colors, boolean, byte)
      */
-    private boolean toUpperCase;
+    private byte toUpperCase;
 
     /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
@@ -382,7 +382,7 @@ public class Formatter implements Localized {
      *                    or {@link WKTFormat#SINGLE_LINE}.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
-            final boolean toUpperCase, final byte indentation)
+            final byte toUpperCase, final byte indentation)
     {
         this.convention     = convention;
         this.authority      = (authority != null) ? authority : convention.getNameAuthority();
@@ -540,8 +540,9 @@ public class Formatter implements Localized {
             newLine();
         }
         appendSeparator();
-        if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+        if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         elementStart = buffer.append(keyword).appendCodePoint(symbols.getOpeningBracket(0)).length();
     }
@@ -630,8 +631,9 @@ public class Formatter implements Localized {
                 setInvalidWKT(object.getClass(), null);
                 keyword = invalidElement;
             }
-        } else if (toUpperCase) {
-            keyword = keyword.toUpperCase(symbols.getLocale());
+        } else if (toUpperCase != 0) {
+            final Locale locale = symbols.getLocale();
+            keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
         }
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
