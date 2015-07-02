@@ -109,6 +109,7 @@
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.operation.OperationMethod" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
         <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
+        <include name="*/*/src/test/resources/META-INF/services/org.opengis.referencing.operation.OperationMethod"/>
       </fileset>
     </concat>
 
