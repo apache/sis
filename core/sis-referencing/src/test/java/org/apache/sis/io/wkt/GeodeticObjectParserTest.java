@@ -298,6 +298,52 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests parsing geographic CRS with implicit axes in seconds instead of degrees.
+     *
+     * @throws ParseException if the parsing failed.
+     *
+     * @see #testGeographicWithImplicitAxes()
+     */
+    @Test
+    @DependsOnMethod("testGeographicWithImplicitAxes")
+    public void testGeographicWithImplicitAxesInSeconds() throws ParseException {
+        final GeographicCRS crs = parse(GeographicCRS.class,
+                "GEOGCS[“NAD83 / NFIS Seconds”," +
+                "DATUM[“North_American_Datum_1983”,\n" +
+                "SPHEROID[“GRS 1980”, 6378137, 298.257222101]],\n" +
+                "PRIMEM[“Greenwich”, 0],\n" +
+                "UNIT[“Decimal_Second”, 4.84813681109536e-06],\n" +
+                "AUTHORITY[“EPSG”, “100001”]]");
+
+        assertNameAndIdentifierEqual("NAD83 / NFIS Seconds", 100001, crs);
+
+        final GeodeticDatum datum = crs.getDatum();
+        assertNameAndIdentifierEqual("North_American_Datum_1983", 0, datum);
+        assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
+
+        final Ellipsoid ellipsoid = datum.getEllipsoid();
+        assertNameAndIdentifierEqual("GRS 1980", 0, ellipsoid);
+        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
+        assertEquals("inverseFlattening", 298.257222101, ellipsoid.getInverseFlattening(), STRICT);
+
+        final EllipsoidalCS cs = crs.getCoordinateSystem();
+        final double secondsIn90 = 90*60*60;
+        CoordinateSystemAxis axis = cs.getAxis(0);
+        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, axis.getName().getCode());
+        assertEquals("abbreviation", "λ",                  axis.getAbbreviation());
+        assertEquals("direction",    AxisDirection.EAST,   axis.getDirection());
+        assertEquals("minimumValue", -secondsIn90*2,       axis.getMinimumValue(), 1E-9);
+        assertEquals("maximumValue", +secondsIn90*2,       axis.getMaximumValue(), 1E-9);
+
+        axis = cs.getAxis(1);
+        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  axis.getName().getCode());
+        assertEquals("abbreviation", "φ",                  axis.getAbbreviation());
+        assertEquals("direction",    AxisDirection.NORTH,  axis.getDirection());
+        assertEquals("minimumValue", -secondsIn90,         axis.getMinimumValue(), 1E-9);
+        assertEquals("maximumValue", +secondsIn90,         axis.getMaximumValue(), 1E-9);
+    }
+
+    /**
      * Tests the parsing of a geographic CRS from a WKT string with axes in wrong order according the
      * {@code ORDER} elements. The {@code ORDER} elements are defined in WKT 2 (they did not existed in WKT 1),
      * but the rest of the string is WKT 1. The SIS parser should sort the axes in the order declared
@@ -316,6 +362,56 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "    UNIT[“degree”, 0.017453292519943295],\n" +
                "    AXIS[“Longitude”, EAST, order[2]],\n" +
                "    AXIS[“Latitude”, NORTH, order[1]]]"));
+    }
+
+    /**
+     * Tests parsing of a CRS using a prime meridian other than Greenwich. The result depends on whether
+     * the parsing is standard compliant or if the parsing use {@link Convention#WKT1_COMMON_UNITS}.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicCRS")
+    public void testGeographicWithParisMeridian() throws ParseException {
+        String wkt = "GEOGCS[“NTF (Paris)”,\n" +
+                     "  DATUM[“Nouvelle Triangulation Française (Paris)”,\n" +
+                     "    SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
+                     "    PRIMEM[“Paris”, 2.5969213, AUTHORITY[“EPSG”, “8903”]],\n" +
+                     "  UNIT[“grade”, 0.015707963267948967],\n" +
+                     "  AXIS[“Latitude”, NORTH],\n" +
+                     "  AXIS[“Longitude”, EAST]]";
+
+        GeographicCRS crs = parse(GeographicCRS.class, wkt);
+        assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
+        PrimeMeridian pm = verifyNTF(crs.getDatum(), false);
+        assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
+        EllipsoidalCS cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, NonSI.GRADE, RangeMeaning.EXACT,      cs.getAxis(0));
+        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, NonSI.GRADE, RangeMeaning.WRAPAROUND, cs.getAxis(1));
+        /*
+         * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements (but not the UNIT[…] element,
+         * which still apply to the axes). When using this convention, the parser does not apply the angular units to
+         * the Greenwich longitude value in PRIMEM[…] elements. Instead, the longitude is unconditionally interpreted
+         * as a value in degrees, which is why we convert "2.5969213" grade to "2.33722917" degrees in the WKT before
+         * to run the test (but we do NOT change the UNIT[…] element since the purpose of this test is to verify that
+         * those units are ignored).
+         *
+         * This is a violation of both OGC 01-009 and ISO 19162 standards, but this is what GDAL does.
+         * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
+         */
+        wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
+        newParser(Convention.WKT1_IGNORE_AXES);
+        crs = parse(GeographicCRS.class, wkt);
+        assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
+        pm = verifyNTF(crs.getDatum(), false);
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, NonSI.GRADE, RangeMeaning.WRAPAROUND, cs.getAxis(0));
+        assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, NonSI.GRADE, RangeMeaning.EXACT,      cs.getAxis(1));
     }
 
     /**
@@ -399,56 +495,6 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",       1.0, param.parameter("scale_factor"    ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting", 500000.0, param.parameter("false_easting"   ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     0.0, param.parameter("false_northing"  ).doubleValue(SI   .METRE),        STRICT);
-    }
-
-    /**
-     * Tests parsing of a CRS using a prime meridian other than Greenwich. The result depends on whether
-     * the parsing is standard compliant or if the parsing use {@link Convention#WKT1_COMMON_UNITS}.
-     *
-     * @throws ParseException if the parsing failed.
-     */
-    @Test
-    @DependsOnMethod("testGeographicCRS")
-    public void testGeographicWithParisMeridian() throws ParseException {
-        String wkt = "GEOGCS[“NTF (Paris)”,\n" +
-                     "  DATUM[“Nouvelle Triangulation Française (Paris)”,\n" +
-                     "    SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
-                     "    PRIMEM[“Paris”, 2.5969213, AUTHORITY[“EPSG”, “8903”]],\n" +
-                     "  UNIT[“grade”, 0.015707963267948967],\n" +
-                     "  AXIS[“Latitude”, NORTH],\n" +
-                     "  AXIS[“Longitude”, EAST]]";
-
-        GeographicCRS crs = parse(GeographicCRS.class, wkt);
-        assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
-        PrimeMeridian pm = verifyNTF(crs.getDatum(), false);
-        assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
-        EllipsoidalCS cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
-        assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, NonSI.GRADE, RangeMeaning.EXACT,      cs.getAxis(0));
-        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, NonSI.GRADE, RangeMeaning.WRAPAROUND, cs.getAxis(1));
-        /*
-         * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements (but not the UNIT[…] element,
-         * which still apply to the axes). When using this convention, the parser does not apply the angular units to
-         * the Greenwich longitude value in PRIMEM[…] elements. Instead, the longitude is unconditionally interpreted
-         * as a value in degrees, which is why we convert "2.5969213" grade to "2.33722917" degrees in the WKT before
-         * to run the test (but we do NOT change the UNIT[…] element since the purpose of this test is to verify that
-         * those units are ignored).
-         *
-         * This is a violation of both OGC 01-009 and ISO 19162 standards, but this is what GDAL does.
-         * So we allow this interpretation in Convention.WKT1_COMMON_UNITS for compatibility reasons.
-         */
-        wkt = wkt.replace("2.5969213", "2.33722917");   // Convert unit in prime meridian.
-        newParser(Convention.WKT1_IGNORE_AXES);
-        crs = parse(GeographicCRS.class, wkt);
-        assertNameAndIdentifierEqual("NTF (Paris)", 0, crs);
-        pm = verifyNTF(crs.getDatum(), false);
-        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
-        cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 2, cs.getDimension());
-        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, NonSI.GRADE, RangeMeaning.WRAPAROUND, cs.getAxis(0));
-        assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, NonSI.GRADE, RangeMeaning.EXACT,      cs.getAxis(1));
     }
 
     /**
@@ -551,109 +597,6 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the parsing of a compound CRS from a WKT 1 string, except the time dimension which is WKT 2.
-     *
-     * @throws ParseException if the parsing failed.
-     */
-    @Test
-    @DependsOnMethod("testGeographicCRS")
-    public void testCompoundCRS() throws ParseException {
-        final CompoundCRS crs = parse(CompoundCRS.class,
-                "COMPD_CS[“WGS 84 + height + time”,\n" +
-                "  GEOGCS[“WGS 84”,\n" +
-                "    DATUM[“World Geodetic System 1984”,\n" +
-                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-                "    PRIMEM[“Greenwich”, 0.0],\n" +
-                "    UNIT[“degree”, 0.017453292519943295],\n" +
-                "    AXIS[“Longitude”, EAST],\n" +
-                "    AXIS[“Latitude”, NORTH]],\n" +
-                "  VERT_CS[“Gravity-related height”,\n" +
-                "    VERT_DATUM[“Mean Sea Level”, 2005],\n" +
-                "    UNIT[“metre”, 1],\n" +
-                "    AXIS[“Gravity-related height”, UP]],\n" +
-                "  TimeCRS[“Time”,\n" +     // WKT 2
-                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
-                "    Unit[“day”, 86400],\n" +
-                "    Axis[“Time”, FUTURE]]]");
-
-        // CompoundCRS parent
-        assertNameAndIdentifierEqual("WGS 84 + height + time", 0, crs);
-        final Iterator<CoordinateReferenceSystem> components = crs.getComponents().iterator();
-
-        // GeographicCRS child
-        verifyGeographicCRS(0, (GeographicCRS) components.next());
-
-        // VerticalCRS child
-        final VerticalCRS vertCRS = (VerticalCRS) components.next();
-        assertNameAndIdentifierEqual("Gravity-related height", 0, vertCRS);
-        assertNameAndIdentifierEqual("Mean Sea Level", 0, vertCRS.getDatum());
-
-        // TemporalCRS child
-        final TemporalCRS   timeCRS   = (TemporalCRS) components.next();
-        final TemporalDatum timeDatum = timeCRS.getDatum();
-        assertNameAndIdentifierEqual("Time", 0, timeCRS);
-        assertNameAndIdentifierEqual("Modified Julian", 0, timeDatum);
-        assertEquals("epoch", new Date(-40587 * (24*60*60*1000L)), timeDatum.getOrigin());
-
-        // No more CRS.
-        assertFalse(components.hasNext());
-
-        // Axes: we verify only the CompoundCRS ones, which should include all others.
-        final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertEquals("dimension", 4, cs.getDimension());
-        assertLongitudeAxisEquals(cs.getAxis(0));
-        assertLatitudeAxisEquals (cs.getAxis(1));
-        assertUnboundedAxisEquals("Gravity-related height", "H", AxisDirection.UP, SI.METRE, cs.getAxis(2));
-        assertUnboundedAxisEquals("Time", "t", AxisDirection.FUTURE, NonSI.DAY, cs.getAxis(3));
-    }
-
-    /**
-     * Tests parsing geographic CRS with implicit axes in seconds instead of degrees.
-     *
-     * @throws ParseException if the parsing failed.
-     *
-     * @see #testGeographicWithImplicitAxes()
-     */
-    @Test
-    @DependsOnMethod("testGeographicWithImplicitAxes")
-    public void testGeographicWithImplicitAxesInSeconds() throws ParseException {
-        final GeographicCRS crs = parse(GeographicCRS.class,
-                "GEOGCS[“NAD83 / NFIS Seconds”," +
-                "DATUM[“North_American_Datum_1983”,\n" +
-                "SPHEROID[“GRS 1980”, 6378137, 298.257222101]],\n" +
-                "PRIMEM[“Greenwich”, 0],\n" +
-                "UNIT[“Decimal_Second”, 4.84813681109536e-06],\n" +
-                "AUTHORITY[“EPSG”, “100001”]]");
-
-        assertNameAndIdentifierEqual("NAD83 / NFIS Seconds", 100001, crs);
-
-        final GeodeticDatum datum = crs.getDatum();
-        assertNameAndIdentifierEqual("North_American_Datum_1983", 0, datum);
-        assertNameAndIdentifierEqual("Greenwich", 0, datum.getPrimeMeridian());
-
-        final Ellipsoid ellipsoid = datum.getEllipsoid();
-        assertNameAndIdentifierEqual("GRS 1980", 0, ellipsoid);
-        assertEquals("semiMajor", 6378137, ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("inverseFlattening", 298.257222101, ellipsoid.getInverseFlattening(), STRICT);
-
-        final EllipsoidalCS cs = crs.getCoordinateSystem();
-        final double secondsIn90 = 90*60*60;
-        CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, axis.getName().getCode());
-        assertEquals("abbreviation", "λ",                  axis.getAbbreviation());
-        assertEquals("direction",    AxisDirection.EAST,   axis.getDirection());
-        assertEquals("minimumValue", -secondsIn90*2,       axis.getMinimumValue(), 1E-9);
-        assertEquals("maximumValue", +secondsIn90*2,       axis.getMaximumValue(), 1E-9);
-
-        axis = cs.getAxis(1);
-        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  axis.getName().getCode());
-        assertEquals("abbreviation", "φ",                  axis.getAbbreviation());
-        assertEquals("direction",    AxisDirection.NORTH,  axis.getDirection());
-        assertEquals("minimumValue", -secondsIn90,         axis.getMinimumValue(), 1E-9);
-        assertEquals("maximumValue", +secondsIn90,         axis.getMaximumValue(), 1E-9);
-    }
-
-    /**
      * Tests parsing a WKT with a missing Geographic CRS name.
      * This should be considered invalid, but happen in practice.
      *
@@ -715,6 +658,63 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
+    }
+
+    /**
+     * Tests the parsing of a compound CRS from a WKT 1 string, except the time dimension which is WKT 2.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicCRS")
+    public void testCompoundCRS() throws ParseException {
+        final CompoundCRS crs = parse(CompoundCRS.class,
+                "COMPD_CS[“WGS 84 + height + time”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  VERT_CS[“Gravity-related height”,\n" +
+                "    VERT_DATUM[“Mean Sea Level”, 2005],\n" +
+                "    UNIT[“metre”, 1],\n" +
+                "    AXIS[“Gravity-related height”, UP]],\n" +
+                "  TimeCRS[“Time”,\n" +     // WKT 2
+                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
+                "    Unit[“day”, 86400],\n" +
+                "    Axis[“Time”, FUTURE]]]");
+
+        // CompoundCRS parent
+        assertNameAndIdentifierEqual("WGS 84 + height + time", 0, crs);
+        final Iterator<CoordinateReferenceSystem> components = crs.getComponents().iterator();
+
+        // GeographicCRS child
+        verifyGeographicCRS(0, (GeographicCRS) components.next());
+
+        // VerticalCRS child
+        final VerticalCRS vertCRS = (VerticalCRS) components.next();
+        assertNameAndIdentifierEqual("Gravity-related height", 0, vertCRS);
+        assertNameAndIdentifierEqual("Mean Sea Level", 0, vertCRS.getDatum());
+
+        // TemporalCRS child
+        final TemporalCRS   timeCRS   = (TemporalCRS) components.next();
+        final TemporalDatum timeDatum = timeCRS.getDatum();
+        assertNameAndIdentifierEqual("Time", 0, timeCRS);
+        assertNameAndIdentifierEqual("Modified Julian", 0, timeDatum);
+        assertEquals("epoch", new Date(-40587 * (24*60*60*1000L)), timeDatum.getOrigin());
+
+        // No more CRS.
+        assertFalse(components.hasNext());
+
+        // Axes: we verify only the CompoundCRS ones, which should include all others.
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 4, cs.getDimension());
+        assertLongitudeAxisEquals(cs.getAxis(0));
+        assertLatitudeAxisEquals (cs.getAxis(1));
+        assertUnboundedAxisEquals("Gravity-related height", "H", AxisDirection.UP, SI.METRE, cs.getAxis(2));
+        assertUnboundedAxisEquals("Time", "t", AxisDirection.FUTURE, NonSI.DAY, cs.getAxis(3));
     }
 
     /**
