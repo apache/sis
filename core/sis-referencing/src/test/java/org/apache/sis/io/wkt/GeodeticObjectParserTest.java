@@ -268,7 +268,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testWithAxisSwapping() throws ParseException {
+    public void testGeographicWithLatLonAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
@@ -284,11 +284,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      *
-     * @see #testWithImplicitAxesInSeconds()
+     * @see #testGeographicWithImplicitAxesInSeconds()
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testWithImplicitAxes() throws ParseException {
+    public void testGeographicWithImplicitAxes() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
@@ -306,8 +306,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testWithAxisSwapping")
-    public void testAxisSorting() throws ParseException {
+    @DependsOnMethod("testGeographicWithLatLonAxes")
+    public void testGeographicWithUnorderedAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
                "  GEOGCS[“WGS 84”,\n" +
                "    DATUM[“World Geodetic System 1984”,\n" +
@@ -409,7 +409,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testGeographicCRS")
-    public void testWithNonGreenwichMeridian() throws ParseException {
+    public void testGeographicWithParisMeridian() throws ParseException {
         String wkt = "GEOGCS[“NTF (Paris)”,\n" +
                      "  DATUM[“Nouvelle Triangulation Française (Paris)”,\n" +
                      "    SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
@@ -458,8 +458,8 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod({"testWithNonGreenwichMeridian", "testProjectedCRS"})
-    public void testWithLessCommonUnits() throws ParseException {
+    @DependsOnMethod({"testGeographicWithParisMeridian", "testProjectedCRS"})
+    public void testProjectedWithGradUnits() throws ParseException {
         String wkt = "PROJCS[“NTF (Paris) / Lambert zone II”," +
                      "  GEOGCS[“NTF (Paris)”," +
                      "    DATUM[“Nouvelle Triangulation Française (Paris)”," +
@@ -485,7 +485,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
         /*
          * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements.
-         * See the comment in 'testWithNonGreenwichMeridian()' method for a discussion.
+         * See the comment in 'testGeographicWithParisMeridian' method for a discussion.
          * The new aspect tested by this method is that the unit should be ignored
          * for the parameters in addition to the prime meridian.
          */
@@ -612,11 +612,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *
      * @throws ParseException if the parsing failed.
      *
-     * @see #testWithImplicitAxes()
+     * @see #testGeographicWithImplicitAxes()
      */
     @Test
-    @DependsOnMethod("testWithImplicitAxes")
-    public void testWithImplicitAxesInSeconds() throws ParseException {
+    @DependsOnMethod("testGeographicWithImplicitAxes")
+    public void testGeographicWithImplicitAxesInSeconds() throws ParseException {
         final GeographicCRS crs = parse(GeographicCRS.class,
                 "GEOGCS[“NAD83 / NFIS Seconds”," +
                 "DATUM[“North_American_Datum_1983”,\n" +
@@ -668,7 +668,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testProjectedCRS")
-    public void testWithMissingName() throws ParseException {
+    public void testProjectedWithMissingName() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“FRANCE/NTF/Lambert III”," +
                 "GEOGCS[“”," + // Missing name (the purpose of this test).
@@ -723,7 +723,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testWithImplicitAxes")
+    @DependsOnMethod("testGeographicWithImplicitAxes")
     public void testWarnings() throws ParseException {
         newParser(Convention.DEFAULT);
         final ParsePosition position = new ParsePosition(0);
