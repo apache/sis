@@ -117,6 +117,21 @@ public final strictfp class WKTFormatTest extends TestCase {
     }
 
     /**
+     * Tests consistency between the parser and the formatter when using the WKT 2 simplified format.
+     * This test parses a WKT, formats it then parses again. We should obtain the same result.
+     *
+     * @throws ParseException if a parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testConsistencyOfWKT2")
+    public void testConsistencyOfWKT2_Simplified() throws ParseException {
+        format = new WKTFormat(null, null);
+        format.setConvention(Convention.WKT2_SIMPLIFIED);
+        parser = format;
+        testConsistency();
+    }
+
+    /**
      * Implementation of {@link #testConsistencyOfWKT1()} and variants.
      *
      * @throws ParseException if a parsing failed.
