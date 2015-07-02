@@ -91,8 +91,8 @@ public class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    public void testGeographic() throws FactoryException {
-        super.testGeographic();
+    public void testGeographic3D() throws FactoryException {
+        super.testGeographic3D();
         verifyEllipsoidalCS();
     }
 
@@ -116,8 +116,8 @@ public class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    public void testGeographicWithRemark() throws FactoryException {
-        super.testGeographicWithRemark();
+    public void testGeographicWithUnicode() throws FactoryException {
+        super.testGeographicWithUnicode();
         verifyEllipsoidalCS();
     }
 
@@ -141,8 +141,8 @@ public class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    public void testGeographicWithId() throws FactoryException {
-        super.testGeographicWithId();
+    public void testGeographicWithIdentifier() throws FactoryException {
+        super.testGeographicWithIdentifier();
         verifyEllipsoidalCS();
     }
 
@@ -212,7 +212,7 @@ public class WKTParserTest extends CRSParserTest {
     @Test
     @Override
     @Ignore("Lambert Azimuthal Equal Area projection method not yet implemented.")
-    public void testProjected() throws FactoryException {
+    public void testProjectedYX() throws FactoryException {
     }
 
     /**
@@ -353,8 +353,8 @@ public class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    public void testEngineeringInclined() throws FactoryException {
-        super.testEngineeringInclined();
+    public void testEngineeringRotated() throws FactoryException {
+        super.testEngineeringRotated();
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", "site east",  cs.getAxis(0).getName().getCode());
         assertEquals("name", "site north", cs.getAxis(1).getName().getCode());
@@ -388,5 +388,157 @@ public class WKTParserTest extends CRSParserTest {
         assertEquals("name", "x", cs.getAxis(0).getName().getCode());
         assertEquals("name", "y", cs.getAxis(1).getName().getCode());
         assertEquals("name", "z", cs.getAxis(2).getName().getCode());
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *  GEODCRS[“ETRS89 Lambert Azimuthal Equal Area CRS”,
+     *    BASEGEODCRS[“WGS 84”,
+     *      DATUM[“WGS 84”,
+     *        ELLIPSOID[“WGS 84”,6378137,298.2572236,LENGTHUNIT[“metre”,1.0]]]],
+     *    DERIVINGCONVERSION[“Atlantic pole”,
+     *      METHOD[“Pole rotation”,ID[“Authority”,1234]],
+     *      PARAMETER[“Latitude of rotated pole”,52.0,
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *      PARAMETER[“Longitude of rotated pole”,-30.0,
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *      PARAMETER[“Axis rotation”,-25.0,
+     *        ANGLEUNIT[“degree”,0.0174532925199433]]],
+     *    CS[ellipsoidal,2],
+     *      AXIS[“latitude”,north,ORDER[1]],
+     *      AXIS[“longitude”,east,ORDER[2]],
+     *      ANGLEUNIT[“degree”,0.0174532925199433]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testDerivedGeodetic() throws FactoryException {
+        super.testDerivedGeodetic();
+        verifyEllipsoidalCS();
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *  ENGCRS[“Topocentric example A”,
+     *    BASEGEODCRS[“WGS 84”,
+     *      DATUM[“WGS 84”,
+     *        ELLIPSOID[“WGS 84”, 6378137, 298.2572236, LENGTHUNIT[“metre”,1.0]]]],
+     *    DERIVINGCONVERSION[“Topocentric example A”,
+     *      METHOD[“Geographic/topocentric conversions”,ID[“EPSG”,9837]],
+     *      PARAMETER[“Latitude of topocentric origin”,55.0,
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *      PARAMETER[“Longitude of topocentric origin”,5.0,
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *      PARAMETER[“Ellipsoidal height of topocentric origin”,0.0,
+     *        LENGTHUNIT[“metre”,1.0]]],
+     *    CS[Cartesian,3],
+     *      AXIS[“Topocentric East (U)”,east,ORDER[1]],
+     *      AXIS[“Topocentric North (V)”,north,ORDER[2]],
+     *      AXIS[“Topocentric height (W)”,up,ORDER[3]],
+     *      LENGTHUNIT[“metre”,1.0]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testDerivedEngineeringFromGeodetic() throws FactoryException {
+        super.testDerivedEngineeringFromGeodetic();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", "Topocentric East",   cs.getAxis(0).getName().getCode());
+        assertEquals("name", "Topocentric North",  cs.getAxis(1).getName().getCode());
+        assertEquals("name", "Topocentric height", cs.getAxis(2).getName().getCode());
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testDerivedEngineeringFromProjected() throws FactoryException {
+        super.testDerivedEngineeringFromProjected();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        /*
+         * In this case we had no axis names, so Apache SIS reused the abbreviations.
+         * This could change in any future SIS version if we update Transliterator.
+         */
+        assertEquals("name", "I", cs.getAxis(0).getName().getCode());
+        assertEquals("name", "J", cs.getAxis(1).getName().getCode());
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *  COMPOUNDCRS[“NAD83 + NAVD88”,
+     *    GEODCRS[“NAD83”,
+     *      DATUM[“North American Datum 1983”,
+     *        ELLIPSOID[“GRS 1980”,6378137,298.257222101,
+     *          LENGTHUNIT[“metre”,1.0]]],
+     *        PRIMEMERIDIAN[“Greenwich”,0],
+     *      CS[ellipsoidal,2],
+     *        AXIS[“latitude”,north,ORDER[1]],
+     *        AXIS[“longitude”,east,ORDER[2]],
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *      VERTCRS[“NAVD88”,
+     *        VDATUM[“North American Vertical Datum 1983”],
+     *        CS[vertical,1],
+     *          AXIS[“gravity-related height (H)”,up],
+     *          LENGTHUNIT[“metre”,1]]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testCompoundWithVertical() throws FactoryException {
+        super.testCompoundWithVertical();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", AxisNames.GEODETIC_LATITUDE,      cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.GEODETIC_LONGITUDE,     cs.getAxis(1).getName().getCode());
+        assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(2).getName().getCode());
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *  COMPOUNDCRS[“GPS position and time”,
+     *     GEODCRS[“WGS 84”,
+     *       DATUM[“World Geodetic System 1984”,
+     *         ELLIPSOID[“WGS 84”,6378137,298.257223563]],
+     *       CS[ellipsoidal,2],
+     *         AXIS[“(lat)”,north,ORDER[1]],
+     *         AXIS[“(lon)”,east,ORDER[2]],
+     *         ANGLEUNIT[“degree”,0.0174532925199433]],
+     *     TIMECRS[“GPS Time”,
+     *       TIMEDATUM[“Time origin”,TIMEORIGIN[1980-01-01]],
+     *       CS[temporal,1],
+     *         AXIS[“time (T)”,future],
+     *         TIMEUNIT[“day”,86400]]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testCompoundWithTime() throws FactoryException {
+        super.testCompoundWithTime();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
+        assertEquals("name", AxisNames.TIME,               cs.getAxis(2).getName().getCode());
     }
 }
