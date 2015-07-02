@@ -1815,12 +1815,27 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             throw new LocalizedParseException(errorLocale, Errors.Keys.IllegalCRSType_1,
                     new Object[] {geoCRS.getClass()}, element.offset);
         }
-        final Unit<Length> linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        /*
+         * Parse the projection parameters. If a default linear unit is specified, it will apply to
+         * all parameters that do not specify explicitely a LengthUnit. If no such crs-wide unit was
+         * specified, then the default will be the unit specified in the parameter descriptor.
+         */
+        Unit<Length> linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
         final boolean ignoreUnits = isWKT1 && usesCommonUnits;
         final Conversion conversion = parseDerivingConversion(MANDATORY, element,
                 isWKT1 ? null : WKTKeywords.Conversion, ignoreUnits ? SI.METRE : linearUnit,
                 ignoreUnits ? NonSI.DEGREE_ANGLE : geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
-
+        /*
+         * Parse the coordinate system. The linear unit must be specified somewhere, either explicitely in each axis
+         * or for the whole CRS with the above 'linearUnit' value. If 'linearUnit' is null, then an exception will be
+         * thrown with a message like "A LengthUnit component is missing in ProjectedCRS".
+         *
+         * However we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified
+         * in the WKT of base CRS. In this case only, we will default to metre.
+         */
+        if (linearUnit == null && isBaseCRS) {
+            linearUnit = SI.METRE;
+        }
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, linearUnit, geoCRS.getDatum());
