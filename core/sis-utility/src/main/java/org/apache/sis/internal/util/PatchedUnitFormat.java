@@ -174,6 +174,8 @@ public final class PatchedUnitFormat extends Format {
             return toAppendTo.append("degree");
         } else if (SI.METRE.equals(unit)) {
             return toAppendTo.append(isLocaleUS ? "meter" : "metre");
+        } else if (NonSI.FOOT_SURVEY_US.equals(unit)) {
+            return toAppendTo.append("US survey foot");
         } else if (Units.PPM.equals(unit)) {
             return toAppendTo.append("parts per million");
         }
