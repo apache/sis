@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.io.PrintWriter;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
@@ -381,6 +382,30 @@ final class Element {
             args = new String[] {keyword, expected};
         }
         return new LocalizedParseException(locale, res, args, offset);
+    }
+
+    /**
+     * Returns a {@link ParseException} for an illegal coordinate system.
+     *
+     * <p>The given {@code cs} argument should never be null with Apache SIS implementation of
+     * {@link org.opengis.referencing.cs.CSFactory}, but could be null with user-supplied implementation.
+     * But it would be a {@code CSFactory} contract violation, so the user would get a {@link NullPointerException}
+     * later. For making easier to trace the cause, we throw here an exception with a similar error message.</p>
+     *
+     * @param  cs The illegal coordinate system.
+     * @return The exception to be thrown.
+     */
+    final ParseException illegalCS(final CoordinateSystem cs) {
+        final short key;
+        final String value;
+        if (cs == null) {
+            key   = Errors.Keys.NullArgument_1;   // See javadoc.
+            value = "coordinateSystem";
+        } else {
+            key   = Errors.Keys.IllegalCoordinateSystem_1;
+            value = cs.getName().getCode();
+        }
+        return new LocalizedParseException(locale, key, new String[] {value}, offset);
     }
 
 
