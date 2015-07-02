@@ -661,6 +661,33 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of an engineering CRS from a WKT 2 string.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testEngineeringCRS() throws ParseException {
+        final EngineeringCRS crs = parse(EngineeringCRS.class,
+                "EngineeringCRS[“A building-centred CRS”,\n" +
+                "  EngineeringDatum[“Building reference point”],\n" +
+                "  CS[Cartesian, 3],\n" +
+                "    Axis[“x”, east],\n" +
+                "    Axis[“y”, north],\n" +
+                "    Axis[“z”, up],\n" +
+                "    Unit[“metre”, 1]]");
+
+        assertNameAndIdentifierEqual("A building-centred CRS", 0, crs);
+        assertNameAndIdentifierEqual("Building reference point", 0, crs.getDatum());
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 3, cs.getDimension());
+
+        // Axis names are arbitrary and could change in future SIS versions.
+        assertUnboundedAxisEquals("Easting",  "x", AxisDirection.EAST,  SI.METRE, cs.getAxis(0));
+        assertUnboundedAxisEquals("Northing", "y", AxisDirection.NORTH, SI.METRE, cs.getAxis(1));
+        assertUnboundedAxisEquals("z",        "z", AxisDirection.UP,    SI.METRE, cs.getAxis(2));
+    }
+
+    /**
      * Tests the parsing of a compound CRS from a WKT 1 string, except the time dimension which is WKT 2.
      *
      * @throws ParseException if the parsing failed.
