@@ -525,6 +525,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (isWKT1) {
             return WKTKeywords.Fitted_CS;
         } else {
+            formatter.newLine();
             formatter.append(new FormattableObject() {     // Format inside a "DefiningConversion" element.
                 @Override protected String formatTo(final Formatter formatter) {
                     WKTUtilities.appendName(conversion, formatter, null);
