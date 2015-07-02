@@ -16,14 +16,14 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Pole rotation"</cite> conversion.
+ * The provider for <cite>"Geographic/topocentric conversions"</cite> conversion (EPSG:9837).
  *
  * This conversion is not yet implemented in Apache SIS, but we need to at least accept the parameters
  * for a Well Known Text (WKT) parsing test in the {@link org.apache.sis.io.wkt.WKTParserTest} class.
@@ -36,25 +36,28 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class PoleRotationMock extends MockProvider {
+public final strictfp class TopocentricConversionMock extends MockProvider {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
+        final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
-            createLatitude (builder.addName("Latitude of rotated pole"), true),
-            createLongitude(builder.addName("Longitude of rotated pole")),
-                            builder.addName("Axis rotation").create(Double.NaN, NonSI.DEGREE_ANGLE)
+            createLatitude (builder.addIdentifier("8834").addName("Latitude of topocentric origin"), true),
+            createLongitude(builder.addIdentifier("8835").addName("Longitude of topocentric origin")),
+                            builder.addIdentifier("8836").addName("Ellipsoidal height of topocentric origin").create(Double.NaN, SI.METRE)
         };
-        PARAMETERS = builder.addName("Pole rotation").createGroup(parameters);
+        PARAMETERS = builder
+                .addIdentifier("9837")
+                .addName("Geographic/topocentric conversions")
+                .createGroup(parameters);
     }
 
     /**
      * Creates a new <cite>"Pole rotation"</cite> operation method.
      */
-    public PoleRotationMock() {
-        super(2, 2, PARAMETERS);
+    public TopocentricConversionMock() {
+        super(3, 3, PARAMETERS);
     }
 }
