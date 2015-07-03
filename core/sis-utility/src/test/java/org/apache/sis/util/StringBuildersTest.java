@@ -97,10 +97,10 @@ public final strictfp class StringBuildersTest extends TestCase {
      */
     @Test
     public void testToASCII() {
-        final StringBuilder metre = new StringBuilder(
+        final StringBuilder s = new StringBuilder(
                 "mètres" + Characters.PARAGRAPH_SEPARATOR +
                 " ‘single’, “double”, \"ascii' 30°20′10″.");
-        toASCII(metre);
-        assertEquals("metres\n 'single', \"double\", \"ascii' 30°20'10\".", metre.toString());
+        toASCII(s);
+        assertEquals("metres\n 'single', \"double\", \"ascii' 30°20'10\".", s.toString());
     }
 }

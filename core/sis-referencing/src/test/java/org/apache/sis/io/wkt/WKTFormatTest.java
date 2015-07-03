@@ -16,8 +16,11 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Collections;
 import java.text.ParseException;
+import javax.measure.unit.NonSI;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -164,7 +167,9 @@ public final strictfp class WKTFormatTest extends TestCase {
                 + "GEOGCS[“NAD27”,"
                 +   "DATUM[“North American Datum 1927”,"
                 +     "SPHEROID[“Clarke 1866”, 6378206.4, 294.97869821]],"
-                +   "UNIT[“degree”,0.0174532925199433]],"
+                +   "UNIT[“degree”,0.0174532925199433],"
+                +   "AXIS[“Lat”,NORTH],"
+                +   "AXIS[“Long”,EAST]],"
                 + "PROJECTION[“Lambert_Conformal_Conic_2SP”],"
                 + "PARAMETER[“latitude_of_origin”,27.83333333333333],"
                 + "PARAMETER[“central_meridian”,-99.0],"
@@ -226,5 +231,39 @@ public final strictfp class WKTFormatTest extends TestCase {
         final String reformat = format.format(expected);
         final Object reparsed = format.parseObject(reformat);
         assertEqualsIgnoreMetadata(expected, reparsed);
+    }
+
+    /**
+     * Tests the production of a warning messages when the WKT contains unformattable elements.
+     *
+     * @throws ParseException if the parsing (tested after formatting) failed.
+     */
+    @Test
+    public void testWarnings() throws ParseException {
+        DefaultPrimeMeridian pm = new DefaultPrimeMeridian(Collections.singletonMap(
+                DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"), -10, NonSI.DEGREE_ANGLE);
+        format = new WKTFormat(null, null);
+        final String   wkt      = format.format(pm);
+        final Warnings warnings = format.getWarnings();
+        assertNotNull("warnings", warnings);
+        assertEquals ("warnings.numMessages", 1, warnings.getNumMessages());
+        assertEquals ("PrimeMeridian[\"Invalid \"\"$name\"\" here\", -10.0, AngleUnit[\"degree\", 0.017453292519943295]]", wkt);
+        assertEquals ("The “$” character in “\"$name\"” is not permitted by the “Well-Known Text” format.", warnings.getMessage(0));
+        assertNull   (warnings.getException(0));
+        /*
+         * Verify that FormattableObject.toWKT() reports that the WKT is invalid.
+         */
+        try {
+            pm.toWKT();
+            fail("Expected UnformattableObjectException.");
+        } catch (UnformattableObjectException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("$name"));
+        }
+        /*
+         * Verify that the WKT is still parseable despite the warning.
+         */
+        pm = (DefaultPrimeMeridian) format.parseObject(wkt);
+        assertEquals("Invalid \"$name\" here", pm.getName().getCode());
     }
 }
