@@ -328,6 +328,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCRSType_1 = 194;
 
         /**
+         * The “{2}” character in “{1}” is not permitted by the “{0}” format.
+         */
+        public static final short IllegalCharacterForFormat_3 = 195;
+
+        /**
          * Class ‘{1}’ is illegal. It must be ‘{0}’ or a derived class.
          */
         public static final short IllegalClass_2 = 34;

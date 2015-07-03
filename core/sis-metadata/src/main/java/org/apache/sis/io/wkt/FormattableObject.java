@@ -20,7 +20,6 @@ import java.io.Console;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
@@ -181,9 +180,14 @@ public abstract class FormattableObject {
         try {
             formatter.append(this);
             if (strict) {
-                final InternationalString message = formatter.getErrorMessage();
-                if (message != null) {
-                    throw new UnformattableObjectException(message.toString(), formatter.getErrorCause());
+                /*
+                 * If a warning occurred, consider the object as non-formattable.
+                 * We take the last message since it is more likely to be about the enclosing element.
+                 */
+                final Warnings warnings = formatter.getWarnings();
+                if (warnings != null) {
+                    final int n = warnings.getNumMessages() - 1;
+                    throw new UnformattableObjectException(warnings.getMessage(n), warnings.getException(n));
                 }
             }
             wkt = formatter.toWKT();

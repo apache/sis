@@ -32,12 +32,10 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.internal.util.Numerics.epsilonEqual;
@@ -108,34 +106,6 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns the angular unit of the specified coordinate system.
-     * The preference will be given to the longitude axis, if found.
-     *
-     * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
-     * @return The angular unit, of {@code null} if no angular unit was found.
-     *
-     * @since 0.6
-     */
-    public static Unit<Angle> getAngularUnit(final CoordinateSystem cs) {
-        Unit<Angle> unit = null;
-        if (cs != null) {
-            for (int i = cs.getDimension(); --i>=0;) {
-                final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (axis != null) {  // Paranoiac check.
-                    final Unit<?> candidate = axis.getUnit();
-                    if (Units.isAngular(candidate)) {
-                        unit = candidate.asType(Angle.class);
-                        if (AxisDirection.EAST.equals(AxisDirections.absolute(axis.getDirection()))) {
-                            break; // Found the longitude axis.
-                        }
-                    }
-                }
-            }
-        }
-        return unit;
-    }
-
-    /**
      * Returns the unit used for all axes in the given coordinate system.
      * If not all axes use the same unit, then this method returns {@code null}.
      *
@@ -145,6 +115,8 @@ public final class ReferencingUtilities extends Static {
      *
      * @param cs The coordinate system for which to get the unit, or {@code null}.
      * @return The unit for all axis in the given coordinate system, or {@code null}.
+     *
+     * @see org.apache.sis.internal.metadata.AxisDirections#getAngularUnit(CoordinateSystem)
      */
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;
