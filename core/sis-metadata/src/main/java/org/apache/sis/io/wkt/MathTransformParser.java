@@ -24,7 +24,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import javax.measure.quantity.Angle;
-import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
@@ -247,15 +246,17 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a sequence of {@code "PARAMETER"} elements.
      *
-     * @param  element     The parent element containing the parameters to parse.
-     * @param  parameters  The group where to store the parameter values.
-     * @param  linearUnit  The default linear unit, or {@code null}.
-     * @param  angularUnit The default angular unit, or {@code null}.
+     * @param  element            The parent element containing the parameters to parse.
+     * @param  parameters         The group where to store the parameter values.
+     * @param  defaultUnit        The default unit (for arbitrary quantity, including angular), or {@code null}.
+     * @param  defaultAngularUnit The default angular unit, or {@code null} if none. This is determined by the
+     *         context, especially when {@link GeodeticObjectParser} parses a {@code ProjectedCRS} element.
      * @throws ParseException if the {@code "PARAMETER"} element can not be parsed.
      */
     final void parseParameters(final Element element, final ParameterValueGroup parameters,
-            final Unit<Length> linearUnit, final Unit<Angle> angularUnit) throws ParseException
+            final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
     {
+        final Unit<?> defaultSI = (defaultUnit != null) ? defaultUnit.toSI() : null;
         Element param = element;
         try {
             while ((param = element.pullElement(OPTIONAL, WKTKeywords.Parameter)) != null) {
@@ -267,7 +268,7 @@ class MathTransformParser extends AbstractParser {
                  * than the parameter name. However we do not yet have a "get parameter by ID" in Apache SIS
                  * or in GeoAPI interfaces. This was not considered necessary since SIS is lenient (hopefully
                  * without introducing ambiguity) regarding parameter names, but we may revisit in a future
-                 * version if it become no longer the case. See https://issues.apache.org/jira/browse/SIS-163
+                 * version if it become no longer the case. See https://issues.apache.org/jira/browse/SIS-210
                  */
                 final ParameterValue<?>      parameter  = parameters.parameter(name);
                 final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
@@ -275,10 +276,13 @@ class MathTransformParser extends AbstractParser {
                 final boolean                isNumeric  = Number.class.isAssignableFrom(valueClass);
                 if (isNumeric && unit == null) {
                     unit = descriptor.getUnit();
-                    if (Units.isLinear(unit)) {
-                        unit = linearUnit;
-                    } else if (Units.isAngular(unit)) {
-                        unit = angularUnit;
+                    if (unit != null) {
+                        final Unit<?> si = unit.toSI();
+                        if (si.equals(defaultSI)) {
+                            unit = defaultUnit;
+                        } else if (si.equals(SI.RADIAN)) {
+                            unit = defaultAngularUnit;
+                        }
                     }
                 }
                 if (unit != null) {

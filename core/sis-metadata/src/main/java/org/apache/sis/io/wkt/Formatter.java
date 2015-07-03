@@ -61,6 +61,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -298,20 +299,12 @@ public class Formatter implements Localized {
     private boolean highlightError;
 
     /**
-     * Non-null if the WKT is invalid. If non-null, then this field contains a keyword that identify the
-     * problematic part.
+     * The warnings that occurred during WKT formatting, or {@code null} if none.
      *
      * @see #isInvalidWKT()
-     * @see #getErrorMessage()
+     * @see #getWarnings()
      */
-    private String invalidElement;
-
-    /**
-     * Error that occurred during WKT formatting, or {@code null} if none.
-     *
-     * @see #getErrorCause()
-     */
-    private Exception errorCause;
+    private Warnings warnings;
 
     /**
      * Creates a new formatter instance with the default configuration.
@@ -627,11 +620,10 @@ public class Formatter implements Localized {
         if (keyword == null) {
             if (info != null) {
                 setInvalidWKT(info, null);
-                keyword = getName(info.getClass());
             } else {
                 setInvalidWKT(object.getClass(), null);
-                keyword = invalidElement;
             }
+            keyword = getName(object.getClass());
         } else if (toUpperCase != 0) {
             final Locale locale = symbols.getLocale();
             keyword = (toUpperCase >= 0) ? keyword.toUpperCase(locale) : keyword.toLowerCase(locale);
@@ -977,14 +969,34 @@ public class Formatter implements Localized {
      * that character will be doubled (WKT 2) or deleted (WKT 1). We check for the closing quote only because
      * it is the character that the parser will look for determining the text end.
      */
-    private void quote(final String text, final ElementKind type) {
+    private void quote(String text, final ElementKind type) {
         setColor(type);
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
-        if (type == ElementKind.REMARKS) {
-            buffer.append(text);
-        } else {
-            buffer.append(transliterator.filter(text));
+        if (type != ElementKind.REMARKS) {
+            text = transliterator.filter(text);
+            int startAt = 0; // Index of the last space character.
+            final int length = text.length();
+            for (int i = 0; i < length;) {
+                int c = text.codePointAt(i);
+                int n = Character.charCount(c);
+                if (!Characters.isValidWKT(c)) {
+                    final String illegal = text.substring(i, i+n);
+                    while ((i += n) < length) {
+                        c = text.codePointAt(i);
+                        n = Character.charCount(c);
+                        if (c == ' ' || c == '_') break;
+                    }
+                    warnings().add(Errors.formatInternational(Errors.Keys.IllegalCharacterForFormat_3,
+                            "Well-Known Text", text.substring(startAt, i), illegal), null, null);
+                    break;
+                }
+                i += n;
+                if (c == ' ' || c == '_') {
+                    startAt = i;
+                }
+            }
         }
+        buffer.append(text);
         closeQuote(base);
         resetColor();
     }
@@ -1452,7 +1464,7 @@ public class Formatter implements Localized {
      * @return {@code true} if the WKT is invalid.
      */
     public boolean isInvalidWKT() {
-        return (invalidElement != null) || (buffer != null && buffer.length() == 0);
+        return (warnings != null) || (buffer != null && buffer.length() == 0);
         /*
          * Note: we really use a "and" condition (not an other "or") for the buffer test because
          *       the buffer is reset to 'null' by WKTFormat after a successfull formatting.
@@ -1460,14 +1472,20 @@ public class Formatter implements Localized {
     }
 
     /**
+     * Returns the object where to store warnings.
+     */
+    private Warnings warnings() {
+        if (warnings == null) {
+            warnings = new Warnings(locale, (byte) 0, Collections.<String, List<String>>emptyMap());
+        }
+        return warnings;
+    }
+
+    /**
      * Marks the current WKT representation of the given object as not strictly compliant with the WKT specification.
      * This method can be invoked by implementations of {@link FormattableObject#formatTo(Formatter)} when the object
      * to format is more complex than what the WKT specification allows.
      * Applications can test {@link #isInvalidWKT()} later for checking WKT validity.
-     *
-     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the last failure will be retained. The reason is that the
-     * last failure is typically the enclosing element.</p>
      *
      * @param unformattable The object that can not be formatted,
      * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
@@ -1479,9 +1497,7 @@ public class Formatter implements Localized {
         if (id == null || (name = id.getCode()) == null) {
             name = getName(unformattable.getClass());
         }
-        invalidElement = name;
-        errorCause     = cause;
-        highlightError = true;
+        setInvalidWKT(name, cause);
     }
 
     /**
@@ -1489,18 +1505,22 @@ public class Formatter implements Localized {
      * This method can be used as an alternative to {@link #setInvalidWKT(IdentifiedObject, Exception)} when the
      * problematic object is not an instance of {@code IdentifiedObject}.
      *
-     * <p>If any {@code setInvalidWKT(…)} method is invoked more than once during formatting,
-     * then only information about the first failure will be retained.</p>
-     *
      * @param unformattable The class of the object that can not be formatted,
      * @param cause The cause for the failure to format, or {@code null} if the cause is not an exception.
      */
     public void setInvalidWKT(final Class<?> unformattable, final Exception cause) {
         ArgumentChecks.ensureNonNull("unformattable", unformattable);
-        if (invalidElement == null) {
-            invalidElement = getName(unformattable);
-            errorCause     = cause;
-        }
+        setInvalidWKT(getName(unformattable), cause);
+    }
+
+    /**
+     * Implementation of public {@code setInvalidWKT(…)} methods.
+     *
+     * <div class="note"><b>Note:</b> the message is stored as an {@link InternationalString}
+     * in order to defer the actual message formatting until needed.</div>
+     */
+    private void setInvalidWKT(final String invalidElement, final Exception cause) {
+        warnings().add(Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement), cause, null);
         highlightError = true;
     }
 
@@ -1521,24 +1541,10 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Returns the error message {@link #isInvalidWKT()} is set, or {@code null} otherwise.
-     * If non-null, a cause may be available in the {@link #getErrorCause()} method.
-     *
-     * <div class="note"><b>Note:</b> the message is returned as an {@link InternationalString}
-     * in order to defer the actual message formatting until needed.</div>
+     * Returns the warnings, or {@code null} if none.
      */
-    final InternationalString getErrorMessage() {
-        if (!isInvalidWKT()) {
-            return null;
-        }
-        return Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement);
-    }
-
-    /**
-     * Returns the cause of the error, or {@code null} if the cause is not an exception.
-     */
-    final Exception getErrorCause() {
-        return errorCause;
+    final Warnings getWarnings() {
+        return warnings;
     }
 
     /**
@@ -1589,7 +1595,6 @@ public class Formatter implements Localized {
         requestNewLine    = false;
         isComplement      = false;
         highlightError    = false;
-        invalidElement    = null;
-        errorCause        = null;
+        warnings          = null;
     }
 }
