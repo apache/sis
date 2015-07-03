@@ -357,6 +357,27 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
+     * Parses a coordinate reference system wrapped in an element of the given name.
+     *
+     * @param  parent   The parent element containing the CRS to parse.
+     * @param  mode     {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  keyword  "SourceCRS", "TargetCRS" or "InterpolationCRS".
+     * @return The coordinate reference system, or {@code null} if none.
+     * @throws ParseException if the CRS can not be parsed.
+     */
+    private CoordinateReferenceSystem parseCoordinateReferenceSystem(final Element parent, final int mode,
+            final String keyword) throws ParseException
+    {
+        final Element element = parent.pullElement(mode, keyword);
+        if (element == null) {
+            return null;
+        }
+        final CoordinateReferenceSystem crs = parseCoordinateReferenceSystem(element, true);
+        element.close(ignoredElements);
+        return crs;
+    }
+
+    /**
      * Returns the value associated to {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
      * This method shall accept all value types that {@link #parseMetadataAndClose(Element, Object)} may store.
      *
@@ -1157,6 +1178,43 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
+     * Parses a {@code "Method"} (WKT 2) element, without the parameters.
+     *
+     * @param  parent   The parent element.
+     * @param  keywords The element keywords.
+     * @return The operation method.
+     * @throws ParseException if the {@code "Method"} element can not be parsed.
+     */
+    private OperationMethod parseMethod(final Element parent, final String... keywords) throws ParseException {
+        final Element element    = parent.pullElement(MANDATORY, keywords);
+        final String  name       = element.pullString("method");
+        Map<String,?> properties = parseMetadataAndClose(element, name, null);
+        final Identifier id      = toIdentifier(properties.remove(IdentifiedObject.IDENTIFIERS_KEY));  // See NOTE 2 in parseDerivingConversion.
+        /*
+         * The map projection method may be specified by an EPSG identifier (or any other authority),
+         * which is preferred to the method name since the later is potentially ambiguous. However not
+         * all CoordinateOperationFactory may accept identifier as an argument to 'getOperationMethod'.
+         * So if an identifier is present, we will try to use it but fallback on the name if we can
+         * not use the identifier.
+         */
+        FactoryException suppressed = null;
+        if (id != null) try {
+            // CodeSpace is a mandatory attribute in ID[…] elements, so we do not test for null values.
+            return opFactory.getOperationMethod(id.getCodeSpace() + DefaultNameSpace.DEFAULT_SEPARATOR + id.getCode());
+        } catch (FactoryException e) {
+            suppressed = e;
+        }
+        try {
+            return opFactory.getOperationMethod(name);
+        } catch (FactoryException e) {
+            if (suppressed != null) {
+                e.addSuppressed(suppressed);
+            }
+            throw element.parseFailed(e);
+        }
+    }
+
+    /**
      * Parses a {@code "Method"} (WKT 2) element, followed by parameter values. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#62">WKT 2 specification §9.3</a>.
      *
@@ -1195,25 +1253,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
             name = parent.pullString("name");
         }
-        final Element element    = parent.pullElement(MANDATORY, WKTKeywords.Method, WKTKeywords.Projection);
-        final String  methodName = element.pullString("method");
-        Map<String,?> properties = parseMetadataAndClose(element, methodName, null);
-        final Identifier id      = toIdentifier(properties.remove(IdentifiedObject.IDENTIFIERS_KEY)); // See NOTE 2.
-        /*
-         * The map projection method may be specified by an EPSG identifier (or any other authority),
-         * which is preferred to the method name since the later is potentially ambiguous. However not
-         * all CoordinateOperationFactory may accept identifier as an argument to 'getOperationMethod'.
-         * So if an identifier is present, we will try to use it but fallback on the name if we can
-         * not use the identifier.
-         */
-        OperationMethod  method     = null;
-        FactoryException suppressed = null;
-        if (id != null) try {
-            // CodeSpace is a mandatory attribute in ID[…] elements, so we do not test for null values.
-            method = opFactory.getOperationMethod(id.getCodeSpace() + DefaultNameSpace.DEFAULT_SEPARATOR + id.getCode());
-        } catch (FactoryException e) {
-            suppressed = e;
-        }
+        OperationMethod method = parseMethod(parent, WKTKeywords.Method, WKTKeywords.Projection);
+        Map<String,?> properties = this.properties;  // Same properties then OperationMethod, with ID removed.
         /*
          * Set the list of parameters.
          *
@@ -1224,32 +1265,26 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          *         but we shall not inherit the OperationMethod identifier. This is the reason why we invoked
          *         properties.remove(IdentifiedObject.IDENTIFIERS_KEY)) above.
          */
+        final ParameterValueGroup parameters = method.getParameters().createValue();
+        parseParameters(parent, parameters, defaultUnit, defaultAngularUnit);
+        if (wrapper != null) {
+            properties = parseMetadataAndClose(parent, name, method);
+            /*
+             * DEPARTURE FROM ISO 19162: the specification in §9.3.2 said:
+             *
+             *     "If an identifier is provided as an attribute within the <map projection conversion> object,
+             *     because it is expected to describe a complete collection of zone name, method, parameters and
+             *     parameter values, it shall override any identifiers given within the map projection method and
+             *     map projection parameter objects."
+             *
+             * However this would require this GeodeticObjectParser to hold a CoordinateOperationAuthorityFactory,
+             * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-210
+             */
+        }
         try {
-            if (method == null) {
-                method = opFactory.getOperationMethod(methodName);
-            }
-            final ParameterValueGroup parameters = method.getParameters().createValue();
-            parseParameters(parent, parameters, defaultUnit, defaultAngularUnit);
-            if (wrapper != null) {
-                properties = parseMetadataAndClose(parent, name, method);
-                /*
-                 * DEPARTURE FROM ISO 19162: the specification in §9.3.2 said:
-                 *
-                 *     "If an identifier is provided as an attribute within the <map projection conversion> object,
-                 *     because it is expected to describe a complete collection of zone name, method, parameters and
-                 *     parameter values, it shall override any identifiers given within the map projection method and
-                 *     map projection parameter objects."
-                 *
-                 * However this would require this GeodeticObjectParser to hold a CoordinateOperationAuthorityFactory,
-                 * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-210
-                 */
-            }
             return opFactory.createDefiningConversion(properties, method, parameters);
         } catch (FactoryException exception) {
-            if (suppressed != null) {
-                exception.addSuppressed(suppressed);
-            }
-            throw element.parseFailed(exception);
+            throw parent.parseFailed(exception);
         }
     }
 
@@ -1935,8 +1970,10 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Parses a {@code "COMPD_CS"} element.
-     * This element has the following pattern:
+     * Parses a {@code "CompoundCRS"} element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#110">WKT 2 specification §16</a>.
+     *
+     * The legacy WKT 1 specification was:
      *
      * {@preformat text
      *     COMPD_CS["<name>", <head cs>, <tail cs> {,<authority>}]
@@ -1944,8 +1981,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
-     * @return The {@code "COMPD_CS"} element as a {@link CompoundCRS} object.
-     * @throws ParseException if the {@code "COMPD_CS"} element can not be parsed.
+     * @return The {@code "CompoundCRS"} element as a {@link CompoundCRS} object.
+     * @throws ParseException if the {@code "CompoundCRS"} element can not be parsed.
      */
     private CompoundCRS parseCompoundCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.CompoundCRS, WKTKeywords.Compd_CS);
@@ -2023,7 +2060,33 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         }
     }
 
+    /**
+     * Parses a {@code "CoordinateOperation"} element. The syntax is given by
+     * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#113">WKT 2 specification §17</a>.
+     *
+     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent The parent element.
+     * @return The {@code "CoordinateOperation"} element as a {@link CoordinateOperation} object.
+     * @throws ParseException if the {@code "CoordinateOperation"} element can not be parsed.
+     */
     private CoordinateOperation parseOperation(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.CoordinateOperation);
+        if (element == null) {
+            return null;
+        }
+        final String name = element.pullString("name");
+        final CoordinateReferenceSystem sourceCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.SourceCRS);
+        final CoordinateReferenceSystem targetCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
+        final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
+        final OperationMethod           method           = parseMethod(parent, WKTKeywords.Method);
+        final Element                   accuracy         = parent.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
+        final Map<String,Object>        properties       = parseMetadataAndClose(parent, name, method);
+        final ParameterValueGroup       parameters       = method.getParameters().createValue();
+        parseParameters(parent, parameters, null, null);
+        if (accuracy != null) {
+            accuracy.pullDouble("accuracy");    // TODO: share the code from EPSG factory.
+            accuracy.close(ignoredElements);
+        }
         return null;    // Not yet implemented.
     }
 }
