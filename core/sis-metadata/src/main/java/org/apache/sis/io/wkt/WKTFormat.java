@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -574,18 +573,15 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.formatter = formatter;
         }
         final boolean valid;
-        final InternationalString warning;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
-            warning = formatter.getErrorMessage();  // Must be saved before formatter.clear() is invoked.
+            warnings = formatter.getWarnings();  // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
         }
-        if (warning != null) {
-            warnings = new Warnings(getLocale(), (byte) 0, Collections.emptyMap());
-            warnings.add(warning, formatter.getErrorCause(), null);
+        if (warnings != null) {
             warnings.setRoot(object);
         }
         if (!valid) {
