@@ -705,11 +705,13 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             if (type == null) {
                 throw parent.missingComponent(WKTKeywords.Axis);
             }
-            String nx = null, x = null;     // Easting or Longitude axis name and abbreviation.
-            String ny = null, y = null;     // Northing or latitude axis name and abbreviation.
-            String nz = null, z = null;     // Depth, height or time axis name and abbreviation.
-            AxisDirection direction = null; // Depth, height or time axis direction.
-            Unit<?> unit = defaultUnit;     // Depth, height or time axis unit.
+            String nx = null, x = null;             // Easting or Longitude axis name and abbreviation.
+            String ny = null, y = null;             // Northing or latitude axis name and abbreviation.
+            String nz = null, z = null;             // Depth, height or time axis name and abbreviation.
+            AxisDirection dx = AxisDirection.EAST;
+            AxisDirection dy = AxisDirection.NORTH;
+            AxisDirection direction = null;         // Depth, height or time axis direction.
+            Unit<?> unit = defaultUnit;             // Depth, height or time axis unit.
             switch (type) {
                 /*
                  * Cartesian — we can create axes only for geodetic datum, in which case the axes are for
@@ -736,14 +738,22 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 }
                 /*
                  * Ellipsoidal — can be two- or three- dimensional, in which case the height can
-                 * only be ellipsoidal height.
+                 * only be ellipsoidal height. The default axis order depends on the WKT version:
+                 *
+                 *   - WKT 1 said explicitely that the default order is (longitude, latitude).
+                 *   - WKT 2 has no default, and allows only (latitude, longitude) order.
                  */
                 case WKTKeywords.ellipsoidal: {
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.AngleUnit);
                     }
-                    nx = AxisNames.GEODETIC_LONGITUDE; x = "λ";
-                    ny = AxisNames.GEODETIC_LATITUDE;  y = "φ";
+                    if (isWKT1) {
+                        nx = AxisNames.GEODETIC_LONGITUDE; x = "λ";
+                        ny = AxisNames.GEODETIC_LATITUDE;  y = "φ";
+                    } else {
+                        nx = AxisNames.GEODETIC_LATITUDE;  x = "φ"; dx = AxisDirection.NORTH;
+                        ny = AxisNames.GEODETIC_LONGITUDE; y = "λ"; dy = AxisDirection.EAST;
+                    }
                     if (dimension >= 3) {
                         direction = AxisDirection.UP;
                         z    = "h";
@@ -801,8 +811,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
             int i = 0;
             axes = new CoordinateSystemAxis[dimension];
-            if (x != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, nx), x, AxisDirection.EAST,  defaultUnit);
-            if (y != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, ny), y, AxisDirection.NORTH, defaultUnit);
+            if (x != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, nx), x, dx,  defaultUnit);
+            if (y != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, ny), y, dy, defaultUnit);
             if (z != null && i < dimension) axes[i++] = csFactory.createCoordinateSystemAxis(singletonMap(CoordinateSystemAxis.NAME_KEY, nz), z, direction, unit);
             // Not a problem if the array does not have the expected length for the CS type. This will be verified below in this method.
         }
