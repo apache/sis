@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -39,7 +40,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
@@ -188,16 +188,16 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          */
         final GeodeticDatum datum = getDatum();     // Gives subclasses a chance to override.
         formatter.newLine();
-        formatter.append(toFormattable(datum));
+        formatter.append(WKTUtilities.toFormattable(datum));
         formatter.newLine();
         final PrimeMeridian pm = datum.getPrimeMeridian();
-        final Unit<Angle> angularUnit = ReferencingUtilities.getAngularUnit(cs);
+        final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
         if (convention != Convention.WKT2_SIMPLIFIED ||
                 ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
         {
             final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
             formatter.indent(1);
-            formatter.append(toFormattable(pm));
+            formatter.append(WKTUtilities.toFormattable(pm));
             formatter.indent(-1);
             formatter.newLine();
             formatter.restoreContextualUnit(angularUnit, oldUnit);
