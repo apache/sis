@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Characters extends Static {
@@ -75,6 +75,34 @@ public final class Characters extends Static {
      * Do not allow instantiation of this class.
      */
     private Characters() {
+    }
+
+    /**
+     * Returns {@code true} if the given code point is a valid character for <cite>Well Known Text</cite> (WKT).
+     * This method returns {@code true} for the following characters:
+     *
+     * <blockquote><pre>{@literal A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</pre></blockquote>
+     *
+     * They are ASCII codes 32 to 125 inclusive except ! (33), # (35), $ (36), @ (64) and ` (96),
+     * plus the addition of ° (176) despite being formally outside the ASCII character set.
+     *
+     * @param  c The code point to test.
+     * @return {@code true} if the given code point is a valid WKT character.
+     *
+     * @see org.apache.sis.io.wkt.Transliterator
+     *
+     * @since 0.6
+     */
+    public static boolean isValidWKT(final int c) {
+        switch (c) {
+            case '!':
+            case '#':
+            case '$':
+            case '@':
+            case '`': return false;
+            case '°': return true;
+            default : return (c >= ' ') && (c <= '}');
+        }
     }
 
     /**

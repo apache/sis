@@ -92,6 +92,7 @@ import org.apache.sis.util.Characters;
  * @version 0.6
  * @module
  *
+ * @see org.apache.sis.util.Characters#isValidWKT(int)
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
  */
 public abstract class Transliterator implements Serializable {
@@ -99,6 +100,11 @@ public abstract class Transliterator implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 7115456393795045932L;
+
+    /**
+     * A bitmask of control characters that are considered as spaces according {@link Character#isWhitespace(char)}.
+     */
+    static final int SPACES = 0xF0003E00;
 
     /**
      * Default names to associate to axis directions in a Cartesian coordinate system.
@@ -146,13 +152,38 @@ public abstract class Transliterator implements Serializable {
      * {@linkplain Symbols#getClosingQuote(int) closing quotes}. The quotes will be doubled by the
      * caller if needed after this method has been invoked.</p>
      *
-     * <p>The default implementation invokes {@link CharSequences#toASCII(CharSequence)}.</p>
+     * <p>The default implementation invokes {@link CharSequences#toASCII(CharSequence)},
+     * replaces line feed and tabulations by single spaces, then remove control characters.</p>
      *
      * @param  text The text to format without non-ASCII characters.
      * @return The text to write in <cite>Well Known Text</cite>.
+     *
+     * @see org.apache.sis.util.Characters#isValidWKT(int)
      */
     public String filter(final String text) {
-        return CharSequences.toASCII(text).toString();
+        CharSequence s = CharSequences.toASCII(text);
+        StringBuilder buffer = null;
+        for (int i=s.length(); --i >= 0;) {
+            final char c = s.charAt(i);
+            if (c < 32) {
+                if (buffer == null) {
+                    if (s == text) {
+                        s = buffer = new StringBuilder(text);
+                    } else {
+                        buffer = (StringBuilder) s;
+                    }
+                }
+                if ((SPACES & (1 << c)) != 0) {
+                    buffer.setCharAt(i, ' ');
+                    if (i != 0 && c == '\n' && s.charAt(i-1) == '\r') {
+                        buffer.deleteCharAt(--i);
+                    }
+                } else {
+                    buffer.deleteCharAt(i);
+                }
+            }
+        }
+        return s.toString();
     }
 
     /**

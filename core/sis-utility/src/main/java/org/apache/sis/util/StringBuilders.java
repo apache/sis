@@ -227,6 +227,8 @@ public final class StringBuilders extends Static {
                         cr = ASCII.charAt(r);
                     } else {
                         switch (getType(c)) {
+                            case FORMAT:
+                            case CONTROL: buffer.delete(i, i + n); continue;  // Character.isIdentifierIgnorable
                             case PARAGRAPH_SEPARATOR:       // Fall through
                             case LINE_SEPARATOR:            cr = '\n'; break;
                             case SPACE_SEPARATOR:           cr = ' '; break;

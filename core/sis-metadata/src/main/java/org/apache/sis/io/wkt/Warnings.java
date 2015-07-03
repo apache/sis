@@ -32,6 +32,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
@@ -234,6 +235,49 @@ public final class Warnings implements Localized, Serializable {
     }
 
     /**
+     * Returns the number of warning messages.
+     *
+     * @return The number of warning messages.
+     */
+    public final int getNumMessages() {
+        return (messages != null) ? messages.size() / 2 : 0;
+    }
+
+    /**
+     * Returns a warning message.
+     *
+     * @param  index 0 for the first warning, 1 for the second warning, <i>etc.</i> until {@link #getNumMessages()} - 1.
+     * @return The <var>i</var>-th warning message.
+     */
+    public String getMessage(int index) {
+        ArgumentChecks.ensureValidIndex(getNumMessages(), index);
+        index *= 2;
+        final InternationalString i18n = (InternationalString) messages.get(index);
+        if (i18n != null) {
+            return i18n.toString(errorLocale);
+        } else {
+            final Exception cause = (Exception) messages.get(index + 1);
+            final String[] sources = exceptionSources.get(cause);   // See comment in 'toString(Locale)'.
+            if (sources != null) {
+                return Errors.getResources(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
+            } else {
+                return cause.toString();
+            }
+        }
+    }
+
+    /**
+     * Returns the exception which was the cause of the message at the given index, or {@code null} if none.
+     *
+     * @param  index The value given to {@link #getMessage(int)}.
+     * @return The exception which was the cause of the warning message, or {@code null} if none.
+     */
+    public Exception getException(final int index) {
+        ArgumentChecks.ensureValidIndex(getNumMessages(), index);
+        return (Exception) messages.get(index*2 + 1);
+    }
+
+    /**
      * Returns the non-fatal exceptions that occurred during the parsing or formatting.
      * If no exception occurred, returns an empty set.
      *
@@ -310,7 +354,7 @@ public final class Warnings implements Localized, Serializable {
               .append(lineSeparator);
         if (messages != null) {
             for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
-                InternationalString i18n = (InternationalString) it.next();
+                final InternationalString i18n = (InternationalString) it.next();
                 Exception cause = (Exception) it.next();
                 final String message;
                 if (i18n != null) {
