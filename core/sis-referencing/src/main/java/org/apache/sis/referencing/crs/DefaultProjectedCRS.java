@@ -39,6 +39,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
@@ -386,7 +387,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         final CartesianCS   cs          = getCoordinateSystem();
         final GeographicCRS baseCRS     = getBaseCRS();
         final Unit<?>       lengthUnit  = ReferencingUtilities.getUnit(cs);
-        final Unit<Angle>   angularUnit = ReferencingUtilities.getAngularUnit(baseCRS.getCoordinateSystem());
+        final Unit<Angle>   angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
         final Unit<Angle>   oldAngle    = formatter.addContextualUnit(angularUnit);
         final Unit<?>       oldLength   = formatter.addContextualUnit(lengthUnit);
         /*

@@ -552,20 +552,6 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
-     * Returns the given unit as a linear unit, or {@code null} if it is not linear.
-     */
-    private static Unit<Length> toLinear(final Unit<?> unit) {
-        return Units.isLinear(unit) ? unit.asType(Length.class) : null;
-    }
-
-    /**
-     * Returns the given unit as an angular unit, or {@code null} if it is not angular.
-     */
-    private static Unit<Angle> toAngular(final Unit<?> unit) {
-        return Units.isAngular(unit) ? unit.asType(Angle.class) : null;
-    }
-
-    /**
      * Parses an optional {@code "UNIT"} element of a known dimension.
      * This element has the following pattern:
      *
@@ -642,7 +628,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param  dimension   The minimal number of dimensions. Can be 1 if unknown.
      * @param  isWKT1      {@code true} if the parent element is an element from the WKT 1 standard.
      * @param  defaultUnit The contextual unit (usually {@code SI.METRE} or {@code SI.RADIAN}), or {@code null} if unknown.
-     * @param  datum       The datum of the enclosing CRS.
+     * @param  datum       The datum of the enclosing CRS, or {@code null} if unknown.
      * @return The {@code "CS"}, {@code "UNIT"} and/or {@code "AXIS"} elements as a Coordinate System, or {@code null}.
      * @throws ParseException if an element can not be parsed.
      * @throws FactoryException if the factory can not create the coordinate system.
@@ -774,21 +760,23 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.Unit);
                     }
+                    z         = "h";
+                    nz        = "Height";
                     direction = AxisDirection.UP;
-                    final VerticalDatumType vt = ((VerticalDatum) datum).getVerticalDatumType();
-                    if (VerticalDatumType.GEOIDAL.equals(vt)) {
-                        nz = AxisNames.GRAVITY_RELATED_HEIGHT;
-                        z  = "H";
-                    } else if (VerticalDatumType.DEPTH.equals(vt)) {
-                        direction = AxisDirection.DOWN;
-                        nz = AxisNames.DEPTH;
-                        z  = "D";
-                    } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(vt)) {
-                        nz = AxisNames.ELLIPSOIDAL_HEIGHT;  // Not allowed by ISO 19111 as a standalone axis, but SIS is
-                        z  = "h";                           // tolerant to this case since it is sometime hard to avoid.
-                    } else {
-                        nz = "Height";
-                        z  = "h";
+                    if (datum instanceof VerticalDatum) {
+                        final VerticalDatumType vt = ((VerticalDatum) datum).getVerticalDatumType();
+                        if (VerticalDatumType.GEOIDAL.equals(vt)) {
+                            nz = AxisNames.GRAVITY_RELATED_HEIGHT;
+                            z  = "H";
+                        } else if (VerticalDatumType.DEPTH.equals(vt)) {
+                            direction = AxisDirection.DOWN;
+                            nz = AxisNames.DEPTH;
+                            z  = "D";
+                        } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(vt)) {
+                            // Not allowed by ISO 19111 as a standalone axis, but SIS is
+                            // tolerant to this case since it is sometime hard to avoid.
+                            nz = AxisNames.ELLIPSOIDAL_HEIGHT;
+                        }
                     }
                     break;
                 }
@@ -1172,16 +1160,16 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * element which is itself inside the {@code ProjectedCRS} element. This is different than WKT 1, which
      * puts this element right into the the {@code ProjectedCRS} element without {@code Conversion} wrapper.
      *
-     * @param  mode        {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
-     * @param  parent      The parent element.
-     * @param  wrapper     "Conversion" or "DerivingConversion" wrapper name, or null if parsing a WKT 1.
-     * @param  linearUnit  The linear unit of the parent {@code ProjectedCRS} element, or {@code null}.
-     * @param  angularUnit The angular unit of the sibling {@code GeographicCRS} element, or {@code null}.
+     * @param  mode               {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent             The parent element.
+     * @param  wrapper            "Conversion" or "DerivingConversion" wrapper name, or null if parsing a WKT 1.
+     * @param  defaultUnit        The unit (usually linear) of the parent element, or {@code null}.
+     * @param  defaultAngularUnit The angular unit of the sibling {@code GeographicCRS} element, or {@code null}.
      * @return The {@code "Method"} element and its parameters as a defining conversion.
      * @throws ParseException if the {@code "Method"} element can not be parsed.
      */
     private Conversion parseDerivingConversion(final int mode, Element parent, final String wrapper,
-            final Unit<Length> linearUnit, final Unit<Angle> angularUnit) throws ParseException
+            final Unit<?> defaultUnit, final Unit<Angle> defaultAngularUnit) throws ParseException
     {
         final String name;
         if (wrapper == null) {
@@ -1231,7 +1219,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 method = opFactory.getOperationMethod(methodName);
             }
             final ParameterValueGroup parameters = method.getParameters().createValue();
-            parseParameters(parent, parameters, linearUnit, angularUnit);
+            parseParameters(parent, parameters, defaultUnit, defaultAngularUnit);
             if (wrapper != null) {
                 properties = parseMetadataAndClose(parent, name, method);
                 /*
@@ -1243,7 +1231,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                  *     map projection parameter objects."
                  *
                  * However this would require this GeodeticObjectParser to hold a CoordinateOperationAuthorityFactory,
-                 * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-163
+                 * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-210
                  */
             }
             return opFactory.createDefiningConversion(properties, method, parameters);
@@ -1463,7 +1451,17 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         SingleCRS        baseCRS  = null;
         Conversion       fromBase = null;
         if (!isWKT1 && !isBaseCRS) {
-            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, null, null);
+            /*
+             * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what we do for ProjectedCRS parameters, in the hope to be consistent.
+             *
+             * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
+             * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
+             * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
+             * instead than inferred from the WKT.
+             */
+            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
                 /*
                  * The order of base types below is arbitrary. But no matter their type,
@@ -1508,9 +1506,9 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (element == null) {
             return null;
         }
-        final String     name   = element.pullString("name");
-        final ImageDatum datum  = parseImageDatum(MANDATORY, element);
-        final Unit<?>    unit   = parseUnit(element);
+        final String     name  = element.pullString("name");
+        final ImageDatum datum = parseImageDatum(MANDATORY, element);
+        final Unit<?>    unit  = parseUnit(element);
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
@@ -1564,40 +1562,66 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (element == null) {
             return null;
         }
-        final boolean     isWKT1;
-        final Unit<Angle> angularUnit;
-              Unit<?>     defaultUnit;
+        final boolean isWKT1;
+        Unit<?>     csUnit;
+        Unit<Angle> angularUnit;
         switch (element.getKeywordIndex()) {
-            default: {      // WKT2 element.
-                isWKT1      = false;
-                defaultUnit = parseUnit(element);
-                angularUnit = Units.isAngular(defaultUnit) ? defaultUnit.asType(Angle.class) : NonSI.DEGREE_ANGLE;
-                if (defaultUnit == null) {
-                    /*
-                     * A UNIT[…] is mandatory either in the CoordinateSystem as a whole (defaultUnit != null),
-                     * or inside each AXIS[…] component (defaultUnit == null). An exception to this rule is when
-                     * parsing a BaseGeodCRS inside a ProjectedCRS or DerivedCRS, in which case axes are omitted.
-                     * We recognize those cases by a non-null 'csType' given in argument to this method.
-                     */
-                    if (WKTKeywords.ellipsoidal.equals(csType)) {
-                        defaultUnit = NonSI.DEGREE_ANGLE;   // For BaseGeodCRS in ProjectedCRS.
+            default: {
+                /*
+                 * WKT 2 "GeodeticCRS" element.
+                 * The specification in §8.2.2 (ii) said:
+                 *
+                 *     "If the subtype of the geodetic CRS to which the prime meridian is an attribute
+                 *     is geographic, the prime meridian’s <irm longitude> value shall be given in the
+                 *     same angular units as those for the horizontal axes of the geographic CRS;
+                 *     if the geodetic CRS subtype is geocentric the prime meridian’s <irm longitude>
+                 *     value shall be given in degrees."
+                 *
+                 * An apparent ambiguity exists for Geocentric CRS using a Spherical CS instead than the more
+                 * usual Cartesian CS: despite using angular units, we should not use the result of parseUnit
+                 * for those CRS. However this ambiguity should not happen in practice because such Spherical
+                 * CS have a third axis in metre.  Since the unit is not the same for all axes, csUnit should
+                 * be null if the WKT is well-formed.
+                 */
+                isWKT1 = false;
+                csUnit = parseUnit(element);
+                if (Units.isAngular(csUnit)) {
+                    angularUnit = csUnit.asType(Angle.class);
+                } else {
+                    angularUnit = NonSI.DEGREE_ANGLE;
+                    if (csUnit == null) {
+                        /*
+                         * A UNIT[…] is mandatory either in the CoordinateSystem as a whole (csUnit != null),
+                         * or inside each AXIS[…] component (csUnit == null). An exception to this rule is when
+                         * parsing a BaseGeodCRS inside a ProjectedCRS or DerivedCRS, in which case axes are omitted.
+                         * We recognize those cases by a non-null 'csType' given in argument to this method.
+                         */
+                        if (WKTKeywords.ellipsoidal.equals(csType)) {
+                            csUnit = NonSI.DEGREE_ANGLE;   // For BaseGeodCRS in ProjectedCRS.
+                        }
                     }
                 }
                 break;
             }
-            case 1: {       // WKT1 "GeogCS" element.
+            case 1: {
+                /*
+                 * WKT 1 "GeogCS" (Geographic) element.
+                 */
                 isWKT1      = true;
                 csType      = WKTKeywords.ellipsoidal;
                 angularUnit = parseScaledUnit(element, WKTKeywords.AngleUnit, SI.RADIAN);
-                defaultUnit = angularUnit;
+                csUnit      = angularUnit;
                 dimension   = 2;
                 break;
             }
-            case 3: {       // WKT1 "GeocCS" element.
+            case 3: {
+                /*
+                 * WKT 1 "GeocCS" (Geocentric) element.
+                 */
                 isWKT1      = true;
                 csType      = WKTKeywords.Cartesian;
                 angularUnit = NonSI.DEGREE_ANGLE;
-                defaultUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+                csUnit      = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
                 dimension   = 3;
                 break;
             }
@@ -1607,19 +1631,23 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * A GeodeticCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind GeodeticCRS.
          * In the later case, the datum is null and we have instead DerivingConversion element from a BaseGeodCRS.
          */
-        GeodeticDatum datum    = null;
-        SingleCRS     baseCRS  = null;
-        Conversion    fromBase = null;
+        SingleCRS  baseCRS  = null;
+        Conversion fromBase = null;
         if (!isWKT1 && csType == null) {
-            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, toLinear(defaultUnit), angularUnit);
+            /*
+             * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what we do for ProjectedCRS parameters, in the hope to be consistent.
+             *
+             * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
+             * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
+             * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
+             * instead than inferred from the WKT.
+             */
+            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, csUnit, angularUnit);
             if (fromBase != null) {
                 baseCRS = parseGeodeticCRS(MANDATORY, element, getSourceDimensions(fromBase.getMethod()), WKTKeywords.ellipsoidal);
             }
-        }
-        if (baseCRS == null) {
-            // The most usual case.
-            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, angularUnit);
-            datum = parseDatum(MANDATORY, element, meridian);
         }
         /*
          * At this point, we have either a non-null 'datum' or non-null 'baseCRS' + 'fromBase'.
@@ -1627,11 +1655,26 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          */
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, csType, dimension, isWKT1, defaultUnit, datum);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            cs = parseCoordinateSystem(element, csType, dimension, isWKT1, csUnit, null);
             if (baseCRS != null) {
+                final Map<String,?> properties = parseMetadataAndClose(element, name, null);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
+            /*
+             * The specifiation in §8.2.2 (ii) said:
+             *
+             *     "(snip) the prime meridian’s <irm longitude> value shall be given in the
+             *     same angular units as those for the horizontal axes of the geographic CRS."
+             *
+             * This is a little bit different than using the 'angularUnit' variable directly,
+             * since the WKT could have overwritten the unit directly in the AXIS[…] element.
+             * So we re-fetch the angular unit. Normally, we will get the same value (unless
+             * the previous value was null).
+             */
+            angularUnit = AxisDirections.getAngularUnit(cs, angularUnit);
+            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, angularUnit);
+            final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof EllipsoidalCS) {  // By far the most frequent case.
                 return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
             }
@@ -1686,7 +1729,17 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
         if (!isWKT1 && !isBaseCRS) {
-            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, toLinear(unit), null);
+            /*
+             * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what we do for ProjectedCRS parameters, in the hope to be consistent.
+             *
+             * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
+             * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
+             * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
+             * instead than inferred from the WKT.
+             */
+            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
                 baseCRS = parseVerticalCRS(MANDATORY, element, true);
             }
@@ -1755,7 +1808,17 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         SingleCRS     baseCRS  = null;
         Conversion    fromBase = null;
         if (!isBaseCRS) {
-            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, null, null);
+            /*
+             * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what we do for ProjectedCRS parameters, in the hope to be consistent.
+             *
+             * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
+             * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
+             * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
+             * instead than inferred from the WKT.
+             */
+            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
             if (fromBase != null) {
                 baseCRS = parseTimeCRS(MANDATORY, element, true);
             }
@@ -1818,27 +1881,39 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         /*
          * Parse the projection parameters. If a default linear unit is specified, it will apply to
          * all parameters that do not specify explicitely a LengthUnit. If no such crs-wide unit was
-         * specified, then the default will be the unit specified in the parameter descriptor.
+         * specified, then the default will be degrees.
+         *
+         * More specifically §9.3.4 in the specification said about the default units:
+         *
+         *    - lengths shall be given in the unit for the projected CRS axes.
+         *    - angles shall be given in the unit for the base geographic CRS of the projected CRS.
          */
-        Unit<Length> linearUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
-        final boolean ignoreUnits = isWKT1 && usesCommonUnits;
+        Unit<Length> csUnit = parseScaledUnit(element, WKTKeywords.LengthUnit, SI.METRE);
+        final Unit<Length> linearUnit;
+        final Unit<Angle>  angularUnit;
+        if (isWKT1 && usesCommonUnits) {
+            linearUnit  = SI.METRE;
+            angularUnit = NonSI.DEGREE_ANGLE;
+        } else {
+            linearUnit  = csUnit;
+            angularUnit = AxisDirections.getAngularUnit(geoCRS.getCoordinateSystem(), NonSI.DEGREE_ANGLE);
+        }
         final Conversion conversion = parseDerivingConversion(MANDATORY, element,
-                isWKT1 ? null : WKTKeywords.Conversion, ignoreUnits ? SI.METRE : linearUnit,
-                ignoreUnits ? NonSI.DEGREE_ANGLE : geoCRS.getCoordinateSystem().getAxis(0).getUnit().asType(Angle.class));
+                isWKT1 ? null : WKTKeywords.Conversion, linearUnit, angularUnit);
         /*
          * Parse the coordinate system. The linear unit must be specified somewhere, either explicitely in each axis
-         * or for the whole CRS with the above 'linearUnit' value. If 'linearUnit' is null, then an exception will be
-         * thrown with a message like "A LengthUnit component is missing in ProjectedCRS".
+         * or for the whole CRS with the above 'csUnit' value. If 'csUnit' is null, then an exception will be thrown
+         * with a message like "A LengthUnit component is missing in ProjectedCRS".
          *
          * However we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified
          * in the WKT of base CRS. In this case only, we will default to metre.
          */
-        if (linearUnit == null && isBaseCRS) {
-            linearUnit = SI.METRE;
+        if (csUnit == null && isBaseCRS) {
+            csUnit = SI.METRE;
         }
         final CoordinateSystem cs;
         try {
-            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, linearUnit, geoCRS.getDatum());
+            cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, csUnit, geoCRS.getDatum());
             final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
             if (cs instanceof CartesianCS) {
                 return crsFactory.createProjectedCRS(properties, (GeographicCRS) geoCRS, conversion, (CartesianCS) cs);
