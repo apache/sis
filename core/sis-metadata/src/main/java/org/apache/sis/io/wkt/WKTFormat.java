@@ -79,6 +79,11 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *
  * <div class="section">Limitations</div>
  * <ul>
+ *   <li><strong>The WKT format is not lossless!</strong>
+ *       Objects formatted by {@code WKTFormat} are not guaranteed to be identical after parsing.
+ *       Some metadata may be lost or altered, but the coordinate operations between two CRS should produce
+ *       the same numerical results provided that the two CRS were formatted independently (do not rely on
+ *       {@link org.opengis.referencing.crs.GeneralDerivedCRS#getConversionFromBase()} for instance).</li>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       It is recommended to create separated format instances for each thread.
  *       If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.</li>
