@@ -22,6 +22,7 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,6 +38,31 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class TransliteratorTest extends TestCase {
+    /**
+     * Verify the value of the {@link Transliterator#SPACES} constant.
+     */
+    @Test
+    public void testSpacesConstant() {
+        int code = 0;
+        for (char c=0; c<32; c++) {
+            if (Character.isWhitespace(c)) {
+                code |= (1 << c);
+            }
+        }
+        assertEquals(Transliterator.SPACES, code);
+    }
+
+    /**
+     * Tests {@link Transliterator#filter(String)}.
+     */
+    @Test
+    @DependsOnMethod("testSpacesConstant")
+    public void testFilter() {
+        final Transliterator t = Transliterator.DEFAULT;
+        assertEquals("Nouvelle triangulation francaise", t.filter("Nouvelle\r\ntriangulation\nfrançaise"));
+        assertEquals("ABC D E", t.filter("AB\bC\rD\tE"));
+    }
+
     /**
      * Tests {@link Transliterator#toLongAxisName(String, AxisDirection, String)}.
      */

@@ -21,8 +21,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
-import java.util.List;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -81,6 +79,11 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *
  * <div class="section">Limitations</div>
  * <ul>
+ *   <li><strong>The WKT format is not lossless!</strong>
+ *       Objects formatted by {@code WKTFormat} are not guaranteed to be identical after parsing.
+ *       Some metadata may be lost or altered, but the coordinate operations between two CRS should produce
+ *       the same numerical results provided that the two CRS were formatted independently (do not rely on
+ *       {@link org.opengis.referencing.crs.GeneralDerivedCRS#getConversionFromBase()} for instance).</li>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       It is recommended to create separated format instances for each thread.
  *       If multiple threads access a {@code WKTFormat} concurrently, it must be synchronized externally.</li>
@@ -575,18 +578,15 @@ public class WKTFormat extends CompoundFormat<Object> {
             this.formatter = formatter;
         }
         final boolean valid;
-        final InternationalString warning;
         try {
             formatter.setBuffer(buffer);
             valid = formatter.appendElement(object) || formatter.appendValue(object);
         } finally {
-            warning = formatter.getErrorMessage();  // Must be saved before formatter.clear() is invoked.
+            warnings = formatter.getWarnings();  // Must be saved before formatter.clear() is invoked.
             formatter.setBuffer(null);
             formatter.clear();
         }
-        if (warning != null) {
-            warnings = new Warnings(getLocale(), (byte) 0, Collections.<String, List<String>>emptyMap());
-            warnings.add(warning, formatter.getErrorCause(), null);
+        if (warnings != null) {
             warnings.setRoot(object);
         }
         if (!valid) {

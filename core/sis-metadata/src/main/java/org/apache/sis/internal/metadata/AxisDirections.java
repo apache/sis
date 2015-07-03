@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Angle;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -358,6 +359,36 @@ public final class AxisDirections extends Static {
      * Maps RIGHT, LEFT, UP, DOWN display order to UP, RIGHT, DOWN, LEFT.
      */
     private static final byte[] DISPLAY_ORDER = {1, 3, 0, 2};
+
+    /**
+     * Returns the angular unit of the specified coordinate system.
+     * The preference will be given to the longitude axis, if found.
+     *
+     * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
+     * @param  unit The default unit to return if no angular unit is found.
+     * @return The angular unit, of {@code null} if no angular unit was found.
+     *
+     * @since 0.6
+     *
+     * @see org.apache.sis.internal.referencing.ReferencingUtilities#getUnit(CoordinateSystem)
+     */
+    public static Unit<Angle> getAngularUnit(final CoordinateSystem cs, Unit<Angle> unit) {
+        if (cs != null) {
+            for (int i = cs.getDimension(); --i>=0;) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                if (axis != null) {  // Paranoiac check.
+                    final Unit<?> candidate = axis.getUnit();
+                    if (Units.isAngular(candidate)) {
+                        unit = candidate.asType(Angle.class);
+                        if (AxisDirection.EAST.equals(absolute(axis.getDirection()))) {
+                            break; // Found the longitude axis.
+                        }
+                    }
+                }
+            }
+        }
+        return unit;
+    }
 
     /**
      * Finds the dimension of an axis having the given direction or its opposite.
