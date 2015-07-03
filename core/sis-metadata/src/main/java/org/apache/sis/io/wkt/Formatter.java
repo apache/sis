@@ -973,16 +973,26 @@ public class Formatter implements Localized {
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
         if (type != ElementKind.REMARKS) {
             text = transliterator.filter(text);
+            int startAt = 0; // Index of the last space character.
             final int length = text.length();
             for (int i = 0; i < length;) {
-                final int c = text.codePointAt(i);
-                final int n = Character.charCount(c);
+                int c = text.codePointAt(i);
+                int n = Character.charCount(c);
                 if (!Characters.isValidWKT(c)) {
+                    final String illegal = text.substring(i, i+n);
+                    while ((i += n) < length) {
+                        c = text.codePointAt(i);
+                        n = Character.charCount(c);
+                        if (c == ' ' || c == '_') break;
+                    }
                     warnings().add(Errors.formatInternational(Errors.Keys.IllegalCharacterForFormat_3,
-                            "Well-Known Text", text, text.substring(i, i+n)), null, null);
+                            "Well-Known Text", text.substring(startAt, i), illegal), null, null);
                     break;
                 }
                 i += n;
+                if (c == ' ' || c == '_') {
+                    startAt = i;
+                }
             }
         }
         buffer.append(text);
