@@ -41,6 +41,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -567,6 +568,39 @@ public final class ServicesForMetadata extends ReferencingServices {
         final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
         info.setValues(values);
         return info;
+    }
+
+    /**
+     * Creates a single operation from the given properties.
+     * This method is provided here because not yet available in GeoAPI interfaces.
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @param  sourceCRS  The source CRS.
+     * @param  targetCRS  The target CRS.
+     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method     The coordinate operation method (mandatory in all cases).
+     * @param  factory    The factory to use.
+     * @return The coordinate operation created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 0.6
+     */
+    @Override
+    public SingleOperation createSingleOperation(
+            final Map<String,?>              properties,
+            final CoordinateReferenceSystem  sourceCRS,
+            final CoordinateReferenceSystem  targetCRS,
+            final CoordinateReferenceSystem  interpolationCRS,
+            final OperationMethod            method,
+            final CoordinateOperationFactory factory) throws FactoryException
+    {
+        final DefaultCoordinateOperationFactory df;
+        if (factory instanceof DefaultCoordinateOperationFactory) {
+            df = (DefaultCoordinateOperationFactory) factory;
+        } else {
+            df = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+        }
+        return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
     }
 
     /**
