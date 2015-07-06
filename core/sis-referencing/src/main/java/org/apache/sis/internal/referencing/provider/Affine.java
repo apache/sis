@@ -23,7 +23,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -168,15 +167,13 @@ public final class Affine extends AbstractProvider {
         }
     }
 
-    /**
-     * Returns the type of operations created by this provider.
-     *
-     * @return Always {@code Conversion.class} for this provider.
+    /*
+     * Do not override the 'getOperationType()' method. We want to inherit the super-type value, which is
+     * SingleOperation.class, because we do not know if this operation method will be used for a Conversion
+     * or a Transformation. When applied on geocentric coordinates, this method applies a transformation
+     * (indeeded, the EPSG method name is "Affine parametric transformation"). But this method can also
+     * be applied for unit conversions or axis swapping for examples, which are conversions.
      */
-    @Override
-    public Class<Conversion> getOperationType() {
-        return Conversion.class;
-    }
 
     /**
      * Creates a projective transform from the specified group of parameter values.
