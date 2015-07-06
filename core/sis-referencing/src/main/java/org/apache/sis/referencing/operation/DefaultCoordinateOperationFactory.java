@@ -374,6 +374,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         /*
          * Undocumented (for now) feature: if the 'transform' argument is null but parameters are
          * found in the given properties, create the MathTransform instance from those parameters.
+         * This is needed for WKT parsing of CoordinateOperation[…] among others.
          */
         if (transform == null) {
             final ParameterValueGroup parameters = Containers.property(properties,

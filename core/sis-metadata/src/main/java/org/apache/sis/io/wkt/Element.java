@@ -208,7 +208,12 @@ final class Element {
                     }
                     lower = upper + n;  // After the closing quote.
                 } while (lower < text.length() && text.codePointAt(lower) == closingQuote);
-                list.add(content.toString());
+                /*
+                 * Leading and trailing spaces should be ignored according ISO 19162 §B.4.
+                 * Note that the specification suggests also to replace consecutive white
+                 * spaces by a single space, but we don't do that yet.
+                 */
+                list.add(CharSequences.trimWhitespaces(content).toString());
             } else if (!Character.isUnicodeIdentifierStart(firstChar)) {
                 /*
                  * Try to parse the next element as a date or a number. We will attempt such parsing

@@ -670,7 +670,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             final Element element = parent.pullElement(OPTIONAL, WKTKeywords.CS);
             if (element != null) {
                 final String expected = type;
-                type         = CharSequences.trimWhitespaces(element.pullVoidElement("type").keyword);
+                type         = element.pullVoidElement("type").keyword;
                 dimension    = element.pullInteger("dimension");
                 csProperties = new HashMap<>(parseMetadataAndClose(element, "CS", null));
                 if (expected != null) {
@@ -954,7 +954,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * expressed by a syntax like AXIS[“South along 90°W”, SOUTH, MERIDIAN[-90, UNIT["deg"]]]. Note that
          * the meridian is relative to the prime meridian of the enclosing geodetic CRS.
          */
-        String name = CharSequences.trimWhitespaces(element.pullString("name"));
+        String name = element.pullString("name");
         final Element orientation = element.pullVoidElement("orientation");
         Unit<?> unit = parseUnit(element);
         if (unit == null) {
