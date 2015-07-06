@@ -16,10 +16,13 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Map;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -56,6 +59,24 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7176751851369816864L;
+
+    /**
+     * Creates a projection from the given properties.
+     *
+     * @param properties The properties to be given to the identified object.
+     * @param sourceCRS  The source CRS.
+     * @param targetCRS  The target CRS.
+     * @param method     The coordinate operation method.
+     * @param transform  Transform from positions in the source CRS to positions in the target CRS.
+     */
+    public DefaultProjection(final Map<String,?>   properties,
+                             final GeographicCRS   sourceCRS,
+                             final ProjectedCRS    targetCRS,
+                             final OperationMethod method,
+                             final MathTransform   transform)
+    {
+        super(properties, sourceCRS, targetCRS, null, method, transform);
+    }
 
     /**
      * Creates a new projection with the same values than the specified one, together with the

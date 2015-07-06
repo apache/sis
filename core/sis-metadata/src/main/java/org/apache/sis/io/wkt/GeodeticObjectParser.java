@@ -669,7 +669,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             final Element element = parent.pullElement(OPTIONAL, WKTKeywords.CS);
             if (element != null) {
                 final String expected = type;
-                type         = CharSequences.trimWhitespaces(element.pullVoidElement("type").keyword);
+                type         = element.pullVoidElement("type").keyword;
                 dimension    = element.pullInteger("dimension");
                 csProperties = new HashMap<String,Object>(parseMetadataAndClose(element, "CS", null));
                 if (expected != null) {
@@ -952,7 +952,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * expressed by a syntax like AXIS[“South along 90°W”, SOUTH, MERIDIAN[-90, UNIT["deg"]]]. Note that
          * the meridian is relative to the prime meridian of the enclosing geodetic CRS.
          */
-        String name = CharSequences.trimWhitespaces(element.pullString("name"));
+        String name = element.pullString("name");
         final Element orientation = element.pullVoidElement("orientation");
         Unit<?> unit = parseUnit(element);
         if (unit == null) {
@@ -1251,7 +1251,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             }
             name = parent.pullString("name");
         }
-        OperationMethod method = parseMethod(parent, WKTKeywords.Method, WKTKeywords.Projection);
+        final OperationMethod method = parseMethod(parent, WKTKeywords.Method, WKTKeywords.Projection);
         Map<String,?> properties = this.properties;  // Same properties then OperationMethod, with ID removed.
         /*
          * Set the list of parameters.
@@ -2078,15 +2078,20 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         final CoordinateReferenceSystem sourceCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.SourceCRS);
         final CoordinateReferenceSystem targetCRS        = parseCoordinateReferenceSystem(element, MANDATORY, WKTKeywords.TargetCRS);
         final CoordinateReferenceSystem interpolationCRS = parseCoordinateReferenceSystem(element, OPTIONAL,  WKTKeywords.InterpolationCRS);
-        final OperationMethod           method           = parseMethod(parent, WKTKeywords.Method);
-        final Element                   accuracy         = parent.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
-        final Map<String,Object>        properties       = parseMetadataAndClose(parent, name, method);
+        final OperationMethod           method           = parseMethod(element, WKTKeywords.Method);
+        final Element                   accuracy         = element.pullElement(OPTIONAL, WKTKeywords.OperationAccuracy);
+        final Map<String,Object>        properties       = parseMetadataAndClose(element, name, method);
         final ParameterValueGroup       parameters       = method.getParameters().createValue();
-        parseParameters(parent, parameters, null, null);
+        parseParameters(element, parameters, null, null);
+        properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
         if (accuracy != null) {
             accuracy.pullDouble("accuracy");    // TODO: share the code from EPSG factory.
             accuracy.close(ignoredElements);
         }
-        return null;    // Not yet implemented.
+        try {
+            return referencing.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, opFactory);
+        } catch (FactoryException e) {
+            throw element.parseFailed(e);
+        }
     }
 }
