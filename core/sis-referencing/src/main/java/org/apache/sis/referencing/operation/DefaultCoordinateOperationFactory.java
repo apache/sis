@@ -26,16 +26,20 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.NullArgumentException;
 
 
 /**
@@ -203,7 +207,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
-     *     <td>{@link Identifier} or {@link String}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link DefaultOperationMethod#getName()}</td>
      *   </tr>
      *   <tr>
@@ -213,7 +217,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
-     *     <td>{@link Identifier} (optionally as array)</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultOperationMethod#getIdentifiers()}</td>
      *   </tr>
      *   <tr>
@@ -247,7 +251,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Constructs a defining conversion from the given operation parameters.
+     * Creates a defining conversion from the given operation parameters.
      * This conversion has no source and target CRS since those elements are usually unknown at this stage.
      * The source and target CRS will become known later, at the
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
@@ -305,6 +309,170 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         }
         // We do no invoke unique(conversion) because defining conversions are usually short-lived objects.
         return conversion;
+    }
+
+    /**
+     * Creates a transformation or conversion from the given properties.
+     * This method infers by itself if the operation to create is a
+     * {@link Transformation}, a {@link Conversion} or a {@link Projection} sub-type
+     * ({@link CylindricalProjection}, {@link ConicProjection} or {@link PlanarProjection})
+     * using the {@linkplain DefaultOperationMethod#getOperationType() information provided by the given method}.
+     *
+     * <p>The properties given in argument follow the same rules than for the
+     * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform) coordinate operation} constructor.
+     * The following table is a reminder of main (not all) properties:</p>
+     *
+     * <table class="sis">
+     *   <caption>Recognized properties (non exhaustive list)</caption>
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
+     *     <td>{@link DefaultConversion#getName()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
+     *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
+     *     <td>{@link DefaultConversion#getIdentifiers()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@link org.opengis.metadata.extent.Extent}</td>
+     *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @param  sourceCRS  The source CRS.
+     * @param  targetCRS  The target CRS.
+     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method     The coordinate operation method (mandatory in all cases).
+     * @param  transform  Transform from positions in the source CRS to positions in the target CRS.
+     * @return The coordinate operation created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultOperationMethod#getOperationType()
+     * @see DefaultTransformation
+     * @see DefaultConversion
+     */
+    public SingleOperation createSingleOperation(
+            final Map<String,?>             properties,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final CoordinateReferenceSystem interpolationCRS,
+            final OperationMethod           method,
+                  MathTransform             transform) throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        ArgumentChecks.ensureNonNull("method",    method);
+        /*
+         * Undocumented (for now) feature: if the 'transform' argument is null but parameters are
+         * found in the given properties, create the MathTransform instance from those parameters.
+         */
+        if (transform == null) {
+            final ParameterValueGroup parameters = Containers.property(properties,
+                    ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class);
+            if (parameters == null) {
+                throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
+            }
+            transform = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+        }
+        /*
+         * The "operationType" property is currently undocumented. The intend is to help this factory method in
+         * situations where the given operation method is not an Apache SIS implementation or does not override
+         * getOperationType(), or the method is ambiguous (e.g. "Affine" can be used for both a transformation
+         * or a conversion).
+         *
+         * If we have both a 'baseType' and a Method.getOperationType(), take the most specific type.
+         * An exception will be thrown if the two types are incompatible.
+         */
+        Class<?> baseType = Containers.property(properties, ReferencingServices.OPERATION_TYPE_KEY, Class.class);
+        if (baseType == null) {
+            baseType = SingleOperation.class;
+        }
+        if (method instanceof DefaultOperationMethod) {
+            final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
+            if (c != null) {  // Paranoiac check (above method should not return null).
+                if (baseType.isAssignableFrom(c)) {
+                    baseType = c;
+                } else if (!c.isAssignableFrom(baseType)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1,
+                            ReferencingServices.OPERATION_TYPE_KEY));
+                }
+            }
+        }
+        /*
+         * If the base type is still abstract (probably because it was not specified neither in the given OperationMethod
+         * or in the properties), then try to find a concrete type using the following rules derived from the definitions
+         * given in ISO 19111:
+         *
+         *   - If the two CRS uses the same datum (ignoring metadata), assume that we have a Conversion.
+         *   - Otherwise we have a datum change, which implies that we have a Transformation.
+         *
+         * In the case of Conversion, we can specialize one step more if the conversion is going from a geographic CRS
+         * to a projected CRS. It may seems that we should check if ProjectedCRS.getBaseCRS() is equals (ignoring meta
+         * data) to source CRS. But we already checked the datum, which is the important part. The axis order and unit
+         * could be different, which we want to allow.
+         */
+        if (baseType == SingleOperation.class) {
+            if (OperationPathFinder.isConversion(sourceCRS, targetCRS)) {
+                if (interpolationCRS == null && sourceCRS instanceof GeographicCRS
+                                             && targetCRS instanceof ProjectedCRS)
+                {
+                    baseType = Projection.class;
+                } else {
+                    baseType = Conversion.class;
+                }
+            } else {
+                baseType = Transformation.class;
+            }
+        }
+        /*
+         * Now create the coordinate operation of the requested type. If we can not find a concrete class for the
+         * requested type, we will instantiate an SingleOperation in last resort. The later action is a departure
+         * from ISO 19111 since 'SingleOperation' is conceptually abstract.  But we do that as a way to said that
+         * we are missing this important piece of information but still go ahead.
+         *
+         * It is unconvenient to guarantee that the created operation is an instance of 'baseType' since the user
+         * could have specified an implementation class or a custom sub-interface. We will perform the type check
+         * only after object creation.
+         */
+        final AbstractSingleOperation op;
+        if (Transformation.class.isAssignableFrom(baseType)) {
+            op = new DefaultTransformation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+        } else if (Projection.class.isAssignableFrom(baseType)) {
+            ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
+            ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
+            if (interpolationCRS != null) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ForbiddenAttribute_2, "interpolationCRS", baseType));
+            }
+            final GeographicCRS baseCRS = (GeographicCRS) sourceCRS;
+            final ProjectedCRS  crs     =  (ProjectedCRS) targetCRS;
+            if (CylindricalProjection.class.isAssignableFrom(baseType)) {
+                op = new DefaultCylindricalProjection(properties, baseCRS, crs, method, transform);
+            } else if (ConicProjection.class.isAssignableFrom(baseType)) {
+                op = new DefaultConicProjection(properties, baseCRS, crs, method, transform);
+            } else if (PlanarProjection.class.isAssignableFrom(baseType)) {
+                op = new DefaultPlanarProjection(properties, baseCRS, crs, method, transform);
+            } else {
+                op = new DefaultProjection(properties, baseCRS, crs, method, transform);
+            }
+        } else if (Conversion.class.isAssignableFrom(baseType)) {
+            op = new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+        } else {  // See above comment about this last-resort fallback.
+            op = new AbstractSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
+        }
+        if (!baseType.isInstance(op)) {
+            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, baseType));
+        }
+        return pool.unique(op);
     }
 
     /**
