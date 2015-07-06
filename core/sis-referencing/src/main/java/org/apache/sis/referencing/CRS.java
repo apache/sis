@@ -38,6 +38,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -258,26 +259,29 @@ public final class CRS extends Static {
      * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
      *
      * <ul>
-     *   <li>It is an instance of {@link GeographicCRS}.</li>
-     *   <li>It is an instance of {@link ProjectedCRS}.</li>
+     *   <li>is an instance of {@link GeographicCRS}, or</li>
+     *   <li>is an instance of {@link ProjectedCRS}, or</li>
+     *   <li>is an instance of {@link EngineeringCRS} (following
+     *     <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">ISO 19162 §16.1</a>
+     *     definition of {@literal <horizontal crs>}).</li>
      * </ul>
      *
      * In case of doubt, this method conservatively returns {@code false}.
      *
-     * @todo Future SIS implementation may extend the above condition list. For example a radar station could
+     * @todo Future SIS implementation may extend the above conditions list. For example a radar station could
      *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
+     *       Conversely, a future SIS versions may impose more conditions on <code>EngineeringCRS</code>.
      *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
      *
      * @param  crs The coordinate reference system, or {@code null}.
-     * @return {@code true} if the given CRS is non-null and comply with one of the above conditions,
-     *         or {@code false} otherwise.
+     * @return {@code true} if the given CRS is non-null and likely horizontal, or {@code false} otherwise.
      *
      * @see #getHorizontalComponent(CoordinateReferenceSystem)
      *
      * @category information
      */
     public static boolean isHorizontalCRS(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeographicCRS || crs instanceof ProjectedCRS) {
+        if (crs instanceof GeographicCRS || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
             return crs.getCoordinateSystem().getDimension() == 2;
         }
         return false;
