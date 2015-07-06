@@ -120,7 +120,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
         assertFalse(transforms .isEmpty());
         assertFalse(conversions.isEmpty());
         assertFalse(projections.isEmpty());
-        assertTrue (conversions.contains(factory.getOperationMethod(Constants.AFFINE)));
+        assertTrue (transforms.contains(factory.getOperationMethod(Constants.AFFINE)));
         /*
          * Following tests will force instantiation of all remaining OperationMethod.
          */
