@@ -83,10 +83,10 @@ public final strictfp class ElementTest extends TestCase {
         assertEquals("value", "World Geodetic System 1984", element.pullString("value"));
         element.close(null);
 
-        // Spaces inside quotes should be preserved.
+        // Leading and trailing spaces inside quotes should be ignored (ISO 19162 §B.4).
         element = parse("  Datum [  \" World Geodetic System 1984  \"  ]  ");
         assertEquals("keyword", "Datum", element.keyword);
-        assertEquals("value", " World Geodetic System 1984  ", element.pullString("value"));
+        assertEquals("value", "World Geodetic System 1984", element.pullString("value"));
         element.close(null);
 
         // Consecutive values.

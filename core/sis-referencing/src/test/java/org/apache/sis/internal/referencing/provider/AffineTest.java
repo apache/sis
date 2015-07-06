@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.test.DependsOnMethod;
@@ -37,6 +38,17 @@ import static org.apache.sis.test.MetadataAssert.*;
  */
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final strictfp class AffineTest extends TestCase {
+    /**
+     * Verifies that {@link Affine#getOperationType()} is {@link SingleOperation}.
+     * The {@code Affine} class can not return one of the above, because we do not
+     * know if this operation method will be used for a transformation ora conversion
+     * (it can be used for both).
+     */
+    @Test
+    public void testOperationType() {
+        assertEquals(SingleOperation.class, new Affine().getOperationType());
+    }
+
     /**
      * Tests {@link Affine#getParameters()} on a standard EPSG:9624 instance.
      */
