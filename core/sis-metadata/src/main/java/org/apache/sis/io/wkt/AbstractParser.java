@@ -295,7 +295,7 @@ abstract class AbstractParser implements Parser {
      */
     final void warning(final Element parent, final Element element, final Exception ex) {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            warnings = new Warnings(errorLocale, true, ignoredElements);
         }
         warnings.add(null, ex, new String[] {parent.keyword, element.keyword});
     }
@@ -308,7 +308,7 @@ abstract class AbstractParser implements Parser {
      */
     final void warning(final InternationalString message, final Exception ex) {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            warnings = new Warnings(errorLocale, true, ignoredElements);
         }
         warnings.add(message, ex, null);
     }
@@ -329,7 +329,7 @@ abstract class AbstractParser implements Parser {
             if (ignoredElements.isEmpty()) {
                 return null;
             }
-            w = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            w = new Warnings(errorLocale, true, ignoredElements);
         }
         w.setRoot(object);
         return w;

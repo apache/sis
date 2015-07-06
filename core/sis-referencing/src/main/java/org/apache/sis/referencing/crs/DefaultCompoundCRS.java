@@ -27,6 +27,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -101,7 +106,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @XmlType(name="CompoundCRSType")
@@ -327,6 +332,73 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
+     * Returns {@code true} if the sequence of single components is conform to the ISO 19162 restrictions.
+     * The <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">WKT 2 specification at §16.1</a>
+     * restricts {@code CompoundCRS} to the following components in that order:
+     *
+     * <ul>
+     *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS}
+     *       or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+     *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
+     *   <li>Optionally followed by a {@code TemporalCRS}.</li>
+     * </ul>
+     *
+     * This method verifies the above criterion with the following flexibilities:
+     *
+     * <ul>
+     *   <li>Accepts three-dimensional {@code GeodeticCRS} followed by a {@code TemporalCRS}.</li>
+     * </ul>
+     *
+     * This method does not verify recursively if the component are themselves standard compliant.
+     * In particular, this method does not verify if the geographic CRS uses (latitude, longitude)
+     * axes order as requested by ISO 19162.
+     *
+     * <p>This method is not yet public because of the above-cited limitations: a {@code true} return
+     * value is not a guarantee that the CRS is really standard-compliant.</p>
+     *
+     * @return {@code true} if this CRS is "standard" compliant, except for the above-cited limitations.
+     */
+    @SuppressWarnings("fallthrough")
+    final boolean isStandardCompliant() {
+        /*
+         * 0 if we expect a horizontal CRS: Geographic2D, projected or engineering.
+         * 1 if we expect a vertical or parametric CRS (but not both).
+         * 2 if we expect a temporal CRS.
+         * 3 if we do not expect any other CRS.
+         */
+        int state = 0;
+        for (final SingleCRS crs : getSingleComponents()) {
+            switch (state) {
+                case 0: {
+                    if (crs instanceof GeodeticCRS || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
+                        switch (crs.getCoordinateSystem().getDimension()) {
+                            case 2: state = 1; continue;    // Next CRS can be vertical, parametric or temporal.
+                            case 3: state = 2; continue;    // Next CRS can only be temporal.
+                        }
+                    }
+                    return false;
+                }
+                case 1: {
+                    if (crs instanceof VerticalCRS) {   // TODO: accept also ParametricCRS here.
+                        state = 2; continue;    // Next CRS can only be temporal.
+                    }
+                    // Fallthrough (the current CRS may be temporal)
+                }
+                case 2: {
+                    if (crs instanceof TemporalCRS) {
+                        state = 3; continue;    // Do not expect any other CRS.
+                    }
+                    // Fallthrough (unexpected CRS).
+                }
+                default: {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Computes the single CRS list on deserialization.
      *
      * @param  in The input stream from which to deserialize a compound CRS.
@@ -461,6 +533,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             formatter.append(toFormattable(element));
         }
         formatter.newLine(); // For writing the ID[…] element on its own line.
+        if (!isStandardCompliant()) {
+            formatter.setInvalidWKT(this, null);
+        }
         return isWKT1 ? WKTKeywords.Compd_CS : WKTKeywords.CompoundCRS;
     }
 }
