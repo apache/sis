@@ -24,6 +24,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -36,7 +37,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
@@ -90,6 +93,15 @@ public class ReferencingServices extends OptionalDependency {
      * concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
      */
     public static final String PARAMETERS_KEY = "parameters";
+
+    /**
+     * The key for specifying the base type of the coordinate operation to create. This optional entry
+     * is used by {@code DefaultCoordinateOperationFactory.createSingleOperation(…)}. Apache SIS tries
+     * to infer this value automatically, but this entry may help SIS to perform a better choice in
+     * some cases. For example an "Affine" operation can be both a conversion or a transformation
+     * (the later is used in datum shift in geocentric coordinates).
+     */
+    public static final String OPERATION_TYPE_KEY = "operationType";
 
     /**
      * The key for specifying a {@linkplain org.opengis.referencing.operation.MathTransformFactory}
@@ -419,6 +431,32 @@ public class ReferencingServices extends OptionalDependency {
      */
     public Object createToWGS84(final double[] values) {
         return null;
+    }
+
+    /**
+     * Creates a single operation from the given properties.
+     * This method is provided here because not yet available in GeoAPI interfaces.
+     *
+     * @param  properties The properties to be given to the identified object.
+     * @param  sourceCRS  The source CRS.
+     * @param  targetCRS  The target CRS.
+     * @param  interpolationCRS The CRS of additional coordinates needed for the operation, or {@code null} if none.
+     * @param  method     The coordinate operation method (mandatory in all cases).
+     * @param  factory    The factory to use.
+     * @return The coordinate operation created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @since 0.6
+     */
+    public SingleOperation createSingleOperation(
+            final Map<String,?>              properties,
+            final CoordinateReferenceSystem  sourceCRS,
+            final CoordinateReferenceSystem  targetCRS,
+            final CoordinateReferenceSystem  interpolationCRS,
+            final OperationMethod            method,
+            final CoordinateOperationFactory factory) throws FactoryException
+    {
+        throw moduleNotFound();
     }
 
     /**
