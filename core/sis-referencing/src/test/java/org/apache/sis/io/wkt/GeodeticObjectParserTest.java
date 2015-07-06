@@ -35,6 +35,7 @@ import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -72,6 +73,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void newParser(final Convention convention) {
         parser = new GeodeticObjectParser(Symbols.getDefault(), null, null, null, convention, Transliterator.DEFAULT, null, null);
+        assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 
     /**
@@ -252,13 +254,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeographicCRS() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0],\n" +
-               "    UNIT[“degree”, 0.017453292519943295],\n" +
-               "    AXIS[“Longitude”, EAST],\n" +
-               "    AXIS[“Latitude”, NORTH]]"));
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0],\n" +
+               "  UNIT[“degree”, 0.017453292519943295],\n" +
+               "  AXIS[“Longitude”, EAST],\n" +
+               "  AXIS[“Latitude”, NORTH]]"));
     }
 
     /**
@@ -270,13 +272,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @DependsOnMethod("testGeographicCRS")
     public void testGeographicWithLatLonAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0],\n" +
-               "    UNIT[“degree”, 0.017453292519943295],\n" +
-               "    AXIS[“Latitude”, NORTH],\n" +
-               "    AXIS[“Longitude”, EAST]]"));
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0],\n" +
+               "  UNIT[“degree”, 0.017453292519943295],\n" +
+               "  AXIS[“Latitude”, NORTH],\n" +
+               "  AXIS[“Longitude”, EAST]]"));
     }
 
     /**
@@ -290,11 +292,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @DependsOnMethod("testGeographicCRS")
     public void testGeographicWithImplicitAxes() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0],\n" +
-               "    UNIT[“degree”, 0.017453292519943295]]"));
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0],\n" +
+               "  UNIT[“degree”, 0.017453292519943295]]"));
     }
 
     /**
@@ -355,13 +357,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @DependsOnMethod("testGeographicWithLatLonAxes")
     public void testGeographicWithUnorderedAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0],\n" +
-               "    UNIT[“degree”, 0.017453292519943295],\n" +
-               "    AXIS[“Longitude”, EAST, order[2]],\n" +
-               "    AXIS[“Latitude”, NORTH, order[1]]]"));
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0],\n" +
+               "  UNIT[“degree”, 0.017453292519943295],\n" +
+               "  AXIS[“Longitude”, EAST, order[2]],\n" +
+               "  AXIS[“Latitude”, NORTH, order[1]]]"));
     }
 
     /**
@@ -755,11 +757,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         newParser(Convention.DEFAULT);
         final ParsePosition position = new ParsePosition(0);
         final GeographicCRS crs = (GeographicCRS) parser.parseObject(
-               "  GEOGCS[“WGS 84”,\n" +
-               "    DATUM[“World Geodetic System 1984”,\n" +
-               "      SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
-               "      PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
-               "    UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position);
+               "GEOGCS[“WGS 84”,\n" +
+               "  DATUM[“World Geodetic System 1984”,\n" +
+               "    SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
+               "  UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position);
 
         verifyGeographicCRS(0, crs);
         assertEquals("errorIndex", -1, position.getErrorIndex());

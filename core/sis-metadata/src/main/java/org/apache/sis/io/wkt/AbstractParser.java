@@ -26,6 +26,9 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
@@ -33,6 +36,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -83,6 +87,13 @@ abstract class AbstractParser implements Parser {
      */
     @Workaround(library = "JDK", version = "1.8")
     static final boolean SCIENTIFIC_NOTATION = true;
+
+    /**
+     * The logger to use for reporting warnings when this parser is used through the {@link #createFromWKT(String)}.
+     * This happen most often when the user invoke the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
+     * convenience method.
+     */
+    private static final Logger LOGGER = Logging.getLogger(AbstractParser.class);
 
     /**
      * The locale for error messages (not for number parsing), or {@code null} for the system default.
@@ -177,6 +188,12 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
+     * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
+     * This information is used for logging purpose only.
+     */
+    abstract String getPublicFacade();
+
+    /**
      * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
      * method is SIS factories only.
      *
@@ -189,8 +206,9 @@ abstract class AbstractParser implements Parser {
      */
     @Override
     public final Object createFromWKT(final String text) throws FactoryException {
+        final Object value;
         try {
-            return parseObject(text, new ParsePosition(0));
+            value = parseObject(text, new ParsePosition(0));
         } catch (ParseException exception) {
             final Throwable cause = exception.getCause();
             if (cause instanceof FactoryException) {
@@ -198,6 +216,15 @@ abstract class AbstractParser implements Parser {
             }
             throw new FactoryException(exception.getMessage(), exception);
         }
+        final Warnings warnings = getAndClearWarnings(value);
+        if (warnings != null) {
+            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setSourceClassName(getPublicFacade());
+            record.setSourceMethodName("createFromWKT");
+            record.setLoggerName(LOGGER.getName());
+            LOGGER.log(record);
+        }
+        return value;
     }
 
     /**

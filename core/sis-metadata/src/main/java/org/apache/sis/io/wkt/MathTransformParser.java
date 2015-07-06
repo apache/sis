@@ -36,7 +36,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -102,13 +101,6 @@ class MathTransformParser extends AbstractParser {
     private transient OperationMethod lastMethod;
 
     /**
-     * Creates a parser using the default set of symbols and factory.
-     */
-    public MathTransformParser() {
-        this(DefaultFactories.forBuildin(MathTransformFactory.class));
-    }
-
-    /**
      * Creates a parser for the given factory.
      *
      * <p><b>Maintenance note:</b> this constructor is invoked through reflection by
@@ -138,6 +130,15 @@ class MathTransformParser extends AbstractParser {
         super(symbols, numberFormat, dateFormat, unitFormat, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
+    }
+
+    /**
+     * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
+     * This information is used for logging purpose only.
+     */
+    @Override
+    String getPublicFacade() {
+        return "org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory";
     }
 
     /**

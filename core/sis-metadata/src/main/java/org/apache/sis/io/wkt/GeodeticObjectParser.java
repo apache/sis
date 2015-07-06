@@ -249,6 +249,15 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
+     * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
+     * This information is used for logging purpose only.
+     */
+    @Override
+    String getPublicFacade() {
+        return "org.apache.sis.referencing.factory.GeodeticObjectFactory";
+    }
+
+    /**
      * Parses a <cite>Well Know Text</cite> (WKT).
      *
      * @param  text The text to be parsed.

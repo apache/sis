@@ -19,9 +19,12 @@ package org.apache.sis.io.wkt;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -52,7 +55,8 @@ public final strictfp class MathTransformParserTest extends TestCase {
      */
     private MathTransform parse(final String text) throws ParseException {
         if (parser == null) {
-            parser = new MathTransformParser();
+            parser = new MathTransformParser(DefaultFactories.forBuildin(MathTransformFactory.class));
+            assertEquals(DefaultMathTransformFactory.class.getCanonicalName(), parser.getPublicFacade());
         }
         final ParsePosition position = new ParsePosition(0);
         final MathTransform mt = (MathTransform) parser.parseObject(text, position);
