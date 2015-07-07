@@ -218,7 +218,7 @@ span.deprecated {
   text-decoration: line-through;
 }
 
-div.details div.block {
+:not(td) > div.block {
   text-align: justify;
 }
 

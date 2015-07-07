@@ -90,10 +90,10 @@ public final class Warnings implements Localized, Serializable {
     private final Locale errorLocale;
 
     /**
-     * {@code 0} if the warnings occurred while formatting, or
-     * {@code 1} if they occurred while parsing.
+     * {@code false} if the warnings occurred while formatting, or
+     * {@code true} if they occurred while parsing.
      */
-    private final byte operation;
+    private final boolean isParsing;
 
     /**
      * Name identifier or class name of the root object being parsed or formatted.
@@ -148,12 +148,12 @@ public final class Warnings implements Localized, Serializable {
      * Creates a new object for declaring warnings.
      *
      * @param locale The locale for reporting warning messages.
-     * @param operation {@code 0} if formatting, or {@code 1} if parsing.
+     * @param isParsing {@code false} if formatting, or {@code true} if parsing.
      * @param ignoredElements The {@link Parser#ignoredElements} map, or an empty map (can not be null).
      */
-    Warnings(final Locale locale, final byte operation, final Map<String, List<String>> ignoredElements) {
+    Warnings(final Locale locale, final boolean isParsing, final Map<String, List<String>> ignoredElements) {
         this.errorLocale     = locale;
-        this.operation       = operation;
+        this.isParsing       = isParsing;
         this.ignoredElements = ignoredElements;
     }
 
@@ -350,8 +350,8 @@ public final class Warnings implements Localized, Serializable {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
         final Messages resources   = Messages.getResources(locale);
-        buffer.append(resources.getString(Messages.Keys.IncompleteFormattingOrParsing_2, operation, root))
-              .append(lineSeparator);
+        buffer.append(resources.getString(isParsing ? Messages.Keys.IncompleteParsing_1
+                : Messages.Keys.NonConformFormatting_1, root)).append(lineSeparator);
         if (messages != null) {
             for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
                 final InternationalString i18n = (InternationalString) it.next();
