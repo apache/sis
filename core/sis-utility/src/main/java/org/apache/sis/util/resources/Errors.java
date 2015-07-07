@@ -333,6 +333,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalCharacterForFormat_3 = 195;
 
         /**
+         * The “{1}” character can not be used for “{0}”.
+         */
+        public static final short IllegalCharacter_2 = 197;
+
+        /**
          * Class ‘{1}’ is illegal. It must be ‘{0}’ or a derived class.
          */
         public static final short IllegalClass_2 = 34;
@@ -651,6 +656,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NoSuchOperationMethod_1 = 179;
 
         /**
+         * No value is associated to “{0}”.
+         */
+        public static final short NoSuchValue_1 = 196;
+
+        /**
          * No unit of measurement has been specified.
          */
         public static final short NoUnit = 72;
@@ -879,6 +889,11 @@ public final class Errors extends IndexedResourceBundle {
          * Unexpected change in ‘{0}’.
          */
         public static final short UnexpectedChange_1 = 108;
+
+        /**
+         * The “{1}” characters after “{0}” was unexpected.
+         */
+        public static final short UnexpectedCharactersAfter_2 = 198;
 
         /**
          * Unexpected end of file while reading “{0}”.

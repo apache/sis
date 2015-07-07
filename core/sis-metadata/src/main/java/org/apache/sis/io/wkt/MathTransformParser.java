@@ -16,6 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Map;
+import java.util.Collections;
 import java.util.Locale;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -111,23 +113,25 @@ class MathTransformParser extends AbstractParser {
      * @param mtFactory The factory to use to create {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), null, null, null, mtFactory, null);
+        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null, mtFactory, null);
     }
 
     /**
      * Creates a parser using the specified set of symbols and factory.
      *
      * @param symbols       The set of symbols to use.
+     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param mtFactory     The factory to use to create {@link MathTransform} objects.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    MathTransformParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final UnitFormat unitFormat, final MathTransformFactory mtFactory, final Locale errorLocale)
+    MathTransformParser(final Symbols symbols, final Map<String,Element> fragments,
+            final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+            final MathTransformFactory mtFactory, final Locale errorLocale)
     {
-        super(symbols, numberFormat, dateFormat, unitFormat, errorLocale);
+        super(symbols, fragments, numberFormat, dateFormat, unitFormat, errorLocale);
         this.mtFactory = mtFactory;
         ensureNonNull("mtFactory", mtFactory);
     }

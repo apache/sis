@@ -127,6 +127,12 @@ abstract class AbstractParser implements Parser {
     private UnitFormat unitFormat;
 
     /**
+     * Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * This parser will only read this map, never write to it.
+     */
+    final Map<String,Element> fragments;
+
+    /**
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
      * but we will nevertheless report them as warnings.
      * The meaning of this map is:
@@ -150,19 +156,21 @@ abstract class AbstractParser implements Parser {
      * Constructs a parser using the specified set of symbols.
      *
      * @param symbols       The set of symbols to use.
+     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    AbstractParser(final Symbols symbols, NumberFormat numberFormat, final DateFormat dateFormat,
-            final UnitFormat unitFormat, final Locale errorLocale)
+    AbstractParser(final Symbols symbols, final Map<String,Element> fragments, NumberFormat numberFormat,
+            final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
     {
         ensureNonNull("symbols", symbols);
         if (numberFormat == null) {
             numberFormat = symbols.createNumberFormat();
         }
         this.symbols     = symbols;
+        this.fragments   = fragments;
         this.dateFormat  = dateFormat;
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;
@@ -238,7 +246,7 @@ abstract class AbstractParser implements Parser {
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
         warnings = null;
         ignoredElements.clear();
-        final Element element = new Element(new Element(this, text, position));
+        final Element element = new Element("<root>", new Element(this, text, position, null));
         final Object object = parseObject(element);
         element.close(ignoredElements);
         return object;

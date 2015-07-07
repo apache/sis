@@ -16,6 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
@@ -40,7 +42,9 @@ public final strictfp class ElementTest extends TestCase {
     /**
      * A dummy parser to be given to the {@link Element} constructor.
      */
-    private final AbstractParser parser = new AbstractParser(Symbols.SQUARE_BRACKETS, null, null, null, Locale.ENGLISH) {
+    private final AbstractParser parser = new AbstractParser(Symbols.SQUARE_BRACKETS, new HashMap<>(2),
+            null, null, null, Locale.ENGLISH)
+    {
         @Override String getPublicFacade() {
             throw new UnsupportedOperationException();
         }
@@ -51,13 +55,19 @@ public final strictfp class ElementTest extends TestCase {
     };
 
     /**
+     * The map of shared values to gives to the {@link Element} constructor.
+     * This is usually null, except for the test of WKT fragments.
+     */
+    private Map<Object,Object> sharedValues;
+
+    /**
      * Parses the given text and ensures that {@link ParsePosition} index is set at to the end of string.
      */
     private Element parse(final String text) throws ParseException {
         final ParsePosition position = new ParsePosition(0);
         final Element element;
         try {
-            element = new Element(parser, text, position);
+            element = new Element(parser, text, position, sharedValues);
         } catch (ParseException e) {
             assertEquals("index should be unchanged.", 0, position.getIndex());
             assertTrue("Error index should be set.", position.getErrorIndex() > 0);
@@ -276,5 +286,37 @@ public final strictfp class ElementTest extends TestCase {
         } catch (ParseException e) {
             assertEquals("Missing a ‘)’ character in “BracketTest” element.", e.getLocalizedMessage());
         }
+    }
+
+    /**
+     * Tests the construction of {@link Element} tree from fragments.
+     *
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    @Test
+    @DependsOnMethod({"testPullString", "testPullElement"})
+    public void testFragments() throws ParseException {
+        sharedValues = new HashMap<>();
+        Element frag = parse("Frag[“A”,“B”,“A”]");
+        parser.fragments.put("MyFrag", frag);
+        try {
+            frag.pullString("A");
+            fail("Element shall be unmodifiable.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
+        /*
+         * Parse a normal value. Since this is not a fragment,
+         * we should be able to pull a copy of the components.
+         */
+        sharedValues = null;
+        final Element element = parse("Foo[“C”,$MyFrag,“D”]");
+        assertEquals("C", element.pullString("C"));
+        assertEquals("D", element.pullString("D"));
+        frag = element.pullElement(AbstractParser.MANDATORY, "Frag");
+        final String a = frag.pullString("A");
+        assertEquals("A", a);
+        assertEquals("B", frag.pullString("B"));
+        assertSame(a, frag.pullString("A"));    // 'sharedValues' should have allowed to share the same instance.
     }
 }
