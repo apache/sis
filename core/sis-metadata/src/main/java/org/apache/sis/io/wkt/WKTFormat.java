@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -34,22 +35,24 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.LocalizedParseException;
 
 
 /**
- * Parser and formatter for <cite>Well Known Text</cite> (WKT) objects.
+ * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
  * This format handles a pair of {@link Parser} and {@link Formatter},
- * to be used by {@code parse} and {@code format} methods respectively.
+ * used by the {@code parse(…)} and {@code format(…)} methods respectively.
  * {@code WKTFormat} objects allow the following configuration:
  *
  * <ul>
  *   <li>The preferred authority of {@linkplain IdentifiedObject#getName() object name} to
  *       format (see {@link Formatter#getNameAuthority()} for more information).</li>
  *   <li>The {@linkplain Symbols symbols} to use (curly braces or brackets, <i>etc</i>).</li>
- *   <li>The {@link Transliterator transliterator} (i.e. replacements to use for Unicode characters).</li>
+ *   <li>The {@linkplain Transliterator transliterator} to use for replacing Unicode characters by ASCII ones.</li>
  *   <li>Whether ANSI X3.64 colors are allowed or not (default is not).</li>
  *   <li>The indentation.</li>
  * </ul>
@@ -57,24 +60,27 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * <div class="section">String expansion</div>
  * Because the strings to be parsed by this class are long and tend to contain repetitive substrings,
  * {@code WKTFormat} provides a mechanism for performing string substitutions before the parsing take place.
- * Long strings can be assigned short names by calls to the
- * <code>{@linkplain #definitions()}.put(<var>key</var>,<var>value</var>)</code> method.
- * After definitions have been added, any call to a parsing method will replace all occurrences
- * of a short name by the associated long string.
- *
- * <p>The short names must comply with the rules of Java identifiers. It is recommended, but not
- * required, to prefix the names by some symbol like {@code "$"} in order to avoid ambiguity.
- * Note however that this class doesn't replace occurrences between quoted text, so string
- * expansion still relatively safe even when used with non-prefixed identifiers.</p>
+ * Long strings can be assigned short names by calls to the {@link #addFragment(String, String)} method.
+ * After fragments have been added, any call to a parsing method will replace all occurrences (except in
+ * quoted text) of tokens like {@code $foo} by the WKT fragment named "foo".
  *
  * <div class="note"><b>Example:</b>
  * In the example below, the {@code $WGS84} substring which appear in the argument given to the
- * {@code parseObject(…)} method will be expanded into the full {@code GEOGCS["WGS84", …]} string
- * before the parsing proceed.
+ * {@code parseObject(…)} method will be expanded into the full {@code GeodeticCRS[“WGS84”, …]}
+ * string before the parsing proceed.
  *
- * <blockquote><code>{@linkplain #definitions()}.put("$WGS84", "GEOGCS[\"WGS84\", DATUM[</code> <i>…etc…</i> <code>]]);<br>
- * Object crs = {@linkplain #parseObject(String) parseObject}("PROJCS[\"Mercator_1SP\", <strong>$WGS84</strong>,
- * PROJECTION[</code> <i>…etc…</i> <code>]]");</code></blockquote>
+ * <blockquote><code>
+ * {@linkplain #addFragment addFragment}("deg", "AngleUnit[“degree”, 0.0174532925199433]");<br>
+ * {@linkplain #addFragment addFragment}("lat", "Axis[“Latitude”, NORTH, <strong>$deg</strong>]");<br>
+ * {@linkplain #addFragment addFragment}("lon", "Axis[“Longitude”, EAST, <strong>$deg</strong>]");<br>
+ * {@linkplain #addFragment addFragment}("MyBaseCRS", "GeodeticCRS[“WGS84”, Datum[</code> <i>…etc…</i> <code>],
+ * CS[</code> <i>…etc…</i> <code>], <strong>$lat</strong>, <strong>$lon</strong>]");<br>
+ * Object crs = {@linkplain #parseObject(String) parseObject}("ProjectedCRS[“Mercator_1SP”, <strong>$MyBaseCRS</strong>,
+ * </code> <i>…etc…</i> <code>]");
+ * </code></blockquote>
+ *
+ * Note that the parsing of WKT fragment does not always produce the same object.
+ * In particular, the default linear and angular units depend on the context in which the WKT fragment appears.
  * </div>
  *
  * <div class="section">Limitations</div>
@@ -164,6 +170,31 @@ public class WKTFormat extends CompoundFormat<Object> {
      * It appears here for serialization purpose.
      */
     private byte indentation;
+
+    /**
+     * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
+     * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
+     * The methods that callers can use directly are:
+     *
+     * <ul>
+     *   <li>{@link #clear()}</li>
+     *   <li>{@link #isEmpty()}</li>
+     *   <li>{@link #size()}</li>
+     *   <li>{@link #containsKey(Object)}</li>
+     * </ul>
+     */
+    private Map<String,Element> fragments;
+
+    /**
+     * Temporary map used by {@link #addFragment(String, String)} for reusing existing instances when possible.
+     * Keys and values are the same {@link String}, {@link Boolean}, {@link Number} or {@link Date} instances.
+     *
+     * <p>This reference is set to null when we assume that no more fragments will be added to this format.
+     * It is not a problem if this map is destroyed too aggressively, since it will be recreated when needed.
+     * The only cost of destroying the map too aggressively is that we may have more instance duplications
+     * than what we would otherwise have.</p>
+     */
+    private transient Map<Object,Object> sharedValues;
 
     /**
      * A formatter using the same symbols than the {@linkplain #parser}.
@@ -412,7 +443,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <tr><td>GEOTIFF</td>   <td>CT_Mercator</td></tr>
      * </table></div>
      *
-     * If no authority has been {@link #setNameAuthority(Citation) explicitly set}, then this
+     * If no authority has been {@linkplain #setNameAuthority(Citation) explicitly set}, then this
      * method returns the default authority for the current {@linkplain #getConvention() convention}.
      *
      * @return The organization, standard or project to look for when fetching projection and parameter names.
@@ -501,22 +532,95 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Creates an object from the given character sequence.
      * The parsing begins at the index given by the {@code pos} argument.
      *
-     * @param  text The character sequence for the object to parse.
-     * @param  pos  The position where to start the parsing.
+     * @param  wkt The character sequence for the object to parse.
+     * @param  pos The position where to start the parsing.
      * @return The parsed object.
-     * @throws ParseException If an error occurred while parsing the object.
+     * @throws ParseException If an error occurred while parsing the WKT.
      */
     @Override
-    public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
+    public Object parse(final CharSequence wkt, final ParsePosition pos) throws ParseException {
         warnings = null;
-        ArgumentChecks.ensureNonNull("text", text);
-        ArgumentChecks.ensureNonNull("pos",  pos);
+        sharedValues = null;
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
+        ArgumentChecks.ensureNonNull ("pos", pos);
+        final AbstractParser parser = parser();
+        Object object = null;
+        try {
+            return object = parser.parseObject(wkt.toString(), pos);
+        } finally {
+            warnings = parser.getAndClearWarnings(object);
+        }
+    }
+
+    /**
+     * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
+     * can contains itself other fragments specified in some previous calls to this method.
+     *
+     * <div class="note"><b>Example</b>
+     * if the following method is invoked:
+     *
+     * {@preformat java
+     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
+     * }
+     *
+     * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
+     * (WKT after the ellipsoid omitted for brevity):
+     *
+     * {@preformat java
+     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     * }
+     * </div>
+     *
+     * @param  identifier The name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  wkt The Well Know Text (WKT) fragment represented by the given identifier.
+     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
+     * @throws ParseException If an error occurred while parsing the given WKT.
+     */
+    public void addFragment(final String identifier, final String wkt) throws IllegalArgumentException, ParseException {
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        short error = Errors.Keys.NotAUnicodeIdentifier_1;
+        if (CharSequences.isUnicodeIdentifier(identifier)) {
+            if (sharedValues == null) {
+                sharedValues = new HashMap<>();
+            }
+            final ParsePosition pos = new ParsePosition(0);
+            final Element element = new Element(parser(), wkt, pos, sharedValues);
+            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
+            if (index < wkt.length()) {
+                throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                        new Object[] {identifier + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
+            }
+            if (fragments.putIfAbsent(identifier, element) == null) {
+                return;
+            }
+            error = Errors.Keys.ElementAlreadyPresent_1;
+        }
+        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, identifier));
+    }
+
+    /**
+     * Removes all fragments previously added by {@link #addFragment(String, String)}.
+     */
+    public void removeAllFragments() {
+        if (fragments != null) {
+            fragments.clear();
+        }
+    }
+
+    /**
+     * Returns the parser, created when first needed.
+     */
+    private AbstractParser parser() {
         AbstractParser parser = this.parser;
         if (parser == null) {
+            if (fragments == null) {
+                fragments = new TreeMap<>();
+            }
             if (factories == null) {
                 factories = new HashMap<>();
             }
-            this.parser = parser = new GeodeticObjectParser(symbols,
+            this.parser = parser = new GeodeticObjectParser(symbols, fragments,
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
@@ -525,12 +629,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                     getLocale(),
                     factories);
         }
-        Object object = null;
-        try {
-            return object = parser.parseObject(text.toString(), pos);
-        } finally {
-            warnings = parser.getAndClearWarnings(object);
-        }
+        return parser;
     }
 
     /**
@@ -590,7 +689,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             warnings.setRoot(object);
         }
         if (!valid) {
-            throw new ClassCastException(Errors.format(
+            throw new ClassCastException(Errors.getResources(getLocale()).getString(
                     Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
         }
         if (buffer != toAppendTo) {
