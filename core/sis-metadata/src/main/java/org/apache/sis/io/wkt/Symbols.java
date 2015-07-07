@@ -79,6 +79,11 @@ public class Symbols implements Localized, Cloneable, Serializable {
     private static final long serialVersionUID = -1730166945430878916L;
 
     /**
+     * The prefix character for the value of a WKT fragment.
+     */
+    static final char FRAGMENT_VALUE = '$';
+
+    /**
      * A set of symbols with values between square brackets, like {@code DATUM["WGS84"]}.
      * This instance defines:
      *
@@ -432,14 +437,25 @@ public class Symbols implements Localized, Cloneable, Serializable {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, name, pair));
             }
             final int c = pair.codePointAt(0);
-            ensureValidUnicodeCodePoint(name, array[j++] = c);
-            ensureValidUnicodeCodePoint(name, array[j++] = pair.codePointAt(Character.charCount(c)));
+            ensureValidQuoteOrBracket(name, array[j++] = c);
+            ensureValidQuoteOrBracket(name, array[j++] = pair.codePointAt(Character.charCount(c)));
             if (i >= n) {
                 break;
             }
             ensureNonNullElement(name = "alternatives", i, pair = alternatives[i++]);
         }
         return array;
+    }
+
+    /**
+     * Ensures that the given code point is a valid Unicode code point but not a Unicode identifier part.
+     */
+    private static void ensureValidQuoteOrBracket(final String name, final int code) {
+        ensureValidUnicodeCodePoint(name, code);
+        if (Character.isUnicodeIdentifierPart(code) || Character.isSpaceChar(code) || code == FRAGMENT_VALUE) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCharacter_2,
+                    name, String.valueOf(Character.toChars(code))));
+        }
     }
 
     /**
@@ -470,8 +486,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setSequenceBrackets(final int openSequence, final int closeSequence) {
         checkWritePermission();
-        ensureValidUnicodeCodePoint("openSequence",  openSequence);
-        ensureValidUnicodeCodePoint("closeSequence", closeSequence);
+        ensureValidQuoteOrBracket("openSequence",  openSequence);
+        ensureValidQuoteOrBracket("closeSequence", closeSequence);
         this.openSequence  = openSequence;
         this.closeSequence = closeSequence;
     }
