@@ -26,6 +26,9 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
@@ -33,6 +36,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -85,6 +89,13 @@ abstract class AbstractParser implements Parser {
     static final boolean SCIENTIFIC_NOTATION = true;
 
     /**
+     * The logger to use for reporting warnings when this parser is used through the {@link #createFromWKT(String)}.
+     * This happen most often when the user invoke the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
+     * convenience method.
+     */
+    private static final Logger LOGGER = Logging.getLogger(AbstractParser.class);
+
+    /**
      * The locale for error messages (not for number parsing), or {@code null} for the system default.
      */
     final Locale errorLocale;
@@ -116,6 +127,12 @@ abstract class AbstractParser implements Parser {
     private UnitFormat unitFormat;
 
     /**
+     * Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
+     * This parser will only read this map, never write to it.
+     */
+    final Map<String,Element> fragments;
+
+    /**
      * Keyword of unknown elements. The ISO 19162 specification requires that we ignore unknown elements,
      * but we will nevertheless report them as warnings.
      * The meaning of this map is:
@@ -139,19 +156,21 @@ abstract class AbstractParser implements Parser {
      * Constructs a parser using the specified set of symbols.
      *
      * @param symbols       The set of symbols to use.
+     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      */
-    AbstractParser(final Symbols symbols, NumberFormat numberFormat, final DateFormat dateFormat,
-            final UnitFormat unitFormat, final Locale errorLocale)
+    AbstractParser(final Symbols symbols, final Map<String,Element> fragments, NumberFormat numberFormat,
+            final DateFormat dateFormat, final UnitFormat unitFormat, final Locale errorLocale)
     {
         ensureNonNull("symbols", symbols);
         if (numberFormat == null) {
             numberFormat = symbols.createNumberFormat();
         }
         this.symbols     = symbols;
+        this.fragments   = fragments;
         this.dateFormat  = dateFormat;
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;
@@ -177,6 +196,12 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
+     * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
+     * This information is used for logging purpose only.
+     */
+    abstract String getPublicFacade();
+
+    /**
      * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
      * method is SIS factories only.
      *
@@ -189,8 +214,9 @@ abstract class AbstractParser implements Parser {
      */
     @Override
     public final Object createFromWKT(final String text) throws FactoryException {
+        final Object value;
         try {
-            return parseObject(text, new ParsePosition(0));
+            value = parseObject(text, new ParsePosition(0));
         } catch (ParseException exception) {
             final Throwable cause = exception.getCause();
             if (cause instanceof FactoryException) {
@@ -198,6 +224,15 @@ abstract class AbstractParser implements Parser {
             }
             throw new FactoryException(exception.getMessage(), exception);
         }
+        final Warnings warnings = getAndClearWarnings(value);
+        if (warnings != null) {
+            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setSourceClassName(getPublicFacade());
+            record.setSourceMethodName("createFromWKT");
+            record.setLoggerName(LOGGER.getName());
+            LOGGER.log(record);
+        }
+        return value;
     }
 
     /**
@@ -211,7 +246,7 @@ abstract class AbstractParser implements Parser {
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
         warnings = null;
         ignoredElements.clear();
-        final Element element = new Element(new Element(this, text, position));
+        final Element element = new Element("<root>", new Element(this, text, position, null));
         final Object object = parseObject(element);
         element.close(ignoredElements);
         return object;
@@ -294,7 +329,7 @@ abstract class AbstractParser implements Parser {
      */
     final void warning(final Element parent, final Element element, final Exception ex) {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            warnings = new Warnings(errorLocale, true, ignoredElements);
         }
         warnings.add(null, ex, new String[] {parent.keyword, element.keyword});
     }
@@ -307,7 +342,7 @@ abstract class AbstractParser implements Parser {
      */
     final void warning(final InternationalString message, final Exception ex) {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            warnings = new Warnings(errorLocale, true, ignoredElements);
         }
         warnings.add(message, ex, null);
     }
@@ -328,7 +363,7 @@ abstract class AbstractParser implements Parser {
             if (ignoredElements.isEmpty()) {
                 return null;
             }
-            w = new Warnings(errorLocale, (byte) 1, ignoredElements);
+            w = new Warnings(errorLocale, true, ignoredElements);
         }
         w.setRoot(object);
         return w;

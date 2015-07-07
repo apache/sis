@@ -266,4 +266,30 @@ public final strictfp class WKTFormatTest extends TestCase {
         pm = (DefaultPrimeMeridian) format.parseObject(wkt);
         assertEquals("Invalid \"$name\" here", pm.getName().getCode());
     }
+
+    /**
+     * Tests the usage of {@code WKTFormat} with WKT fragments.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testFragments() throws ParseException {
+        format = new WKTFormat(null, null);
+        format.addFragment("deg",    "UNIT[“degree”, 0.0174532925199433]");
+        format.addFragment("Bessel", "SPHEROID[“Bessel 1841”, 6377397.155, 299.1528128, AUTHORITY[“EPSG”,“7004”]]");
+        format.addFragment("Tokyo",  "DATUM[“Tokyo”, $Bessel]");
+        format.addFragment("Lat",    "AXIS[“Lat”, NORTH, $deg]");
+        format.addFragment("Lon",    "AXIS[“Long”, EAST, $deg]");
+        final Object crs = format.parseObject("GEOGCS[“Tokyo”, $Tokyo, $Lat, $Lon]");
+        final String wkt = format.format(crs);
+        assertMultilinesEquals(
+                "GeodeticCRS[\"Tokyo\",\n" +
+                "  Datum[\"Tokyo\",\n" +
+                "    Ellipsoid[\"Bessel 1841\", 6377397.155, 299.1528128, LengthUnit[\"metre\", 1]]],\n" +
+                "    PrimeMeridian[\"Greenwich\", 0.0, AngleUnit[\"degree\", 0.017453292519943295]],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "    Axis[\"Latitude (B)\", north, Order[1]],\n" +
+                "    Axis[\"Longitude (L)\", east, Order[2]],\n" +
+                "    AngleUnit[\"degree\", 0.017453292519943295]]", wkt);
+    }
 }
