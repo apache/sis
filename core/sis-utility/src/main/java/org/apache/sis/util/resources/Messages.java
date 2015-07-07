@@ -93,9 +93,9 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertyAssociatedTo_1 = 7;
 
         /**
-         * {0,choice,0#Formatting|1#Parsing} of “{1}” done, but some elements were ignored.
+         * Parsing of “{0}” done, but some elements were ignored.
          */
-        public static final short IncompleteFormattingOrParsing_2 = 14;
+        public static final short IncompleteParsing_1 = 14;
 
         /**
          * Text were discarded for some locales.
@@ -107,6 +107,11 @@ public final class Messages extends IndexedResourceBundle {
          * not match the definition of the “{0}” ellipsoid.
          */
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
+
+        /**
+         * Formatting of “{0}” is not conform to the format standard.
+         */
+        public static final short NonConformFormatting_1 = 15;
 
         /**
          * This parameter borrowed from the “{0}” projection is not formally a parameter of this
