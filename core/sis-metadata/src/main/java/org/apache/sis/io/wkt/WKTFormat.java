@@ -174,14 +174,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
-     * The methods that callers can use directly are:
-     *
-     * <ul>
-     *   <li>{@link #clear()}</li>
-     *   <li>{@link #isEmpty()}</li>
-     *   <li>{@link #size()}</li>
-     *   <li>{@link #containsKey(Object)}</li>
-     * </ul>
      */
     private Map<String,Element> fragments;
 
