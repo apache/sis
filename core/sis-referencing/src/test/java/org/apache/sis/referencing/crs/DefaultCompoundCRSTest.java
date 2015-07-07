@@ -139,6 +139,22 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     }
 
     /**
+     * Tests {@link DefaultCompoundCRS#isStandardCompliant()}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testIsStandardCompliant() {
+        final DefaultCompoundCRS crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), HardCodedCRS.WGS84,  HEIGHT);
+        final DefaultCompoundCRS crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), HardCodedCRS.WGS84_3D, TIME);
+        assertTrue (crs3.isStandardCompliant());
+        assertTrue (crs4.isStandardCompliant());
+        assertTrue (new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME).isStandardCompliant());
+        assertFalse(new DefaultCompoundCRS(singletonMap(NAME_KEY, "5D"), crs4, TIME).isStandardCompliant());
+        assertFalse(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), TIME, crs3).isStandardCompliant());
+    }
+
+    /**
      * Tests WKT 1 formatting.
      */
     @Test

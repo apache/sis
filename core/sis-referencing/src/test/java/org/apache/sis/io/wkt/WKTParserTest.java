@@ -43,12 +43,28 @@ import static org.junit.Assert.*;
  */
 @RunWith(JUnit4.class)
 @DependsOn(GeodeticObjectParserTest.class)
-public class WKTParserTest extends CRSParserTest {
+public final strictfp class WKTParserTest extends CRSParserTest {
     /**
      * Creates a new test case using the default {@code CRSFactory} implementation.
      */
     public WKTParserTest() {
         super(org.apache.sis.internal.system.DefaultFactories.forClass(CRSFactory.class));
+    }
+
+    /**
+     * Pre-process the WKT string before parsing. This method chooses randomly whether to replace
+     * curly quotation marks ({@code “} and {@code ”}) by straight quotation marks ({@code "}) or not.
+     * The Apache SIS parser should understand both forms transparently.
+     *
+     * @param  wkt The Well-Known Text to pre-process.
+     * @return The Well-Known Text to parse.
+     */
+    @Override
+    protected String preprocessWKT(String wkt) {
+        if (Math.random() >= 0.5) {
+            wkt = super.preprocessWKT(wkt);
+        }
+        return wkt;
     }
 
     /**

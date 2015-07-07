@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.text.DateFormat;
@@ -194,7 +195,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     public GeodeticObjectParser(final Map<String,?> defaultProperties,
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
-        super(Symbols.getDefault(), null, null, null, mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
+        super(Symbols.getDefault(), Collections.<String,Element>emptyMap(), null, null, null,
+                mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         crsFactory      = (CRSFactory)   factories;
         csFactory       = (CSFactory)    factories;
         datumFactory    = (DatumFactory) factories;
@@ -210,6 +212,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * This constructor is for {@link WKTFormat} usage only.
      *
      * @param symbols       The set of symbols to use.
+     * @param fragments     Reference to the {@link WKTFormat#fragments} map, or an empty map if none.
      * @param numberFormat  The number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param dateFormat    The date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param unitFormat    The unit format provided by {@link WKTFormat}, or {@code null} for a default format.
@@ -217,11 +220,13 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @param errorLocale   The locale for error messages (not for parsing), or {@code null} for the system default.
      * @param factories     On input, the factories to use. On output, the factories used. Can be null.
      */
-    GeodeticObjectParser(final Symbols symbols, final NumberFormat numberFormat, final DateFormat dateFormat,
-            final UnitFormat unitFormat, final Convention convention, final Transliterator transliterator,
-            final Locale errorLocale, final Map<Class<?>,Factory> factories)
+    GeodeticObjectParser(final Symbols symbols, final Map<String,Element> fragments,
+            final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+            final Convention convention, final Transliterator transliterator, final Locale errorLocale,
+            final Map<Class<?>,Factory> factories)
     {
-        super(symbols, numberFormat, dateFormat, unitFormat, getFactory(MathTransformFactory.class, factories), errorLocale);
+        super(symbols, fragments, numberFormat, dateFormat, unitFormat,
+                getFactory(MathTransformFactory.class, factories), errorLocale);
         this.transliterator = transliterator;
         crsFactory      = getFactory(CRSFactory.class,   factories);
         csFactory       = getFactory(CSFactory.class,    factories);
@@ -246,6 +251,15 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             factories.put(type, factory);
         }
         return factory;
+    }
+
+    /**
+     * Returns the name of the class providing the publicly-accessible {@code createFromWKT(String)} method.
+     * This information is used for logging purpose only.
+     */
+    @Override
+    String getPublicFacade() {
+        return "org.apache.sis.referencing.factory.GeodeticObjectFactory";
     }
 
     /**
