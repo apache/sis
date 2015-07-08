@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -204,10 +204,9 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      */
     public void setDimensionSize(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", false, newValue);
+        if (ensurePositive(DefaultDimension.class, "dimensionSize", false, newValue)) {
+            dimensionSize = newValue;
         }
-        dimensionSize = newValue;
     }
 
     /**
@@ -231,10 +230,9 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      */
     public void setResolution(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultDimension.class, "dimensionSize", true, newValue);
+        if (ensurePositive(DefaultDimension.class, "dimensionSize", true, newValue)) {
+            resolution = newValue;
         }
-        resolution = newValue;
     }
 
     /**
