@@ -50,21 +50,11 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 @RunWith(TestRunner.class)
 public abstract strictfp class TestCase {
-    /**
-     * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@preformat java
-     *     assertEquals(expected, actual, STRICT);
-     * }
-     */
-    protected static final double STRICT = 0;
-
     /**
      * A flag for code that are pending future SIS development before to be enabled.
      * This flag is always set to {@code false}. It shall be used as below:
@@ -83,6 +73,16 @@ public abstract strictfp class TestCase {
     public static final boolean PENDING_FUTURE_SIS_VERSION = false;
 
     /**
+     * Tolerance threshold for strict comparisons of floating point numbers.
+     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
+     *
+     * {@preformat java
+     *     assertEquals(expected, actual, STRICT);
+     * }
+     */
+    protected static final double STRICT = 0;
+
+    /**
      * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator(String)},
      * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow the
      * developer to reproduce the failure.
@@ -91,7 +91,7 @@ public abstract strictfp class TestCase {
 
     /**
      * The output writer where to print debugging information (never {@code null}).
-     * Texts sent to this printer will be show only if the test fails, or if the
+     * Texts sent to this printer will be shown only if the test fails, or if the
      * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
      * is set to {@code true}. This writer will use the system default encoding, unless
      * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system
@@ -121,6 +121,12 @@ public abstract strictfp class TestCase {
     }
 
     /**
+     * The parent logger of all Apache SIS loggers.
+     * Needs to be retained by strong reference.
+     */
+    static final Logger LOGGER = Logger.getLogger("org.apache.sis");
+
+    /**
      * Sets the encoding of the console logging handler, if an encoding has been specified.
      * Note that we look specifically for {@link ConsoleHandler}; we do not generalize to
      * {@link StreamHandler} because the log files may not be intended for being show in
@@ -132,7 +138,7 @@ public abstract strictfp class TestCase {
     static {
         final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
         if (encoding != null) try {
-            for (Logger logger=Logger.getLogger("org.apache.sis"); logger!=null; logger=logger.getParent()) {
+            for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
                 for (final Handler handler : logger.getHandlers()) {
                     if (handler instanceof ConsoleHandler) {
                         ((ConsoleHandler) handler).setEncoding(encoding);
@@ -145,6 +151,7 @@ public abstract strictfp class TestCase {
         } catch (UnsupportedEncodingException e) {
             Logging.recoverableException(TestCase.class, "<clinit>", e);
         }
+        LOGGER.addHandler(LogRecordCollector.INSTANCE);
     }
 
     /**

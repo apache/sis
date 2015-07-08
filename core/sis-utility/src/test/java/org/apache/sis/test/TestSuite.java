@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
 import javax.management.JMException;
@@ -246,5 +247,12 @@ public abstract strictfp class TestSuite {
     public static void shutdown() throws JMException {
         SystemListener.fireClasspathChanged();
         Shutdown.stop(TestSuite.class);
+        TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);
+        System.err.flush();   // For flushing log messages sent by ConsoleHandler.
+        try {
+            LogRecordCollector.INSTANCE.report(System.out);
+        } catch (IOException e) {   // Should never happen.
+            throw new AssertionError(e);
+        }
     }
 }
