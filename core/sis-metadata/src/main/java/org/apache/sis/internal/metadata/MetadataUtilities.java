@@ -85,35 +85,35 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Convenience method invoked when an argument was expected to be positive, but the user gave a negative value
-     * or (in some case) zero. This method logs a warning if we are in process of (un)marshalling a XML document,
-     * or throw an exception otherwise.
+     * Ensures that the given property value is positive. If the user gave a negative value or (in some case) zero,
+     * then this method logs a warning if we are in process of (un)marshalling a XML document or throw an exception
+     * otherwise.
      *
-     * <p><b>When to use:</b></p>
-     * <ul>
-     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
-     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
-     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
-     *       The stored metadata value may be invalid, but not lost.</li>
-     * </ul>
-     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
-     * are only warnings for this method, while they are errors by default for
-     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
-     *
-     * @param  classe   The caller class.
+     * @param  classe   The class which invoke this method.
      * @param  property The property name. Method name will be inferred by the usual Java bean convention.
      * @param  strict   {@code true} if the value was expected to be strictly positive, or {@code false} if 0 is accepted.
-     * @param  value    The invalid argument value.
-     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
+     * @param  newValue The argument value to verify.
+     * @return {@code true} if the value is valid.
+     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
      */
-    public static void warnNonPositiveArgument(final Class<?> classe, final String property, final boolean strict,
-            final Number value) throws IllegalArgumentException
+    public static boolean ensurePositive(final Class<?> classe,
+            final String property, final boolean strict, final Number newValue) throws IllegalArgumentException
     {
-        final String msg = logOrFormat(classe, property,
-                strict ? Errors.Keys.ValueNotGreaterThanZero_2 : Errors.Keys.NegativeArgument_2, property, value);
-        if (msg != null) {
-            throw new IllegalArgumentException(msg);
+        if (newValue != null) {
+            final double value = newValue.doubleValue();
+            if (!(strict ? value > 0 : value >= 0)) { // Use '!' for catching NaN.
+                if (NilReason.forObject(newValue) == null) {
+                    final String msg = logOrFormat(classe, property, strict
+                            ? Errors.Keys.ValueNotGreaterThanZero_2
+                            : Errors.Keys.NegativeArgument_2, property, newValue);
+                    if (msg != null) {
+                        throw new IllegalArgumentException(msg);
+                    }
+                    return false;
+                }
+            }
         }
+        return true;
     }
 
     /**

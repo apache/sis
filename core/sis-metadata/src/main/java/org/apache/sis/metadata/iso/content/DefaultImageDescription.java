@@ -26,7 +26,7 @@ import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.measure.ValueRange;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -384,10 +384,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public void setCompressionGenerationQuantity(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue);
+        if (ensurePositive(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue)) {
+            compressionGenerationQuantity = newValue;
         }
-        compressionGenerationQuantity = newValue;
     }
 
     /**
