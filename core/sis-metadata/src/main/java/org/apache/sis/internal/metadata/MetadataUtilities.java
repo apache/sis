@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class MetadataUtilities extends Static {
@@ -101,7 +101,7 @@ public final class MetadataUtilities extends Static {
     {
         if (newValue != null) {
             final double value = newValue.doubleValue();
-            if (!(strict ? value > 0 : value >= 0)) { // Use '!' for catching NaN.
+            if (!(strict ? value > 0 : value >= 0)) {   // Use '!' for catching NaN.
                 if (NilReason.forObject(newValue) == null) {
                     final String msg = logOrFormat(classe, property, strict
                             ? Errors.Keys.ValueNotGreaterThanZero_2
@@ -117,34 +117,36 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Convenience method invoked when an argument is outside the expected range of values. This method logs
-     * a warning if we are in process of (un)marshalling a XML document, or throw an exception otherwise.
+     * Ensures that the given argument is either null or between the given minimum and maximum values.
+     * If the user argument is outside the expected range of values, then this method logs a warning
+     * if we are in process of (un)marshalling a XML document or throw an exception otherwise.
      *
-     * <p><b>When to use:</b></p>
-     * <ul>
-     *   <li>This method is for setter methods that may be invoked by JAXB. Constructors or methods ignored
-     *       by JAXB should use the simpler {@link org.apache.sis.util.ArgumentChecks} class instead.</li>
-     *   <li>This method should be invoked only when ignoring the warning will not cause information lost.
-     *       The stored metadata value may be invalid, but not lost.</li>
-     * </ul>
-     * <div class="note"><b>Note:</b> the later point is the reason why problems during XML (un)marshalling
-     * are only warnings for this method, while they are errors by default for
-     * {@link org.apache.sis.xml.ValueConverter} (the later can not store the value in case of error).</div>
-     *
-     * @param  classe   The caller class.
-     * @param  property The property name. Method name will be inferred by the usual Java bean convention.
+     * @param  classe   The class which invoke this method.
+     * @param  property Name of the property to check.
      * @param  minimum  The minimal legal value.
      * @param  maximum  The maximal legal value.
-     * @param  value    The invalid argument value.
-     * @throws IllegalArgumentException if we are not (un)marshalling a XML document.
+     * @param  newValue The value given by the user.
+     * @return {@code true} if the value is valid.
+     * @throws IllegalArgumentException if the given value is out of range and the problem has not been logged.
      */
-    public static void warnOutOfRangeArgument(final Class<?> classe, final String property,
-            final Number minimum, final Number maximum, final Number value) throws IllegalArgumentException
+    public static boolean ensureInRange(final Class<?> classe, final String property,
+            final Number minimum, final Number maximum, final Number newValue)
+            throws IllegalArgumentException
     {
-        final String msg = logOrFormat(classe, property, Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, value);
-        if (msg != null) {
-            throw new IllegalArgumentException(msg);
+        if (newValue != null) {
+            final double value = newValue.doubleValue();
+            if (!(value >= minimum.doubleValue() && value <= maximum.doubleValue())) {  // Use '!' for catching NaN.
+                if (NilReason.forObject(newValue) == null) {
+                    final String msg = logOrFormat(classe, property,
+                            Errors.Keys.ValueOutOfRange_4, property, minimum, maximum, newValue);
+                    if (msg != null) {
+                        throw new IllegalArgumentException(msg);
+                    }
+                    return false;
+                }
+            }
         }
+        return true;
     }
 
     /**
