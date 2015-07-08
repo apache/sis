@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.logging.Logger;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -29,7 +28,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -62,7 +63,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      * (it should have been a private field).</p>
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logger.getLogger("org.apache.sis.referencing.operation")) {
+    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.COORDINATE_OPERATION)) {
         @Override protected void verifyMessage(final String message) {
             assertTrue(message, message.contains("semi_minor"));
             assertTrue(message, message.contains("WGS84"));

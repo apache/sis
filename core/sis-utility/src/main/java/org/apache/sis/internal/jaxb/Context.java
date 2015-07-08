@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -103,7 +104,7 @@ public final class Context extends MarshalContext {
      *
      * @see org.apache.sis.metadata.iso.ISOMetadata#LOGGER
      */
-    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.xml");
+    public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
 
     /**
      * Various boolean attributes determines by the above static constants.

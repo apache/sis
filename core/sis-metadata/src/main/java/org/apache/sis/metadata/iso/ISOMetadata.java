@@ -31,6 +31,7 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
@@ -69,7 +70,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@code "equivalentScale"} properties in {@link org.apache.sis.metadata.iso.identification.DefaultResolution}
      * are mutually exclusive: setting one discards the other. In such case, a warning is logged.
      */
-    public static final Logger LOGGER = Logging.getLogger(ISOMetadata.class);
+    public static final Logger LOGGER = Logging.getLogger(Loggers.ISO_19115);
 
     /**
      * All identifiers associated with this metadata, or {@code null} if none.

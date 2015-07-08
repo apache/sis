@@ -43,6 +43,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -472,7 +473,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                              * Since the intend of this check was to skip those parameters anyway, it is okay
                              * for the purpose of WKT formatting if there is no parameter for axis lengths.
                              */
-                            Logging.recoverableException(DefaultProjectedCRS.class, "formatTo", e);
+                            Logging.recoverableException(Logging.getLogger(Loggers.WKT), DefaultProjectedCRS.class, "formatTo", e);
                             continue;
                         }
                         if (Double.isNaN(value)) {
