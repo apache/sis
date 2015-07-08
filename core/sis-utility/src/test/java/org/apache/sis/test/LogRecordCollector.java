@@ -96,7 +96,7 @@ final class LogRecordCollector extends Handler {
                 method = "<unknown>";
                 for (final StackTraceElement t : Thread.currentThread().getStackTrace()) {
                     final String c = t.getClassName();
-                    if (c.startsWith("org.apache.sis.") && c.endsWith("Test")) {
+                    if (c.startsWith("org.apache.sis.") && c.endsWith(TestSuite.CLASSNAME_SUFFIX)) {
                         cname  = c;
                         method = t.getMethodName();
                         break;
