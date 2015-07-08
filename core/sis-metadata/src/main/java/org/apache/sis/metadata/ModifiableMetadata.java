@@ -191,7 +191,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                  * (for example it may be backed by some external database).
                  * Assumes that the metadata is unmodifiable.
                  */
-                Logging.unexpectedException(LOGGER, getClass(), "unmodifiable", exception);
+                Logging.unexpectedException(Logging.getLogger(ModifiableMetadata.class),
+                                            getClass(), "unmodifiable", exception);
                 return this;
             }
             candidate.freeze();

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.util.logging.Logger;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -24,15 +25,17 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.test.Validators;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.GeodeticObjectBuilder;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
+import org.junit.Rule;
 
 import static org.apache.sis.test.MetadataAssert.*;
 
@@ -50,6 +53,22 @@ import static org.apache.sis.test.MetadataAssert.*;
     org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
 public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
+    /**
+     * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
+     * This rule verifies that the message logged contains the expected information. The expected message is something
+     * like "Parameter semi_minor could have been omitted but got a value that does not match the WGS84 ellipsoid".
+     *
+     * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
+     * (it should have been a private field).</p>
+     */
+    @Rule
+    public final LoggingWatcher listener = new LoggingWatcher(Logger.getLogger("org.apache.sis.referencing.operation")) {
+        @Override protected void verifyMessage(final String message) {
+            assertTrue(message, message.contains("semi_minor"));
+            assertTrue(message, message.contains("WGS84"));
+        }
+    };
+
     /**
      * An XML file in this package containing a projected CRS definition.
      */
@@ -270,6 +289,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT1_WithExplicitAxisLength() throws FactoryException {
+        listener.maximumLogCount = 1;
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Mercator (variant A)")
                 .setConversionName("Popular Visualisation Pseudo-Mercator")
@@ -298,6 +318,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Easting”, EAST],\n" +
                 "  AXIS[“Northing”, NORTH]]",
                 crs);
+
+        assertEquals("A warning should have been logged.", 0, listener.maximumLogCount);
     }
 
     /**
