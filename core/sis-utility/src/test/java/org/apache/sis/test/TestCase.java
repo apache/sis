@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.junit.runner.RunWith;
 
@@ -149,7 +150,7 @@ public abstract strictfp class TestCase {
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            Logging.recoverableException(TestCase.class, "<clinit>", e);
+            Logging.recoverableException(LOGGER, TestCase.class, "<clinit>", e);
         }
         LOGGER.addHandler(LogRecordCollector.INSTANCE);
     }

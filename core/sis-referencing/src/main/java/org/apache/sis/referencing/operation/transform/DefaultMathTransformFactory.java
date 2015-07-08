@@ -54,6 +54,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -538,7 +539,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
                         Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                         mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
-                record.setLoggerName("org.apache.sis.referencing.operation");
+                record.setLoggerName(Loggers.COORDINATE_OPERATION);
                 Logging.log(DefaultMathTransformFactory.class, "createBaseToDerived", record);
             }
         }

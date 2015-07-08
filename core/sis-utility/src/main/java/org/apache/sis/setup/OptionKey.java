@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 // Branch-dependent imports
 import java.nio.file.OpenOption;
@@ -283,7 +284,7 @@ public class OptionKey<T> implements Serializable {
              * we override the 'equals' and 'hashCode' methods. This option is likely to be ignored,
              * but options are expected to be optional...
              */
-            Logging.recoverableException(OptionKey.class, "readResolve", e);
+            Logging.recoverableException(Logging.getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);
             return this;
         }
     }

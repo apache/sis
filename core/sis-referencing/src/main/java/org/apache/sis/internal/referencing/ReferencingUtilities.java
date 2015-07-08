@@ -32,6 +32,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -57,7 +58,7 @@ public final class ReferencingUtilities extends Static {
     /**
      * The logger to use for messages related to the {@code sis-referencing} module.
      */
-    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.referencing");
+    public static final Logger LOGGER = Logging.getLogger(Modules.REFERENCING);
 
     /**
      * Do not allow instantiation of this class.

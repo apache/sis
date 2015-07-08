@@ -91,7 +91,7 @@ public abstract class OptionalDependency extends SystemListener {
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.CONFIG,
                     Messages.Keys.OptionalModuleNotFound_1, dependency);
             record.setLoggerName(module);
-            Logging.log(OptionalDependency.class, "getInstance", record);
+            Logging.log(type, "getInstance", record);
             return null;
         } catch (ReflectiveOperationException exception) {
             // Should never happen if we didn't broke our helper class.
