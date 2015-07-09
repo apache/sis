@@ -236,7 +236,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * is part of a ProjectedCRS. Note however that in such case, the units to format are the angular units because
          * the linear units will be formatted in the enclosing PROJCS[…] element.
          */
-        if (!isBaseCRS) {
+        if (!isBaseCRS || convention == Convention.INTERNAL) {
             formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);    // Will also format the axes unit.
         } else if (convention.isSimplified()) {
             formatter.append(formatter.toContextualUnit(angularUnit));
