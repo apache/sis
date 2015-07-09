@@ -31,7 +31,7 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -208,10 +208,9 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     public void setTransferSize(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue >= 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultDigitalTransferOptions.class, "transferSize", true, newValue);
+        if (ensurePositive(DefaultDigitalTransferOptions.class, "transferSize", true, newValue)) {
+            transferSize = newValue;
         }
-        transferSize = newValue;
     }
 
     /**

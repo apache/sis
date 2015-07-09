@@ -67,7 +67,7 @@ public final class Shutdown {
             Threads.shutdown(System.nanoTime() + 4000);
         } catch (InterruptedException e) {
             if (caller != null) {
-                Logging.unexpectedException(caller, "stop", e);
+                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), caller, "stop", e);
             }
         }
         if (exception != null) {

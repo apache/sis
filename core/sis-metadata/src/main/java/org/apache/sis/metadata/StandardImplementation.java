@@ -21,6 +21,7 @@ import java.util.IdentityHashMap;
 import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -150,7 +151,8 @@ final class StandardImplementation extends MetadataStandard {
                         try {
                             candidate = Class.forName(classname);
                         } catch (ClassNotFoundException e) {
-                            Logging.recoverableException(MetadataStandard.class, "getImplementation", e);
+                            Logging.recoverableException(Logging.getLogger(Modules.METADATA),
+                                    MetadataStandard.class, "getImplementation", e);
                             length = p.length();
                             continue;
                         }

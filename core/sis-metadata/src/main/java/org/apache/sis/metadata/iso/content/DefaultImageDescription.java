@@ -25,8 +25,8 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -198,26 +198,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     }
 
     /**
-     * Ensures that the given argument is either null or between the given minimum and maximum values.
-     *
-     * @param property Name of the property to check.
-     * @param min      The minimal legal value.
-     * @param max      The maximal legal value.
-     * @param newValue The value given by the user.
-     * @throws IllegalArgumentException if the given value is out of range and the problem has not been logged.
-     */
-    private static void ensureInRange(final String property, final double min, final double max, final Double newValue)
-            throws IllegalArgumentException
-    {
-        if (newValue != null) {
-            final double v = newValue;
-            if (!(v >= min && v <= max)) { // Use '!' for catching NaN.
-                warnOutOfRangeArgument(DefaultImageDescription.class, property, min, max, v);
-            }
-        }
-    }
-
-    /**
      * Returns the illumination elevation measured in degrees clockwise from the target plane at
      * intersection of the optical line of sight with the Earth's surface.
      * For images from a scanning device, refer to the centre pixel of the image.
@@ -243,8 +223,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public void setIlluminationElevationAngle(final Double newValue) {
         checkWritePermission();
-        ensureInRange("illuminationElevationAngle", -90, +90, newValue);
-        illuminationElevationAngle = newValue;
+        if (ensureInRange(DefaultImageDescription.class, "illuminationElevationAngle", -90, +90, newValue)) {
+            illuminationElevationAngle = newValue;
+        }
     }
 
     /**
@@ -269,8 +250,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public void setIlluminationAzimuthAngle(final Double newValue) {
         checkWritePermission();
-        ensureInRange("illuminationAzimuthAngle", 0, 360, newValue);
-        illuminationAzimuthAngle = newValue;
+        if (ensureInRange(DefaultImageDescription.class, "illuminationAzimuthAngle", 0, 360, newValue)) {
+            illuminationAzimuthAngle = newValue;
+        }
     }
 
     /**
@@ -335,8 +317,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public void setCloudCoverPercentage(final Double newValue) {
         checkWritePermission();
-        ensureInRange("cloudCoverPercentage", 0, 100, newValue);
-        cloudCoverPercentage = newValue;
+        if (ensureInRange(DefaultImageDescription.class, "cloudCoverPercentage", 0, 100, newValue)) {
+            cloudCoverPercentage = newValue;
+        }
     }
 
     /**
@@ -384,10 +367,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public void setCompressionGenerationQuantity(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue);
+        if (ensurePositive(DefaultImageDescription.class, "compressionGenerationQuantity", false, newValue)) {
+            compressionGenerationQuantity = newValue;
         }
-        compressionGenerationQuantity = newValue;
     }
 
     /**

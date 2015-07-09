@@ -168,10 +168,11 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "    UNIT[“degree”, 0.017453292519943295],\n" +
                 "    AXIS[“Longitude”, EAST],\n" +
                 "    AXIS[“Latitude”, NORTH]],\n" +
-                "  VERT_CS[“Gravity-related height”,\n" +
+                "  VERT_CS[“MSL height”,\n" +
                 "    VERT_DATUM[“Mean Sea Level”, 2005],\n" +
                 "    UNIT[“metre”, 1],\n" +
-                "    AXIS[“Gravity-related height”, UP]],\n" +
+                "    AXIS[“Gravity-related height”, UP],\n" +
+                "    AUTHORITY[“EPSG”, “5714”]],\n" +   // SIS includes Identifier for component of CompoundCRS.
                 "  TIMECRS[“Time”,\n" +
                 "    TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
                 "    TIMEUNIT[“day”, 86400],\n" +
@@ -195,11 +196,12 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "      Axis[“Longitude (L)”, east, Order[1]],\n" +
                 "      Axis[“Latitude (B)”, north, Order[2]],\n" +
                 "      AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "  VerticalCRS[“Gravity-related height”,\n" +
+                "  VerticalCRS[“MSL height”,\n" +
                 "    VerticalDatum[“Mean Sea Level”],\n" +
                 "    CS[vertical, 1],\n" +
                 "      Axis[“Gravity-related height (H)”, up, Order[1]],\n" +
-                "      LengthUnit[“metre”, 1]],\n" +
+                "      LengthUnit[“metre”, 1],\n" +
+                "    Id[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
                 "  TimeCRS[“Time”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
                 "    CS[temporal, 1],\n" +

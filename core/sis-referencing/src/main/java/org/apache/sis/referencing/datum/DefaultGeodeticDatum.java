@@ -38,6 +38,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
@@ -414,7 +415,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
                  * returning 'null' is allowed by this method's contract.
                  */
-                Logging.unexpectedException(DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                Logging.unexpectedException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
         }
         /*

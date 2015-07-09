@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.CONDITIONAL;
@@ -204,19 +204,6 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
-     * Ensures that the given property is greater than zero.
-     *
-     * @param  property The name of the property to verify.
-     * @param  value The property value, or {@code null}.
-     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
-     */
-    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
-        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultResolution.class, property, true, value);
-        }
-    }
-
-    /**
      * Sets the properties identified by the {@code code} argument, if non-null.
      * This discards any other properties.
      *
@@ -229,7 +216,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             if (newValue == null) {
                 return; // Do not erase the other property.
             }
-            Context.warningOccured(Context.current(), LOGGER, DefaultResolution.class, SETTERS[code-1],
+            Context.warningOccured(Context.current(), DefaultResolution.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
         value = newValue;
@@ -284,8 +271,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setDistance(final Double newValue) {
-        ensurePositive("distance", newValue);
-        setProperty(DISTANCE, newValue);
+        if (ensurePositive(DefaultResolution.class, "distance", true, newValue)) {
+            setProperty(DISTANCE, newValue);
+        }
     }
 
     /**
@@ -314,8 +302,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @since 0.5
      */
     public void setVertical(final Double newValue) {
-        ensurePositive("vertical", newValue);
-        setProperty(VERTICAL, newValue);
+        if (ensurePositive(DefaultResolution.class, "vertical", true, newValue)) {
+            setProperty(VERTICAL, newValue);
+        }
     }
 
     /**
@@ -344,8 +333,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * @since 0.5
      */
     public void setAngularDistance(final Double newValue) {
-        ensurePositive("angular", newValue);
-        setProperty(ANGULAR, newValue);
+        if (ensurePositive(DefaultResolution.class, "angular", true, newValue)) {
+            setProperty(ANGULAR, newValue);
+        }
     }
 
     /**

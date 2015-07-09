@@ -33,6 +33,7 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Workaround;
@@ -93,7 +94,7 @@ abstract class AbstractParser implements Parser {
      * This happen most often when the user invoke the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
      * convenience method.
      */
-    private static final Logger LOGGER = Logging.getLogger(AbstractParser.class);
+    private static final Logger LOGGER = Logging.getLogger(Loggers.WKT);
 
     /**
      * The locale for error messages (not for number parsing), or {@code null} for the system default.

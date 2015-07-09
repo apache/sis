@@ -23,7 +23,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -160,9 +160,8 @@ public class DefaultFeatureTypeInfo extends ISOMetadata {
      */
     public void setFeatureInstanceCount(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue);
+        if (ensurePositive(DefaultFeatureTypeInfo.class, "featureInstanceCount", true, newValue)) {
+            featureInstanceCount = newValue;
         }
-        featureInstanceCount = newValue;
     }
 }

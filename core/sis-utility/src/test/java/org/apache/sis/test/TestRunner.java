@@ -110,6 +110,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
             if (!TestCase.verbose) {
                 TestCase.clearBuffer();
             }
+            LogRecordCollector.INSTANCE.setCurrentTest(description);
         }
 
         /**
@@ -123,6 +124,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
                 TestCase.flushOutput();
             }
             TestCase.randomSeed = 0;
+            LogRecordCollector.INSTANCE.setCurrentTest(null);
         }
 
         /**

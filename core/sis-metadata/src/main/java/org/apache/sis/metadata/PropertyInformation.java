@@ -29,6 +29,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleIdentifier;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
@@ -289,7 +290,8 @@ final class PropertyInformation<E> extends SimpleIdentifier
                      * to have an IllegalArgumentException while he didn't provided any argument.
                      * Returning null as a fallback is compliant with the method contract.
                      */
-                    Logging.unexpectedException(PropertyInformation.class, "getDomainValue", e);
+                    Logging.unexpectedException(Logging.getLogger(Modules.METADATA),
+                            PropertyInformation.class, "getDomainValue", e);
                     domain = null;
                 }
                 domainValue = domain;
