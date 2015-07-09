@@ -16,16 +16,20 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Random;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
+import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
@@ -194,6 +198,58 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests the <cite>"Lambert Conic Conformal (1SP West Orientated)"</cite> case (EPSG:9826)).
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testLambertConicConformal1SP")
+    public void testLambertConicConformalWestOrientated() throws FactoryException, TransformException {
+        initialize(new LambertConformal1SP(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+        final MathTransform reference = transform;
+
+        initialize(new LambertConformalWest(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final double[] sources = new double[20];
+        for (int i=0; i<sources.length;) {
+            sources[i++] = 20 * random.nextDouble();      // Longitude
+            sources[i++] = 10 * random.nextDouble() + 35; // Latitude
+        }
+        final double[] expected = new double[sources.length];
+        reference.transform(sources, 0, expected, 0, sources.length/2);
+        /*
+         * At this point, we have the source coordinates and the expected projected coordinates calculated
+         * by the "Lambert Conic Conformal (1SP)" method. Now convert those projected coordinates into the
+         * coordinates that we expect from the "Lambert Conic Conformal (1SP West Orientated)".  If we had
+         * no false easting, we would just revert the sign of 'x' values. But because of the false easting,
+         * we expect an additional offset of two time that easting. This is because (quoting the EPSG guide):
+         *
+         *    the term FE retains its definition, i.e. in the Lambert Conic Conformal (West Orientated)
+         *    method it increases the Westing value at the natural origin.
+         *    In this method it is effectively false westing (FW).
+         */
+        for (int i=0; i<sources.length; i += 2) {
+            expected[i] = 400 - expected[i];
+        }
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(sources, expected);
+    }
+
+    /**
      * Verifies the consistency of spherical formulas with the elliptical formulas.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -212,7 +268,13 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new LambertConformal1SP(), false, true, false, true);
+        initialize(new LambertConformal1SP(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 268617081);
     }
