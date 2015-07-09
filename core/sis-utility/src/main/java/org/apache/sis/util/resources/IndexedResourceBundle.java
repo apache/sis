@@ -40,6 +40,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.JDK7;
@@ -290,6 +291,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
+                    record.setLoggerName(Loggers.LOCALIZATION);
                     /*
                      * Loads resources from the UTF file.
                      */
@@ -361,7 +363,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
             try {
                 keyID = getKeyConstants().getKeyValue(key);
             } catch (Exception e) {
-                Logging.recoverableException(getClass(), "handleGetObject", e);
+                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
                 return null; // This is okay as of 'handleGetObject' contract.
             }
         }

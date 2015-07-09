@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
 import javax.management.JMException;
@@ -58,7 +59,7 @@ public abstract strictfp class TestSuite {
     /**
      * Expected suffix in name of test classes.
      */
-    private static final String CLASSNAME_SUFFIX = "Test";
+    static final String CLASSNAME_SUFFIX = "Test";
 
     /**
      * {@code true} for disabling the search for missing tests. This is necessary
@@ -66,6 +67,12 @@ public abstract strictfp class TestSuite {
      * <a href="https://svn.apache.org/repos/asf/sis/release-test/maven">release test</a>.
      */
     static boolean skipCheckForMissingTests;
+
+    /**
+     * {@code true} for disabling {@link #shutdown()}. This is necessary when the test suites
+     * are executed from an external project (same need than {@link #skipCheckForMissingTests}).
+     */
+    static boolean skipShutdown;
 
     /**
      * Creates a new test suite.
@@ -244,7 +251,17 @@ public abstract strictfp class TestSuite {
      */
     @AfterClass
     public static void shutdown() throws JMException {
-        SystemListener.fireClasspathChanged();
-        Shutdown.stop(TestSuite.class);
+        if (!skipShutdown) {
+            skipShutdown = true;
+            TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);
+            System.err.flush();   // Flushs log messages sent by ConsoleHandler.
+            try {
+                LogRecordCollector.INSTANCE.report(System.out);
+            } catch (IOException e) {   // Should never happen.
+                throw new AssertionError(e);
+            }
+            SystemListener.fireClasspathChanged();
+            Shutdown.stop(TestSuite.class);
+        }
     }
 }

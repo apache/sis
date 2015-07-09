@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
@@ -53,6 +54,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -539,10 +541,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 failure = e;
             }
             if (mismatchedParam != null) {
-                Logging.log(DefaultMathTransformFactory.class, "createBaseToDerived",
-                        Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
-                                Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
-                                mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue));
+                final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
+                        Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
+                        mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
+                record.setLoggerName(Loggers.COORDINATE_OPERATION);
+                Logging.log(DefaultMathTransformFactory.class, "createBaseToDerived", record);
             }
         }
         MathTransform baseToDerived;

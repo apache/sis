@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.internal.system.Modules;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.junit.AfterClass;
@@ -46,7 +47,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
     public static EmptyWarningListeners<Decoder> LISTENERS =
-            new EmptyWarningListeners<Decoder>("org.apache.sis.storage.netcdf");
+            new EmptyWarningListeners<Decoder>(Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}

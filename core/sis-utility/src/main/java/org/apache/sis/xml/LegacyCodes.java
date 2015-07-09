@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
@@ -55,7 +56,7 @@ final class LegacyCodes {
             codes.load(in);
             in.close();
         } catch (IOException e) {
-            Logging.unexpectedException(ValueConverter.class, "toCharset[Code]", e);
+            Logging.unexpectedException(Logging.getLogger(Loggers.XML), ValueConverter.class, "toCharset[Code]", e);
         }
         final int capacity = Containers.hashMapCapacity(codes.size());
         IANA_TO_LEGACY = new HashMap<String,String>(capacity);

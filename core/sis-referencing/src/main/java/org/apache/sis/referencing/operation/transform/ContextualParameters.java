@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
@@ -772,6 +773,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * transform.</p>
      */
     private static void unexpectedException(final NoninvertibleMatrixException e) {
-        Logging.unexpectedException(ConcatenatedTransform.class, "formatTo", e);
+        Logging.unexpectedException(Logging.getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e);
     }
 }

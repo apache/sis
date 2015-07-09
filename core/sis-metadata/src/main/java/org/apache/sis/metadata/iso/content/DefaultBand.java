@@ -29,7 +29,7 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -199,8 +199,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     public void setBoundMin(final Double newValue) {
         checkWritePermission();
-        ensurePositive("boundMin", false, newValue);
-        boundMin = newValue;
+        if (ensurePositive(DefaultBand.class, "boundMin", false, newValue)) {
+            boundMin = newValue;
+        }
     }
 
     /**
@@ -229,8 +230,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     public void setBoundMax(final Double newValue) {
         checkWritePermission();
-        ensurePositive("boundMax", false, newValue);
-        boundMax = newValue;
+        if (ensurePositive(DefaultBand.class, "boundMax", false, newValue)) {
+            boundMax = newValue;
+        }
     }
 
     /**
@@ -300,8 +302,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     public void setPeakResponse(final Double newValue) {
         checkWritePermission();
-        ensurePositive("peakResponse", false, newValue);
-        peakResponse = newValue;
+        if (ensurePositive(DefaultBand.class, "peakResponse", false, newValue)) {
+            peakResponse = newValue;
+        }
     }
 
     /**
@@ -341,10 +344,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     public void setToneGradation(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultBand.class, "toneGradation", false, newValue);
+        if (ensurePositive(DefaultBand.class, "toneGradation", false, newValue)) {
+            toneGradation = newValue;
         }
-        toneGradation = newValue;
     }
 
     /**

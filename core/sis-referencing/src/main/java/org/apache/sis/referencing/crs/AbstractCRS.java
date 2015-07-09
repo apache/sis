@@ -468,8 +468,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         formatter.newLine();
         formatter.append(toFormattable(getDatum()));
         formatter.newLine();
-        final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
-        if (isWKT1 || !isBaseCRS(formatter)) {
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = convention.majorVersion() == 1;
+        if (isWKT1 || convention == Convention.INTERNAL || !isBaseCRS(formatter)) {
             final CoordinateSystem cs = getCoordinateSystem();
             formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
         }
@@ -496,7 +497,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <p>In WKT 2 format, this method should not be invoked if {@link #isBaseCRS(Formatter)} returned {@code true}
      * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
-     * coordinate systems.</p>
+     * coordinate systems. The SIS-specific {@link Convention#INTERNAL} formats also those coordinate systems.</p>
      *
      * <div class="note"><b>Note:</b> the {@code unit} and {@code isWKT1} arguments could be computed by this method,
      * but are requested in order to avoid computing them twice, because the caller usually have them anyway.</div>
@@ -509,7 +510,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     final void formatCS(final Formatter formatter, final CoordinateSystem cs, final Unit<?> unit, final boolean isWKT1) {
         assert unit == ReferencingUtilities.getUnit(cs) : unit;
         assert (formatter.getConvention().majorVersion() == 1) == isWKT1 : isWKT1;
-        assert isWKT1 || !isBaseCRS(formatter) : isWKT1;    // Condition documented in javadoc.
+        assert isWKT1 || !isBaseCRS(formatter) || formatter.getConvention() == Convention.INTERNAL;    // Condition documented in javadoc.
 
         final Unit<?> oldUnit = formatter.addContextualUnit(unit);
         if (isWKT1) { // WKT 1 writes unit before axes, while WKT 2 writes them after axes.

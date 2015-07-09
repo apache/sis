@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.Namespaces;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -124,19 +124,6 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     }
 
     /**
-     * Ensures that the given property is greater than zero.
-     *
-     * @param  property The name of the property to verify.
-     * @param  value The property value, or {@code null}.
-     * @throws IllegalArgumentException if the property is zero or negative and the problem has not been logged.
-     */
-    private static void ensurePositive(final String property, final Double value) throws IllegalArgumentException {
-        if (value != null && !(value > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultNominalResolution.class, property, true, value);
-        }
-    }
-
-    /**
      * Returns the distance between consistent parts of (centre, left side, right side)
      * adjacent pixels in the scan plane.
      *
@@ -158,8 +145,9 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     public void setScanningResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("scanningResolution", newValue);
-        scanningResolution = newValue;
+        if (ensurePositive(DefaultNominalResolution.class, "scanningResolution", true, newValue)) {
+            scanningResolution = newValue;
+        }
     }
 
     /**
@@ -184,7 +172,8 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      */
     public void setGroundResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("groundResolution", newValue);
-        groundResolution = newValue;
+        if (ensurePositive(DefaultNominalResolution.class, "groundResolution", true, newValue)) {
+            groundResolution = newValue;
+        }
     }
 }
