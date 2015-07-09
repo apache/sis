@@ -192,6 +192,43 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
+     * Tests WKT formatting in "internal" mode.
+     * This mode is similar to WKT 2 but shall include the axes of the base CRS.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testInternal() throws FactoryException {
+        ProjectedCRS crs = create(HardCodedCRS.NTF);
+        assertWktEquals(Convention.INTERNAL,
+                "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                "    Datum[“Nouvelle Triangulation Française”,\n" +
+                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269],\n" +
+                "      Scope[“Topographic mapping.”],\n" +
+                "      Id[“EPSG”, 6807]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Id[“EPSG”, 8903]],\n" +
+                "    CS[ellipsoidal, 2],\n" +
+                "      Axis[“Longitude (λ)”, east],\n" +
+                "      Axis[“Latitude (φ)”, north],\n" +
+                "      Unit[“grade”, 0.015707963267948967, Id[“EPSG”, 9105]]],\n" +
+                "  Conversion[“Lambert zone II”,\n" +
+                "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801], Id[“GeoTIFF”, 9]],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Id[“EPSG”, 8801]],\n" +
+                "    Parameter[“Longitude of natural origin”, 0.0, Id[“EPSG”, 8802]],\n" +
+                "    Parameter[“Scale factor at natural origin”, 0.99987742, Id[“EPSG”, 8805]],\n" +
+                "    Parameter[“False easting”, 600000.0, Id[“EPSG”, 8806]],\n" +
+                "    Parameter[“False northing”, 2200000.0, Id[“EPSG”, 8807]]],\n" +
+                "  CS[Cartesian, 2],\n" +
+                "    Axis[“Easting (E)”, east],\n" +
+                "    Axis[“Northing (N)”, north],\n" +
+                "    Unit[“metre”, 1, Id[“EPSG”, 9001]],\n" +
+                "  Id[“EPSG”, 27572]]",
+                crs);
+    }
+
+    /**
      * Tests WKT 2 formatting in simplified mode.
      *
      * @throws FactoryException if the CRS creation failed.

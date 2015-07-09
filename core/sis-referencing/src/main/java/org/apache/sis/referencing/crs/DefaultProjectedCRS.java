@@ -44,6 +44,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -384,7 +385,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             return super.formatTo(formatter);
         }
         WKTUtilities.appendName(this, formatter, null);
-        final boolean       isWKT1      = (formatter.getConvention().majorVersion() == 1);
+        final Convention    convention  = formatter.getConvention();
+        final boolean       isWKT1      = (convention.majorVersion() == 1);
         final CartesianCS   cs          = getCoordinateSystem();
         final GeographicCRS baseCRS     = getBaseCRS();
         final Unit<?>       lengthUnit  = ReferencingUtilities.getUnit(cs);
@@ -413,7 +415,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
          * In WKT 2 format, the coordinate system axes are written only if this projected CRS is not the base CRS
          * of another derived CRS.
          */
-        if (!isBaseCRS) {
+        if (!isBaseCRS || convention == Convention.INTERNAL) {
             formatCS(formatter, cs, lengthUnit, isWKT1);
         }
         formatter.restoreContextualUnit(lengthUnit, oldLength);
