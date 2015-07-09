@@ -234,7 +234,13 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new Mercator1SP(), false, false, false, true);
+        initialize(new Mercator1SP(), false,
+                  0.5,    // Central meridian
+                  0,      // Latitude of origin (none)
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }

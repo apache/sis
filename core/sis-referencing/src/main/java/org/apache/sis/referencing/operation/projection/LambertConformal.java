@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
+import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -73,7 +74,7 @@ public class LambertConformal extends NormalizedProjection {
      *
      * @see #getType(ParameterDescriptorGroup)
      */
-    static final byte SP1 = 1, SP2 = 2, BELGIUM = 3;
+    static final byte SP1 = 1, SP2 = 2, WEST = 3, BELGIUM = 4;
 
     /**
      * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
@@ -88,7 +89,7 @@ public class LambertConformal extends NormalizedProjection {
     /**
      * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given type.
      *
-     * @param  type One of {@link #SP1}, {@link #SP2} or {@link #BELGIUM} constants.
+     * @param  type One of {@link #SP1}, {@link #SP2}, {@link #WEST} or {@link #BELGIUM} constants.
      * @return The roles map to give to super-class constructor.
      */
     private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
@@ -99,18 +100,21 @@ public class LambertConformal extends NormalizedProjection {
          */
         roles.put(ParameterRole.SCALE_FACTOR, LambertConformal1SP.SCALE_FACTOR);
         switch (type) {
+            case WEST:
             case SP1: {
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
                 roles.put(ParameterRole.FALSE_EASTING,    LambertConformal1SP.FALSE_EASTING);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
                 break;
             }
-            default: {
+            case BELGIUM:
+            case SP2: {
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
                 roles.put(ParameterRole.FALSE_EASTING,    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
                 break;
             }
+            default: throw new AssertionError(type);
         }
         return roles;
     }
@@ -139,7 +143,7 @@ public class LambertConformal extends NormalizedProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters, roles(type));
-        double φ0 = getAndStore(parameters, (type == SP1) ?
+        double φ0 = getAndStore(parameters, (type == SP1 || type == WEST) ?
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
@@ -201,7 +205,7 @@ public class LambertConformal extends NormalizedProjection {
          *   - Scale x and y by F.
          *   - Translate y by ρ0.
          *   - Multiply by the scale factor (done by the super-class constructor).
-         *   - Add false easting and fasle northing (done by the super-class constructor).
+         *   - Add false easting and false northing (done by the super-class constructor).
          */
         context.getMatrix(true).convertAfter(0, new DoubleDouble(-n, 0),    // Multiplication factor for longitudes.
                 (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
@@ -210,6 +214,16 @@ public class LambertConformal extends NormalizedProjection {
         denormalize.convertBefore(0, F, null);
         F.negate();
         denormalize.convertBefore(1, F, ρ0);
+        /*
+         * EPSG:9826  —  Lambert Conic Conformal (1SP West Orientated)
+         *
+         * In this projection method positive x are oriented toward West. Reverse the sign of 'x' before to apply
+         * the "false easting". As a consequence of this operation order, despite its name the "false easting" is
+         * effectively a "false westing" (FW) parameter. This is confusing but the operation is defined like that.
+         */
+        if (type == WEST) {
+            denormalize.convertBefore(0, new DoubleDouble(-1, 0), null);
+        }
     }
 
     /**
@@ -226,6 +240,7 @@ public class LambertConformal extends NormalizedProjection {
      */
     private static byte getType(final ParameterDescriptorGroup parameters) {
         if (identMatch(parameters, "(?i).*\\bBelgium\\b.*", LambertConformalBelgium.IDENTIFIER)) return BELGIUM;
+        if (identMatch(parameters, "(?i).*\\bWest\\b.*",    LambertConformalWest   .IDENTIFIER)) return WEST;
         if (identMatch(parameters, "(?i).*\\b2SP\\b.*",     LambertConformal2SP    .IDENTIFIER)) return SP2;
         if (identMatch(parameters, "(?i).*\\b1SP\\b.*",     LambertConformal1SP    .IDENTIFIER)) return SP1;
         return 0; // Unidentified case, to be considered as 2SP.
@@ -311,8 +326,8 @@ public class LambertConformal extends NormalizedProjection {
         final double x = ρ * sinλ;
         final double y = ρ * cosλ;
         if (dstPts != null) {
-            dstPts[dstOff]   = x;
-            dstPts[dstOff+1] = y;
+            dstPts[dstOff    ] = x;
+            dstPts[dstOff + 1] = y;
         }
         if (!derivate) {
             return null;
@@ -341,8 +356,8 @@ public class LambertConformal extends NormalizedProjection {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x = srcPts[srcOff  ];
-        final double y = srcPts[srcOff+1];
+        final double x = srcPts[srcOff    ];
+        final double y = srcPts[srcOff + 1];
         /*
          * NOTE: If some equation terms seem missing (e.g. "y = ρ0 - y"), this is because the linear operations
          * applied before the first non-linear one moved to the inverse of the "denormalize" transform, and the
@@ -434,8 +449,8 @@ public class LambertConformal extends NormalizedProjection {
             assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
                 && Assertions.checkTransform(dstPts, dstOff, x, y);     // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
-                dstPts[dstOff  ] = x;
-                dstPts[dstOff+1] = y;
+                dstPts[dstOff    ] = x;
+                dstPts[dstOff + 1] = y;
             }
             return derivative;
         }
@@ -454,8 +469,8 @@ public class LambertConformal extends NormalizedProjection {
             x = atan2(x, y);  // Really (x,y), not (y,x)
             y = 2 * atan(pow(1/ρ, -1/n)) - PI/2;
             assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
+            dstPts[dstOff    ] = x;
+            dstPts[dstOff + 1] = y;
         }
 
         /**
