@@ -22,7 +22,9 @@ import java.util.Collections;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 import static org.opengis.referencing.IdentifiedObject.*;
 import static org.opengis.referencing.ReferenceSystem.DOMAIN_OF_VALIDITY_KEY;
@@ -47,7 +49,7 @@ public final strictfp class HardCodedCRS {
      * <p>This CRS is equivalent to {@code EPSG:4326}.</p>
      */
     public static final DefaultGeographicCRS WGS84_φλ = new DefaultGeographicCRS(
-            properties("WGS 84 (φ,λ)"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
+            properties("WGS 84 (φ,λ)", "4326"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
 
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
@@ -59,7 +61,7 @@ public final strictfp class HardCodedCRS {
      * since EPSG puts latitude before longitude.</p>
      */
     public static final DefaultGeographicCRS WGS84 = new DefaultGeographicCRS(
-            properties("WGS 84"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_2D);
+            properties("WGS 84", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_2D);
 
     /**
      * A three-dimensional geographic coordinate reference system using the WGS84 datum.
@@ -71,7 +73,7 @@ public final strictfp class HardCodedCRS {
      * to {@code EPSG:4327}) except for axis order, since EPSG puts latitude before longitude.</p>
      */
     public static final DefaultGeographicCRS WGS84_3D = new DefaultGeographicCRS(
-            properties("WGS 84 (3D)"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
+            properties("WGS 84 (3D)", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
@@ -162,7 +164,7 @@ public final strictfp class HardCodedCRS {
      * A vertical coordinate reference system using Mean Sea Level datum.
      */
     public static final DefaultVerticalCRS GRAVITY_RELATED_HEIGHT = new DefaultVerticalCRS(
-            getProperties(HardCodedCS.GRAVITY_RELATED_HEIGHT), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.GRAVITY_RELATED_HEIGHT);
+            properties("MSL height", "5714"), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.GRAVITY_RELATED_HEIGHT);
 
     /**
      * A vertical coordinate reference system using Mean Sea Level datum.
@@ -181,14 +183,14 @@ public final strictfp class HardCodedCRS {
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
     public static final DefaultCompoundCRS GEOID_3D = new DefaultCompoundCRS(
-            properties("WGS 84 + height"), WGS84, GRAVITY_RELATED_HEIGHT);
+            properties("WGS 84 + height", null), WGS84, GRAVITY_RELATED_HEIGHT);
 
     /**
      * A (λ,φ,H,t) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT} and <var>t</var> is {@link #TIME}.
      * This constant uses the "geoid" term as an approximation for the gravity related height.
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(
-            properties("WGS 84 + height + time"), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
+            properties("WGS 84 + height + time", null), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
 
     /**
      * A two-dimensional Cartesian coordinate reference system with (column, row) axes.
@@ -202,12 +204,15 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedDatum.IMAGE), HardCodedDatum.IMAGE, HardCodedCS.GRID);
 
     /**
-     * Creates a map of properties for the given name.
+     * Creates a map of properties for the given name and code with world extent.
      */
-    private static Map<String,?> properties(final String name) {
+    private static Map<String,?> properties(final String name, final String code) {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(NAME_KEY, name);
         properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
+        if (code != null) {
+            properties.put(IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, code));
+        }
         return properties;
     }
 
