@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.maintenance;
 
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
@@ -40,7 +41,7 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
      * details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(DefaultScopeDescription.LOGGER) {
+    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER) {
         /**
          * Ensures that the logging message contains the name of the exclusive properties.
          */
