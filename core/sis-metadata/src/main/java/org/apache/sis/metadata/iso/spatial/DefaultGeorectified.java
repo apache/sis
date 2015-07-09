@@ -211,7 +211,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
             booleans |= CHECK_POINT_MASK;
         } else {
             if (checkPointDescription != null && (booleans & CHECK_POINT_MASK) != 0) {
-                Context.warningOccured(Context.current(), LOGGER, DefaultGeorectified.class, "setCheckPointAvailable",
+                Context.warningOccured(Context.current(), DefaultGeorectified.class, "setCheckPointAvailable",
                         Messages.class, Messages.Keys.PropertyHiddenBy_2, "checkPointDescription", "checkPointAvailability");
             }
             booleans &= ~CHECK_POINT_MASK;

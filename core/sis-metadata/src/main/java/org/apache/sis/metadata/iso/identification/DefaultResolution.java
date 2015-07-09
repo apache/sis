@@ -211,7 +211,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             if (newValue == null) {
                 return; // Do not erase the other property.
             }
-            Context.warningOccured(Context.current(), LOGGER, DefaultResolution.class, SETTERS[code-1],
+            Context.warningOccured(Context.current(), DefaultResolution.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
         value = newValue;

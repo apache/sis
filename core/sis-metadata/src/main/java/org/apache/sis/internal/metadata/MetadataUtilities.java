@@ -166,7 +166,7 @@ public final class MetadataUtilities extends Static {
         } else {
             final StringBuilder buffer = new StringBuilder(property.length() + 3).append("set").append(property);
             buffer.setCharAt(3, Character.toUpperCase(buffer.charAt(3)));
-            Context.warningOccured(context, ISOMetadata.LOGGER, classe, buffer.toString(), Errors.class, key, arguments);
+            Context.warningOccured(context, classe, buffer.toString(), Errors.class, key, arguments);
             return null;
         }
     }

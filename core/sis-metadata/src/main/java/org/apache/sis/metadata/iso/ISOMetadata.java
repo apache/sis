@@ -69,7 +69,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Warnings are emitted when an action causes the lost of data. For example the {@code "distance"} and
      * {@code "equivalentScale"} properties in {@link org.apache.sis.metadata.iso.identification.DefaultResolution}
      * are mutually exclusive: setting one discards the other. In such case, a warning is logged.
+     *
+     * @deprecated Messages related to XML (un)marshalling are now logged to the {@code "org.apache.sis.xml"} logger.
      */
+    @Deprecated
     public static final Logger LOGGER = Logging.getLogger(Loggers.ISO_19115);
 
     /**
