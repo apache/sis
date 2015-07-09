@@ -77,6 +77,16 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConstantProjParameterValue_1 = 11;
 
         /**
+         * Created an instance of ‘{0}’ named “{1}” with “{2}” identifier.
+         */
+        public static final short CreatedIdentifiedObject_3 = 17;
+
+        /**
+         * Created an instance of ‘{0}’ named “{1}”.
+         */
+        public static final short CreatedNamedObject_2 = 16;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */

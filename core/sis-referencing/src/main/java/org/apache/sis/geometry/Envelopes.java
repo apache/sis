@@ -45,6 +45,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
@@ -123,7 +124,7 @@ public final class Envelopes extends Static {
      * that they can be silently ignored in most cases.
      */
     private static void recoverableException(final TransformException exception) {
-        Logging.recoverableException(Envelopes.class, "transform", exception);
+        Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "transform", exception);
     }
 
     /**

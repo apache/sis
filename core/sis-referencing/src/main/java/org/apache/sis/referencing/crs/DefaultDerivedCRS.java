@@ -48,6 +48,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
@@ -502,7 +503,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return super.formatTo(formatter);
         }
         WKTUtilities.appendName(this, formatter, null);
-        final boolean isWKT1 = (formatter.getConvention().majorVersion() == 1);
+        final Convention convention = formatter.getConvention();
+        final boolean isWKT1 = (convention.majorVersion() == 1);
         /*
          * Both WKT 1 and WKT 2 format the base CRS. But WKT 1 formats the MathTransform before the base CRS,
          * while WKT 2 formats the conversion method and parameter values after the base CRS.
@@ -536,7 +538,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     return WKTKeywords.DerivingConversion;
                 }
             });
-            if (!isBaseCRS(formatter)) {
+            if (convention == Convention.INTERNAL || !isBaseCRS(formatter)) {
                 final CoordinateSystem cs = getCoordinateSystem();
                 formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
             }

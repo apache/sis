@@ -232,19 +232,22 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         csFactory       = getFactory(CSFactory.class,    factories);
         datumFactory    = getFactory(DatumFactory.class, factories);
         referencing     = ReferencingServices.getInstance();
-        opFactory       = referencing.getCoordinateOperationFactory(null, mtFactory);
         usesCommonUnits = convention.usesCommonUnits;
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
+        final Factory f = factories.get(CoordinateOperationFactory.class);
+        if (f != null) {
+            opFactory = (CoordinateOperationFactory) f;
+        } else {
+            opFactory = referencing.getCoordinateOperationFactory(null, mtFactory);
+            factories.put(CoordinateOperationFactory.class, opFactory);
+        }
     }
 
     /**
-     * Returns the factory of the given type. This method will fetch the factory from the given
-     * map if non-null. The factory actually used is stored in the map, unless the map is null.
+     * Returns the factory of the given type. This method fetches the factory from the given map.
+     * The factory actually used is stored in the map.
      */
-    private static <T extends Factory> T getFactory(final Class<T> type, final Map<Class<?>,Factory> factories) {
-        if (factories == null) {
-            return DefaultFactories.forBuildin(type);
-        }
+    static <T extends Factory> T getFactory(final Class<T> type, final Map<Class<?>,Factory> factories) {
         T factory = type.cast(factories.get(type));
         if (factory == null) {
             factory = DefaultFactories.forBuildin(type);

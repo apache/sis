@@ -21,8 +21,10 @@ import java.lang.reflect.Modifier;
 import org.opengis.util.Enumerated;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Rule;
@@ -47,7 +49,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
      * details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher();
+    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.

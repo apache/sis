@@ -31,6 +31,7 @@ import java.util.SortedMap;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.logging.*;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.io.IO;
@@ -297,12 +298,12 @@ public class MonolineFormatter extends Formatter {
         try {
             timeFormat(manager.getProperty(classname + ".time"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         try {
             sourceFormat(manager.getProperty(classname + ".source"));
         } catch (IllegalArgumentException exception) {
-            Logging.configurationException(MonolineFormatter.class, "<init>", exception);
+            Logging.configurationException(Logging.getLogger(Modules.UTILITIES), MonolineFormatter.class, "<init>", exception);
         }
         /*
          * Applies the default set of colors only if the handler is writing to the console.

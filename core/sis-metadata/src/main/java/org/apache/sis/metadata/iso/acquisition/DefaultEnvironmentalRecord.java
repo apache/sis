@@ -24,7 +24,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnOutOfRangeArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensureInRange;
 
 
 /**
@@ -176,10 +176,9 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue >= 0 && newValue <= 100)) { // Use '!' for catching NaN.
-            warnOutOfRangeArgument(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue);
+        if (ensureInRange(DefaultEnvironmentalRecord.class, "maxRelativeHumidity", 0, 100, newValue)) {
+            maxRelativeHumidity = newValue;
         }
-        maxRelativeHumidity = newValue;
     }
 
     /**

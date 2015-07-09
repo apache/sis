@@ -151,7 +151,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * @param cause   The exception that occurred during the parsing process.
      */
     static void parseFailure(final Context context, final String value, final Class<?> type, final Exception cause) {
-        Context.warningOccured(context, Context.LOGGER, Level.WARNING, IdentifierMap.class, "put", cause,
+        Context.warningOccured(context, Level.WARNING, IdentifierMap.class, "put", cause,
                 Messages.class, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
     }
 

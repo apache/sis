@@ -46,6 +46,8 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 
 import static java.lang.System.getProperty;
 import static org.apache.sis.util.collection.TableColumn.NAME;
@@ -534,7 +536,7 @@ pathTree:   for (int j=0; ; j++) {
             }
         }
         if (error != null) {
-            Logging.unexpectedException(About.class, "configuration", error);
+            Logging.unexpectedException(Logging.getLogger(Modules.UTILITIES), About.class, "configuration", error);
         }
         return true;
     }
@@ -643,7 +645,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            Logging.recoverableException(About.class, "configuration", e);
+            Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
             return null;
         }
     }

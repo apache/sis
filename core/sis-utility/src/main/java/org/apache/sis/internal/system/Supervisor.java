@@ -93,10 +93,10 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
             } catch (InstanceAlreadyExistsException e) {
                 final LogRecord record = Messages.getResources(null)
                         .getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
-                record.setLoggerName("org.apache.sis");
+                record.setLoggerName(Loggers.SYSTEM);
                 Logging.log(Supervisor.class, "register", record);
             } catch (Exception e) { // (SecurityException | JMException) on the JDK7 branch.
-                Logging.unexpectedException(Logging.getLogger("org.apache.sis"), Supervisor.class, "register", e);
+                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), Supervisor.class, "register", e);
             }
         }
     }

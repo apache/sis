@@ -26,6 +26,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
@@ -243,7 +244,7 @@ public class MarshallerPool {
         } catch (JAXBException exception) {
             // Not expected to happen because we are supposed
             // to reset the properties to their initial values.
-            Logging.unexpectedException(MarshallerPool.class, "recycle", exception);
+            Logging.unexpectedException(Logging.getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
             return;
         }
         queue.push(marshaller);

@@ -27,6 +27,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Loggers;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -870,7 +871,7 @@ public class XLink implements Serializable {
             } catch (NoSuchFieldException e) {
                 // Should never happen with Enums. But if it
                 // happen anyway, this is not a fatal error.
-                Logging.unexpectedException(XLink.class, "toString", e);
+                Logging.unexpectedException(Logging.getLogger(Loggers.XML), XLink.class, "toString", e);
             }
             buffer.append(label).append("=\"").append(value).append('"');
         }
