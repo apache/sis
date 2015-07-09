@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -34,6 +35,11 @@ import org.opengis.util.Factory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -174,6 +180,8 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * WKT fragments that can be inserted in longer WKT strings, or {@code null} if none. Keys are short identifiers
      * and values are WKT subtrees to substitute to the identifiers when they are found in a WKT to parse.
+     *
+     * @see #fragments()
      */
     private Map<String,Element> fragments;
 
@@ -200,7 +208,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient AbstractParser parser;
 
     /**
-     * The factories needed by the parser. Will be created when first needed.
+     * The factories needed by the parser. Those factories are currently not serialized (because usually not
+     * serializable), so any value that users may have specified with {@link #setFactory(Class, Factory)}
+     * will be lost at serialization time.
+     *
+     * @see #factories()
      */
     private transient Map<Class<?>,Factory> factories;
 
@@ -224,6 +236,26 @@ public class WKTFormat extends CompoundFormat<Object> {
         symbols     = Symbols.getDefault();
         keywordCase = KeywordCase.DEFAULT;
         indentation = DEFAULT_INDENTATION;
+    }
+
+    /**
+     * Returns the {@link #fragments} map, creating it when first needed.
+     */
+    private Map<String,Element> fragments() {
+        if (fragments == null) {
+            fragments = new TreeMap<>();
+        }
+        return fragments;
+    }
+
+    /**
+     * Returns the {@link #factories} map, creating it when first needed.
+     */
+    private Map<Class<?>,Factory> factories() {
+        if (factories == null) {
+            factories = new HashMap<>(8);
+        }
+        return factories;
     }
 
     /**
@@ -510,6 +542,68 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Verifies if the given type is a valid key for the {@link #factories} map.
+     */
+    private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (type != CRSFactory.class            &&
+            type != CSFactory.class             &&
+            type != DatumFactory.class          &&
+            type != MathTransformFactory.class  &&
+            type != CoordinateOperationFactory.class)
+        {
+            throw new IllegalArgumentException(Errors.getResources(getLocale())
+                    .getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
+        }
+    }
+
+    /**
+     * Returns one of the factories used by this {@code WKTFormat} for parsing WKT.
+     * The given {@code type} argument can be one of the following values:
+     *
+     * <ul>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
+     *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
+     * </ul>
+     *
+     * @param  <T>  The compile-time type of the {@code type} argument.
+     * @param  type The factory type.
+     * @return The factory used by this {@code WKTFormat} for the given type.
+     * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
+     */
+    public <T extends Factory> T getFactory(final Class<T> type) {
+        ensureValidFactoryType(type);
+        return GeodeticObjectParser.getFactory(type, factories());
+    }
+
+    /**
+     * Sets one of the factories to be used by this {@code WKTFormat} for parsing WKT.
+     * The given {@code type} argument can be one of the following values:
+     *
+     * <ul>
+     *   <li><code>{@linkplain CRSFactory}.class</code></li>
+     *   <li><code>{@linkplain CSFactory}.class</code></li>
+     *   <li><code>{@linkplain DatumFactory}.class</code></li>
+     *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
+     *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
+     * </ul>
+     *
+     * @param  <T>     The compile-time type of the {@code type} argument.
+     * @param  type    The factory type.
+     * @param  factory The factory to be used by this {@code WKTFormat} for the given type.
+     * @throws IllegalArgumentException if the {@code type} argument is not one of the valid values.
+     */
+    public <T extends Factory> void setFactory(final Class<T> type, final T factory) {
+        ensureValidFactoryType(type);
+        if (factories().put(type, factory) != factory) {
+            parser = null;
+        }
+    }
+
+    /**
      * Returns the type of objects formatted by this class. This method has to return {@code Object.class}
      * since it is the only common parent to all object types accepted by this formatter.
      *
@@ -518,6 +612,70 @@ public class WKTFormat extends CompoundFormat<Object> {
     @Override
     public final Class<Object> getValueType() {
         return Object.class;
+    }
+
+    /**
+     * Returns the name of all WKT fragments known to this {@code WKTFormat}.
+     * The returned collection is initially empty.
+     * WKT fragments can be added by call to {@link #addFragment(String, String)}.
+     *
+     * <p>The returned collection is modifiable. In particular, a call to {@link Set#clear()}
+     * removes all fragments from this {@code WKTFormat}.</p>
+     *
+     * @return The name of all fragments known to this {@code WKTFormat}.
+     */
+    public Set<String> getFragmentNames() {
+        return fragments().keySet();
+    }
+
+    /**
+     * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
+     * can contains itself other fragments specified in some previous calls to this method.
+     *
+     * <div class="note"><b>Example</b>
+     * if the following method is invoked:
+     *
+     * {@preformat java
+     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
+     * }
+     *
+     * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
+     * (WKT after the ellipsoid omitted for brevity):
+     *
+     * {@preformat java
+     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     * }
+     * </div>
+     *
+     * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
+     *
+     * @param  name The name to assign to the WKT fragment. Identifiers are case-sensitive.
+     * @param  wkt The Well Know Text (WKT) fragment represented by the given identifier.
+     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
+     * @throws ParseException If an error occurred while parsing the given WKT.
+     */
+    public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
+        ArgumentChecks.ensureNonEmpty("wkt", wkt);
+        ArgumentChecks.ensureNonEmpty("name", name);
+        short error = Errors.Keys.NotAUnicodeIdentifier_1;
+        if (CharSequences.isUnicodeIdentifier(name)) {
+            if (sharedValues == null) {
+                sharedValues = new HashMap<>();
+            }
+            final ParsePosition pos = new ParsePosition(0);
+            final Element element = new Element(parser(), wkt, pos, sharedValues);
+            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
+            if (index < wkt.length()) {
+                throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
+                        new Object[] {name + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
+            }
+            // 'fragments' map has been created by 'parser()'.
+            if (fragments.putIfAbsent(name, element) == null) {
+                return;
+            }
+            error = Errors.Keys.ElementAlreadyPresent_1;
+        }
+        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, name));
     }
 
     /**
@@ -545,81 +703,19 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
-     * can contains itself other fragments specified in some previous calls to this method.
-     *
-     * <div class="note"><b>Example</b>
-     * if the following method is invoked:
-     *
-     * {@preformat java
-     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
-     * }
-     *
-     * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
-     * (WKT after the ellipsoid omitted for brevity):
-     *
-     * {@preformat java
-     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
-     * }
-     * </div>
-     *
-     * @param  identifier The name to assign to the WKT fragment. Identifiers are case-sensitive.
-     * @param  wkt The Well Know Text (WKT) fragment represented by the given identifier.
-     * @throws IllegalArgumentException if the name is invalid or if a fragment is already present for that name.
-     * @throws ParseException If an error occurred while parsing the given WKT.
-     */
-    public void addFragment(final String identifier, final String wkt) throws IllegalArgumentException, ParseException {
-        ArgumentChecks.ensureNonEmpty("wkt", wkt);
-        ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        short error = Errors.Keys.NotAUnicodeIdentifier_1;
-        if (CharSequences.isUnicodeIdentifier(identifier)) {
-            if (sharedValues == null) {
-                sharedValues = new HashMap<>();
-            }
-            final ParsePosition pos = new ParsePosition(0);
-            final Element element = new Element(parser(), wkt, pos, sharedValues);
-            final int index = CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length());
-            if (index < wkt.length()) {
-                throw new LocalizedParseException(getLocale(), Errors.Keys.UnexpectedCharactersAfter_2,
-                        new Object[] {identifier + " = " + element.keyword + "[…]", CharSequences.token(wkt, index)}, index);
-            }
-            if (fragments.putIfAbsent(identifier, element) == null) {
-                return;
-            }
-            error = Errors.Keys.ElementAlreadyPresent_1;
-        }
-        throw new IllegalArgumentException(Errors.getResources(getLocale()).getString(error, identifier));
-    }
-
-    /**
-     * Removes all fragments previously added by {@link #addFragment(String, String)}.
-     */
-    public void removeAllFragments() {
-        if (fragments != null) {
-            fragments.clear();
-        }
-    }
-
-    /**
      * Returns the parser, created when first needed.
      */
     private AbstractParser parser() {
         AbstractParser parser = this.parser;
         if (parser == null) {
-            if (fragments == null) {
-                fragments = new TreeMap<>();
-            }
-            if (factories == null) {
-                factories = new HashMap<>();
-            }
-            this.parser = parser = new GeodeticObjectParser(symbols, fragments,
+            this.parser = parser = new GeodeticObjectParser(symbols, fragments(),
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
                     convention,
                     (transliterator != null) ? transliterator : Transliterator.DEFAULT,
                     getLocale(),
-                    factories);
+                    factories());
         }
         return parser;
     }
