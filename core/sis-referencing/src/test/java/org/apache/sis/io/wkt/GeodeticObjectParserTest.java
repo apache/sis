@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.text.ParsePosition;
@@ -74,7 +75,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void newParser(final Convention convention) {
         parser = new GeodeticObjectParser(Symbols.getDefault(), Collections.emptyMap(),
-                null, null, null, convention, Transliterator.DEFAULT, null, null);
+                null, null, null, convention, Transliterator.DEFAULT, null, new HashMap<>());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 
