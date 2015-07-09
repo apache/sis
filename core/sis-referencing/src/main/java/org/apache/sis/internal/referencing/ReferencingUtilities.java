@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
-import java.util.logging.Logger;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -28,7 +27,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
@@ -54,11 +52,6 @@ import static org.apache.sis.internal.util.Numerics.epsilonEqual;
  * @module
  */
 public final class ReferencingUtilities extends Static {
-    /**
-     * The logger to use for messages related to the {@code sis-referencing} module.
-     */
-    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.referencing");
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -322,7 +315,7 @@ public final class ReferencingUtilities extends Static {
         }
         final Context context = Context.current();
         if (context != null) {
-            Context.warningOccured(context, LOGGER, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
+            Context.warningOccured(context, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
             return false;
         } else {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));

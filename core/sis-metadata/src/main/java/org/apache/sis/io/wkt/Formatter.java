@@ -48,6 +48,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -286,7 +287,7 @@ public class Formatter implements Localized {
      * {@code ID} (previously known as {@code AUTHORITY}) and {@code REMARKS}, and have a special treatment: they
      * are written by {@link #append(FormattableObject)} after the {@code formatTo(Formatter)} method returned.
      *
-     * @see #appendComplement(IdentifiedObject, boolean)
+     * @see #appendComplement(IdentifiedObject, FormattableObject)
      */
     private boolean isComplement;
 
@@ -615,7 +616,7 @@ public class Formatter implements Localized {
          *             GEOGCS[...etc...],
          *             ...etc...
          */
-        final IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
+        IdentifiedObject info = (object instanceof IdentifiedObject) ? (IdentifiedObject) object : null;
         String keyword = object.formatTo(this);
         if (keyword == null) {
             if (info != null) {
@@ -641,10 +642,11 @@ public class Formatter implements Localized {
          * Format the SCOPE["…"], AREA["…"] and other elements. Some of those information
          * are available only for Datum, CoordinateOperation and ReferenceSystem objects.
          */
+        if (info == null && convention.majorVersion() != 1 && object instanceof GeneralParameterValue) {
+            info = ((GeneralParameterValue) object).getDescriptor();
+        }
         if (info != null) {
-            appendComplement(info, stackDepth == 0);
-        } else if (convention.majorVersion() != 1 && object instanceof GeneralParameterValue) {
-            appendComplement(((GeneralParameterValue) object).getDescriptor(), false);
+            appendComplement(info, (stackDepth != 0) ? enclosingElements.get(stackDepth - 1) : null);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
@@ -682,7 +684,7 @@ public class Formatter implements Localized {
      * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
      * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
-    private void appendComplement(final IdentifiedObject object, final boolean isRoot) {
+    private void appendComplement(final IdentifiedObject object, final FormattableObject parent) {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
         final boolean filterID;     // Whether we shall limit to a single ID[…] element.
@@ -694,23 +696,34 @@ public class Formatter implements Localized {
             showOthers  = true;
             showRemarks = true;
         } else {
-            if (convention == Convention.WKT2_SIMPLIFIED) {
-                showIDs = isRoot;
+            /*
+             * Except for the special cases of OperationMethod and Parameters, ISO 19162 recommends to format the
+             * ID only for the root element.  But Apache SIS adds an other exception to this rule by handling the
+             * components of CompoundCRS as if they were root elements. The reason is that users often create their
+             * own CompoundCRS from standard components, for example by adding a time axis to some standard CRS like
+             * "WGS84". The resulting CompoundCRS usually have no identifier. Then the users often need to extract a
+             * particular component of a CompoundCRS, most often the horizontal part, and will need its identifier
+             * for example in a Web Map Service (WMS). Those ID are lost if we do not format them here.
+             */
+            if (parent == null || parent instanceof CompoundCRS) {
+                showIDs = true;
+            } else if (convention == Convention.WKT2_SIMPLIFIED) {
+                showIDs = false;
             } else {
-                showIDs = isRoot || (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
+                showIDs = (object instanceof OperationMethod) || (object instanceof GeneralParameterDescriptor);
             }
             if (convention.majorVersion() == 1) {
                 filterID    = true;
                 showOthers  = false;
                 showRemarks = false;
             } else {
-                filterID = !isRoot;
+                filterID = (parent != null);
                 if (object instanceof CoordinateOperation) {
                     showOthers  = true;
                     showRemarks = true;
                 } else if (object instanceof ReferenceSystem) {
-                    showOthers  = isRoot;
-                    showRemarks = isRoot || (getEnclosingElement(2) instanceof CoordinateOperation);
+                    showOthers  = (parent == null);
+                    showRemarks = (parent == null) || (getEnclosingElement(2) instanceof CoordinateOperation);
                 } else {
                     showOthers  = false;    // Mandated by ISO 19162.
                     showRemarks = false;

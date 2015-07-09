@@ -17,14 +17,12 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlTransient;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -80,18 +78,6 @@ import org.apache.sis.util.logging.Logging;
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
-    /**
-     * The logger for messages related to metadata implementations.
-     *
-     * Note that another logger is provided with public access in the {@code iso} sub-package:
-     * {@link org.apache.sis.metadata.iso.ISOMetadata#LOGGER}. This {@code LOGGER} instance is
-     * kept package-privated for avoiding confusion (other sub-packages like {@code sql} should
-     * create their own logger). This logger is declared in a static field because otherwise,
-     * any configuration done by the user may be lost when the garbage-collector collects the
-     * logger.
-     */
-    static final Logger LOGGER = Logging.getLogger(AbstractMetadata.class);
-
     /**
      * Creates an initially empty metadata.
      */

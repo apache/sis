@@ -34,6 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.internal.system.Modules;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -186,8 +187,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
             record.setSourceClassName("org.apache.sis.util.iso.Types");
             record.setSourceMethodName("toInternationalString");
-            record.setLoggerName("org.apache.sis.util.iso");
-            Logging.getLogger("org.apache.sis.util.iso").log(record);
+            record.setLoggerName(Modules.UTILITIES);
+            Logging.getLogger(Modules.UTILITIES).log(record);
         }
     }
 

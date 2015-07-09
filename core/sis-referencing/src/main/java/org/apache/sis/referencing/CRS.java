@@ -45,6 +45,7 @@ import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -172,7 +173,7 @@ public final class CRS extends Static {
             return factory.createCoordinateReferenceSystem(value);
         } catch (FactoryException failure) {
             final CoordinateReferenceSystem crs = CommonCRS.forCode(authority, value, failure);
-            Logging.unexpectedException(CRS.class, "forCode", failure); // See above comment.
+            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), CRS.class, "forCode", failure); // See above comment.
             return crs;
         } else {
             return CommonCRS.forCode(authority, value, null);

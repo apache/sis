@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import static org.opengis.annotation.Obligation.OPTIONAL;
@@ -212,10 +212,9 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     public void setDensity(final Double newValue) {
         checkWritePermission();
-        if (newValue != null && !(newValue > 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultMedium.class, "density", true, newValue);
+        if (ensurePositive(DefaultMedium.class, "density", true, newValue)) {
+            densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
         }
-        densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
     }
 
     /**
@@ -281,10 +280,9 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     public void setVolumes(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultMedium.class, "volumes", false, newValue);
+        if (ensurePositive(DefaultMedium.class, "volumes", false, newValue)) {
+            volumes = newValue;
         }
-        volumes = newValue;
     }
 
     /**

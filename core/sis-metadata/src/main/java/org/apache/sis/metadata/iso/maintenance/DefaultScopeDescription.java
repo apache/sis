@@ -264,7 +264,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     private void warningOnOverwrite(final byte code) {
         if (value != null && property != code) {
-            Context.warningOccured(Context.current(), LOGGER, DefaultScopeDescription.class, SETTERS[code-1],
+            Context.warningOccured(Context.current(), DefaultScopeDescription.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
     }

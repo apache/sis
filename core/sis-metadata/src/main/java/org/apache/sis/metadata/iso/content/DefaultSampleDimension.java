@@ -28,7 +28,7 @@ import org.opengis.util.RecordType;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -221,22 +221,6 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
     }
 
     /**
-     * Ensures that the given property value is positive.
-     *
-     * @param property Name of the property to check.
-     * @param strict   {@code false} is zero is a legal value.
-     * @param newValue The property value to verify.
-     * @throws IllegalArgumentException if the given value is negative and the problem has not been logged.
-     */
-    static void ensurePositive(final String property, final boolean strict, final Number newValue)
-            throws IllegalArgumentException
-    {
-        if (newValue != null && !(strict ? newValue.doubleValue() > 0 : newValue.doubleValue() >= 0)) { // Use '!' for catching NaN.
-            warnNonPositiveArgument(DefaultSampleDimension.class, property, strict, newValue);
-        }
-    }
-
-    /**
      * Returns the minimum value of data values in each dimension included in the resource.
      *
      * @return Minimum value of data values in each dimension included in the resource, or {@code null} if unspecified.
@@ -319,8 +303,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      */
     public void setNumberOfValues(final Integer newValue) {
         checkWritePermission();
-        ensurePositive("numberOfValues", false, newValue);
-        numberOfValues = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "numberOfValues", false, newValue)) {
+            numberOfValues = newValue;
+        }
     }
 
     /**
@@ -449,8 +434,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      */
     public void setBitsPerValue(final Integer newValue) {
         checkWritePermission();
-        ensurePositive("bitsPerValue", true, newValue);
-        bitsPerValue = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "bitsPerValue", true, newValue)) {
+            bitsPerValue = newValue;
+        }
     }
 
     /**
@@ -473,8 +459,9 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      */
     public void setNominalSpatialResolution(final Double newValue) {
         checkWritePermission();
-        ensurePositive("nominalSpatialResolution", true, newValue);
-        nominalSpatialResolution = newValue;
+        if (ensurePositive(DefaultSampleDimension.class, "nominalSpatialResolution", true, newValue)) {
+            nominalSpatialResolution = newValue;
+        }
     }
 
     /**

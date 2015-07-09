@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.test;
 
 import java.util.logging.Filter;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import org.apache.sis.test.TestCase;
-import org.junit.rules.TestWatchman;
-import org.junit.runners.model.FrameworkMethod;
 
 import static org.junit.Assert.*;
 
+// Branch-specific imports
+import org.junit.rules.TestWatchman;
+import org.junit.runners.model.FrameworkMethod;
+
 
 /**
- * Watches the logs sent to {@link ISOMetadata#LOGGER}. Logs will be allowed only if the test
- * was expected to cause some logging events to occur, otherwise a test failure will occurs.
+ * Watches the logs sent to the given logger. Logs will be allowed only if the test was
+ * expected to cause some logging events to occur, otherwise a test failure will occurs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
+ * @since   0.6
+ * @version 0.6
  * @module
  */
 public strictfp class LoggingWatcher extends TestWatchman implements Filter {
@@ -48,14 +50,22 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
     public int maximumLogCount;
 
     /**
+     * The logger to watch.
+     */
+    private final Logger logger;
+
+    /**
      * The formatter to use for formatting log messages.
      */
     private final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Creates a new watcher.
+     * Creates a new watcher for the given logger.
+     *
+     * @param logger The logger to watch.
      */
-    public LoggingWatcher() {
+    public LoggingWatcher(final Logger logger) {
+        this.logger = logger;
     }
 
     /**
@@ -68,9 +78,9 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
      * @see #isLoggable(LogRecord)
      */
     @Override
-    public final void starting(final FrameworkMethod method) {
-        assertNull(ISOMetadata.LOGGER.getFilter());
-        ISOMetadata.LOGGER.setFilter(this);
+    public final void starting(final FrameworkMethod description) {
+        assertNull(logger.getFilter());
+        logger.setFilter(this);
         maximumLogCount = 0;
     }
 
@@ -81,8 +91,8 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
      * @param description A description of the JUnit test that finished.
      */
     @Override
-    public final void finished(final FrameworkMethod method) {
-        ISOMetadata.LOGGER.setFilter(null);
+    public final void finished(final FrameworkMethod description) {
+        logger.setFilter(null);
     }
 
     /**

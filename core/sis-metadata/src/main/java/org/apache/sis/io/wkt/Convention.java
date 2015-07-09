@@ -79,14 +79,18 @@ public enum Convention {
      * <ul>
      *   <li>{@code PrimeMeridian} element omitted if the meridian is Greenwich.</li>
      *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
-     *   <li>{@code VerticalExtent} element omits the {@code LengthUnit} sub-element
-     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code Ellipsoid} element omits the {@code LengthUnit} sub-element
-     *       if the unit is {@link javax.measure.unit.SI#METRE}.</li>
-     *   <li>{@code PrimeMeridian} element omits the {@code AngleUnit} sub-element
-     *       if the unit is as defined by the enclosing {@code GeodeticCRS} element.</li>
-     *   <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
-     *       and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
+     *   <li>{@code Unit} elements are less verbose:<ul>
+     *     <li>{@code Ellipsoid} and {@code VerticalExtent} elements omit the {@code LengthUnit} sub-element
+     *         if that unit is {@link javax.measure.unit.SI#METRE}.</li>
+     *     <li>{@code Parameter} elements omit the {@code LengthUnit} sub-element
+     *         if that unit is the same than the unit of the {@code ProjectedCRS} axes.</li>
+     *     <li>{@code Parameter} and {@code PrimeMeridian} elements omit the {@code AngleUnit} sub-element
+     *         if that unit is the same than the unit of the {@code GeodeticCRS} axes.</li>
+     *     <li>Axes unit is declared only once after the axes instead than repeated for each axis
+     *         if the unit is the same for all axes.</li>
+     *     <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
+     *         and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
+     *     </ul></li>
      *   <li>{@code Id} is formatted only for the root element
      *       (omit parameters and operation methods {@code Id}).</li>
      * </ul>

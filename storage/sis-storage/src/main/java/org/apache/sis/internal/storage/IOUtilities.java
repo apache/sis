@@ -38,6 +38,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Modules;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Files;
@@ -472,6 +473,6 @@ public final class IOUtilities extends Static {
      * the exception at {@link java.util.logging.Level#FINE} without stack trace.
      */
     private static void recoverableException(final Exception warning) {
-        Logging.recoverableException(Logging.getLogger("org.apache.sis.storage"), IOUtilities.class, "open", warning);
+        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", warning);
     }
 }
