@@ -40,6 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.system.Loggers;
 
 
 /**
@@ -346,7 +347,7 @@ public final class Types extends Static {
             try {
                 return super.toString(locale);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(ResourceInternationalString.class, "toString", e);
+                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
                 return fallback();
             }
         }

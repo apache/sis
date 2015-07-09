@@ -28,7 +28,7 @@ import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.apache.sis.measure.ValueRange;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -195,10 +195,9 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     public void setNumberOfDimensions(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue);
+        if (ensurePositive(DefaultGridSpatialRepresentation.class, "numberOfDimensions", false, newValue)) {
+            numberOfDimensions = newValue;
         }
-        numberOfDimensions = newValue;
     }
 
     /**

@@ -176,7 +176,7 @@ public final class DelayedExecutor extends DaemonThread {
                 // Probably the 'killAll' method has been invoked.
                 // We need to test 'isKillRequested()' below.
             } catch (Throwable exception) {
-                Logging.unexpectedException(getClass(), "run", exception);
+                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 queue.clear();

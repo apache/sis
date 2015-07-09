@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Field;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 // Branch-specific imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -156,7 +157,7 @@ public final class AxisNames {
              * We will take the values that we have been able to map so far. The other values will
              * just not have their case fixed.
              */
-            Logging.unexpectedException(AxisNames.class, "<cinit>", e);
+            Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), AxisNames.class, "<cinit>", e);
         }
         VALUES = values;
     }

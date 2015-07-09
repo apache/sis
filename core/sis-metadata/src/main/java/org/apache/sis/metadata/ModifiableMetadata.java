@@ -34,6 +34,7 @@ import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.Modules;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -191,7 +192,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                  * (for example it may be backed by some external database).
                  * Assumes that the metadata is unmodifiable.
                  */
-                Logging.unexpectedException(LOGGER, getClass(), "unmodifiable", exception);
+                Logging.unexpectedException(Logging.getLogger(Modules.METADATA), getClass(), "unmodifiable", exception);
                 return this;
             }
             candidate.freeze();

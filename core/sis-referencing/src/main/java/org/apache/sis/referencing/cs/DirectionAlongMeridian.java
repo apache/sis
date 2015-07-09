@@ -25,6 +25,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
@@ -117,7 +118,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
         try {
             candidate = parse(direction.name());
         } catch (IllegalArgumentException e) {
-            Logging.recoverableException(DirectionAlongMeridian.class, "parse", e);
+            Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), DirectionAlongMeridian.class, "parse", e);
             return null;
         }
         if (candidate != null) {

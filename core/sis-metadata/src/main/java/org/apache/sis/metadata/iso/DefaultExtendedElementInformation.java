@@ -31,7 +31,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -440,10 +440,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     public void setMaximumOccurrence(final Integer newValue) {
         checkWritePermission();
-        if (newValue != null && newValue < 0) {
-            warnNonPositiveArgument(DefaultExtendedElementInformation.class, "maximumOccurrence", false, newValue);
+        if (ensurePositive(DefaultExtendedElementInformation.class, "maximumOccurrence", false, newValue)) {
+            maximumOccurrence = newValue;
         }
-        maximumOccurrence = newValue;
     }
 
     /**

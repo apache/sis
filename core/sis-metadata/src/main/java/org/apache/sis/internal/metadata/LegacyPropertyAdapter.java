@@ -182,7 +182,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     public static void warnIgnoredExtraneous(final Class<?> valueClass,
             final Class<?> callerClass, final String callerMethod)
     {
-        Context.warningOccured(Context.current(), ISOMetadata.LOGGER, callerClass, callerMethod,
+        Context.warningOccured(Context.current(), callerClass, callerMethod,
                 Messages.class, Messages.Keys.IgnoredPropertiesAfterFirst_1, valueClass);
     }
 

@@ -38,6 +38,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.Modules;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -528,7 +529,7 @@ public final class IOUtilities extends Static {
                     // We have been able to create a channel, maybe not with the given OpenOptions.
                     // But the exception was nevertheless unexpected, so log its stack trace in order
                     // to allow the developer to check if there is something wrong.
-                    Logging.unexpectedException(Logging.getLogger("org.apache.sis.storage"), IOUtilities.class, "open", e);
+                    Logging.unexpectedException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", e);
                     return channel;
                 }
             }
@@ -552,6 +553,6 @@ public final class IOUtilities extends Static {
      * the exception at {@link java.util.logging.Level#FINE} without stack trace.
      */
     private static void recoverableException(final Exception warning) {
-        Logging.recoverableException(Logging.getLogger("org.apache.sis.storage"), IOUtilities.class, "open", warning);
+        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), IOUtilities.class, "open", warning);
     }
 }
