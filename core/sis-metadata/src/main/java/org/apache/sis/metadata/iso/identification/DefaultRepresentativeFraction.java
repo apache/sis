@@ -39,7 +39,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.metadata.MetadataUtilities.warnNonPositiveArgument;
+import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
 
 /**
@@ -161,10 +161,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDenominator(final long denominator) {
-        if (denominator < 0) {
-            warnNonPositiveArgument(DefaultRepresentativeFraction.class, "denominator", false, denominator);
+        if (ensurePositive(DefaultRepresentativeFraction.class, "denominator", false, denominator)) {
+            this.denominator = denominator;
         }
-        this.denominator = denominator;
     }
 
     /**

@@ -63,7 +63,7 @@ final class Threads extends Static {
      */
     static final ThreadGroup DAEMONS = new ThreadGroup(SIS, "Daemons") {
         @Override public void uncaughtException(final Thread thread, final Throwable exception) {
-            Logging.severeException(Logging.getLogger("org.apache.sis"), thread.getClass(), "run", exception);
+            Logging.severeException(Logging.getLogger(Loggers.SYSTEM), thread.getClass(), "run", exception);
         }
     };
 

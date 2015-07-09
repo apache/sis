@@ -26,6 +26,7 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.MathFunctions;
 
 
@@ -64,7 +65,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     /**
      * The logger where to logs collection events, if logging at the finest level is enabled.
      */
-    private static final Logger LOGGER = Logging.getLogger(WeakEntry.class);
+    private static final Logger LOGGER = Logging.getLogger(Modules.UTILITIES);
 
     /**
      * The next entry, or {@code null} if there is none.

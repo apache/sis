@@ -30,6 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -103,7 +104,7 @@ public final class Context extends MarshalContext {
      *
      * @see org.apache.sis.metadata.iso.ISOMetadata#LOGGER
      */
-    public static final Logger LOGGER = Logging.getLogger("org.apache.sis.xml");
+    public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
 
     /**
      * Various boolean attributes determines by the above static constants.
@@ -390,7 +391,6 @@ public final class Context extends MarshalContext {
      * message from the {@code exception}.</p>
      *
      * @param context   The current context, or {@code null} if none.
-     * @param logger    The logger where to send the warning.
      * @param level     The logging level.
      * @param classe    The class to declare as the warning source.
      * @param method    The name of the method to declare as the warning source.
@@ -401,7 +401,7 @@ public final class Context extends MarshalContext {
      *
      * @since 0.5
      */
-    public static void warningOccured(final Context context, final Logger logger,
+    public static void warningOccured(final Context context,
             final Level level, final Class<?> classe, final String method, final Throwable exception,
             final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
     {
@@ -422,7 +422,7 @@ public final class Context extends MarshalContext {
         }
         record.setSourceClassName(classe.getCanonicalName());
         record.setSourceMethodName(method);
-        record.setLoggerName(logger.getName());
+        record.setLoggerName(Loggers.XML);
         if (context != null) {
             final WarningListener<?> warningListener = context.warningListener;
             if (warningListener != null) {
@@ -435,7 +435,7 @@ public final class Context extends MarshalContext {
          * Log the warning without stack-trace, since this method shall be used
          * only for non-fatal warnings and we want to avoid polluting the logs.
          */
-        logger.log(record);
+        LOGGER.log(record);
     }
 
     /**
@@ -443,7 +443,6 @@ public final class Context extends MarshalContext {
      * resources. The message will be logged at {@link Level#WARNING}.
      *
      * @param context   The current context, or {@code null} if none.
-     * @param logger    The logger where to send the warning.
      * @param classe    The class to declare as the warning source.
      * @param method    The name of the method to declare as the warning source.
      * @param resources Either {@code Errors.class} or {@code Messages.class}.
@@ -452,11 +451,10 @@ public final class Context extends MarshalContext {
      *
      * @since 0.5
      */
-    public static void warningOccured(final Context context, final Logger logger,
-            final Class<?> classe, final String method,
+    public static void warningOccured(final Context context, final Class<?> classe, final String method,
             final Class<? extends IndexedResourceBundle> resources, final short key, final Object... arguments)
     {
-        warningOccured(context, logger, Level.WARNING, classe, method, null, resources, key, arguments);
+        warningOccured(context, Level.WARNING, classe, method, null, resources, key, arguments);
     }
 
     /**
@@ -472,7 +470,7 @@ public final class Context extends MarshalContext {
     public static void warningOccured(final Context context, final Class<?> classe,
             final String method, final Exception cause, final boolean warning)
     {
-        warningOccured(context, LOGGER, warning ? Level.WARNING : Level.FINE, classe, method, cause,
+        warningOccured(context, warning ? Level.WARNING : Level.FINE, classe, method, cause,
                 null, (short) 0, (Object[]) null);
     }
 

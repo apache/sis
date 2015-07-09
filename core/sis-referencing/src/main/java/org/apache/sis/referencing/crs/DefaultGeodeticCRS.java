@@ -192,7 +192,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         formatter.newLine();
         final PrimeMeridian pm = datum.getPrimeMeridian();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
-        if (convention != Convention.WKT2_SIMPLIFIED ||
+        if (convention != Convention.WKT2_SIMPLIFIED ||   // Really this specific enum, not Convention.isSimplified().
                 ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
         {
             final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
@@ -236,7 +236,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * is part of a ProjectedCRS. Note however that in such case, the units to format are the angular units because
          * the linear units will be formatted in the enclosing PROJCS[…] element.
          */
-        if (!isBaseCRS) {
+        if (!isBaseCRS || convention == Convention.INTERNAL) {
             formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);    // Will also format the axes unit.
         } else if (convention.isSimplified()) {
             formatter.append(formatter.toContextualUnit(angularUnit));

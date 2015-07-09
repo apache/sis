@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.test;
 
 import java.util.logging.Filter;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import org.apache.sis.test.TestCase;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
@@ -27,12 +27,12 @@ import static org.junit.Assert.*;
 
 
 /**
- * Watches the logs sent to {@link ISOMetadata#LOGGER}. Logs will be allowed only if the test
- * was expected to cause some logging events to occur, otherwise a test failure will occurs.
+ * Watches the logs sent to the given logger. Logs will be allowed only if the test was
+ * expected to cause some logging events to occur, otherwise a test failure will occurs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
- * @version 0.3
+ * @since   0.6
+ * @version 0.6
  * @module
  */
 public strictfp class LoggingWatcher extends TestWatcher implements Filter {
@@ -48,14 +48,22 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
     public int maximumLogCount;
 
     /**
+     * The logger to watch.
+     */
+    private final Logger logger;
+
+    /**
      * The formatter to use for formatting log messages.
      */
     private final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
-     * Creates a new watcher.
+     * Creates a new watcher for the given logger.
+     *
+     * @param logger The logger to watch.
      */
-    public LoggingWatcher() {
+    public LoggingWatcher(final Logger logger) {
+        this.logger = logger;
     }
 
     /**
@@ -69,8 +77,8 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
      */
     @Override
     protected final void starting(final Description description) {
-        assertNull(ISOMetadata.LOGGER.getFilter());
-        ISOMetadata.LOGGER.setFilter(this);
+        assertNull(logger.getFilter());
+        logger.setFilter(this);
         maximumLogCount = 0;
     }
 
@@ -82,7 +90,7 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
      */
     @Override
     protected final void finished(final Description description) {
-        ISOMetadata.LOGGER.setFilter(null);
+        logger.setFilter(null);
     }
 
     /**

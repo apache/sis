@@ -58,6 +58,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -1342,10 +1343,10 @@ public enum CommonCRS {
 
     /**
      * Invoked when a factory failed to create an object.
-     * After invoking this method, then the caller will fallback on hard-coded values.
+     * After invoking this method, the caller will fallback on hard-coded values.
      */
     static void failure(final Object caller, final String method, final FactoryException e) {
-        Logging.unexpectedException(caller.getClass(), method, e);
+        Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), caller.getClass(), method, e);
     }
 
     /**
