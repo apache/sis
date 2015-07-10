@@ -46,7 +46,7 @@ import static java.lang.Double.*;
 
 
 /**
- * <cite>Lambert Conical Conformal</cite> projection (EPSG codes 9801, 9802, 9803).
+ * <cite>Lambert Conical Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
  * See the <a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert conformal
  * conic projection on MathWorld</a> for an overview.
  *
