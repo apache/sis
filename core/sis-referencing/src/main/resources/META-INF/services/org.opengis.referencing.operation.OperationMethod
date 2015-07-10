@@ -13,3 +13,4 @@ org.apache.sis.internal.referencing.provider.LambertConformal1SP
 org.apache.sis.internal.referencing.provider.LambertConformal2SP
 org.apache.sis.internal.referencing.provider.LambertConformalWest
 org.apache.sis.internal.referencing.provider.LambertConformalBelgium
+org.apache.sis.internal.referencing.provider.LambertConformalMichigan

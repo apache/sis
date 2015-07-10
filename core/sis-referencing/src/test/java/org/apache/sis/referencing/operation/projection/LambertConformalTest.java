@@ -25,6 +25,7 @@ import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
+import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
@@ -195,6 +196,21 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @DependsOnMethod("testLambertConicConformal2SP")
     public void testLambertConicConformalBelgium() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformalBelgium()).testLambertConicConformalBelgium();
+    }
+
+    /**
+     * Tests the <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> case (EPSG:1051).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformalMichigan()
+     */
+    @Test
+    @DependsOnMethod("testLambertConicConformal2SP")
+    public void testLambertConicConformalMichigan() throws FactoryException, TransformException {
+        createGeoApiTest(new LambertConformalMichigan()).testLambertConicConformalMichigan();
     }
 
     /**
