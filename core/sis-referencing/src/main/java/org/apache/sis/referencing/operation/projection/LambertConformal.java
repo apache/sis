@@ -31,6 +31,7 @@ import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
+import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
@@ -72,9 +73,13 @@ public class LambertConformal extends NormalizedProjection {
      * Codes for special kinds of Lambert projection. We do not provide such codes in public API because
      * they duplicate the functionality of {@link OperationMethod} instances. We use them only for convenience.
      *
+     * <p>Codes for SP1 case must be odd, and codes for SP2 case must be even.</p>
+     *
      * @see #getType(ParameterDescriptorGroup)
      */
-    static final byte SP1 = 1, SP2 = 2, WEST = 3, BELGIUM = 4;
+    private static final byte SP1  = 1,   SP2      = 2,
+                              WEST = 3,   BELGIUM  = 4,
+                                          MICHIGAN = 6;
 
     /**
      * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
@@ -89,7 +94,7 @@ public class LambertConformal extends NormalizedProjection {
     /**
      * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given type.
      *
-     * @param  type One of {@link #SP1}, {@link #SP2}, {@link #WEST} or {@link #BELGIUM} constants.
+     * @param  type One of {@link #SP1}, {@link #SP2}, {@link #WEST}, {@link #BELGIUM} and {@link #MICHIGAN} constants.
      * @return The roles map to give to super-class constructor.
      */
     @SuppressWarnings("fallthrough")
@@ -99,7 +104,7 @@ public class LambertConformal extends NormalizedProjection {
          * "Scale factor" is not formally a "Lambert Conformal (2SP)" argument, but we accept it
          * anyway for all Lambert projections since it may be used in some Well Known Text (WKT).
          */
-        roles.put(ParameterRole.SCALE_FACTOR, LambertConformal1SP.SCALE_FACTOR);
+        ParameterDescriptor<Double> scaleFactor = LambertConformal1SP.SCALE_FACTOR;
         ParameterRole eastingDirection = ParameterRole.FALSE_EASTING;
         switch (type) {
             case WEST: {
@@ -116,6 +121,10 @@ public class LambertConformal extends NormalizedProjection {
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
                 break;
             }
+            case MICHIGAN: {
+                scaleFactor = LambertConformalMichigan.SCALE_FACTOR;    // Ellipsoid scaling factor (EPSG:1038)
+                // Fallthrough
+            }
             case BELGIUM:
             case SP2: {
                 roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
@@ -125,6 +134,7 @@ public class LambertConformal extends NormalizedProjection {
             }
             default: throw new AssertionError(type);
         }
+        roles.put(ParameterRole.SCALE_FACTOR, scaleFactor);
         return roles;
     }
 
@@ -134,8 +144,10 @@ public class LambertConformal extends NormalizedProjection {
      *
      * <ul>
      *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
      *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
      *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
      * </ul>
      *
      * @param method     Description of the projection parameters.
@@ -152,7 +164,7 @@ public class LambertConformal extends NormalizedProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters, roles(type));
-        double φ0 = getAndStore(parameters, (type == SP1 || type == WEST) ?
+        double φ0 = getAndStore(parameters, ((type & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
@@ -238,10 +250,11 @@ public class LambertConformal extends NormalizedProjection {
      * If this method can not identify the type, then the parameters should be considered as a 2SP case.
      */
     private static byte getType(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bBelgium\\b.*", LambertConformalBelgium.IDENTIFIER)) return BELGIUM;
-        if (identMatch(parameters, "(?i).*\\bWest\\b.*",    LambertConformalWest   .IDENTIFIER)) return WEST;
-        if (identMatch(parameters, "(?i).*\\b2SP\\b.*",     LambertConformal2SP    .IDENTIFIER)) return SP2;
-        if (identMatch(parameters, "(?i).*\\b1SP\\b.*",     LambertConformal1SP    .IDENTIFIER)) return SP1;
+        if (identMatch(parameters, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
+        if (identMatch(parameters, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
+        if (identMatch(parameters, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
+        if (identMatch(parameters, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
+        if (identMatch(parameters, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
         return 0; // Unidentified case, to be considered as 2SP.
     }
 
