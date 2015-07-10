@@ -241,9 +241,17 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
          *    the term FE retains its definition, i.e. in the Lambert Conic Conformal (West Orientated)
          *    method it increases the Westing value at the natural origin.
          *    In this method it is effectively false westing (FW).
+         *
+         * So the conversion for this test case should be:     W = 400 - E
+         *
+         * However our map projection "kernel" implementation does not reverse the sign of 'x' values,
+         * because this reversal is the job of a separated method (CoordinateSystems.swapAndScaleAxes)
+         * which does is work by examining the axis directions. So we the values that we expect are:
+         *
+         *     expected  =  -W  =  E - 400
          */
         for (int i=0; i<sources.length; i += 2) {
-            expected[i] = 400 - expected[i];
+            expected[i] -= 400;
         }
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyTransform(sources, expected);

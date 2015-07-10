@@ -16,12 +16,24 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
- * The provider for <cite>Lambert Conic Conformal (West Orientated)"</cite> projection (EPSG:9826).
+ * The provider for <cite>"Lambert Conic Conformal (West Orientated)"</cite> projection (EPSG:9826).
+ * In this projection method, the <var>x</var> values increase toward West. However the projection
+ * is defined in such a way that the sign of <var>x</var> values are reversed before to apply the
+ * <cite>"false easting"</cite> translation. As a consequence of this operation order, despite its
+ * name the <cite>"false easting"</cite> is effectively a <cite>"false westing"</cite> (FW) parameter.
+ * See §1.3.1.3 in <i>Geomatics Guidance Note number 7, part 2 – April 2015</i>.
+ *
+ * <p>In Apache SIS implementation, this operation method does <strong>not</strong> reverse the sign of
+ * <var>x</var> values because all our map projection "kernels" go from (longitude, latitude) in degrees
+ * to (easting, northing) in metres by definition. The sign reversal is applied later, by examination of
+ * axis directions in {@link org.apache.sis.referencing.cs.CoordinateSystems}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -45,6 +57,9 @@ public final class LambertConformalWest extends AbstractLambert {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        final ParameterDescriptor<?> falseEasting = createShift(builder
+                .addNamesAndIdentifiers(LambertConformal1SP.FALSE_EASTING)
+                .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False westing")));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
@@ -53,7 +68,7 @@ public final class LambertConformalWest extends AbstractLambert {
                     LambertConformal1SP.LATITUDE_OF_ORIGIN,
                     LambertConformal1SP.CENTRAL_MERIDIAN,
                     LambertConformal1SP.SCALE_FACTOR,
-                    LambertConformal1SP.FALSE_EASTING,
+                    falseEasting,
                     LambertConformal1SP.FALSE_NORTHING);
     }
 
