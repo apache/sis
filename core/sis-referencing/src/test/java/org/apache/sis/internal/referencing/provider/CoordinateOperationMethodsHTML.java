@@ -75,6 +75,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
     public static void main(final String[] args) throws IOException {
         final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final List<OperationMethod> methods = new ArrayList<>(factory.getAvailableMethods(SingleOperation.class));
+        methods.removeIf((method) -> method.getClass().getName().endsWith("Mock"));
         Collections.sort(methods, (final OperationMethod o1, final OperationMethod o2) -> {
             int c = category(o1) - category(o2);
             if (c == 0) {  // If the two methods are in the same category, sort by name.
@@ -330,7 +331,17 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
                 if (index == null) {
                     index = footnotes.size();
                 }
-                remarks = ((param.getMinimumOccurs() != 0) ? "Unmodifiable " : "Optional ") + toSuperScript(index);
+                if (param.getMinimumOccurs() == 0) {
+                    remarks = "Optional ";
+                } else {
+                    final Comparable<?> min = param.getMinimumValue();
+                    if (min != null && min.equals(param.getMaximumValue())) {
+                        remarks = "Unmodifiable ";
+                    } else {
+                        remarks = "See note ";
+                    }
+                }
+                remarks += toSuperScript(index);
             }
             println("td class=\"sep\"", escape(remarks));
             final String domain = toLocalizedString(Parameters.getValueDomain(param));
@@ -480,10 +491,23 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
     }
 
     /**
+     * Returns the operation type of the given method.
+     */
+    private static Class<?> getOperationType(final DefaultOperationMethod method) {
+        Class<?> type = method.getOperationType();
+        if (type == SingleOperation.class) {
+            if (method instanceof Affine) {     // EPSG:9624 - Affine parametric transformation
+                type = Transformation.class;
+            }
+        }
+        return type;
+    }
+
+    /**
      * Returns a code for sorting methods in categories.
      */
     private static int category(final OperationMethod method) {
-        final Class<?> c = ((DefaultOperationMethod) method).getOperationType();
+        final Class<?> c = getOperationType((DefaultOperationMethod) method);
         if (CylindricalProjection.class.isAssignableFrom(c)) return CYLINDRICAL_PROJECTION;
         if (ConicProjection      .class.isAssignableFrom(c)) return CONIC_PROJECTION;
         if (PlanarProjection     .class.isAssignableFrom(c)) return PLANAR_PROJECTION;
