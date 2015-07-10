@@ -40,6 +40,11 @@ import static java.lang.Math.*;
  * But the errors become centimetric (for a planet of the size of the Earth) before excentricity 0.2
  * and increase quickly after excentricity 0.3.</p>
  *
+ * <p>For the WGS84 ellipsoid and the iteration tolerance given by the {@link NormalizedProjection#ITERATION_TOLERANCE}
+ * constant (currently about 0.25 cm), the two methods have equivalent precision. Computing φ values for millions of
+ * random numbers and verifying which method is the most accurate give fifty-fifty results: each method win in about
+ * 50% of cases. But as we increase the excentricity, the iterative method wins more often.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
