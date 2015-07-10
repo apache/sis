@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
@@ -263,6 +264,30 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
                 assertTrue("φ(t) in invalid range should be negative.", t < 0);
             }
             assertEquals("Inverse function doesn't match.", i, back, tolerance);
+        }
+    }
+
+    /**
+     * Performs a comparison between φ values computed by the iterative method (the current SIS method)
+     * and φ values computed by series expansion (this alternative).
+     * See {@link MercatorAlternative} for a discussion.
+     *
+     * @throws ProjectionException if an error occurred in {@link NormalizedProjection#φ(double)}.
+     *
+     * @see MercatorAlternative
+     */
+    @Test
+    public void compareWithSeriesExpansion() throws ProjectionException {
+        final NormalizedProjection projection = new NoOp(true);
+        final MercatorAlternative alternative = new MercatorAlternative(projection.excentricitySquared);
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final int numSamples = 2000;
+        for (int i=0; i<numSamples; i++) {
+            final double φ = random.nextDouble() * PI - PI/2;
+            final double t = 1 / projection.expOfNorthing(φ, projection.excentricity * sin(φ));
+            final double byIterativeMethod =  projection.φ(t);
+            final double bySeriesExpansion = alternative.φ(t);
+            assertEquals(bySeriesExpansion, byIterativeMethod, 1E-11);
         }
     }
 

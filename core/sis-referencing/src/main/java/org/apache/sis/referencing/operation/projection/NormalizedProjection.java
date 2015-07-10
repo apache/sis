@@ -936,6 +936,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   <li>φ(∞)   =  -π/2.</li>
      * </ul>
      *
+     * <b>Note:</b> §1.3.3 in Geomatics Guidance Note number 7 part 2 (April 2015) uses a series expansion instead.
+     * The series expansion is twice faster than the iterative method used here for the same precision, but this
+     * precision is achieved "only" for relatively small excentricity like the Earth's one.
+     * See the {@code MercatorAlternative} class in the test package for more discussion.
+     *
      * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
