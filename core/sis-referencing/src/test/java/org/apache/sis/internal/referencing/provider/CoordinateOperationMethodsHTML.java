@@ -79,7 +79,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
         Collections.sort(methods, (final OperationMethod o1, final OperationMethod o2) -> {
             int c = category(o1) - category(o2);
             if (c == 0) {  // If the two methods are in the same category, sort by name.
-                c = o1.getName().getCode().compareTo(o2.getName().getCode());
+                final String n1 = o1.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+                final String n2 = o2.getName().getCode().replace('(',' ').replace(')',' ').replace('_',' ');
+                c = n1.compareTo(n2);
             }
             return c;
         });
@@ -485,6 +487,9 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
     private static String getUnit(final ParameterDescriptor<?> param) {
         final String unit = PatchedUnitFormat.toString(param.getUnit());
         if (unit != null && !unit.isEmpty()) {
+            if (unit.equals("°")) {
+                return unit;
+            }
             return " " + unit;
         }
         return "";
