@@ -600,6 +600,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      * </ul>
      *
+     * <div class="section">Limitation</div>
+     * The current implementation does not serialize the given factories, because they are usually not
+     * {@link java.io.Serializable}. The factories used by {@code WKTFormat} instances after deserialization
+     * are the default ones.
+     *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  type    The factory type.
      * @param  factory The factory to be used by this {@code WKTFormat} for the given type.
