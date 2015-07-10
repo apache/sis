@@ -119,6 +119,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
 
         /**
+         * Despite its name, this parameter is effectively “{0}”.
+         */
+        public static final short MisnamedParameter_1 = 18;
+
+        /**
          * Formatting of “{0}” is not conform to the format standard.
          */
         public static final short NonConformFormatting_1 = 15;

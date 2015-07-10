@@ -92,6 +92,7 @@ public class LambertConformal extends NormalizedProjection {
      * @param  type One of {@link #SP1}, {@link #SP2}, {@link #WEST} or {@link #BELGIUM} constants.
      * @return The roles map to give to super-class constructor.
      */
+    @SuppressWarnings("fallthrough")
     private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
@@ -99,19 +100,27 @@ public class LambertConformal extends NormalizedProjection {
          * anyway for all Lambert projections since it may be used in some Well Known Text (WKT).
          */
         roles.put(ParameterRole.SCALE_FACTOR, LambertConformal1SP.SCALE_FACTOR);
+        ParameterRole eastingDirection = ParameterRole.FALSE_EASTING;
         switch (type) {
-            case WEST:
+            case WEST: {
+                /*
+                 * For "Lambert Conic Conformal (West Orientated)" projection, the "false easting" parameter is
+                 * effectively a "false westing" (Geomatics Guidance Note number 7, part 2 – April 2015, §1.3.1.3)
+                 */
+                eastingDirection = ParameterRole.FALSE_WESTING;
+                // Fallthrough
+            }
             case SP1: {
-                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
-                roles.put(ParameterRole.FALSE_EASTING,    LambertConformal1SP.FALSE_EASTING);
+                roles.put(eastingDirection,               LambertConformal1SP.FALSE_EASTING);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
                 break;
             }
             case BELGIUM:
             case SP2: {
-                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
-                roles.put(ParameterRole.FALSE_EASTING,    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
+                roles.put(eastingDirection,               LambertConformal2SP.EASTING_AT_FALSE_ORIGIN);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
                 break;
             }
             default: throw new AssertionError(type);
@@ -214,16 +223,6 @@ public class LambertConformal extends NormalizedProjection {
         denormalize.convertBefore(0, F, null);
         F.negate();
         denormalize.convertBefore(1, F, ρ0);
-        /*
-         * EPSG:9826  —  Lambert Conic Conformal (1SP West Orientated)
-         *
-         * In this projection method positive x are oriented toward West. Reverse the sign of 'x' before to apply
-         * the "false easting". As a consequence of this operation order, despite its name the "false easting" is
-         * effectively a "false westing" (FW) parameter. This is confusing but the operation is defined like that.
-         */
-        if (type == WEST) {
-            denormalize.convertBefore(0, new DoubleDouble(-1, 0), null);
-        }
     }
 
     /**

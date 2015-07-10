@@ -281,6 +281,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_EASTING,
 
         /**
+         * Maps the <cite>false westing</cite> parameter (symbol: <var>FW</var>).
+         * This is the same <var>x</var> translation than {@link #FALSE_EASTING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false westing" in a map projection.
+         * But some projections like <cite>"Lambert Conic Conformal (West Orientated)"</cite> are
+         * defined in such a way that their "false easting" parameter is effectively a "false westing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_WESTING,
+
+        /**
          * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
          * This is a translation term for the <var>y</var> values obtained after map projections.
          *
@@ -291,7 +302,18 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Northing at projection centre</li>
          * </ul>
          */
-        FALSE_NORTHING
+        FALSE_NORTHING,
+
+        /**
+         * Maps the <cite>false southing</cite> parameter (symbol: <var>FS</var>).
+         * This is the same <var>y</var> translation than {@link #FALSE_NORTHING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false southing" in a map projection.
+         * But some projections like <cite>"Transverse Mercator (South Orientated)"</cite> are
+         * defined in such a way that their "false northing" parameter is effectively a "false southing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_SOUTHING
     }
 
     /**
@@ -379,8 +401,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
               double a  = getAndStore(parameters, semiMajor);
         final double b  = getAndStore(parameters, semiMinor);
         final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
-        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING));
-        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING));
+        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING))
+                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_WESTING));
+        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING))
+                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_SOUTHING));
         final double rs = b / a;
         excentricitySquared = 1 - (rs * rs);
         excentricity = sqrt(excentricitySquared);
