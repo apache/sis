@@ -80,14 +80,14 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Computes {@link NormalizedProjection#φ(double)}.
+     * Computes {@link GeneralLambert#φ(double)}.
      *
      * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
     private double φ(final double expOfSouthing) throws ProjectionException {
-        return ((NormalizedProjection) transform).φ(expOfSouthing);
+        return ((GeneralLambert) transform).φ(expOfSouthing);
     }
 
     /**
@@ -218,10 +218,10 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link NormalizedProjection#φ(double)} function. We expect it to be the converse of the
-     * {@link NormalizedProjection#t(double, double)} function. In theory only the [-90° … +90°] range needs
-     * to be tested. However the function still consistent in the [-90° … +270°] range so we test that range
-     * for tracking this fact.
+     * Tests the {@link GeneralLambert#φ(double)} function. We expect it to be
+     * the converse of the {@link NormalizedProjection#expOfNorthing(double, double)} function.
+     * In theory only the [-90° … +90°] range needs to be tested. However the function is still
+     * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *
      * @throws ProjectionException Should never happen.
      */
@@ -263,31 +263,32 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
             } else {
                 assertTrue("φ(t) in invalid range should be negative.", t < 0);
             }
-            assertEquals("Inverse function doesn't match.", i, back, tolerance);
+            assertEquals("Inverse function does not match.", i, back, tolerance);
         }
     }
 
     /**
-     * Performs a comparison between φ values computed by the iterative method (the current SIS method)
-     * and φ values computed by series expansion (this alternative).
-     * See {@link MercatorAlternative} for a discussion.
+     * Performs a comparison between φ values computed by the iterative method and by series expansion.
+     * Then compares with the φ values computed by {@link GeneralLambert#φ(double)}, which uses a mix
+     * of the two methods. See {@link MercatorAlternative} for a discussion.
      *
-     * @throws ProjectionException if an error occurred in {@link NormalizedProjection#φ(double)}.
+     * @throws ProjectionException if an error occurred during computation of φ.
      *
      * @see MercatorAlternative
      */
     @Test
     public void compareWithSeriesExpansion() throws ProjectionException {
-        final NormalizedProjection projection = new NoOp(true);
-        final MercatorAlternative alternative = new MercatorAlternative(projection.excentricitySquared);
+        final GeneralLambert projection = new NoOp(true);
+        final MercatorAlternative comparator = new MercatorAlternative(projection.excentricitySquared);
         final Random random = TestUtilities.createRandomNumberGenerator();
         final int numSamples = 2000;
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
-            final double t = 1 / projection.expOfNorthing(φ, projection.excentricity * sin(φ));
-            final double byIterativeMethod =  projection.φ(t);
-            final double bySeriesExpansion = alternative.φ(t);
+            final double t = 1 / comparator.expOfNorthing(φ);
+            final double byIterativeMethod = comparator.byIterativeMethod(t);
+            final double bySeriesExpansion = comparator.bySeriesExpansion(t);
             assertEquals(bySeriesExpansion, byIterativeMethod, 1E-11);
+            assertEquals(bySeriesExpansion, projection.φ(t),   1E-11);
         }
     }
 

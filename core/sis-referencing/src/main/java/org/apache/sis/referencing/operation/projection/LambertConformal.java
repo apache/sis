@@ -63,7 +63,7 @@ import static java.lang.Double.*;
  * @version 0.6
  * @module
  */
-public class LambertConformal extends NormalizedProjection {
+public class LambertConformal extends GeneralLambert {
     /**
      * For cross-version compatibility.
      */
