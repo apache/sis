@@ -38,7 +38,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends GeneralLambert {
+final strictfp class NoOp extends AbstractLambertConformal {
     /**
      * Creates a new "no-operation".
      *
