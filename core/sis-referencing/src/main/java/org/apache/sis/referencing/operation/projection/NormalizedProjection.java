@@ -153,6 +153,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maximum number of iterations for iterative computations.
+     * The iterative methods used in subclasses should converge quickly (in 3 or 4 iterations)
+     * when used for a planet with an excentricity similar to Earth. But we allow a high limit
+     * in case someone uses SIS for some planet with higher excentricity.
      */
     static final int MAXIMUM_ITERATIONS = 15;
 
@@ -865,6 +868,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * of the value returned by this method. This function is <em>almost</em> the converse of
      * {@link GeneralLambert#φ(double)}.
      *
+     * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
+     * a function closely related to this one has the letter <var>t</var>.</p>
+     *
      *
      * <div class="section">Properties</div>
      * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
@@ -914,6 +920,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     final double expOfNorthing(final double φ, final double ℯsinφ) {
         /*
          * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
+         *
+         * A + sign in the equation favorises slightly the accuracy in South hemisphere, while a - sign
+         * favorises slightly the North hemisphere (but the differences are very small). In Apache SIS,
+         * we handle that by changing the sign of some terms in the (de)normalisation matrices.
          */
         return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
     }

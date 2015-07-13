@@ -93,25 +93,25 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
         if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true, 40);   // Elliptical case
+            initialize(true, 40);  // Elliptical case
         }
         final double INF = POSITIVE_INFINITY;
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
         assertEquals ("Out of range",     NaN, transform(+2),             NORMALIZED_TOLERANCE);
         assertEquals ("Out of range",     NaN, transform(-2),             NORMALIZED_TOLERANCE);
         assertEquals ("Forward 0°N",      1,   transform(0),              NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°N",     0,   transform(+PI/2),          NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°S",     INF, transform(-PI/2),          NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°N", 0,   transform(+nextUp(+PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°S", INF, transform(-nextUp( PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90-ε)°N", 0,   transform(-nextUp(-PI/2)), 1E-10);
+        assertEquals ("Forward 90°S",     0,   transform(-PI/2),          NORMALIZED_TOLERANCE);
+        assertEquals ("Forward 90°N",     INF, transform(+PI/2),          NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90+ε)°S", 0,   transform(-nextUp( PI/2)), NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90+ε)°N", INF, transform(+nextUp(+PI/2)), NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90-ε)°S", 0,   transform(+nextUp(-PI/2)), 1E-10);
 
         assertEquals ("Not a number", NaN, inverseTransform(NaN),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse 0",  +PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse 0",  -PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse +1",     0, inverseTransform(+1),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse -1",     0, inverseTransform(-1),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse +∞", -PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse -∞", -PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
         initialize(((LambertConformal) transform).excentricity != 0, -40);

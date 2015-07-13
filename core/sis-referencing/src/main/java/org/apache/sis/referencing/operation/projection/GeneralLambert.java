@@ -167,7 +167,7 @@ abstract class GeneralLambert extends NormalizedProjection {
            + c4χ * sin(4*φ)
            + c2χ * sin(2*φ);
         /*
-         * Note: a previous version checked if the value of the smallest term c8χ·sin(8φ) was smaller than
+         * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
          * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold
          * determined empirically by MercatorMethodComparison.
          */

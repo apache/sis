@@ -130,7 +130,7 @@ public final strictfp class GeneralLambertTest extends TransformTestCase {
             final double byIterativeMethod = comparator.byIterativeMethod(t);
             final double bySeriesExpansion = comparator.bySeriesExpansion(t);
             assertEquals(bySeriesExpansion, byIterativeMethod, 1E-11);
-            assertEquals(bySeriesExpansion, projection.φ(t),   1E-15);
+            assertEquals(bySeriesExpansion, projection.φ(t),   1E-15);  // Tolerance threshold close to 1 ULP of 2π.
         }
     }
 }
