@@ -39,14 +39,21 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends NormalizedProjection {
+final strictfp class NoOp extends AbstractLambertConformal {
     /**
      * Creates a new "no-operation".
      *
      * @param ellipsoidal {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
      */
     NoOp(final boolean ellipsoidal) {
-        this(parameters(ellipsoidal));
+        this(parameters((ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid()));
+    }
+
+    /**
+     * Creates a new "no-operation" for the given axis lengths.
+     */
+    NoOp(final double semiMajor, final double semiMinor) {
+        this(parameters(semiMajor, semiMinor));
     }
 
     /**
@@ -66,12 +73,21 @@ final strictfp class NoOp extends NormalizedProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static Parameters parameters(final boolean ellipse) {
+    private static Parameters parameters(final Ellipsoid ellipsoid) {
+        return parameters(ellipsoid.getSemiMajorAxis(),
+                          ellipsoid.getSemiMinorAxis());
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static Parameters parameters(final double semiMajor, final double semiMinor) {
         final ParameterValueGroup group = new ParameterBuilder()
                 .addName("No-operation").createGroupForMapProjection().createValue();
-        final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
-        group.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
-        group.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
+        group.parameter(Constants.SEMI_MAJOR).setValue(semiMajor);
+        group.parameter(Constants.SEMI_MINOR).setValue(semiMinor);
         return (Parameters) group;
     }
 
