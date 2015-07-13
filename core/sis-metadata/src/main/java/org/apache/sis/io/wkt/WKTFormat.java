@@ -558,6 +558,15 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public <T extends Factory> T getFactory(final Class<T> type) {
         ensureValidFactoryType(type);
+        if (type == CoordinateOperationFactory.class) {
+            /*
+             * HACK: we have a special way to get the CoordinateOperationFactory because of its dependency
+             * toward MathTransformFactory.  A lazy (but costly) way to ensure a consistent behavior is to
+             * let the GeodeticObjectParser constructor do its job.  This is costly, but should not happen
+             * often.
+             */
+            parser();
+        }
         return GeodeticObjectParser.getFactory(type, factories());
     }
 
@@ -572,6 +581,11 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li><code>{@linkplain MathTransformFactory}.class</code></li>
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      * </ul>
+     *
+     * <div class="section">Limitation</div>
+     * The current implementation does not serialize the given factories, because they are usually not
+     * {@link java.io.Serializable}. The factories used by {@code WKTFormat} instances after deserialization
+     * are the default ones.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  type    The factory type.
