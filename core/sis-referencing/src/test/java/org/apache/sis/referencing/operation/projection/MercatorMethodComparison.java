@@ -26,7 +26,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
-import static java.lang.Math.*;
+import static java.lang.Math.*;     // Not StrictMath in this particular case.
 
 
 /**
@@ -215,7 +215,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             }
             out.println("Comparison of different ways to compute φ for excentricity " + excentricity + '.');
             out.println("Values are in units of " + NormalizedProjection.ITERATION_TOLERANCE + " radians (about "
-                    + Math.round(toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60 * ReferencingServices.NAUTICAL_MILE * 1000)
+                    + round(toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60 * ReferencingServices.NAUTICAL_MILE * 1000)
                     + " mm on Earth).");
             final StatisticsFormat format = StatisticsFormat.getInstance();
             format.setBorderWidth(1);

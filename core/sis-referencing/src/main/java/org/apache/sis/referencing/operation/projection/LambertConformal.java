@@ -43,6 +43,7 @@ import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
+import static org.apache.sis.math.MathFunctions.isPositive;
 
 
 /**
@@ -88,6 +89,8 @@ public class LambertConformal extends GeneralLambert {
 
     /**
      * Internal coefficients for computation, depending only on values of standards parallels.
+     * This is defined as {@literal n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂)} in §1.3.1.1 of
+     * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      */
     final double n;
 
@@ -177,6 +180,33 @@ public class LambertConformal extends GeneralLambert {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.LatitudesAreOpposite_2,
                     new Latitude(φ1), new Latitude(φ2)));
         }
+        /*
+         * Whether to favorize precision in the North hemisphere (true) or in the South hemisphere (false).
+         * The IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015 uses the
+         * following formula:
+         *
+         *     t = tan(π/4 – φ/2) / [(1 – ℯ⋅sinφ)/(1 + ℯ⋅sinφ)] ^ (ℯ/2)
+         *
+         * while our 'expOfNorthing' function is defined like above, but with   tan(π/4 + φ/2)   instead of
+         * tan(π/4 - φ/2). Those two expressions are the reciprocal of each other if we reverse the sign of
+         * φ (see 'expOfNorthing' for trigonometric identities), but their accuracies are not equivalent:
+         * the hemisphere having values closer to zero is favorized. The EPSG formulas favorize the North
+         * hemisphere.
+         *
+         * Since Apache SIS's formula uses the + operator instead of -, we need to reverse the sign of φ
+         * values in order to match the EPSG formulas, but we will do that only if the map projection is
+         * for the North hemisphere.
+         *
+         * TEST: whether 'isNorth' is true of false does not change the formulas "correctness": it is only
+         * a small accuracy improvement. One can safely force this boolean value to 'true' or 'false' for
+         * testing purpose.
+         */
+        final boolean isNorth = isPositive(φ0);
+        if (isNorth) {
+            φ0 = -φ0;
+            φ1 = -φ1;
+            φ2 = -φ2;
+        }
         φ0 = toRadians(φ0);
         φ1 = toRadians(φ1);
         φ2 = toRadians(φ2);
@@ -189,6 +219,11 @@ public class LambertConformal extends GeneralLambert {
         final double sinφ1 = sin(φ1);
         final double m1    = cos(φ1) / rν(sinφ1);
         final double t1    = expOfNorthing(φ1, excentricity*sinφ1);
+        /*
+         * Computes n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
+         * since division is less at risk of precision lost than subtraction. Note that this equation
+         * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
+         */
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
             final double m2 = cos(φ2) / rν(sinφ2);
@@ -198,18 +233,26 @@ public class LambertConformal extends GeneralLambert {
             n = -sinφ1;
         }
         /*
+         * Computes F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
          * Following constants will be stored in the denormalization matrix, to be applied after
          * the non-linear formulas implemented by this LambertConformal class. Opportunistically
          * use double-double arithmetic since we the matrix coefficients will be stored in this
          * format anyway. This makes a change in the 2 or 3 last digits.
          */
-        final DoubleDouble F = new DoubleDouble(-pow(t1, -n), 0);
-        F.multiply(m1, 0);
-        F.divide(n, 0);
-        final DoubleDouble ρ0 = new DoubleDouble();    // Initialized to zero.
+        final DoubleDouble F = new DoubleDouble(n, 0);
+        F.multiply(pow(t1, n), 0);
+        F.inverseDivide(m1, 0);
+        if (!isNorth) {
+            F.negate();
+        }
+        /*
+         * Compute  r = a⋅F⋅tⁿ  from EPSG notes where (in our case) a=1 and t is our 'expOfNorthing' function.
+         * Note that Snyder calls this term "ρ0".
+         */
+        final DoubleDouble r0 = new DoubleDouble();    // Initialized to zero.
         if (φ0 != copySign(PI/2, -n)) {    // For avoiding the rounding error documented in expOfNorthing(+π/2).
-            ρ0.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
-            ρ0.multiply(F);
+            r0.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
+            r0.multiply(F);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -228,13 +271,16 @@ public class LambertConformal extends GeneralLambert {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        context.getMatrix(true).convertAfter(0, new DoubleDouble(-n, 0),    // Multiplication factor for longitudes.
+        final MatrixSIS normalize = context.getMatrix(true);
+        normalize.convertAfter(0, new DoubleDouble(isNorth ? n : -n, 0),    // Multiplication factor for longitudes.
                 (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
-
+        if (isNorth) {
+            normalize.convertAfter(1, new DoubleDouble(-1, 0), null);
+        }
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, F, null);
         F.negate();
-        denormalize.convertBefore(1, F, ρ0);
+        denormalize.convertBefore(1, F, r0);
     }
 
     /**
@@ -301,7 +347,7 @@ public class LambertConformal extends GeneralLambert {
     }
 
     /**
-     * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
+     * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
      * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
      * if {@code derivate} is {@code true}.
      *
@@ -319,24 +365,24 @@ public class LambertConformal extends GeneralLambert {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double λ    = srcPts[srcOff];
-        final double φ    = srcPts[srcOff + 1];
+        final double θ    = srcPts[srcOff];         // θ = λ⋅n
+        final double φ    = srcPts[srcOff + 1];     // Sign may be reversed
         final double absφ = abs(φ);
-        final double sinλ = sin(λ);
-        final double cosλ = cos(λ);
+        final double sinθ = sin(θ);
+        final double cosθ = cos(θ);
         final double sinφ;
-        final double ρ;     // Snyder p. 108
+        final double r;     // From EPSG guide. Note that Snyder p. 108 calls this term "ρ".
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            ρ = pow(expOfNorthing(φ, excentricity*sinφ), n);
+            r = pow(expOfNorthing(φ, excentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
-            ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+            r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
         } else {
-            ρ = sinφ = NaN;
+            r = sinφ = NaN;
         }
-        final double x = ρ * sinλ;
-        final double y = ρ * cosλ;
+        final double x = r * sinθ;
+        final double y = r * cosθ;
         if (dstPts != null) {
             dstPts[dstOff    ] = x;
             dstPts[dstOff + 1] = y;
@@ -349,12 +395,12 @@ public class LambertConformal extends GeneralLambert {
         //
         final double dρ;
         if (sinφ != 1) {
-            dρ = n * dy_dφ(sinφ, cos(φ)) * ρ;
+            dρ = n * dy_dφ(sinφ, cos(φ)) * r;
         } else {
-            dρ = ρ;
+            dρ = r;
         }
-        return new Matrix2(y, dρ*sinλ,      // ∂x/∂λ , ∂x/∂φ
-                          -x, dρ*cosλ);     // ∂y/∂λ , ∂y/∂φ
+        return new Matrix2(y, dρ*sinθ,      // ∂x/∂λ , ∂x/∂φ
+                          -x, dρ*cosθ);     // ∂y/∂λ , ∂y/∂φ
     }
 
     /**
@@ -431,31 +477,31 @@ public class LambertConformal extends GeneralLambert {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double λ    = srcPts[srcOff];
-            final double φ    = srcPts[srcOff + 1];
+            final double θ    = srcPts[srcOff];         // θ = λ⋅n
+            final double φ    = srcPts[srcOff + 1];     // Sign may be reversed
             final double absφ = abs(φ);
-            final double sinλ = sin(λ);
-            final double cosλ = cos(λ);
-            final double ρ;
+            final double sinθ = sin(θ);
+            final double cosθ = cos(θ);
+            final double r;   // Snyder p. 108 calls this term "ρ", but we use "r" for consistency with EPSG guide.
             if (absφ < PI/2) {
-                ρ = pow(tan(PI/4 + 0.5*φ), n);
+                r = pow(tan(PI/4 + 0.5*φ), n);
             } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
-                ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+                r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
             } else {
-                ρ = NaN;
+                r = NaN;
             }
-            final double x = ρ * sinλ;
-            final double y = ρ * cosλ;
+            final double x = r * sinθ;
+            final double y = r * cosθ;
             Matrix derivative = null;
             if (derivate) {
                 final double dρ;
                 if (absφ < PI/2) {
-                    dρ = n*ρ / cos(φ);
+                    dρ = n*r / cos(φ);
                 } else {
                     dρ = NaN;
                 }
-                derivative = new Matrix2(y, dρ*sinλ,    // ∂x/∂λ , ∂x/∂φ
-                                        -x, dρ*cosλ);   // ∂y/∂λ , ∂y/∂φ
+                derivative = new Matrix2(y, dρ*sinθ,    // ∂x/∂λ , ∂x/∂φ
+                                        -x, dρ*cosθ);   // ∂y/∂λ , ∂y/∂φ
             }
             // Following part is common to all spherical projections: verify, store and return.
             assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
@@ -479,7 +525,7 @@ public class LambertConformal extends GeneralLambert {
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
             x = atan2(x, y);  // Really (x,y), not (y,x)
-            y = 2 * atan(pow(1/ρ, -1/n)) - PI/2;
+            y = 2*atan(pow(1/ρ, -1/n)) - PI/2;
             assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
             dstPts[dstOff    ] = x;
             dstPts[dstOff + 1] = y;
@@ -491,11 +537,11 @@ public class LambertConformal extends GeneralLambert {
          */
         private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
                                               final double[] dstPts, final int dstOff,
-                                              final double λ, final double φ)
+                                              final double θ, final double φ)
                 throws ProjectionException
         {
             super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, λ, φ);
+            return Assertions.checkInverseTransform(dstPts, dstOff, θ, φ);
         }
     }
 
