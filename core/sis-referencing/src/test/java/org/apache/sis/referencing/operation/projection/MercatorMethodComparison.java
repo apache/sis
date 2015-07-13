@@ -57,7 +57,7 @@ import static java.lang.Math.*;
  * @version 0.6
  * @module
  */
-public final class MercatorAlternative {   // No 'strictfp' keyword here since we want to compare with Mercator class.
+public final class MercatorMethodComparison {   // No 'strictfp' keyword here since we want to compare with Mercator class.
     /**
      * Where to print the outputs of this class.
      */
@@ -77,7 +77,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
      * Creates a new instance for the excentricty of the WGS84 ellipsoid, which is approximatively 0.08181919084262157.
      * Reminder: the excentricity of a sphere is 0.
      */
-    public MercatorAlternative() {
+    public MercatorMethodComparison() {
         this(0.00669437999014133);  // Squared excentricity.
     }
 
@@ -86,7 +86,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
      *
      * @param projection the projection from which to take the excentricity.
      */
-    public MercatorAlternative(final NormalizedProjection projection) {
+    public MercatorMethodComparison(final NormalizedProjection projection) {
         this(projection.excentricitySquared);
     }
 
@@ -95,7 +95,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
      *
      * @param e2 the square of the excentricity.
      */
-    public MercatorAlternative(final double e2) {
+    public MercatorMethodComparison(final double e2) {
         excentricity = sqrt(e2);
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
@@ -194,9 +194,9 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
         }
         /*
          * At this point we finished to collect the statistics for the excentricity of this particular
-         * MercatorAlternative instance. If this method call is only part of a longer calculation for
-         * various excentricty values, print a summary in a single line. Otherwise print more verbose
-         * results.
+         * MercatorMethodComparison instance. If this method call is only part of a longer calculation
+         * for various excentricty values, print a summary in a single line.
+         * Otherwise print more verbose results.
          */
         if (summarize != null) {
             summarize.append(String.valueOf(excentricity));                     summarize.nextColumn();
@@ -257,7 +257,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
                 crossThreshold = true;
                 table.appendHorizontalSeparator();
             }
-            final MercatorAlternative alt = new MercatorAlternative(excentricity * excentricity);
+            final MercatorMethodComparison alt = new MercatorMethodComparison(excentricity * excentricity);
             alt.compare(null, 10000, table);
         }
         table.appendHorizontalSeparator();
@@ -283,7 +283,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
         out.println("The errors should be almost zero:");
         out.println();
         GeneralLambert projection = new NoOp(false);
-        MercatorAlternative alt = new MercatorAlternative(projection);
+        MercatorMethodComparison alt = new MercatorMethodComparison(projection);
         alt.compare(projection, 10000, null);
 
         out.println();
@@ -291,7 +291,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
         out.println("The 'GeneralLambert' errors should be the same than the series expansion errors:");
         out.println();
         projection = new NoOp(true);
-        alt = new MercatorAlternative(projection);
+        alt = new MercatorMethodComparison(projection);
         alt.compare(projection, 1000000, null);
 
         out.println();
@@ -299,7 +299,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
         out.println("The 'GeneralLambert' errors should be the close to the iterative method errors:");
         out.println();
         projection = new NoOp(100, 95);
-        alt = new MercatorAlternative(projection);
+        alt = new MercatorMethodComparison(projection);
         alt.compare(projection, 1000000, null);
     }
 }

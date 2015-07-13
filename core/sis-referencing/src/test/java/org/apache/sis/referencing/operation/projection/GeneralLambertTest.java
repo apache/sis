@@ -112,16 +112,16 @@ public final strictfp class GeneralLambertTest extends TransformTestCase {
     /**
      * Performs a comparison between φ values computed by the iterative method and by series expansion.
      * Then compares with the φ values computed by {@link GeneralLambert#φ(double)}, which uses a mix
-     * of the two methods. See {@link MercatorAlternative} for a discussion.
+     * of the two methods. See {@link MercatorMethodComparison} for a discussion.
      *
      * @throws ProjectionException if an error occurred during computation of φ.
      *
-     * @see MercatorAlternative
+     * @see MercatorMethodComparison
      */
     @Test
     public void compareWithSeriesExpansion() throws ProjectionException {
         final GeneralLambert projection = new NoOp(true);
-        final MercatorAlternative comparator = new MercatorAlternative(projection.excentricitySquared);
+        final MercatorMethodComparison comparator = new MercatorMethodComparison(projection.excentricitySquared);
         final Random random = TestUtilities.createRandomNumberGenerator();
         final int numSamples = 2000;
         for (int i=0; i<numSamples; i++) {
