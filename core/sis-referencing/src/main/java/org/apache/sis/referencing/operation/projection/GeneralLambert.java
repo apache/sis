@@ -47,7 +47,7 @@ abstract class GeneralLambert extends NormalizedProjection {
     /**
      * The threshold value of {@link #excentricity} at which we consider the accuracy of the
      * series expansion insufficient. This threshold is determined empirically with the help
-     * of the {@code MercatorAlternative} class in the test directory.
+     * of the {@code MercatorMethodComparison} class in the test directory.
      * We choose the value where:
      *
      * <ul>
@@ -141,7 +141,7 @@ abstract class GeneralLambert extends NormalizedProjection {
      * <b>Note:</b> §1.3.3 in Geomatics Guidance Note number 7 part 2 (April 2015) uses a series expansion
      * while USGS used an iterative method. The series expansion is twice faster than the iterative method
      * for the same precision, but this precision is achieved "only" for relatively small excentricity like
-     * the Earth's one. See the {@code MercatorAlternative} class in the test package for more discussion.
+     * the Earth's one. See the {@code MercatorMethodComparison} class in the test package for more discussion.
      *
      * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
      * @return The latitude in radians.
@@ -160,14 +160,17 @@ abstract class GeneralLambert extends NormalizedProjection {
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the
          * EPSG guidance note. Note that we add those terms in reverse order, beginning with the smallest
-         * values, for reducing rounding errors due to IEEE 754 arithmetic. We also store in ε the value
-         * of the smallest term.
+         * values, for reducing rounding errors due to IEEE 754 arithmetic.
          */
         φ += c8χ * sin(8*φ)
            + c6χ * sin(6*φ)
            + c4χ * sin(4*φ)
            + c2χ * sin(2*φ);
-
+        /*
+         * Note: a previous version checked if the value of the smallest term c8χ·sin(8φ) was smaller than
+         * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold
+         * determined empirically by MercatorMethodComparison.
+         */
         if (!useIterations) {
             return φ;
         }
@@ -177,7 +180,7 @@ abstract class GeneralLambert extends NormalizedProjection {
          * Try to improve by iteratively solving equation (7-9) from Snyder. However instead than using
          * Snyder (7-11) as the starting point, we take the result of above calculation as the initial φ.
          * Assuming that it is closer to the real φ value, this save us some iteration loops and usually
-         * gives us more accurate results (according MercatorAlternative tests).
+         * gives us more accurate results (according MercatorMethodComparison tests).
          */
         final double hℯ = 0.5 * excentricity;
         for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
