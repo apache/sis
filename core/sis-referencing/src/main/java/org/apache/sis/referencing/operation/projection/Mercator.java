@@ -39,6 +39,7 @@ import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
+import static org.apache.sis.math.MathFunctions.isPositive;
 
 
 /**
@@ -75,7 +76,7 @@ import static java.lang.Double.*;
  * @see TransverseMercator
  * @see ObliqueMercator
  */
-public class Mercator extends NormalizedProjection {
+public class Mercator extends AbstractLambertConformal {
     /**
      * For cross-version compatibility.
      */
@@ -227,6 +228,7 @@ public class Mercator extends NormalizedProjection {
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
+        final MatrixSIS   normalize = context.getMatrix(true);
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
@@ -239,8 +241,36 @@ public class Mercator extends NormalizedProjection {
             denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (type == MILLER) {
-            context.getMatrix(true).convertBefore(1, new DoubleDouble(0.8), null);
+              normalize.convertBefore(1, new DoubleDouble(0.80), null);
             denormalize.convertBefore(1, new DoubleDouble(1.25), null);
+        }
+        /*
+         * At this point we are done, but we add here a little bit a maniac precision hunting.
+         * The Mercator equations have naturally a very slight better precision in the South
+         * hemisphere, because of the following term:
+         *
+         *     tan(π/4 + φ/2)        which implies        tan( 0 )   when   φ = -90°    (south pole)
+         *                                                tan(π/2)   when   φ = +90°    (north pole)
+         *
+         * The case for the North pole has no exact representation. Furthermore IEEE 754 arithmetic has
+         * better precision for values close to zero, which favors the South hemisphere in the above term.
+         * The code below reverses the sign of latitudes before the map projection, then reverses the sign
+         * of results after the projection. This has the effect of interchanging the favorized hemisphere.
+         * But we do that only if the latitude given in parameter is positive. In other words, we favor the
+         * hemisphere of the latitude given in parameters.
+         *
+         * Other libraries do something equivalent by rewriting the equations, e.g. using  tan(π/4 - φ/2)
+         * and modifying the other equations accordingly. This favors the North hemisphere instead of the
+         * South one, but this favoritism is hard-coded. The Apache SIS design with normalization matrices
+         * allows a more dynamic approach, which we apply here.
+         *
+         * This "precision hunting" is optional. If something seems to go wrong, it is safe to comment all
+         * those remaning lines of code.
+         */
+        if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
+            final DoubleDouble revert = new DoubleDouble(-1, 0);
+              normalize.convertBefore(1, revert, null);
+            denormalize.convertBefore(1, revert, null);  // Must be before false easting/northing.
         }
     }
 

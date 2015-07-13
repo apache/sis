@@ -83,24 +83,20 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * the chances to detect a mismatch.
      */
     final void initialize(final DefaultOperationMethod provider, final boolean ellipse,
-            final boolean hasLatitudeOfOrigin,
-            final boolean hasStandardParallel,
-            final boolean hasScaleFactor)
-            throws FactoryException
+            final double centralMeridian,
+            final double latitudeOfOrigin,
+            final double standardParallel,
+            final double scaleFactor,
+            final double falseEasting,
+            final double falseNorthing) throws FactoryException
     {
         final Parameters parameters = parameters(provider, ellipse);
-        parameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(0.5, NonSI.DEGREE_ANGLE);
-        parameters.parameter(Constants.FALSE_EASTING)   .setValue(200);
-        parameters.parameter(Constants.FALSE_NORTHING)  .setValue(100);
-        if (hasLatitudeOfOrigin) {
-            parameters.parameter("latitude_of_origin").setValue(40);
-        }
-        if (hasStandardParallel) {
-            parameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(20);
-        }
-        if (hasScaleFactor) {
-            parameters.parameter(Constants.SCALE_FACTOR).setValue(0.997);
-        }
+        if (centralMeridian  != 0) parameters.parameter(Constants.CENTRAL_MERIDIAN)   .setValue(centralMeridian, NonSI.DEGREE_ANGLE);
+        if (latitudeOfOrigin != 0) parameters.parameter("latitude_of_origin")         .setValue(latitudeOfOrigin);
+        if (standardParallel != 0) parameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(standardParallel);
+        if (scaleFactor      != 1) parameters.parameter(Constants.SCALE_FACTOR)       .setValue(scaleFactor);
+        if (falseEasting     != 0) parameters.parameter(Constants.FALSE_EASTING)      .setValue(falseEasting);
+        if (falseNorthing    != 0) parameters.parameter(Constants.FALSE_NORTHING)     .setValue(falseNorthing);
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
         validate();
     }

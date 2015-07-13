@@ -35,7 +35,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -50,7 +49,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
-import static java.lang.Double.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Branch-dependent imports
@@ -145,7 +143,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
-     * This constant defines the desired accuracy of methods like {@link #φ(double)}.
+     * This constant defines the desired accuracy of methods like {@link AbstractLambertConformal#φ(double)}.
      *
      * <p>The current value is 0.25 time the accuracy derived from {@link Formulas#LINEAR_TOLERANCE}.
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
@@ -155,6 +153,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maximum number of iterations for iterative computations.
+     * The iterative methods used in subclasses should converge quickly (in 3 or 4 iterations)
+     * when used for a planet with an excentricity similar to Earth. But we allow a high limit
+     * in case someone uses SIS for some planet with higher excentricity.
      */
     static final int MAXIMUM_ITERATIONS = 15;
 
@@ -168,7 +169,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     final ContextualParameters context;
 
     /**
-     * Ellipsoid excentricity, equal to <code>sqrt({@linkplain #excentricitySquared})</code>.
+     * Ellipsoid excentricity, equals to <code>sqrt({@linkplain #excentricitySquared})</code>.
      * Value 0 means that the ellipsoid is spherical.
      */
     protected final double excentricity;
@@ -281,6 +282,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_EASTING,
 
         /**
+         * Maps the <cite>false westing</cite> parameter (symbol: <var>FW</var>).
+         * This is the same <var>x</var> translation than {@link #FALSE_EASTING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false westing" in a map projection.
+         * But some projections like <cite>"Lambert Conic Conformal (West Orientated)"</cite> are
+         * defined in such a way that their "false easting" parameter is effectively a "false westing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_WESTING,
+
+        /**
          * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
          * This is a translation term for the <var>y</var> values obtained after map projections.
          *
@@ -291,7 +303,18 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *   <li>Northing at projection centre</li>
          * </ul>
          */
-        FALSE_NORTHING
+        FALSE_NORTHING,
+
+        /**
+         * Maps the <cite>false southing</cite> parameter (symbol: <var>FS</var>).
+         * This is the same <var>y</var> translation than {@link #FALSE_NORTHING}, but of opposite sign.
+         *
+         * <p>Actually, there is usually no parameter named "false southing" in a map projection.
+         * But some projections like <cite>"Transverse Mercator (South Orientated)"</cite> are
+         * defined in such a way that their "false northing" parameter is effectively a "false southing".
+         * This enumeration value can be used for informing {@link NormalizedProjection} about that fact.</p>
+         */
+        FALSE_SOUTHING
     }
 
     /**
@@ -379,8 +402,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
               double a  = getAndStore(parameters, semiMajor);
         final double b  = getAndStore(parameters, semiMinor);
         final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
-        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING));
-        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING));
+        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING))
+                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_WESTING));
+        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING))
+                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_SOUTHING));
         final double rs = b / a;
         excentricitySquared = 1 - (rs * rs);
         excentricity = sqrt(excentricitySquared);
@@ -839,8 +864,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
      * Lambert projection with the equator as the single standard parallel.
      *
-     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm} of the
-     * value returned by this method. This function is <em>almost</em> the converse of {@link #φ(double)}.
+     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm}
+     * of the value returned by this method. This function is <em>almost</em> the converse of
+     * {@link AbstractLambertConformal#φ(double)}.
+     *
+     * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
+     * a function closely related to this one has the letter <var>t</var>.</p>
      *
      *
      * <div class="section">Properties</div>
@@ -885,54 +914,18 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      *
-     * @see #φ(double)
+     * @see AbstractLambertConformal#φ(double)
      * @see #dy_dφ(double, double)
      */
     final double expOfNorthing(final double φ, final double ℯsinφ) {
         /*
          * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
+         *
+         * A + sign in the equation favorises slightly the accuracy in South hemisphere, while a - sign
+         * favorises slightly the North hemisphere (but the differences are very small). In Apache SIS,
+         * we handle that by changing the sign of some terms in the (de)normalisation matrices.
          */
         return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
-    }
-
-    /**
-     * Computes the latitude for a value closely related to the <var>y</var> value of a Mercator projection.
-     * This formula is also part of other projections, since Mercator can be considered as a special case of
-     * Lambert Conic Conformal for instance.
-     *
-     * <p>This function is <em>almost</em> the converse of the above {@link #expOfNorthing(double, double)} function.
-     * In a Mercator inverse projection, the value of the {@code expOfSouthing} argument is {@code exp(-y)}.</p>
-     *
-     * <p>The input should be a positive number, otherwise the result will be either outside
-     * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>
-     *
-     * <ul>
-     *   <li>φ(0)   =   π/2</li>
-     *   <li>φ(1)   =   0</li>
-     *   <li>φ(∞)   =  -π/2.</li>
-     * </ul>
-     *
-     * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
-     * @return The latitude in radians.
-     * @throws ProjectionException if the iteration does not converge.
-     *
-     * @see #expOfNorthing(double, double)
-     * @see #dy_dφ(double, double)
-     */
-    final double φ(final double expOfSouthing) throws ProjectionException {
-        final double hℯ = 0.5 * excentricity;
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // Snyder (7-11)
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {          // Iteratively solve equation (7-9) from Snyder
-            final double ℯsinφ = excentricity * sin(φ);
-            final double Δφ = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
-            if (Δφ <= ITERATION_TOLERANCE) {
-                return φ;
-            }
-        }
-        if (isNaN(expOfSouthing)) {
-            return NaN;
-        }
-        throw new ProjectionException(Errors.Keys.NoConvergence);
     }
 
     /**
@@ -947,7 +940,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @return The partial derivative of a Mercator projection at the given latitude.
      *
      * @see #expOfNorthing(double, double)
-     * @see #φ(double)
+     * @see AbstractLambertConformal#φ(double)
      */
     final double dy_dφ(final double sinφ, final double cosφ) {
         return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
