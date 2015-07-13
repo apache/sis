@@ -101,6 +101,7 @@ import org.junit.BeforeClass;
     // Test map projections. Those tests need the providers tested above.
     org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
     org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
+    org.apache.sis.referencing.operation.projection.AbstractLambertConformalTest.class,
     org.apache.sis.referencing.operation.projection.MercatorTest.class,
     org.apache.sis.referencing.operation.projection.LambertConformalTest.class,
 

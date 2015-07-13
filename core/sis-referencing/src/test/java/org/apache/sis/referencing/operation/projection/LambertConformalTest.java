@@ -16,16 +16,21 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Random;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
+import org.apache.sis.internal.referencing.provider.LambertConformalWest;
 import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
+import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
@@ -45,7 +50,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
-@DependsOn(NormalizedProjectionTest.class)
+@DependsOn(AbstractLambertConformalTest.class)
 public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link LambertConformal}. See the class javadoc for an explanation
@@ -88,25 +93,25 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
         if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true, 40);   // Elliptical case
+            initialize(true, 40);  // Elliptical case
         }
         final double INF = POSITIVE_INFINITY;
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
         assertEquals ("Out of range",     NaN, transform(+2),             NORMALIZED_TOLERANCE);
         assertEquals ("Out of range",     NaN, transform(-2),             NORMALIZED_TOLERANCE);
         assertEquals ("Forward 0°N",      1,   transform(0),              NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°N",     0,   transform(+PI/2),          NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°S",     INF, transform(-PI/2),          NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°N", 0,   transform(+nextUp(+PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°S", INF, transform(-nextUp( PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90-ε)°N", 0,   transform(-nextUp(-PI/2)), 1E-10);
+        assertEquals ("Forward 90°S",     0,   transform(-PI/2),          NORMALIZED_TOLERANCE);
+        assertEquals ("Forward 90°N",     INF, transform(+PI/2),          NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90+ε)°S", 0,   transform(-nextUp( PI/2)), NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90+ε)°N", INF, transform(+nextUp(+PI/2)), NORMALIZED_TOLERANCE);
+        assertEquals ("Forward (90-ε)°S", 0,   transform(+nextUp(-PI/2)), 1E-10);
 
         assertEquals ("Not a number", NaN, inverseTransform(NaN),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse 0",  +PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse 0",  -PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse +1",     0, inverseTransform(+1),   NORMALIZED_TOLERANCE);
         assertEquals ("Inverse -1",     0, inverseTransform(-1),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse +∞", -PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse -∞", -PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
+        assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
         initialize(((LambertConformal) transform).excentricity != 0, -40);
@@ -194,6 +199,81 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests the <cite>"Lambert Conic Conformal (2SP Michigan)"</cite> case (EPSG:1051).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformalMichigan()
+     */
+    @Test
+    @DependsOnMethod("testLambertConicConformal2SP")
+    public void testLambertConicConformalMichigan() throws FactoryException, TransformException {
+        new LambertConformalMichigan();  // Test creation only, as GeoAPI 3.0 did not yet had the test method.
+    }
+
+    /**
+     * Tests the <cite>"Lambert Conic Conformal (1SP West Orientated)"</cite> case (EPSG:9826)).
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testLambertConicConformal1SP")
+    public void testLambertConicConformalWestOrientated() throws FactoryException, TransformException {
+        initialize(new LambertConformal1SP(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+        final MathTransform reference = transform;
+
+        initialize(new LambertConformalWest(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final double[] sources = new double[20];
+        for (int i=0; i<sources.length;) {
+            sources[i++] = 20 * random.nextDouble();      // Longitude
+            sources[i++] = 10 * random.nextDouble() + 35; // Latitude
+        }
+        final double[] expected = new double[sources.length];
+        reference.transform(sources, 0, expected, 0, sources.length/2);
+        /*
+         * At this point, we have the source coordinates and the expected projected coordinates calculated
+         * by the "Lambert Conic Conformal (1SP)" method. Now convert those projected coordinates into the
+         * coordinates that we expect from the "Lambert Conic Conformal (1SP West Orientated)".  If we had
+         * no false easting, we would just revert the sign of 'x' values. But because of the false easting,
+         * we expect an additional offset of two time that easting. This is because (quoting the EPSG guide):
+         *
+         *    the term FE retains its definition, i.e. in the Lambert Conic Conformal (West Orientated)
+         *    method it increases the Westing value at the natural origin.
+         *    In this method it is effectively false westing (FW).
+         *
+         * So the conversion for this test case should be:     W = 400 - E
+         *
+         * However our map projection "kernel" implementation does not reverse the sign of 'x' values,
+         * because this reversal is the job of a separated method (CoordinateSystems.swapAndScaleAxes)
+         * which does is work by examining the axis directions. So we the values that we expect are:
+         *
+         *     expected  =  -W  =  E - 400
+         */
+        for (int i=0; i<sources.length; i += 2) {
+            expected[i] -= 400;
+        }
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(sources, expected);
+    }
+
+    /**
      * Verifies the consistency of spherical formulas with the elliptical formulas.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -212,7 +292,13 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new LambertConformal1SP(), false, true, false, true);
+        initialize(new LambertConformal1SP(), false,
+                  0.5,    // Central meridian
+                 40,      // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 268617081);
     }

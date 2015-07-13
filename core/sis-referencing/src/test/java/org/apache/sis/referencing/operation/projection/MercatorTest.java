@@ -48,7 +48,7 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @version 0.6
  * @module
  */
-@DependsOn(NormalizedProjectionTest.class)
+@DependsOn(AbstractLambertConformalTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
@@ -236,7 +236,13 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         /*
          * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
          */
-        initialize(new Mercator1SP(), false, false, false, true);
+        initialize(new Mercator1SP(), false,
+                  0.5,    // Central meridian
+                  0,      // Latitude of origin (none)
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 84018710);
     }

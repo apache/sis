@@ -19,7 +19,9 @@ package org.apache.sis.internal.jdk8;
 import java.util.Map;
 import java.util.Date;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentMap;
@@ -97,6 +99,25 @@ public final class JDK8 {
             map.put(key, previous);
         }
         return previous;
+    }
+
+    /**
+     * Removes all elements for which the given filter returns {@code true}.
+     *
+     * @param  <E>        The type of elements in the given collection.
+     * @param  collection The collection from which to remove element.
+     * @param  filter     The condition for elements to remove.
+     * @return {@code true} if at least one element has been removed.
+     */
+    public static <E> boolean removeIf(final Collection<E> collection, final Predicate<? super E> filter) {
+        boolean changed = false;
+        for (final Iterator<E> it = collection.iterator(); it.hasNext();) {
+            if (filter.test(it.next())) {
+                it.remove();
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
