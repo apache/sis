@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
-@DependsOn(NormalizedProjectionTest.class)
+@DependsOn(GeneralLambertTest.class)
 public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link LambertConformal}. See the class javadoc for an explanation

@@ -19,11 +19,12 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Random;
 import java.io.IOException;
 import java.io.PrintStream;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.measure.Latitude;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.metadata.ReferencingServices;
 
 import static java.lang.Math.*;
 
@@ -57,6 +58,11 @@ import static java.lang.Math.*;
  * @module
  */
 public final class MercatorAlternative {   // No 'strictfp' keyword here since we want to compare with Mercator class.
+    /**
+     * Where to print the outputs of this class.
+     */
+    private static final PrintStream out = System.out;
+
     /**
      * Ellipsoid excentricity. Value 0 means that the ellipsoid is spherical.
      */
@@ -106,6 +112,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
 
     /**
      * Computes φ using the series expansion given by Geomatics Guidance Note number 7, part 2.
+     * This is the first part of the {@link GeneralLambert#φ(double)} method.
      *
      * @param  t The {@code expOfSouthing} parameter value.
      * @return The latitude (in radians) for the given parameter.
@@ -120,6 +127,7 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
 
     /**
      * Computes φ using the iterative method used by USGS.
+     * This is the second part of the {@link GeneralLambert#φ(double)} method.
      *
      * @param  t The {@code expOfSouthing} parameter value.
      * @return The latitude (in radians) for the given parameter.
@@ -150,75 +158,148 @@ public final class MercatorAlternative {   // No 'strictfp' keyword here since w
     }
 
     /**
-     * Performs a comparison between φ values computed by the iterative method
-     * and φ values computed by series expansion.
-     * The result is printed to the standard output stream.
+     * Compares the φ values computed by the two methods (iterative and series expansion) against the expected φ
+     * values for random numbers. The result is printed to the standard output stream as the maximum and average errors,
+     * in units of {@link NormalizedProjection#ITERATION_TOLERANCE} (about 0.25 cm on a planet of the size of Earth).
      *
      * @param  numSamples Number of random sample values.
      * @throws ProjectionException if an error occurred during the calculation of φ.
      */
-    public void compare(final int numSamples) throws ProjectionException {
-        compare(null, numSamples);
+    public void printAccuracyComparison(final int numSamples) throws ProjectionException {
+        compare(null, numSamples, null);
     }
 
     /**
-     * Implementation of {@link #compare(int)}, optionally with a comparison with {@link GeneralLambert}.
+     * Implementation of {@link #printAccuracyComparison(int)} and {@link #printErrorForExcentricities(double,double)},
+     * optionally with a comparison with {@link GeneralLambert}.
      */
-    private void compare(final GeneralLambert projection, final int numSamples) throws ProjectionException {
+    private void compare(final GeneralLambert projection, final int numSamples, final TableAppender summarize)
+            throws ProjectionException
+    {
         final Statistics iterativeMethodErrors = new Statistics("Iterative method error");
         final Statistics seriesExpansionErrors = new Statistics("Series expansion error");
         final Statistics generalLambertErrors  = new Statistics("'GeneralLambert' error");
-        final Statistics methodDifferences     = new Statistics("Δ (iterative - series)");
         final Random random = new Random();
         for (int i=0; i<numSamples; i++) {
-            final double φ_deg = random.nextDouble() * (Latitude.MAX_VALUE - Latitude.MIN_VALUE) + Latitude.MIN_VALUE;
-            final double φ     = toRadians(φ_deg);
-            final double t     = 1 / expOfNorthing(φ);
-            final double byIterativeMethod = toDegrees(byIterativeMethod(t));
-            final double bySeriesExpansion = toDegrees(bySeriesExpansion(t));
+            final double φ = random.nextDouble() * PI - PI/2;
+            final double t = 1 / expOfNorthing(φ);
+            final double byIterativeMethod = byIterativeMethod(t);
+            final double bySeriesExpansion = bySeriesExpansion(t);
 
-            iterativeMethodErrors.accept(abs(φ_deg - byIterativeMethod));
-            seriesExpansionErrors.accept(abs(φ_deg - bySeriesExpansion));
-            methodDifferences.accept(byIterativeMethod - bySeriesExpansion);
+            iterativeMethodErrors.accept(abs(φ - byIterativeMethod) / NormalizedProjection.ITERATION_TOLERANCE);
+            seriesExpansionErrors.accept(abs(φ - bySeriesExpansion) / NormalizedProjection.ITERATION_TOLERANCE);
             if (projection != null) {
-                generalLambertErrors.accept(abs(φ_deg - toDegrees(projection.φ(t))));
+                generalLambertErrors.accept(abs(φ - projection.φ(t)) / NormalizedProjection.ITERATION_TOLERANCE);
             }
         }
         /*
-         * At this point we finished to collect the statistics.
+         * At this point we finished to collect the statistics for the excentricity of this particular
+         * MercatorAlternative instance. If this method call is only part of a longer calculation for
+         * various excentricty values, print a summary in a single line. Otherwise print more verbose
+         * results.
          */
-        Statistics[] stats = new Statistics[] {
-            iterativeMethodErrors,
-            seriesExpansionErrors,
-            generalLambertErrors,
-            methodDifferences
-        };
-        if (projection == null) {
-            stats = ArraysExt.remove(stats, 2, 1);
+        if (summarize != null) {
+            summarize.append(String.valueOf(excentricity));                     summarize.nextColumn();
+            summarize.append(String.valueOf(iterativeMethodErrors.mean()));     summarize.nextColumn();
+            summarize.append(String.valueOf(iterativeMethodErrors.maximum()));  summarize.nextColumn();
+            summarize.append(String.valueOf(seriesExpansionErrors.mean()));     summarize.nextColumn();
+            summarize.append(String.valueOf(seriesExpansionErrors.maximum()));  summarize.nextLine();
+        } else {
+            Statistics[] stats = new Statistics[] {
+                iterativeMethodErrors,
+                seriesExpansionErrors,
+                generalLambertErrors
+            };
+            if (projection == null) {
+                stats = ArraysExt.remove(stats, 2, 1);
+            }
+            out.println("Comparison of different ways to compute φ for excentricity " + excentricity + '.');
+            out.println("Values are in units of " + NormalizedProjection.ITERATION_TOLERANCE + " radians (about "
+                    + Math.round(toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60 * ReferencingServices.NAUTICAL_MILE * 1000)
+                    + " mm on Earth).");
+            final StatisticsFormat format = StatisticsFormat.getInstance();
+            format.setBorderWidth(1);
+            try {
+                format.format(stats, out);
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+            out.flush();
         }
-        final PrintStream out = System.out;
-        out.println("Comparison of two different way to compute φ for excentricity " + excentricity);
-        out.println("Values are in degrees, ");
-        final StatisticsFormat format = StatisticsFormat.getInstance();
-        format.setBorderWidth(1);
-        try {
-            format.format(stats, out);
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
-        out.flush();
     }
 
     /**
-     * Executes {@link #compare(int)} for the excentricity of an imaginary ellipsoid.
+     * Prints the error of the two methods for various excentricity values.
+     * The intend of this method is to find an excentricity threshold value where we consider the errors too high.
+     *
+     * <p>This method is used for determining empirically a value for {@link GeneralLambert#EXCENTRICITY_THRESHOLD}.
+     * The current threshold value is shown by inserting a horizontal line separator in the table when that threshold
+     * is crossed.</p>
+     *
+     * @param min The first excentricity value to test.
+     * @param max The maximal excentricity value to test.
+     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     */
+    public static void printErrorForExcentricities(final double min, final double max) throws ProjectionException {
+        final TableAppender table = new TableAppender(out);
+        table.appendHorizontalSeparator();
+        table.append("Excentricity");            table.nextColumn();
+        table.append("Mean iterative error");    table.nextColumn();
+        table.append("Maximal iterative error"); table.nextColumn();
+        table.append("Mean series error");       table.nextColumn();
+        table.append("Maximal series error");    table.nextLine();
+        table.appendHorizontalSeparator();
+        boolean crossThreshold = false;
+        final double step = 0.01;
+        double excentricity;
+        for (int i=0; (excentricity = min + step*i) < max; i++) {
+            if (!crossThreshold && excentricity >= GeneralLambert.EXCENTRICITY_THRESHOLD) {
+                crossThreshold = true;
+                table.appendHorizontalSeparator();
+            }
+            final MercatorAlternative alt = new MercatorAlternative(excentricity * excentricity);
+            alt.compare(null, 10000, table);
+        }
+        table.appendHorizontalSeparator();
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
      * The result is printed to the standard output stream.
      *
      * @param  args ignored.
      * @throws ProjectionException if an error occurred in {@link #φ(double)}.
      */
     public static void main(String[] args) throws ProjectionException {
-        final GeneralLambert projection = new NoOp(100, 95);
-        final MercatorAlternative alt = new MercatorAlternative(projection);
-        alt.compare(projection, 2000000);
+        out.println("Comparison of the errors of series expension and iterative method for various excentricity values.");
+        printErrorForExcentricities(0.08, 0.3);
+
+        out.println();
+        out.println("Comparison of the errors for a sphere.");
+        out.println("The errors should be almost zero:");
+        out.println();
+        GeneralLambert projection = new NoOp(false);
+        MercatorAlternative alt = new MercatorAlternative(projection);
+        alt.compare(projection, 10000, null);
+
+        out.println();
+        out.println("Comparison of the errors for the WGS84 excentricity.");
+        out.println("The 'GeneralLambert' errors should be the same than the series expansion errors:");
+        out.println();
+        projection = new NoOp(true);
+        alt = new MercatorAlternative(projection);
+        alt.compare(projection, 1000000, null);
+
+        out.println();
+        out.println("Comparison of the errors for the excentricity of an imaginary ellipsoid.");
+        out.println("The 'GeneralLambert' errors should be the close to the iterative method errors:");
+        out.println();
+        projection = new NoOp(100, 95);
+        alt = new MercatorAlternative(projection);
+        alt.compare(projection, 1000000, null);
     }
 }

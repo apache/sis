@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.util.resources.Errors;
@@ -43,9 +45,32 @@ abstract class GeneralLambert extends NormalizedProjection {
     private static final long serialVersionUID = 458860570536642265L;
 
     /**
-     * Coefficients in the series expansion used by {@link #φ(double)}.
+     * The threshold value of {@link #excentricity} at which we consider the accuracy of the
+     * series expansion insufficient. This threshold is determined empirically with the help
+     * of the {@code MercatorAlternative} class in the test directory.
+     * We choose the value where:
+     *
+     * <ul>
+     *   <li>the average error of series expansion become greater than {@link NormalizedProjection#ITERATION_TOLERANCE},</li>
+     *   <li>the maximal error of series expansion become greater than {@link NormalizedProjection#ANGULAR_TOLERANCE}.</li>
+     * </ul>
      */
-    private final double c2χ, c4χ, c6χ, c8χ;
+    static final double EXCENTRICITY_THRESHOLD = 0.16;
+
+    /**
+     * Coefficients in the series expansion used by {@link #φ(double)}.
+     *
+     * <p>Consider those fields as final. They are not only of the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     */
+    private transient double c2χ, c4χ, c6χ, c8χ;
+
+    /**
+     * {@code true} if the {@link #excentricity} value is greater than or equals to {@link #EXCENTRICITY_THRESHOLD},
+     * in which case the {@link #φ(double)} method will need to use an iterative method.
+     *
+     * <p>Consider this field as final. It is not only of the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     */
+    private transient boolean useIterations;
 
     /**
      * Constructs a new map projection from the supplied parameters.
@@ -59,6 +84,14 @@ abstract class GeneralLambert extends NormalizedProjection {
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
         super(method, parameters, roles);
+        initialize();
+    }
+
+    /**
+     * Computes the transient fields after construction or deserialization.
+     */
+    private void initialize() {
+        useIterations = (excentricity >= EXCENTRICITY_THRESHOLD);
         final double e2 = excentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
@@ -81,6 +114,7 @@ abstract class GeneralLambert extends NormalizedProjection {
      */
     GeneralLambert(final GeneralLambert other) {
         super(other);
+        useIterations = other.useIterations;
         c2χ = other.c2χ;
         c4χ = other.c4χ;
         c6χ = other.c6χ;
@@ -129,31 +163,41 @@ abstract class GeneralLambert extends NormalizedProjection {
          * values, for reducing rounding errors due to IEEE 754 arithmetic. We also store in ε the value
          * of the smallest term.
          */
-        double ε;
-        φ += (ε = c8χ * sin(8*φ))
-                + c6χ * sin(6*φ)
-                + c4χ * sin(4*φ)
-                + c2χ * sin(2*φ);
-        /*
-         * If the smallest term is smaller or equals to the tolerance threshold, we are done.
-         * This is always the case for the WGS84 ellipsoid.
-         */
-        if (!(abs(ε) > ITERATION_TOLERANCE)) {   // Use '!' for catching NaN.
+        φ += c8χ * sin(8*φ)
+           + c6χ * sin(6*φ)
+           + c4χ * sin(4*φ)
+           + c2χ * sin(2*φ);
+
+        if (!useIterations) {
             return φ;
         }
         /*
          * We should never reach this point for map projections on Earth. But if the ellipsoid is for some
-         * other planet having a hight excentricity, the above series expansion may not be sufficient.
-         * Try to improve by iteratively solving equation (7-9) from Snyder.
+         * other planet having a high excentricity, then the above series expansion may not be sufficient.
+         * Try to improve by iteratively solving equation (7-9) from Snyder. However instead than using
+         * Snyder (7-11) as the starting point, we take the result of above calculation as the initial φ.
+         * Assuming that it is closer to the real φ value, this save us some iteration loops and usually
+         * gives us more accurate results (according MercatorAlternative tests).
          */
         final double hℯ = 0.5 * excentricity;
         for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
             final double ℯsinφ = excentricity * sin(φ);
-            ε = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
+            double ε = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
             if (ε <= ITERATION_TOLERANCE) {
                 return φ;
             }
         }
+        if (Double.isNaN(expOfSouthing)) {
+            return Double.NaN;
+        }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+    /**
+     * Restores transient fields after deserialization.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initialize();
     }
 }
