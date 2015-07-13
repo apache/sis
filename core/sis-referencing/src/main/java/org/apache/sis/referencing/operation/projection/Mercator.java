@@ -76,7 +76,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @see TransverseMercator
  * @see ObliqueMercator
  */
-public class Mercator extends GeneralLambert {
+public class Mercator extends AbstractLambertConformal {
     /**
      * For cross-version compatibility.
      */

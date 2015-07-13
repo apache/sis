@@ -64,7 +64,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @version 0.6
  * @module
  */
-public class LambertConformal extends GeneralLambert {
+public class LambertConformal extends AbstractLambertConformal {
     /**
      * For cross-version compatibility.
      */

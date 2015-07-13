@@ -28,7 +28,7 @@ import static java.lang.Math.*;
 
 
 /**
- * Base class of {@link Lambert} and {@link Mercator} projections.
+ * Base class of {@link LambertConformal} and {@link Mercator} projections.
  * For this base class, the Mercator projection is considered as <cite>"a special limiting case of the
  * Lambert Conic Conformal map projection with the equator as the single standard parallel."</cite>
  * (Source: §1.3.3 in IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015).
@@ -38,7 +38,7 @@ import static java.lang.Math.*;
  * @version 0.6
  * @module
  */
-abstract class GeneralLambert extends NormalizedProjection {
+abstract class AbstractLambertConformal extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
@@ -80,7 +80,7 @@ abstract class GeneralLambert extends NormalizedProjection {
      * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
-    protected GeneralLambert(final OperationMethod method, final Parameters parameters,
+    protected AbstractLambertConformal(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
         super(method, parameters, roles);
@@ -112,7 +112,7 @@ abstract class GeneralLambert extends NormalizedProjection {
      * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
-    GeneralLambert(final GeneralLambert other) {
+    AbstractLambertConformal(final AbstractLambertConformal other) {
         super(other);
         useIterations = other.useIterations;
         c2χ = other.c2χ;
