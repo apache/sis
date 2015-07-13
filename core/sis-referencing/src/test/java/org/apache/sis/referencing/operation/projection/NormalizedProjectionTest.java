@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Random;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
@@ -49,7 +48,7 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */
-    private static final double TOLERANCE = 1E-12;
+    static final double TOLERANCE = 1E-12;
 
     /**
      * Natural logarithm of the pseudo-infinity as returned by Mercator formulas in the spherical
@@ -77,17 +76,6 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
      */
     private double expOfNorthing(final double φ) {
         return expOfNorthing((NormalizedProjection) transform, φ);
-    }
-
-    /**
-     * Computes {@link GeneralLambert#φ(double)}.
-     *
-     * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
-     * @return The latitude in radians.
-     * @throws ProjectionException if the iteration does not converge.
-     */
-    private double φ(final double expOfSouthing) throws ProjectionException {
-        return ((GeneralLambert) transform).φ(expOfSouthing);
     }
 
     /**
@@ -215,81 +203,6 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
         assertEquals("Mercator(0°)",   0,                 log(expOfNorthing(0)),     tolerance);
         assertEquals("Mercator(90°S)", NEGATIVE_INFINITY, log(expOfNorthing(-PI/2)), tolerance);
         assertTrue  ("Mercator(90°N)", LN_INFINITY <      log(expOfNorthing(+PI/2)));
-    }
-
-    /**
-     * Tests the {@link GeneralLambert#φ(double)} function. We expect it to be
-     * the converse of the {@link NormalizedProjection#expOfNorthing(double, double)} function.
-     * In theory only the [-90° … +90°] range needs to be tested. However the function is still
-     * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
-     *
-     * @throws ProjectionException Should never happen.
-     */
-    @Test
-    @DependsOnMethod("testExpOfNorthing")
-    public void test_φ() throws ProjectionException {
-        transform = new NoOp(false);   // Spherical case
-        tolerance = TOLERANCE;
-        doTest_φ();
-        transform = new NoOp(true);    // Ellipsoidal case
-        tolerance = NormalizedProjection.ITERATION_TOLERANCE;
-        doTest_φ();
-    }
-
-    /**
-     * Implementation of {@link #test_φ()}.
-     * The {@link #projection} field must have been set before this method is called.
-     */
-    private void doTest_φ() throws ProjectionException {
-        assertEquals("φ(NaN) = NaN",    NaN,   φ(NaN),               tolerance);
-        assertEquals("φ( ∞)  = -90°", -PI/2,   φ(POSITIVE_INFINITY), tolerance);
-        assertEquals("φ( ∞)  = -90°", -PI/2,   φ(MAX_VALUE),         tolerance);
-        assertEquals("φ( 1)  =   0°",    0,    φ(1),                 tolerance);
-        assertEquals("φ( ε)  →  90°",  PI/2,   φ(MIN_VALUE),         tolerance);
-        assertEquals("φ( 0)  =  90°",  PI/2,   φ(0),                 tolerance);
-        assertEquals("φ(-ε)  →  90°",  PI/2,   φ(-MIN_VALUE),        tolerance);
-        assertEquals("φ(-1)  = 180°",  PI,     φ(-1),                tolerance);
-        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(-MAX_VALUE),        tolerance);
-        assertEquals("φ(-∞)  = 270°",  PI*1.5, φ(NEGATIVE_INFINITY), tolerance);
-        /*
-         * Using t(φ) as a reference.
-         */
-        for (int i=-90; i<=270; i+=5) {
-            final double φ   = toRadians(i);
-            final double t    = 1 / expOfNorthing(φ);
-            final double back = toDegrees(φ(t));
-            if (i <= 90) {
-                assertTrue("φ(t) in valid range should be positive.", t >= 0);
-            } else {
-                assertTrue("φ(t) in invalid range should be negative.", t < 0);
-            }
-            assertEquals("Inverse function does not match.", i, back, tolerance);
-        }
-    }
-
-    /**
-     * Performs a comparison between φ values computed by the iterative method and by series expansion.
-     * Then compares with the φ values computed by {@link GeneralLambert#φ(double)}, which uses a mix
-     * of the two methods. See {@link MercatorAlternative} for a discussion.
-     *
-     * @throws ProjectionException if an error occurred during computation of φ.
-     *
-     * @see MercatorAlternative
-     */
-    @Test
-    public void compareWithSeriesExpansion() throws ProjectionException {
-        final GeneralLambert projection = new NoOp(true);
-        final MercatorAlternative comparator = new MercatorAlternative(projection.excentricitySquared);
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        final int numSamples = 2000;
-        for (int i=0; i<numSamples; i++) {
-            final double φ = random.nextDouble() * PI - PI/2;
-            final double t = 1 / comparator.expOfNorthing(φ);
-            final double byIterativeMethod = comparator.byIterativeMethod(t);
-            final double bySeriesExpansion = comparator.bySeriesExpansion(t);
-            assertEquals(bySeriesExpansion, byIterativeMethod, 1E-11);
-            assertEquals(bySeriesExpansion, projection.φ(t),   1E-11);
-        }
     }
 
     /**
