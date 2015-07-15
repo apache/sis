@@ -87,7 +87,7 @@ class AbstractMercator extends MapProjection {
      * @return The map projection created from the given parameter values.
      */
     @Override
-    protected final NormalizedProjection createProjection(final Parameters parameters) {
+    protected NormalizedProjection createProjection(final Parameters parameters) {
         return new Mercator(this, parameters);
     }
 }

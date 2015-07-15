@@ -347,9 +347,8 @@ public class LambertConformal extends AbstractLambertConformal {
     }
 
     /**
-     * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
-     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
-     * if {@code derivate} is {@code true}.
+     * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
+     * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
      * @return The matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -404,8 +403,7 @@ public class LambertConformal extends AbstractLambertConformal {
     }
 
     /**
-     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates
-     * and stores the result in {@code dstPts} (angles in radians).
+     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
      * @throws ProjectionException if the point can not be converted.
      */

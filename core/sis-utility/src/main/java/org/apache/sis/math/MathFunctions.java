@@ -57,7 +57,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see DecimalFunctions
@@ -312,8 +312,38 @@ public final class MathFunctions extends Static {
     }
 
     /**
+     * Returns the inverse hyperbolic sine of the given value.
+     * This is the inverse of the {@link Math#sinh(double)} method.
+     *
+     * @param  x The value for which to compute the inverse hyperbolic sine.
+     * @return The inverse hyperbolic sine of the given value.
+     *
+     * @see Math#sinh(double)
+     *
+     * @since 0.6
+     */
+    public static double asinh(final double x) {
+        return Math.log(x + Math.sqrt(x*x + 1));
+    }
+
+    /**
+     * Returns the inverse hyperbolic cosine of the given value.
+     * This is the inverse of the {@link Math#cosh(double)} method.
+     *
+     * @param  x The value for which to compute the inverse hyperbolic cosine.
+     * @return The inverse hyperbolic cosine of the given value.
+     *
+     * @see Math#cosh(double)
+     *
+     * @since 0.6
+     */
+    public static double acosh(final double x) {
+        return Math.log(x + Math.sqrt(x*x - 1));
+    }
+
+    /**
      * Returns the inverse hyperbolic tangent of the given value.
-     * This is the inverse of the {@linkplain Math#tanh(double) tanh} method.
+     * This is the inverse of the {@link Math#tanh(double)} method.
      * The range of input values shall be in the [-1 … 1].
      * Special cases:
      *
