@@ -331,25 +331,25 @@ public class Mercator extends AbstractLambertConformal {
         final double λ    = srcPts[srcOff];
         final double φ    = srcPts[srcOff + 1];
         final double sinφ = sin(φ);
-        /*
-         * Projection of zero is zero. However the formulas below have a slight rounding error
-         * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
-         * avoiding rounding error, this also preserve the sign (positive vs negative zero).
-         */
-        final double y;
-        if (φ == 0) {
-            y = φ;
-        } else {
-            // See the javadoc of the Spherical inner class for a note
-            // about why we perform explicit checks for the pole cases.
-            final double a = abs(φ);
-            if (a < PI/2) {
-                y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
-            } else {
-                y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
-            }
-        }
         if (dstPts != null) {
+            /*
+             * Projection of zero is zero. However the formulas below have a slight rounding error
+             * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
+             * avoiding rounding error, this also preserve the sign (positive vs negative zero).
+             */
+            final double y;
+            if (φ == 0) {
+                y = φ;
+            } else {
+                // See the javadoc of the Spherical inner class for a note
+                // about why we perform explicit checks for the pole cases.
+                final double a = abs(φ);
+                if (a < PI/2) {
+                    y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
+                } else {
+                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                }
+            }
             dstPts[dstOff]   = λ;
             dstPts[dstOff+1] = y;
         }
