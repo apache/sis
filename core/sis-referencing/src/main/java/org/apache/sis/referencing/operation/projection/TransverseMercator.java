@@ -107,12 +107,12 @@ public class TransverseMercator extends NormalizedProjection {
         final double n3 = n2 * n;
         final double n4 = n2 * n2;
         /*
-         * Computes B  =  (n4/64 + n2/4 + 1) / (1 + n)
+         * Compute B  =  (n4/64 + n2/4 + 1) / (n + 1)
          * Opportunistically uses double-double arithmetic since we use it anyway for denormalization matrix.
          */
         final DoubleDouble B = new DoubleDouble(n);
         B.add(1);
-        B.inverseDivide(n4/64 + n2/4 + 1, 0);
+        B.inverseDivide(1, n4/64 + n2/4);
         /*
          * Coefficients for direct projection.
          * Add the smallest values first in order to reduce rounding errors.
@@ -133,7 +133,7 @@ public class TransverseMercator extends NormalizedProjection {
          * Computes M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄), and negate in anticipation for what
          * will be needed in the denormalization matrix.
          */
-        final double Q  = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
+        final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
         final double β = atan(sinh(Q));
         final DoubleDouble M0 = new DoubleDouble(β, 0);
         M0.add(h1 * sin(2*β), 0);
@@ -184,6 +184,8 @@ public class TransverseMercator extends NormalizedProjection {
         final double η0 = atanh(cos(β) * sin(λ));
         final double ξ0 = asin(sin(β) * cosh(η0));
 
+        // TODO: use trigonometric identities.
+        // See AbstractLambertConformal for example.
         final double ξ = h4 * sin(8*ξ0) * cosh(8*η0)
                        + h3 * sin(6*ξ0) * cosh(6*η0)
                        + h2 * sin(4*ξ0) * cosh(4*η0)
@@ -204,7 +206,7 @@ public class TransverseMercator extends NormalizedProjection {
             return null;
         }
 
-        // TODO
+        // TODO: compute projection derivative.
         return null;
     }
 
@@ -221,6 +223,8 @@ public class TransverseMercator extends NormalizedProjection {
         final double η = srcPts[srcOff    ];
         final double ξ = srcPts[srcOff + 1];
 
+        // TODO: use trigonometric identities.
+        // See AbstractLambertConformal for example.
         final double ξ0 = ξ - (ih4 * sin(8*ξ) * cosh(8*η)
                              + ih3 * sin(6*ξ) * cosh(6*η)
                              + ih2 * sin(4*ξ) * cosh(4*η)
