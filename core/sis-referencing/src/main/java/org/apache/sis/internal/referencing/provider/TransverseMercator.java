@@ -25,7 +25,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>Transverse Mercator</cite> projection (EPSG codes 9807).
+ * The provider for <cite>"Transverse Mercator"</cite> projection (EPSG:9807).
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)

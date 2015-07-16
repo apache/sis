@@ -19,14 +19,16 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
-
 import org.apache.sis.util.resources.Errors;
+
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -75,13 +77,26 @@ public class TransverseMercator extends NormalizedProjection {
      *
      * @return The roles map to give to super-class constructor.
      */
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles() {
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final boolean isSouth) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        ParameterRole xOffset = ParameterRole.FALSE_EASTING;
+        ParameterRole yOffset = ParameterRole.FALSE_NORTHING;
+        if (isSouth) {
+            xOffset = ParameterRole.FALSE_WESTING;
+            yOffset = ParameterRole.FALSE_SOUTHING;
+        }
         roles.put(ParameterRole.CENTRAL_MERIDIAN, org.apache.sis.internal.referencing.provider.TransverseMercator.LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.SCALE_FACTOR,     org.apache.sis.internal.referencing.provider.TransverseMercator.SCALE_FACTOR);
-        roles.put(ParameterRole.FALSE_EASTING,    org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
-        roles.put(ParameterRole.FALSE_NORTHING,   org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
+        roles.put(xOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
+        roles.put(yOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
         return roles;
+    }
+
+    /**
+     * Returns the type of the projection based on the name and identifier of the given parameter group.
+     */
+    private static boolean isSouth(final ParameterDescriptorGroup parameters) {
+        return identMatch(parameters, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
     }
 
     /**
@@ -96,7 +111,7 @@ public class TransverseMercator extends NormalizedProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public TransverseMercator(final OperationMethod method, final Parameters parameters) {
-        super(method, parameters, roles());
+        super(method, parameters, roles(isSouth(parameters.getDescriptor())));
         final double φ0 = toRadians(getAndStore(parameters,
                 org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
         final double rs = parameters.doubleValue(MapProjection.SEMI_MINOR)
