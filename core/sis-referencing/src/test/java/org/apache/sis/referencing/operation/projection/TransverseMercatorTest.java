@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -63,6 +64,21 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testTransverseMercator() throws FactoryException, TransformException {
         createGeoApiTest(new org.apache.sis.internal.referencing.provider.TransverseMercator()).testTransverseMercator();
+    }
+
+    /**
+     * Tests the <cite>Transverse Mercator (South Orientated)</cite> case (EPSG:9808).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testTransverseMercatorSouthOrientated()
+     */
+    @Test
+    @org.junit.Ignore("Missing implementation of the projection derivative.")
+    public void testTransverseMercatorSouthOrientated() throws FactoryException, TransformException {
+        createGeoApiTest(new TransverseMercatorSouth()).testTransverseMercatorSouthOrientated();
     }
 
     /**
