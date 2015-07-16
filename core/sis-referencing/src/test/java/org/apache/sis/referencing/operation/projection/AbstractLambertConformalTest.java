@@ -110,9 +110,18 @@ public final strictfp class AbstractLambertConformalTest extends TransformTestCa
     }
 
     /**
-     * Performs a comparison between φ values computed by the iterative method and by series expansion.
-     * Then compares with the φ values computed by {@link AbstractLambertConformal#φ(double)}, which uses a mix
-     * of the two methods. See {@link MercatorMethodComparison} for a discussion.
+     * Performs a comparison between φ values computed by various methods.
+     * The comparisons are:
+     *
+     * <ol>
+     *   <li>φ values computed by an iterative method.</li>
+     *   <li>φ values computed by the series expansion given by EPSG guide.</li>
+     *   <li>φ values computed by modified form of series expansion, using trigonometric identities.</li>
+     *   <li>φ values computed by the actual {@link AbstractLambertConformal} implementation.</li>
+     * </ol>
+     *
+     * {@link AbstractLambertConformal#φ(double)} which uses a mix of 1 and 3 in the above list.
+     * See {@link MercatorMethodComparison} for a discussion.
      *
      * @throws ProjectionException if an error occurred during computation of φ.
      *
@@ -129,8 +138,19 @@ public final strictfp class AbstractLambertConformalTest extends TransformTestCa
             final double t = 1 / comparator.expOfNorthing(φ);
             final double byIterativeMethod = comparator.byIterativeMethod(t);
             final double bySeriesExpansion = comparator.bySeriesExpansion(t);
-            assertEquals(bySeriesExpansion, byIterativeMethod, 1E-11);
-            assertEquals(bySeriesExpansion, projection.φ(t),   1E-15);  // Tolerance threshold close to 1 ULP of 2π.
+            final double byTrigoIdentities = comparator.usingTrigonometricIdentities(t);
+            final double byImplementation  = projection.φ(t);
+            assertEquals("Iterative method",  φ, byIterativeMethod, 1E-11);
+            assertEquals("Series expansion",  φ, bySeriesExpansion, 1E-11);
+            assertEquals("Trigo. identities", φ, byTrigoIdentities, 1E-11);
+            assertEquals("Implementation",    φ, byImplementation,  1E-11);
+            /*
+             * Verify that the formulas modified with trigonometric identities give the same results
+             * than the original formulas. The main purpose of this test is to detect mistake during
+             * the application of identities.
+             */
+            assertEquals(byTrigoIdentities, bySeriesExpansion, 1E-15);  // Tolerance threshold close to 1 ULP of 2π.
+            assertEquals(projection.φ(t),   byTrigoIdentities, 1E-15);
         }
     }
 }
