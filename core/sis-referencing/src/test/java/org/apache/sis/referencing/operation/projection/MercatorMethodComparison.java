@@ -126,6 +126,30 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     }
 
     /**
+     * Same formula than {@link #bySeriesExpansion(double)}, but replacing some sine by trigonometric identities.
+     * The identities used are:
+     *
+     * <ul>
+     *   <li>sin(2⋅x) = 2⋅sin(x)⋅cos(x)</li>
+     *   <li>sin(3⋅x) = (3 - 4⋅sin²(x))⋅sin(x)</li>
+     *   <li>sin(4⋅x) = (4 - 8⋅sin²(x))⋅sin(x)⋅cos(x)</li>
+     * </ul>
+     *
+     * @param  t The {@code expOfSouthing} parameter value.
+     * @return The latitude (in radians) for the given parameter.
+     */
+    public double usingTrigonometricIdentities(final double t) {
+        final double χ = PI/2 - 2*atan(t);
+        final double sin2χ     = sin(2*χ);
+        final double sin_cos2χ = cos(2*χ) * sin2χ;
+        final double sin_sin2χ = sin2χ * sin2χ;
+        return c8χ * (4 - 8*sin_sin2χ)*sin_cos2χ
+             + c6χ * (3 - 4*sin_sin2χ)*sin2χ
+             + c4χ * 2*sin_cos2χ
+             + c2χ * sin2χ + χ;
+    }
+
+    /**
      * Computes φ using the iterative method used by USGS.
      * This is the second part of the {@link AbstractLambertConformal#φ(double)} method.
      *
@@ -178,16 +202,19 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     {
         final Statistics iterativeMethodErrors = new Statistics("Iterative method error");
         final Statistics seriesExpansionErrors = new Statistics("Series expansion error");
-        final Statistics abstractLambertErrors  = new Statistics("'AbstractLambertConformal' error");
+        final Statistics usingTrigoIdentErrors = new Statistics("Using trigonometric identities");
+        final Statistics abstractLambertErrors = new Statistics("'AbstractLambertConformal' error");
         final Random random = new Random();
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
             final double t = 1 / expOfNorthing(φ);
             final double byIterativeMethod = byIterativeMethod(t);
             final double bySeriesExpansion = bySeriesExpansion(t);
+            final double usingTrigoIdent = usingTrigonometricIdentities(t);
 
             iterativeMethodErrors.accept(abs(φ - byIterativeMethod) / NormalizedProjection.ITERATION_TOLERANCE);
             seriesExpansionErrors.accept(abs(φ - bySeriesExpansion) / NormalizedProjection.ITERATION_TOLERANCE);
+            usingTrigoIdentErrors.accept(abs(φ - usingTrigoIdent)   / NormalizedProjection.ITERATION_TOLERANCE);
             if (projection != null) {
                 abstractLambertErrors.accept(abs(φ - projection.φ(t)) / NormalizedProjection.ITERATION_TOLERANCE);
             }
@@ -208,6 +235,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             Statistics[] stats = new Statistics[] {
                 iterativeMethodErrors,
                 seriesExpansionErrors,
+                usingTrigoIdentErrors,
                 abstractLambertErrors
             };
             if (projection == null) {
@@ -269,12 +297,47 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     }
 
     /**
+     * Compares the performance of the 3 methods.
+     *
+     * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     */
+    private void benchmark() throws ProjectionException {
+        final Random random = new Random();
+        final double[] t = new double[1000000];
+        for (int i=0; i<t.length; i++) {
+            t[i] = random.nextGaussian() * 3;
+        }
+        double s0 = 0, s1 = 0, s2 = 0;
+        final long t0 = System.nanoTime();
+        for (int i=0; i<t.length; i++) {
+            s0 += byIterativeMethod(t[i]);
+        }
+        final long t1 = System.nanoTime();
+        for (int i=0; i<t.length; i++) {
+            s1 += bySeriesExpansion(t[i]);
+        }
+        final long t2 = System.nanoTime();
+        for (int i=0; i<t.length; i++) {
+            s2 += usingTrigonometricIdentities(t[i]);
+        }
+        final long t3 = System.nanoTime();
+        final float c = (t1 - t0) / 100f;
+        out.println("Iterative method:         " + ((t1 - t0) / 1E9f) + " seconds (" + round((t1 - t0) / c) + "%).");
+        out.println("Series expansion:         " + ((t2 - t1) / 1E9f) + " seconds (" + round((t2 - t1) / c) + "%).");
+        out.println("Trigonometric identities: " + ((t3 - t2) / 1E9f) + " seconds (" + round((t3 - t2) / c) + "%).");
+        out.println("Mean φ values: " + (s0 / t.length) + ", "
+                                      + (s1 / t.length) + " and "
+                                      + (s2 / t.length) + ".");
+    }
+
+    /**
      * The result is printed to the standard output stream.
      *
      * @param  args ignored.
      * @throws ProjectionException if an error occurred in {@link #φ(double)}.
+     * @throws InterruptedException if the thread has been interrupted between two benchmarks.
      */
-    public static void main(String[] args) throws ProjectionException {
+    public static void main(String[] args) throws ProjectionException, InterruptedException {
         out.println("Comparison of the errors of series expension and iterative method for various excentricity values.");
         printErrorForExcentricities(0.08, 0.3);
 
@@ -283,23 +346,34 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         out.println("The errors should be almost zero:");
         out.println();
         AbstractLambertConformal projection = new NoOp(false);
-        MercatorMethodComparison alt = new MercatorMethodComparison(projection);
-        alt.compare(projection, 10000, null);
+        MercatorMethodComparison c = new MercatorMethodComparison(projection);
+        c.compare(projection, 10000, null);
 
         out.println();
         out.println("Comparison of the errors for the WGS84 excentricity.");
         out.println("The 'AbstractLambertConformal' errors should be the same than the series expansion errors:");
         out.println();
         projection = new NoOp(true);
-        alt = new MercatorMethodComparison(projection);
-        alt.compare(projection, 1000000, null);
+        c = new MercatorMethodComparison(projection);
+        c.compare(projection, 1000000, null);
 
         out.println();
         out.println("Comparison of the errors for the excentricity of an imaginary ellipsoid.");
         out.println("The 'AbstractLambertConformal' errors should be the close to the iterative method errors:");
         out.println();
         projection = new NoOp(100, 95);
-        alt = new MercatorMethodComparison(projection);
-        alt.compare(projection, 1000000, null);
+        c = new MercatorMethodComparison(projection);
+        c.compare(projection, 1000000, null);
+
+        out.println();
+        out.println("Benchmarks");
+        c = new MercatorMethodComparison();
+        for (int i=0; i<4; i++) {
+            System.gc();
+            Thread.sleep(1000);
+            c.benchmark();
+            out.println();
+        }
+        out.flush();
     }
 }
