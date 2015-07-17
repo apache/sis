@@ -18,8 +18,11 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
@@ -38,6 +41,12 @@ public final class ObliqueStereographic extends AbstractStereographic {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6505988910141381354L;
+
+    /**
+     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
+     * Valid values range is [-90 … 90]° and default value is 0°.
+     */
+    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN = TransverseMercator.LATITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
@@ -76,5 +85,15 @@ public final class ObliqueStereographic extends AbstractStereographic {
      */
     public ObliqueStereographic() {
         super(PARAMETERS);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return The map projection created from the given parameter values.
+     */
+    @Override
+    protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet.");  // TODO
     }
 }

@@ -22,6 +22,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.referencing.operation.projection.PolarStereographic;
 
 
 /**
@@ -37,12 +38,6 @@ abstract class AbstractStereographic extends MapProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -8797654778436582119L;
-
-    /**
-     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * Valid values range is [-90 … 90]° and default value is 0°.
-     */
-    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN = TransverseMercator.LATITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
@@ -82,10 +77,13 @@ abstract class AbstractStereographic extends MapProjection {
     /**
      * {@inheritDoc}
      *
+     * The default implementation creates a projection for the <cite>"Polar Stereographic"</cite> case only.
+     * Subclasses need to override if they want to support other cases (oblique and equatorial).
+     *
      * @return The map projection created from the given parameter values.
      */
     @Override
     protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet.");  // TODO
+        return new PolarStereographic(this, parameters);
     }
 }
