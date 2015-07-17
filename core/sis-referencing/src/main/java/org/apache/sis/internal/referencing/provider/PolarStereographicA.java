@@ -43,7 +43,7 @@ public final class PolarStereographicA extends AbstractStereographic {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
 
     /**
      * The group of all parameters expected by this coordinate operation.
