@@ -28,10 +28,15 @@ import static java.lang.Math.*;
 
 
 /**
- * Base class of {@link LambertConformal} and {@link Mercator} projections.
+ * Base class of {@link LambertConformal}, {@link Mercator} and {@link PolarStereographic} projections.
  * For this base class, the Mercator projection is considered as <cite>"a special limiting case of the
  * Lambert Conic Conformal map projection with the equator as the single standard parallel."</cite>
  * (Source: §1.3.3 in IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015).
+ *
+ * <p>The polar stereographic projection is not documented as a special case of Lambert Conic Conformal,
+ * but the equations in the {@code PolarStereographic.transform(…)} and {@code inverseTransform(…)} methods
+ * appear to be the same with the <var>n</var> factor fixed to 1 or -1, so we leverage the code provided by
+ * this base class. This class hierarchy is only an implementation convenience and not part of public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
