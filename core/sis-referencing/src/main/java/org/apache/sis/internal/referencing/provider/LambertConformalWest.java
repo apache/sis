@@ -73,9 +73,9 @@ public final class LambertConformalWest extends AbstractLambert {
             .addName("Lambert Conic Conformal (West Orientated)")
             .createGroupForMapProjection(
                     LambertConformal1SP.LATITUDE_OF_ORIGIN,
-                    LambertConformal1SP.CENTRAL_MERIDIAN,
+                    LambertConformal1SP.LONGITUDE_OF_ORIGIN,
                     LambertConformal1SP.SCALE_FACTOR,
-                    FALSE_WESTING,
+                                        FALSE_WESTING,
                     LambertConformal1SP.FALSE_NORTHING);
     }
 

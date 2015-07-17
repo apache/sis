@@ -150,6 +150,9 @@ public class TransverseMercator extends NormalizedProjection {
          * the precision is actually not better than double (in current SIS version) because of
          * the precision of trigonometric functions. We may improve on that in the future if it
          * seems useful.
+         *
+         * NOTE: the EPSG documentation makes special cases for φ₀ = 0 or ±π/2. This is not
+         * needed here; we verified that the code below produces naturally the expected values.
          */
         final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
         final double β = atan(sinh(Q));

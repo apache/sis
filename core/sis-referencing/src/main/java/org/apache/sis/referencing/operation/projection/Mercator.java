@@ -193,7 +193,7 @@ public class Mercator extends AbstractLambertConformal {
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
          * for now; it will be converted to radians later.
          */
-        final double λ0 = getAndStore(parameters, Mercator1SP.CENTRAL_MERIDIAN);
+        final double λ0 = getAndStore(parameters, Mercator1SP.LONGITUDE_OF_ORIGIN);
         /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
