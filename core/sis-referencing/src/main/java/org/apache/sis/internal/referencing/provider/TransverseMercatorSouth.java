@@ -16,10 +16,13 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -33,7 +36,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @version 0.6
  * @module
  *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
+ * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator_south_oriented.html">Transverse Mercator (South Oriented) on RemoteSensing.org</a>
  */
 public final class TransverseMercatorSouth extends AbstractMercator {
     /**
@@ -52,16 +55,22 @@ public final class TransverseMercatorSouth extends AbstractMercator {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        final ParameterDescriptor<Double> falseSouthing = createShift(builder
+                .addNamesAndIdentifiers(FALSE_NORTHING)
+                .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False southing")));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
-            .addName("Transverse Mercator (South Orientated)")
+            .addName(                    "Transverse Mercator (South Orientated)")
+            .addName(Citations.OGC,      "Transverse_Mercator_South_Orientated")
+            .addName(Citations.GEOTIFF,  "CT_TransvMercator_SouthOriented")
+            .addIdentifier(Citations.GEOTIFF,  "27")
             .createGroupForMapProjection(
                     TransverseMercator.LATITUDE_OF_ORIGIN,
                     TransverseMercator.LONGITUDE_OF_ORIGIN,
                     TransverseMercator.SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                    LambertConformalWest.FALSE_WESTING,
+                    falseSouthing);
     }
 
     /**

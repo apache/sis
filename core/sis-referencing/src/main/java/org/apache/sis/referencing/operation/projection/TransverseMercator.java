@@ -145,8 +145,11 @@ public class TransverseMercator extends NormalizedProjection {
         ih3 = ( -37. /    840)*n4  +  (17. / 480)*n3;
         ih4 = (4397. / 161280)*n4;
         /*
-         * Computes M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄), and negate in anticipation for what
-         * will be needed in the denormalization matrix.
+         * Compute M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄) and negate in anticipation for what will be needed
+         * in the denormalization matrix. We opportunistically use double-double arithmetic, but
+         * the precision is actually not better than double (in current SIS version) because of
+         * the precision of trigonometric functions. We may improve on that in the future if it
+         * seems useful.
          */
         final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
         final double β = atan(sinh(Q));
