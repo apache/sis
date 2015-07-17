@@ -364,24 +364,24 @@ public class LambertConformal extends AbstractLambertConformal {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = srcPts[srcOff];         // θ = λ⋅n
-        final double φ    = srcPts[srcOff + 1];     // Sign may be reversed
+        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n
+        final double φ    = srcPts[srcOff+1];     // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
         final double sinφ;
-        final double r;     // From EPSG guide. Note that Snyder p. 108 calls this term "ρ".
+        final double ρ;     // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            r = pow(expOfNorthing(φ, excentricity*sinφ), n);
+            ρ = pow(expOfNorthing(φ, excentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
-            r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+            ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
         } else {
-            r = sinφ = NaN;
+            ρ = sinφ = NaN;
         }
-        final double x = r * sinθ;
-        final double y = r * cosθ;
+        final double x = ρ * sinθ;
+        final double y = ρ * cosθ;
         if (dstPts != null) {
             dstPts[dstOff    ] = x;
             dstPts[dstOff + 1] = y;
@@ -394,9 +394,9 @@ public class LambertConformal extends AbstractLambertConformal {
         //
         final double dρ;
         if (sinφ != 1) {
-            dρ = n * dy_dφ(sinφ, cos(φ)) * r;
+            dρ = n * dy_dφ(sinφ, cos(φ)) * ρ;
         } else {
-            dρ = r;
+            dρ = ρ;
         }
         return new Matrix2(y, dρ*sinθ,      // ∂x/∂λ , ∂x/∂φ
                           -x, dρ*cosθ);     // ∂y/∂λ , ∂y/∂φ
@@ -480,21 +480,21 @@ public class LambertConformal extends AbstractLambertConformal {
             final double absφ = abs(φ);
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);
-            final double r;   // Snyder p. 108 calls this term "ρ", but we use "r" for consistency with EPSG guide.
+            final double ρ;   // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
             if (absφ < PI/2) {
-                r = pow(tan(PI/4 + 0.5*φ), n);
+                ρ = pow(tan(PI/4 + 0.5*φ), n);
             } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
-                r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+                ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
             } else {
-                r = NaN;
+                ρ = NaN;
             }
-            final double x = r * sinθ;
-            final double y = r * cosθ;
+            final double x = ρ * sinθ;
+            final double y = ρ * cosθ;
             Matrix derivative = null;
             if (derivate) {
                 final double dρ;
                 if (absφ < PI/2) {
-                    dρ = n*r / cos(φ);
+                    dρ = n*ρ / cos(φ);
                 } else {
                     dρ = NaN;
                 }
