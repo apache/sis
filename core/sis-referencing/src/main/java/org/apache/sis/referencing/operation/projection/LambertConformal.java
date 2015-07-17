@@ -121,7 +121,7 @@ public class LambertConformal extends AbstractLambertConformal {
             case SP1: {
                 roles.put(eastingDirection,               LambertConformal1SP.FALSE_EASTING);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
-                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.LONGITUDE_OF_ORIGIN);
                 break;
             }
             case MICHIGAN: {

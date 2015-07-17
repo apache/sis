@@ -52,7 +52,7 @@ public final class Mercator1SP extends AbstractMercator {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
@@ -70,7 +70,7 @@ public final class Mercator1SP extends AbstractMercator {
                 .rename(Citations.GEOTIFF, "NatOriginLat")
                 .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()), 0.0);
 
-        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.CENTRAL_MERIDIAN)
+        LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.LONGITUDE_OF_ORIGIN)
                 .rename(Citations.GEOTIFF, "NatOriginLong"));
 
         SCALE_FACTOR = createScale(builder
@@ -93,7 +93,7 @@ public final class Mercator1SP extends AbstractMercator {
             .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
             .createGroupForMapProjection(
                     LATITUDE_OF_ORIGIN,
-                    CENTRAL_MERIDIAN,
+                    LONGITUDE_OF_ORIGIN,
                     SCALE_FACTOR,
                     FALSE_EASTING,
                     FALSE_NORTHING);

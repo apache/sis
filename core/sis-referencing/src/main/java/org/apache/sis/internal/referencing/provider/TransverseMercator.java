@@ -68,7 +68,7 @@ public final class TransverseMercator extends AbstractMercator {
         LATITUDE_OF_ORIGIN = createLatitude(builder
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN), true);
 
-        LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Mercator1SP.CENTRAL_MERIDIAN)
+        LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Mercator1SP.LONGITUDE_OF_ORIGIN)
                 .rename(Citations.NETCDF, "longitude_of_central_meridian"));
 
         SCALE_FACTOR = createScale(builder

@@ -104,7 +104,7 @@ public final class Mercator2SP extends AbstractMercator {
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
                     latitudeOfOrigin,       // Not formally a Mercator2SP parameter.
-                    Mercator1SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.LONGITUDE_OF_ORIGIN,
                     SCALE_FACTOR,           // Not formally a Mercator2SP parameter.
                     FALSE_EASTING,
                     FALSE_NORTHING);
