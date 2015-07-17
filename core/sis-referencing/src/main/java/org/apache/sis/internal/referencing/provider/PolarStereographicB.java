@@ -40,6 +40,11 @@ public final class PolarStereographicB extends AbstractStereographic {
     private static final long serialVersionUID = 5188231050523249971L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9829";
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of standard parallel</cite> (φ₁) parameter value.
      * Valid values are -90° or 90°.
      */
@@ -75,7 +80,7 @@ public final class PolarStereographicB extends AbstractStereographic {
                 builder.addIdentifier("8833").addName("Longitude of origin").setDeprecated(false)));
 
         PARAMETERS = builder
-            .addIdentifier("9829")
+            .addIdentifier(IDENTIFIER)
             .addName("Polar Stereographic (variant B)")
             .addName(Citations.ESRI, "Stereographic_North_Pole")
             .addName(Citations.ESRI, "Stereographic_South_Pole")

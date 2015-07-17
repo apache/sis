@@ -40,6 +40,17 @@ public final class PolarStereographicA extends AbstractStereographic {
     private static final long serialVersionUID = 538262714055500925L;
 
     /**
+     * The EPSG identifier, to be preferred to the name when available.
+     */
+    public static final String IDENTIFIER = "9810";
+
+    /**
+     * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
+     * Valid values can be -90° or 90° only. There is no default value.
+     */
+    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN = LambertConformal1SP.LATITUDE_OF_ORIGIN;
+
+    /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
@@ -56,7 +67,7 @@ public final class PolarStereographicA extends AbstractStereographic {
                 .rename(Citations.GEOTIFF, "StraightVertPoleLong"));
 
         PARAMETERS = builder
-            .addIdentifier(             "9810")
+            .addIdentifier(             IDENTIFIER)
             .addName(                   "Polar Stereographic (variant A)")
             .addName(Citations.OGC,     "Polar_Stereographic")
             .addName(Citations.GEOTIFF, "CT_PolarStereographic")

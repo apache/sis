@@ -46,7 +46,7 @@ public final class LambertConformal1SP extends AbstractLambert {
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * Valid values range is [-90 … 90]° and default value is 0°.
+     * Valid values range is [-90 … 90]°. There is no default value.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
