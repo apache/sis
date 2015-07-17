@@ -67,7 +67,7 @@ public class TransverseMercator extends NormalizedProjection {
     private static final long serialVersionUID = -4717976245811852528L;
 
     /**
-     * Internal coefficients for computation, depending only on values of standards parallels.
+     * Internal coefficients for computation, depending only on value of excentricity.
      * Defined in §1.3.5.1 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      */
     private final double h1, h2, h3, h4, ih1, ih2, ih3, ih4;
