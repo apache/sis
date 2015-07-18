@@ -49,7 +49,7 @@ import static java.lang.Math.*;
  * @see EquatorialStereographic
  * @see ObliqueStereographic
  */
-public class PolarStereographic extends AbstractLambertConformal {  // Seen as a special case of LambertConformal.
+public class PolarStereographic extends ConformalProjection {  // Seen as a special case of LambertConformal.
     /**
      * For cross-version compatibility.
      */

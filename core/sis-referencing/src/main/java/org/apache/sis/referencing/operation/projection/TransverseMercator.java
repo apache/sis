@@ -207,7 +207,7 @@ public class TransverseMercator extends NormalizedProjection {
         final double ξ0 = asin(sin(β) * cosh(η0));
 
         // TODO: use trigonometric identities.
-        // See AbstractLambertConformal for example.
+        // See ConformalProjection for example.
         final double ξ = h4 * sin(8*ξ0) * cosh(8*η0)
                        + h3 * sin(6*ξ0) * cosh(6*η0)
                        + h2 * sin(4*ξ0) * cosh(4*η0)
@@ -246,7 +246,7 @@ public class TransverseMercator extends NormalizedProjection {
         final double ξ = srcPts[srcOff + 1];
 
         // TODO: use trigonometric identities.
-        // See AbstractLambertConformal for example.
+        // See ConformalProjection for example.
         final double ξ0 = ξ - (ih4 * sin(8*ξ) * cosh(8*η)
                              + ih3 * sin(6*ξ) * cosh(6*η)
                              + ih2 * sin(4*ξ) * cosh(4*η)

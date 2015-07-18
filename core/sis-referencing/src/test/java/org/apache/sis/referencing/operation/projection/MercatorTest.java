@@ -46,7 +46,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * @version 0.6
  * @module
  */
-@DependsOn(AbstractLambertConformalTest.class)
+@DependsOn(ConformalProjectionTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.

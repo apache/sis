@@ -43,7 +43,7 @@ import static java.lang.Math.*;
  * @version 0.6
  * @module
  */
-abstract class AbstractLambertConformal extends NormalizedProjection {
+abstract class ConformalProjection extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
@@ -101,7 +101,7 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
-    protected AbstractLambertConformal(final OperationMethod method, final Parameters parameters,
+    protected ConformalProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
         super(method, parameters, roles);
@@ -138,7 +138,7 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
-    AbstractLambertConformal(final AbstractLambertConformal other) {
+    ConformalProjection(final ConformalProjection other) {
         super(other);
         useIterations = other.useIterations;
         c2χ = other.c2χ;
