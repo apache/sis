@@ -45,6 +45,12 @@ public final class PolarStereographicB extends AbstractStereographic {
     public static final String IDENTIFIER = "9829";
 
     /**
+     * The operation parameter descriptor for the <cite>Longitude of origin</cite> (λ₀) parameter value.
+     * Valid values range is [-180 … 180]° and default value is 0°.
+     */
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
+
+    /**
      * The operation parameter descriptor for the <cite>Latitude of standard parallel</cite> (φ₁) parameter value.
      * Valid values are -90° or 90°.
      */
@@ -67,6 +73,10 @@ public final class PolarStereographicB extends AbstractStereographic {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        LONGITUDE_OF_ORIGIN = createLongitude(
+                exceptEPSG(PolarStereographicA.LONGITUDE_OF_ORIGIN,
+                builder.addIdentifier("8833").addName("Longitude of origin").setDeprecated(false)));
+
         STANDARD_PARALLEL = createMandatoryLatitude(builder
                 .addIdentifier("8832").addName("Latitude of standard parallel")
                 .addName(sameNameAs(Citations.OGC, Mercator2SP.STANDARD_PARALLEL)));
@@ -74,10 +84,6 @@ public final class PolarStereographicB extends AbstractStereographic {
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
                 .setRemarks(notFormalParameter("Polar Stereographic (variant A)")).setDeprecated(true));
-
-        final ParameterDescriptor<Double> longitudeOfOrigin = createLongitude(
-                exceptEPSG(PolarStereographicA.LONGITUDE_OF_ORIGIN,
-                builder.addIdentifier("8833").addName("Longitude of origin").setDeprecated(false)));
 
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
@@ -89,7 +95,7 @@ public final class PolarStereographicB extends AbstractStereographic {
             .addIdentifier(Citations.S57, "11")
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
-                    longitudeOfOrigin,
+                    LONGITUDE_OF_ORIGIN,
                     SCALE_FACTOR,       // Not formally a parameter of this projection.
                     FALSE_EASTING,
                     FALSE_NORTHING);
