@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link AbstractLambertConformal} class.
+ * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -37,30 +37,30 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class AbstractLambertConformalTest extends TransformTestCase {
+public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
-     * Computes {@link AbstractLambertConformal#expOfNorthing(double, double)} for the given latitude.
+     * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
      *
      * @param  φ The latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
     private double expOfNorthing(final double φ) {
-        return NormalizedProjectionTest.expOfNorthing((AbstractLambertConformal) transform, φ);
+        return NormalizedProjectionTest.expOfNorthing((ConformalProjection) transform, φ);
     }
 
     /**
-     * Computes {@link AbstractLambertConformal#φ(double)}.
+     * Computes {@link ConformalProjection#φ(double)}.
      *
      * @param  expOfSouthing The reciprocal of the value returned by {@link #expOfNorthing(double)}.
      * @return The latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      */
     private double φ(final double expOfSouthing) throws ProjectionException {
-        return ((AbstractLambertConformal) transform).φ(expOfSouthing);
+        return ((ConformalProjection) transform).φ(expOfSouthing);
     }
 
     /**
-     * Tests the {@link AbstractLambertConformal#φ(double)} function. We expect it to be
+     * Tests the {@link ConformalProjection#φ(double)} function. We expect it to be
      * the converse of the {@link NormalizedProjection#expOfNorthing(double, double)} function.
      * In theory only the [-90° … +90°] range needs to be tested. However the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
@@ -117,10 +117,10 @@ public final strictfp class AbstractLambertConformalTest extends TransformTestCa
      *   <li>φ values computed by an iterative method.</li>
      *   <li>φ values computed by the series expansion given by EPSG guide.</li>
      *   <li>φ values computed by modified form of series expansion, using trigonometric identities.</li>
-     *   <li>φ values computed by the actual {@link AbstractLambertConformal} implementation.</li>
+     *   <li>φ values computed by the actual {@link ConformalProjection} implementation.</li>
      * </ol>
      *
-     * {@link AbstractLambertConformal#φ(double)} which uses a mix of 1 and 3 in the above list.
+     * {@link ConformalProjection#φ(double)} which uses a mix of 1 and 3 in the above list.
      * See {@link MercatorMethodComparison} for a discussion.
      *
      * @throws ProjectionException if an error occurred during computation of φ.
@@ -129,7 +129,7 @@ public final strictfp class AbstractLambertConformalTest extends TransformTestCa
      */
     @Test
     public void compareWithSeriesExpansion() throws ProjectionException {
-        final AbstractLambertConformal projection = new NoOp(true);
+        final ConformalProjection projection = new NoOp(true);
         final MercatorMethodComparison comparator = new MercatorMethodComparison(projection.excentricitySquared);
         final Random random = TestUtilities.createRandomNumberGenerator();
         final int numSamples = 2000;

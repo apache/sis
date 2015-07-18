@@ -112,7 +112,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
     /**
      * Computes φ using the series expansion given by Geomatics Guidance Note number 7, part 2.
-     * This is the first part of the {@link AbstractLambertConformal#φ(double)} method.
+     * This is the first part of the {@link ConformalProjection#φ(double)} method.
      *
      * @param  t The {@code expOfSouthing} parameter value.
      * @return The latitude (in radians) for the given parameter.
@@ -151,7 +151,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
     /**
      * Computes φ using the iterative method used by USGS.
-     * This is the second part of the {@link AbstractLambertConformal#φ(double)} method.
+     * This is the second part of the {@link ConformalProjection#φ(double)} method.
      *
      * @param  t The {@code expOfSouthing} parameter value.
      * @return The latitude (in radians) for the given parameter.
@@ -174,7 +174,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     }
 
     /**
-     * Basically a copy of {@link AbstractLambertConformal#expOfNorthing(double, double)}.
+     * Basically a copy of {@link ConformalProjection#expOfNorthing(double, double)}.
      */
     final double expOfNorthing(final double φ) {
         final double ℯsinφ = excentricity * sin(φ);
@@ -195,15 +195,15 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
     /**
      * Implementation of {@link #printAccuracyComparison(int)} and {@link #printErrorForExcentricities(double,double)},
-     * optionally with a comparison with {@link AbstractLambertConformal}.
+     * optionally with a comparison with {@link ConformalProjection}.
      */
-    private void compare(final AbstractLambertConformal projection, final int numSamples, final TableAppender summarize)
+    private void compare(final ConformalProjection projection, final int numSamples, final TableAppender summarize)
             throws ProjectionException
     {
         final Statistics iterativeMethodErrors = new Statistics("Iterative method error");
         final Statistics seriesExpansionErrors = new Statistics("Series expansion error");
         final Statistics usingTrigoIdentErrors = new Statistics("Using trigonometric identities");
-        final Statistics abstractLambertErrors = new Statistics("'AbstractLambertConformal' error");
+        final Statistics abstractLambertErrors = new Statistics("'ConformalProjection' error");
         final Random random = new Random();
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
@@ -260,7 +260,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Prints the error of the two methods for various excentricity values.
      * The intend of this method is to find an excentricity threshold value where we consider the errors too high.
      *
-     * <p>This method is used for determining empirically a value for {@link AbstractLambertConformal#EXCENTRICITY_THRESHOLD}.
+     * <p>This method is used for determining empirically a value for {@link ConformalProjection#EXCENTRICITY_THRESHOLD}.
      * The current threshold value is shown by inserting a horizontal line separator in the table when that threshold
      * is crossed.</p>
      *
@@ -281,7 +281,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         final double step = 0.01;
         double excentricity;
         for (int i=0; (excentricity = min + step*i) < max; i++) {
-            if (!crossThreshold && excentricity >= AbstractLambertConformal.EXCENTRICITY_THRESHOLD) {
+            if (!crossThreshold && excentricity >= ConformalProjection.EXCENTRICITY_THRESHOLD) {
                 crossThreshold = true;
                 table.appendHorizontalSeparator();
             }
@@ -345,13 +345,13 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         out.println("Comparison of the errors for a sphere.");
         out.println("The errors should be almost zero:");
         out.println();
-        AbstractLambertConformal projection = new NoOp(false);
+        ConformalProjection projection = new NoOp(false);
         MercatorMethodComparison c = new MercatorMethodComparison(projection);
         c.compare(projection, 10000, null);
 
         out.println();
         out.println("Comparison of the errors for the WGS84 excentricity.");
-        out.println("The 'AbstractLambertConformal' errors should be the same than the series expansion errors:");
+        out.println("The 'ConformalProjection' errors should be the same than the series expansion errors:");
         out.println();
         projection = new NoOp(true);
         c = new MercatorMethodComparison(projection);
@@ -359,7 +359,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
         out.println();
         out.println("Comparison of the errors for the excentricity of an imaginary ellipsoid.");
-        out.println("The 'AbstractLambertConformal' errors should be the close to the iterative method errors:");
+        out.println("The 'ConformalProjection' errors should be the close to the iterative method errors:");
         out.println();
         projection = new NoOp(100, 95);
         c = new MercatorMethodComparison(projection);

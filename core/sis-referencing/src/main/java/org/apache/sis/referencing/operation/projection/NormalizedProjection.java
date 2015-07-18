@@ -143,7 +143,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
-     * This constant defines the desired accuracy of methods like {@link AbstractLambertConformal#φ(double)}.
+     * This constant defines the desired accuracy of methods like {@link ConformalProjection#φ(double)}.
      *
      * <p>The current value is 0.25 time the accuracy derived from {@link Formulas#LINEAR_TOLERANCE}.
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
@@ -866,7 +866,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm}
      * of the value returned by this method. This function is <em>almost</em> the converse of
-     * {@link AbstractLambertConformal#φ(double)}.
+     * {@link ConformalProjection#φ(double)}.
      *
      * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
      * a function closely related to this one has the letter <var>t</var>.</p>
@@ -914,7 +914,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      *
-     * @see AbstractLambertConformal#φ(double)
+     * @see ConformalProjection#φ(double)
      * @see #dy_dφ(double, double)
      */
     final double expOfNorthing(final double φ, final double ℯsinφ) {
@@ -940,7 +940,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @return The partial derivative of a Mercator projection at the given latitude.
      *
      * @see #expOfNorthing(double, double)
-     * @see AbstractLambertConformal#φ(double)
+     * @see ConformalProjection#φ(double)
      */
     final double dy_dφ(final double sinφ, final double cosφ) {
         return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
