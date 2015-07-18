@@ -19,8 +19,14 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.internal.referencing.provider.PolarStereographicB;
+import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
+
+import static java.lang.StrictMath.*;
 
 
 /**
@@ -34,6 +40,54 @@ import org.junit.Test;
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class PolarStereographicTest extends MapProjectionTestCase {
     /**
+     * Creates a new instance of {@link PolarStereographic}.
+     *
+     * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
+     */
+    private void initialize(final boolean ellipse, final double latitudeOfOrigin) {
+        final PolarStereographicA method = new PolarStereographicA();
+        final Parameters parameters = parameters(method, ellipse);
+        parameters.getOrCreate(PolarStereographicA.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
+        transform = new PolarStereographic(method, parameters);
+        if (!ellipse) {
+            transform = new PolarStereographic.Spherical((PolarStereographic) transform);
+        }
+        tolerance = NORMALIZED_TOLERANCE;
+        validate();
+    }
+
+    /**
+     * Verifies the consistency between spherical and elliptical formulas in the South pole.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testSphericalCaseSouth() throws FactoryException, TransformException {
+        initialize(false, -90);
+        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 56763886);
+    }
+
+    /**
+     * Verifies the consistency between spherical and elliptical formulas in the North pole.
+     * This is the same formulas than the South case, but with the sign of some coefficients negated.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testSphericalCaseSouth")
+    public void testSphericalCaseNorth() throws FactoryException, TransformException {
+        initialize(false, 90);
+        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 56763886);
+    }
+
+    /**
      * Tests the <cite>Polar Stereographic (variant A)</cite> case (EPSG:9810).
      * This test is defined in GeoAPI conformance test suite.
      *
@@ -43,8 +97,21 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicA()
      */
     @Test
-    @org.junit.Ignore("To debug")
-    public void testTransverseMercator() throws FactoryException, TransformException {
+    public void testPolarStereographicA() throws FactoryException, TransformException {
         createGeoApiTest(new PolarStereographicA()).testPolarStereographicA();
+    }
+
+    /**
+     * Tests the <cite>Polar Stereographic (variant B)</cite> case (EPSG:9829).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicB()
+     */
+    @Test
+    public void testPolarStereographicB() throws FactoryException, TransformException {
+        createGeoApiTest(new PolarStereographicB()).testPolarStereographicB();
     }
 }

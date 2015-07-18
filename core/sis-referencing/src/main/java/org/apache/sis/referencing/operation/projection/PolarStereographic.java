@@ -18,10 +18,13 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
@@ -29,6 +32,7 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.measure.Latitude;
 
 import static java.lang.Math.*;
@@ -56,37 +60,45 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
     private static final long serialVersionUID = -6635298308431138524L;
 
     /**
-     * Codes for variants.
+     * Codes for variants of Polar Stereographic projection. Those variants modify the way the projections are
+     * constructed (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are closely related.
+     *
+     * <p>We do not provide such codes in public API because they duplicate the functionality of
+     * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
      *
      * @see #getVariant(ParameterDescriptorGroup)
      */
     private static final byte A = 1, B = 2, C = 3, NORTH = 4, SOUTH = 5;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Polar Stereographic projection.
-     *
-     * @return The roles map to give to super-class constructor.
-     */
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles() {
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, PolarStereographicA.LONGITUDE_OF_ORIGIN);
-        roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
-        roles.put(ParameterRole.FALSE_EASTING,    PolarStereographicA.FALSE_EASTING);
-        roles.put(ParameterRole.FALSE_NORTHING,   PolarStereographicA.FALSE_NORTHING);
-        return roles;
-    }
-
-    /**
      * Returns the type of the projection based on the name and identifier of the given parameter group.
      * If this method can not identify the type, then the parameters should be considered as a 2SP case.
      */
     private static byte getVariant(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bA\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
-        if (identMatch(parameters, "(?i).*\\bB\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
-//      if (identMatch(parameters, "(?i).*\\bC\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
-        if (identMatch(parameters, "(?i).*\\bNorth\\b.*",  null)) return NORTH;
-        if (identMatch(parameters, "(?i).*\\bSouth\\b.*",  null)) return SOUTH;
+        if (identMatch(parameters, "(?i).*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
+        if (identMatch(parameters, "(?i).*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
+//      if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
+        if (identMatch(parameters, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
+        if (identMatch(parameters, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
         return 0; // Unidentified case, to be considered as variant A.
+    }
+
+    /**
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Polar Stereographic projection.
+     *
+     * @param  variant One of {@link #A}, {@link #B}, {@link #C}, {@link #NORTH} or {@link #SOUTH} constants.
+     * @return The roles map to give to super-class constructor.
+     */
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
+        roles.put(ParameterRole.FALSE_EASTING,    PolarStereographicA.FALSE_EASTING);
+        roles.put(ParameterRole.FALSE_NORTHING,   PolarStereographicA.FALSE_NORTHING);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == B)
+                ? PolarStereographicB.LONGITUDE_OF_ORIGIN
+                : PolarStereographicA.LONGITUDE_OF_ORIGIN);
+        return roles;
     }
 
     /**
@@ -103,8 +115,16 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      * @param parameters The parameter values of the projection to create.
      */
     public PolarStereographic(final OperationMethod method, final Parameters parameters) {
-        super(method, parameters, roles());
-        final byte variant = getVariant(parameters.getDescriptor());
+        this(method, parameters, getVariant(parameters.getDescriptor()));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private PolarStereographic(final OperationMethod method, final Parameters parameters, final byte variant) {
+        super(method, parameters, roles(variant));
         /*
          * "Standard parallel" and "Latitude of origin" should be mutually exclusive,
          * but this is not a strict requirement for the constructor.
@@ -145,9 +165,10 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          * It may be possible to specify φ0 and φ1 if the caller used his own parameter descriptor,
          * in which case maybe he really wanted different sign (e.g. for testing purpose).
          */
-        φ1 = toRadians(abs(φ1));  // May be anything in [0 … π/2] range.
+        φ1 = toRadians(φ1);  // May be anything in [-π/2 … π/2] range.
         final double ρ;
-        if (abs(φ1 - PI/2) < ANGULAR_TOLERANCE) {
+        Double ρF = null;    // Actually -ρF (compared to EPSG guide).
+        if (abs(abs(φ1) - PI/2) < ANGULAR_TOLERANCE) {
             /*
              * Polar Stereographic (variant A)
              * True scale at pole (part of Synder 21-33). From EPSG guide (April 2015) §1.3.7.2:
@@ -163,11 +184,28 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
             ρ = 2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity));
         } else {
             /*
-             * Derived from Synder 21-32 and 21-33.
+             * Polar Stereographic (variant B or C)
+             * Derived from Synder 21-32 and 21-33. From EPSG guide (April 2015) §1.3.7.2:
+             *
+             *   tF = tan(π/4 + φ1/2) / {[(1 + ℯ⋅sinφ1) / (1 – ℯ⋅sinφ1)]^(ℯ/2)}
+             *   mF = cosφ1 / √[1 – ℯ²⋅sin²φ1]
+             *   k₀ = mF⋅√[(1+ℯ)^(1+ℯ) ⋅ (1–ℯ)^(1–ℯ)] / (2⋅tF)
+             *
+             * In our case:
+             *
+             *   tF = expOfNorthing(φ1, ℯ⋅sinφ1)
+             *   mF = cos(φ1) / rν(sinφ1)
+             *   ρ  = mF / tF
+             *   k₀ = ρ⋅√[…]/2  but we do not need that value.
+             *
              * In the spherical case, should give ρ = 1 + sinφ1   (Synder 21-7 and 21-11).
              */
             final double sinφ1 = sin(φ1);
-            ρ = cos(φ1) * expOfNorthing(φ1, sinφ1) / rν(sinφ1);
+            final double mF = cos(φ1) / rν(sinφ1);
+            ρ = mF / expOfNorthing(φ1, excentricity*sinφ1);
+            if (variant == C) {
+                ρF = -mF;
+            }
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -175,11 +213,39 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          */
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, ρ, null);
-        denormalize.convertBefore(1, ρ, null);
-        if (φ0 >= 0) {  // North pole.
+        denormalize.convertBefore(1, ρ, ρF);
+        if (φ1 >= 0) {  // North pole.
             context.getMatrix(true).convertAfter(1, -1, null);
             denormalize.convertBefore(1, -1, null);
         }
+    }
+
+    /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    PolarStereographic(final PolarStereographic other) {
+        super(other);
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        PolarStereographic kernel = this;
+        if (excentricity == 0) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**
@@ -206,7 +272,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         /*
          * From EPSG guide:
          *
-         *    t = tan(π/4 + φ/2) / {[(1+esinφ) / (1–esinφ)]^(e/2)}
+         *    t = tan(π/4 + φ/2) / {[(1 + ℯ⋅sinφ)  /  (1 – ℯ⋅sinφ)]^(ℯ/2)}
          *
          * The next step is to compute ρ = 2⋅a⋅k₀⋅t / …, but those steps are
          * applied by the denormalization matrix and shall not be done here.
@@ -242,6 +308,96 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         dstPts[dstOff  ] = atan2(x, y);     // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = φ(hypot(x, y));
+        dstPts[dstOff+1] = -φ(hypot(x, y));
+    }
+
+
+    /**
+     * Provides the transform equations for the spherical case of the polar stereographic projection.
+     *
+     * @author  Gerald Evenden (USGS)
+     * @author  André Gosselin (MPO)
+     * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+     * @author  Rueben Schulz (UBC)
+     * @since   0.6
+     * @version 0.6
+     * @module
+     */
+    static final class Spherical extends PolarStereographic {
+        /**
+         * For compatibility with different versions during deserialization.
+         */
+        private static final long serialVersionUID = 1655096575897215547L;
+
+        /**
+         * Constructs a new map projection from the parameters of the given projection.
+         *
+         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         */
+        protected Spherical(final PolarStereographic other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws ProjectionException
+        {
+            final double θ    = srcPts[srcOff  ];  // θ = λ - λ₀
+            final double φ    = srcPts[srcOff+1];
+            final double sinθ = sin(θ);
+            final double cosθ = cos(θ);
+            final double t    = tan(PI/4 + 0.5*φ);
+            final double x    = t * sinθ;          // Synder 21-5
+            final double y    = t * cosθ;          // Synder 21-6
+            Matrix derivative = null;
+            if (derivate) {
+                final double dt = t / cos(φ);
+                derivative = new Matrix2(y, dt*sinθ,   // ∂x/∂λ , ∂x/∂φ
+                                        -x, dt*cosθ);  // ∂y/∂λ , ∂y/∂φ
+            }
+            // Following part is common to all spherical projections: verify, store and return.
+            assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
+                && Assertions.checkTransform(dstPts, dstOff, x, y); // dstPts = result from ellipsoidal formulas.
+            if (dstPts != null) {
+                dstPts[dstOff  ] = x;
+                dstPts[dstOff+1] = y;
+            }
+            return derivative;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                        final double[] dstPts, final int dstOff)
+                throws ProjectionException
+        {
+            double x = srcPts[srcOff  ];
+            double y = srcPts[srcOff+1];
+            final double ρ = hypot(x, y);
+            x = atan2(x, y);        // Really (x,y), not (y,x)
+            y = 2*atan(ρ) - PI/2;   // (20-14) with φ1=90° and cos(y) = sin(π/2 + y).
+            assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
+            dstPts[dstOff  ] = x;
+            dstPts[dstOff+1] = y;
+        }
+
+        /**
+         * Computes using ellipsoidal formulas and compare with the
+         * result from spherical formulas. Used in assertions only.
+         */
+        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
+                                              final double[] dstPts, final int dstOff,
+                                              final double λ, final double φ)
+                throws ProjectionException
+        {
+            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
+            return Assertions.checkInverseTransform(dstPts, dstOff, λ, φ);
+        }
     }
 }

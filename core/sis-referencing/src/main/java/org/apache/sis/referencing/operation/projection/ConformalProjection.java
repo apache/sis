@@ -185,10 +185,14 @@ abstract class ConformalProjection extends NormalizedProjection {
      */
     final double φ(final double expOfSouthing) throws ProjectionException {
         /*
-         * Get a first approximation of φ. The result below is exact if the ellipsoid is actually a sphere.
-         * But if the excentricity is different than 0, then we will need to add a correction.
+         * Get a first approximation of φ from Snyder (7-11). The result below would be exact if the
+         * ellipsoid was actually a sphere. But if the excentricity is different than 0, then we will
+         * need to add a correction.
+         *
+         * Note that the φ value computed by the line below is called χ in EPSG guide.
+         * We name it φ in our code because we will modify that value in-place in order to get φ.
          */
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // Snyder (7-11)
+        double φ = (PI/2) - 2*atan(expOfSouthing);          // at this point == χ
         /*
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the
