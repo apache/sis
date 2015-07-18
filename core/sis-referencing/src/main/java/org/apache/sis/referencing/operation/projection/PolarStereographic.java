@@ -146,31 +146,38 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          * in which case maybe he really wanted different sign (e.g. for testing purpose).
          */
         φ1 = toRadians(abs(φ1));  // May be anything in [0 … π/2] range.
-        final double k0;
+        final double ρ;
         if (abs(φ1 - PI/2) < ANGULAR_TOLERANCE) {
             /*
-             * True scale at pole (part of Synder 21-33).
-             * In the spherical case, should give k0 == 2.
+             * Polar Stereographic (variant A)
+             * True scale at pole (part of Synder 21-33). From EPSG guide (April 2015) §1.3.7.2:
+             *
+             *    ρ = 2⋅a⋅k₀⋅t / √[(1+ℯ)^(1+ℯ) ⋅ (1–ℯ)^(1–ℯ)]
+             *
+             * In this implementation, we omit:
+             *    - the 'a' and 'k₀' factors, because they are handled outside this class,
+             *    - the 't' factor, because it needs to be computed in the transform(…) method.
+             *
+             * In the spherical case, should give ρ == 2.
              */
-            k0 = 2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity));
+            ρ = 2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity));
         } else {
             /*
              * Derived from Synder 21-32 and 21-33.
-             * In the spherical case, should give k0 = 1 + sinφ1   (Synder 21-7 and 21-11).
+             * In the spherical case, should give ρ = 1 + sinφ1   (Synder 21-7 and 21-11).
              */
             final double sinφ1 = sin(φ1);
-            k0 = cos(φ1) * expOfNorthing(φ1, sinφ1) / rν(sinφ1);
+            ρ = cos(φ1) * expOfNorthing(φ1, sinφ1) / rν(sinφ1);
         }
         /*
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
          */
         final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertBefore(0, k0, null);
-        denormalize.convertBefore(1, k0, null);
+        denormalize.convertBefore(0, ρ, null);
+        denormalize.convertBefore(1, ρ, null);
         if (φ0 >= 0) {  // North pole.
             context.getMatrix(true).convertAfter(1, -1, null);
-        } else {
             denormalize.convertBefore(1, -1, null);
         }
     }
@@ -196,9 +203,17 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
         final double sinφ = sin(φ);
-        final double ρ    = expOfNorthing(φ, excentricity*sinφ);
-        final double x    = ρ * sinθ;
-        final double y    = ρ * cosθ;
+        /*
+         * From EPSG guide:
+         *
+         *    t = tan(π/4 + φ/2) / {[(1+esinφ) / (1–esinφ)]^(e/2)}
+         *
+         * The next step is to compute ρ = 2⋅a⋅k₀⋅t / …, but those steps are
+         * applied by the denormalization matrix and shall not be done here.
+         */
+        final double t = expOfNorthing(φ, excentricity*sinφ);
+        final double x = t * sinθ;
+        final double y = t * cosθ;
         if (dstPts != null) {
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
@@ -209,9 +224,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         //
         // End of map projection. Now compute the derivative.
         //
-        final double dρ = ρ * dy_dφ(sinφ, cos(φ));
-        return new Matrix2(y, dρ*sinθ,   // ∂x/∂λ , ∂x/∂φ
-                          -x, dρ*cosθ);  // ∂y/∂λ , ∂y/∂φ
+        final double dt = t * dy_dφ(sinφ, cos(φ));
+        return new Matrix2(y, dt*sinθ,   // ∂x/∂λ , ∂x/∂φ
+                          -x, dt*cosθ);  // ∂y/∂λ , ∂y/∂φ
     }
 
     /**
@@ -227,6 +242,6 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         dstPts[dstOff  ] = atan2(x, y);     // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = -φ(hypot(x, y));
+        dstPts[dstOff+1] = φ(hypot(x, y));
     }
 }
