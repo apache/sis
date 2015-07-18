@@ -33,7 +33,7 @@ import org.junit.Test;
 import static java.lang.Double.*;
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
-import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.LN_INFINITY;
+import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 
 /**
