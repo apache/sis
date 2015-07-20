@@ -332,7 +332,6 @@ public class Mercator extends ConformalProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff  ];
         final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
         if (dstPts != null) {
@@ -354,7 +353,7 @@ public class Mercator extends ConformalProjection {
                     y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                 }
             }
-            dstPts[dstOff  ] = λ;   // Scale will be applied by the denormalization matrix.
+            dstPts[dstOff  ] = srcPts[srcOff];   // Scale will be applied by the denormalization matrix.
             dstPts[dstOff+1] = y;
         }
         /*
@@ -465,40 +464,29 @@ public class Mercator extends ConformalProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
-            /*
-             * Projection of zero is zero. However the formulas below have a slight rounding error
-             * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
-             * avoiding rounding error, this also preserve the sign (positive vs negative zero).
-             */
-            final double y;
-            if (φ == 0) {
-                y = φ;
-            } else {
-                // See class javadoc for a note about explicit check for poles.
-                final double a = abs(φ);
-                if (a < PI/2) {
-                    y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
-                } else {
-                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
-                }
-            }
-            Matrix derivative = null;
-            if (derivate) {
-                derivative = new Matrix2(1, 0, 0, 1/cos(φ));
-            }
-            /*
-             * Following part is common to all spherical projections: verify, store and return.
-             */
-            assert (excentricity != 0)  // Can not perform the following assertions if excentricity is not zero.
-                   || (Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                   && Assertions.checkTransform(dstPts, dstOff, λ, y)); // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
-                dstPts[dstOff  ] = λ;
+                /*
+                 * Projection of zero is zero. However the formulas below have a slight rounding error
+                 * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
+                 * avoiding rounding error, this also preserve the sign (positive vs negative zero).
+                 */
+                final double y;
+                if (φ == 0) {
+                    y = φ;
+                } else {
+                    // See class javadoc for a note about explicit check for poles.
+                    final double a = abs(φ);
+                    if (a < PI/2) {
+                        y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                    } else {
+                        y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                    }
+                }
+                dstPts[dstOff  ] = srcPts[srcOff];
                 dstPts[dstOff+1] = y;
             }
-            return derivative;
+            return derivate ? new Matrix2(1, 0, 0, 1/cos(φ)) : null;
         }
 
         /**
@@ -542,26 +530,9 @@ public class Mercator extends ConformalProjection {
                                         final double[] dstPts, final int dstOff)
                 throws ProjectionException
         {
-            double x = srcPts[srcOff  ];
-            double y = srcPts[srcOff+1];
-            y = PI/2 - 2 * atan(exp(-y));     // Part of Snyder (7-4)
-            assert (excentricity != 0)  // Can not perform the following assertion if excentricity is not zero.
-                   || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
-        }
-
-        /**
-         * Computes using ellipsoidal formulas and compare with the
-         * result from spherical formulas. Used in assertions only.
-         */
-        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
-                                              final double[] dstPts, final int dstOff,
-                                              final double λ, final double φ)
-                throws ProjectionException
-        {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, λ, φ);
+            final double y = srcPts[srcOff+1];           // Must be before writing x.
+            dstPts[dstOff  ] = srcPts[srcOff];           // Must be before writing y.
+            dstPts[dstOff+1] = PI/2 - 2*atan(exp(-y));  // Part of Snyder (7-4);
         }
     }
 }

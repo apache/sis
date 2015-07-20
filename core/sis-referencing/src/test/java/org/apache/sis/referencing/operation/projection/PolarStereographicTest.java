@@ -45,14 +45,16 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
      */
-    private void initialize(final boolean ellipse, final double latitudeOfOrigin) {
+    private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
         final PolarStereographicA method = new PolarStereographicA();
         final Parameters parameters = parameters(method, ellipse);
         parameters.getOrCreate(PolarStereographicA.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
-        transform = new PolarStereographic(method, parameters);
+        NormalizedProjection projection = new PolarStereographic(method, parameters);
         if (!ellipse) {
-            transform = new PolarStereographic.Spherical((PolarStereographic) transform);
+            projection = new ProjectionResultComparator(projection,
+                    new PolarStereographic.Spherical((PolarStereographic) projection));
         }
+        transform = projection;
         tolerance = NORMALIZED_TOLERANCE;
         validate();
     }
@@ -65,7 +67,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      */
     @Test
     public void testSphericalCaseSouth() throws FactoryException, TransformException {
-        initialize(false, -90);
+        createNormalizedProjection(false, -90);
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 56763886);
@@ -81,7 +83,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @Test
     @DependsOnMethod("testSphericalCaseSouth")
     public void testSphericalCaseNorth() throws FactoryException, TransformException {
-        initialize(false, 90);
+        createNormalizedProjection(false, 90);
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 56763886);

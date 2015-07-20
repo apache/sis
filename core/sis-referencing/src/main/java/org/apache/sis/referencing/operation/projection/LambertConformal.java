@@ -521,25 +521,21 @@ public class LambertConformal extends ConformalProjection {
             }
             final double x = ρ * sinθ;
             final double y = ρ * cosθ;
-            Matrix derivative = null;
-            if (derivate) {
-                final double dρ;
-                if (absφ < PI/2) {
-                    dρ = n*ρ / cos(φ);
-                } else {
-                    dρ = NaN;
-                }
-                derivative = new Matrix2(y, dρ*sinθ,    // ∂x/∂λ , ∂x/∂φ
-                                        -x, dρ*cosθ);   // ∂y/∂λ , ∂y/∂φ
-            }
-            // Following part is common to all spherical projections: verify, store and return.
-            assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                && Assertions.checkTransform(dstPts, dstOff, x, y);     // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
                 dstPts[dstOff  ] = x;
                 dstPts[dstOff+1] = y;
             }
-            return derivative;
+            if (!derivate) {
+                return null;
+            }
+            final double dρ;
+            if (absφ < PI/2) {
+                dρ = n*ρ / cos(φ);
+            } else {
+                dρ = NaN;
+            }
+            return new Matrix2(y, dρ*sinθ,    // ∂x/∂λ , ∂x/∂φ
+                              -x, dρ*cosθ);   // ∂y/∂λ , ∂y/∂φ
         }
 
         /**
@@ -553,24 +549,8 @@ public class LambertConformal extends ConformalProjection {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
-            x = atan2(x, y);  // Really (x,y), not (y,x)
-            y = PI/2 - 2*atan(pow(1/ρ, 1/n));
-            assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
-        }
-
-        /**
-         * Computes using ellipsoidal formulas and compare with the
-         * result from spherical formulas. Used in assertions only.
-         */
-        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
-                                              final double[] dstPts, final int dstOff,
-                                              final double θ, final double φ)
-                throws ProjectionException
-        {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, θ, φ);
+            dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x);
+            dstPts[dstOff+1] = PI/2 - 2*atan(pow(1/ρ, 1/n));
         }
     }
 
