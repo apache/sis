@@ -41,7 +41,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
-    private void initialize(final boolean ellipse, final double latitudeOfOrigin) {
+    private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
         final org.apache.sis.internal.referencing.provider.TransverseMercator method =
                 new org.apache.sis.internal.referencing.provider.TransverseMercator();
         final Parameters parameters = parameters(method, ellipse);
@@ -89,7 +89,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     @Test
     @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testSphericalDerivative() throws TransformException {
-        initialize(false, 0);
+        createNormalizedProjection(false, 0);
         tolerance = 1E-9;
 
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
@@ -107,7 +107,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     @Test
     @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testEllipsoidalDerivative() throws TransformException {
-        initialize(true, 0);
+        createNormalizedProjection(true, 0);
         tolerance = 1E-9;
 
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.

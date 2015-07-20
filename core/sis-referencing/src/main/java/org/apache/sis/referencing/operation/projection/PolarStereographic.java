@@ -353,20 +353,16 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
             final double t    = tan(PI/4 + 0.5*φ);
             final double x    = t * sinθ;          // Synder 21-5
             final double y    = t * cosθ;          // Synder 21-6
-            Matrix derivative = null;
-            if (derivate) {
-                final double dt = t / cos(φ);
-                derivative = new Matrix2(y, dt*sinθ,   // ∂x/∂λ , ∂x/∂φ
-                                        -x, dt*cosθ);  // ∂y/∂λ , ∂y/∂φ
-            }
-            // Following part is common to all spherical projections: verify, store and return.
-            assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                && Assertions.checkTransform(dstPts, dstOff, x, y); // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
                 dstPts[dstOff  ] = x;
                 dstPts[dstOff+1] = y;
             }
-            return derivative;
+            if (!derivate) {
+                return null;
+            }
+            final double dt = t / cos(φ);
+            return new Matrix2(y, dt*sinθ,   // ∂x/∂λ , ∂x/∂φ
+                              -x, dt*cosθ);  // ∂y/∂λ , ∂y/∂φ
         }
 
         /**
@@ -380,24 +376,8 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
-            x = atan2(x, y);        // Really (x,y), not (y,x)
-            y = 2*atan(ρ) - PI/2;   // (20-14) with φ1=90° and cos(y) = sin(π/2 + y).
-            assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
-        }
-
-        /**
-         * Computes using ellipsoidal formulas and compare with the
-         * result from spherical formulas. Used in assertions only.
-         */
-        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
-                                              final double[] dstPts, final int dstOff,
-                                              final double λ, final double φ)
-                throws ProjectionException
-        {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, λ, φ);
+            dstPts[dstOff  ] = atan2(x, y);        // Really (x,y), not (y,x);
+            dstPts[dstOff+1] = 2*atan(ρ) - PI/2;   // (20-14) with φ1=90° and cos(y) = sin(π/2 + y).;
         }
     }
 }
