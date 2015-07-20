@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
+import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
@@ -116,6 +117,20 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @Test
     public void testPolarStereographicB() throws FactoryException, TransformException {
         createGeoApiTest(new PolarStereographicB()).testPolarStereographicB();
+    }
+
+    /**
+     * Tests the <cite>Polar Stereographic (variant C)</cite> case (EPSG:9830).
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testPolarStereographicC()
+     */
+    @Test
+    public void testPolarStereographicC() throws FactoryException, TransformException {
+        createGeoApiTest(new PolarStereographicC()).testPolarStereographicC();
     }
 
     /**

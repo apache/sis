@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
+import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
@@ -78,7 +79,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
     private static byte getVariant(final ParameterDescriptorGroup parameters) {
         if (identMatch(parameters, "(?i).*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
         if (identMatch(parameters, "(?i).*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
-//      if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
+        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
         if (identMatch(parameters, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
         if (identMatch(parameters, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
         return 0; // Unidentified case, to be considered as variant A.
@@ -92,10 +93,16 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      */
     private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        ParameterDescriptor<Double> falseEasting  = PolarStereographicA.FALSE_EASTING;
+        ParameterDescriptor<Double> falseNorthing = PolarStereographicA.FALSE_NORTHING;
+        if (variant == C) {
+            falseEasting  = PolarStereographicC.EASTING_AT_FALSE_ORIGIN;
+            falseNorthing = PolarStereographicC.NORTHING_AT_FALSE_ORIGIN;
+        }
+        roles.put(ParameterRole.FALSE_EASTING,    falseEasting);
+        roles.put(ParameterRole.FALSE_NORTHING,   falseNorthing);
         roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
-        roles.put(ParameterRole.FALSE_EASTING,    PolarStereographicA.FALSE_EASTING);
-        roles.put(ParameterRole.FALSE_NORTHING,   PolarStereographicA.FALSE_NORTHING);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == B)
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == B || variant == C)
                 ? PolarStereographicB.LONGITUDE_OF_ORIGIN
                 : PolarStereographicA.LONGITUDE_OF_ORIGIN);
         return roles;
