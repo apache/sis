@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
@@ -115,5 +116,42 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @Test
     public void testPolarStereographicB() throws FactoryException, TransformException {
         createGeoApiTest(new PolarStereographicB()).testPolarStereographicB();
+    }
+
+    /**
+     * Verifies the consistency of elliptical formulas with the spherical formulas.
+     * This test compares the results of elliptical formulas with the spherical ones
+     * for some random points.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    private void compareEllipticalWithSpherical(final CoordinateDomain domain, final double latitudeOfOrigin,
+            final long randomSeed) throws FactoryException, TransformException
+    {
+        createCompleteProjection(new PolarStereographicA(), false,
+                  0.5,              // Central meridian
+                 latitudeOfOrigin,  // Latitude of origin
+                  0,                // Standard parallel (none)
+                  0.994,            // Scale factor
+                200,                // False easting
+                100);               // False northing
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        compareEllipticalWithSpherical(domain, randomSeed);
+    }
+
+    /**
+     * Verifies the consistency of elliptical formulas with the spherical formulas.
+     * This test compares the results of elliptical formulas with the spherical ones
+     * for some random points.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod({"testSphericalCaseSouth", "testSphericalCaseNorth"})
+    public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
+        compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SOUTH_POLE, -90,  17326686);
+        compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_NORTH_POLE, +90, 970559366);
     }
 }

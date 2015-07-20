@@ -110,6 +110,16 @@ public class LambertConformal extends ConformalProjection {
      * Internal coefficients for computation, depending only on values of standards parallels.
      * This is defined as {@literal n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂)} in §1.3.1.1 of
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
+     *
+     * <p><b>Note:</b></p>
+     * <ul>
+     *   <li>If φ1 = -φ2, then the cone become a cylinder and this {@code n} value become 0.
+     *       This is limiting case is the Mercator projection, but we can not compare with this class
+     *       because {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
+     *   <li>If φ1 = φ2 = ±90°, then this {@code n} value become ±1. The formulas in the transform and
+     *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
+     *       (de)normalization matrices contain NaN values.</li>
+     * </ul>
      */
     final double n;
 
@@ -196,6 +206,11 @@ public class LambertConformal extends ConformalProjection {
         double φ1 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
         double φ2 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
+            /*
+             * We can not allow that because if φ1 = -φ2, then n = 0 and the equations
+             * in this class break down with indetermination like 0 × ∞.
+             * The caller should use the Mercator projection instead for such cases.
+             */
             throw new IllegalArgumentException(Errors.format(Errors.Keys.LatitudesAreOpposite_2,
                     new Latitude(φ1), new Latitude(φ2)));
         }
