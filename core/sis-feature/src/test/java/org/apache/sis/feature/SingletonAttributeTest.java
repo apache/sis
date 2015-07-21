@@ -130,6 +130,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testValue")
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();

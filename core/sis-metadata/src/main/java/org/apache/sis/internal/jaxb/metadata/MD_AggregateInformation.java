@@ -32,6 +32,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("deprecation")
 public final class MD_AggregateInformation extends
         PropertyType<MD_AggregateInformation, AggregateInformation>
 {

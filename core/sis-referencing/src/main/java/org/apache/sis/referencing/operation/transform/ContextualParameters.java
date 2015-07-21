@@ -368,6 +368,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
+    @SuppressWarnings("AssignmentToForLoopParameter")
     public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {

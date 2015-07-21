@@ -33,6 +33,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * @version 0.4
  * @module
  */
+@SuppressWarnings("CloneInNonCloneableClass")
 final class UninitializedParameter implements GeneralParameterValue, Serializable { // Intentionally non-Cloneable.
     /**
      * For cross-version serialization compatibility.

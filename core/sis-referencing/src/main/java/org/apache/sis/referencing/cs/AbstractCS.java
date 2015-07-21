@@ -164,6 +164,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param properties The properties to be given to the identified object.
      * @param axes       The sequence of axes.
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
         super(properties);
         ensureNonNull("axes", axes);

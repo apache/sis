@@ -235,6 +235,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * <p><strong>WARNING:</strong> this method is invoked by constructors <em>before</em>
      * the {@linkplain #components} field is set. Do not use this field in this method.</p>
      */
+    @SuppressWarnings("SuspiciousToArrayCall")
     private List<? extends CoordinateReferenceSystem> copy(List<? extends CoordinateReferenceSystem> components) {
         if (computeSingleCRS(components)) {
             components = singles; // Shares the same list.

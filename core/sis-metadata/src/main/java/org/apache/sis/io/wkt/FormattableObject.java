@@ -142,6 +142,7 @@ public abstract class FormattableObject {
      * <p>This is a convenience method for debugging purpose and for console applications.</p>
      */
     @Debug
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void print() {
         final Console console = System.console();
         final PrintWriter out = (console != null) ? console.writer() : null;

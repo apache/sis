@@ -69,7 +69,7 @@ public final class MercatorSpherical extends AbstractMercator {
             .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")  // Prior to EPSG version 7.6
             .createGroupForMapProjection(
                     Mercator1SP.LATITUDE_OF_ORIGIN,
-                    Mercator1SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.LONGITUDE_OF_ORIGIN,
                     scaleFactor,
                     FALSE_EASTING,
                     FALSE_NORTHING);

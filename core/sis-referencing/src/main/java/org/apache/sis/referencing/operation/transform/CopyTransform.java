@@ -26,7 +26,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 
 
-
 /**
  * A transform which copy the ordinates in the source array to different locations in the target array.
  * This is a special case of {@link ProjectiveTransform} where the matrix coefficients are zero everywhere,
