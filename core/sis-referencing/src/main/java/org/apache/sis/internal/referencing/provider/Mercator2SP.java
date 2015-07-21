@@ -57,8 +57,8 @@ public final class Mercator2SP extends AbstractMercator {
      * The operation parameter descriptor for the <cite>Scale factor</cite> (not necessarily at natural origin)
      * parameter value. Valid values range is (0 … ∞) and default value is 1.
      *
-     * <p>This parameter is used by {@link Mercator1SP} and is not formally a parameter of {@link Mercator2SP}
-     * projections. Nevertheless we declare it is as an optional parameter because it is sometime used in Well
+     * <p>This parameter is used by {@link Mercator1SP} and is not formally a parameter of {@code Mercator2SP}
+     * projection. Nevertheless we declare it is as an optional parameter because it is sometime used in Well
      * Known Text (WKT). However it shall be interpreted as a <cite>Scale factor at the standard parallel</cite>
      * rather than at the natural origin.</p>
      */
@@ -104,7 +104,7 @@ public final class Mercator2SP extends AbstractMercator {
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
                     latitudeOfOrigin,       // Not formally a Mercator2SP parameter.
-                    Mercator1SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.LONGITUDE_OF_ORIGIN,
                     SCALE_FACTOR,           // Not formally a Mercator2SP parameter.
                     FALSE_EASTING,
                     FALSE_NORTHING);

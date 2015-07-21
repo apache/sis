@@ -213,6 +213,26 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
+     * Copies all names and identifiers, but using the given authority as the primary name.
+     * This is a convenience method for defining the parameters of an ESRI-specific projection
+     * using the EPSG parameters as template.
+     */
+    static ParameterBuilder addNamesAndIdentifiers(final Citation authority,
+            final ParameterDescriptor<Double> source, final ParameterBuilder builder)
+    {
+        builder.addName(sameNameAs(authority, source)).addName(source.getName());
+        for (final GenericName alias : source.getAlias()) {
+            if (((Identifier) alias).getAuthority() != authority) {
+                builder.addName(alias);
+            }
+        }
+        for (final Identifier id : source.getIdentifiers()) {
+            builder.addIdentifier(id);
+        }
+        return builder;
+    }
+
+    /**
      * Copies all names except the EPSG one from the given parameter into the builder.
      * The EPSG name is presumed the first name and identifier (this is not verified).
      */
@@ -221,6 +241,16 @@ public abstract class MapProjection extends AbstractProvider {
             builder.addName(alias);
         }
         return builder;
+    }
+
+    /**
+     * Returns the same parameter than the given one, except that the primary name is the ESRI name
+     * instead than the EPSG one.
+     */
+    @SuppressWarnings("unchecked")
+    static ParameterDescriptor<Double> forESRI(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
+        return addNamesAndIdentifiers(Citations.ESRI, source, builder).createBounded((MeasurementRange<Double>)
+                ((DefaultParameterDescriptor<Double>) source).getValueDomain(), source.getDefaultValue());
     }
 
     /**

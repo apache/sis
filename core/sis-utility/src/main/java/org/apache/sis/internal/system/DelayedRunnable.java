@@ -115,6 +115,8 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
 
         /**
          * {@inheritDoc}
+         *
+         * @return {@inheritDoc}
          */
         @Override
         public final int compareTo(final Delayed other) {

@@ -43,8 +43,9 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      *
      * @param value The value.
      */
+    @SuppressWarnings("NumberEquality")
     private GO_Boolean(final Boolean value) {
-        super(value, value.booleanValue() == false && value != Boolean.FALSE);
+        super(value, !value && value != Boolean.FALSE);
     }
 
     /**

@@ -141,7 +141,7 @@ public final strictfp class MapProjectionTest extends TestCase {
      * This test is mostly for {@link Equirectangular#LATITUDE_OF_ORIGIN}.
      */
     private static void assertIsForcedToZero(final ParameterDescriptor<?> parameter) {
-        final Double zero = Double.valueOf(0);
+        final Double zero = 0.0;
         assertEquals("minimumValue", zero, parameter.getMinimumValue());
         assertEquals("maximumValue", zero, parameter.getMaximumValue());
     }

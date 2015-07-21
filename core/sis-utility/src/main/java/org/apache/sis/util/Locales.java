@@ -118,7 +118,7 @@ public final class Locales extends Static {
                     }
                     if (alpha3 != 0 && alpha3 != alpha2) {
                         final Short p = map.put(alpha3, alpha2);
-                        if (p != null && p.shortValue() != alpha2) {
+                        if (p != null && p != alpha2) {
                             // We do not expect any conflict. But if it happen anyway, conservatively
                             // remember that we should not perform any substitution for that code.
                             map.put(alpha3, CONFLICT);
@@ -191,8 +191,8 @@ public final class Locales extends Static {
         locales = Locale.getAvailableLocales();
 filter: for (final Locale locale : locales) {
             final String code = locale.getLanguage();
-            for (int i=0; i<languages.length; i++) {
-                if (code.equals(languages[i])) {
+            for (final String language : languages) {
+                if (code.equals(language)) {
                     locales[count++] = unique(locale);
                     continue filter;
                 }

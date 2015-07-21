@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.metadata.AbstractMetadata;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;

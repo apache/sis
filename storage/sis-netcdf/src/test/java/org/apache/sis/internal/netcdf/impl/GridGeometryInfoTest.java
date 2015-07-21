@@ -38,6 +38,9 @@ import org.apache.sis.test.DependsOn;
 public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Creates a new decoder for dataset of the given name.
+     *
+     * @return The decoder for the given name.
+     * @throws IOException If an error occurred while opening the file.
      */
     @Override
     protected Decoder createDecoder(final String name) throws IOException {
@@ -47,6 +50,8 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
      * supports only the classic and 64 bits NetCDF formats.
+     *
+     * @return {@code false}.
      */
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {
@@ -56,6 +61,8 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Filters out the one-dimensional coordinate systems created by {@code GridGeometry}
      * but not by the UCAR library.
+     *
+     * @return The filtered grid geometries to test.
      */
     @Override
     protected GridGeometry[] filter(final GridGeometry[] geometries) {

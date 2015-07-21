@@ -212,9 +212,10 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
             UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
             if (uuid != null || link != null) {
+                @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+                final Class<BoundType>  type     = getBoundType();
                 final Context           context  = Context.current();
                 final ReferenceResolver resolver = Context.resolver(context);
-                final Class<BoundType>  type     = getBoundType();
                 /*
                  * Check if the user gives us the permission to use reference to those identifiers.
                  * If not, forget them in order to avoid marshalling the identifiers twice (see the

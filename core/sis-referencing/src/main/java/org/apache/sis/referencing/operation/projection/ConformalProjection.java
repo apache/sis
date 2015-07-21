@@ -28,17 +28,29 @@ import static java.lang.Math.*;
 
 
 /**
- * Base class of {@link LambertConformal} and {@link Mercator} projections.
+ * Base class of {@link LambertConformal}, {@link Mercator} and {@link PolarStereographic} projections.
+ * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
+ * angles locally. However we do not put this base class in public API because we do not (yet) guarantee
+ * than all conformal projections will extend this base class.
+ *
+ * <p>This base class can been seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
+ * which includes some other projections like Mercator and Polar Stereographic as special cases.
  * For this base class, the Mercator projection is considered as <cite>"a special limiting case of the
  * Lambert Conic Conformal map projection with the equator as the single standard parallel."</cite>
  * (Source: §1.3.3 in IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015).
+ * Indeed, those two projections have some equation in commons which are provided in this base class.</p>
+ *
+ * <p>The polar stereographic projection is not documented as a special case of Lambert Conic Conformal,
+ * but the equations in the {@code PolarStereographic.transform(…)} and {@code inverseTransform(…)} methods
+ * appear to be the same with the <var>n</var> factor fixed to 1 or -1, so we leverage the code provided by
+ * this base class. This class hierarchy is only an implementation convenience and not part of public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
  */
-abstract class AbstractLambertConformal extends NormalizedProjection {
+abstract class ConformalProjection extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
@@ -56,6 +68,22 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      * </ul>
      */
     static final double EXCENTRICITY_THRESHOLD = 0.16;
+
+    /**
+     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
+     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
+     * method. The identities used are:
+     *
+     * <ul>
+     *   <li>sin(2⋅x) = 2⋅sin(x)⋅cos(x)</li>
+     *   <li>sin(3⋅x) = (3 - 4⋅sin²(x))⋅sin(x)</li>
+     *   <li>sin(4⋅x) = (4 - 8⋅sin²(x))⋅sin(x)⋅cos(x)</li>
+     * </ul>
+     *
+     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
+     * executed (no need to comment-out that code).
+     */
+    private static final boolean ORIGINAL_FORMULA = false;
 
     /**
      * Coefficients in the series expansion used by {@link #φ(double)}.
@@ -80,7 +108,7 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
-    protected AbstractLambertConformal(final OperationMethod method, final Parameters parameters,
+    protected ConformalProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
         super(method, parameters, roles);
@@ -104,6 +132,11 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
         c4χ  =   811/ 11520.* e8  +  29/240.* e6  +  7/48.* e4;
         c6χ  =    81/  1120.* e8  +   7/120.* e6;
         c8χ  =  4279/161280.* e8;
+        if (!ORIGINAL_FORMULA) {
+            c4χ *= 2;
+            c6χ *= 4;
+            c8χ *= 8;
+        }
     }
 
     /**
@@ -112,7 +145,7 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
-    AbstractLambertConformal(final AbstractLambertConformal other) {
+    ConformalProjection(final ConformalProjection other) {
         super(other);
         useIterations = other.useIterations;
         c2χ = other.c2χ;
@@ -152,20 +185,38 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
      */
     final double φ(final double expOfSouthing) throws ProjectionException {
         /*
-         * Get a first approximation of φ. The result below is exact if the ellipsoid is actually a sphere.
-         * But if the excentricity is different than 0, then we will need to add a correction.
+         * Get a first approximation of φ from Snyder (7-11). The result below would be exact if the
+         * ellipsoid was actually a sphere. But if the excentricity is different than 0, then we will
+         * need to add a correction.
+         *
+         * Note that the φ value computed by the line below is called χ in EPSG guide.
+         * We name it φ in our code because we will modify that value in-place in order to get φ.
          */
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // Snyder (7-11)
+        double φ = (PI/2) - 2*atan(expOfSouthing);          // at this point == χ
         /*
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the
          * EPSG guidance note. Note that we add those terms in reverse order, beginning with the smallest
          * values, for reducing rounding errors due to IEEE 754 arithmetic.
          */
-        φ += c8χ * sin(8*φ)
-           + c6χ * sin(6*φ)
-           + c4χ * sin(4*φ)
-           + c2χ * sin(2*φ);
+        if (ORIGINAL_FORMULA) {
+            φ += c8χ * sin(8*φ)
+               + c6χ * sin(6*φ)
+               + c4χ * sin(4*φ)
+               + c2χ * sin(2*φ);
+        } else {
+            /*
+             * Same formula than above, be rewriten using trigonometric identities in order to have only two
+             * calls to Math.sin/cos instead than 5. The performance gain is twice faster on some machines.
+             */
+            final double sin2χ     = sin(2*φ);
+            final double sin_cos2χ = cos(2*φ) * sin2χ;
+            final double sin_sin2χ = sin2χ * sin2χ;
+            φ += c8χ * (0.50 - sin_sin2χ)*sin_cos2χ     // ÷8 compared to original formula
+               + c6χ * (0.75 - sin_sin2χ)*sin2χ         // ÷4 compared to original formula
+               + c4χ * (       sin_cos2χ)               // ÷2 compared to original formula
+               + c2χ * sin2χ;
+        }
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
          * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold
@@ -194,6 +245,93 @@ abstract class AbstractLambertConformal extends NormalizedProjection {
             return Double.NaN;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+    /**
+     * Computes part of the Mercator projection for the given latitude. This formula is also part of
+     * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
+     * Lambert projection with the equator as the single standard parallel.
+     *
+     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm}
+     * of the value returned by this method. This function is <em>almost</em> the converse of
+     * {@link #φ(double)}.
+     *
+     * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
+     * a function closely related to this one has the letter <var>t</var>.</p>
+     *
+     *
+     * <div class="section">Properties</div>
+     * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
+     * The result is always a positive number when the φ argument is inside the above-cited range.
+     * If, after removal of any 2π periodicity, φ is still outside the [-π/2 … π/2] range, then the
+     * result is a negative number. In a Mercator projection, such negative number will result in NaN.
+     *
+     * <p>Some values are:</p>
+     * <ul>
+     *   <li>expOfNorthing(NaN)    =  NaN</li>
+     *   <li>expOfNorthing(±∞)     =  NaN</li>
+     *   <li>expOfNorthing(-π/2)   =   0</li>
+     *   <li>expOfNorthing( 0  )   =   1</li>
+     *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
+     *   <li>expOfNorthing(-φ)     =  1 / expOfNorthing(φ)</li>
+     * </ul>
+     *
+     *
+     * <div class="section">The π/2 special case</div>
+     * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
+     * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
+     * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
+     * does nothing special about it.
+     *
+     * <p>Note that the result for the φ value after {@code Math.PI/2} (as given by {@link Math#nextUp(double)})
+     * is still positive, maybe because {@literal PI/2 < π/2 < nextUp(PI/2)}. Only the {@code nextUp(nextUp(PI/2))}
+     * value become negative. Callers may need to take this behavior in account: special check for {@code Math.PI/2}
+     * is not sufficient, the check needs to include at least the {@code nextUp(Math.PI/2)} case.</p>
+     *
+     *
+     * <div class="section">Relationship with Snyder</div>
+     * This function is related to the following functions from Snyder:
+     *
+     * <ul>
+     *   <li>(7-7) in the <cite>Mercator projection</cite> chapter.</li>
+     *   <li>Reciprocal of (9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
+     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
+     * </ul>
+     *
+     * @param  φ     The latitude in radians.
+     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
+     * @return {@code Math.exp} of the Mercator projection of the given latitude.
+     *
+     * @see #φ(double)
+     * @see #dy_dφ(double, double)
+     */
+    final double expOfNorthing(final double φ, final double ℯsinφ) {
+        /*
+         * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
+         *
+         * A + sign in the equation favorises slightly the accuracy in South hemisphere, while a - sign
+         * favorises slightly the North hemisphere (but the differences are very small). In Apache SIS,
+         * we handle that by changing the sign of some terms in the (de)normalisation matrices.
+         */
+        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
+    }
+
+    /**
+     * Computes the partial derivative of a Mercator projection at the given latitude. This formula is also part of
+     * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
+     *
+     * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
+     * the returned value by by {@code expOfNorthing}.</p>
+     *
+     * @param  sinφ the sine of latitude.
+     * @param  cosφ The cosine of latitude.
+     * @return The partial derivative of a Mercator projection at the given latitude.
+     *
+     * @see #expOfNorthing(double, double)
+     * @see #φ(double)
+     */
+    final double dy_dφ(final double sinφ, final double cosφ) {
+        return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
     }
 
     /**
