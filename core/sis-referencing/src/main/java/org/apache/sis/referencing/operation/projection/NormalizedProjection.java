@@ -453,7 +453,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns {@code true} if the projection specified by the given parameters has the given keyword or identifier.
+     * Returns {@code true} if the projection specified by the given method has the given keyword or identifier.
      * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the keyword.
      *
      * <div class="note"><b>Implementation note:</b>
@@ -464,19 +464,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @param  parameters The user-specified parameters.
      * @param  regex      The regular expression to use when using the operation name as the criterion.
-     * @param  identifier The identifier to compare against the parameter group name.
-     * @return {@code true} if the given parameter group name contains the given keyword
+     * @param  identifier The identifier to compare against the operation method name.
+     * @return {@code true} if the name of the given operation method contains the given keyword
      *         or has an EPSG identifier equals to the given identifier.
      */
-    static boolean identMatch(final ParameterDescriptorGroup parameters, final String regex, final String identifier) {
+    static boolean identMatch(final OperationMethod method, final String regex, final String identifier) {
         if (identifier != null) {
-            for (final Identifier id : parameters.getIdentifiers()) {
+            for (final Identifier id : method.getIdentifiers()) {
                 if (Constants.EPSG.equals(id.getCodeSpace())) {
                     return identifier.equals(id.getCode());
                 }
             }
         }
-        return parameters.getName().getCode().replace('_',' ').matches(regex);
+        return method.getName().getCode().replace('_',' ').matches(regex);
     }
 
     /**
@@ -501,7 +501,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         final Double defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
-            context.parameter(descriptor.getName().getCode()).setValue(value);
+            context.getOrCreate(descriptor).setValue(value);
         }
         return value;
     }

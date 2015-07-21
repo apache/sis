@@ -138,6 +138,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     }
 
     /** Wrappers used as a fallback by {@link Parameters#castOrWrap(ParameterValueGroup)}. */
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     private static final class Wrapper extends Parameters implements Serializable {
         private static final long serialVersionUID = -5491790565456920471L;
         private final ParameterValueGroup delegate;
@@ -299,11 +300,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             final Identifier group = descriptor.getName();
             if (group != null) {    // Paranoiac check (should never be null)
                 final Citation authority = group.getAuthority();
-                if (authority != null) {
-                    final String name = IdentifiedObjects.getName(source, group.getAuthority());
-                    if (name != null) {
-                        return name;
-                    }
+                final String name = IdentifiedObjects.getName(source, authority);
+                if (name != null || authority == null) {
+                    return name;
                 }
             }
         }

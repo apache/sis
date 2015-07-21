@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -93,10 +92,10 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
-     * Returns the type of the projection based on the name and identifier of the given parameter group.
+     * Returns the type of the projection based on the name and identifier of the given operation method.
      */
-    private static boolean isSouth(final ParameterDescriptorGroup parameters) {
-        return identMatch(parameters, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
+    private static boolean isSouth(final OperationMethod method) {
+        return identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
     }
 
     /**
@@ -112,7 +111,7 @@ public class TransverseMercator extends NormalizedProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public TransverseMercator(final OperationMethod method, final Parameters parameters) {
-        super(method, parameters, roles(isSouth(parameters.getDescriptor())));
+        super(method, parameters, roles(isSouth(method)));
         final double φ0 = toRadians(getAndStore(parameters,
                 org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
         final double rs = parameters.doubleValue(MapProjection.SEMI_MINOR)
