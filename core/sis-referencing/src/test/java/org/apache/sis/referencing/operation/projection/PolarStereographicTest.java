@@ -19,9 +19,12 @@ package org.apache.sis.referencing.operation.projection;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
+import org.apache.sis.internal.referencing.provider.PolarStereographicNorth;
+import org.apache.sis.internal.referencing.provider.PolarStereographicSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
@@ -47,15 +50,11 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
      */
-    private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
-        final PolarStereographicA method = new PolarStereographicA();
-        final Parameters parameters = parameters(method, ellipse);
-        parameters.getOrCreate(PolarStereographicA.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
+    private void createNormalizedProjection(final MapProjection method) {
+        final Parameters parameters = parameters(method, false);
         NormalizedProjection projection = new PolarStereographic(method, parameters);
-        if (!ellipse) {
-            projection = new ProjectionResultComparator(projection,
-                    new PolarStereographic.Spherical((PolarStereographic) projection));
-        }
+        projection = new ProjectionResultComparator(projection,
+                new PolarStereographic.Spherical((PolarStereographic) projection));
         transform = projection;
         tolerance = NORMALIZED_TOLERANCE;
         validate();
@@ -69,7 +68,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
      */
     @Test
     public void testSphericalCaseSouth() throws FactoryException, TransformException {
-        createNormalizedProjection(false, -90);
+        createNormalizedProjection(new PolarStereographicSouth());
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 56763886);
@@ -85,7 +84,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @Test
     @DependsOnMethod("testSphericalCaseSouth")
     public void testSphericalCaseNorth() throws FactoryException, TransformException {
-        createNormalizedProjection(false, 90);
+        createNormalizedProjection(new PolarStereographicNorth());
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 56763886);
