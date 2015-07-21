@@ -40,6 +40,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  */
+@SuppressWarnings("CloneInNonCloneableClass")
 abstract class AbstractLinearTransform extends AbstractMathTransform
         implements LinearTransform, Matrix // Not Cloneable, despite the clone() method.
 {

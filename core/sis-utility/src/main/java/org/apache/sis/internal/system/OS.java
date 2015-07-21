@@ -66,9 +66,9 @@ public enum OS {
     public static OS current() {
         final String name = System.getProperty("os.name");
         if (name != null) {
-            if (name.indexOf("Windows") >= 0) return WINDOWS;
-            if (name.indexOf("Mac OS")  >= 0) return MAC_OS;
-            if (name.indexOf("Linux")   >= 0) return LINUX;
+            if (name.contains("Windows")) return WINDOWS;
+            if (name.contains("Mac OS"))  return MAC_OS;
+            if (name.contains("Linux"))   return LINUX;
         }
         return UNKNOWN;
     }

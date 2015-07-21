@@ -442,6 +442,7 @@ public final class NilReason implements Serializable {
      *
      * @throws IllegalArgumentException If the given type is not a supported type.
      */
+    @SuppressWarnings({"RedundantStringConstructorCall", "BooleanConstructorCall"})
     private static Object createNilPrimitive(final Class<?> type) {
         if (type == String .class) return new String("");         // REALLY need a new instance.
         if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
@@ -463,8 +464,8 @@ public final class NilReason implements Serializable {
      */
     private static boolean mayBeNil(final Object object) {
         // 'instanceof' checks on instances of final classes are expected to be very fast.
-        if (object instanceof String)  return ((String)  object).isEmpty();
-        if (object instanceof Boolean) return ((Boolean) object).booleanValue() == false && object != Boolean.FALSE;
+        if (object instanceof String)  return ((String) object).isEmpty();
+        if (object instanceof Boolean) return !((Boolean) object) && (object != Boolean.FALSE);
         if (object instanceof Number) {
             /*
              * Following test may return false positives for Long, Float and Double types, but this is okay
