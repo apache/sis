@@ -476,7 +476,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 }
             }
         }
-        return parameters.getName().getCode().matches(regex);
+        return parameters.getName().getCode().replace('_',' ').matches(regex);
     }
 
     /**

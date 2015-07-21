@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
@@ -88,6 +89,31 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 56763886);
+    }
+
+    /**
+     * Tests <cite>"Stereographic North Pole"</cite>. The tested point is adapted from
+     * <a href="http://www.remotesensing.org/geotiff/proj_list/polar_stereographic.html">Polar Stereographic
+     * on remotesensing.org</a>.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testPolarStereographicNorth() throws FactoryException, TransformException {
+        final PolarStereographicNorth method = new PolarStereographicNorth();
+        final Parameters pg = parameters(method, true);
+        pg.parameter("standard_parallel_1").setValue(71.0);
+        pg.parameter("central_meridian").setValue(-96.0);
+        transform = new MathTransformFactoryMock(method).createParameterizedTransform(pg);
+        tolerance = 0.02;
+        verifyTransform(new double[] {
+            -121 - (20 + 22.380/60)/60,     // 121°20'22.380"W
+              39 + ( 6 +  4.508/60)/60      //  39°06'04.508"N
+        }, new double[] {
+            -2529570,
+            -5341800
+        });
     }
 
     /**

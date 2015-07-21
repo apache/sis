@@ -82,7 +82,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
         if (identMatch(parameters, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
         if (identMatch(parameters, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
-        return 0; // Unidentified case, to be considered as variant A.
+        return 0; // Unidentified case, to be considered as variant B.
     }
 
     /**
@@ -102,9 +102,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         roles.put(ParameterRole.FALSE_EASTING,    falseEasting);
         roles.put(ParameterRole.FALSE_NORTHING,   falseNorthing);
         roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == B || variant == C)
-                ? PolarStereographicB.LONGITUDE_OF_ORIGIN
-                : PolarStereographicA.LONGITUDE_OF_ORIGIN);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == A)
+                ? PolarStereographicA.LONGITUDE_OF_ORIGIN
+                : PolarStereographicB.LONGITUDE_OF_ORIGIN);
         return roles;
     }
 
@@ -172,10 +172,11 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          * It may be possible to specify φ0 and φ1 if the caller used his own parameter descriptor,
          * in which case maybe he really wanted different sign (e.g. for testing purpose).
          */
-        φ1 = toRadians(φ1);  // May be anything in [-π/2 … π/2] range.
+        final boolean isNorthPole = (φ1 >= 0);
+        φ1 = -abs(toRadians(φ1));  // May be anything in [-π/2 … 0] range.
         final double ρ;
         Double ρF = null;    // Actually -ρF (compared to EPSG guide).
-        if (abs(abs(φ1) - PI/2) < ANGULAR_TOLERANCE) {
+        if (abs(φ1 + PI/2) < ANGULAR_TOLERANCE) {
             /*
              * Polar Stereographic (variant A)
              * True scale at pole (part of Synder 21-33). From EPSG guide (April 2015) §1.3.7.2:
@@ -221,7 +222,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
-        if (φ1 >= 0) {  // North pole.
+        if (isNorthPole) {
             context.getMatrix(true).convertAfter(1, -1, null);
             denormalize.convertBefore(1, -1, null);
         }
