@@ -213,7 +213,7 @@ public final class TreeTables extends Static {
             }
         }
         filtered = ArraysExt.resize(filtered, count);
-        return replaceCharSequences(table.getRoot(), filtered, locale, new HashMap<String,String>());
+        return replaceCharSequences(table.getRoot(), filtered, locale, new HashMap<>());
     }
 
     /**

@@ -57,6 +57,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
 
     /**
      * Returns the source class given at construction time.
+     *
+     * @return The type of objects to convert.
      */
     @Override
     public final Class<S> getSourceClass() {
@@ -65,6 +67,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
 
     /**
      * Returns the target class given at construction time.
+     *
+     * @return The type of converted objects.
      */
     @Override
     public final Class<T> getTargetClass() {
@@ -82,6 +86,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
 
     /**
      * Default to non-invertible conversion. Must be overridden by subclasses that support inversions.
+     *
+     * @return A converter for converting instances of <var>T</var> back to instances of <var>S</var>.
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
