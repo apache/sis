@@ -44,6 +44,9 @@ import static org.junit.Assume.*;
 public final strictfp class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new decoder for dataset of the given name.
+     *
+     * @return The decoder for the given name.
+     * @throws IOException If an error occurred while opening the file.
      */
     @Override
     protected Decoder createDecoder(final String name) throws IOException {
@@ -80,6 +83,8 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
      * supports only the classic and 64 bits NetCDF formats.
+     *
+     * @return {@code false}.
      */
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {

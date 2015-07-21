@@ -40,8 +40,8 @@ import org.apache.sis.internal.geoapi.temporal.Position;
  * @version 0.3
  * @module
  */
+@XmlType(name = "TimeInstantType")
 @XmlRootElement(name="TimeInstant")
-//@XmlType(name = "TimeInstantType") // TODO: Omitted for now for allowing external modules to define their own type.
 public final class TimeInstant extends GMLAdapter {
     /**
      * The date, optionally with its time component. The time component is omitted

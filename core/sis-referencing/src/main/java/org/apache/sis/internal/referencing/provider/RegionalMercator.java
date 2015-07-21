@@ -92,7 +92,7 @@ public class RegionalMercator extends AbstractMercator {
             .addName("Mercator (variant C)")
             .createGroupForMapProjection(
                     Mercator2SP.STANDARD_PARALLEL,
-                    Mercator1SP.CENTRAL_MERIDIAN,
+                    Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
                     LATITUDE_OF_FALSE_ORIGIN,
                     EASTING_AT_FALSE_ORIGIN,
                     NORTHING_AT_FALSE_ORIGIN);

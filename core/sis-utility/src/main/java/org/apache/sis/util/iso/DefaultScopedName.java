@@ -161,6 +161,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * @param path The first part to concatenate.
      * @param tail The second part to concatenate.
      */
+    @SuppressWarnings("SuspiciousToArrayCall")
     protected DefaultScopedName(final GenericName path, final GenericName tail) {
         ArgumentChecks.ensureNonNull("path", path);
         ArgumentChecks.ensureNonNull("tail", tail);

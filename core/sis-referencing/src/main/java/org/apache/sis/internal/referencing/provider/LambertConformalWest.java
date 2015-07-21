@@ -52,12 +52,19 @@ public final class LambertConformalWest extends AbstractLambert {
     public static final String IDENTIFIER = "9826";
 
     /**
+     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
+     * In the case of West Orientated projection, despite its EPSG name this parameter is actually
+     * <cite>False westing</cite> (FW)
+     */
+    static final ParameterDescriptor<Double> FALSE_WESTING;
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        final ParameterDescriptor<?> falseEasting = createShift(builder
+        FALSE_WESTING = createShift(builder
                 .addNamesAndIdentifiers(LambertConformal1SP.FALSE_EASTING)
                 .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False westing")));
 
@@ -66,9 +73,9 @@ public final class LambertConformalWest extends AbstractLambert {
             .addName("Lambert Conic Conformal (West Orientated)")
             .createGroupForMapProjection(
                     LambertConformal1SP.LATITUDE_OF_ORIGIN,
-                    LambertConformal1SP.CENTRAL_MERIDIAN,
+                    LambertConformal1SP.LONGITUDE_OF_ORIGIN,
                     LambertConformal1SP.SCALE_FACTOR,
-                    falseEasting,
+                                        FALSE_WESTING,
                     LambertConformal1SP.FALSE_NORTHING);
     }
 

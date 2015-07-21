@@ -145,6 +145,7 @@ public class DefaultCompoundCS extends AbstractCS {
     /**
      * Returns all axes in the given sequence of components.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private static CoordinateSystemAxis[] getAxes(final CoordinateSystem[] components) {
         int count = 0;
         for (int i=0; i<components.length; i++) {

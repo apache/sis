@@ -63,6 +63,9 @@ public class XMLStoreProvider extends DataStoreProvider {
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
      * header.
+     *
+     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable as a XML file.
+     * @throws DataStoreException if an I/O or SQL error occurred.
      */
     @Override
     public ProbeResult probeContent(final StorageConnector storage) throws DataStoreException {

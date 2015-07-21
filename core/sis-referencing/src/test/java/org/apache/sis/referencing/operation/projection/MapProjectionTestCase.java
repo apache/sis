@@ -19,10 +19,12 @@ package org.apache.sis.referencing.operation.projection;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.mock.GeodeticDatumMock;
@@ -79,9 +81,9 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
      * This method uses arbitrary central meridian, scale factor, false easting and false northing for increasing
-     * the chances to detect a mismatch.
+     * the chances to detect a mismatch. The result is stored in the {@link #transform} field.
      */
-    final void initialize(final DefaultOperationMethod provider, final boolean ellipse,
+    final void createCompleteProjection(final DefaultOperationMethod provider, final boolean ellipse,
             final double centralMeridian,
             final double latitudeOfOrigin,
             final double standardParallel,
@@ -146,5 +148,25 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
             assertEquals(0, λ, tolerance);
         }
         return φ;
+    }
+
+    /**
+     * Compares the elliptical formulas with the spherical formulas for random points in the given domain.
+     * The spherical formulas are arbitrarily selected as the reference implementation because they are simpler,
+     * so less bug-prone, than the elliptical formulas.
+     *
+     * @param  domain The domain of the numbers to be generated.
+     * @param  randomSeed The seed for the random number generator, or 0 for choosing a random seed.
+     * @throws TransformException If a conversion, transformation or derivative failed.
+     */
+    final void compareEllipticalWithSpherical(final CoordinateDomain domain, final long randomSeed)
+            throws TransformException
+    {
+        transform = ProjectionResultComparator.sphericalAndEllipsoidal(transform);
+        if (derivativeDeltas == null) {
+            final double delta = toRadians(100.0 / 60) / 1852;    // Approximatively 100 metres.
+            derivativeDeltas = new double[] {delta, delta};
+        }
+        verifyInDomain(domain, randomSeed);
     }
 }

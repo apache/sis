@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -76,23 +75,38 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @see TransverseMercator
  * @see ObliqueMercator
  */
-public class Mercator extends AbstractLambertConformal {
+public class Mercator extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2564172914329253286L;
 
     /**
-     * Codes for special kinds of Mercator projection. We do not provide such codes in public API because
-     * they duplicate the functionality of {@link OperationMethod} instances. We use them only for convenience.
+     * Codes for variants of Mercator projection. Those variants modify the way the projections are constructed
+     * (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     * Those variants are not exactly the same than variants A, B and C used by EPSG, but they are related.
      *
-     * <p><b>CONVENTION:</b> Spherical cases must be odd, all other cases must be even. This allow us to perform
-     * quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
+     * <p>We do not provide such codes in public API because they duplicate the functionality of
+     * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
      *
-     * @see #getType(ParameterDescriptorGroup)
+     * <p><b>CONVENTION:</b> <strong>Spherical cases must be odd, all other cases must be even.</strong>
+     * This allow us to perform quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
+     *
+     * @see #getVariant(OperationMethod)
      */
-    static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
-                      REGIONAL  = 2, MILLER = 4;    // Must be even.
+    private static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
+                              REGIONAL  = 2, MILLER = 4;    // Must be even.
+
+    /**
+     * Returns the variant of the projection based on the name and identifier of the given operation method.
+     */
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
+        if (identMatch(method, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
+        if (identMatch(method, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
+        if (identMatch(method, "(?i).*\\bMiller.*",          null))                         return MILLER;
+        return 0;
+    }
 
     /**
      * The type of Mercator projection. Possible values are:
@@ -106,18 +120,18 @@ public class Mercator extends AbstractLambertConformal {
      *
      * Other cases may be added in the future.
      *
-     * @see #getType(ParameterDescriptorGroup)
+     * @see #getVariant(OperationMethod)
      */
-    final byte type;
+    private final byte variant;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given type.
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given variant.
      *
-     * @param  type One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
+     * @param  variant One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
      * @return The roles map to give to super-class constructor.
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
                 new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
@@ -127,7 +141,7 @@ public class Mercator extends AbstractLambertConformal {
          * since it may be used in some Well Known Text (WKT).
          */
         roles.put(ParameterRole.SCALE_FACTOR, Mercator1SP.SCALE_FACTOR);
-        switch (type) {
+        switch (variant) {
             case REGIONAL: {
                 roles.put(ParameterRole.FALSE_EASTING,  RegionalMercator.EASTING_AT_FALSE_ORIGIN);
                 roles.put(ParameterRole.FALSE_NORTHING, RegionalMercator.NORTHING_AT_FALSE_ORIGIN);
@@ -178,7 +192,7 @@ public class Mercator extends AbstractLambertConformal {
      * @param parameters The parameter values of the projection to create.
      */
     public Mercator(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getType(parameters.getDescriptor()));
+        this(method, parameters, getVariant(method));
     }
 
     /**
@@ -186,15 +200,15 @@ public class Mercator extends AbstractLambertConformal {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private Mercator(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters, roles(type));
-        this.type = type;
+    private Mercator(final OperationMethod method, final Parameters parameters, final byte variant) {
+        super(method, parameters, roles(variant));
+        this.variant = variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
          * for now; it will be converted to radians later.
          */
-        final double λ0 = getAndStore(parameters, Mercator1SP.CENTRAL_MERIDIAN);
+        final double λ0 = getAndStore(parameters, Mercator1SP.LONGITUDE_OF_ORIGIN);
         /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
@@ -207,7 +221,7 @@ public class Mercator extends AbstractLambertConformal {
          * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        final double φ0 = toRadians(getAndStore(parameters, (type == REGIONAL)
+        final double φ0 = toRadians(getAndStore(parameters, (variant == REGIONAL)
                 ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
@@ -241,7 +255,7 @@ public class Mercator extends AbstractLambertConformal {
         if (φ0 != 0) {
             denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
-        if (type == MILLER) {
+        if (variant == MILLER) {
               normalize.convertBefore(1, new DoubleDouble(0.80), null);
             denormalize.convertBefore(1, new DoubleDouble(1.25), null);
         }
@@ -280,18 +294,7 @@ public class Mercator extends AbstractLambertConformal {
      */
     Mercator(final Mercator other) {
         super(other);
-        type = other.type;
-    }
-
-    /**
-     * Returns the type of the projection based on the name and identifier of the given parameter group.
-     */
-    private static byte getType(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
-        if (identMatch(parameters, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
-        if (identMatch(parameters, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
-        if (identMatch(parameters, "(?i).*\\bMiller.*",          null))                         return MILLER;
-        return 0;
+        variant = other.variant;
     }
 
     /**
@@ -309,7 +312,7 @@ public class Mercator extends AbstractLambertConformal {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Mercator kernel = this;
-        if ((type & SPHERICAL) != 0 || excentricity == 0) {
+        if ((variant & SPHERICAL) != 0 || excentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -329,29 +332,28 @@ public class Mercator extends AbstractLambertConformal {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff];
-        final double φ    = srcPts[srcOff + 1];
+        final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
-        /*
-         * Projection of zero is zero. However the formulas below have a slight rounding error
-         * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
-         * avoiding rounding error, this also preserve the sign (positive vs negative zero).
-         */
-        final double y;
-        if (φ == 0) {
-            y = φ;
-        } else {
-            // See the javadoc of the Spherical inner class for a note
-            // about why we perform explicit checks for the pole cases.
-            final double a = abs(φ);
-            if (a < PI/2) {
-                y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
-            } else {
-                y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
-            }
-        }
         if (dstPts != null) {
-            dstPts[dstOff]   = λ;
+            /*
+             * Projection of zero is zero. However the formulas below have a slight rounding error
+             * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
+             * avoiding rounding error, this also preserve the sign (positive vs negative zero).
+             */
+            final double y;
+            if (φ == 0) {
+                y = φ;
+            } else {
+                // See the javadoc of the Spherical inner class for a note
+                // about why we perform explicit checks for the pole cases.
+                final double a = abs(φ);
+                if (a < PI/2) {
+                    y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
+                } else {
+                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                }
+            }
+            dstPts[dstOff  ] = srcPts[srcOff];   // Scale will be applied by the denormalization matrix.
             dstPts[dstOff+1] = y;
         }
         /*
@@ -462,40 +464,29 @@ public class Mercator extends AbstractLambertConformal {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
-            /*
-             * Projection of zero is zero. However the formulas below have a slight rounding error
-             * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
-             * avoiding rounding error, this also preserve the sign (positive vs negative zero).
-             */
-            final double y;
-            if (φ == 0) {
-                y = φ;
-            } else {
-                // See class javadoc for a note about explicit check for poles.
-                final double a = abs(φ);
-                if (a < PI/2) {
-                    y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
-                } else {
-                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
-                }
-            }
-            Matrix derivative = null;
-            if (derivate) {
-                derivative = new Matrix2(1, 0, 0, 1/cos(φ));
-            }
-            /*
-             * Following part is common to all spherical projections: verify, store and return.
-             */
-            assert (excentricity != 0)  // Can not perform the following assertions if excentricity is not zero.
-                   || (Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                   && Assertions.checkTransform(dstPts, dstOff, λ, y)); // dstPts = result from ellipsoidal formulas.
             if (dstPts != null) {
-                dstPts[dstOff  ] = λ;
+                /*
+                 * Projection of zero is zero. However the formulas below have a slight rounding error
+                 * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
+                 * avoiding rounding error, this also preserve the sign (positive vs negative zero).
+                 */
+                final double y;
+                if (φ == 0) {
+                    y = φ;
+                } else {
+                    // See class javadoc for a note about explicit check for poles.
+                    final double a = abs(φ);
+                    if (a < PI/2) {
+                        y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                    } else {
+                        y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                    }
+                }
+                dstPts[dstOff  ] = srcPts[srcOff];
                 dstPts[dstOff+1] = y;
             }
-            return derivative;
+            return derivate ? new Matrix2(1, 0, 0, 1/cos(φ)) : null;
         }
 
         /**
@@ -539,26 +530,9 @@ public class Mercator extends AbstractLambertConformal {
                                         final double[] dstPts, final int dstOff)
                 throws ProjectionException
         {
-            double x = srcPts[srcOff  ];
-            double y = srcPts[srcOff+1];
-            y = PI/2 - 2 * atan(exp(-y));     // Part of Snyder (7-4)
-            assert (excentricity != 0)  // Can not perform the following assertion if excentricity is not zero.
-                   || checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
-        }
-
-        /**
-         * Computes using ellipsoidal formulas and compare with the
-         * result from spherical formulas. Used in assertions only.
-         */
-        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
-                                              final double[] dstPts, final int dstOff,
-                                              final double λ, final double φ)
-                throws ProjectionException
-        {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, λ, φ);
+            final double y = srcPts[srcOff+1];           // Must be before writing x.
+            dstPts[dstOff  ] = srcPts[srcOff];           // Must be before writing y.
+            dstPts[dstOff+1] = PI/2 - 2*atan(exp(-y));  // Part of Snyder (7-4);
         }
     }
 }

@@ -971,6 +971,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Writes the given object to the console using a shared instance of {@code ParameterFormat}.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void print(final Object object) {
         final Console console = System.console();
         final Appendable out = (console != null) ? console.writer() : System.out;
