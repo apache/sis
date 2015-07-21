@@ -17,3 +17,5 @@ org.apache.sis.internal.referencing.provider.LambertConformalMichigan
 org.apache.sis.internal.referencing.provider.PolarStereographicA
 org.apache.sis.internal.referencing.provider.PolarStereographicB
 org.apache.sis.internal.referencing.provider.PolarStereographicC
+org.apache.sis.internal.referencing.provider.PolarStereographicNorth
+org.apache.sis.internal.referencing.provider.PolarStereographicSouth

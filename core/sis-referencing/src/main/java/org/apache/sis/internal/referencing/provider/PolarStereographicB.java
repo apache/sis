@@ -79,7 +79,8 @@ public final class PolarStereographicB extends AbstractStereographic {
 
         STANDARD_PARALLEL = createMandatoryLatitude(builder
                 .addIdentifier("8832").addName("Latitude of standard parallel")
-                .addName(sameNameAs(Citations.OGC, Mercator2SP.STANDARD_PARALLEL)));
+                .addName(sameNameAs(Citations.OGC,  Mercator2SP.STANDARD_PARALLEL))
+                .addName(sameNameAs(Citations.ESRI, Mercator2SP.STANDARD_PARALLEL)));
 
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
@@ -88,8 +89,6 @@ public final class PolarStereographicB extends AbstractStereographic {
         PARAMETERS = builder
             .addIdentifier(IDENTIFIER)
             .addName("Polar Stereographic (variant B)")
-            .addName(Citations.ESRI, "Stereographic_North_Pole")
-            .addName(Citations.ESRI, "Stereographic_South_Pole")
             .addName(Citations.S57,  "Polar stereographic")
             .addName(Citations.S57,  "PST")
             .addIdentifier(Citations.S57, "11")
