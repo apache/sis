@@ -46,7 +46,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      * @param value The value.
      */
     private GO_Integer(final Integer value) {
-        super(value, value.intValue() == 0);
+        super(value, value == 0);
     }
 
     /**

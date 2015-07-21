@@ -59,6 +59,7 @@ class AbstractMercator extends MapProjection {
      *
      * @throws ArrayStoreException if a {@code descriptors} element is not an instance of {@link ParameterDescriptor}.
      */
+    @SuppressWarnings("SuspiciousToArrayCall")
     static ParameterDescriptor<?>[] toArray(List<GeneralParameterDescriptor> descriptors) {
         descriptors = descriptors.subList(2, descriptors.size());
         return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);  // Intentional array subtype.
@@ -87,7 +88,7 @@ class AbstractMercator extends MapProjection {
      * @return The map projection created from the given parameter values.
      */
     @Override
-    protected final NormalizedProjection createProjection(final Parameters parameters) {
+    protected NormalizedProjection createProjection(final Parameters parameters) {
         return new Mercator(this, parameters);
     }
 }

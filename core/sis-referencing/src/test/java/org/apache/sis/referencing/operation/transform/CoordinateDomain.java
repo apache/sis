@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+
 import static java.lang.StrictMath.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
@@ -100,7 +101,7 @@ public strictfp class CoordinateDomain {
     public static final CoordinateDomain GEOGRAPHIC_POLES = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
             Latitude .MIN_VALUE, Latitude .MAX_VALUE,
-                  -0*5 * HEIGHT,        0.5 * HEIGHT)
+                        -HEIGHT,              HEIGHT)
     {
         @Override
         public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
@@ -117,6 +118,24 @@ public strictfp class CoordinateDomain {
             return ordinates;
         }
     };
+
+    /**
+     * Geographic input coordinates close to the north pole.
+     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     */
+    public static final CoordinateDomain GEOGRAPHIC_NORTH_POLE = new CoordinateDomain(
+            Longitude.MIN_VALUE, Longitude.MAX_VALUE,
+                 ARTICLE_CIRCLE, Latitude .MAX_VALUE,
+                        -HEIGHT,              HEIGHT);
+
+    /**
+     * Geographic input coordinates close to the south pole.
+     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     */
+    public static final CoordinateDomain GEOGRAPHIC_SOUTH_POLE = new CoordinateDomain(
+            Longitude.MIN_VALUE, Longitude.MAX_VALUE,
+            Latitude .MIN_VALUE,     -ARTICLE_CIRCLE,
+                        -HEIGHT,              HEIGHT);
 
     /**
      * Geographic input coordinates with angles in radians.

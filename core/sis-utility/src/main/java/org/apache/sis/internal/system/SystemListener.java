@@ -120,6 +120,7 @@ public abstract class SystemListener implements EventListener {
     /**
      * Notifies all registered listeners that the classpath may have changed.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     public static void fireClasspathChanged() {
         final SystemListener[] list;
         synchronized (SystemListener.class) {

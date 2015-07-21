@@ -43,7 +43,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      * @param value The value.
      */
     private GO_Integer64(final Long value) {
-        super(value, value.longValue() == 0);
+        super(value, value == 0L);
     }
 
     /**

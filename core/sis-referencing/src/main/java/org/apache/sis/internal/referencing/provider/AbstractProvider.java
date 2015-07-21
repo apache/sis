@@ -128,10 +128,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      * where the default value should be the value of another parameter instead than 0°.
      */
     static ParameterDescriptor<Double> createMandatoryLatitude(final ParameterBuilder builder) {
-        return builder.createBounded(MeasurementRange.create(
-                Latitude.MIN_VALUE, true,
-                Latitude.MAX_VALUE, true,
-                NonSI.DEGREE_ANGLE), null);
+        return builder.createBounded(Latitude.MIN_VALUE, Latitude.MAX_VALUE, Double.NaN, NonSI.DEGREE_ANGLE);
     }
 
     /**
@@ -148,10 +145,7 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      * Creates a descriptor for a longitude parameter in degrees with a default value of 0°.
      */
     static ParameterDescriptor<Double> createLongitude(final ParameterBuilder builder) {
-        return builder.createBounded(MeasurementRange.create(
-                Longitude.MIN_VALUE, true,
-                Longitude.MAX_VALUE, true,
-                NonSI.DEGREE_ANGLE), 0.0);
+        return builder.createBounded(Longitude.MIN_VALUE, Longitude.MAX_VALUE, 0.0, NonSI.DEGREE_ANGLE);
     }
 
     /**

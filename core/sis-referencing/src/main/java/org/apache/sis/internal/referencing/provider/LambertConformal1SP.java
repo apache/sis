@@ -46,7 +46,7 @@ public final class LambertConformal1SP extends AbstractLambert {
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
-     * Valid values range is [-90 … 90]° and default value is 0°.
+     * Valid values range is [-90 … 90]°. There is no default value.
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
@@ -54,7 +54,7 @@ public final class LambertConformal1SP extends AbstractLambert {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Mercator1SP.CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN = Mercator1SP.LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
@@ -65,7 +65,7 @@ public final class LambertConformal1SP extends AbstractLambert {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
 
@@ -80,7 +80,7 @@ public final class LambertConformal1SP extends AbstractLambert {
             .addIdentifier(Citations.GEOTIFF, "9")
             .createGroupForMapProjection(
                     LATITUDE_OF_ORIGIN,
-                    CENTRAL_MERIDIAN,
+                    LONGITUDE_OF_ORIGIN,
                     SCALE_FACTOR,
                     FALSE_EASTING,
                     FALSE_NORTHING);

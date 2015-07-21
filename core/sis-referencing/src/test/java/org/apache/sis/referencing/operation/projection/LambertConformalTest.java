@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
-@DependsOn(AbstractLambertConformalTest.class)
+@DependsOn(ConformalProjectionTest.class)
 public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link LambertConformal}. See the class javadoc for an explanation
@@ -59,7 +59,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @param latitudeOfOrigin The latitude of origin, in decimal degrees.
      */
-    private void initialize(final boolean ellipse, final double latitudeOfOrigin) {
+    private void createNormalizedProjection(final boolean ellipse, final double latitudeOfOrigin) {
         final LambertConformal1SP method = new LambertConformal1SP();
         final Parameters parameters = parameters(method, ellipse);
         parameters.getOrCreate(LambertConformal1SP.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
@@ -77,7 +77,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
      */
     @Test
     public void testNormalizedWKT() {
-        initialize(true, 40);
+        createNormalizedProjection(true, 40);
         assertWktEquals(
                 "PARAM_MT[“Lambert_Conformal_Conic_1SP”,\n" +
                 "  PARAMETER[“semi_major”, 1.0],\n" +
@@ -93,7 +93,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
         if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true, 40);  // Elliptical case
+            createNormalizedProjection(true, 40);  // Elliptical case
         }
         final double INF = POSITIVE_INFINITY;
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
@@ -114,7 +114,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
-        initialize(((LambertConformal) transform).excentricity != 0, -40);
+        createNormalizedProjection(((LambertConformal) transform).excentricity != 0, -40);
         validate();
 
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
@@ -143,7 +143,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @DependsOnMethod("testSpecialLatitudes")
     public void testDerivative() throws TransformException {
         if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            initialize(true, 40);   // Elliptical case
+            createNormalizedProjection(true, 40);   // Elliptical case
         }
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
@@ -222,7 +222,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testLambertConicConformal1SP")
     public void testLambertConicConformalWestOrientated() throws FactoryException, TransformException {
-        initialize(new LambertConformal1SP(), false,
+        createCompleteProjection(new LambertConformal1SP(), false,
                   0.5,    // Central meridian
                  40,      // Latitude of origin
                   0,      // Standard parallel (none)
@@ -231,7 +231,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
                 100);     // False northing
         final MathTransform reference = transform;
 
-        initialize(new LambertConformalWest(), false,
+        createCompleteProjection(new LambertConformalWest(), false,
                   0.5,    // Central meridian
                  40,      // Latitude of origin
                   0,      // Standard parallel (none)
@@ -274,25 +274,35 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     }
 
     /**
-     * Verifies the consistency of spherical formulas with the elliptical formulas.
+     * Performs the same tests than {@link #testSpecialLatitudes()} and {@link #testDerivative()},
+     * but using spherical formulas.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testSpecialLatitudes")
+    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
-        initialize(false, 40); // Spherical case
+        createNormalizedProjection(false, 40); // Spherical case
         testSpecialLatitudes();
         testDerivative();
-        /*
-         * Make sure that the above methods did not changed the 'transform' field type.
-         */
+
+        // Make sure that the above methods did not overwrote the 'transform' field.
         assertEquals("transform.class", LambertConformal.Spherical.class, transform.getClass());
-        /*
-         * For some random points, compare the result of spherical formulas with the ellipsoidal ones.
-         */
-        initialize(new LambertConformal1SP(), false,
+    }
+
+    /**
+     * Verifies the consistency of elliptical formulas with the spherical formulas.
+     * This test compares the results of elliptical formulas with the spherical ones
+     * for some random points.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testSphericalCase")
+    public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
+        createCompleteProjection(new LambertConformal1SP(), false,
                   0.5,    // Central meridian
                  40,      // Latitude of origin
                   0,      // Standard parallel (none)
@@ -300,6 +310,6 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
                 200,      // False easting
                 100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
-        verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 268617081);
+        compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
     }
 }

@@ -39,7 +39,7 @@ import org.apache.sis.util.Workaround;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends AbstractLambertConformal {
+final strictfp class NoOp extends ConformalProjection {
     /**
      * Creates a new "no-operation".
      *
