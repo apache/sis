@@ -65,12 +65,13 @@ public final class PolarStereographicB extends AbstractStereographic {
      * because it is sometime used in Well Known Text (WKT). However it shall be interpreted as a
      * <cite>Scale factor at the standard parallel</cite> rather than at the natural origin.</p>
      */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         LONGITUDE_OF_ORIGIN = createLongitude(
