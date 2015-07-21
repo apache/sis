@@ -55,7 +55,7 @@ public final class PolarStereographicC extends AbstractStereographic {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier(IDENTIFIER)

@@ -44,7 +44,7 @@ public final class PolarStereographicNorth extends AbstractStereographic {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         List<GeneralParameterDescriptor> sp = PolarStereographicSouth.PARAMETERS.descriptors();
         sp = sp.subList(2, sp.size());  // Skip the "semi-major" and "semi-minor" parameters.

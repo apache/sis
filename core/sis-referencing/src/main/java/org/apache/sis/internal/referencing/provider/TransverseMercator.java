@@ -62,7 +62,7 @@ public final class TransverseMercator extends AbstractMercator {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         LATITUDE_OF_ORIGIN = createLatitude(builder

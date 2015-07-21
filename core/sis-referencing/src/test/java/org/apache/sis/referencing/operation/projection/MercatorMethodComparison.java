@@ -61,6 +61,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     /**
      * Where to print the outputs of this class.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static final PrintStream out = System.out;
 
     /**
