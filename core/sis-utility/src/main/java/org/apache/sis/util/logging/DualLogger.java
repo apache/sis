@@ -31,10 +31,12 @@ import java.util.logging.Logger;
  * @version 0.3
  * @module
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 final class DualLogger extends LoggerAdapter {
     /**
      * The two loggers.
      */
+    @SuppressWarnings("NonConstantLogger")
     private final Logger first, second;
 
     /**

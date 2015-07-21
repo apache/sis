@@ -132,6 +132,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the path which is currently set. The array returned by this method may be only
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
      * groups which have been found in the NetCDF file are returned by this method.
+     *
+     * @return The current search path.
      */
     @Override
     public String[] getSearchPath() {
@@ -269,6 +271,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns the globally unique dataset identifier as determined by the UCAR library.
+     *
+     * @return The global dataset identifier, or {@code null} if none.
      */
     @Override
     public String getId() {
@@ -277,6 +281,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * Returns the human readable title as determined by the UCAR library.
+     *
+     * @return The dataset title, or {@code null} if none.
      */
     @Override
     public String getTitle() {
@@ -286,8 +292,11 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns all variables found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return All variables, or an empty array if none.
      */
     @Override
+    @SuppressWarnings("null")
     public Variable[] getVariables() {
         if (variables == null) {
             final List<Dimension> dimensions = file.getDimensions();
@@ -303,8 +312,12 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
      * This method returns a direct reference to an internal array - do not modify.
+     *
+     * @return All grid geometries, or an empty array if none.
+     * @throws IOException If an I/O operation was necessary but failed.
      */
     @Override
+    @SuppressWarnings("null")
     public GridGeometry[] getGridGeometries() throws IOException {
         if (geometries == null) {
             List<CoordinateSystem> systems = null;

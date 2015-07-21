@@ -151,6 +151,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * Tests attribute comparison.
      */
     @Test
+    @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final Map<String,Object> identification = new HashMap<String,Object>(4);
         final DefaultAttributeType<Integer> a1 = population(identification);
