@@ -21,7 +21,6 @@ import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -83,21 +82,21 @@ public class LambertConformal extends ConformalProjection {
      *
      * <p><b>CONVENTION:</b> Codes for SP1 case must be odd, and codes for SP2 case must be even.
      *
-     * @see #getVariant(ParameterDescriptorGroup)
+     * @see #getVariant(OperationMethod)
      */
     private static final byte SP1  = 1,  WEST    = 3,                   // Must be odd
                               SP2  = 2,  BELGIUM = 4,  MICHIGAN = 6;    // Must be even
 
     /**
-     * Returns the type of the projection based on the name and identifier of the given parameter group.
+     * Returns the type of the projection based on the name and identifier of the given operation method.
      * If this method can not identify the type, then the parameters should be considered as a 2SP case.
      */
-    private static byte getVariant(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
-        if (identMatch(parameters, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
-        if (identMatch(parameters, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
-        if (identMatch(parameters, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
-        if (identMatch(parameters, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
+        if (identMatch(method, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
+        if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
+        if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
+        if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
         return 0; // Unidentified case, to be considered as 2SP.
     }
 
@@ -186,7 +185,7 @@ public class LambertConformal extends ConformalProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public LambertConformal(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(parameters.getDescriptor()));
+        this(method, parameters, getVariant(method));
     }
 
     /**

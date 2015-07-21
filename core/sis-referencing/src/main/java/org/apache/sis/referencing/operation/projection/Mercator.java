@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -93,19 +92,19 @@ public class Mercator extends ConformalProjection {
      * <p><b>CONVENTION:</b> <strong>Spherical cases must be odd, all other cases must be even.</strong>
      * This allow us to perform quick checks for all spherical cases using {@code if ((type & SPHERICAL) != 0)}.</p>
      *
-     * @see #getVariant(ParameterDescriptorGroup)
+     * @see #getVariant(OperationMethod)
      */
     private static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
                               REGIONAL  = 2, MILLER = 4;    // Must be even.
 
     /**
-     * Returns the variant of the projection based on the name and identifier of the given parameter group.
+     * Returns the variant of the projection based on the name and identifier of the given operation method.
      */
-    private static byte getVariant(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
-        if (identMatch(parameters, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
-        if (identMatch(parameters, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
-        if (identMatch(parameters, "(?i).*\\bMiller.*",          null))                         return MILLER;
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*", RegionalMercator .IDENTIFIER)) return REGIONAL;
+        if (identMatch(method, "(?i).*\\bSpherical\\b.*",    MercatorSpherical.IDENTIFIER)) return SPHERICAL;
+        if (identMatch(method, "(?i).*\\bPseudo.*",          PseudoMercator   .IDENTIFIER)) return PSEUDO;
+        if (identMatch(method, "(?i).*\\bMiller.*",          null))                         return MILLER;
         return 0;
     }
 
@@ -121,7 +120,7 @@ public class Mercator extends ConformalProjection {
      *
      * Other cases may be added in the future.
      *
-     * @see #getVariant(ParameterDescriptorGroup)
+     * @see #getVariant(OperationMethod)
      */
     private final byte variant;
 
@@ -192,7 +191,7 @@ public class Mercator extends ConformalProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public Mercator(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(parameters.getDescriptor()));
+        this(method, parameters, getVariant(method));
     }
 
     /**

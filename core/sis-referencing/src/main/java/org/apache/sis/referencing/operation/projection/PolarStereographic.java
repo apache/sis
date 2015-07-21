@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -68,20 +67,20 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      * <p>We do not provide such codes in public API because they duplicate the functionality of
      * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
      *
-     * @see #getVariant(ParameterDescriptorGroup)
+     * @see #getVariant(OperationMethod)
      */
     private static final byte A = 1, B = 2, C = 3, NORTH = 4, SOUTH = 5;
 
     /**
-     * Returns the type of the projection based on the name and identifier of the given parameter group.
+     * Returns the type of the projection based on the name and identifier of the given operation method.
      * If this method can not identify the type, then the parameters should be considered as a 2SP case.
      */
-    private static byte getVariant(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
-        if (identMatch(parameters, "(?i).*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
-        if (identMatch(parameters, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
-        if (identMatch(parameters, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
-        if (identMatch(parameters, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bvariant\\s*A\\b.*",  PolarStereographicA.IDENTIFIER)) return A;
+        if (identMatch(method, "(?i).*\\bvariant\\s*B\\b.*",  PolarStereographicB.IDENTIFIER)) return B;
+        if (identMatch(method, "(?i).*\\bvariant\\s*C\\b.*",  PolarStereographicC.IDENTIFIER)) return C;
+        if (identMatch(method, "(?i).*\\bNorth\\b.*",         null)) return NORTH;
+        if (identMatch(method, "(?i).*\\bSouth\\b.*",         null)) return SOUTH;
         return 0; // Unidentified case, to be considered as variant B.
     }
 
@@ -122,7 +121,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      * @param parameters The parameter values of the projection to create.
      */
     public PolarStereographic(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(parameters.getDescriptor()));
+        this(method, parameters, getVariant(method));
     }
 
     /**
