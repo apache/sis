@@ -100,7 +100,7 @@ public final class Equirectangular extends AbstractProvider {
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
@@ -130,7 +130,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName(Citations.GEOTIFF, "ProjStdParallel1")
                 .addName(Citations.PROJ4,   "lat_ts"), false);
 
-        CENTRAL_MERIDIAN = createLongitude(builder
+        LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addIdentifier("8802")
                 .addName("Longitude of natural origin")
                 .addName(Citations.OGC,     Constants.CENTRAL_MERIDIAN)
@@ -189,7 +189,7 @@ public final class Equirectangular extends AbstractProvider {
             .createGroupForMapProjection(
                     STANDARD_PARALLEL,
                     LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
-                    CENTRAL_MERIDIAN,
+                    LONGITUDE_OF_ORIGIN,
                     FALSE_EASTING,
                     FALSE_NORTHING);
     }
@@ -250,7 +250,7 @@ public final class Equirectangular extends AbstractProvider {
         final ContextualParameters context = new ContextualParameters(this);
         double a  = getAndStore(p, context, MapProjection.SEMI_MAJOR);
         double b  = getAndStore(p, context, MapProjection.SEMI_MINOR);
-        double λ0 = getAndStore(p, context, CENTRAL_MERIDIAN);
+        double λ0 = getAndStore(p, context, LONGITUDE_OF_ORIGIN);
         double φ0 = getAndStore(p, context, LATITUDE_OF_ORIGIN);
         double φ1 = getAndStore(p, context, STANDARD_PARALLEL);
         double fe = getAndStore(p, context, FALSE_EASTING);

@@ -44,11 +44,11 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
 public final strictfp class EquirectangularTest extends MapProjectionTestCase {
     /**
      * Initializes a simple Equirectangular projection on sphere. This method is different than the
-     * {@code initialize(boolean)} method in all other test classes,  because it does not create an
-     * instance of {@link NormalizedProjection}. Instead, it creates an affine transform for the
-     * whole projection (not only the normalized part).
+     * {@code createNormalizedProjection(boolean)} method in all other test classes, because it does
+     * not create an instance of {@link NormalizedProjection}. Instead, it creates an affine transform
+     * for the whole projection (not only the normalized part).
      */
-    private void initialize() throws FactoryException {
+    private void createCompleteProjection() throws FactoryException {
         final Equirectangular provider = new Equirectangular();
         final Parameters parameters = parameters(provider, false);
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
@@ -65,7 +65,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      */
     @Test
     public void testWKT() throws FactoryException {
-        initialize();
+        createCompleteProjection();
         assertWktEquals(
                 "PARAM_MT[“Equirectangular”,\n" +
                 "  PARAMETER[“semi_major”, 6371007.0],\n" +
@@ -95,7 +95,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      */
     @Test
     public void testSimpleTransform() throws FactoryException, TransformException {
-        initialize();
+        createCompleteProjection();
         verifyTransform(
                 new double[] {  // (λ,φ) coordinates in degrees to project.
                     0, 0,
@@ -118,7 +118,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      */
     @Test
     public void testRandomPoints() throws FactoryException, TransformException {
-        initialize(new Equirectangular(), true,
+        createCompleteProjection(new Equirectangular(), true,
                   0.5,  // Central meridian
                   0,    // Latitude of origin (none)
                  20,    // Standard parallel

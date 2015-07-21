@@ -149,6 +149,30 @@ public final strictfp class MathFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests the {@link MathFunctions#asinh(double)} method in the [-10 … +10] range.
+     */
+    @Test
+    public void testAsinh() {
+        for (int i=-100; i<=100; i++) {
+            final double x = 0.1 * i;
+            final double y = asinh(x);
+            assertEquals(x, StrictMath.sinh(y), EPS);
+        }
+    }
+
+    /**
+     * Tests the {@link MathFunctions#acosh(double)} method in the [1 … +10] range.
+     */
+    @Test
+    public void testAcosh() {
+        for (int i=10; i<=100; i++) {
+            final double x = 0.1 * i;
+            final double y = acosh(x);
+            assertEquals(x, StrictMath.cosh(y), EPS);
+        }
+    }
+
+    /**
      * Tests the {@link MathFunctions#atanh(double)} method in the [-1 … +1] range.
      */
     @Test

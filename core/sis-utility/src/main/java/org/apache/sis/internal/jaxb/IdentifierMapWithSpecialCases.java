@@ -115,6 +115,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@code true} if at least one identifier uses the given code.
      */
     @Override
     public boolean containsValue(final Object code) {
@@ -123,6 +125,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * @return {@code true} if at least one identifier uses the given authority.
      */
     @Override
     public boolean containsKey(final Object authority) {
@@ -140,6 +144,11 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * @param  <T> The identifier type.
+     * @param  authority The namespace whose associated identifier is to be returned.
+     * @return The identifier to which the given namespace is mapped, or
+     *         {@code null} if this map contains no mapping for the namespace.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -161,6 +170,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * @return The code of the identifier for the given authority, or {@code null} if none.
      */
     @Override
     public String get(final Object authority) {
@@ -183,6 +194,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
      * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
      * <cite>as-is</cite> under the {@code HREF} key.</p>
+     *
+     * @return The code of the identifier for the given authority, or {@code null} if none.
      */
     @Override
     public String put(final Citation authority, final String code)
@@ -226,6 +239,13 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
      * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
      * The previous {@code HREF} value, if any, is discarded.</p>
+     *
+     * @param  <T> The identifier type.
+     * @param  authority The namespace with which the given identifier is to be associated.
+     * @param  value The identifier to be associated with the given namespace.
+     * @return The previous identifier associated with {@code authority}, or {@code null}
+     *         if there was no mapping of the specialized type for {@code authority}.
+     * @throws UnsupportedOperationException If the identifier map is unmodifiable.
      */
     @Override
     @SuppressWarnings("unchecked")

@@ -20,7 +20,6 @@ import java.util.Date;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.internal.jaxb.Context;
@@ -71,6 +70,7 @@ public final class MetadataUtilities extends Static {
      * @return The given value as a primitive type.
      * @throws InvalidMetadataException if the given value is nil.
      */
+    @SuppressWarnings("NumberEquality")
     public static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
         if (value == null) {
             return true;
@@ -78,7 +78,7 @@ public final class MetadataUtilities extends Static {
         final boolean p = value;
         // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
         // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
-        if (p || value == Boolean.FALSE || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
+        if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
             return p;
         }
         throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));

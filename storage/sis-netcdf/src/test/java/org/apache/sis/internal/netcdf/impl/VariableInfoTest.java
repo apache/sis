@@ -36,6 +36,9 @@ import org.apache.sis.test.DependsOn;
 public final strictfp class VariableInfoTest extends VariableTest {
     /**
      * Creates a new decoder for dataset of the given name.
+     *
+     * @return The decoder for the given dataset.
+     * @throws IOException If an error occurred while opening the file.
      */
     @Override
     protected Decoder createDecoder(final String name) throws IOException {
@@ -45,6 +48,8 @@ public final strictfp class VariableInfoTest extends VariableTest {
     /**
      * Unconditionally returns {@code false} since {@link ChannelDecoder}
      * supports only the classic and 64 bits NetCDF formats.
+     *
+     * @return {@code false}.
      */
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {

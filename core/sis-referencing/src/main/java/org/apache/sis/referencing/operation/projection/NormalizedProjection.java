@@ -143,7 +143,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
-     * This constant defines the desired accuracy of methods like {@link AbstractLambertConformal#φ(double)}.
+     * This constant defines the desired accuracy of methods like {@link ConformalProjection#φ(double)}.
      *
      * <p>The current value is 0.25 time the accuracy derived from {@link Formulas#LINEAR_TOLERANCE}.
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
@@ -453,7 +453,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns {@code true} if the projection specified by the given parameters has the given keyword or identifier.
+     * Returns {@code true} if the projection specified by the given method has the given keyword or identifier.
      * If non-null, the given identifier is presumed in the EPSG namespace and has precedence over the keyword.
      *
      * <div class="note"><b>Implementation note:</b>
@@ -464,19 +464,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @param  parameters The user-specified parameters.
      * @param  regex      The regular expression to use when using the operation name as the criterion.
-     * @param  identifier The identifier to compare against the parameter group name.
-     * @return {@code true} if the given parameter group name contains the given keyword
+     * @param  identifier The identifier to compare against the operation method name.
+     * @return {@code true} if the name of the given operation method contains the given keyword
      *         or has an EPSG identifier equals to the given identifier.
      */
-    static boolean identMatch(final ParameterDescriptorGroup parameters, final String regex, final String identifier) {
+    static boolean identMatch(final OperationMethod method, final String regex, final String identifier) {
         if (identifier != null) {
-            for (final Identifier id : parameters.getIdentifiers()) {
+            for (final Identifier id : method.getIdentifiers()) {
                 if (Constants.EPSG.equals(id.getCodeSpace())) {
                     return identifier.equals(id.getCode());
                 }
             }
         }
-        return parameters.getName().getCode().matches(regex);
+        return method.getName().getCode().replace('_',' ').matches(regex);
     }
 
     /**
@@ -501,7 +501,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         final Double defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
-            context.parameter(descriptor.getName().getCode()).setValue(value);
+            context.getOrCreate(descriptor).setValue(value);
         }
         return value;
     }
@@ -860,92 +860,5 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     final double rν(final double sinφ) {
         return sqrt(1 - excentricitySquared * (sinφ*sinφ));
-    }
-
-    /**
-     * Computes part of the Mercator projection for the given latitude. This formula is also part of
-     * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
-     * Lambert projection with the equator as the single standard parallel.
-     *
-     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm}
-     * of the value returned by this method. This function is <em>almost</em> the converse of
-     * {@link AbstractLambertConformal#φ(double)}.
-     *
-     * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
-     * a function closely related to this one has the letter <var>t</var>.</p>
-     *
-     *
-     * <div class="section">Properties</div>
-     * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
-     * The result is always a positive number when the φ argument is inside the above-cited range.
-     * If, after removal of any 2π periodicity, φ is still outside the [-π/2 … π/2] range, then the
-     * result is a negative number. In a Mercator projection, such negative number will result in NaN.
-     *
-     * <p>Some values are:</p>
-     * <ul>
-     *   <li>expOfNorthing(NaN)    =  NaN</li>
-     *   <li>expOfNorthing(±∞)     =  NaN</li>
-     *   <li>expOfNorthing(-π/2)   =   0</li>
-     *   <li>expOfNorthing( 0  )   =   1</li>
-     *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
-     *   <li>expOfNorthing(-φ)     =  1 / expOfNorthing(φ)</li>
-     * </ul>
-     *
-     *
-     * <div class="section">The π/2 special case</div>
-     * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
-     * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
-     * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
-     * does nothing special about it.
-     *
-     * <p>Note that the result for the φ value after {@code Math.PI/2} (as given by {@link Math#nextUp(double)})
-     * is still positive, maybe because {@literal PI/2 < π/2 < nextUp(PI/2)}. Only the {@code nextUp(nextUp(PI/2))}
-     * value become negative. Callers may need to take this behavior in account: special check for {@code Math.PI/2}
-     * is not sufficient, the check needs to include at least the {@code nextUp(Math.PI/2)} case.</p>
-     *
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This function is related to the following functions from Snyder:
-     *
-     * <ul>
-     *   <li>(7-7) in the <cite>Mercator projection</cite> chapter.</li>
-     *   <li>Reciprocal of (9-13) in the <cite>Oblique Mercator projection</cite> chapter.</li>
-     *   <li>Reciprocal of (15-9) in the <cite>Lambert Conformal Conic projection</cite> chapter.</li>
-     * </ul>
-     *
-     * @param  φ     The latitude in radians.
-     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
-     * @return {@code Math.exp} of the Mercator projection of the given latitude.
-     *
-     * @see AbstractLambertConformal#φ(double)
-     * @see #dy_dφ(double, double)
-     */
-    final double expOfNorthing(final double φ, final double ℯsinφ) {
-        /*
-         * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
-         *
-         * A + sign in the equation favorises slightly the accuracy in South hemisphere, while a - sign
-         * favorises slightly the North hemisphere (but the differences are very small). In Apache SIS,
-         * we handle that by changing the sign of some terms in the (de)normalisation matrices.
-         */
-        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
-    }
-
-    /**
-     * Computes the partial derivative of a Mercator projection at the given latitude. This formula is also part of
-     * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
-     *
-     * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
-     * the returned value by by {@code expOfNorthing}.</p>
-     *
-     * @param  sinφ the sine of latitude.
-     * @param  cosφ The cosine of latitude.
-     * @return The partial derivative of a Mercator projection at the given latitude.
-     *
-     * @see #expOfNorthing(double, double)
-     * @see AbstractLambertConformal#φ(double)
-     */
-    final double dy_dφ(final double sinφ, final double cosφ) {
-        return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
     }
 }

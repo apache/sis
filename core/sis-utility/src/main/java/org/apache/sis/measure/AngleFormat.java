@@ -405,6 +405,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @param  locale The locale to use.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")  // We rely on the compiler for simplifying the expression.
     public AngleFormat(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
@@ -902,6 +903,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @return The {@code toAppendTo} buffer, returned for method calls chaining.
      */
+    @SuppressWarnings("PointlessBitwiseExpression")  // We rely on the compiler for simplifying the expression.
     public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         final int offset = toAppendTo.length();
         final int fieldPos = getField(pos);
@@ -1328,7 +1330,7 @@ public class AngleFormat extends Format implements Localized {
      * specifies if spaces can be accepted as a field separator. For example if {@code true},
      * then "45 30" will be parsed as "45°30".
      */
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"fallthrough", "UnnecessaryLabelOnBreakStatement"})
     private Angle parse(final String source, final ParsePosition pos, final boolean spaceAsSeparator) {
         double degrees;
         double minutes   = NaN;

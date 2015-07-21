@@ -57,7 +57,7 @@ abstract class MimeTypeDetector {
     /**
      * The {@code "xmlns"} string as a sequence of bytes.
      */
-    private static byte[] XMLNS = {'x','m','l','n','s'};
+    private static final byte[] XMLNS = {'x','m','l','n','s'};
 
     /**
      * The maximal US-ASCII value, inclusive.
@@ -234,7 +234,6 @@ abstract class MimeTypeDetector {
             // Skip everything up to the next space, and check again.
             while ((c = read()) >= ' ');
             if (c < 0) return null;
-            continue;
         }
         /*
          * At this point, we found the "xmlns" attribute for the prefix of the root element.

@@ -99,6 +99,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @param transform1 The first math transform.
      * @param transform2 The second math transform.
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     protected ConcatenatedTransform(final MathTransform transform1,
                                     final MathTransform transform2)
     {

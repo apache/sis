@@ -18,9 +18,11 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Latitude;
@@ -64,23 +66,39 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @version 0.6
  * @module
  */
-public class LambertConformal extends AbstractLambertConformal {
+public class LambertConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2067358524298002016L;
 
     /**
-     * Codes for special kinds of Lambert projection. We do not provide such codes in public API because
-     * they duplicate the functionality of {@link OperationMethod} instances. We use them only for convenience.
+     * Codes for variants of Lambert Conical Conformal projection. Those variants modify the way the projections are
+     * constructed (e.g. in the way parameters are interpreted), but formulas are basically the same after construction.
+     * Those variants are not exactly the same than variants 1SP and 2SP used by EPSG, but they are closely related.
      *
-     * <p>Codes for SP1 case must be odd, and codes for SP2 case must be even.</p>
+     * <p>We do not provide such codes in public API because they duplicate the functionality of
+     * {@link OperationMethod} instances. We use them only for constructors convenience.</p>
      *
-     * @see #getType(ParameterDescriptorGroup)
+     * <p><b>CONVENTION:</b> Codes for SP1 case must be odd, and codes for SP2 case must be even.
+     *
+     * @see #getVariant(OperationMethod)
      */
-    private static final byte SP1  = 1,   SP2      = 2,
-                              WEST = 3,   BELGIUM  = 4,
-                                          MICHIGAN = 6;
+    private static final byte SP1  = 1,  WEST    = 3,                   // Must be odd
+                              SP2  = 2,  BELGIUM = 4,  MICHIGAN = 6;    // Must be even
+
+    /**
+     * Returns the type of the projection based on the name and identifier of the given operation method.
+     * If this method can not identify the type, then the parameters should be considered as a 2SP case.
+     */
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
+        if (identMatch(method, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
+        if (identMatch(method, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
+        if (identMatch(method, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
+        if (identMatch(method, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
+        return 0; // Unidentified case, to be considered as 2SP.
+    }
 
     /**
      * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
@@ -91,17 +109,27 @@ public class LambertConformal extends AbstractLambertConformal {
      * Internal coefficients for computation, depending only on values of standards parallels.
      * This is defined as {@literal n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂)} in §1.3.1.1 of
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
+     *
+     * <p><b>Note:</b></p>
+     * <ul>
+     *   <li>If φ1 = -φ2, then the cone become a cylinder and this {@code n} value become 0.
+     *       This is limiting case is the Mercator projection, but we can not compare with this class
+     *       because {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
+     *   <li>If φ1 = φ2 = ±90°, then this {@code n} value become ±1. The formulas in the transform and
+     *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
+     *       (de)normalization matrices contain NaN values.</li>
+     * </ul>
      */
     final double n;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given type.
+     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given variant.
      *
-     * @param  type One of {@link #SP1}, {@link #SP2}, {@link #WEST}, {@link #BELGIUM} and {@link #MICHIGAN} constants.
+     * @param  variant One of {@link #SP1}, {@link #SP2}, {@link #WEST}, {@link #BELGIUM} and {@link #MICHIGAN} constants.
      * @return The roles map to give to super-class constructor.
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte type) {
+    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
                 new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
@@ -110,7 +138,7 @@ public class LambertConformal extends AbstractLambertConformal {
          */
         ParameterDescriptor<Double> scaleFactor = LambertConformal1SP.SCALE_FACTOR;
         ParameterRole eastingDirection = ParameterRole.FALSE_EASTING;
-        switch (type) {
+        switch (variant) {
             case WEST: {
                 /*
                  * For "Lambert Conic Conformal (West Orientated)" projection, the "false easting" parameter is
@@ -122,7 +150,7 @@ public class LambertConformal extends AbstractLambertConformal {
             case SP1: {
                 roles.put(eastingDirection,               LambertConformal1SP.FALSE_EASTING);
                 roles.put(ParameterRole.FALSE_NORTHING,   LambertConformal1SP.FALSE_NORTHING);
-                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.CENTRAL_MERIDIAN);
+                roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal1SP.LONGITUDE_OF_ORIGIN);
                 break;
             }
             case MICHIGAN: {
@@ -136,7 +164,7 @@ public class LambertConformal extends AbstractLambertConformal {
                 roles.put(ParameterRole.CENTRAL_MERIDIAN, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN);
                 break;
             }
-            default: throw new AssertionError(type);
+            default: throw new AssertionError(variant);
         }
         roles.put(ParameterRole.SCALE_FACTOR, scaleFactor);
         return roles;
@@ -158,7 +186,7 @@ public class LambertConformal extends AbstractLambertConformal {
      * @param parameters The parameter values of the projection to create.
      */
     public LambertConformal(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getType(parameters.getDescriptor()));
+        this(method, parameters, getVariant(method));
     }
 
     /**
@@ -178,6 +206,11 @@ public class LambertConformal extends AbstractLambertConformal {
         double φ1 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
         double φ2 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
+            /*
+             * We can not allow that because if φ1 = -φ2, then n = 0 and the equations
+             * in this class break down with indetermination like 0 × ∞.
+             * The caller should use the Mercator projection instead for such cases.
+             */
             throw new IllegalArgumentException(Errors.format(Errors.Keys.LatitudesAreOpposite_2,
                     new Latitude(φ1), new Latitude(φ2)));
         }
@@ -247,13 +280,17 @@ public class LambertConformal extends AbstractLambertConformal {
             F.negate();
         }
         /*
-         * Compute  r = a⋅F⋅tⁿ  from EPSG notes where (in our case) a=1 and t is our 'expOfNorthing' function.
-         * Note that Snyder calls this term "ρ0".
+         * Compute the radius of the parallel of latitude of the false origin.
+         * This is related to the "ρ0" term in Snyder. From EPG guide:
+         *
+         *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expOfNorthing' function.
+         *
+         * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
-        final DoubleDouble r0 = new DoubleDouble();    // Initialized to zero.
+        final DoubleDouble rF = new DoubleDouble();    // Initialized to zero.
         if (φ0 != copySign(PI/2, -n)) {    // For avoiding the rounding error documented in expOfNorthing(+π/2).
-            r0.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
-            r0.multiply(F);
+            rF.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
+            rF.multiply(F);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -281,7 +318,7 @@ public class LambertConformal extends AbstractLambertConformal {
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, F, null);
         F.negate();
-        denormalize.convertBefore(1, F, r0);
+        denormalize.convertBefore(1, F, rF);
     }
 
     /**
@@ -293,16 +330,24 @@ public class LambertConformal extends AbstractLambertConformal {
     }
 
     /**
-     * Returns the type of the projection based on the name and identifier of the given parameter group.
-     * If this method can not identify the type, then the parameters should be considered as a 2SP case.
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
      */
-    private static byte getType(final ParameterDescriptorGroup parameters) {
-        if (identMatch(parameters, "(?i).*\\bBelgium\\b.*",  LambertConformalBelgium .IDENTIFIER)) return BELGIUM;
-        if (identMatch(parameters, "(?i).*\\bMichigan\\b.*", LambertConformalMichigan.IDENTIFIER)) return MICHIGAN;
-        if (identMatch(parameters, "(?i).*\\bWest\\b.*",     LambertConformalWest    .IDENTIFIER)) return WEST;
-        if (identMatch(parameters, "(?i).*\\b2SP\\b.*",      LambertConformal2SP     .IDENTIFIER)) return SP2;
-        if (identMatch(parameters, "(?i).*\\b1SP\\b.*",      LambertConformal1SP     .IDENTIFIER)) return SP1;
-        return 0; // Unidentified case, to be considered as 2SP.
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        LambertConformal kernel = this;
+        if (excentricity == 0) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**
@@ -348,9 +393,8 @@ public class LambertConformal extends AbstractLambertConformal {
     }
 
     /**
-     * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
-     * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
-     * if {@code derivate} is {@code true}.
+     * Converts the specified (θ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
+     * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
      * @return The matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -366,27 +410,27 @@ public class LambertConformal extends AbstractLambertConformal {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = srcPts[srcOff];         // θ = λ⋅n
-        final double φ    = srcPts[srcOff + 1];     // Sign may be reversed
+        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n
+        final double φ    = srcPts[srcOff+1];     // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
         final double sinφ;
-        final double r;     // From EPSG guide. Note that Snyder p. 108 calls this term "ρ".
+        final double ρ;     // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            r = pow(expOfNorthing(φ, excentricity*sinφ), n);
+            ρ = pow(expOfNorthing(φ, excentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
-            r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+            ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
         } else {
-            r = sinφ = NaN;
+            ρ = sinφ = NaN;
         }
-        final double x = r * sinθ;
-        final double y = r * cosθ;
+        final double x = ρ * sinθ;
+        final double y = ρ * cosθ;
         if (dstPts != null) {
-            dstPts[dstOff    ] = x;
-            dstPts[dstOff + 1] = y;
+            dstPts[dstOff  ] = x;
+            dstPts[dstOff+1] = y;
         }
         if (!derivate) {
             return null;
@@ -396,17 +440,16 @@ public class LambertConformal extends AbstractLambertConformal {
         //
         final double dρ;
         if (sinφ != 1) {
-            dρ = n * dy_dφ(sinφ, cos(φ)) * r;
+            dρ = n * dy_dφ(sinφ, cos(φ)) * ρ;
         } else {
-            dρ = r;
+            dρ = ρ;
         }
         return new Matrix2(y, dρ*sinθ,      // ∂x/∂λ , ∂x/∂φ
                           -x, dρ*cosθ);     // ∂y/∂λ , ∂y/∂φ
     }
 
     /**
-     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates
-     * and stores the result in {@code dstPts} (angles in radians).
+     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
      * @throws ProjectionException if the point can not be converted.
      */
@@ -415,15 +458,15 @@ public class LambertConformal extends AbstractLambertConformal {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double x = srcPts[srcOff    ];
-        final double y = srcPts[srcOff + 1];
+        final double x = srcPts[srcOff  ];
+        final double y = srcPts[srcOff+1];
         /*
          * NOTE: If some equation terms seem missing (e.g. "y = ρ0 - y"), this is because the linear operations
          * applied before the first non-linear one moved to the inverse of the "denormalize" transform, and the
          * linear operations applied after the last non-linear one moved to the inverse of the "normalize" transform.
          */
-        dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x)
-        dstPts[dstOff+1] = φ(pow(hypot(x, y), -1/n));
+        dstPts[dstOff  ] = atan2(x, y);                 // Really (x,y), not (y,x)
+        dstPts[dstOff+1] = -φ(pow(hypot(x, y), 1/n));   // Equivalent to φ(pow(hypot(x,y), -1/n)) but more accurate for n>0.
     }
 
 
@@ -478,40 +521,36 @@ public class LambertConformal extends AbstractLambertConformal {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double θ    = srcPts[srcOff];         // θ = λ⋅n
-            final double φ    = srcPts[srcOff + 1];     // Sign may be reversed
+            final double θ    = srcPts[srcOff  ];       // θ = λ⋅n
+            final double φ    = srcPts[srcOff+1];       // Sign may be reversed
             final double absφ = abs(φ);
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);
-            final double r;   // Snyder p. 108 calls this term "ρ", but we use "r" for consistency with EPSG guide.
+            final double ρ;   // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
             if (absφ < PI/2) {
-                r = pow(tan(PI/4 + 0.5*φ), n);
+                ρ = pow(tan(PI/4 + 0.5*φ), n);
             } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
-                r = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
+                ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;
             } else {
-                r = NaN;
+                ρ = NaN;
             }
-            final double x = r * sinθ;
-            final double y = r * cosθ;
-            Matrix derivative = null;
-            if (derivate) {
-                final double dρ;
-                if (absφ < PI/2) {
-                    dρ = n*r / cos(φ);
-                } else {
-                    dρ = NaN;
-                }
-                derivative = new Matrix2(y, dρ*sinθ,    // ∂x/∂λ , ∂x/∂φ
-                                        -x, dρ*cosθ);   // ∂y/∂λ , ∂y/∂φ
-            }
-            // Following part is common to all spherical projections: verify, store and return.
-            assert Assertions.checkDerivative(derivative, super.transform(srcPts, srcOff, dstPts, dstOff, derivate))
-                && Assertions.checkTransform(dstPts, dstOff, x, y);     // dstPts = result from ellipsoidal formulas.
+            final double x = ρ * sinθ;
+            final double y = ρ * cosθ;
             if (dstPts != null) {
-                dstPts[dstOff    ] = x;
-                dstPts[dstOff + 1] = y;
+                dstPts[dstOff  ] = x;
+                dstPts[dstOff+1] = y;
             }
-            return derivative;
+            if (!derivate) {
+                return null;
+            }
+            final double dρ;
+            if (absφ < PI/2) {
+                dρ = n*ρ / cos(φ);
+            } else {
+                dρ = NaN;
+            }
+            return new Matrix2(y, dρ*sinθ,    // ∂x/∂λ , ∂x/∂φ
+                              -x, dρ*cosθ);   // ∂y/∂λ , ∂y/∂φ
         }
 
         /**
@@ -525,24 +564,8 @@ public class LambertConformal extends AbstractLambertConformal {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
-            x = atan2(x, y);  // Really (x,y), not (y,x)
-            y = 2*atan(pow(1/ρ, -1/n)) - PI/2;
-            assert checkInverseTransform(srcPts, srcOff, dstPts, dstOff, x, y);
-            dstPts[dstOff    ] = x;
-            dstPts[dstOff + 1] = y;
-        }
-
-        /**
-         * Computes using ellipsoidal formulas and compare with the
-         * result from spherical formulas. Used in assertions only.
-         */
-        private boolean checkInverseTransform(final double[] srcPts, final int srcOff,
-                                              final double[] dstPts, final int dstOff,
-                                              final double θ, final double φ)
-                throws ProjectionException
-        {
-            super.inverseTransform(srcPts, srcOff, dstPts, dstOff);
-            return Assertions.checkInverseTransform(dstPts, dstOff, θ, φ);
+            dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x);
+            dstPts[dstOff+1] = PI/2 - 2*atan(pow(1/ρ, 1/n));
         }
     }
 
