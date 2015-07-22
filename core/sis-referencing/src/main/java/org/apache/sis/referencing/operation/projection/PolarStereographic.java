@@ -34,6 +34,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
 
@@ -171,8 +172,17 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          * It may be possible to specify φ0 and φ1 if the caller used his own parameter descriptor,
          * in which case maybe he really wanted different sign (e.g. for testing purpose).
          */
-        final boolean isNorthPole = (φ1 >= 0);
-        φ1 = -abs(toRadians(φ1));  // May be anything in [-π/2 … 0] range.
+        final boolean isNorth = MathFunctions.isPositive(φ1);
+        if (isNorth) {
+            /*
+             * The South case has the most "natural" formulas. For the North case, we use the same formulas
+             * with only the sign reversed before and after projection. This sign reversal is done in the
+             * (de)normalization matrices at the end of this method. But we need to apply the same politic
+             * on the parameters that we will use below.
+             */
+            φ1 = -φ1;
+        }
+        φ1 = toRadians(φ1);  // May be anything in [-π/2 … 0] range.
         final double ρ;
         Double ρF = null;    // Actually -ρF (compared to EPSG guide).
         if (abs(φ1 + PI/2) < ANGULAR_TOLERANCE) {
@@ -221,7 +231,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
-        if (isNorthPole) {
+        if (isNorth) {
             context.getMatrix(true).convertAfter(1, -1, null);
             denormalize.convertBefore(1, -1, null);
         }
