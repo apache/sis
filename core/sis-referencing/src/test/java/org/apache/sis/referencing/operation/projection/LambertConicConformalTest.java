@@ -39,9 +39,9 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link LambertConformal} class. We test using various values of the latitude of origin.
+ * Tests the {@link LambertConicConformal} class. We test using various values of the latitude of origin.
  * We do not test with various values of standard parallels, because it is just an other way to set
- * the value of the <var>n</var> field in {@code LambertConformal}. As long as we make this value varying,
+ * the value of the <var>n</var> field in {@code LambertConicConformal}. As long as we make this value varying,
  * the latitude of origin is the simplest approach.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,9 +51,9 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class LambertConformalTest extends MapProjectionTestCase {
+public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
     /**
-     * Creates a new instance of {@link LambertConformal}. See the class javadoc for an explanation
+     * Creates a new instance of {@link LambertConicConformal}. See the class javadoc for an explanation
      * about why we ask only for the latitude of origin and not the standard parallels.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
@@ -63,9 +63,9 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         final LambertConformal1SP method = new LambertConformal1SP();
         final Parameters parameters = parameters(method, ellipse);
         parameters.getOrCreate(LambertConformal1SP.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
-        transform = new LambertConformal(method, parameters);
+        transform = new LambertConicConformal(method, parameters);
         if (!ellipse) {
-            transform = new LambertConformal.Spherical((LambertConformal) transform);
+            transform = new LambertConicConformal.Spherical((LambertConicConformal) transform);
         }
         tolerance = NORMALIZED_TOLERANCE;
         validate();
@@ -86,7 +86,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     public void testNormalizedWKT() {
         createNormalizedProjection(true, 40);
         assertWktEqualsRegex("\\Q" +
-                "PARAM_MT[“Lambert conformal”,\n" +
+                "PARAM_MT[“Lambert conic conformal”,\n" +
                 "  PARAMETER[“excentricity”, 0.08181919084262157],\n" +
                 "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\]\\]");  // 0.6427876096865393 in the original test.
     }
@@ -120,7 +120,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
-        createNormalizedProjection(((LambertConformal) transform).excentricity != 0, -40);
+        createNormalizedProjection(((LambertConicConformal) transform).excentricity != 0, -40);
         validate();
 
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
@@ -294,7 +294,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         testDerivative();
 
         // Make sure that the above methods did not overwrote the 'transform' field.
-        assertEquals("transform.class", LambertConformal.Spherical.class, transform.getClass());
+        assertEquals("transform.class", LambertConicConformal.Spherical.class, transform.getClass());
     }
 
     /**

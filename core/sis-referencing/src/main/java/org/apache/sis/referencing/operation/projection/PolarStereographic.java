@@ -54,7 +54,7 @@ import static java.lang.Math.*;
  * @see EquatorialStereographic
  * @see ObliqueStereographic
  */
-public class PolarStereographic extends ConformalProjection {  // Seen as a special case of LambertConformal.
+public class PolarStereographic extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
@@ -279,7 +279,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
                             final boolean derivate) throws ProjectionException
     {
         /*
-         * Note: formulas below are very similar to LambertConformal.transform(…) with n = -1.
+         * Note: formulas below are very similar to LambertConicConformal.transform(…) with n = -1.
          */
         final double θ    = srcPts[srcOff  ];   // θ = λ - λ₀
         final double φ    = srcPts[srcOff+1];   // Sign may be reversed
