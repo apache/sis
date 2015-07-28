@@ -44,7 +44,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
 
 
 /**
- * <cite>Lambert Conical Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
+ * <cite>Lambert Conic Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
  * See the <a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert conformal
  * conic projection on MathWorld</a> for an overview.
  *
@@ -61,7 +61,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @version 0.6
  * @module
  */
-public class LambertConformal extends ConformalProjection {
+public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
@@ -184,7 +184,7 @@ public class LambertConformal extends ConformalProjection {
      * @param method     Description of the projection parameters.
      * @param parameters The parameter values of the projection to create.
      */
-    public LambertConformal(final OperationMethod method, final Parameters parameters) {
+    public LambertConicConformal(final OperationMethod method, final Parameters parameters) {
         this(method, parameters, getVariant(method));
     }
 
@@ -193,7 +193,7 @@ public class LambertConformal extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
+    private LambertConicConformal(final OperationMethod method, final Parameters parameters, final byte type) {
         super(method, parameters, roles(type));
         double φ0 = getAndStore(parameters, ((type & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
@@ -268,7 +268,7 @@ public class LambertConformal extends ConformalProjection {
         /*
          * Computes F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
          * Following constants will be stored in the denormalization matrix, to be applied after
-         * the non-linear formulas implemented by this LambertConformal class. Opportunistically
+         * the non-linear formulas implemented by this LambertConicConformal class. Opportunistically
          * use double-double arithmetic since we the matrix coefficients will be stored in this
          * format anyway. This makes a change in the 2 or 3 last digits.
          */
@@ -323,14 +323,14 @@ public class LambertConformal extends ConformalProjection {
     /**
      * Creates a new projection initialized to the same parameters than the given one.
      */
-    LambertConformal(final LambertConformal other) {
+    LambertConicConformal(final LambertConicConformal other) {
         super(other);
         n = other.n;
     }
 
     /**
      * Returns the names of additional internal parameters which need to be taken in account when
-     * comparing two {@code LambertConformal} projections or formatting them in debug mode.
+     * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
      */
     @Override
     String[] getInternalParameterNames() {
@@ -339,7 +339,7 @@ public class LambertConformal extends ConformalProjection {
 
     /**
      * Returns the values of additional internal parameters which need to be taken in account when
-     * comparing two {@code LambertConformal} projections or formatting them in debug mode.
+     * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
      */
     @Override
     double[] getInternalParameterValues() {
@@ -360,7 +360,7 @@ public class LambertConformal extends ConformalProjection {
      */
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
-        LambertConformal kernel = this;
+        LambertConicConformal kernel = this;
         if (excentricity == 0) {
             kernel = new Spherical(this);
         }
@@ -473,7 +473,7 @@ public class LambertConformal extends ConformalProjection {
      * @version 0.6
      * @module
      */
-    static final class Spherical extends LambertConformal {
+    static final class Spherical extends LambertConicConformal {
         /**
          * For cross-version compatibility.
          */
@@ -484,7 +484,7 @@ public class LambertConformal extends ConformalProjection {
          *
          * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
          */
-        protected Spherical(final LambertConformal other) {
+        protected Spherical(final LambertConicConformal other) {
             super(other);
         }
 

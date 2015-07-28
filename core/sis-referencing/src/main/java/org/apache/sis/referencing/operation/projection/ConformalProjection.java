@@ -28,7 +28,7 @@ import static java.lang.Math.*;
 
 
 /**
- * Base class of {@link LambertConformal}, {@link Mercator} and {@link PolarStereographic} projections.
+ * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
  * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
  * angles locally. However we do not put this base class in public API because we do not (yet) guarantee
  * than all conformal projections will extend this base class.
