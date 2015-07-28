@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -36,12 +35,8 @@ import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
@@ -118,6 +113,11 @@ public class LambertConformal extends ConformalProjection {
      *   <li>If φ1 = φ2 = ±90°, then this {@code n} value become ±1. The formulas in the transform and
      *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
      *       (de)normalization matrices contain NaN values.</li>
+     *   <li>Depending on how the formulas are written, <var>n</var> may be positive in the South hemisphere and
+     *       negative in the North hemisphere (or conversely). However Apache SIS adjusts the coefficients of the
+     *       (de)normalization matrices in order to keep <var>n</var> positive, because the formulas are slightly
+     *       more accurate for positive <var>n</var> values. However this adjustment is optional and can be disabled
+     *       in the constructor.</li>
      * </ul>
      */
     final double n;
@@ -329,6 +329,24 @@ public class LambertConformal extends ConformalProjection {
     }
 
     /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code LambertConformal} projections or formatting them in debug mode.
+     */
+    @Override
+    String[] getInternalParameterNames() {
+        return new String[] {"n"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code LambertConformal} projections or formatting them in debug mode.
+     */
+    @Override
+    double[] getInternalParameterValues() {
+        return new double[] {n};
+    }
+
+    /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
      * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
@@ -347,48 +365,6 @@ public class LambertConformal extends ConformalProjection {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
-    }
-
-    /**
-     * Returns a copy of the parameter values for this projection.
-     * This method supplies a value only for the following parameters:
-     *
-     * <ul>
-     *   <li>Semi-major axis length of 1</li>
-     *   <li>Semi-minor axis length of <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code></li>
-     *   <li>Only one of the following:
-     *     <ul>
-     *       <li>Natural origin (1SP case)</li>
-     *     </ul>
-     *     or, in the 2SP case:
-     *     <ul>
-     *       <li>Standard parallel 1</li>
-     *       <li>Standard parallel 2</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
-     * No other parameters are set because only the above-cited ones are significant for the non-linear part
-     * of this projection.
-     *
-     * <div class="note"><b>Note:</b>
-     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
-     *
-     * @return A copy of the parameter values for this normalized projection.
-     */
-    @Debug
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return getParameterValues(new String[] {
-            Constants.SEMI_MAJOR,
-            Constants.SEMI_MINOR,
-            Constants.STANDARD_PARALLEL_1,
-            Constants.STANDARD_PARALLEL_2,
-            "latitude_of_origin"
-        });
     }
 
     /**
@@ -566,18 +542,5 @@ public class LambertConformal extends ConformalProjection {
             dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x);
             dstPts[dstOff+1] = PI/2 - 2*atan(pow(1/ρ, 1/n));
         }
-    }
-
-    /**
-     * Compares the given object with this transform for equivalence.
-     *
-     * @return {@code true} if the given object is equivalent to this map projection.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            return Numerics.epsilonEqual(n, ((LambertConformal) object).n, mode);
-        }
-        return false;
     }
 }

@@ -16,16 +16,14 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import org.opengis.metadata.Identifier;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -34,18 +32,21 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
@@ -158,6 +159,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher excentricity.
      */
     static final int MAXIMUM_ITERATIONS = 15;
+
+    /**
+     * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
+     * containing at least a parameter for the {@link #excentricity} value, and optionally other internal parameter
+     * added by some subclasses.
+     *
+     * <p>Entries are created only when first needed. Those descriptors are usually never created since they are
+     * used only by {@link #getParameterDescriptors()}, which is itself invoked mostly for debugging purpose.</p>
+     */
+    @Debug
+    private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<>();
 
     /**
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
@@ -566,18 +578,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns a copy of the parameter values for this projection.
-     * This base class supplies a value only for the following parameters:
-     *
-     * <ul>
-     *   <li>Semi-major axis length, which is set to 1.</li>
-     *   <li>Semi-minor axis length, which is set to
-     *       <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code>.</li>
-     * </ul>
-     *
-     * Subclasses must complete if needed. Many projections will not need to complete,
-     * because most parameters like the scale factor or the false easting/northing can
-     * be handled by the (de)normalization affine transforms.
+     * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
+     * The returned group contained at least the {@link #excentricity} parameter value.
+     * Some subclasses add more non-linear parameters, but most of them do not because many parameters
+     * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
+     * {@linkplain ContextualParameters#getMatrix(boolean) (de)normalization affine transforms} instead.
      *
      * <div class="note"><b>Note:</b>
      * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -585,56 +590,85 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the parameter values for this normalized projection.
+     * @return A copy of the internal parameter values for this normalized projection.
      */
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        return getParameterValues(new String[] {
-            Constants.SEMI_MAJOR,
-            Constants.SEMI_MINOR
-        });
+        final ParameterValueGroup group = getParameterDescriptors().createValue();
+        group.parameter("excentricity").setValue(excentricity);
+        final String[] names  = getInternalParameterNames();
+        final double[] values = getInternalParameterValues();
+        for (int i=0; i<names.length; i++) {
+            group.parameter(names[i]).setValue(values[i]);
+        }
+        return group;
     }
 
     /**
-     * Filters the parameter descriptor in order to retain only the parameters of the given names, and
-     * sets the semi-major and semi-minor axis lengths. The specified parameters list should contains at
-     * least the {@code "semi_major"} and {@code "semi_minor"} strings.
+     * Returns a description of the non-linear internal parameters of this {@code NormalizedProjection}.
+     * The returned group contained at least a descriptor for the {@link #excentricity} parameter.
+     * Subclasses may add more parameters.
      *
-     * <p>This filtered descriptor is used for displaying the parameter values of this non-linear kernel only,
-     * not for displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying
-     * the kernel parameter values is for debugging purpose only, it is not worth to cache this descriptor.</p>
+     * <p>This method is for inspecting the parameter values of this non-linear kernel only,
+     * not for inspecting the {@linkplain #getContextualParameters() contextual parameters}.
+     * Inspecting the kernel parameter values is usually for debugging purpose only.</p>
+     *
+     * @return A description of the internal parameters.
      */
     @Debug
-    final ParameterValueGroup getParameterValues(final String[] nonLinearParameters) {
-        ParameterDescriptorGroup descriptor = getParameterDescriptors();
-        final List<GeneralParameterDescriptor> filtered = new ArrayList<>(nonLinearParameters.length);
-        for (final GeneralParameterDescriptor p : descriptor.descriptors()) {
-            for (final String name : nonLinearParameters) {
-                if (IdentifiedObjects.isHeuristicMatchForName(p, name)) {
-                    filtered.add(p);
-                    break;
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        Class<?> type = getClass();
+        while (!Modifier.isPublic(type.getModifiers())) {
+            type = type.getSuperclass();
+        }
+        ParameterDescriptorGroup group;
+        synchronized (DESCRIPTORS) {
+            group = DESCRIPTORS.get(type);
+            if (group == null) {
+                final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
+                if (Utilities.isSIS(type)) {
+                    builder.setCodeSpace(Citations.SIS, "SIS");
                 }
+                final String[] names = getInternalParameterNames();
+                final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];
+                for (int i=0; i<parameters.length; i++) {
+                    final ParameterDescriptor<?> p;
+                    if (i == 0) {
+                        final ParameterDescriptorGroup existing = CollectionsExt.first(DESCRIPTORS.values());
+                        if (existing != null) {
+                            p = (ParameterDescriptor<?>) existing.descriptor("excentricity");
+                        } else {
+                            p = builder.addName(Citations.SIS, "excentricity").createBounded(0, 1, Double.NaN, null);
+                        }
+                    } else {
+                        p = builder.addName(names[i-1]).create(Double.class, null);
+                    }
+                    parameters[i] = p;
+                }
+                group = builder.addName(CharSequences.camelCaseToSentence(type.getSimpleName())).createGroup(1, 1, parameters);
+                DESCRIPTORS.put(type, group);
             }
         }
-        descriptor = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
-                1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
-        /*
-         * Parameter values for the ellipsoid semi-major and semi-minor axis lengths are 1 and <= 1
-         * respectively because the denormalization (e.g. multiplication by a scale factor) will be
-         * applied by an affine transform after this NormalizedProjection.
-         */
-        final ParameterValueGroup values = descriptor.createValue();
-        for (final GeneralParameterDescriptor desc : filtered) {
-            final String name = desc.getName().getCode();
-            final ParameterValue<?> p = values.parameter(name);
-            switch (name) {
-                case Constants.SEMI_MAJOR: p.setValue(1.0); break;
-                case Constants.SEMI_MINOR: p.setValue(sqrt(1 - excentricitySquared)); break;
-                default: p.setValue(context.parameter(name).getValue());
-            }
-        }
-        return values;
+        return group;
+    }
+
+    /**
+     * Returns the names of any additional internal parameters (other than {@link #excentricity})
+     * that this projection has. The length of this array must be the same than the length of the
+     * {@link #getInternalParameterValues()} array, if the later is non-null.
+     */
+    String[] getInternalParameterNames() {
+        return CharSequences.EMPTY_ARRAY;
+    }
+
+    /**
+     * Returns the values of any additional internal parameters (other than {@link #excentricity}) that
+     * this projection has. Those values are also compared by {@link #equals(Object, ComparisonMode)}.
+     */
+    double[] getInternalParameterValues() {
+        return null;
     }
 
     /**
@@ -760,14 +794,20 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Computes a hash code value for this map projection.
-     * The default implementation computes a value from the parameters given at construction time.
+     * Computes a hash code value for this {@code NormalizedProjection}.
      *
      * @return The hash code value.
      */
     @Override
     protected int computeHashCode() {
-        return context.hashCode() + 31 * super.computeHashCode();
+        long c = Double.doubleToLongBits(excentricity);
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
+            for (int i=0; i<parameters.length; i++) {
+                c = c*31 + Double.doubleToLongBits(parameters[i]);
+            }
+        }
+        return super.computeHashCode() ^ Numerics.hashCode(c);
     }
 
     /**
@@ -817,7 +857,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
              * to use the 'excentricity', otherwise we would need to take the square of the
              * tolerance factor before comparing 'excentricitySquared'.
              */
-            return Numerics.epsilonEqual(e1, e2, mode);
+            if (Numerics.epsilonEqual(e1, e2, mode)) {
+                final double[] parameters = getInternalParameterValues();
+                if (parameters != null) {
+                    /*
+                     * super.equals(…) guarantees that the two objects are of the same class.
+                     * So in SIS implementation, this implies that the arrays have the same length.
+                     */
+                    final double[] others = that.getInternalParameterValues();
+                    assert others.length == parameters.length;
+                    for (int i=0; i<parameters.length; i++) {
+                        if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
         }
         return false;
     }

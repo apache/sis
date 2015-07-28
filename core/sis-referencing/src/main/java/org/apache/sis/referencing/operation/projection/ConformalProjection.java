@@ -45,6 +45,12 @@ import static java.lang.Math.*;
  * appear to be the same with the <var>n</var> factor fixed to 1 or -1, so we leverage the code provided by
  * this base class. This class hierarchy is only an implementation convenience and not part of public API.</p>
  *
+ * <div class="note"><b>Reference:</b>
+ * “Lambert developed the regular Conformal Conic as the oblique aspect of a family containing the previously
+ * known polar Stereographic and regular Mercator projections. (…) If the standard parallels are symmetrical
+ * about the Equator, the regular Mercator results (although formulas must be revised). If the only standard
+ * parallel is a pole, the polar Stereographic results.” (Snyder, page 105)</div>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
