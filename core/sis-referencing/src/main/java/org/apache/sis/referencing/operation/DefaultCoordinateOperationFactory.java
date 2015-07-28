@@ -32,6 +32,7 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
@@ -569,7 +570,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return delegate;
         }
         for (final CoordinateOperationFactory factory : java.util.ServiceLoader.load(CoordinateOperationFactory.class)) {
-            if (!factory.getClass().getName().startsWith("org.apache.sis.")) {
+            if (!Utilities.isSIS(factory.getClass())) {
                 delegate = factory;
                 return factory;
             }

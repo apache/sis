@@ -73,16 +73,22 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Lambert Conformal projection, we expect
-     * the standard parallels or the latitude of origin in addition to the semi-major and semi-minor axis length.
+     * the internal {@code n} parameter in addition to the excentricity.
+     *
+     * <div class="section">Note on accuracy</div>
+     * The value of the excentricity parameter should be fully accurate because it is calculated using only the
+     * {@link Math#sqrt(double)} function (ignoring basic algebraic operations) which, according javadoc, must
+     * give the result closest to the true mathematical result. But the functions involved in the calculation of
+     * <var>n</var> do not have such strong guarantees. So we use a regular expression in this test for ignoring
+     * the 2 last digits of <var>n</var>.
      */
     @Test
     public void testNormalizedWKT() {
         createNormalizedProjection(true, 40);
-        assertWktEquals(
-                "PARAM_MT[“Lambert_Conformal_Conic_1SP”,\n" +
-                "  PARAMETER[“semi_major”, 1.0],\n" +
-                "  PARAMETER[“semi_minor”, 0.9966471893352525],\n" +
-                "  PARAMETER[“latitude_of_origin”, 40.0]]");
+        assertWktEqualsRegex("\\Q" +
+                "PARAM_MT[“Lambert conformal”,\n" +
+                "  PARAMETER[“excentricity”, 0.08181919084262157],\n" +
+                "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\]\\]");  // 0.6427876096865393 in the original test.
     }
 
     /**

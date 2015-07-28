@@ -39,6 +39,16 @@ public final class Utilities extends Static {
     }
 
     /**
+     * Returns {@code true} if the given class is an Apache SIS class.
+     *
+     * @param  type The class to verify.
+     * @return {@code true} if the given class is an Apache SIS class.
+     */
+    public static boolean isSIS(final Class<?> type) {
+        return type.getName().startsWith("org.apache.sis.");
+    }
+
+    /**
      * Appends to the given buffer only the characters that are valid for a Unicode identifier.
      * The given separator character is append before the given {@code text} only if the buffer
      * is not empty and at least one {@code text} character is valid.

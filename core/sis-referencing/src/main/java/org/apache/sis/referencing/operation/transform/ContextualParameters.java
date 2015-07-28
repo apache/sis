@@ -562,7 +562,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     @Override
     public int hashCode() {
-        return (normalize.hashCode() + 31*denormalize.hashCode()) ^ (int) serialVersionUID;
+        return (normalize.hashCode() + 31*denormalize.hashCode()) ^ Arrays.hashCode(values) ^ (int) serialVersionUID;
     }
 
     /**
@@ -575,9 +575,10 @@ public class ContextualParameters extends Parameters implements Serializable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ContextualParameters that = (ContextualParameters) object;
-            return Objects.equals(descriptor,  that.descriptor) &&
-                   Objects.equals(normalize,   that.normalize)  &&
-                   Objects.equals(denormalize, that.denormalize);
+            return Objects.equals(descriptor,  that.descriptor)  &&
+                   Objects.equals(normalize,   that.normalize)   &&
+                   Objects.equals(denormalize, that.denormalize) &&
+                    Arrays.equals(values,      that.values);
         }
         return false;
     }
