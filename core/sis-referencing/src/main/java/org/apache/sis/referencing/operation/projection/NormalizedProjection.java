@@ -133,14 +133,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
-     * The current value take the system-wide angular tolerance value (equivalent to
+     * The current value takes the system-wide angular tolerance value (equivalent to
      * about 1 cm on Earth) converted to radians.
      *
      * <p>Some formulas use this tolerance value for testing sines or cosines of an angle.
      * In the sine case, this is justified because sin(θ) ≅ θ when θ is small.
      * Similar reasoning applies to cosine with cos(θ) ≅ θ + π/2 when θ is small.</p>
+     *
+     * <p>Some formulas may use this tolerance value as a <em>linear</em> tolerance on the unit sphere.
+     * This is okay because the arc length for an angular tolerance θ is r⋅θ, but in this class r=1.</p>
      */
     static final double ANGULAR_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180);
+    // Note: an alternative way to compute this value could be Formulas.LINEAR_TOLERANCE / AUTHALIC_RADIUS.
+    // But the later is only 0.07% lower than the current value.
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
@@ -150,7 +155,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
      * 4E-10 radians). The 0.25 factor is a safety margin for meeting the 1 cm accuracy.</p>
      */
-    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25;
+    static final double ITERATION_TOLERANCE = ANGULAR_TOLERANCE * 0.25;
 
     /**
      * Maximum number of iterations for iterative computations.
@@ -832,50 +837,83 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @return {@code true} if the given object is equivalent to this map projection.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }
-        if (super.equals(object, mode)) {
-            final double e1, e2;
-            final NormalizedProjection that = (NormalizedProjection) object;
-            if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
+        if (!super.equals(object, mode)) {
+            return false;
+        }
+        final NormalizedProjection that = (NormalizedProjection) object;
+        switch (mode) {
+            case STRICT:
+            case BY_CONTRACT: {
                 if (!Objects.equals(context, that.context)) {
                     return false;
                 }
-                e1 = this.excentricitySquared;
-                e2 = that.excentricitySquared;
-            } else {
-                e1 = this.excentricity;
-                e2 = that.excentricity;
+                // Fall through for comparing the excentricity.
             }
-            /*
-             * There is no need to compare both 'excentricity' and 'excentricitySquared' since
-             * the former is computed from the later. In strict comparison mode, we are better
-             * to compare the 'excentricitySquared' since it is the original value from which
-             * the other value is derived. However in approximative comparison mode, we need
-             * to use the 'excentricity', otherwise we would need to take the square of the
-             * tolerance factor before comparing 'excentricitySquared'.
-             */
-            if (Numerics.epsilonEqual(e1, e2, mode)) {
-                final double[] parameters = getInternalParameterValues();
-                if (parameters != null) {
-                    /*
-                     * super.equals(…) guarantees that the two objects are of the same class.
-                     * So in SIS implementation, this implies that the arrays have the same length.
-                     */
-                    final double[] others = that.getInternalParameterValues();
-                    assert others.length == parameters.length;
-                    for (int i=0; i<parameters.length; i++) {
-                        if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
-                            return false;
-                        }
-                    }
+            case IGNORE_METADATA: {
+                /*
+                 * There is no need to compare both 'excentricity' and 'excentricitySquared' since the former
+                 * is computed from the later. We are better to compare 'excentricitySquared' since it is the
+                 * original value from which the other value is derived.
+                 */
+                if (!Numerics.equals(excentricitySquared, that.excentricitySquared)) {
+                    return false;
                 }
-                return true;
+                break;
+            }
+            default: {
+                /*
+                 * We want to compare the excentricity with a tolerance threshold corresponding approximatively
+                 * to an error of 1 cm on Earth. The excentricity for an ellipsoid of semi-major axis a=1 is:
+                 *
+                 *     ℯ² = 1 - b²
+                 *
+                 * If we add a slight ε error to the semi-minor axis length (where ε will be our linear tolerance
+                 * threshold), we get:
+                 *
+                 *     (ℯ + ε′)²    =    1 - (b + ε)²    ≈    1 - (b² + 2⋅b⋅ε)    assuming ε ≪ b
+                 *
+                 * Replacing  1 - b²  by  ℯ²:
+                 *
+                 *     ℯ² + 2⋅ℯ⋅ε′  ≈   ℯ² - 2⋅b⋅ε
+                 *
+                 * After a few rearrangements:
+                 *
+                 *     ε′  ≈   ε⋅(ℯ - 1/ℯ)
+                 *
+                 * Note that  ε′  is negative for  ℯ < 1  so we actually need to compute  ε⋅(1/ℯ - ℯ)  instead.
+                 * The result is less than 2E-8 for the excentricity of the Earth.
+                 */
+                final double e = max(excentricity, that.excentricity);
+                if (!Numerics.epsilonEqual(excentricity, that.excentricity, ANGULAR_TOLERANCE * (1/e - e))) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            "excentricity", excentricity, that.excentricity);
+                    return false;
+                }
+                break;
             }
         }
-        return false;
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
+            /*
+             * super.equals(…) guarantees that the two objects are of the same class.
+             * So in SIS implementation, this implies that the arrays have the same length.
+             */
+            final double[] others = that.getInternalParameterValues();
+            assert others.length == parameters.length;
+            for (int i=0; i<parameters.length; i++) {
+                if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            getInternalParameterNames()[i], parameters[i], others[i]);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 

@@ -895,7 +895,7 @@ public abstract class AbstractMathTransform extends FormattableObject
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.
              */
-            if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
+            if (!mode.isApproximative()) {
                 final int tc = hashCode;
                 if (tc != 0) {
                     final int oc = that.hashCode;
@@ -905,7 +905,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 }
             }
             // See the policy documented in the LenientComparable javadoc.
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 return true;
             }
             return Utilities.deepEquals(this.getContextualParameters(),

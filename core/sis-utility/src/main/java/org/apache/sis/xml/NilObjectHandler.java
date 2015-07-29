@@ -179,7 +179,7 @@ final class NilObjectHandler implements InvocationHandler {
         if (other == proxy) return true;
         if (other == null) return false;
         if (proxy.getClass() == other.getClass()) {
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 return true;
             }
             final NilObjectHandler h = (NilObjectHandler) Proxy.getInvocationHandler(other);

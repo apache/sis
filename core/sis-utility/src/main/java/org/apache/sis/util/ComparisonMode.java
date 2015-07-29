@@ -41,7 +41,7 @@ package org.apache.sis.util;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  *
  * @see LenientComparable#equals(Object, ComparisonMode)
@@ -150,6 +150,32 @@ public enum ComparisonMode {
      */
     @Debug
     DEBUG;
+
+    /**
+     * Returns {@code true} if this comparison ignores metadata.
+     * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATIVE}
+     * or {@code DEBUG} only, but this list may be extended in future SIS versions.
+     *
+     * @return Whether this comparison ignore metadata.
+     *
+     * @since 0.6
+     */
+    public boolean isIgnoringMetadata() {
+        return ordinal() >= IGNORE_METADATA.ordinal();
+    }
+
+    /**
+     * Returns {@code true} if this comparison uses a tolerance threshold.
+     * This method currently returns {@code true} for {@code APPROXIMATIVE} or {@code DEBUG} only,
+     * but this list may be extended in future SIS versions.
+     *
+     * @return Whether this comparison uses a tolerance threshold.
+     *
+     * @since 0.6
+     */
+    public boolean isApproximative() {
+        return ordinal() >= APPROXIMATIVE.ordinal();
+    }
 
     /**
      * If the two given objects are equals according one of the modes enumerated in this class,
