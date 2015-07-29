@@ -346,16 +346,17 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
                 that.getDefaultValue() == null &&
                 that.getValueClass()   == getValueClass())
             {
-                if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                if (mode.isIgnoringMetadata()) {
                     return Objects.equals(toString(getName()), toString(that.getName()));
+                    // super.equals(…) already compared 'getName()' in others mode.
                 }
                 return deepEquals(that.getDescription(), getDescription(), mode) &&
-                       that.getDirection()     == getDirection()     &&
-                       that.getMinimumOccurs() == getMinimumOccurs() &&
-                       that.getMaximumOccurs() == getMaximumOccurs() &&
-                       that.getValidValues()   == null &&
-                       that.getMinimumValue()  == null &&
-                       that.getMaximumValue()  == null;
+                                  that.getDirection()     == getDirection()     &&
+                                  that.getMinimumOccurs() == getMinimumOccurs() &&
+                                  that.getMaximumOccurs() == getMaximumOccurs() &&
+                                  that.getValidValues()   == null &&
+                                  that.getMinimumValue()  == null &&
+                                  that.getMaximumValue()  == null;
             }
         }
         return false;

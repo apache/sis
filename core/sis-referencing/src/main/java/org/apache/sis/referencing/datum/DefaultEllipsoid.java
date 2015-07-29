@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.converter.ConversionException;
+import javax.measure.converter.UnitConverter;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -44,7 +44,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
-import static org.apache.sis.internal.util.Numerics.epsilonEqual;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -422,13 +421,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Sets the semi-major axis value.
      * This method is invoked by JAXB at unmarshalling time only.
      *
-     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
-     *         and we can not convert from one to the other.
-     *
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
      * @see #afterUnmarshal()
      */
-    private void setSemiMajorAxisMeasure(final Measure measure) throws ConversionException {
+    private void setSemiMajorAxisMeasure(final Measure measure) {
         if (semiMajorAxis != 0) {
             warnDuplicated("semiMajorAxis");
         } else {
@@ -525,13 +521,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * value or the semi minor axis value, according to what have been defined in the
      * second defining parameter given. This is for JAXB unmarshalling process only.
      *
-     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
-     *         and we can not convert from one to the other.
-     *
      * @see #setSemiMajorAxisMeasure(Measure)
      * @see #afterUnmarshal()
      */
-    private void setSecondDefiningParameter(SecondDefiningParameter second) throws ConversionException {
+    private void setSecondDefiningParameter(SecondDefiningParameter second) {
         while (second.secondDefiningParameter != null) {
             second = second.secondDefiningParameter;
         }
@@ -563,15 +556,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Ensures that the semi-minor axis uses the same unit than the semi-major one.
      * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
      *
-     * @param  uom The semi-minor axis unit.
-     * @throws ConversionException If semi-major and semi-minor axes use inconsistent units
-     *         and we can not convert from one to the other.
+     * @param uom The semi-minor axis unit.
      */
-    private void harmonizeAxisUnits(final Unit<Length> uom) throws ConversionException {
+    private void harmonizeAxisUnits(final Unit<Length> uom) {
         if (unit == null) {
             unit = uom;
         } else if (uom != null && uom != unit) {
-            semiMinorAxis = uom.getConverterToAny(unit).convert(semiMinorAxis);
+            semiMinorAxis = uom.getConverterTo(unit).convert(semiMinorAxis);
         }
     }
 
@@ -730,12 +721,48 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 }
                 // Fall through
             }
+            case IGNORE_METADATA: {
+                /*
+                 * "Inverse flattening factor" and "semi-minor axis length" are computed from each other,
+                 * so we do not need to compare both of them. But in non-approximative mode we nevertheless
+                 * compare both as a safety against rounding errors.
+                 */
+                if (!Numerics.equals(getInverseFlattening(), ((Ellipsoid) object).getInverseFlattening())) {
+                    return false;
+                }
+                // Fall through
+            }
             default: {
+                /*
+                 * Note: DefaultPrimeMeridian.equals(object, IGNORE_METADATA) ignores the unit.
+                 * But we do not perform the same relaxation here because the ellipsoid unit will
+                 * become the linear unit of map projections if the user does not overwrite them
+                 * with an explicit CoordinateSystem declaration.
+                 */
                 final Ellipsoid that = (Ellipsoid) object;
-                return epsilonEqual(getSemiMajorAxis(),     that.getSemiMajorAxis(),     mode) &&
-                       epsilonEqual(getSemiMinorAxis(),     that.getSemiMinorAxis(),     mode) &&
-                       epsilonEqual(getInverseFlattening(), that.getInverseFlattening(), mode) &&
-                       Objects.equals(getAxisUnit(),        that.getAxisUnit());
+                final Unit<Length> unit = getAxisUnit();  // In case the user override this method.
+                if (!Objects.equals(unit, that.getAxisUnit())) {
+                    return false;
+                }
+                final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(SI.METRE) : null;
+                boolean isMinor = false;
+                double v1 = this.getSemiMajorAxis();
+                double v2 = that.getSemiMajorAxis();
+                if (c == null ? Numerics.equals(v1, v2) : Numerics.epsilonEqual(
+                        c.convert(v1), c.convert(v2), Formulas.LINEAR_TOLERANCE))
+                {
+                    isMinor = true;
+                    v1 = this.getSemiMinorAxis();
+                    v2 = that.getSemiMinorAxis();
+                    if (c == null ? Numerics.equals(v1, v2) : Numerics.epsilonEqual(
+                            c.convert(v1), c.convert(v2), Formulas.LINEAR_TOLERANCE))
+                    {
+                        return true;
+                    }
+                }
+                assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                        isMinor ? "semiMinorAxis" : "semiMajorAxis", v1, v2);
+                return false;
             }
         }
     }

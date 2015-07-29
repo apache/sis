@@ -68,7 +68,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * the ellipsoid excentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
      *
-     * @see LambertConformalTest#testNormalizedWKT()
+     * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
     public void testNormalizedWKT() {

@@ -64,6 +64,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform
      * Returns a copy of the matrix that user can modify.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public final Matrix clone() {
         return Matrices.copy(this);
     }
@@ -151,10 +152,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform
             return true;
         }
         if (object != null) {
-            if (getClass() == object.getClass()) {
-                if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
-                    return equalsSameClass(object);
-                }
+            if (getClass() == object.getClass() && !mode.isApproximative()) {
+                return equalsSameClass(object);
             }
             if (mode != ComparisonMode.STRICT) {
                 if (object instanceof LinearTransform) {
