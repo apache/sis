@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -125,13 +124,33 @@ public class Mercator extends ConformalProjection {
     private final byte variant;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given variant.
+     * Creates a Mercator projection from the given parameters.
+     * The {@code method} argument can be the description of one of the following:
      *
-     * @param  variant One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
-     * @return The roles map to give to super-class constructor.
+     * <ul>
+     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant C)"</cite>.</li>
+     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
+     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
+     *   <li><cite>"Miller Cylindrical"</cite>.</li>
+     * </ul>
+     *
+     * @param method     Description of the projection parameters.
+     * @param parameters The parameter values of the projection to create.
+     */
+    public Mercator(final OperationMethod method, final Parameters parameters) {
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final byte variant = getVariant(method);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Longitude of origin" is a parameter of all Mercator projections, but is intentionally omitted from
@@ -171,27 +190,7 @@ public class Mercator extends ConformalProjection {
                 break;
             }
         }
-        return roles;
-    }
-
-    /**
-     * Creates a Mercator projection from the given parameters.
-     * The {@code method} argument can be the description of one of the following:
-     *
-     * <ul>
-     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant C)"</cite>.</li>
-     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
-     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
-     *   <li><cite>"Miller Cylindrical"</cite>.</li>
-     * </ul>
-     *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
-     */
-    public Mercator(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -199,15 +198,15 @@ public class Mercator extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private Mercator(final OperationMethod method, final Parameters parameters, final byte variant) {
-        super(method, parameters, roles(variant));
-        this.variant = variant;
+    private Mercator(final Initializer initializer) {
+        super(initializer);
+        this.variant = initializer.variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
          * for now; it will be converted to radians later.
          */
-        final double λ0 = getAndStore(parameters, Mercator1SP.LONGITUDE_OF_ORIGIN);
+        final double λ0 = initializer.getAndStore(Mercator1SP.LONGITUDE_OF_ORIGIN);
         /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
@@ -220,7 +219,7 @@ public class Mercator extends ConformalProjection {
          * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        final double φ0 = toRadians(getAndStore(parameters, (variant == REGIONAL)
+        final double φ0 = toRadians(initializer.getAndStore((variant == REGIONAL)
                 ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
@@ -228,9 +227,9 @@ public class Mercator extends ConformalProjection {
          * the later is for projections "1SP" (namely variant A and spherical). However we let users specify both
          * if they really want, since we sometime see such CRS definitions.
          */
-        final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
+        final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
         final DoubleDouble k0 = new DoubleDouble(cos(φ1), 0);
-        k0.divide(rν(sin(φ1)), 0);
+        k0.divide(initializer.rν(sin(φ1)));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
