@@ -41,16 +41,13 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -402,58 +399,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
     {
-        ensureNonNull("method",     method);
-        ensureNonNull("parameters", parameters);
-        ensureNonNull("roles",      roles);
-        context = new ContextualParameters(method);
-        /*
-         * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
-         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
-         * in this constructor signature.
-         */
-        ParameterDescriptor<Double> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
-        ParameterDescriptor<Double> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
-        if (semiMajor == null) semiMajor = MapProjection.SEMI_MAJOR;
-        if (semiMinor == null) semiMinor = MapProjection.SEMI_MINOR;
+        this(new Initializer(method, parameters, roles, (byte) 0));
+    }
 
-              double a  = getAndStore(parameters, semiMajor);
-        final double b  = getAndStore(parameters, semiMinor);
-        final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
-        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING))
-                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_WESTING));
-        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING))
-                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_SOUTHING));
-        final double rs = b / a;
-        excentricitySquared = 1 - (rs * rs);
-        excentricity = sqrt(excentricitySquared);
-        if (excentricitySquared != 0) {
-            final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-            if (radius != null) {
-                /*
-                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-                 * for Rc given in section 1.2, table 3.
-                 *
-                 * Table 3 gives:
-                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-                 *
-                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-                 */
-                final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                a = b / (1 - excentricitySquared * (sinφ*sinφ));
-            }
-        }
-        context.normalizeGeographicInputs(λ0);
-        final DoubleDouble k = new DoubleDouble(a);
-        final ParameterDescriptor<Double> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
-        if (scaleFactor != null) {
-            k.multiply(getAndStore(parameters, scaleFactor));
-        }
-        final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertAfter(0, k, new DoubleDouble(fe));
-        denormalize.convertAfter(1, k, new DoubleDouble(fn));
-        inverse = new Inverse();
+    /**
+     * Creates a new normalized projection from the parameters computed by the given initializer.
+     *
+     * @param initializer The initializer for computing map projection internal parameters.
+     */
+    NormalizedProjection(final Initializer initializer) {
+        context             = initializer.context;
+        excentricitySquared = initializer.excentricitySquared.value;
+        excentricity        = sqrt(excentricitySquared);
+        inverse             = new Inverse();
     }
 
     /**
@@ -494,50 +452,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             }
         }
         return method.getName().getCode().replace('_',' ').matches(regex);
-    }
-
-    /**
-     * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
-     * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
-     * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
-     *
-     * <p>This method performs the following actions:</p>
-     * <ul>
-     *   <li>Convert the value to the units specified by the descriptor.</li>
-     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
-     *   <li>Store the value only if different than the default value.</li>
-     * </ul>
-     *
-     * This method shall be invoked at construction time only.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
-        if (descriptor == null) {
-            return 0;   // Default value for all parameters except scale factor.
-        }
-        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        final Double defaultValue = descriptor.getDefaultValue();
-        if (defaultValue == null || !defaultValue.equals(value)) {
-            MapProjection.validate(descriptor, value);
-            context.getOrCreate(descriptor).setValue(value);
-        }
-        return value;
-    }
-
-    /**
-     * Same as {@link #getAndStore(Parameters, ParameterDescriptor)}, but returns the given default value
-     * if the parameter is not specified.  This method shall be used only for parameters having a default
-     * value more complex than what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor,
-            final double defaultValue)
-    {
-        final Double value = parameters.getValue(descriptor);   // Apply a unit conversion if needed.
-        if (value == null) {
-            return defaultValue;
-        }
-        MapProjection.validate(descriptor, value);
-        context.parameter(descriptor.getName().getCode()).setValue(value);
-        return value;
     }
 
     /**
@@ -914,42 +828,5 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             }
         }
         return true;
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////                       FORMULAS FROM EPSG or SNYDER                       ////////
-    ////////                                                                          ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * That radius of curvature is:
-     *
-     * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
-     *
-     * This method returns 1/ν.
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This is related to functions (14-15) from Snyder (used for computation of scale factors
-     * at the true scale latitude) as below:
-     *
-     * <blockquote>m = cosφ / rν</blockquote>
-     *
-     * Special cases:
-     * <ul>
-     *   <li>If φ is 0°, then <var>m</var> is 1.</li>
-     *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
-     *       (otherwise we get {@link Double#NaN}).</li>
-     * </ul>
-     *
-     * @param  sinφ The sine of the φ latitude in radians.
-     * @return Reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     */
-    final double rν(final double sinφ) {
-        return sqrt(1 - excentricitySquared * (sinφ*sinφ));
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
@@ -27,6 +26,7 @@ import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
@@ -72,33 +72,6 @@ public class TransverseMercator extends NormalizedProjection {
     private final double h1, h2, h3, h4, ih1, ih2, ih3, ih4;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Transverse Mercator projection.
-     *
-     * @return The roles map to give to super-class constructor.
-     */
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final boolean isSouth) {
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
-        ParameterRole xOffset = ParameterRole.FALSE_EASTING;
-        ParameterRole yOffset = ParameterRole.FALSE_NORTHING;
-        if (isSouth) {
-            xOffset = ParameterRole.FALSE_WESTING;
-            yOffset = ParameterRole.FALSE_SOUTHING;
-        }
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, org.apache.sis.internal.referencing.provider.TransverseMercator.LONGITUDE_OF_ORIGIN);
-        roles.put(ParameterRole.SCALE_FACTOR,     org.apache.sis.internal.referencing.provider.TransverseMercator.SCALE_FACTOR);
-        roles.put(xOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
-        roles.put(yOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
-        return roles;
-    }
-
-    /**
-     * Returns the type of the projection based on the name and identifier of the given operation method.
-     */
-    private static boolean isSouth(final OperationMethod method) {
-        return identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
-    }
-
-    /**
      * Creates a Transverse Mercator projection from the given parameters.
      * The {@code method} argument can be the description of one of the following:
      *
@@ -111,11 +84,42 @@ public class TransverseMercator extends NormalizedProjection {
      * @param parameters The parameter values of the projection to create.
      */
     public TransverseMercator(final OperationMethod method, final Parameters parameters) {
-        super(method, parameters, roles(isSouth(method)));
-        final double φ0 = toRadians(getAndStore(parameters,
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @SuppressWarnings("fallthrough")
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final boolean isSouth = identMatch(method, "(?i).*\\bSouth\\b.*", TransverseMercatorSouth.IDENTIFIER);
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        ParameterRole xOffset = ParameterRole.FALSE_EASTING;
+        ParameterRole yOffset = ParameterRole.FALSE_NORTHING;
+        if (isSouth) {
+            xOffset = ParameterRole.FALSE_WESTING;
+            yOffset = ParameterRole.FALSE_SOUTHING;
+        }
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, org.apache.sis.internal.referencing.provider.TransverseMercator.LONGITUDE_OF_ORIGIN);
+        roles.put(ParameterRole.SCALE_FACTOR,     org.apache.sis.internal.referencing.provider.TransverseMercator.SCALE_FACTOR);
+        roles.put(xOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
+        roles.put(yOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
+        return new Initializer(method, parameters, roles, isSouth ? (byte) 1 : (byte) 0);
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private TransverseMercator(final Initializer initializer) {
+        super(initializer);
+        final double φ0 = toRadians(initializer.getAndStore(
                 org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
-        final double rs = parameters.doubleValue(MapProjection.SEMI_MINOR)
-                        / parameters.doubleValue(MapProjection.SEMI_MAJOR);
+        final double rs = initializer.parameters.doubleValue(MapProjection.SEMI_MINOR)
+                        / initializer.parameters.doubleValue(MapProjection.SEMI_MAJOR);
 
         final double n  = (1 - rs) / (1 + rs);       // Rewrite of n = f / (2-f)
         final double n2 = n  * n;

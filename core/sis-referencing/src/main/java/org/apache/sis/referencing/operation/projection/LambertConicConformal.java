@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -123,13 +122,32 @@ public class LambertConicConformal extends ConformalProjection {
     final double n;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given variant.
+     * Creates a Lambert projection from the given parameters.
+     * The {@code method} argument can be the description of one of the following:
      *
-     * @param  variant One of {@link #SP1}, {@link #SP2}, {@link #WEST}, {@link #BELGIUM} and {@link #MICHIGAN} constants.
-     * @return The roles map to give to super-class constructor.
+     * <ul>
+     *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
+     * </ul>
+     *
+     * @param method     Description of the projection parameters.
+     * @param parameters The parameter values of the projection to create.
+     */
+    public LambertConicConformal(final OperationMethod method, final Parameters parameters) {
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final byte variant = getVariant(method);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         /*
          * "Scale factor" is not formally a "Lambert Conformal (2SP)" argument, but we accept it
@@ -166,26 +184,7 @@ public class LambertConicConformal extends ConformalProjection {
             default: throw new AssertionError(variant);
         }
         roles.put(ParameterRole.SCALE_FACTOR, scaleFactor);
-        return roles;
-    }
-
-    /**
-     * Creates a Lambert projection from the given parameters.
-     * The {@code method} argument can be the description of one of the following:
-     *
-     * <ul>
-     *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
-     * </ul>
-     *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
-     */
-    public LambertConicConformal(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -193,17 +192,17 @@ public class LambertConicConformal extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private LambertConicConformal(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters, roles(type));
-        double φ0 = getAndStore(parameters, ((type & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
+    private LambertConicConformal(final Initializer initializer) {
+        super(initializer);
+        double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
          * in case the user gave us non-standard parameters. For the 1SP case, or for the 2SP case left to
          * their default values, EPSG says that we shall use the latitude of origin as the SP.
          */
-        double φ1 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
-        double φ2 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
+        double φ1 = initializer.getAndStore(LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
+        double φ2 = initializer.getAndStore(LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
             /*
              * We can not allow that because if φ1 = -φ2, then n = 0 and the equations
@@ -248,33 +247,60 @@ public class LambertConicConformal extends ConformalProjection {
          * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the excentricity is zero.
          * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
+         *
+         * Opportunistically use double-double arithmetic below since this is what we will store in the
+         * (de)normalization matrices. The extra precision that we get is not necessarily significant,
+         * but we do that more in an attempt to reduce rounding errors in concatenations of a sequence
+         * of MathTransforms (through matrix multiplications) than for map projection precisions.
+         * Equivalent Java code for the following double-double arithmetic:
+         *
+         *     final double m1 = cos(φ1) / rν(sinφ1);
          */
         final double sinφ1 = sin(φ1);
-        final double m1    = cos(φ1) / rν(sinφ1);
-        final double t1    = expOfNorthing(φ1, excentricity*sinφ1);
+        final DoubleDouble m1 = initializer.rν(sinφ1);
+        m1.inverseDivide(cos(φ1), 0);
+        final double t1 = expOfNorthing(φ1, excentricity*sinφ1);
         /*
          * Computes n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
          * since division is less at risk of precision lost than subtraction. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
+         *
+         * Equivalent Java code for the following double-double arithmetic:
+         *
+         *     final double sinφ2 = sin(φ2);
+         *     final double m2 = cos(φ2) / rν(sinφ2);
+         *     final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
+         *     n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
          */
+        final DoubleDouble F = new DoubleDouble();
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
-            final double m2 = cos(φ2) / rν(sinφ2);
+            final DoubleDouble m2 = initializer.rν(sinφ2);
+            m2.inverseDivide(cos(φ2), 0);
             final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
-            n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
+            m2.inverseDivide(m1);
+            F.value = log(m2.value);
+            F.divide(log(t1/t2), 0);
         } else {
-            n = -sinφ1;
+            F.value = -sinφ1;
+        }
+        n = F.value;
+        /*
+         * Scale factor for longitudes, stored now before we modify the F value.
+         */
+        final DoubleDouble sx = new DoubleDouble(F);
+        if (!isNorth) {
+            sx.negate();
         }
         /*
          * Computes F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
-         * Following constants will be stored in the denormalization matrix, to be applied after
-         * the non-linear formulas implemented by this LambertConicConformal class. Opportunistically
-         * use double-double arithmetic since we the matrix coefficients will be stored in this
-         * format anyway. This makes a change in the 2 or 3 last digits.
+         * Following constants will be stored in the denormalization matrix, to be applied
+         * after the non-linear formulas implemented by this LambertConicConformal class.
+         * Opportunistically use double-double arithmetic since the matrix coefficients will
+         * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
-        final DoubleDouble F = new DoubleDouble(n, 0);
         F.multiply(pow(t1, n), 0);
-        F.inverseDivide(m1, 0);
+        F.inverseDivide(m1);
         if (!isNorth) {
             F.negate();
         }
@@ -287,7 +313,7 @@ public class LambertConicConformal extends ConformalProjection {
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
         final DoubleDouble rF = new DoubleDouble();    // Initialized to zero.
-        if (φ0 != copySign(PI/2, -n)) {    // For avoiding the rounding error documented in expOfNorthing(+π/2).
+        if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
             rF.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
             rF.multiply(F);
         }
@@ -309,8 +335,7 @@ public class LambertConicConformal extends ConformalProjection {
          *   - Add false easting and false northing (done by the super-class constructor).
          */
         final MatrixSIS normalize = context.getMatrix(true);
-        normalize.convertAfter(0, new DoubleDouble(isNorth ? n : -n, 0),    // Multiplication factor for longitudes.
-                (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
+        normalize.convertAfter(0, sx, (initializer.variant == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);
         if (isNorth) {
             normalize.convertAfter(1, new DoubleDouble(-1, 0), null);
         }

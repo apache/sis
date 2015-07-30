@@ -16,13 +16,9 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.parameter.Parameters;
 
 import static java.lang.Math.*;
 
@@ -107,17 +103,12 @@ abstract class ConformalProjection extends NormalizedProjection {
     private transient boolean useIterations;
 
     /**
-     * Constructs a new map projection from the supplied parameters.
+     * Creates a new normalized projection from the parameters computed by the given initializer.
      *
-     * @param method     Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param initializer The initializer for computing map projection internal parameters.
      */
-    protected ConformalProjection(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
-    {
-        super(method, parameters, roles);
+    ConformalProjection(final Initializer initializer) {
+        super(initializer);
         initialize();
     }
 

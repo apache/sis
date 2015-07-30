@@ -75,7 +75,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         createNormalizedProjection(true);
         assertWktEquals(
                 "PARAM_MT[“Mercator”,\n" +
-                "  PARAMETER[“excentricity”, 0.08181919084262157]]");
+                "  PARAMETER[“excentricity”, 0.08181919084262244]]");
     }
 
     /**
