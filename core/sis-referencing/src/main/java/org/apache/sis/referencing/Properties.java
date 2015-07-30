@@ -118,10 +118,10 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     final Object getAt(final int key) {
         if ((excludeMask & (1 << key)) == 0) {
             switch (key) {
-                case 0: {
+                case 0: {   // NAME_KEY
                     return object.getName();
                 }
-                case 1: {
+                case 1: {   // IDENTIFIERS_KEY
                     final Collection<Identifier> c = object.getIdentifiers();
                     if (c != null) {
                         final int size = c.size();
@@ -131,7 +131,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 2: {
+                case 2: {   // ALIAS_KEY
                     final Collection<GenericName> c = object.getAlias();
                     if (c != null) {
                         final int size = c.size();
@@ -141,10 +141,10 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 3: {
+                case 3: {   // REMARKS_KEY
                     return object.getRemarks();
                 }
-                case 4: {
+                case 4: {   // SCOPE_KEY
                     if (object instanceof ReferenceSystem) {
                         return ((ReferenceSystem) object).getScope();
                     } else if (object instanceof Datum) {
@@ -154,7 +154,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 5: {
+                case 5: {   // DOMAIN_OF_VALIDITY_KEY
                     if (object instanceof ReferenceSystem) {
                         return ((ReferenceSystem) object).getDomainOfValidity();
                     } else if (object instanceof Datum) {
@@ -164,13 +164,13 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                     }
                     break;
                 }
-                case 6: {
+                case 6: {   // OPERATION_VERSION_KEY
                     if (object instanceof CoordinateOperation) {
                         return ((CoordinateOperation) object).getOperationVersion();
                     }
                     break;
                 }
-                case 7: {
+                case 7: {   // COORDINATE_OPERATION_ACCURACY_KEY
                     if (object instanceof CoordinateOperation) {
                         final Collection<PositionalAccuracy> c = ((CoordinateOperation) object).getCoordinateOperationAccuracy();
                         if (c != null) {
