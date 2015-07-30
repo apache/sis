@@ -126,6 +126,20 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Creates a new builder initialized to properties of the given object.
+     *
+     * @param descriptor The descriptor from which to inherit properties, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public ParameterBuilder(final GeneralParameterDescriptor descriptor) {
+        super(descriptor);
+        if (descriptor != null) {
+            required = descriptor.getMinimumOccurs() != 0;
+        }
+    }
+
+    /**
      * Sets whether the parameter is mandatory or optional.
      * This property determines the {@linkplain DefaultParameterDescriptor#getMinimumOccurs() minimum number
      * of times} that values are required, which will be 0 for an optional parameter and 1 for a mandatory one.
@@ -148,7 +162,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Boxes the given value if non-NaN, or returns {@code null} if the value is {@code NaN}.
      */
     private static Double valueOf(final double value) {
-        return Double.isNaN(value) ? null : Double.valueOf(value);
+        return Double.isNaN(value) ? null : value;
     }
 
     /**
