@@ -943,13 +943,15 @@ public final class DoubleDouble extends Number {
      * <blockquote>ε  ≈  (value + error - r²) / (2r)</blockquote>
      */
     public void sqrt() {
-        final double thisValue = this.value;
-        final double thisError = this.error;
-        double r = Math.sqrt(thisValue);
-        setToProduct(r, r);
-        subtract(thisValue, thisError);
-        divide(-2*r, 0); // Multiplication by 2 does not cause any precision lost.
-        setToQuickSum(r, value);
+        if (value != 0) {
+            final double thisValue = this.value;
+            final double thisError = this.error;
+            double r = Math.sqrt(thisValue);
+            setToProduct(r, r);
+            subtract(thisValue, thisError);
+            divide(-2*r, 0);                    // Multiplication by 2 does not cause any precision lost.
+            setToQuickSum(r, value);
+        }
     }
 
     /**
