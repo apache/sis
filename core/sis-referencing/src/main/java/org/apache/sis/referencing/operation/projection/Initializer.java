@@ -86,7 +86,7 @@ final class Initializer {
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     Initializer(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles,
+            final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
             final byte variant)
     {
         ensureNonNull("method",     method);
@@ -100,8 +100,8 @@ final class Initializer {
          * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
          * in this constructor signature.
          */
-        ParameterDescriptor<Double> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
-        ParameterDescriptor<Double> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
+        ParameterDescriptor<? extends Number> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
+        ParameterDescriptor<? extends Number> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
         if (semiMajor == null) semiMajor = MapProjection.SEMI_MAJOR;
         if (semiMinor == null) semiMinor = MapProjection.SEMI_MINOR;
 
@@ -131,7 +131,7 @@ final class Initializer {
                 excentricitySquared.value = 1;
                 excentricitySquared.subtract(rs);
             }
-            final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
+            final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
             if (radius != null) {
                 /*
                  * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
@@ -154,7 +154,7 @@ final class Initializer {
             }
         }
         context.normalizeGeographicInputs(λ0);
-        final ParameterDescriptor<Double> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
+        final ParameterDescriptor<? extends Number> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
             k.multiply(getAndStore(scaleFactor));
         }
@@ -166,7 +166,7 @@ final class Initializer {
     /**
      * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
      * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
-     * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
+     * chain as a whole. It does not really apply to a {@code NormalizedProjection} instance taken alone.
      *
      * <p>This method performs the following actions:</p>
      * <ul>
@@ -175,12 +175,12 @@ final class Initializer {
      *   <li>Store the value only if different than the default value.</li>
      * </ul>
      */
-    final double getAndStore(final ParameterDescriptor<Double> descriptor) {
+    final double getAndStore(final ParameterDescriptor<? extends Number> descriptor) {
         if (descriptor == null) {
             return 0;   // Default value for all parameters except scale factor.
         }
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        final Double defaultValue = descriptor.getDefaultValue();
+        final Number defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
             context.getOrCreate(descriptor).setValue(value);
@@ -236,15 +236,10 @@ final class Initializer {
         t.multiply(t);
         t.multiply(excentricitySquared);
 
-        // Save result of ℯ²⋅sin²φ
-        final double value = t.value;
-        final double error = t.error;
-
-        // Compute 1 - above. Since above may be small, this
-        // is where double-double arithmetic has more value.
-        t.clear();
-        t.value = 1;
-        t.subtract(value, error);
+        // Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
+        // this is where double-double arithmetic has more value.
+        t.negate();
+        t.add(1,0);
         return t;
     }
 
