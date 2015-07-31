@@ -283,6 +283,9 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             dd.subtract(value, error);
             assertEquals(0, dd.doubleValue(), 1E-29);
         }
+        dd.clear();
+        dd.sqrt();
+        assertTrue(dd.isZero());
     }
 
     /**
