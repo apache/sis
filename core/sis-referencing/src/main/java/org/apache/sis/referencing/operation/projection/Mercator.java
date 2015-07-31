@@ -38,6 +38,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -228,8 +229,7 @@ public class Mercator extends ConformalProjection {
          * if they really want, since we sometime see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
-        final DoubleDouble k0 = new DoubleDouble(cos(φ1), 0);
-        k0.divide(initializer.rν(sin(φ1)));
+        final Number k0 = verbatim(initializer.scaleAtφ(sin(φ1), cos(φ1)));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -251,11 +251,11 @@ public class Mercator extends ConformalProjection {
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, verbatim(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (variant == MILLER) {
-              normalize.convertBefore(1, new DoubleDouble(0.80), null);
-            denormalize.convertBefore(1, new DoubleDouble(1.25), null);
+            normalize  .convertBefore(1, 0.80, null);
+            denormalize.convertBefore(1, 1.25, null);
         }
         /*
          * At this point we are done, but we add here a little bit a maniac precision hunting.
@@ -281,9 +281,9 @@ public class Mercator extends ConformalProjection {
          * those remaning lines of code.
          */
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
-            final DoubleDouble revert = new DoubleDouble(-1, 0);
-              normalize.convertBefore(1, revert, null);
-            denormalize.convertBefore(1, revert, null);  // Must be before false easting/northing.
+            final Number reverseSign = verbatim(-1);
+            normalize  .convertBefore(1, reverseSign, null);
+            denormalize.convertBefore(1, reverseSign, null);  // Must be before false easting/northing.
         }
     }
 

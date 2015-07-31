@@ -40,6 +40,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -96,8 +97,20 @@ public class LambertConicConformal extends ConformalProjection {
 
     /**
      * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
+     *
+     * <div class="note"><b>Tip:</b> how to verify the value:
+     * {@preformat java
+     *     BigDecimal a = new BigDecimal(BELGE_A.value);
+     *     a = a.add     (new BigDecimal(BELGE_A.error));
+     *     a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));
+     *     a = a.multiply(new BigDecimal(60 * 60));
+     *     System.out.println(a);
+     * }
+     * </div>
      */
-    private static final double BELGE_A = 0.00014204313635987700;
+    static Number belgeA() {
+        return new DoubleDouble(-1.420431363598774E-4, -1.1777378450498224E-20);
+    }
 
     /**
      * Internal coefficients for computation, depending only on values of standards parallels.
@@ -243,62 +256,35 @@ public class LambertConicConformal extends ConformalProjection {
         φ1 = toRadians(φ1);
         φ2 = toRadians(φ2);
         /*
-         * Computes constants. We do not need to use special formulas for the spherical case below,
+         * Compute constants. We do not need to use special formulas for the spherical case below,
          * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the excentricity is zero.
          * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
-         *
-         * Opportunistically use double-double arithmetic below since this is what we will store in the
-         * (de)normalization matrices. The extra precision that we get is not necessarily significant,
-         * but we do that more in an attempt to reduce rounding errors in concatenations of a sequence
-         * of MathTransforms (through matrix multiplications) than for map projection precisions.
-         * Equivalent Java code for the following double-double arithmetic:
-         *
-         *     final double m1 = cos(φ1) / rν(sinφ1);
          */
         final double sinφ1 = sin(φ1);
-        final DoubleDouble m1 = initializer.rν(sinφ1);
-        m1.inverseDivide(cos(φ1), 0);
+        final double m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
         final double t1 = expOfNorthing(φ1, excentricity*sinφ1);
         /*
-         * Computes n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
+         * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
          * since division is less at risk of precision lost than subtraction. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
-         *
-         * Equivalent Java code for the following double-double arithmetic:
-         *
-         *     final double sinφ2 = sin(φ2);
-         *     final double m2 = cos(φ2) / rν(sinφ2);
-         *     final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
-         *     n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
          */
-        final DoubleDouble F = new DoubleDouble();
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
-            final DoubleDouble m2 = initializer.rν(sinφ2);
-            m2.inverseDivide(cos(φ2), 0);
+            final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
             final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
-            m2.inverseDivide(m1);
-            F.value = log(m2.value);
-            F.divide(log(t1/t2), 0);
+            n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
-            F.value = -sinφ1;
-        }
-        n = F.value;
-        /*
-         * Scale factor for longitudes, stored now before we modify the F value.
-         */
-        final DoubleDouble sx = new DoubleDouble(F);
-        if (!isNorth) {
-            sx.negate();
+            n = -sinφ1;
         }
         /*
-         * Computes F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
+         * Compute F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
          * Following constants will be stored in the denormalization matrix, to be applied
          * after the non-linear formulas implemented by this LambertConicConformal class.
          * Opportunistically use double-double arithmetic since the matrix coefficients will
          * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
+        final DoubleDouble F = verbatim(n);
         F.multiply(pow(t1, n), 0);
         F.inverseDivide(m1);
         if (!isNorth) {
@@ -306,16 +292,16 @@ public class LambertConicConformal extends ConformalProjection {
         }
         /*
          * Compute the radius of the parallel of latitude of the false origin.
-         * This is related to the "ρ0" term in Snyder. From EPG guide:
+         * This is related to the "ρ₀" term in Snyder. From EPG guide:
          *
          *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expOfNorthing' function.
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
-        final DoubleDouble rF = new DoubleDouble();    // Initialized to zero.
+        DoubleDouble rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
-            rF.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
-            rF.multiply(F);
+            rF = new DoubleDouble(F);
+            rF.multiply(pow(expOfNorthing(φ0, excentricity*sin(φ0)), n), 0);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -334,14 +320,19 @@ public class LambertConicConformal extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        final MatrixSIS normalize = context.getMatrix(true);
-        normalize.convertAfter(0, sx, (initializer.variant == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);
+        DoubleDouble sλ = verbatim(n);
+        DoubleDouble sφ = null;
         if (isNorth) {
-            normalize.convertAfter(1, new DoubleDouble(-1, 0), null);
+            // Reverse the sign of either longitude or latitude values before map projection.
+            sφ = verbatim(-1);
+        } else {
+            sλ.negate();
         }
+        final MatrixSIS normalize   = context.getMatrix(true);
         final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertBefore(0, F, null);
-        F.negate();
+        normalize  .convertAfter(0, sλ, (initializer.variant == BELGIUM) ? belgeA() : null);
+        normalize  .convertAfter(1, sφ, null);
+        denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
     }
 

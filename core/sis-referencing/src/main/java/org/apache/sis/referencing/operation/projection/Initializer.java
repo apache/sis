@@ -28,14 +28,20 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection.Para
 
 import static java.lang.Math.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
  * Helper class for map projection constructions, providing formulas normally needed only at construction time.
- * Since map projection constructions should not happen very often, we afford using double-double arithmetic here.
+ * Since map projection constructions should not happen very often, we afford using some double-double arithmetic.
  * The main intend is not to provide more accurate coordinate conversions (while it may be a nice side-effect),
- * but rather to increase the chances that the concatenations of (de)normalization matrices with the matrices of
- * other transforms give back identity matrices when such result is expected.
+ * but to improve the result of concatenations of (de)normalization matrices with the matrices of other transforms,
+ * as found in transformation chains.
+ *
+ * <p>As a general rule, we stop storing result with double-double precision after the point where we need
+ * transcendental functions (sine, logarithm, <i>etc.</i>), since we do not have double-double versions of
+ * those functions. Digits after the {@code double} part are usually not significant in such cases, except
+ * in some relatively rare scenarios like 1 ± (a result much smaller than 1).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -71,7 +77,13 @@ final class Initializer {
     final byte variant;
 
     /**
-     * Creates a new initializer.
+     * Creates a new initializer. The parameters are described in
+     * {@link NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)}.
+     *
+     * @param method     Description of the map projection parameters.
+     * @param parameters The parameters of the projection to be created.
+     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     Initializer(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles,
@@ -102,25 +114,23 @@ final class Initializer {
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
         excentricitySquared = new DoubleDouble();
-        final DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
+        DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
             /*
-             * Equivalent Java code for the following lines:
+             * ℯ² = 1 - (b/a)²
              *
-             *     final double rs = b / a;
-             *     excentricitySquared = 1 - (rs * rs);
-             *
-             * Test show that double-double arithmetic here makes a difference in the 3 last digits for WGS84 ellipsoid.
-             * Those 3 digits are not significant since the parameter are not so accurate (furthermore the 'b' parameter
-             * used below may have been computed from the inverse flattening factor).
+             * Double-double arithmetic here makes a difference in the 3 last digits for WGS84 ellipsoid.
              */
-            final DoubleDouble rs = new DoubleDouble(b);
-            final double eb = rs.error;
-            rs.divide(k);    // rs = b/a
-            rs.multiply(rs);
-            excentricitySquared.value = 1;
-            excentricitySquared.subtract(rs);
-
+            if (DoubleDouble.DISABLED) {
+                final double rs = b / a;
+                excentricitySquared.value = 1 - (rs * rs);
+            } else {
+                final DoubleDouble rs = new DoubleDouble(b);
+                rs.divide(k);    // rs = b/a
+                rs.multiply(rs);
+                excentricitySquared.value = 1;
+                excentricitySquared.subtract(rs);
+            }
             final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
             if (radius != null) {
                 /*
@@ -139,13 +149,8 @@ final class Initializer {
                  *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
                  *     k = b / (1 - excentricitySquared * (sinφ*sinφ));
                  */
-                final DoubleDouble t = new DoubleDouble(sin(toRadians(parameters.doubleValue(radius))), 0);
-                t.multiply(t);
-                t.multiply(excentricitySquared);
-                k.clear();
-                k.value = 1;
-                k.subtract(t);
-                k.inverseDivide(b, eb);
+                k = rν2(sin(toRadians(parameters.doubleValue(radius))));
+                k.inverseDivide(b, 0);
             }
         }
         context.normalizeGeographicInputs(λ0);
@@ -198,28 +203,19 @@ final class Initializer {
         return value;
     }
 
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////                       FORMULAS FROM EPSG or SNYDER                       ////////
-    ////////                                                                          ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
-
     /**
-     * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * That radius of curvature is:
+     * Computes the square of the reciprocal of the radius of curvature of the ellipsoid
+     * perpendicular to the meridian at latitude φ. That radius of curvature is:
      *
      * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
-     * This method returns 1/ν.
+     * This method returns 1/ν².
      *
      * <div class="section">Relationship with Snyder</div>
      * This is related to functions (14-15) from Snyder (used for computation of scale factors
      * at the true scale latitude) as below:
      *
-     * <blockquote>m = cosφ / rν</blockquote>
+     * <blockquote>m = cosφ / sqrt(rν²)</blockquote>
      *
      * Special cases:
      * <ul>
@@ -228,24 +224,46 @@ final class Initializer {
      *       (otherwise we get {@link Double#NaN}).</li>
      * </ul>
      *
-     * @param  sinφ The sine of the φ latitude in radians.
-     * @return Reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
+     * @param  sinφ The sine of the φ latitude.
+     * @return Reciprocal squared of the radius of curvature of the ellipsoid
+     *         perpendicular to the meridian at latitude φ.
      */
-    final DoubleDouble rν(final double sinφ) {
-        /*
-         * Equivalent Java code:
-         *
-         *     return sqrt(1 - excentricitySquared * (sinφ*sinφ));
-         */
-        final DoubleDouble t = new DoubleDouble(sinφ, 0);
+    private DoubleDouble rν2(final double sinφ) {
+        if (DoubleDouble.DISABLED) {
+            return verbatim(1 - excentricitySquared.value * (sinφ*sinφ));
+        }
+        final DoubleDouble t = verbatim(sinφ);
         t.multiply(t);
         t.multiply(excentricitySquared);
+
+        // Save result of ℯ²⋅sin²φ
         final double value = t.value;
         final double error = t.error;
+
+        // Compute 1 - above. Since above may be small, this
+        // is where double-double arithmetic has more value.
         t.clear();
         t.value = 1;
         t.subtract(value, error);
-        t.sqrt();
         return t;
+    }
+
+    /**
+     * Returns the scale factor at latitude φ. This is computed as:
+     *
+     * <blockquote>cosφ / sqrt(rν2(sinφ))</blockquote>
+     *
+     * The result is returned as a {@code double} because the limited precision of {@code sinφ} and {@code cosφ}
+     * makes the error term meaningless. We use double-double arithmetic only for intermediate calculation.
+     *
+     * @param  sinφ The sine of the φ latitude.
+     * @param  cosφ The cosine of the φ latitude.
+     * @return Scale factor at latitude φ.
+     */
+    final double scaleAtφ(final double sinφ, final double cosφ) {
+        final DoubleDouble s = rν2(sinφ);
+        s.sqrt();
+        s.inverseDivide(cosφ, 0);
+        return s.value;
     }
 }

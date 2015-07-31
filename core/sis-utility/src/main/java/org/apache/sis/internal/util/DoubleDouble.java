@@ -237,6 +237,20 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Uses the given value verbatim, without inferring an error term for double-double arithmetic.
+     * We use this method when the value has been computed using transcendental functions (cosine,
+     * logarithm, <i>etc.</i>) in which case there is no way we can infer a meaningful error term.
+     *
+     * <p>We use this method both for readability and for making easier to search where such thing occur.</p>
+     *
+     * @param  value The value to wrap in a {@code DoubleDouble} instance.
+     * @return A {@code DoubleDouble} containing exactly the given value, without error term.
+     */
+    public static DoubleDouble verbatim(final double value) {
+        return new DoubleDouble(value, 0);
+    }
+
+    /**
      * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
      * from radians to angular degrees.
      *
