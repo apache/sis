@@ -33,6 +33,9 @@ import org.apache.sis.util.ArraysExt;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
 
+// Branch-specific imports
+import java.util.Objects;
+
 
 /**
  * Map projection parameters, with special processing for alternative ways to express the ellipsoid axis length
@@ -60,13 +63,19 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      * The {@link InverseFlattening} parameter instance, created when first needed.
      * This is an "invisible" parameter, never shown in the {@link #values()} list.
      */
-    private transient ParameterValue<Double> inverseFlattening;
+    private transient InverseFlattening inverseFlattening;
 
     /**
      * The {@link StandardParallel} parameter instance, created when first needed.
      * This is an "invisible" parameter, never shown in the {@link #values()} list.
      */
     private transient ParameterValue<double[]> standardParallel;
+
+    /**
+     * The {@link IsIvfDefinitive} parameter instance, created when first needed.
+     * This is an "invisible" parameter, never shown in the {@link #values()} list.
+     */
+    private transient ParameterValue<Boolean> isIvfDefinitive;
 
     /**
      * Creates a new parameter value group. An instance of {@link MapProjectionDescriptor}
@@ -97,36 +106,44 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      */
     @Override
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
-        if (MapProjectionDescriptor.isHeuristicMatchForName(name, MapProjectionDescriptor.EARTH_RADIUS)) {
-            ParameterValue<?> value = earthRadius;
-            if (value == null) {
-                value = earthRadius = new EarthRadius(
-                        parameter(Constants.SEMI_MAJOR),
-                        parameter(Constants.SEMI_MINOR));
+        if (MapProjectionDescriptor.isHeuristicMatchForName(name, Constants.EARTH_RADIUS)) {
+            if (earthRadius == null) {
+                earthRadius = new EarthRadius(parameter(Constants.SEMI_MAJOR),
+                                              parameter(Constants.SEMI_MINOR));
             }
-            return value;
+            return earthRadius;
         }
-        if (MapProjectionDescriptor.isHeuristicMatchForName(name, MapProjectionDescriptor.INVERSE_FLATTENING)) {
-            ParameterValue<?> value = inverseFlattening;
-            if (value == null) {
-                value = inverseFlattening = new InverseFlattening(
-                        parameter(Constants.SEMI_MAJOR),
-                        parameter(Constants.SEMI_MINOR));
+        if (MapProjectionDescriptor.isHeuristicMatchForName(name, Constants.INVERSE_FLATTENING)) {
+            return getInverseFlattening();
+        }
+        if (MapProjectionDescriptor.isHeuristicMatchForName(name, Constants.IS_IVF_DEFINITIVE)) {
+            if (isIvfDefinitive == null) {
+                isIvfDefinitive = new IsIvfDefinitive(getInverseFlattening());
             }
-            return value;
+            return isIvfDefinitive;
         }
         if (((MapProjectionDescriptor) getDescriptor()).hasStandardParallels) {
-            if (MapProjectionDescriptor.isHeuristicMatchForName(name, MapProjectionDescriptor.STANDARD_PARALLEL)) {
-                ParameterValue<?> value = standardParallel;
-                if (value == null) {
-                    value = standardParallel = new StandardParallel(
-                            parameter(Constants.STANDARD_PARALLEL_1),
-                            parameter(Constants.STANDARD_PARALLEL_2));
+            if (MapProjectionDescriptor.isHeuristicMatchForName(name, Constants.STANDARD_PARALLEL)) {
+                if (standardParallel == null) {
+                    standardParallel = new StandardParallel(parameter(Constants.STANDARD_PARALLEL_1),
+                                                            parameter(Constants.STANDARD_PARALLEL_2));
                 }
-                return value;
+                return standardParallel;
             }
         }
         return super.parameterIfExist(name);
+    }
+
+    /**
+     * Returns the {@link InverseFlattening} instance, creating it when first needed.
+     * This parameter is used also by {@link IsIvfDefinitive}.
+     */
+    private InverseFlattening getInverseFlattening() {
+        if (inverseFlattening == null) {
+            inverseFlattening = new InverseFlattening(parameter(Constants.SEMI_MAJOR),
+                                                      parameter(Constants.SEMI_MINOR));
+        }
+        return inverseFlattening;
     }
 
 
@@ -152,15 +169,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                toMap(MapProjectionDescriptor.EARTH_RADIUS), 0, 1, Double.class,
+                InverseFlattening.toMap(Constants.EARTH_RADIUS), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, SI.METRE), null, null);
-
-        /**
-         * Helper method for {@link #DESCRIPTOR} constructions.
-         */
-        static Map<String,?> toMap(final String name) {
-            return Collections.singletonMap(NAME_KEY, new NamedIdentifier(NETCDF, name));
-        }
 
         /**
          * The parameters for the semi-major and semi-minor axis length.
@@ -181,8 +191,8 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
-            super.setValue(value, unit);   // Perform argument check.
-            final double r = (Double) value;
+            super.setValue(value, unit);        // Perform argument check.
+            final double r = (Double) value;    // At this point, can not be anything else than Double.
             semiMajor.setValue(r, unit);
             semiMinor.setValue(r, unit);
         }
@@ -243,13 +253,26 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                EarthRadius.toMap(MapProjectionDescriptor.INVERSE_FLATTENING), 0, 1, Double.class,
+                toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Unit.ONE), null, null);
+
+        /**
+         * Helper method for {@link #DESCRIPTOR} constructions.
+         */
+        static Map<String,?> toMap(final String name) {
+            return Collections.singletonMap(NAME_KEY, new NamedIdentifier(NETCDF, name));
+        }
 
         /**
          * The parameters for the semi-major and semi-minor axis length.
          */
         private final ParameterValue<?> semiMajor, semiMinor;
+
+        /**
+         * The declared inverse flattening values, together with a snapshot of axis lengths
+         * at the time the inverse flattening has been set.
+         */
+        private double inverseFlattening, a, b;
 
         /**
          * Creates a new parameter.
@@ -258,6 +281,32 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
             super(DESCRIPTOR);
             this.semiMajor = semiMajor;
             this.semiMinor = semiMinor;
+            invalidate();
+        }
+
+        /**
+         * Declares that the inverse flattening factor is not definitive.
+         * We use the fact that the {@code ==} operator gives {@code false} if a value is NaN.
+         */
+        void invalidate() {
+            a = b = Double.NaN;
+        }
+
+        /**
+         * Returns {@code true} if the inverse flattening factor has been explicitely specified
+         * and seems to still valid.
+         */
+        boolean isIvfDefinitive() {
+            if (inverseFlattening > 0) {
+                final Number ca = (Number) semiMajor.getValue();
+                if (ca != null && ca.doubleValue() == a) {
+                    final Number cb = (Number) semiMinor.getValue();
+                    if (cb != null && cb.doubleValue() == b) {
+                        return Objects.equals(semiMajor.getUnit(), semiMinor.getUnit());
+                    }
+                }
+            }
+            return false;
         }
 
         /**
@@ -266,27 +315,31 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
-            super.setValue(value, unit);   // Perform argument check.
-            final double ivf = (Double) value;
-            if (!Double.isNaN(ivf)) {
-                final Double a = (Double) semiMajor.getValue();
-                if (a != null) {
-                    semiMinor.setValue(Formulas.getSemiMinor(a, ivf), semiMajor.getUnit());
-                }
+            super.setValue(value, unit);        // Perform argument check.
+            final double ivf = (Double) value;  // At this point, can not be anything else than Double.
+            final Number ca = (Number) semiMajor.getValue();
+            if (ca != null) {
+                a = ca.doubleValue();
+                b = Formulas.getSemiMinor(a, ivf);
+                semiMinor.setValue(b, semiMajor.getUnit());
+            } else {
+                invalidate();
             }
+            inverseFlattening = ivf;
         }
 
         /**
-         * Invoked when the parameter value is requested.
-         * Unconditionally computes the inverse flattening factor from the axis lengths.
+         * Invoked when the parameter value is requested. Computes the inverse flattening factor
+         * from the axis lengths if the currently stored value does not seem to be valid anymore.
          */
         @Override
         public double doubleValue() {
-            final Double a = (Double) semiMajor.getValue();
-            if (a != null && semiMinor.getValue() != null) {
-                return Formulas.getInverseFlattening(a, semiMinor.doubleValue(semiMajor.getUnit()));
+            final double ca = semiMajor.doubleValue();
+            final double cb = semiMinor.doubleValue(semiMajor.getUnit());
+            if (ca == a && cb == b && inverseFlattening > 0) {
+                return inverseFlattening;
             }
-            return Double.NaN;
+            return Formulas.getInverseFlattening(ca, cb);
         }
 
         /**
@@ -295,6 +348,69 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         @Override
         public Double getValue() {
             return doubleValue();
+        }
+    }
+
+
+
+
+    /**
+     * Whether the inverse flattening parameter is definitive.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#isIvfDefinitive()
+     */
+    static final class IsIvfDefinitive extends DefaultParameterValue<Boolean> {
+        /**
+         * For cross-version compatibility. Actually instances of this class
+         * are not expected to be serialized, but we try to be a bit safer here.
+         */
+        private static final long serialVersionUID = 5988883252321358629L;
+
+        /**
+         * All names known to Apache SIS for the "is IVF definitive" parameter.
+         * This is not a standard parameter.
+         */
+        static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<>(
+                InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, null);
+
+        /**
+         * The parameters for the inverse flattening factor.
+         */
+        private final InverseFlattening inverseFlattening;
+
+        /**
+         * Creates a new parameter.
+         */
+        IsIvfDefinitive(final InverseFlattening inverseFlattening) {
+            super(DESCRIPTOR);
+            this.inverseFlattening = inverseFlattening;
+        }
+
+        /**
+         * Invoked when a new parameter value is set.
+         */
+        @Override
+        protected void setValue(final Object value, final Unit<?> unit) {
+            super.setValue(value, unit);   // Perform argument check.
+            if (!(Boolean) value) {
+                inverseFlattening.invalidate();
+            }
+        }
+
+        /**
+         * Invoked when the parameter value is requested.
+         */
+        @Override
+        public boolean booleanValue() {
+            return inverseFlattening.isIvfDefinitive();
+        }
+
+        /**
+         * Getters other than the above {@code booleanValue()} delegate to this method.
+         */
+        @Override
+        public Boolean getValue() {
+            return booleanValue();
         }
     }
 
@@ -319,7 +435,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * {@link #STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
         static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                EarthRadius.toMap(MapProjectionDescriptor.STANDARD_PARALLEL),
+                InverseFlattening.toMap(Constants.STANDARD_PARALLEL),
                 0, 1, double[].class, null, null, null);
 
         /**
@@ -368,15 +484,15 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          */
         @Override
         public double[] getValue() {
-            final Double p1 = (Double) standardParallel1.getValue();
-            final Double p2 = (Double) standardParallel2.getValue();
+            final Number p1 = (Number) standardParallel1.getValue();
+            final Number p2 = (Number) standardParallel2.getValue();
             if (p2 == null) {
                 if (p1 == null) {
                     return ArraysExt.EMPTY_DOUBLE;
                 }
-                return new double[] {p1};
+                return new double[] {p1.doubleValue()};
             }
-            return new double[] {(p1 != null) ? p1 : Double.NaN, p2};
+            return new double[] {(p1 != null) ? p1.doubleValue() : Double.NaN, p2.doubleValue()};
         }
     }
 }

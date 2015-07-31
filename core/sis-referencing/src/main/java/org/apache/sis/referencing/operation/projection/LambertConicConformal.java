@@ -96,7 +96,10 @@ public class LambertConicConformal extends ConformalProjection {
     }
 
     /**
-     * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
+     * Constant for the Belgium 2SP case. Defined as 29.2985 seconds, given here in radians.
+     * Use double-double arithmetic not for map projection accuracy, but for consistency with
+     * the normalization matrix which use that precision for "degrees to radians" conversion.
+     * The goal is to have cleaner results after matrix inversions and multiplications.
      *
      * <div class="note"><b>Tip:</b> how to verify the value:
      * {@preformat java

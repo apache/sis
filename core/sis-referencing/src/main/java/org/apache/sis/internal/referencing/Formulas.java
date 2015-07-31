@@ -106,9 +106,7 @@ public final class Formulas extends Static {
 
     /**
      * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid
-     * specified by the given axis length. This method does not verify if {@code a == b}
-     * (in which case {@code a} could be returned directly); it is up to the caller to perform
-     * such optimization if desired.
+     * specified by the given axis length.
      *
      * @param  a The semi-major axis length.
      * @param  b The semi-minor axis length.

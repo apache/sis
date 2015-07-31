@@ -18,8 +18,10 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -67,6 +69,11 @@ final class Initializer {
      * <var>ℯ</var> is the {@linkplain #excentricity excentricity},
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     *
+     * <p>This is stored as a double-double value because this parameter is sometime used for computing back
+     * the semi-minor axis length or the inverse flattening factor. In such case we wish to find the original
+     * {@code double} parameter value without rounding errors. This wish usually do not apply to other internal
+     * {@link NormalizedProjection} parameters.</p>
      */
     final DoubleDouble excentricitySquared;
 
@@ -117,13 +124,31 @@ final class Initializer {
         DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
             /*
-             * ℯ² = 1 - (b/a)²
+             * (1) Using axis lengths:  ℯ² = 1 - (b/a)²
+             * (2) Using flattening;    ℯ² = 2f - f²     where f is the (NOT inverse) flattening factor.
              *
-             * Double-double arithmetic here makes a difference in the 3 last digits for WGS84 ellipsoid.
+             * If the inverse flattening factor is the definitive factor for the ellipsoid, we use (2).
+             * Otherwise use (1). With double-double arithmetic, this makes a difference in the 3 last
+             * digits for the WGS84 ellipsoid.
              */
-            if (DoubleDouble.DISABLED) {
-                final double rs = b / a;
-                excentricitySquared.value = 1 - (rs * rs);
+            boolean isIvfDefinitive;
+            try {
+                isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
+            } catch (ParameterNotFoundException e) {
+                /*
+                 * Should never happen with Apache SIS implementation, but may happen if the given parameters come
+                 * from another implementation. We can safely abandon our attempt to get the inverse flattening value,
+                 * since it was redundant with semi-minor axis length.
+                 */
+                isIvfDefinitive = false;
+            }
+            if (isIvfDefinitive) {
+                final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
+                f.inverseDivide(1,0);
+                excentricitySquared.setFrom(f);
+                excentricitySquared.multiply(2,0);
+                f.multiply(f);
+                excentricitySquared.subtract(f);
             } else {
                 final DoubleDouble rs = new DoubleDouble(b);
                 rs.divide(k);    // rs = b/a

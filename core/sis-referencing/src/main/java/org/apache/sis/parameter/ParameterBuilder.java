@@ -385,7 +385,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      *   <tr><td>{@code "semi_major"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
      *   <tr><td>{@code "semi_minor"}</td>         <td>Always</td>     <td>Standard parameter defined by WKT 1.</td></tr>
      *   <tr><td>{@code "earth_radius"}</td>       <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
-     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Mapped to {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
+     *   <tr><td>{@code "inverse_flattening"}</td> <td>Hidden</td>     <td>Computed from the {@code "semi_major"} and {@code "semi_minor"} parameters.</td></tr>
      *   <tr><td>{@code "standard_parallel"}</td>  <td>Hidden</td>
      *     <td>Array of 1 or 2 elements mapped to {@code "standard_parallel_1"} and {@code "standard_parallel_2"}.</td></tr>
      * </table>

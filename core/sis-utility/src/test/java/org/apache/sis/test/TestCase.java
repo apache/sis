@@ -24,7 +24,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.junit.runner.RunWith;
 
@@ -182,6 +181,7 @@ public abstract strictfp class TestCase {
      *
      * @param success {@code true} if this method is invoked on build success,
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     static void flushOutput() {
         System.out.flush();
         System.err.flush();
