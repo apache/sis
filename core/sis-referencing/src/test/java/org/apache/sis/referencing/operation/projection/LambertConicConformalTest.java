@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import java.math.BigDecimal;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -28,6 +29,7 @@ import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -52,6 +54,22 @@ import static org.junit.Assert.*;
  */
 @DependsOn(ConformalProjectionTest.class)
 public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
+    /**
+     * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
+     *
+     * @see #testLambertConicConformalBelgium()
+     */
+    @Test
+    public void verifyBelgeConstant() {
+        final DoubleDouble BELGE_A = (DoubleDouble) LambertConicConformal.belgeA();
+        BigDecimal a = new BigDecimal(BELGE_A.value);
+        a = a.add     (new BigDecimal(BELGE_A.error));
+        a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));  // Conversion from radians to degrees.
+        a = a.multiply(new BigDecimal(60 * 60));                                // Conversion from degrees to seconds.
+        a = a.add     (new BigDecimal("29.2985"));                              // The standard value.
+        assertTrue(Math.abs(a.doubleValue()) < 1E-31);
+    }
+
     /**
      * Creates a new instance of {@link LambertConicConformal}. See the class javadoc for an explanation
      * about why we ask only for the latitude of origin and not the standard parallels.
@@ -199,7 +217,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal2SP")
+    @DependsOnMethod({"testLambertConicConformal2SP", "verifyBelgeConstant"})
     public void testLambertConicConformalBelgium() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformalBelgium()).testLambertConicConformalBelgium();
     }

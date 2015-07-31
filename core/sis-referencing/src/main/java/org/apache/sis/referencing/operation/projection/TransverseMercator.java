@@ -31,6 +31,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -129,7 +130,7 @@ public class TransverseMercator extends NormalizedProjection {
          * Compute B  =  (n4/64 + n2/4 + 1) / (n + 1)
          * Opportunistically uses double-double arithmetic since we use it anyway for denormalization matrix.
          */
-        final DoubleDouble B = new DoubleDouble(n);
+        final DoubleDouble B = verbatim(n);
         B.add(1);
         B.inverseDivide(1, n4/64 + n2/4);
         /*
@@ -160,7 +161,7 @@ public class TransverseMercator extends NormalizedProjection {
          */
         final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
         final double β = atan(sinh(Q));
-        final DoubleDouble M0 = new DoubleDouble(β, 0);
+        final DoubleDouble M0 = verbatim(β);
         M0.add(h1 * sin(2*β), 0);
         M0.add(h2 * sin(4*β), 0);
         M0.add(h3 * sin(6*β), 0);

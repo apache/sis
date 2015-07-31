@@ -29,7 +29,6 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
@@ -37,6 +36,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -185,8 +185,7 @@ public class PolarStereographic extends ConformalProjection {
             φ1 = -φ1;
         }
         φ1 = toRadians(φ1);  // May be anything in [-π/2 … 0] range.
-        final DoubleDouble ρ;
-        DoubleDouble ρF = null;    // Actually -ρF (compared to EPSG guide).
+        final Number ρ, ρF;  // This ρF is actually -ρF in EPSG guide.
         if (abs(φ1 + PI/2) < ANGULAR_TOLERANCE) {
             /*
              * Polar Stereographic (variant A)
@@ -199,19 +198,9 @@ public class PolarStereographic extends ConformalProjection {
              *    - the 't' factor, because it needs to be computed in the transform(…) method.
              *
              * In the spherical case, should give ρ == 2.
-             *
-             * Opportunistically use double-double arithmetic below since this is what we will store in the
-             * (de)normalization matrices. The extra precision that we get is not necessarily significant,
-             * but we do that more in an attempt to reduce rounding errors in concatenations of a sequence
-             * of MathTransforms (through matrix multiplications) than for map projection precisions.
-             * Equivalent Java code for the following double-double arithmetic:
-             *
-             *     ρ = 2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity));
              */
-            ρ = new DoubleDouble(pow(1+excentricity, 1+excentricity), 0);
-            ρ.multiply          (pow(1-excentricity, 1-excentricity), 0);
-            ρ.sqrt();
-            ρ.inverseDivide(2, 0);
+            ρ = verbatim(2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity)));
+            ρF = null;
         } else {
             /*
              * Polar Stereographic (variant B or C)
@@ -229,21 +218,11 @@ public class PolarStereographic extends ConformalProjection {
              *   k₀ = ρ⋅√[…]/2  but we do not need that value.
              *
              * In the spherical case, should give ρ = 1 + sinφ1   (Synder 21-7 and 21-11).
-             *
-             * Equivalent Java code for the following double-double arithmetic:
-             *
-             *     final double mF = cos(φ1) / rν(sinφ1);
-             *     ρ = mF / expOfNorthing(φ1, excentricity*sinφ1);
-             *     if (variant == C) ρF = -mF;
              */
             final double sinφ1 = sin(φ1);
-            ρ = initializer.rν(sinφ1);
-            ρ.inverseDivide(cos(φ1), 0);
-            if (variant == C) {
-                ρF = new DoubleDouble(ρ);
-                ρF.negate();
-            }
-            ρ.divide(expOfNorthing(φ1, excentricity*sinφ1), 0);
+            final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
+            ρ = verbatim(mF / expOfNorthing(φ1, excentricity*sinφ1));
+            ρF = (variant == C) ? verbatim(-mF) : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -253,8 +232,10 @@ public class PolarStereographic extends ConformalProjection {
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
         if (isNorth) {
-            context.getMatrix(true).convertAfter(1, -1, null);
-            denormalize.convertBefore(1, -1, null);
+            final Number reverseSign = verbatim(-1);
+            final MatrixSIS normalize = context.getMatrix(true);
+            normalize  .convertAfter (1, reverseSign, null);
+            denormalize.convertBefore(1, reverseSign, null);
         }
     }
 
