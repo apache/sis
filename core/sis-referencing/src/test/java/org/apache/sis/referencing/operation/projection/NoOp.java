@@ -45,7 +45,17 @@ final strictfp class NoOp extends ConformalProjection {
      * @param ellipsoidal {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
      */
     NoOp(final boolean ellipsoidal) {
-        this(parameters((ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid()));
+        this(ellipsoidal, ellipsoidal);
+    }
+
+    /**
+     * Creates a new "no-operation".
+     *
+     * @param ellipsoidal {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
+     * @param declareIvf  {@code true} for declaring the inverse flattening factor.
+     */
+    NoOp(final boolean ellipsoidal, final boolean declareIvf) {
+        this(parameters((ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid(), declareIvf));
     }
 
     /**
@@ -71,9 +81,14 @@ final strictfp class NoOp extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static Parameters parameters(final Ellipsoid ellipsoid) {
-        return parameters(ellipsoid.getSemiMajorAxis(),
-                          ellipsoid.getSemiMinorAxis());
+    private static Parameters parameters(final Ellipsoid ellipsoid, final boolean declareIvf) {
+        final Parameters parameters = parameters(
+                ellipsoid.getSemiMajorAxis(),
+                ellipsoid.getSemiMinorAxis());
+        if (declareIvf) {
+            parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
+        }
+        return parameters;
     }
 
     /**

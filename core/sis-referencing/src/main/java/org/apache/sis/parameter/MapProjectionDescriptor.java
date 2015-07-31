@@ -58,30 +58,6 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     private static final long serialVersionUID = -9142116135803309453L;
 
     /**
-     * The NetCDF parameter name for the Earth radius.
-     *
-     * @see Constants#SEMI_MAJOR
-     * @see Constants#SEMI_MINOR
-     */
-    static final String EARTH_RADIUS = "earth_radius";
-
-    /**
-     * The NetCDF parameter name for inverse flattening.
-     *
-     * @see Constants#SEMI_MAJOR
-     * @see Constants#SEMI_MINOR
-     */
-    static final String INVERSE_FLATTENING = "inverse_flattening";
-
-    /**
-     * The NetCDF parameter name for the standard parallels.
-     *
-     * @see Constants#STANDARD_PARALLEL_1
-     * @see Constants#STANDARD_PARALLEL_2
-     */
-    static final String STANDARD_PARALLEL = "standard_parallel";
-
-    /**
      * {@code true} if the {@link #STANDARD_PARALLEL} parameter can be added.
      */
     final boolean hasStandardParallels;
@@ -146,14 +122,17 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      */
     @Override
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
-        if (isHeuristicMatchForName(name, EARTH_RADIUS)) {
+        if (isHeuristicMatchForName(name, Constants.EARTH_RADIUS)) {
             return MapProjectionParameters.EarthRadius.DESCRIPTOR;
         }
-        if (isHeuristicMatchForName(name, INVERSE_FLATTENING)) {
+        if (isHeuristicMatchForName(name, Constants.INVERSE_FLATTENING)) {
             return MapProjectionParameters.InverseFlattening.DESCRIPTOR;
         }
+        if (isHeuristicMatchForName(name, Constants.IS_IVF_DEFINITIVE)) {
+            return MapProjectionParameters.IsIvfDefinitive.DESCRIPTOR;
+        }
         if (hasStandardParallels) {
-            if (isHeuristicMatchForName(name, STANDARD_PARALLEL)) {
+            if (isHeuristicMatchForName(name, Constants.STANDARD_PARALLEL)) {
                 return MapProjectionParameters.StandardParallel.DESCRIPTOR;
             }
         }

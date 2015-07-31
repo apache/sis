@@ -126,7 +126,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName("Latitude of 1st standard parallel")
                 .addName(Citations.OGC,     Constants.STANDARD_PARALLEL_1)
                 .addName(Citations.ESRI,    "Standard_Parallel_1")
-                .addName(Citations.NETCDF,  "standard_parallel")
+                .addName(Citations.NETCDF,  Constants.STANDARD_PARALLEL)
                 .addName(Citations.GEOTIFF, "ProjStdParallel1")
                 .addName(Citations.PROJ4,   "lat_ts"), false);
 
@@ -144,7 +144,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName("False easting")
                 .addName(Citations.OGC,     Constants.FALSE_EASTING)
                 .addName(Citations.ESRI,    "False_Easting")
-                .addName(Citations.NETCDF,  "false_easting")
+                .addName(Citations.NETCDF,  Constants.FALSE_EASTING)
                 .addName(Citations.GEOTIFF, "FalseEasting")
                 .addName(Citations.PROJ4,   "x_0"));
 
@@ -153,7 +153,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName("False northing")
                 .addName(Citations.OGC,     Constants.FALSE_NORTHING)
                 .addName(Citations.ESRI,    "False_Northing")
-                .addName(Citations.NETCDF,  "false_northing")
+                .addName(Citations.NETCDF,  Constants.FALSE_NORTHING)
                 .addName(Citations.GEOTIFF, "FalseNorthing")
                 .addName(Citations.PROJ4,   "y_0"));
         /*
