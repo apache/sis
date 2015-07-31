@@ -296,7 +296,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             return new Sphere(properties, semiMajorAxis, false, unit);
         } else {
             return new DefaultEllipsoid(properties, semiMajorAxis, semiMinorAxis,
-                       semiMajorAxis / (semiMajorAxis - semiMinorAxis), false, unit);
+                       Formulas.getInverseFlattening(semiMajorAxis, semiMinorAxis), false, unit);
         }
     }
 
@@ -320,7 +320,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             return new Sphere(properties, semiMajorAxis, true, unit);
         } else {
             return new DefaultEllipsoid(properties, semiMajorAxis,
-                    semiMajorAxis * (1 - 1/inverseFlattening), inverseFlattening, true, unit);
+                    Formulas.getSemiMinor(semiMajorAxis, inverseFlattening),
+                    inverseFlattening, true, unit);
         }
     }
 
@@ -358,11 +359,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private void afterUnmarshal() {
         if (ivfDefinitive) {
             if (semiMinorAxis == 0) {
-                semiMinorAxis = semiMajorAxis * (1 - 1/inverseFlattening);
+                semiMinorAxis = Formulas.getSemiMinor(semiMajorAxis, inverseFlattening);
             }
         } else {
             if (inverseFlattening == 0) {
-                inverseFlattening = semiMajorAxis / (semiMajorAxis - semiMinorAxis);
+                inverseFlattening = Formulas.getInverseFlattening(semiMajorAxis, semiMinorAxis);
             }
         }
         if (unit == null) {

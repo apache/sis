@@ -271,7 +271,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
             if (!Double.isNaN(ivf)) {
                 final Double a = (Double) semiMajor.getValue();
                 if (a != null) {
-                    semiMinor.setValue(a * (1 - 1/ivf), semiMajor.getUnit());
+                    semiMinor.setValue(Formulas.getSemiMinor(a, ivf), semiMajor.getUnit());
                 }
             }
         }
@@ -284,8 +284,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         public double doubleValue() {
             final Double a = (Double) semiMajor.getValue();
             if (a != null && semiMinor.getValue() != null) {
-                final double b = semiMinor.doubleValue(semiMajor.getUnit());
-                return a / (a - b);
+                return Formulas.getInverseFlattening(a, semiMinor.doubleValue(semiMajor.getUnit()));
             }
             return Double.NaN;
         }

@@ -397,7 +397,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
+            final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
         this(new Initializer(method, parameters, roles, (byte) 0));
     }
