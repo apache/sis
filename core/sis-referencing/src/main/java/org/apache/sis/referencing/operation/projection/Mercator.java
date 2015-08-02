@@ -246,6 +246,11 @@ public class Mercator extends ConformalProjection {
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {
+            /*
+             * Use double-double arithmetic here for consistency with the work done in the normalization matrix.
+             * The intend is to have exact value at 'double' precision when computing Matrix.invert(). Note that
+             * there is no such goal for other parameters computed from sine or consine functions.
+             */
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
             offset.multiply(-λ0);
             denormalize.convertBefore(0, null, offset);

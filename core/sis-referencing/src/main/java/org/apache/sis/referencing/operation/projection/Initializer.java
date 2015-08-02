@@ -37,13 +37,22 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * Helper class for map projection constructions, providing formulas normally needed only at construction time.
  * Since map projection constructions should not happen very often, we afford using some double-double arithmetic.
  * The main intend is not to provide more accurate coordinate conversions (while it may be a nice side-effect),
- * but to improve the result of concatenations of (de)normalization matrices with the matrices of other transforms,
- * as found in transformation chains.
+ * but to improve the result of matrix multiplications when the map projection is part of a more complex chain
+ * of transformations. More specifically we want to be able:
+ *
+ * <ul>
+ *   <li>To convert degrees to radians, than back to degrees and find the original value.</li>
+ *   <li>To convert axis length (optionally with flattening factor) to excentricity, then back
+ *       to axis length and find the original value.</li>
+ * </ul>
+ *
+ * This has visible effects on WKT formatting among others, but also in our capability to detect simplification
+ * opportunities in relatively complex chains of transformations.
  *
  * <p>As a general rule, we stop storing result with double-double precision after the point where we need
  * transcendental functions (sine, logarithm, <i>etc.</i>), since we do not have double-double versions of
  * those functions. Digits after the {@code double} part are usually not significant in such cases, except
- * in some relatively rare scenarios like 1 ± (a result much smaller than 1).</p>
+ * in some relatively rare scenarios like 1 ± x where <var>x</var> is much smaller than 1.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -142,6 +151,12 @@ final class Initializer {
                  */
                 isIvfDefinitive = false;
             }
+            /*
+             * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
+             * because they are defined by authorities. For example the semi-major axis length of the WGS84
+             * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
+             * constructor applies corrections for making those values more accurate in base 10 rather than 2.
+             */
             if (isIvfDefinitive) {
                 final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
                 f.inverseDivide(1,0);
@@ -178,11 +193,20 @@ final class Initializer {
                 k.inverseDivide(b, 0);
             }
         }
-        context.normalizeGeographicInputs(λ0);
+        /*
+         * Scale factor is assumed more accurate in base 10 than in base 2 for the same reason than for the
+         * ellipsoid parameters (i.e. is a value given by authority as part of map projection definition).
+         * Again, DoubleDouble constructor will take care of computing a correction.
+         */
         final ParameterDescriptor<? extends Number> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
             k.multiply(getAndStore(scaleFactor));
         }
+        /*
+         * Set meridian rotation, scale factor, false easting and false northing parameter values
+         * in the (de)normalization matrices.
+         */
+        context.normalizeGeographicInputs(λ0);
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertAfter(0, k, new DoubleDouble(fe));
         denormalize.convertAfter(1, k, new DoubleDouble(fn));
