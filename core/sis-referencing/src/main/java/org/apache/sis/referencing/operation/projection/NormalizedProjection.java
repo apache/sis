@@ -410,7 +410,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     NormalizedProjection(final Initializer initializer) {
         context             = initializer.context;
         excentricitySquared = initializer.excentricitySquared.value;
-        excentricity        = sqrt(excentricitySquared);
+        excentricity        = sqrt(excentricitySquared);  // DoubleDouble.sqrt() does not make any difference here.
         inverse             = new Inverse();
     }
 
