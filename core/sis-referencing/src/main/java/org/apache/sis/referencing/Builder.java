@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
@@ -202,10 +203,9 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * The codespace as a {@code NameSpace} object, or {@code null} if not yet created.
-     *
-     * @see #namespace()
+     * This object is built from the {@value org.opengis.metadata.Identifier#CODESPACE_KEY} value when first needed.
      */
-    private NameSpace namespace;
+    private transient NameSpace namespace;
 
     /**
      * The name factory, fetched when first needed.
@@ -252,6 +252,26 @@ public abstract class Builder<B extends Builder<B>> {
     @SuppressWarnings("unchecked")
     private B self() {
         return (B) this;
+    }
+
+    /**
+     * Creates a new builder initialized to properties of the given object.
+     * The properties recognized by this constructor are documented in the
+     * {@link IdentifiedObjects#getProperties(IdentifiedObject, String...)} method.
+     *
+     * @param object The identified object from which to inherit properties, or {@code null}.
+     *
+     * @since 0.6
+     */
+    protected Builder(final IdentifiedObject object) {
+        this();
+        if (object != null) {
+            properties.putAll(IdentifiedObjects.getProperties(object));
+            final GenericName[] valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
+            final Identifier[]  valueIds   = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+            if (valueAlias != null) aliases.addAll(Arrays.asList(valueAlias));
+            if (valueIds != null) identifiers.addAll(Arrays.asList(valueIds));
+        }
     }
 
     /**
@@ -428,31 +448,6 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B setVersion(final String version) {
         setProperty(Identifier.VERSION_KEY, version);
-        return self();
-    }
-
-    /**
-     * Sets whether the next {@code IdentifiedObject}s to create shall be considered deprecated. Deprecated objects
-     * exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
-     *
-     * <p>Note that this method does not apply to name and identifiers, which have their own
-     * {@code addDeprecatedFoo(…)} methods.</p>
-     *
-     * <p><b>Lifetime:</b>
-     * this property is kept unchanged until this {@code setDeprecated(…)} method is invoked again.</p>
-     *
-     * @param  deprecated {@code true} if the next names, identifiers and identified objects should be
-     *         considered deprecated, or {@code false} otherwise.
-     * @return {@code this}, for method call chaining.
-     *
-     * @see #addDeprecatedName(CharSequence, CharSequence)
-     * @see #addDeprecatedIdentifier(String, String)
-     * @see AbstractIdentifiedObject#isDeprecated()
-     *
-     * @since 0.6
-     */
-    public B setDeprecated(final boolean deprecated) {
-        properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, deprecated);
         return self();
     }
 
@@ -836,6 +831,31 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B setRemarks(final CharSequence remarks) {
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
+        return self();
+    }
+
+    /**
+     * Sets whether the next {@code IdentifiedObject}s to create shall be considered deprecated. Deprecated objects
+     * exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
+     *
+     * <p>Note that this method does not apply to name and identifiers, which have their own
+     * {@code addDeprecatedFoo(…)} methods.</p>
+     *
+     * <p><b>Lifetime:</b>
+     * this property is kept unchanged until this {@code setDeprecated(…)} method is invoked again.</p>
+     *
+     * @param  deprecated {@code true} if the next names, identifiers and identified objects should be
+     *         considered deprecated, or {@code false} otherwise.
+     * @return {@code this}, for method call chaining.
+     *
+     * @see #addDeprecatedName(CharSequence, CharSequence)
+     * @see #addDeprecatedIdentifier(String, String)
+     * @see AbstractIdentifiedObject#isDeprecated()
+     *
+     * @since 0.6
+     */
+    public B setDeprecated(final boolean deprecated) {
+        properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, deprecated);
         return self();
     }
 

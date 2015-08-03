@@ -29,6 +29,7 @@ import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -48,7 +49,6 @@ import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.internal.util.Numerics.floatEpsilonEqual;
 import static org.apache.sis.internal.util.CollectionsExt.snapshot;
 import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -176,9 +176,8 @@ class PropertyAccessor {
     private final Method[] setters;
 
     /**
-     * The JavaBeans property names. They are computed at construction time,
-     * {@linkplain String#intern() interned} then cached. Those names are often
-     * the same than field names (at least in SIS implementation), so it is
+     * The JavaBeans property names. They are computed at construction time, {@linkplain String#intern() interned}
+     * then cached. Those names are often the same than field names (at least in SIS implementation), so it is
      * reasonable to intern them in order to share {@code String} instances.
      *
      * <p>This array shall not contains any {@code null} elements.</p>
@@ -1112,10 +1111,17 @@ class PropertyAccessor {
                 // Empty strings are also considered equal to null (this is more questionable).
                 continue;
             }
-            if (!Utilities.deepEquals(value1, value2, mode)) {
-                if (mode.ordinal() >= ComparisonMode.APPROXIMATIVE.ordinal() && floatEpsilonEqual(value1, value2)) {
-                    continue; // Accept this slight difference.
-                }
+            final boolean equals;
+            if ((value1 instanceof Double || value1 instanceof Float) &&
+                (value2 instanceof Double || value2 instanceof Float))
+            {
+                equals = Numerics.epsilonEqual(((Number) value1).doubleValue(),
+                                               ((Number) value2).doubleValue(), mode);
+            } else {
+                equals = Utilities.deepEquals(value1, value2, mode);
+            }
+            if (!equals) {
+                assert (mode != ComparisonMode.DEBUG) : type.getSimpleName() + '.' + names[i] + " differ.";
                 return false;
             }
         }

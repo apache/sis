@@ -103,7 +103,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
     org.apache.sis.referencing.operation.projection.ConformalProjectionTest.class,
     org.apache.sis.referencing.operation.projection.MercatorTest.class,
-    org.apache.sis.referencing.operation.projection.LambertConformalTest.class,
+    org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
 

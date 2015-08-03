@@ -106,9 +106,7 @@ public final class Formulas extends Static {
 
     /**
      * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid
-     * specified by the given axis length. This method does not verify if {@code a == b}
-     * (in which case {@code a} could be returned directly); it is up to the caller to perform
-     * such optimization if desired.
+     * specified by the given axis length.
      *
      * @param  a The semi-major axis length.
      * @param  b The semi-minor axis length.
@@ -124,5 +122,37 @@ public final class Formulas extends Static {
         } else {
             return a;
         }
+    }
+
+    /**
+     * Computes the semi-minor axis length from the given semi-major axis and inverse flattening factor.
+     *
+     * @param  semiMajorAxis     The semi-major axis length.
+     * @param  inverseFlattening The inverse flattening factor.
+     * @return The semi-minor axis length.
+     */
+    public static double getSemiMinor(final double semiMajorAxis, final double inverseFlattening) {
+        /*
+         * Note: double-double arithmetic does not increase the accuracy here, unless the inverse flattening
+         * factor given to this method is very high (i.e. the planet is very close to a perfect sphere).
+         */
+        return semiMajorAxis * (1 - 1/inverseFlattening);
+    }
+
+    /**
+     * Computes the inverse flattening factor from the given axis lengths.
+     *
+     * @param  semiMajorAxis The semi-major axis length.
+     * @param  semiMinorAxis The semi-minor axis length.
+     * @return The inverse flattening factor.
+     */
+    public static double getInverseFlattening(final double semiMajorAxis, final double semiMinorAxis) {
+        /*
+         * Note: double-double arithmetic here sometime change the last digit. We ignore for now.
+         * We may consider using double-double arithmetic in a future SIS version, not for more
+         * accurate map projection but rather for being able to find back the original value after
+         * we convert back and forward betwen inverse flattening and semi-minor axis length.
+         */
+        return semiMajorAxis / (semiMajorAxis - semiMinorAxis);
     }
 }

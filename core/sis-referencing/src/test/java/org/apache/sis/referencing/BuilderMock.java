@@ -32,6 +32,19 @@ import org.opengis.util.GenericName;
  */
 final strictfp class BuilderMock extends Builder<BuilderMock> {
     /**
+     * Creates a new builder.
+     */
+    BuilderMock() {
+    }
+
+    /**
+     * Creates a new builder initialized to the given object.
+     */
+    BuilderMock(final IdentifiedObject object) {
+        super(object);
+    }
+
+    /**
      * Convenience accessor for the property value assigned to {@link IdentifiedObject#NAME_KEY}.
      */
     Object getName() {

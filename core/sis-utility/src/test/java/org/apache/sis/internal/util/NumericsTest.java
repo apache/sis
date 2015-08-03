@@ -20,6 +20,7 @@ import java.util.Random;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.ComparisonMode;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
@@ -34,9 +35,10 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
+@SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumericsTest extends TestCase {
     /**
      * Tests the {@link Numerics#cached(Object)} method.
@@ -67,20 +69,20 @@ public final strictfp class NumericsTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Numerics#epsilonEqual(double, double)} method.
+     * Tests the {@link Numerics#epsilonEqual(double, double, ComparisonMode)} method.
      */
     @Test
     public void testEpsilonEqual() {
-        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY));
-        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN));
-        assertTrue (epsilonEqual(NaN,               NaN));
-        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD / 2));
-        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD / 2));
-        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD * 2));
-        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD * 50));
-        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150));
+        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
+        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN,                  ComparisonMode.APPROXIMATIVE));
+        assertTrue (epsilonEqual(NaN,               NaN,                  ComparisonMode.APPROXIMATIVE));
+        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATIVE));
+        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATIVE));
+        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD *   2, ComparisonMode.APPROXIMATIVE));
+        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD *  50, ComparisonMode.APPROXIMATIVE));
+        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150, ComparisonMode.APPROXIMATIVE));
     }
 
     /**

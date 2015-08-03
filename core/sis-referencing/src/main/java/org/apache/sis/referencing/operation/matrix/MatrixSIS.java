@@ -305,7 +305,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             sum.clear();
             for (int j=0; j<numRow; j++) {
                 get(j, i, dot);
-                dot.multiply(dot);
+                dot.square();
                 sum.add(dot);
             }
             sum.sqrt();

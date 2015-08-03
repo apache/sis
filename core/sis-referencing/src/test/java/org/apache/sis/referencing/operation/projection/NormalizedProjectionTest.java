@@ -68,8 +68,17 @@ public final strictfp class NormalizedProjectionTest extends TransformTestCase {
         NormalizedProjection projection;
         transform = projection = new NoOp(false);
         assertEquals("excentricity", 0.0, projection.excentricity, 0.0);
+        /*
+         * Tested methods. Note the similarity between (1) and (3).
+         *
+         *  (1) Using double        arithmetic and axis lengths:  0.08181919084262157
+         *  (2) Using double-double arithmetic and axis lengths:  0.08181919084262244
+         *  (3) Using double-double arithmetic and flattening:    0.0818191908426215
+         */
+        transform = projection = new NoOp(true, false);
+        assertEquals("excentricity", 0.08181919084262244, projection.excentricity, 0.0);
 
-        transform = projection = new NoOp(true);
-        assertEquals("excentricity", 0.08181919084262157, projection.excentricity, TOLERANCE);
+        transform = projection = new NoOp(true, true);
+        assertEquals("excentricity", 0.0818191908426215, projection.excentricity, 0.0);
     }
 }

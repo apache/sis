@@ -43,6 +43,10 @@ import static java.lang.Double.doubleToLongBits;
  *
  * @see org.apache.sis.math.MathFunctions
  */
+@SuppressWarnings({
+    "UnnecessaryBoxing",
+    "ResultOfObjectAllocationIgnored"
+})
 public final class Numbers extends Static {
     /**
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
@@ -88,6 +92,7 @@ public final class Numbers extends Static {
     /**
      * Creates an entry for a type which is not a primitive type.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> type, final boolean isFloat, final boolean isInteger, final byte ordinal) {
         primitive = wrapper = type;
         this.isFloat   = isFloat;
@@ -104,6 +109,7 @@ public final class Numbers extends Static {
     /**
      * Creates a mapping between a primitive type and its wrapper.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> primitive, final Class<?> wrapper,
                     final boolean  isFloat,   final boolean  isInteger,
                     final byte     size,      final byte     ordinal,
