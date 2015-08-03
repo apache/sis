@@ -65,16 +65,17 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
-     * the semi-major and semi-minor axis length. We expect nothing else because all other parameters are used
+     * the ellipsoid excentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
+     *
+     * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
     public void testNormalizedWKT() {
         createNormalizedProjection(true);
         assertWktEquals(
-                "PARAM_MT[“Mercator_2SP”,\n" +
-                "  PARAMETER[“semi_major”, 1.0],\n" +
-                "  PARAMETER[“semi_minor”, 0.9966471893352525]]");
+                "PARAM_MT[“Mercator”,\n" +
+                "  PARAMETER[“excentricity”, 0.0818191908426215]]");
     }
 
     /**

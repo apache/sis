@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
+import java.util.HashMap;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
@@ -24,6 +25,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -49,6 +51,7 @@ public final strictfp class BuilderTest extends TestCase {
      * Tests {@link Builder#verifyParameterizedType(Class)}.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testVerifyParameterizedType() {
         final class Invalid extends Builder<BuilderMock> {
         }
@@ -276,5 +279,37 @@ public final strictfp class BuilderTest extends TestCase {
             "OGC:Replacement 2",
             "GeoTIFF:CT_Mercator"
         }, builder.getAsStrings(1));
+    }
+
+    /**
+     * Tests the {@link Builder#Builder(IdentifiedObject)} constructor.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testCreationFromObject() {
+        final Map<String,Object> properties = new HashMap<String,Object>();
+        final Identifier id = new SimpleIdentifier(null, "An identifier", false);
+        assertNull(properties.put(AbstractIdentifiedObject.IDENTIFIERS_KEY, id));
+        assertNull(properties.put(AbstractIdentifiedObject.ALIAS_KEY,       "An alias"));
+        assertNull(properties.put(AbstractIdentifiedObject.NAME_KEY,        "Dummy object"));
+        assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY,     "Some remarks"));
+        final BuilderMock builder = new BuilderMock(new AbstractIdentifiedObject(properties));
+
+        assertEquals("Expected only name and remarks.", 2, builder.properties.size());
+        builder.onCreate(false);
+        assertEquals("Expected name, aliases, identifiers and remarks.", 4, builder.properties.size());
+
+        assertEquals(AbstractIdentifiedObject.NAME_KEY, "Dummy object",
+                builder.properties.get(AbstractIdentifiedObject.NAME_KEY).toString());
+
+        assertEquals(AbstractIdentifiedObject.REMARKS_KEY, "Some remarks",
+                builder.properties.get(AbstractIdentifiedObject.REMARKS_KEY).toString());
+
+        assertEquals(AbstractIdentifiedObject.ALIAS_KEY, "An alias",
+                ((Object[]) builder.properties.get(AbstractIdentifiedObject.ALIAS_KEY))[0].toString());
+
+        assertSame(AbstractIdentifiedObject.IDENTIFIERS_KEY, id,
+                ((Object[]) builder.properties.get(AbstractIdentifiedObject.IDENTIFIERS_KEY))[0]);
     }
 }

@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ComparisonMode;
 
@@ -30,7 +31,7 @@ import static java.lang.Math.abs;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class Numerics extends Static {
@@ -58,9 +59,9 @@ public final class Numerics extends Static {
      * Helper method for the construction of the {@link #CACHE} map.
      */
     private static void cache(final double value) {
-        Double key;
-        key = Double.valueOf( value); CACHE.put(key, key);
-        key = Double.valueOf(-value); CACHE.put(key, key);
+        Double boxed;
+        boxed =  value; CACHE.put(boxed, boxed);
+        boxed = -value; CACHE.put(boxed, boxed);
     }
 
     /**
@@ -146,9 +147,9 @@ public final class Numerics extends Static {
      * @return The given value as a {@code Double}.
      */
     public static Double valueOf(final double value) {
-        final Double n = Double.valueOf(value);
-        final Object candidate = CACHE.get(value);
-        return (candidate != null) ? (Double) candidate : n;
+        final Double boxed = value;
+        final Object candidate = CACHE.get(boxed);
+        return (candidate != null) ? (Double) candidate : boxed;
     }
 
     /**
@@ -188,14 +189,14 @@ public final class Numerics extends Static {
      * Returns {@code true} if the given floats are equals. Positive and negative zero are
      * considered different, while a NaN value is considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Float#equals(Object)
      */
-    public static boolean equals(final float o1, final float o2) {
-        return Float.floatToIntBits(o1) == Float.floatToIntBits(o2);
+    public static boolean equals(final float v1, final float v2) {
+        return Float.floatToIntBits(v1) == Float.floatToIntBits(v2);
     }
 
     /**
@@ -203,78 +204,86 @@ public final class Numerics extends Static {
      * Positive and negative zeros are considered different.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Double#equals(Object)
      */
-    public static boolean equals(final double o1, final double o2) {
-        return Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    public static boolean equals(final double v1, final double v2) {
+        return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
     }
 
     /**
      * Returns {@code true} if the given doubles are equal, ignoring the sign of zero values.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  o1 The first value to compare.
-     * @param  o2 The second value to compare.
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
      * @return {@code true} if both values are equal.
      */
-    public static boolean equalsIgnoreZeroSign(final double o1, final double o2) {
-        return (o1 == o2) || Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    public static boolean equalsIgnoreZeroSign(final double v1, final double v2) {
+        return (v1 == v2) || Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
     }
 
     /**
-     * Returns {@code true} if the given values are approximatively equal,
-     * up to the {@linkplain #COMPARISON_THRESHOLD comparison threshold}.
+     * Returns {@code true} if the given values are approximatively equal, up to the given comparison threshold.
      *
      * @param  v1 The first value to compare.
      * @param  v2 The second value to compare.
-     * @return {@code true} If both values are approximatively equal.
+     * @param  threshold The comparison threshold.
+     * @return {@code true} if both values are approximatively equal.
      */
-    public static boolean epsilonEqual(final double v1, final double v2) {
-        final double threshold = COMPARISON_THRESHOLD * max(abs(v1), abs(v2));
-        if (threshold == Double.POSITIVE_INFINITY || Double.isNaN(threshold)) {
-            return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
-        }
-        return abs(v1 - v2) <= threshold;
+    public static boolean epsilonEqual(final double v1, final double v2, final double threshold) {
+        return (abs(v1 - v2) <= threshold) || equals(v1, v2);
     }
 
     /**
      * Returns {@code true} if the given values are approximatively equal given the comparison mode.
+     * In mode {@code APPROXIMATIVE} or {@code DEBUG}, this method will compute a relative comparison
+     * threshold from the {@link #COMPARISON_THRESHOLD} constant.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
+     * <p>This method does not thrown {@link AssertionError} in {@link ComparisonMode#DEBUG}.
+     * It is caller responsibility to handle the {@code DEBUG} case.</p>
+     *
+     * @param  v1   The first value to compare.
+     * @param  v2   The second value to compare.
      * @param  mode The comparison mode to use for comparing the numbers.
-     * @return {@code true} If both values are approximatively equal.
+     * @return {@code true} if both values are considered equal for the given comparison mode.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
-        switch (mode) {
-            default: return equals(v1, v2);
-            case APPROXIMATIVE: return epsilonEqual(v1, v2);
-            case DEBUG: {
-                final boolean equal = epsilonEqual(v1, v2);
-                assert equal : "v1=" + v1 + " v2=" + v2 + " Δv=" + abs(v1-v2);
-                return equal;
+        if (mode.isApproximative()) {
+            final double mg = max(abs(v1), abs(v2));
+            if (mg != Double.POSITIVE_INFINITY) {
+                return epsilonEqual(v1, v2, COMPARISON_THRESHOLD * mg);
             }
         }
+        return equals(v1, v2);
     }
 
     /**
-     * Returns {@code true} if the following objects are floating point numbers ({@link Float} or
-     * {@link Double} types) and approximatively equal. If the given object are not floating point
-     * numbers, then this method returns {@code false} unconditionally on the assumption that
-     * strict equality has already been checked before this method call.
+     * Creates a messages to put in {@link AssertionError} when two values differ in an unexpected way.
+     * This is a helper method for debugging purpose only, typically used with {@code assert} statements.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @return {@code true} If both values are real number and approximatively equal.
+     * @param name The name of the property which differ, or {@code null} if unknown.
+     * @param v1   The first value.
+     * @param v2   The second value.
+     * @return The message to put in {@code AssertionError}.
+     *
+     * @since 0.6
      */
-    public static boolean floatEpsilonEqual(final Object v1, final Object v2) {
-        return (v1 instanceof Float || v1 instanceof Double) &&
-               (v2 instanceof Float || v2 instanceof Double) &&
-               epsilonEqual(((Number) v1).doubleValue(), ((Number) v2).doubleValue());
+    @Debug
+    public static String messageForDifference(final String name, final double v1, final double v2) {
+        final StringBuilder builder = new StringBuilder();
+        if (name != null) {
+            builder.append(name).append(": ");
+        }
+        builder.append("values ").append(v1).append(" and ").append(v2).append(" differ");
+        final float delta = (float) abs(v1 - v2);
+        if (delta < Float.POSITIVE_INFINITY) {
+            builder.append(" by ").append(delta);
+        }
+        return builder.toString();
     }
 
     /**

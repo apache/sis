@@ -36,6 +36,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -540,12 +541,34 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             } catch (IllegalStateException e) {
                 failure = e;
             }
+            final boolean isIvfDefinitive;
             if (mismatchedParam != null) {
                 final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
                         Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                         mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
                 record.setLoggerName(Loggers.COORDINATE_OPERATION);
                 Logging.log(DefaultMathTransformFactory.class, "createBaseToDerived", record);
+                isIvfDefinitive = false;
+            } else {
+                isIvfDefinitive = ellipsoid.isIvfDefinitive();
+            }
+            /*
+             * Following is specific to Apache SIS. We use this non-standard API for allowing the
+             * NormalizedProjection class (our base class for all map projection implementations)
+             * to known that the ellipsoid definitive parameter is the inverse flattening factor
+             * instead than the semi-major axis length. It makes a small difference in the accuracy
+             * of the excentricity parameter.
+             */
+            if (isIvfDefinitive) try {
+                parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
+            } catch (ParameterNotFoundException e) {
+                /*
+                 * Should never happen with Apache SIS implementation, but may happen if the given parameters come
+                 * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
+                 * since it was redundant with semi-minor axis length.
+                 */
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        DefaultMathTransformFactory.class, "createBaseToDerived", e);
             }
         }
         MathTransform baseToDerived;

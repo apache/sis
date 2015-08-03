@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -39,6 +38,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -125,13 +125,33 @@ public class Mercator extends ConformalProjection {
     private final byte variant;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Mercator projection of the given variant.
+     * Creates a Mercator projection from the given parameters.
+     * The {@code method} argument can be the description of one of the following:
      *
-     * @param  variant One of {@link #REGIONAL}, {@link #SPHERICAL}, {@link #PSEUDO} or {@link #MILLER} constants.
-     * @return The roles map to give to super-class constructor.
+     * <ul>
+     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
+     *   <li><cite>"Mercator (variant C)"</cite>.</li>
+     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
+     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
+     *   <li><cite>"Miller Cylindrical"</cite>.</li>
+     * </ul>
+     *
+     * @param method     Description of the projection parameters.
+     * @param parameters The parameter values of the projection to create.
+     */
+    public Mercator(final OperationMethod method, final Parameters parameters) {
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final byte variant = getVariant(method);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
                 new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
@@ -172,27 +192,7 @@ public class Mercator extends ConformalProjection {
                 break;
             }
         }
-        return roles;
-    }
-
-    /**
-     * Creates a Mercator projection from the given parameters.
-     * The {@code method} argument can be the description of one of the following:
-     *
-     * <ul>
-     *   <li><cite>"Mercator (variant A)"</cite>, also known as <cite>"Mercator (1SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant B)"</cite>, also known as <cite>"Mercator (2SP)"</cite>.</li>
-     *   <li><cite>"Mercator (variant C)"</cite>.</li>
-     *   <li><cite>"Mercator (Spherical)"</cite>.</li>
-     *   <li><cite>"Popular Visualisation Pseudo Mercator"</cite>.</li>
-     *   <li><cite>"Miller Cylindrical"</cite>.</li>
-     * </ul>
-     *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
-     */
-    public Mercator(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -200,15 +200,15 @@ public class Mercator extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private Mercator(final OperationMethod method, final Parameters parameters, final byte variant) {
-        super(method, parameters, roles(variant));
-        this.variant = variant;
+    private Mercator(final Initializer initializer) {
+        super(initializer);
+        this.variant = initializer.variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
          * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
          * for now; it will be converted to radians later.
          */
-        final double λ0 = getAndStore(parameters, Mercator1SP.LONGITUDE_OF_ORIGIN);
+        final double λ0 = initializer.getAndStore(Mercator1SP.LONGITUDE_OF_ORIGIN);
         /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
@@ -221,7 +221,7 @@ public class Mercator extends ConformalProjection {
          * "Latitude of origin" can not have a non-zero value, if it still have non-zero value we will process as
          * for "Latitude of false origin".
          */
-        final double φ0 = toRadians(getAndStore(parameters, (variant == REGIONAL)
+        final double φ0 = toRadians(initializer.getAndStore((variant == REGIONAL)
                 ? RegionalMercator.LATITUDE_OF_FALSE_ORIGIN : Mercator1SP.LATITUDE_OF_ORIGIN));
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
@@ -229,9 +229,8 @@ public class Mercator extends ConformalProjection {
          * the later is for projections "1SP" (namely variant A and spherical). However we let users specify both
          * if they really want, since we sometime see such CRS definitions.
          */
-        final double φ1 = toRadians(getAndStore(parameters, Mercator2SP.STANDARD_PARALLEL));
-        final DoubleDouble k0 = new DoubleDouble(cos(φ1), 0);
-        k0.divide(rν(sin(φ1)), 0);
+        final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
+        final Number k0 = verbatim(initializer.scaleAtφ(sin(φ1), cos(φ1)));
         /*
          * In principle we should rotate the central meridian (λ0) in the normalization transform, as below:
          *
@@ -248,16 +247,21 @@ public class Mercator extends ConformalProjection {
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {
+            /*
+             * Use double-double arithmetic here for consistency with the work done in the normalization matrix.
+             * The intend is to have exact value at 'double' precision when computing Matrix.invert(). Note that
+             * there is no such goal for other parameters computed from sine or consine functions.
+             */
             final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
             offset.multiply(-λ0);
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, verbatim(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
         }
         if (variant == MILLER) {
-              normalize.convertBefore(1, new DoubleDouble(0.80), null);
-            denormalize.convertBefore(1, new DoubleDouble(1.25), null);
+            normalize  .convertBefore(1, 0.80, null);
+            denormalize.convertBefore(1, 1.25, null);
         }
         /*
          * At this point we are done, but we add here a little bit a maniac precision hunting.
@@ -283,9 +287,9 @@ public class Mercator extends ConformalProjection {
          * those remaning lines of code.
          */
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
-            final DoubleDouble revert = new DoubleDouble(-1, 0);
-              normalize.convertBefore(1, revert, null);
-            denormalize.convertBefore(1, revert, null);  // Must be before false easting/northing.
+            final Number reverseSign = verbatim(-1);
+            normalize  .convertBefore(1, reverseSign, null);
+            denormalize.convertBefore(1, reverseSign, null);  // Must be before false easting/northing.
         }
     }
 

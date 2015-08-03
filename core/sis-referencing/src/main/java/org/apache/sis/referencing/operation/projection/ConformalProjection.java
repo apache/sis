@@ -16,19 +16,15 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.parameter.Parameters;
 
 import static java.lang.Math.*;
 
 
 /**
- * Base class of {@link LambertConformal}, {@link Mercator} and {@link PolarStereographic} projections.
+ * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
  * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
  * angles locally. However we do not put this base class in public API because we do not (yet) guarantee
  * than all conformal projections will extend this base class.
@@ -44,6 +40,12 @@ import static java.lang.Math.*;
  * but the equations in the {@code PolarStereographic.transform(…)} and {@code inverseTransform(…)} methods
  * appear to be the same with the <var>n</var> factor fixed to 1 or -1, so we leverage the code provided by
  * this base class. This class hierarchy is only an implementation convenience and not part of public API.</p>
+ *
+ * <div class="note"><b>Reference:</b>
+ * “Lambert developed the regular Conformal Conic as the oblique aspect of a family containing the previously
+ * known polar Stereographic and regular Mercator projections. (…) If the standard parallels are symmetrical
+ * about the Equator, the regular Mercator results (although formulas must be revised). If the only standard
+ * parallel is a pole, the polar Stereographic results.” (Snyder, page 105)</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -101,17 +103,12 @@ abstract class ConformalProjection extends NormalizedProjection {
     private transient boolean useIterations;
 
     /**
-     * Constructs a new map projection from the supplied parameters.
+     * Creates a new normalized projection from the parameters computed by the given initializer.
      *
-     * @param method     Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param initializer The initializer for computing map projection internal parameters.
      */
-    protected ConformalProjection(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
-    {
-        super(method, parameters, roles);
+    ConformalProjection(final Initializer initializer) {
+        super(initializer);
         initialize();
     }
 

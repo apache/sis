@@ -16,10 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -36,20 +34,17 @@ import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.math.MathFunctions.isPositive;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
- * <cite>Lambert Conical Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
+ * <cite>Lambert Conic Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
  * See the <a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert conformal
  * conic projection on MathWorld</a> for an overview.
  *
@@ -66,7 +61,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @version 0.6
  * @module
  */
-public class LambertConformal extends ConformalProjection {
+public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
@@ -101,9 +96,24 @@ public class LambertConformal extends ConformalProjection {
     }
 
     /**
-     * Constant for the Belgium 2SP case. This is 29.2985 seconds, given here in radians.
+     * Constant for the Belgium 2SP case. Defined as 29.2985 seconds, given here in radians.
+     * Use double-double arithmetic not for map projection accuracy, but for consistency with
+     * the normalization matrix which use that precision for "degrees to radians" conversion.
+     * The goal is to have cleaner results after matrix inversions and multiplications.
+     *
+     * <div class="note"><b>Tip:</b> how to verify the value:
+     * {@preformat java
+     *     BigDecimal a = new BigDecimal(BELGE_A.value);
+     *     a = a.add     (new BigDecimal(BELGE_A.error));
+     *     a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));
+     *     a = a.multiply(new BigDecimal(60 * 60));
+     *     System.out.println(a);
+     * }
+     * </div>
      */
-    private static final double BELGE_A = 0.00014204313635987700;
+    static Number belgeA() {
+        return new DoubleDouble(-1.420431363598774E-4, -1.1777378450498224E-20);
+    }
 
     /**
      * Internal coefficients for computation, depending only on values of standards parallels.
@@ -118,18 +128,42 @@ public class LambertConformal extends ConformalProjection {
      *   <li>If φ1 = φ2 = ±90°, then this {@code n} value become ±1. The formulas in the transform and
      *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
      *       (de)normalization matrices contain NaN values.</li>
+     *   <li>Depending on how the formulas are written, <var>n</var> may be positive in the South hemisphere and
+     *       negative in the North hemisphere (or conversely). However Apache SIS adjusts the coefficients of the
+     *       (de)normalization matrices in order to keep <var>n</var> positive, because the formulas are slightly
+     *       more accurate for positive <var>n</var> values. However this adjustment is optional and can be disabled
+     *       in the constructor.</li>
      * </ul>
      */
     final double n;
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Lambert projection of the given variant.
+     * Creates a Lambert projection from the given parameters.
+     * The {@code method} argument can be the description of one of the following:
      *
-     * @param  variant One of {@link #SP1}, {@link #SP2}, {@link #WEST}, {@link #BELGIUM} and {@link #MICHIGAN} constants.
-     * @return The roles map to give to super-class constructor.
+     * <ul>
+     *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
+     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
+     * </ul>
+     *
+     * @param method     Description of the projection parameters.
+     * @param parameters The parameter values of the projection to create.
+     */
+    public LambertConicConformal(final OperationMethod method, final Parameters parameters) {
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @SuppressWarnings("fallthrough")
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final byte variant = getVariant(method);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles =
                 new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
@@ -167,26 +201,7 @@ public class LambertConformal extends ConformalProjection {
             default: throw new AssertionError(variant);
         }
         roles.put(ParameterRole.SCALE_FACTOR, scaleFactor);
-        return roles;
-    }
-
-    /**
-     * Creates a Lambert projection from the given parameters.
-     * The {@code method} argument can be the description of one of the following:
-     *
-     * <ul>
-     *   <li><cite>"Lambert Conic Conformal (1SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (West Orientated)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Belgium)"</cite>.</li>
-     *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
-     * </ul>
-     *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
-     */
-    public LambertConformal(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(method));
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -194,17 +209,17 @@ public class LambertConformal extends ConformalProjection {
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private LambertConformal(final OperationMethod method, final Parameters parameters, final byte type) {
-        super(method, parameters, roles(type));
-        double φ0 = getAndStore(parameters, ((type & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
+    private LambertConicConformal(final Initializer initializer) {
+        super(initializer);
+        double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
          * Standard parallels (SP) are defined only for the 2SP case, but we look for them unconditionally
          * in case the user gave us non-standard parameters. For the 1SP case, or for the 2SP case left to
          * their default values, EPSG says that we shall use the latitude of origin as the SP.
          */
-        double φ1 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
-        double φ2 = getAndStore(parameters, LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
+        double φ1 = initializer.getAndStore(LambertConformal2SP.STANDARD_PARALLEL_1, φ0);
+        double φ2 = initializer.getAndStore(LambertConformal2SP.STANDARD_PARALLEL_2, φ1);
         if (abs(φ1 + φ2) < Formulas.ANGULAR_TOLERANCE) {
             /*
              * We can not allow that because if φ1 = -φ2, then n = 0 and the equations
@@ -245,52 +260,52 @@ public class LambertConformal extends ConformalProjection {
         φ1 = toRadians(φ1);
         φ2 = toRadians(φ2);
         /*
-         * Computes constants. We do not need to use special formulas for the spherical case below,
+         * Compute constants. We do not need to use special formulas for the spherical case below,
          * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the excentricity is zero.
          * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
          */
         final double sinφ1 = sin(φ1);
-        final double m1    = cos(φ1) / rν(sinφ1);
-        final double t1    = expOfNorthing(φ1, excentricity*sinφ1);
+        final double m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
+        final double t1 = expOfNorthing(φ1, excentricity*sinφ1);
         /*
-         * Computes n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
-         * since division is less at risk of precision lost than subtraction. Note that this equation
+         * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
+         * for reducing the amount of calls to the logarithmic function. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
          */
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
-            final double m2 = cos(φ2) / rν(sinφ2);
+            final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
             final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
             n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
             n = -sinφ1;
         }
         /*
-         * Computes F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
-         * Following constants will be stored in the denormalization matrix, to be applied after
-         * the non-linear formulas implemented by this LambertConformal class. Opportunistically
-         * use double-double arithmetic since we the matrix coefficients will be stored in this
-         * format anyway. This makes a change in the 2 or 3 last digits.
+         * Compute F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
+         * Following constants will be stored in the denormalization matrix, to be applied
+         * after the non-linear formulas implemented by this LambertConicConformal class.
+         * Opportunistically use double-double arithmetic since the matrix coefficients will
+         * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
-        final DoubleDouble F = new DoubleDouble(n, 0);
+        final DoubleDouble F = verbatim(n);
         F.multiply(pow(t1, n), 0);
-        F.inverseDivide(m1, 0);
+        F.inverseDivide(m1);
         if (!isNorth) {
             F.negate();
         }
         /*
          * Compute the radius of the parallel of latitude of the false origin.
-         * This is related to the "ρ0" term in Snyder. From EPG guide:
+         * This is related to the "ρ₀" term in Snyder. From EPG guide:
          *
          *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expOfNorthing' function.
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
-        final DoubleDouble rF = new DoubleDouble();    // Initialized to zero.
-        if (φ0 != copySign(PI/2, -n)) {    // For avoiding the rounding error documented in expOfNorthing(+π/2).
-            rF.value = pow(expOfNorthing(φ0, excentricity*sin(φ0)), n);
-            rF.multiply(F);
+        DoubleDouble rF = null;
+        if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
+            rF = new DoubleDouble(F);
+            rF.multiply(pow(expOfNorthing(φ0, excentricity*sin(φ0)), n), 0);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -309,24 +324,46 @@ public class LambertConformal extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        final MatrixSIS normalize = context.getMatrix(true);
-        normalize.convertAfter(0, new DoubleDouble(isNorth ? n : -n, 0),    // Multiplication factor for longitudes.
-                (type == BELGIUM) ? new DoubleDouble(-BELGE_A, 0) : null);  // Longitude translation for Belgium.
+        DoubleDouble sλ = verbatim(n);
+        DoubleDouble sφ = null;
         if (isNorth) {
-            normalize.convertAfter(1, new DoubleDouble(-1, 0), null);
+            // Reverse the sign of either longitude or latitude values before map projection.
+            sφ = verbatim(-1);
+        } else {
+            sλ.negate();
         }
+        final MatrixSIS normalize   = context.getMatrix(true);
         final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertBefore(0, F, null);
-        F.negate();
+        normalize  .convertAfter(0, sλ, (initializer.variant == BELGIUM) ? belgeA() : null);
+        normalize  .convertAfter(1, sφ, null);
+        denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
     }
 
     /**
      * Creates a new projection initialized to the same parameters than the given one.
      */
-    LambertConformal(final LambertConformal other) {
+    LambertConicConformal(final LambertConicConformal other) {
         super(other);
         n = other.n;
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
+     */
+    @Override
+    String[] getInternalParameterNames() {
+        return new String[] {"n"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
+     */
+    @Override
+    double[] getInternalParameterValues() {
+        return new double[] {n};
     }
 
     /**
@@ -343,53 +380,11 @@ public class LambertConformal extends ConformalProjection {
      */
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
-        LambertConformal kernel = this;
+        LambertConicConformal kernel = this;
         if (excentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
-    }
-
-    /**
-     * Returns a copy of the parameter values for this projection.
-     * This method supplies a value only for the following parameters:
-     *
-     * <ul>
-     *   <li>Semi-major axis length of 1</li>
-     *   <li>Semi-minor axis length of <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code></li>
-     *   <li>Only one of the following:
-     *     <ul>
-     *       <li>Natural origin (1SP case)</li>
-     *     </ul>
-     *     or, in the 2SP case:
-     *     <ul>
-     *       <li>Standard parallel 1</li>
-     *       <li>Standard parallel 2</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
-     * No other parameters are set because only the above-cited ones are significant for the non-linear part
-     * of this projection.
-     *
-     * <div class="note"><b>Note:</b>
-     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
-     *
-     * @return A copy of the parameter values for this normalized projection.
-     */
-    @Debug
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return getParameterValues(new String[] {
-            Constants.SEMI_MAJOR,
-            Constants.SEMI_MINOR,
-            Constants.STANDARD_PARALLEL_1,
-            Constants.STANDARD_PARALLEL_2,
-            "latitude_of_origin"
-        });
     }
 
     /**
@@ -498,7 +493,7 @@ public class LambertConformal extends ConformalProjection {
      * @version 0.6
      * @module
      */
-    static final class Spherical extends LambertConformal {
+    static final class Spherical extends LambertConicConformal {
         /**
          * For cross-version compatibility.
          */
@@ -509,7 +504,7 @@ public class LambertConformal extends ConformalProjection {
          *
          * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
          */
-        protected Spherical(final LambertConformal other) {
+        protected Spherical(final LambertConicConformal other) {
             super(other);
         }
 
@@ -567,18 +562,5 @@ public class LambertConformal extends ConformalProjection {
             dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x);
             dstPts[dstOff+1] = PI/2 - 2*atan(pow(1/ρ, 1/n));
         }
-    }
-
-    /**
-     * Compares the given object with this transform for equivalence.
-     *
-     * @return {@code true} if the given object is equivalent to this map projection.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            return Numerics.epsilonEqual(n, ((LambertConformal) object).n, mode);
-        }
-        return false;
     }
 }
