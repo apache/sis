@@ -78,15 +78,32 @@ public final class Constants extends Static {
     public static final byte CRS84 = 84;
 
     /**
+     * The NetCDF parameter name for the Earth radius.
+     */
+    public static final String EARTH_RADIUS = "earth_radius";
+
+    /**
      * Name of the {@value} projection parameter, which is handled specially during WKT formatting.
      */
     public static final String SEMI_MAJOR = "semi_major",
                                SEMI_MINOR = "semi_minor";
 
     /**
+     * The NetCDF parameter name for inverse flattening, and whether that parameter is definitive.
+     * The later is specific to SIS.
+     */
+    public static final String INVERSE_FLATTENING = "inverse_flattening",
+                               IS_IVF_DEFINITIVE  = "is_ivf_definitive";
+
+    /**
      * The OGC parameter name for the central meridian.
      */
     public static final String CENTRAL_MERIDIAN = "central_meridian";
+
+    /**
+     * The NetCDF parameter name for the standard parallels.
+     */
+    public static final String STANDARD_PARALLEL = "standard_parallel";
 
     /**
      * The OGC parameter name for the standard parallels.
@@ -125,6 +142,7 @@ public final class Constants extends Static {
      */
     public static final String FALSE_EASTING  = "false_easting",
                                FALSE_NORTHING = "false_northing";
+
     /**
      * Name of the {@value} matrix parameters.
      */

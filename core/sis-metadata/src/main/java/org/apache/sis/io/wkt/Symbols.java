@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
@@ -80,6 +81,16 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1730166945430878916L;
+
+    /**
+     * Set to {@code true} if parsing and formatting of number in scientific notation is allowed.
+     * The way to achieve that is currently a hack, because {@link NumberFormat} has no API for
+     * managing that as of JDK 1.8.
+     *
+     * @todo See if a future version of JDK allows us to get ride of this ugly hack.
+     */
+    @Workaround(library = "JDK", version = "1.8")
+    static final boolean SCIENTIFIC_NOTATION = true;
 
     /**
      * The prefix character for the value of a WKT fragment.

@@ -530,6 +530,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      *
      * @since 0.4
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Envelope[] toSimpleEnvelopes() {
         long isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
         CoordinateReferenceSystem crs = null;

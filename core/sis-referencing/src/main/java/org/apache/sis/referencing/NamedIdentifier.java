@@ -28,6 +28,7 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.resources.Errors;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -213,11 +214,20 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private static String toString(final CharSequence code) {
         ArgumentChecks.ensureNonNull("code", code);
+        final String c;
         if (code instanceof InternationalString) {
-            return ((InternationalString) code).toString(Locale.ROOT);
+            c = ((InternationalString) code).toString(Locale.ROOT);
         } else {
-            return code.toString();
+            c = code.toString();
         }
+        if (c != null) {
+            return c;
+        }
+        /*
+         * May happen if the user gave us an instance of 'org.apache.sis.internal.jaxb.gmx.Anchor' class
+         * (maybe he got the instance indirectly) and the construction of that instance is not completed.
+         */
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_2, "code", code.getClass()));
     }
 
     /**

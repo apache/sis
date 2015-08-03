@@ -32,6 +32,7 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
@@ -107,7 +108,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
                  * without invoking super.getIdentifiers(), in which case their identifiers will not be copied.
                  * For safety, we will do this optimization only if the implementation is an Apache SIS one.
                  */
-                if (object.getClass().getName().startsWith("org.apache.sis.")) {
+                if (Utilities.isSIS(object.getClass())) {
                     return;
                 }
             }
