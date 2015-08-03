@@ -428,6 +428,35 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 i = ((AbstractMathTransform) step).beforeFormat(transforms, i, false);
             }
         }
+        /*
+         * Merge consecutive affine transforms. The transforms list should never contain consecutive instances
+         * of LinearTransform because the ConcatenatedTransform.create(…) method already merged them  (this is
+         * verified by assertions in MathTransforms). However the above loop may have created synthetic affine
+         * transforms for WKT formatting purpose. Those synthetic affine transforms are actually represented by
+         * Matrix objects (rather than full MathTransform objects), and two matrices may have been generated
+         * consecutively.
+         */
+        Matrix after = null;
+        for (int i=transforms.size(); --i >= 0;) {
+            final Object step = transforms.get(i);
+            if (step instanceof Matrix) {
+                if (after != null) {
+                    final Matrix merged = Matrices.multiply(after, (Matrix) step);
+                    if (merged.isIdentity()) {
+                        transforms.subList(i, i+2).clear();
+                        after = null;
+                    } else {
+                        transforms.set(i, MathTransforms.linear(merged));
+                        transforms.remove(i+1);
+                        after = merged;
+                    }
+                } else {
+                    after = (Matrix) step;
+                }
+            } else {
+                after = null;
+            }
+        }
         return transforms;
     }
 

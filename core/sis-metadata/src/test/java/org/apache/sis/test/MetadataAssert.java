@@ -30,7 +30,7 @@ import org.apache.sis.io.wkt.Convention;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public strictfp class MetadataAssert extends Assert {
@@ -107,6 +107,33 @@ public strictfp class MetadataAssert extends Assert {
             }
             assertMultilinesEquals((object instanceof IdentifiedObject) ?
                     ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
+        }
+    }
+
+    /**
+     * Asserts that the WKT of the given object according the given convention is equal to the given regular expression.
+     * This method is like {@link #assertWktEquals(String, Object)}, but the use of regular expression allows some
+     * tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
+     *
+     * @param convention The WKT convention to use.
+     * @param expected   The expected regular expression, or {@code null} if {@code object} is expected to be null.
+     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     *
+     * @since 0.6
+     */
+    public static void assertWktEqualsRegex(final Convention convention, final String expected, final Object object) {
+        if (expected == null) {
+            assertNull(object);
+        } else {
+            assertNotNull(object);
+            final String wkt;
+            synchronized (WKT_FORMAT) {
+                WKT_FORMAT.setConvention(convention);
+                wkt = WKT_FORMAT.format(object);
+            }
+            if (!wkt.matches(expected)) {
+                fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
+            }
         }
     }
 }

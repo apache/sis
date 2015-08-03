@@ -16,15 +16,13 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.io.Serializable;
-import org.opengis.parameter.ParameterValue;
+import java.lang.reflect.Modifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -33,22 +31,22 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -132,14 +130,19 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
-     * The current value take the system-wide angular tolerance value (equivalent to
+     * The current value takes the system-wide angular tolerance value (equivalent to
      * about 1 cm on Earth) converted to radians.
      *
      * <p>Some formulas use this tolerance value for testing sines or cosines of an angle.
      * In the sine case, this is justified because sin(θ) ≅ θ when θ is small.
      * Similar reasoning applies to cosine with cos(θ) ≅ θ + π/2 when θ is small.</p>
+     *
+     * <p>Some formulas may use this tolerance value as a <em>linear</em> tolerance on the unit sphere.
+     * This is okay because the arc length for an angular tolerance θ is r⋅θ, but in this class r=1.</p>
      */
     static final double ANGULAR_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180);
+    // Note: an alternative way to compute this value could be Formulas.LINEAR_TOLERANCE / AUTHALIC_RADIUS.
+    // But the later is only 0.07% lower than the current value.
 
     /**
      * Desired accuracy for the result of iterative computations, in radians.
@@ -149,7 +152,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * So if the linear tolerance is 1 cm, then the accuracy that we will seek for is 0.25 cm (about
      * 4E-10 radians). The 0.25 factor is a safety margin for meeting the 1 cm accuracy.</p>
      */
-    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25;
+    static final double ITERATION_TOLERANCE = ANGULAR_TOLERANCE * 0.25;
 
     /**
      * Maximum number of iterations for iterative computations.
@@ -158,6 +161,17 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in case someone uses SIS for some planet with higher excentricity.
      */
     static final int MAXIMUM_ITERATIONS = 15;
+
+    /**
+     * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
+     * containing at least a parameter for the {@link #excentricity} value, and optionally other internal parameter
+     * added by some subclasses.
+     *
+     * <p>Entries are created only when first needed. Those descriptors are usually never created since they are
+     * used only by {@link #getParameterDescriptors()}, which is itself invoked mostly for debugging purpose.</p>
+     */
+    @Debug
+    private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<Class<?>,ParameterDescriptorGroup>();
 
     /**
      * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
@@ -383,60 +397,21 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
-            final Map<ParameterRole, ? extends ParameterDescriptor<Double>> roles)
+            final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
     {
-        ensureNonNull("method",     method);
-        ensureNonNull("parameters", parameters);
-        ensureNonNull("roles",      roles);
-        context = new ContextualParameters(method);
-        /*
-         * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
-         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
-         * in this constructor signature.
-         */
-        ParameterDescriptor<Double> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
-        ParameterDescriptor<Double> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
-        if (semiMajor == null) semiMajor = MapProjection.SEMI_MAJOR;
-        if (semiMinor == null) semiMinor = MapProjection.SEMI_MINOR;
+        this(new Initializer(method, parameters, roles, (byte) 0));
+    }
 
-              double a  = getAndStore(parameters, semiMajor);
-        final double b  = getAndStore(parameters, semiMinor);
-        final double λ0 = getAndStore(parameters, roles.get(ParameterRole.CENTRAL_MERIDIAN));
-        final double fe = getAndStore(parameters, roles.get(ParameterRole.FALSE_EASTING))
-                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_WESTING));
-        final double fn = getAndStore(parameters, roles.get(ParameterRole.FALSE_NORTHING))
-                        - getAndStore(parameters, roles.get(ParameterRole.FALSE_SOUTHING));
-        final double rs = b / a;
-        excentricitySquared = 1 - (rs * rs);
-        excentricity = sqrt(excentricitySquared);
-        if (excentricitySquared != 0) {
-            final ParameterDescriptor<Double> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-            if (radius != null) {
-                /*
-                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-                 * for Rc given in section 1.2, table 3.
-                 *
-                 * Table 3 gives:
-                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-                 *
-                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-                 */
-                final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                a = b / (1 - excentricitySquared * (sinφ*sinφ));
-            }
-        }
-        context.normalizeGeographicInputs(λ0);
-        final DoubleDouble k = new DoubleDouble(a);
-        final ParameterDescriptor<Double> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
-        if (scaleFactor != null) {
-            k.multiply(getAndStore(parameters, scaleFactor));
-        }
-        final MatrixSIS denormalize = context.getMatrix(false);
-        denormalize.convertAfter(0, k, new DoubleDouble(fe));
-        denormalize.convertAfter(1, k, new DoubleDouble(fn));
-        inverse = new Inverse();
+    /**
+     * Creates a new normalized projection from the parameters computed by the given initializer.
+     *
+     * @param initializer The initializer for computing map projection internal parameters.
+     */
+    NormalizedProjection(final Initializer initializer) {
+        context             = initializer.context;
+        excentricitySquared = initializer.excentricitySquared.value;
+        excentricity        = sqrt(excentricitySquared);  // DoubleDouble.sqrt() does not make any difference here.
+        inverse             = new Inverse();
     }
 
     /**
@@ -477,50 +452,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             }
         }
         return method.getName().getCode().replace('_',' ').matches(regex);
-    }
-
-    /**
-     * Gets a parameter value identified by the given descriptor and stores it in the {@link #context}.
-     * A "contextual parameter" is a parameter that apply to the normalize → {@code this} → denormalize
-     * chain as a whole. It does not really apply to this {@code NormalizedProjection} instance when taken alone.
-     *
-     * <p>This method performs the following actions:</p>
-     * <ul>
-     *   <li>Convert the value to the units specified by the descriptor.</li>
-     *   <li>Ensure that the value is contained in the range specified by the descriptor.</li>
-     *   <li>Store the value only if different than the default value.</li>
-     * </ul>
-     *
-     * This method shall be invoked at construction time only.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor) {
-        if (descriptor == null) {
-            return 0;   // Default value for all parameters except scale factor.
-        }
-        final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        final Double defaultValue = descriptor.getDefaultValue();
-        if (defaultValue == null || !defaultValue.equals(value)) {
-            MapProjection.validate(descriptor, value);
-            context.getOrCreate(descriptor).setValue(value);
-        }
-        return value;
-    }
-
-    /**
-     * Same as {@link #getAndStore(Parameters, ParameterDescriptor)}, but returns the given default value
-     * if the parameter is not specified.  This method shall be used only for parameters having a default
-     * value more complex than what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
-     */
-    final double getAndStore(final Parameters parameters, final ParameterDescriptor<Double> descriptor,
-            final double defaultValue)
-    {
-        final Double value = parameters.getValue(descriptor);   // Apply a unit conversion if needed.
-        if (value == null) {
-            return defaultValue;
-        }
-        MapProjection.validate(descriptor, value);
-        context.parameter(descriptor.getName().getCode()).setValue(value);
-        return value;
     }
 
     /**
@@ -566,18 +497,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns a copy of the parameter values for this projection.
-     * This base class supplies a value only for the following parameters:
-     *
-     * <ul>
-     *   <li>Semi-major axis length, which is set to 1.</li>
-     *   <li>Semi-minor axis length, which is set to
-     *       <code>sqrt(1 - {@linkplain #excentricitySquared ℯ²})</code>.</li>
-     * </ul>
-     *
-     * Subclasses must complete if needed. Many projections will not need to complete,
-     * because most parameters like the scale factor or the false easting/northing can
-     * be handled by the (de)normalization affine transforms.
+     * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
+     * The returned group contained at least the {@link #excentricity} parameter value.
+     * Some subclasses add more non-linear parameters, but most of them do not because many parameters
+     * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
+     * {@linkplain ContextualParameters#getMatrix(boolean) (de)normalization affine transforms} instead.
      *
      * <div class="note"><b>Note:</b>
      * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -585,59 +509,85 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
      *
-     * @return A copy of the parameter values for this normalized projection.
+     * @return A copy of the internal parameter values for this normalized projection.
      */
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        return getParameterValues(new String[] {
-            Constants.SEMI_MAJOR,
-            Constants.SEMI_MINOR
-        });
+        final ParameterValueGroup group = getParameterDescriptors().createValue();
+        group.parameter("excentricity").setValue(excentricity);
+        final String[] names  = getInternalParameterNames();
+        final double[] values = getInternalParameterValues();
+        for (int i=0; i<names.length; i++) {
+            group.parameter(names[i]).setValue(values[i]);
+        }
+        return group;
     }
 
     /**
-     * Filters the parameter descriptor in order to retain only the parameters of the given names, and
-     * sets the semi-major and semi-minor axis lengths. The specified parameters list should contains at
-     * least the {@code "semi_major"} and {@code "semi_minor"} strings.
+     * Returns a description of the non-linear internal parameters of this {@code NormalizedProjection}.
+     * The returned group contained at least a descriptor for the {@link #excentricity} parameter.
+     * Subclasses may add more parameters.
      *
-     * <p>This filtered descriptor is used for displaying the parameter values of this non-linear kernel only,
-     * not for displaying the {@linkplain #getContextualParameters() contextual parameters}. Since displaying
-     * the kernel parameter values is for debugging purpose only, it is not worth to cache this descriptor.</p>
+     * <p>This method is for inspecting the parameter values of this non-linear kernel only,
+     * not for inspecting the {@linkplain #getContextualParameters() contextual parameters}.
+     * Inspecting the kernel parameter values is usually for debugging purpose only.</p>
+     *
+     * @return A description of the internal parameters.
      */
     @Debug
-    final ParameterValueGroup getParameterValues(final String[] nonLinearParameters) {
-        ParameterDescriptorGroup descriptor = getParameterDescriptors();
-        final List<GeneralParameterDescriptor> filtered =
-                new ArrayList<GeneralParameterDescriptor>(nonLinearParameters.length);
-        for (final GeneralParameterDescriptor p : descriptor.descriptors()) {
-            for (final String name : nonLinearParameters) {
-                if (IdentifiedObjects.isHeuristicMatchForName(p, name)) {
-                    filtered.add(p);
-                    break;
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        Class<?> type = getClass();
+        while (!Modifier.isPublic(type.getModifiers())) {
+            type = type.getSuperclass();
+        }
+        ParameterDescriptorGroup group;
+        synchronized (DESCRIPTORS) {
+            group = DESCRIPTORS.get(type);
+            if (group == null) {
+                final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
+                if (Utilities.isSIS(type)) {
+                    builder.setCodeSpace(Citations.SIS, "SIS");
                 }
+                final String[] names = getInternalParameterNames();
+                final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];
+                for (int i=0; i<parameters.length; i++) {
+                    final ParameterDescriptor<?> p;
+                    if (i == 0) {
+                        final ParameterDescriptorGroup existing = CollectionsExt.first(DESCRIPTORS.values());
+                        if (existing != null) {
+                            p = (ParameterDescriptor<?>) existing.descriptor("excentricity");
+                        } else {
+                            p = builder.addName(Citations.SIS, "excentricity").createBounded(0, 1, Double.NaN, null);
+                        }
+                    } else {
+                        p = builder.addName(names[i-1]).create(Double.class, null);
+                    }
+                    parameters[i] = p;
+                }
+                group = builder.addName(CharSequences.camelCaseToSentence(type.getSimpleName())).createGroup(1, 1, parameters);
+                DESCRIPTORS.put(type, group);
             }
         }
-        descriptor = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(descriptor),
-                1, 1, filtered.toArray(new GeneralParameterDescriptor[filtered.size()]));
-        /*
-         * Parameter values for the ellipsoid semi-major and semi-minor axis lengths are 1 and <= 1
-         * respectively because the denormalization (e.g. multiplication by a scale factor) will be
-         * applied by an affine transform after this NormalizedProjection.
-         */
-        final ParameterValueGroup values = descriptor.createValue();
-        for (final GeneralParameterDescriptor desc : filtered) {
-            final String name = desc.getName().getCode();
-            final ParameterValue<?> p = values.parameter(name);
-            if (name.equals(Constants.SEMI_MAJOR)) {
-                p.setValue(1.0);
-            } else if (name.equals(Constants.SEMI_MINOR)) {
-                p.setValue(sqrt(1 - excentricitySquared));
-            } else {
-                p.setValue(context.parameter(name).getValue());
-            }
-        }
-        return values;
+        return group;
+    }
+
+    /**
+     * Returns the names of any additional internal parameters (other than {@link #excentricity})
+     * that this projection has. The length of this array must be the same than the length of the
+     * {@link #getInternalParameterValues()} array, if the later is non-null.
+     */
+    String[] getInternalParameterNames() {
+        return CharSequences.EMPTY_ARRAY;
+    }
+
+    /**
+     * Returns the values of any additional internal parameters (other than {@link #excentricity}) that
+     * this projection has. Those values are also compared by {@link #equals(Object, ComparisonMode)}.
+     */
+    double[] getInternalParameterValues() {
+        return null;
     }
 
     /**
@@ -763,14 +713,20 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Computes a hash code value for this map projection.
-     * The default implementation computes a value from the parameters given at construction time.
+     * Computes a hash code value for this {@code NormalizedProjection}.
      *
      * @return The hash code value.
      */
     @Override
     protected int computeHashCode() {
-        return context.hashCode() + 31 * super.computeHashCode();
+        long c = Double.doubleToLongBits(excentricity);
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
+            for (int i=0; i<parameters.length; i++) {
+                c = c*31 + Double.doubleToLongBits(parameters[i]);
+            }
+        }
+        return super.computeHashCode() ^ Numerics.hashCode(c);
     }
 
     /**
@@ -795,70 +751,82 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @return {@code true} if the given object is equivalent to this map projection.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }
-        if (super.equals(object, mode)) {
-            final double e1, e2;
-            final NormalizedProjection that = (NormalizedProjection) object;
-            if (mode.ordinal() < ComparisonMode.IGNORE_METADATA.ordinal()) {
+        if (!super.equals(object, mode)) {
+            return false;
+        }
+        final NormalizedProjection that = (NormalizedProjection) object;
+        switch (mode) {
+            case STRICT:
+            case BY_CONTRACT: {
                 if (!Objects.equals(context, that.context)) {
                     return false;
                 }
-                e1 = this.excentricitySquared;
-                e2 = that.excentricitySquared;
-            } else {
-                e1 = this.excentricity;
-                e2 = that.excentricity;
+                // Fall through for comparing the excentricity.
             }
-            /*
-             * There is no need to compare both 'excentricity' and 'excentricitySquared' since
-             * the former is computed from the later. In strict comparison mode, we are better
-             * to compare the 'excentricitySquared' since it is the original value from which
-             * the other value is derived. However in approximative comparison mode, we need
-             * to use the 'excentricity', otherwise we would need to take the square of the
-             * tolerance factor before comparing 'excentricitySquared'.
-             */
-            return Numerics.epsilonEqual(e1, e2, mode);
+            case IGNORE_METADATA: {
+                /*
+                 * There is no need to compare both 'excentricity' and 'excentricitySquared' since the former
+                 * is computed from the later. We are better to compare 'excentricitySquared' since it is the
+                 * original value from which the other value is derived.
+                 */
+                if (!Numerics.equals(excentricitySquared, that.excentricitySquared)) {
+                    return false;
+                }
+                break;
+            }
+            default: {
+                /*
+                 * We want to compare the excentricity with a tolerance threshold corresponding approximatively
+                 * to an error of 1 cm on Earth. The excentricity for an ellipsoid of semi-major axis a=1 is:
+                 *
+                 *     ℯ² = 1 - b²
+                 *
+                 * If we add a slight ε error to the semi-minor axis length (where ε will be our linear tolerance
+                 * threshold), we get:
+                 *
+                 *     (ℯ + ε′)²    =    1 - (b + ε)²    ≈    1 - (b² + 2⋅b⋅ε)    assuming ε ≪ b
+                 *
+                 * Replacing  1 - b²  by  ℯ²:
+                 *
+                 *     ℯ² + 2⋅ℯ⋅ε′  ≈   ℯ² - 2⋅b⋅ε
+                 *
+                 * After a few rearrangements:
+                 *
+                 *     ε′  ≈   ε⋅(ℯ - 1/ℯ)
+                 *
+                 * Note that  ε′  is negative for  ℯ < 1  so we actually need to compute  ε⋅(1/ℯ - ℯ)  instead.
+                 * The result is less than 2E-8 for the excentricity of the Earth.
+                 */
+                final double e = max(excentricity, that.excentricity);
+                if (!Numerics.epsilonEqual(excentricity, that.excentricity, ANGULAR_TOLERANCE * (1/e - e))) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            "excentricity", excentricity, that.excentricity);
+                    return false;
+                }
+                break;
+            }
         }
-        return false;
-    }
-
-
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    ////////                                                                          ////////
-    ////////                       FORMULAS FROM EPSG or SNYDER                       ////////
-    ////////                                                                          ////////
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Computes the reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * That radius of curvature is:
-     *
-     * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
-     *
-     * This method returns 1/ν.
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This is related to functions (14-15) from Snyder (used for computation of scale factors
-     * at the true scale latitude) as below:
-     *
-     * <blockquote>m = cosφ / rν</blockquote>
-     *
-     * Special cases:
-     * <ul>
-     *   <li>If φ is 0°, then <var>m</var> is 1.</li>
-     *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
-     *       (otherwise we get {@link Double#NaN}).</li>
-     * </ul>
-     *
-     * @param  sinφ The sine of the φ latitude in radians.
-     * @return Reciprocal of the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     */
-    final double rν(final double sinφ) {
-        return sqrt(1 - excentricitySquared * (sinφ*sinφ));
+        final double[] parameters = getInternalParameterValues();
+        if (parameters != null) {
+            /*
+             * super.equals(…) guarantees that the two objects are of the same class.
+             * So in SIS implementation, this implies that the arrays have the same length.
+             */
+            final double[] others = that.getInternalParameterValues();
+            assert others.length == parameters.length;
+            for (int i=0; i<parameters.length; i++) {
+                if (!Numerics.epsilonEqual(parameters[i], others[i], mode)) {
+                    assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
+                            getInternalParameterNames()[i], parameters[i], others[i]);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

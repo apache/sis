@@ -1100,17 +1100,32 @@ public class Formatter implements Localized {
     public void append(final double number) {
         appendSeparator();
         setColor(ElementKind.NUMBER);
+        final double abs = Math.abs(number);
         /*
-         * The 2 below is for using two less fraction digits than the expected number accuracy.
-         * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
-         * mind that the number value is not necessarily the original one (we may have applied
-         * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
-         * maximum of 8 fraction digits, which is more than enough.
+         * Use scientific notation if the number magnitude is too high or too low. The threshold values used here
+         * may be different than the threshold values used in the standard 'StringBuilder.append(double)' method.
+         * In particular, we use a higher threshold for large numbers because ellipsoid axis lengths are above the
+         * JDK threshold when the axis length is given in feet (about 2.1E+7) while we still want to format them
+         * as usual numbers.
+         *
+         * Note that we perform this special formatting only if the 'NumberFormat' is not localized
+         * (which is the usual case).
          */
-        numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
-        numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
-        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
-        numberFormat.format(number, buffer, dummy);
+        if (Symbols.SCIENTIFIC_NOTATION && (abs < 1E-3 || abs >= 1E+9) && symbols.getLocale() == Locale.ROOT) {
+            buffer.append(number);
+        } else {
+            /*
+             * The 2 below is for using two less fraction digits than the expected number accuracy.
+             * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
+             * mind that the number value is not necessarily the original one (we may have applied
+             * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
+             * maximum of 8 fraction digits, which is more than enough.
+             */
+            numberFormat.setMaximumFractionDigits(DecimalFunctions.fractionDigitsForValue(number, 2));
+            numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
+            numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+            numberFormat.format(number, buffer, dummy);
+        }
         resetColor();
     }
 

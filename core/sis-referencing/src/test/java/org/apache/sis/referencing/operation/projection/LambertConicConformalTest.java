@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import java.math.BigDecimal;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -28,6 +29,7 @@ import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -37,11 +39,15 @@ import static java.lang.StrictMath.*;
 import static java.lang.Double.*;
 import static org.junit.Assert.*;
 
+// Branch-specific imports
+import static org.junit.Assume.assumeTrue;
+import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
+
 
 /**
- * Tests the {@link LambertConformal} class. We test using various values of the latitude of origin.
+ * Tests the {@link LambertConicConformal} class. We test using various values of the latitude of origin.
  * We do not test with various values of standard parallels, because it is just an other way to set
- * the value of the <var>n</var> field in {@code LambertConformal}. As long as we make this value varying,
+ * the value of the <var>n</var> field in {@code LambertConicConformal}. As long as we make this value varying,
  * the latitude of origin is the simplest approach.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,9 +57,25 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class LambertConformalTest extends MapProjectionTestCase {
+public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
     /**
-     * Creates a new instance of {@link LambertConformal}. See the class javadoc for an explanation
+     * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
+     *
+     * @see #testLambertConicConformalBelgium()
+     */
+    @Test
+    public void verifyBelgeConstant() {
+        final DoubleDouble BELGE_A = (DoubleDouble) LambertConicConformal.belgeA();
+        BigDecimal a = new BigDecimal(BELGE_A.value);
+        a = a.add     (new BigDecimal(BELGE_A.error));
+        a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));  // Conversion from radians to degrees.
+        a = a.multiply(new BigDecimal(60 * 60));                                // Conversion from degrees to seconds.
+        a = a.add     (new BigDecimal("29.2985"));                              // The standard value.
+        assertTrue(Math.abs(a.doubleValue()) < 1E-31);
+    }
+
+    /**
+     * Creates a new instance of {@link LambertConicConformal}. See the class javadoc for an explanation
      * about why we ask only for the latitude of origin and not the standard parallels.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
@@ -63,9 +85,9 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         final LambertConformal1SP method = new LambertConformal1SP();
         final Parameters parameters = parameters(method, ellipse);
         parameters.getOrCreate(LambertConformal1SP.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
-        transform = new LambertConformal(method, parameters);
+        transform = new LambertConicConformal(method, parameters);
         if (!ellipse) {
-            transform = new LambertConformal.Spherical((LambertConformal) transform);
+            transform = new LambertConicConformal.Spherical((LambertConicConformal) transform);
         }
         tolerance = NORMALIZED_TOLERANCE;
         validate();
@@ -73,16 +95,22 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Lambert Conformal projection, we expect
-     * the standard parallels or the latitude of origin in addition to the semi-major and semi-minor axis length.
+     * the internal {@code n} parameter in addition to the excentricity.
+     *
+     * <div class="section">Note on accuracy</div>
+     * The value of the excentricity parameter should be fully accurate because it is calculated using only the
+     * {@link Math#sqrt(double)} function (ignoring basic algebraic operations) which, according javadoc, must
+     * give the result closest to the true mathematical result. But the functions involved in the calculation of
+     * <var>n</var> do not have such strong guarantees. So we use a regular expression in this test for ignoring
+     * the 2 last digits of <var>n</var>.
      */
     @Test
     public void testNormalizedWKT() {
         createNormalizedProjection(true, 40);
-        assertWktEquals(
-                "PARAM_MT[“Lambert_Conformal_Conic_1SP”,\n" +
-                "  PARAMETER[“semi_major”, 1.0],\n" +
-                "  PARAMETER[“semi_minor”, 0.9966471893352525],\n" +
-                "  PARAMETER[“latitude_of_origin”, 40.0]]");
+        assertWktEqualsRegex("\\Q" +
+                "PARAM_MT[“Lambert conic conformal”,\n" +
+                "  PARAMETER[“excentricity”, 0.0818191908426215],\n" +
+                "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\]\\]");  // 0.6427876096865393 in the original test.
     }
 
     /**
@@ -114,7 +142,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
-        createNormalizedProjection(((LambertConformal) transform).excentricity != 0, -40);
+        createNormalizedProjection(((LambertConicConformal) transform).excentricity != 0, -40);
         validate();
 
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
@@ -193,7 +221,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal2SP")
+    @DependsOnMethod({"testLambertConicConformal2SP", "verifyBelgeConstant"})
     public void testLambertConicConformalBelgium() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformalBelgium()).testLambertConicConformalBelgium();
     }
@@ -210,7 +238,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testLambertConicConformal2SP")
     public void testLambertConicConformalMichigan() throws FactoryException, TransformException {
-        new LambertConformalMichigan();  // Test creation only, as GeoAPI 3.0 did not yet had the test method.
+        assumeTrue(PENDING_NEXT_GEOAPI_RELEASE);   // Test not available in GeoAPI 3.0
     }
 
     /**
@@ -288,7 +316,7 @@ public final strictfp class LambertConformalTest extends MapProjectionTestCase {
         testDerivative();
 
         // Make sure that the above methods did not overwrote the 'transform' field.
-        assertEquals("transform.class", LambertConformal.Spherical.class, transform.getClass());
+        assertEquals("transform.class", LambertConicConformal.Spherical.class, transform.getClass());
     }
 
     /**

@@ -36,7 +36,6 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.internal.util.Numerics.epsilonEqual;
 
 
 /**
@@ -56,27 +55,6 @@ public final class ReferencingUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private ReferencingUtilities() {
-    }
-
-    /**
-     * Returns {@code true} if the Greenwich longitude of the {@code actual} prime meridian is equals to the
-     * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in unit of the
-     * expected prime meridian.
-     *
-     * <p>A {@code null} argument is interpreted as "unknown prime meridian". Consequently this method
-     * unconditionally returns {@code false} if one or both arguments is {@code null}.</p>
-     *
-     * @param expected The expected prime meridian, or {@code null}.
-     * @param actual The actual prime meridian, or {@code null}.
-     * @return {@code true} if both prime meridian have the same Greenwich longitude,
-     *         in unit of the expected prime meridian.
-     */
-    public static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
-        if (expected == null || actual == null) {
-            return false; // See method javadoc.
-        }
-        return (expected == actual) || epsilonEqual(expected.getGreenwichLongitude(),
-                getGreenwichLongitude(actual, expected.getAngularUnit()));
     }
 
     /**

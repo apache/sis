@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -565,7 +566,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     @Override
     public int hashCode() {
-        return (normalize.hashCode() + 31*denormalize.hashCode()) ^ (int) serialVersionUID;
+        return (normalize.hashCode() + 31*denormalize.hashCode()) ^ Arrays.hashCode(values) ^ (int) serialVersionUID;
     }
 
     /**
@@ -578,9 +579,10 @@ public class ContextualParameters extends Parameters implements Serializable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ContextualParameters that = (ContextualParameters) object;
-            return Objects.equals(descriptor,  that.descriptor) &&
-                   Objects.equals(normalize,   that.normalize)  &&
-                   Objects.equals(denormalize, that.denormalize);
+            return Objects.equals(descriptor,  that.descriptor)  &&
+                   Objects.equals(normalize,   that.normalize)   &&
+                   Objects.equals(denormalize, that.denormalize) &&
+                    Arrays.equals(values,      that.values);
         }
         return false;
     }
@@ -705,11 +707,31 @@ public class ContextualParameters extends Parameters implements Serializable {
          * At this point "userDefined" is the affine transform to show to user instead of the
          * "before" affine transform. Replaces "before" by "userDefined" locally (but not yet
          * in the list), or set it to null (meaning that it will be removed from the list) if
-         * it is identity, which happen quite often. Note that in the former (non-null) case,
-         * the coefficients are often either 0 or 1 since the transform is often for changing
-         * axis order, so it is worth to attempt rounding coefficents.
+         * it is identity, which happen quite often.
+         *
+         * Note on rounding error: the coefficients are often either 0 or 1 since the transform
+         * is often for changing axis order. Thanks to double-double arithmetic in SIS matrices,
+         * the non-zero values are usually accurate. But the values that should be zero are much
+         * harder to get right. Sometime we see small values (around 1E-12) in the last column of
+         * the 'before' matrix below. Since this column contains translation terms, those numbers
+         * are in the unit of measurement of input values of the MathTransform after the matrix.
+         *
+         *   - For forward map projections, those values are conceptually in decimal degrees
+         *     (in fact the values are converted to radians but not by this 'before' matrix).
+         *
+         *   - For inverse map projections, those values are conceptually in metres (in fact
+         *     converted to distances on a unitary ellipsoid but not by this 'before' matrix).
+         *
+         *   - Geographic/Geocentric transformations behave like map projections in regard to units.
+         *     Molodensky transformations conceptually use always decimal degrees. There is not much
+         *     other cases since this mechanism is internal to SIS (not in public API).
+         *
+         * Consequently we set the tolerance threshold to ANGULAR_TOLERANCE. We do not bother (at least
+         * for now) to identify the cases where we could use LINEAR_TOLERANCE because just checking the
+         * 'inverse' flag is not sufficient (e.g. the Molodensky case). Since the angular tolerance is
+         * smaller than the linear one, unconditional usage of ANGULAR_TOLERANCE is more conservative.
          */
-        before = userDefined.isIdentity() ? null : userDefined;
+        before = Matrices.isIdentity(userDefined, Formulas.ANGULAR_TOLERANCE) ? null : userDefined;
         /*
          * Compute the "after" affine transform in a way similar than the "before" affine.
          * Note that if this operation fails, we will cancel everything we would have done
@@ -725,7 +747,23 @@ public class ContextualParameters extends Parameters implements Serializable {
         if (hasAfter) {
             userDefined = Matrices.multiply(after, userDefined);
         }
-        after = userDefined.isIdentity() ? null : userDefined;
+        /*
+         * Note on rounding error: same discussion than the "note on rounding error" of the 'before' matrix,
+         * with the following differences:
+         *
+         *   - For forward map projections, unit of measurements of translation terms are conceptually
+         *     metres (instead than degrees) multiplied by the scale factors in the 'after' matrix.
+         *
+         *   - For inverse map projections, unit of measurements of translation terms are conceptually
+         *     degrees (instead than metres) multiplied by the scale factors in the 'after' matrix.
+         *
+         *   - And so on for all cases: swap the units of the forward and inverse cases, then multiply
+         *     by the scale factor. Note that the multiplication step does not exist in the 'before' case.
+         *
+         * Since we are seeking for the identity matrix, the scale factor is 1. We do not bother to distinguish
+         * the ANGULAR_TOLERANCE and LINEAR_TOLERANCE cases for the same reasons than for the 'before' matrix.
+         */
+        after = Matrices.isIdentity(userDefined, Formulas.ANGULAR_TOLERANCE) ? null : userDefined;
         /*
          * At this point we have computed all the affine transforms to show to the user.
          * We can replace the elements in the list. The transform referenced by transforms.get(index)

@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Arrays;
 import java.util.List;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.Formulas;
@@ -167,6 +168,15 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
         reference.inverseTransform(point, 0, point, 0);
         assertEquals("φ", point[0], dstPts[dstOff  ], INVERSE_TOLERANCE);
         assertEquals("λ", point[1], dstPts[dstOff+1], INVERSE_TOLERANCE);
+    }
+
+    /**
+     * Delegates to the {@link #tested} implementation.
+     */
+    @Debug
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return tested.getParameterDescriptors();
     }
 
     /**
