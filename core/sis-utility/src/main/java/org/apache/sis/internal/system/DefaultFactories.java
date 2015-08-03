@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;
+import org.apache.sis.internal.util.Utilities;
 
 
 /**
@@ -86,8 +87,7 @@ public final class DefaultFactories extends SystemListener {
         if (factory == null && !FACTORIES.containsKey(type)) {
             T fallback = null;
             for (final T candidate : ServiceLoader.load(type)) {
-                final Class<?> ct = candidate.getClass();
-                if (ct.getName().startsWith("org.apache.sis.")) {
+                if (Utilities.isSIS(candidate.getClass())) {
                     if (factory != null) {
                         throw new ServiceConfigurationError("Found two implementations of " + type);
                     }

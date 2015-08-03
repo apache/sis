@@ -322,8 +322,9 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *         or {@code null} if it does not apply or if there is no restriction.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<T> getValidValues() {
-        return validValues;
+        return validValues;   // Null or unmodifiable
     }
 
     /**

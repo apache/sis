@@ -108,7 +108,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode) && (object instanceof ReferenceSystem)) {
             final ReferenceSystem that = (ReferenceSystem) object;
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
                 return Objects.equals(getName(), that.getName());
             }

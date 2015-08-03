@@ -36,7 +36,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -78,16 +77,6 @@ abstract class AbstractParser implements Parser {
      * thrown if no element have a name matching one of the requested names.
      */
     static final int MANDATORY = 2;
-
-    /**
-     * Set to {@code true} if parsing of number in scientific notation is allowed.
-     * The way to achieve that is currently a hack, because {@link NumberFormat}
-     * has no API for managing that as of JDK 1.8.
-     *
-     * @todo See if a future version of JDK allows us to get ride of this ugly hack.
-     */
-    @Workaround(library = "JDK", version = "1.8")
-    static final boolean SCIENTIFIC_NOTATION = true;
 
     /**
      * The logger to use for reporting warnings when this parser is used through the {@link #createFromWKT(String)}.
@@ -175,7 +164,7 @@ abstract class AbstractParser implements Parser {
         this.dateFormat  = dateFormat;
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;
-        if (SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
+        if (Symbols.SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
             final DecimalFormat decimalFormat = (DecimalFormat) ((DecimalFormat) numberFormat).clone();
             exponentSymbol = decimalFormat.getDecimalFormatSymbols().getExponentSeparator();
             String pattern = decimalFormat.toPattern();

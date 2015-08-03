@@ -29,6 +29,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.Measure;
@@ -39,10 +40,10 @@ import org.apache.sis.util.ComparisonMode;
 
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.referencing.Formulas;
 
 
 /**
@@ -265,7 +266,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        if (measure != null && canSetProperty(DefaultPrimeMeridian.class,
+        if (measure != null && ReferencingUtilities.canSetProperty(DefaultPrimeMeridian.class,
                 "setGreenwichMeasure", "greenwichLongitude", greenwichLongitude != 0 || angularUnit != null))
         {
             greenwichLongitude = measure.value;
@@ -299,10 +300,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (object == this) {
             return true; // Slight optimization.
         }
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
+        if (super.equals(object, mode)) switch (mode) {
             case STRICT: {
                 final DefaultPrimeMeridian that = (DefaultPrimeMeridian) object;
                 return Numerics.equals(this.greenwichLongitude, that.greenwichLongitude) &&
@@ -314,16 +312,25 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                         Objects.equals(getAngularUnit(),        that.getAngularUnit());
             }
             default: {
-                final DefaultPrimeMeridian that = castOrCopy((PrimeMeridian) object);
-                return Numerics.epsilonEqual(this.getGreenwichLongitude(NonSI.DEGREE_ANGLE),
-                                             that.getGreenwichLongitude(NonSI.DEGREE_ANGLE), mode);
-                /*
-                 * Note: if mode==IGNORE_METADATA, we relax the unit check because EPSG uses
-                 *       sexagesimal degrees for the Greenwich meridian. Requirying the same
-                 *       unit prevent Geodetic.isWGS84(...) method to recognize EPSG's WGS84.
-                 */
+                final double v1 = getGreenwichLongitude(NonSI.DEGREE_ANGLE);
+                final double v2 = ReferencingUtilities.getGreenwichLongitude((PrimeMeridian) object, NonSI.DEGREE_ANGLE);
+                if (mode == ComparisonMode.IGNORE_METADATA) {
+                    /*
+                     * We relax the check on unit of measurement because EPSG uses sexagesimal degrees
+                     * for the Greenwich meridian.  Requirying the same unit would make more difficult
+                     * for isWGS84(…) methods to recognize EPSG's WGS84. We allow this relaxation here
+                     * because the unit of the prime meridian is usually not inherited by axes (indeed,
+                     * they are often not the same in the EPSG dataset). The same is not true for other
+                     * objects like DefaultEllipsoid.
+                     */
+                    return Numerics.equals(v1, v2);
+                } else if (Numerics.epsilonEqual(v1, v2, Formulas.ANGULAR_TOLERANCE)) {
+                    return true;
+                }
+                assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference("greenwichLongitude", v1, v2);
             }
         }
+        return false;
     }
 
     /**
