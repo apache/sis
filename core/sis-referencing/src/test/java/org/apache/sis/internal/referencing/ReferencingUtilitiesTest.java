@@ -22,7 +22,6 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -31,8 +30,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singletonMap;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
 
 
@@ -45,26 +42,6 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
-    /**
-     * Tests {@link ReferencingUtilities#isGreenwichLongitudeEquals(PrimeMeridian, PrimeMeridian)}.
-     */
-    @Test
-    public void testIsGreenwichLongitudeEquals() {
-        assertFalse(isGreenwichLongitudeEquals(null, null)); // "null" interpreted as "unknown".
-        assertFalse(isGreenwichLongitudeEquals(null, HardCodedDatum.GREENWICH));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, null));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.GREENWICH, HardCodedDatum.PARIS));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS_RGS));
-        assertFalse(isGreenwichLongitudeEquals(HardCodedDatum.PARIS_RGS, HardCodedDatum.PARIS));
-        assertTrue (isGreenwichLongitudeEquals(HardCodedDatum.PARIS, HardCodedDatum.PARIS));
-        /*
-         * Test two prime meridians using different units (Paris in grade and Paris in degrees).
-         */
-        final PrimeMeridian pd = new DefaultPrimeMeridian(singletonMap(NAME_KEY, "Paris"), 2.33722917, NonSI.DEGREE_ANGLE);
-        assertTrue(isGreenwichLongitudeEquals(HardCodedDatum.PARIS, pd));
-        assertTrue(isGreenwichLongitudeEquals(pd, HardCodedDatum.PARIS));
-    }
-
     /**
      * Tests {@link ReferencingUtilities#getGreenwichLongitude(PrimeMeridian, Unit)}.
      */

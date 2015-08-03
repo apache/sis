@@ -370,6 +370,20 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Asserts that the current {@linkplain #transform transform} produces a WKT matching the given regular expression.
+     *
+     * @param expected A regular expression for the expected WKT.
+     *
+     * @see #printInternalWKT()
+     *
+     * @since 0.6
+     */
+    protected final void assertWktEqualsRegex(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEqualsRegex(Convention.WKT1, expected, transform);
+    }
+
+    /**
      * Prints the current {@linkplain #transform transform} as normal and internal WKT.
      * This method is for debugging purpose only.
      *
@@ -377,6 +391,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      */
     @Debug
     protected final void printInternalWKT() {
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         final TableAppender table = new TableAppender(System.out);
         table.setMultiLinesCells(true);
         table.appendHorizontalSeparator();

@@ -874,13 +874,12 @@ public abstract class AbstractMathTransform extends FormattableObject
      * <p>The default implementation returns {@code true} if the following conditions are meet:</p>
      * <ul>
      *   <li>{@code object} is an instance of the same class than {@code this}. We require the
-     *        same class because there is no interface for the various kinds of transform.</li>
-     *   <li>The {@linkplain #getParameterDescriptors() parameter descriptors} are equal according
+     *       same class because there is no interface for the various kinds of transform.</li>
+     *   <li>If the hash code value has already been {@linkplain #computeHashCode() computed} for both
+     *       instances, their values are the same <i>(opportunist performance enhancement)</i>.</li>
+     *   <li>The {@linkplain #getContextualParameters() contextual parameters} are equal according
      *       the given comparison mode.</li>
      * </ul>
-     *
-     * The {@linkplain #getParameterValues() parameter values} are <strong>not</strong> compared because
-     * subclasses can typically compare those values more efficiently by accessing to their member fields.
      *
      * @param  object The object to compare with this transform.
      * @param  mode The strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
@@ -896,7 +895,7 @@ public abstract class AbstractMathTransform extends FormattableObject
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.
              */
-            if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
+            if (!mode.isApproximative()) {
                 final int tc = hashCode;
                 if (tc != 0) {
                     final int oc = that.hashCode;
@@ -906,11 +905,11 @@ public abstract class AbstractMathTransform extends FormattableObject
                 }
             }
             // See the policy documented in the LenientComparable javadoc.
-            if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+            if (mode.isIgnoringMetadata()) {
                 return true;
             }
-            return Utilities.deepEquals(this.getParameterDescriptors(),
-                                        that.getParameterDescriptors(), mode);
+            return Utilities.deepEquals(this.getContextualParameters(),
+                                        that.getContextualParameters(), mode);
         }
         return false;
     }

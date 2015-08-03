@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Map;
 import java.util.EnumMap;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -34,8 +33,10 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
+import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -53,7 +54,7 @@ import static java.lang.Math.*;
  * @see EquatorialStereographic
  * @see ObliqueStereographic
  */
-public class PolarStereographic extends ConformalProjection {  // Seen as a special case of LambertConformal.
+public class PolarStereographic extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
@@ -85,29 +86,6 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
     }
 
     /**
-     * Returns the (<var>role</var> → <var>parameter</var>) associations for a Polar Stereographic projection.
-     *
-     * @param  variant One of {@link #A}, {@link #B}, {@link #C}, {@link #NORTH} or {@link #SOUTH} constants.
-     * @return The roles map to give to super-class constructor.
-     */
-    private static Map<ParameterRole, ParameterDescriptor<Double>> roles(final byte variant) {
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
-        ParameterDescriptor<Double> falseEasting  = PolarStereographicA.FALSE_EASTING;
-        ParameterDescriptor<Double> falseNorthing = PolarStereographicA.FALSE_NORTHING;
-        if (variant == C) {
-            falseEasting  = PolarStereographicC.EASTING_AT_FALSE_ORIGIN;
-            falseNorthing = PolarStereographicC.NORTHING_AT_FALSE_ORIGIN;
-        }
-        roles.put(ParameterRole.FALSE_EASTING,    falseEasting);
-        roles.put(ParameterRole.FALSE_NORTHING,   falseNorthing);
-        roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == A)
-                ? PolarStereographicA.LONGITUDE_OF_ORIGIN
-                : PolarStereographicB.LONGITUDE_OF_ORIGIN);
-        return roles;
-    }
-
-    /**
      * Creates a Polar Stereographic projection from the given parameters.
      * The {@code method} argument can be the description of one of the following:
      *
@@ -121,7 +99,31 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      * @param parameters The parameter values of the projection to create.
      */
     public PolarStereographic(final OperationMethod method, final Parameters parameters) {
-        this(method, parameters, getVariant(method));
+        this(initializer(method, parameters));
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @SuppressWarnings("fallthrough")
+    @Workaround(library="JDK", version="1.7")
+    private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
+        final byte variant = getVariant(method);
+        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        ParameterDescriptor<Double> falseEasting  = PolarStereographicA.FALSE_EASTING;
+        ParameterDescriptor<Double> falseNorthing = PolarStereographicA.FALSE_NORTHING;
+        if (variant == C) {
+            falseEasting  = PolarStereographicC.EASTING_AT_FALSE_ORIGIN;
+            falseNorthing = PolarStereographicC.NORTHING_AT_FALSE_ORIGIN;
+        }
+        roles.put(ParameterRole.FALSE_EASTING,    falseEasting);
+        roles.put(ParameterRole.FALSE_NORTHING,   falseNorthing);
+        roles.put(ParameterRole.SCALE_FACTOR,     PolarStereographicA.SCALE_FACTOR);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, (variant == A)
+                ? PolarStereographicA.LONGITUDE_OF_ORIGIN
+                : PolarStereographicB.LONGITUDE_OF_ORIGIN);
+        return new Initializer(method, parameters, roles, variant);
     }
 
     /**
@@ -129,8 +131,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private PolarStereographic(final OperationMethod method, final Parameters parameters, final byte variant) {
-        super(method, parameters, roles(variant));
+    private PolarStereographic(final Initializer initializer) {
+        super(initializer);
+        final byte variant = initializer.variant;
         /*
          * "Standard parallel" and "Latitude of origin" should be mutually exclusive,
          * but this is not a strict requirement for the constructor.
@@ -148,9 +151,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          */
         double φ0;
         if (variant == A) {
-            φ0 = getAndStore(parameters, PolarStereographicA.LATITUDE_OF_ORIGIN);   // Mandatory
+            φ0 = initializer.getAndStore(PolarStereographicA.LATITUDE_OF_ORIGIN);   // Mandatory
         } else {
-            φ0 = getAndStore(parameters, PolarStereographicA.LATITUDE_OF_ORIGIN,    // Optional (should not be present)
+            φ0 = initializer.getAndStore(PolarStereographicA.LATITUDE_OF_ORIGIN,    // Optional (should not be present)
                     (variant == NORTH) ? Latitude.MAX_VALUE :
                     (variant == SOUTH) ? Latitude.MIN_VALUE : Double.NaN);
         }
@@ -160,9 +163,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         }
         double φ1;
         if (variant == B || variant == C || Double.isNaN(φ0)) {
-            φ1 = getAndStore(parameters, PolarStereographicB.STANDARD_PARALLEL);        // Mandatory
+            φ1 = initializer.getAndStore(PolarStereographicB.STANDARD_PARALLEL);        // Mandatory
         } else {
-            φ1 = getAndStore(parameters, PolarStereographicB.STANDARD_PARALLEL, φ0);    // Optional
+            φ1 = initializer.getAndStore(PolarStereographicB.STANDARD_PARALLEL, φ0);    // Optional
         }
         /*
          * At this point we should ensure that the sign of φ0 is the same than the sign of φ1,
@@ -171,10 +174,18 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
          * It may be possible to specify φ0 and φ1 if the caller used his own parameter descriptor,
          * in which case maybe he really wanted different sign (e.g. for testing purpose).
          */
-        final boolean isNorthPole = (φ1 >= 0);
-        φ1 = -abs(toRadians(φ1));  // May be anything in [-π/2 … 0] range.
-        final double ρ;
-        Double ρF = null;    // Actually -ρF (compared to EPSG guide).
+        final boolean isNorth = MathFunctions.isPositive(φ1);
+        if (isNorth) {
+            /*
+             * The South case has the most "natural" formulas. For the North case, we use the same formulas
+             * with only the sign reversed before and after projection. This sign reversal is done in the
+             * (de)normalization matrices at the end of this method. But we need to apply the same politic
+             * on the parameters that we will use below.
+             */
+            φ1 = -φ1;
+        }
+        φ1 = toRadians(φ1);  // May be anything in [-π/2 … 0] range.
+        final Number ρ, ρF;  // This ρF is actually -ρF in EPSG guide.
         if (abs(φ1 + PI/2) < ANGULAR_TOLERANCE) {
             /*
              * Polar Stereographic (variant A)
@@ -188,7 +199,8 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
              *
              * In the spherical case, should give ρ == 2.
              */
-            ρ = 2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity));
+            ρ = verbatim(2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity)));
+            ρF = null;
         } else {
             /*
              * Polar Stereographic (variant B or C)
@@ -208,11 +220,9 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
              * In the spherical case, should give ρ = 1 + sinφ1   (Synder 21-7 and 21-11).
              */
             final double sinφ1 = sin(φ1);
-            final double mF = cos(φ1) / rν(sinφ1);
-            ρ = mF / expOfNorthing(φ1, excentricity*sinφ1);
-            if (variant == C) {
-                ρF = -mF;
-            }
+            final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
+            ρ = verbatim(mF / expOfNorthing(φ1, excentricity*sinφ1));
+            ρF = (variant == C) ? verbatim(-mF) : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -221,9 +231,11 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
-        if (isNorthPole) {
-            context.getMatrix(true).convertAfter(1, -1, null);
-            denormalize.convertBefore(1, -1, null);
+        if (isNorth) {
+            final Number reverseSign = verbatim(-1);
+            final MatrixSIS normalize = context.getMatrix(true);
+            normalize  .convertAfter (1, reverseSign, null);
+            denormalize.convertBefore(1, reverseSign, null);
         }
     }
 
@@ -269,7 +281,7 @@ public class PolarStereographic extends ConformalProjection {  // Seen as a spec
                             final boolean derivate) throws ProjectionException
     {
         /*
-         * Note: formulas below are very similar to LambertConformal.transform(…) with n = -1.
+         * Note: formulas below are very similar to LambertConicConformal.transform(…) with n = -1.
          */
         final double θ    = srcPts[srcOff  ];   // θ = λ - λ₀
         final double φ    = srcPts[srcOff+1];   // Sign may be reversed

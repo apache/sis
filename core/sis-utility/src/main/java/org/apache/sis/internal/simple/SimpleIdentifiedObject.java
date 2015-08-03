@@ -203,10 +203,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         }
         if (object instanceof IdentifiedObject) {
             if (mode != ComparisonMode.STRICT || object.getClass() == getClass()) {
-                final IdentifiedObject that = (IdentifiedObject) object;
-                if (mode.ordinal() >= ComparisonMode.IGNORE_METADATA.ordinal()) {
+                if (mode.isIgnoringMetadata()) {
                     return true;
                 }
+                final IdentifiedObject that = (IdentifiedObject) object;
                 return Objects.equals(getName(), that.getName()) &&
                         isNullOrEmpty(that.getIdentifiers()) &&
                         isNullOrEmpty(that.getAlias()) &&

@@ -135,15 +135,15 @@ public abstract class MapProjection extends AbstractProvider {
      *
      * @see #createConstant(ParameterBuilder, Double)
      */
-    public static void validate(final ParameterDescriptor<Double> descriptor, final double value)
+    public static void validate(final ParameterDescriptor<? extends Number> descriptor, final double value)
             throws IllegalArgumentException
     {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
         }
-        final Comparable<Double> min = descriptor.getMinimumValue();
-        final Comparable<Double> max = descriptor.getMaximumValue();
+        final Comparable<? extends Number> min = descriptor.getMinimumValue();
+        final Comparable<? extends Number> max = descriptor.getMaximumValue();
         if (!Objects.equals(min, max)) {
             /*
              * RATIONAL: why we do not check the bounds if (min == max):
