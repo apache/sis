@@ -935,6 +935,24 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Computes (1-x)/(1+x) where <var>x</var> is {@code this}.
+     * This pattern occurs in map projections.
+     */
+    public void ratio_1m_1p() {
+        final DoubleDouble numerator = new DoubleDouble(1, 0);
+        numerator.subtract(this);
+        add(1, 0);
+        inverseDivide(numerator);
+    }
+
+    /**
+     * Computes the square of this value.
+     */
+    public void square() {
+        multiply(value, error);
+    }
+
+    /**
      * Sets this double-double value to its square root.
      *
      * <div class="section">Implementation</div>
@@ -965,6 +983,32 @@ public final class DoubleDouble extends Number {
             subtract(thisValue, thisError);
             divide(-2*r, 0);                    // Multiplication by 2 does not cause any precision lost.
             setToQuickSum(r, value);
+        }
+    }
+
+    /**
+     * Computes c₀ + c₁x + c₂x² + c₃x³ + c₄x⁴ + … where <var>x</var> is {@code this}.
+     * The given <var>c</var> coefficients are presumed accurate in base 2
+     * (i.e. this method does not try to apply a correction for base 10).
+     *
+     * @param coefficients The {@code c} coefficients. The array length must be at least 1.
+     */
+    public void series(final double... coefficients) {
+        final DoubleDouble x = new DoubleDouble(this);
+        value = coefficients[0];
+        error = 0;
+        final int last = coefficients.length - 1;
+        if (last >= 1) {
+            final DoubleDouble xn = new DoubleDouble(x);
+            final DoubleDouble t = new DoubleDouble(xn);
+            for (int i=1; i<last; i++) {
+                t.multiply(coefficients[i], 0);
+                add(t);
+                xn.multiply(x);
+                t.setFrom(xn);
+            }
+            t.multiply(coefficients[last], 0);
+            add(t);
         }
     }
 

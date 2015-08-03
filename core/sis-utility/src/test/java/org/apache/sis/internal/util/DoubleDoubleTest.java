@@ -250,6 +250,17 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     }
 
     /**
+     * Tests {@link DoubleDouble#ratio_1m_1p()}.
+     */
+    @Test
+    @DependsOnMethod("testDivide")
+    public void testRatio_1m_1p() {
+        final DoubleDouble t = new DoubleDouble(0.25, 0);
+        t.ratio_1m_1p();
+        assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
+    }
+
+    /**
      * Tests {@link DoubleDouble#sqrt()} first with the square root of 2, then with random values.
      * In the {@code sqrt(2)} case:
      *
@@ -278,7 +289,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             }
             final double value = dd.value;
             final double error = dd.error;
-            dd.multiply(dd);
+            dd.square();
             dd.sqrt();
             dd.subtract(value, error);
             assertEquals(0, dd.doubleValue(), 1E-29);
@@ -286,6 +297,17 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         dd.clear();
         dd.sqrt();
         assertTrue(dd.isZero());
+    }
+
+    /**
+     * Tests the {@link DoubleDouble#series(double...)} method.
+     */
+    @Test
+    @DependsOnMethod({"testMultiply", "testAdd"})
+    public void testSeries() {
+        final DoubleDouble t = new DoubleDouble(2);
+        t.series(1, 1./3, 1./9, 1./7, 1./13);  // Random coefficient.
+        assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue(), STRICT);
     }
 
     /**
