@@ -21,7 +21,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
@@ -31,7 +30,6 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
-import static org.apache.sis.internal.util.DoubleDouble.verbatim;
 
 
 /**
@@ -119,20 +117,32 @@ public class TransverseMercator extends NormalizedProjection {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(
                 org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
-        final double rs = initializer.parameters.doubleValue(MapProjection.SEMI_MINOR)
-                        / initializer.parameters.doubleValue(MapProjection.SEMI_MAJOR);
-
-        final double n  = (1 - rs) / (1 + rs);       // Rewrite of n = f / (2-f)
+        /*
+         * Opportunistically use double-double arithmetic for computation of B since we will store
+         * it in the denormalization matrix, and there is no sine/cosine functions involved here.
+         */
+        final double n;
+        final DoubleDouble B;
+        {   // For keeping the 't' variable locale.
+            /*
+             * EPSG gives:      n  =  f / (2-f)
+             * We rewrite as:   n  =  (1 - b/a) / (1 + b/a)
+             */
+            final DoubleDouble t = initializer.axisLengthRatio();   // t  =  b/a
+            t.ratio_1m_1p();                                        // t  =  (1 - t) / (1 + t)
+            n = t.doubleValue();
+            /*
+             * Compute B  =  (1 + n²/4 + n⁴/64) / (1 + n)
+             */
+            B = new DoubleDouble(t);        // B  =  n
+            B.square();
+            B.series(1, 0.25, 1./64);       // B  =  (1 + n²/4 + n⁴/64)
+            t.add(1,0);
+            B.divide(t);                    // B  =  (1 + n²/4 + n⁴/64) / (1 + n)
+        }
         final double n2 = n  * n;
         final double n3 = n2 * n;
         final double n4 = n2 * n2;
-        /*
-         * Compute B  =  (n4/64 + n2/4 + 1) / (n + 1)
-         * Opportunistically uses double-double arithmetic since we use it anyway for denormalization matrix.
-         */
-        final DoubleDouble B = verbatim(n);
-        B.add(1);
-        B.inverseDivide(1, n4/64 + n2/4);
         /*
          * Coefficients for direct projection.
          * Add the smallest values first in order to reduce rounding errors.
@@ -151,21 +161,22 @@ public class TransverseMercator extends NormalizedProjection {
         ih4 = (4397. / 161280)*n4;
         /*
          * Compute M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄) and negate in anticipation for what will be needed
-         * in the denormalization matrix. We opportunistically use double-double arithmetic, but
-         * the precision is actually not better than double (in current SIS version) because of
-         * the precision of trigonometric functions. We may improve on that in the future if it
-         * seems useful.
+         * in the denormalization matrix. We opportunistically use double-double arithmetic but
+         * only for the final multiplication by B, for consistency with the translation term to
+         * be stored in the denormalization matrix. It is not worth to use double-double in the
+         * sum of sine functions because the extra digits would be meaningless.
          *
          * NOTE: the EPSG documentation makes special cases for φ₀ = 0 or ±π/2. This is not
          * needed here; we verified that the code below produces naturally the expected values.
          */
         final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
         final double β = atan(sinh(Q));
-        final DoubleDouble M0 = verbatim(β);
-        M0.add(h1 * sin(2*β), 0);
-        M0.add(h2 * sin(4*β), 0);
-        M0.add(h3 * sin(6*β), 0);
-        M0.add(h4 * sin(8*β), 0);
+        final DoubleDouble M0 = new DoubleDouble();
+        M0.value = h4 * sin(8*β)
+                 + h3 * sin(6*β)
+                 + h2 * sin(4*β)
+                 + h1 * sin(2*β)
+                 + β;
         M0.multiply(B);
         M0.negate();
         /*

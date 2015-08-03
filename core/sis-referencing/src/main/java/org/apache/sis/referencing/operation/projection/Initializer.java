@@ -162,12 +162,12 @@ final class Initializer {
                 f.inverseDivide(1,0);
                 excentricitySquared.setFrom(f);
                 excentricitySquared.multiply(2,0);
-                f.multiply(f);
+                f.square();
                 excentricitySquared.subtract(f);
             } else {
                 final DoubleDouble rs = new DoubleDouble(b);
                 rs.divide(k);    // rs = b/a
-                rs.multiply(rs);
+                rs.square();
                 excentricitySquared.value = 1;
                 excentricitySquared.subtract(rs);
             }
@@ -253,6 +253,17 @@ final class Initializer {
     }
 
     /**
+     * Returns {@code b/a} where {@code a} is the semi-major axis length and {@code b} the semi-minor axis length.
+     * We retrieve this value from the excentricity with {@code b/a = sqrt(1-ℯ²)}.
+     */
+    final DoubleDouble axisLengthRatio() {
+        final DoubleDouble b = new DoubleDouble(1,0);
+        b.subtract(excentricitySquared);
+        b.sqrt();
+        return b;
+    }
+
+    /**
      * Computes the square of the reciprocal of the radius of curvature of the ellipsoid
      * perpendicular to the meridian at latitude φ. That radius of curvature is:
      *
@@ -282,7 +293,7 @@ final class Initializer {
             return verbatim(1 - excentricitySquared.value * (sinφ*sinφ));
         }
         final DoubleDouble t = verbatim(sinφ);
-        t.multiply(t);
+        t.square();
         t.multiply(excentricitySquared);
 
         // Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
