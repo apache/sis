@@ -567,10 +567,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
                 <module name="Checker">
                   <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
                   <module name="NewlineAtEndOfFile"/>   <!-- Checks that there is a newline at the end of each file. -->
-<!--              <module name="TreeWalker">
-                    <module name="RedundantImport"/>    <!- Checks for redundant import statements. ->
-                    <module name="GenericWhitespace"/>  <!- Checks that the whitespace around the Generic tokens follow the typical convention. ->
-                  </module> -->
+                  <module name="TreeWalker">
+                    <module name="RedundantImport"/>    <!-- Checks for redundant import statements. -->
+                    <module name="GenericWhitespace"/>  <!-- Checks that the whitespace around the Generic tokens follow the typical convention. -->
+                  </module>
                 </module>
               </checkstyleRules>
             </configuration>
