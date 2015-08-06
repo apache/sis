@@ -55,8 +55,8 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
-     *       will return an identity transform.</li>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2)</code>
+     *       will return an identity operation.</li>
      * </ul>
      *
      * If a more lenient comparison allowing slight differences in numerical values is wanted,
@@ -92,8 +92,8 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
-     *       will return a transform close to the identity transform.</li>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2)</code>
+     *       will return an operation close to identity.</li>
      * </ul>
      *
      * <div class="section">Implementation note</div>
