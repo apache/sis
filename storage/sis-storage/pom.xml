@@ -109,6 +109,7 @@ Provides the interfaces and base classes to be implemented by various storage fo
         <configuration>
           <instructions>
             <Bundle-SymbolicName>org.apache.sis.storage</Bundle-SymbolicName>
+            <Export-Package>org.apache.sis.internal.storage; x-friends=org.apache.sis.storage.netcdf, *</Export-Package>
           </instructions>
         </configuration>
       </plugin>
