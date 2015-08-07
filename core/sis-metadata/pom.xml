@@ -116,6 +116,11 @@ Implementations of metadata derived from ISO 19115. This module provides both an
         <configuration>
           <instructions>
             <Bundle-SymbolicName>org.apache.sis.metadata</Bundle-SymbolicName>
+              <Export-Package>org.apache.sis.internal.jaxb.metadata, *</Export-Package>
+              <Require-Capability>osgi.extender;
+                  filter:="(osgi.extender=osgi.serviceloader.registrar)"</Require-Capability>
+              <Provide-Capability>osgi.serviceloader;
+                  osgi.serviceloader=org.apache.sis.internal.jaxb.TypeRegistration</Provide-Capability>
           </instructions>
         </configuration>
       </plugin>
