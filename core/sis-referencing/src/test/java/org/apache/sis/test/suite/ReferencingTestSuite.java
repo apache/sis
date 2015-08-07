@@ -138,6 +138,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.SubTypesTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
+    org.apache.sis.referencing.factory.GIGS3002.class,
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
