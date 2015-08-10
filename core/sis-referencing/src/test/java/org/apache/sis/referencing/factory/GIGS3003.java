@@ -25,7 +25,7 @@ import org.junit.runners.JUnit4;
 
 /**
  * Runs the <cite>Geospatial Integrity of Geoscience Software</cite> tests on
- * {@link org.apache.sis.referencing.datum.DefaultEllipsoid} objects creation.
+ * {@link org.apache.sis.referencing.datum.DefaultPrimeMeridian} objects creation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -34,13 +34,13 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 @DependsOn({
-    org.apache.sis.referencing.datum.DefaultEllipsoidTest.class
+    org.apache.sis.referencing.datum.DefaultPrimeMeridianTest.class
 })
-public final strictfp class GIGS3002 extends org.opengis.test.referencing.gigs.GIGS3002 {
+public final strictfp class GIGS3003 extends org.opengis.test.referencing.gigs.GIGS3003 {
     /**
      * Creates a new test suite using the singleton factory instance.
      */
-    public GIGS3002() {
+    public GIGS3003() {
         super(DefaultFactories.forBuildin(DatumFactory.class));
     }
 }
