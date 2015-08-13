@@ -201,7 +201,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param newValues The new use limitations.
      */
-    public void setUseLimitations(final Collection< ? extends InternationalString> newValues) {
+    public void setUseLimitations(final Collection<? extends InternationalString> newValues) {
         useLimitations = writeCollection(newValues, useLimitations, InternationalString.class);
     }
 
