@@ -341,7 +341,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>1.2</version>
+        <version>1.2.1</version>
       </dependency>
       <dependency>
         <groupId>gov.nist.math</groupId>
@@ -553,9 +553,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.4.0</version>
+        <version>2.5.0</version>
         <extensions>true</extensions>
         <configuration>
+          <excludeDependencies>true</excludeDependencies>
           <instructions>
             <Bundle-DocURL>${project.url}</Bundle-DocURL>
           </instructions>
@@ -563,42 +564,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </plugin>
 
       <!-- Checkstype configuration
-           Legal note: Checkstyle is under LGPL license, but it is okay to use it only for
-           the build if it is downloaded by Maven (not included in Apache SIS distribution).
-           See http://www.apache.org/legal/resolved.html#prohibited
-      -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.13</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
-              <encoding>${project.build.sourceEncoding}</encoding>
-              <consoleOutput>true</consoleOutput>
-              <checkstyleRules>
-                <module name="Checker">
-                  <module name="FileTabCharacter"/>     <!-- Checks that there are no tab characters in the file. -->
-<!--              <module name="NewlineAtEndOfFile"/>   <!-  Checks that there is a newline at the end of each file. ->
-                  <module name="TreeWalker">
-                    <module name="RedundantImport"/>    <!- Checks for redundant import statements. ->
-                    <module name="GenericWhitespace"/>  <!- Checks that the whitespace around the Generic tokens follow the typical convention. ->
-                  </module> -->
-                </module>
-              </checkstyleRules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+           Omitted from the JDK6 branch because Checkstyle requires a higher JDK version. -->
 
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.1</version>
+        <version>2.10.3</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -639,11 +610,11 @@ Apache SIS is a free software, Java language library for developing geospatial a
             </group>
             <group>
               <title>Referencing</title>
-              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*:org.apache.sis.distance*</packages>
             </group>
             <group>
               <title>Metadata</title>
-              <packages>org.apache.sis.metadata*</packages>
+              <packages>org.apache.sis.metadata*:org.apache.sis.io.wkt</packages>
             </group>
             <group>
               <title>Utilities</title>
