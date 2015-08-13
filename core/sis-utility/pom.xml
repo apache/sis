@@ -136,6 +136,15 @@ Miscellaneous utilities.
           <instructions>
             <Bundle-SymbolicName>org.apache.sis.util</Bundle-SymbolicName>
             <Bundle-Activator>org.apache.sis.internal.system.OSGiActivator</Bundle-Activator>
+            <Export-Package>*</Export-Package>
+            <Require-Capability>
+              osgi.extender;
+              filter:="(osgi.extender=osgi.serviceloader.registrar)",
+              osgi.serviceloader;
+              ;cardinality:=multiple,osgi.extender;
+              filter:="(osgi.extender=osgi.serviceloader.processor)"
+            </Require-Capability>
+            <SPI-Producer>*</SPI-Producer>
           </instructions>
         </configuration>
       </plugin>

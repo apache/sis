@@ -96,6 +96,7 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
         <configuration>
           <instructions>
             <Bundle-SymbolicName>org.apache.sis.storage.netcdf</Bundle-SymbolicName>
+            <Import-Package>!ucar.*, *</Import-Package>
           </instructions>
         </configuration>
       </plugin>

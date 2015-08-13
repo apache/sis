@@ -66,11 +66,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
 
     /**
      * Tolerance threshold for considering a matrix as identity. Since the value used here is smaller
-     * than 1 ULP (about 2.22E-16), it applies only the the zero terms in the matrix. The terms on the
+     * than 1 ULP (about 2.22E-16), it applies only to the zero terms in the matrix. The terms on the
      * diagonal are still expected to be exactly 1.
-     *
-     * @deprecated Try to remove completely this tolerance threshold after we applied double-double arithmetic
-     *             to all matrices.
      */
     private static final double IDENTITY_TOLERANCE = 1E-16;
 
