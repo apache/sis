@@ -88,4 +88,16 @@
  * @version 0.6
  * @module
  */
+@XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+})
+@XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.parameter;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import org.apache.sis.xml.Namespaces;

@@ -268,7 +268,7 @@ public final class ReferencingUtilities extends Static {
     /**
      * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
      * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
-     * serves two purposes:
+     * serves three purposes:
      *
      * <ul>
      *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
