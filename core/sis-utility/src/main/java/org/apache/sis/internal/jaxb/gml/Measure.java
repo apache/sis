@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gco;
+package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Quantity;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
@@ -34,7 +35,7 @@ import org.apache.sis.measure.Units;
  * This is used for marshalling an element defined by ISO-19103.
  *
  * <p>This class duplicates {@link org.apache.sis.measure.Measure}, but we have to do that way
- * because that{@code Measure} extends {@link Number} and we are not allowed to use the
+ * because that {@code Measure} extends {@link Number} and we are not allowed to use the
  * {@code @XmlValue} annotation on a class that extends an other class.</p>
  *
  * <div class="section">XML marshalling</div>
@@ -63,9 +64,11 @@ import org.apache.sis.measure.Units;
  * @version 0.4
  * @module
  *
- * @see UnitAdapter
  * @see org.apache.sis.measure.Measure
+ * @see org.apache.sis.internal.jaxb.gml.MeasureList
+ * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
  */
+@XmlType(name = "MeasureType")
 public final class Measure {
     /**
      * The value of the measure.
@@ -74,7 +77,7 @@ public final class Measure {
     public double value;
 
     /**
-     * The unit of measure.
+     * The unit of measurement.
      */
     public Unit<?> unit;
 
@@ -82,11 +85,11 @@ public final class Measure {
      * {@code true} if the units shall be formatted as {@code xpointer}.
      * If {@code false} (the default), then this class will try to format the units using the GML syntax.
      */
-    boolean asXPointer;
+    public boolean asXPointer;
 
     /**
      * Default empty constructor for JAXB. The value is initialized to NaN,
-     * but JAXB will overwrite this value if a XML value is presents.
+     * but JAXB will overwrite that value if a XML value is present.
      */
     public Measure() {
         value = Double.NaN;
@@ -97,7 +100,7 @@ public final class Measure {
      * with the UOM attribute like {@code "gmxUom.xml#xpointer(//*[@gml:id='m'])"}.
      *
      * @param value The value of the measure.
-     * @param unit  The unit of measure to use.
+     * @param unit  The unit of measurement.
      */
     public Measure(final double value, final Unit<?> unit) {
         this.value = value;
@@ -139,7 +142,7 @@ public final class Measure {
      * @param  inAxis {@code true} for a unit used in Coordinate System Axis definition.
      * @return The string representation of the unit of measure.
      */
-    static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {
+    public static String getUOM(final Unit<?> unit, final boolean asXPointer, final boolean inAxis) {
         if (!asXPointer) {
             final Integer code = Units.getEpsgCode(unit, inAxis);
             if (code != null) {

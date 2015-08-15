@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 
@@ -37,5 +38,6 @@ public final class ReferencingTypes extends TypeRegistration {
     @Override
     public void getTypes(final Collection<Class<?>> addTo) {
         addTo.add(AbstractIdentifiedObject.class);
+        addTo.add(DefaultParameterValue.class);
     }
 }
