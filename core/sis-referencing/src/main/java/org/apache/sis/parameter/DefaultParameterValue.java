@@ -125,7 +125,7 @@ import java.nio.file.Path;
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",
-//  "operationParameter"
+    "descriptor"
 })
 @XmlRootElement(name = "ParameterValue")
 public class DefaultParameterValue<T> extends FormattableObject implements ParameterValue<T>,
@@ -138,8 +138,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * The definition of this parameter.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptor(ParameterDescriptor)}</p>
+     *
+     * @see #getDescriptor()
      */
-    private final ParameterDescriptor<T> descriptor;
+    private ParameterDescriptor<T> descriptor;
 
     /**
      * The value, or {@code null} if undefined.
@@ -160,7 +165,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * but will be assigned a value after XML unmarshalling.
      */
     private DefaultParameterValue() {
-        descriptor = null;
     }
 
     /**
@@ -199,6 +203,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @return The definition of this parameter.
      */
     @Override
+    @XmlElement(name = "operationParameter", required = true)
     public ParameterDescriptor<T> getDescriptor() {
         return descriptor;
     }
@@ -525,7 +530,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     private String getClassTypeError() {
         return Errors.format(Errors.Keys.IllegalOperationForValueClass_1,
-                ((ParameterDescriptor<?>) descriptor).getValueClass());
+                (descriptor != null) ? ((ParameterDescriptor<?>) descriptor).getValueClass() : "?");
     }
 
     /**
@@ -919,8 +924,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
              * Note that we take the descriptor unit as a starting point instead than this parameter unit
              * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
              */
-            Unit<?> contextualUnit = descriptor.getUnit();
-            if (contextualUnit == null) { // Should be very rare (probably a buggy descriptor), but we try to be safe.
+            Unit<?> contextualUnit;
+            if (descriptor == null || (contextualUnit = descriptor.getUnit()) == null) {
+                // Should be very rare (probably a buggy descriptor), but we try to be safe.
                 contextualUnit = unit;
             }
             contextualUnit = formatter.toContextualUnit(contextualUnit);
@@ -940,7 +946,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             } catch (IllegalStateException exception) {
                 // May happen if a parameter is mandatory (e.g. "semi-major")
                 // but no value has been set for this parameter.
-                formatter.setInvalidWKT(descriptor, exception);
+                if (descriptor != null) {
+                    formatter.setInvalidWKT(descriptor, exception);
+                } else {
+                    // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                    // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                    formatter.setInvalidWKT(DefaultParameterValue.class, exception);
+                }
                 value = Double.NaN;
             }
             formatter.append(value);
@@ -958,7 +970,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 if (!isWKT1) {
                     formatter.append(unit);
                 } else if (!ignoreUnits) {
-                    formatter.setInvalidWKT(descriptor, null);
+                    if (descriptor != null) {
+                        formatter.setInvalidWKT(descriptor, null);
+                    } else {
+                        // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                        // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                        formatter.setInvalidWKT(DefaultParameterValue.class, null);
+                    }
                 }
             }
         }
@@ -1000,6 +1018,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         @XmlElement(name = "valueList",         type = MeasureList.class)
     })
     private Object getXmlValue() {
+        final Object value = getValue();    // Give to user a chance to override.
         if (value != null) {
             if (value instanceof Number) {
                 final Number n = (Number) value;
@@ -1009,7 +1028,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                         return xmlValue;
                     }
                 }
-                return new Measure(((Number) value).doubleValue(), unit);
+                return new Measure(((Number) value).doubleValue(), getUnit());
             }
             if (value instanceof CharSequence) {
                 return value.toString();
@@ -1022,7 +1041,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 if (Numbers.isInteger(type)) {
                     return new IntegerList(value);
                 }
-                return new MeasureList(value, type, unit);
+                return new MeasureList(value, type, getUnit());
             }
         }
         return value;
@@ -1031,6 +1050,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * Invoked by JAXB at unmarshalling time.
      */
+    @SuppressWarnings("unchecked")
     private void setXmlValue(Object xmlValue) {
         if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
                 "setXmlValue", "value", value != null || unit != null))
@@ -1047,6 +1067,10 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 xmlValue = ((IntegerList) xmlValue).toArray();
             }
             if (descriptor != null) {
+                /*
+                 * Should never happen with default SIS implementation, but may happen if the user created
+                 * a sub-type of DefaultParameterValue with a default constructor providing the descriptor.
+                 */
                 value = ObjectConverters.convert(xmlValue, descriptor.getValueClass());
             } else {
                 /*
@@ -1054,12 +1078,23 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                  * descriptor is normally defined after the value in a GML document. The type will need
                  * to be verified when the descriptor will be set.
                  *
-                 * There is no @SuppressWarnings("unchecked") annotation because we can not prove that this
-                 * cast is correct before the descriptor is set, and maybe that descriptor will never be set
-                 * (if the GML document is illegal).
+                 * There is no way we can prove that this cast is correct before the descriptor is set,
+                 * and maybe that descriptor will never be set if the GML document is illegal. However
+                 * this code is executed only during XML unmarshalling, in which case our unmarshalling
+                 * process will construct a descriptor compatible with the value rather than the converse.
                  */
                 value = (T) xmlValue;
             }
         }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDescriptor()
+     */
+    private void setDescriptor(final ParameterDescriptor<T> descriptor) {
+        this.descriptor = descriptor;
+        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
     }
 }

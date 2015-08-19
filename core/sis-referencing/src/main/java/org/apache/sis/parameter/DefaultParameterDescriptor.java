@@ -19,6 +19,8 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.parameter.ParameterValue;
@@ -31,6 +33,9 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -64,12 +69,14 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultParameterValue
  * @see DefaultParameterDescriptorGroup
  */
+@XmlType(name = "OperationParameterType")
+@XmlRootElement(name = "OperationParameter")
 public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor implements ParameterDescriptor<T> {
     /**
      * Serial number for inter-operability with different versions.
@@ -85,7 +92,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
 
     /**
      * A set of valid values (usually from a {@linkplain CodeList code list})
-     * or {@code null} if it doesn't apply. This set is immutable.
+     * or {@code null} if it does not apply. This set is immutable.
      *
      * @see #getValidValues()
      */
@@ -112,6 +119,37 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * @see #getDefaultValue()
      */
     private final T defaultValue;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     *
+     * <p>This constructor fetches the value class and the unit of measurement from the enclosing
+     * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.
+     * They are GeoAPI additions.</p>
+     */
+    @SuppressWarnings("unchecked")
+    private DefaultParameterDescriptor() {
+        final PropertyType<?,?> wrapper = Context.getWrapper(Context.current());
+        if (wrapper instanceof CC_OperationParameter) {
+            final CC_OperationParameter param = (CC_OperationParameter) wrapper;
+            /*
+             * This unsafe cast would be forbidden if this constructor was public or used in any context where the
+             * user can choose the value of <T>. But this constructor should be invoked only during unmarshalling,
+             * after the creation of the ParameterValue (this is the reverse creation order than what we normally
+             * do through the public API). The 'valueClass' should be compatible with DefaultParameterValue.value,
+             * and the parameterized type visible to the user should be only <?>.
+             */
+            valueClass  = (Class) param.valueClass;
+            valueDomain = param.valueDomain;
+        } else {
+            valueClass  = null;
+            valueDomain = null;
+        }
+        validValues  = null;
+        defaultValue = null;
+    }
 
     /**
      * Constructs a descriptor from the given properties. The properties map is given unchanged to the
