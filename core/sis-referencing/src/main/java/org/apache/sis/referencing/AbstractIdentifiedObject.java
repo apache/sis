@@ -123,6 +123,7 @@ import java.util.Objects;
  * @module
  */
 @XmlType(name="IdentifiedObjectType", propOrder={
+    "description",
     "identifier",
     "names",
     "remarks"
@@ -702,6 +703,25 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Override
     public Set<Identifier> getIdentifiers() {
         return nonNull(identifiers); // Needs to be null-safe because we may have a null value on unmarshalling.
+    }
+
+    /**
+     * Returns a narrative explanation of the role of this object.
+     *
+     * <div class="section">Default value</div>
+     * The default implementation returns the
+     * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
+     * provided by this object's {@linkplain #getName() name}.
+     *
+     * @return A narrative explanation of the role of this object, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription()
+     *
+     * @since 0.6
+     */
+    @XmlElement
+    public InternationalString getDescription() {
+        return (name != null) ? name.getDescription() : null;
     }
 
     /**

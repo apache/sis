@@ -171,6 +171,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     public static <T> ParameterDescriptor<T> cast(final ParameterDescriptor<?> descriptor, final Class<T> valueClass)
             throws ClassCastException
     {
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
         if (descriptor != null) {
             final Class<?> actual = descriptor.getValueClass();
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
@@ -187,9 +188,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * Casts the given parameter value to the given type.
      * An exception is thrown immediately if the parameter does not have the expected value class.
      *
-     * @param  <T>   The expected value class.
-     * @param  value The value to cast, or {@code null}.
-     * @param  type  The expected value class.
+     * @param  <T>        The expected value class.
+     * @param  parameter  The parameter to cast, or {@code null}.
+     * @param  valueClass The expected value class.
      * @return The value casted to the given type, or {@code null} if the given value was null.
      * @throws ClassCastException if the given value doesn't have the expected value class.
      *
@@ -198,18 +199,19 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> ParameterValue<T> cast(final ParameterValue<?> value, final Class<T> type)
+    public static <T> ParameterValue<T> cast(final ParameterValue<?> parameter, final Class<T> valueClass)
             throws ClassCastException
     {
-        if (value != null) {
-            final ParameterDescriptor<?> descriptor = value.getDescriptor();
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
+        if (parameter != null) {
+            final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
             final Class<?> actual = descriptor.getValueClass();
-            if (!type.equals(actual)) { // Same comment than cast(ParameterDescriptor)...
+            if (!valueClass.equals(actual)) {   // Same comment than cast(ParameterDescriptor).
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
                         descriptor.getName().getCode(), actual));
             }
         }
-        return (ParameterValue<T>) value;
+        return (ParameterValue<T>) parameter;
     }
 
     /**

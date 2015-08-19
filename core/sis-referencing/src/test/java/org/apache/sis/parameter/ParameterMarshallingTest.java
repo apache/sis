@@ -21,6 +21,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
+import org.opengis.test.Validators;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.test.DependsOn;
@@ -51,7 +53,8 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      */
     private static <T> DefaultParameterValue<T> create(final Class<T> type, final Range<?> valueDomain) {
         return new DefaultParameterValue<>(new DefaultParameterDescriptor<>(
-                Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY, type.getSimpleName()),
+                Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY,
+                        "A parameter of type " + type.getSimpleName()),
                 1, 1, type, valueDomain, null, null));
     }
 
@@ -68,9 +71,54 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         assertXmlEquals(expected, xml, "xmlns:*");
         final DefaultParameterValue<?> r = (DefaultParameterValue<?>) XML.unmarshal(xml);
         if (!Objects.deepEquals(parameter.getValue(), r.getValue())) {
-            assertEquals("value", parameter.getValue(), r.getValue());  // Should always fail, but we want the error message.
+            // If we enter in this block, then the line below should always fail.
+            // But we use this assertion for getting a better error message.
+            assertEquals("value", parameter.getValue(), r.getValue());
         }
-        assertEquals("unit",  parameter.getUnit(),  r.getUnit());
+        assertEquals("unit", parameter.getUnit(), r.getUnit());
+        /*
+         * Verify the descriptor, especially the 'valueClass' property. That property is not part of GML,
+         * so Apache SIS has to rely on some tricks for finding this information (see CC_OperationParameter).
+         */
+        final ParameterDescriptor<?> reference = parameter.getDescriptor();
+        final ParameterDescriptor<?> descriptor = r.getDescriptor();
+        assertNotNull("descriptor",                                             descriptor);
+        assertEquals ("descriptor.name",          reference.getName(),          descriptor.getName());
+        assertEquals ("descriptor.unit",          reference.getUnit(),          descriptor.getUnit());
+        assertEquals ("descriptor.valueClass",    reference.getValueClass(),    descriptor.getValueClass());
+        assertEquals ("descriptor.minimumOccurs", reference.getMinimumOccurs(), descriptor.getMinimumOccurs());
+        assertEquals ("descriptor.maximumOccurs", reference.getMaximumOccurs(), descriptor.getMaximumOccurs());
+        Validators.validate(r);
+    }
+
+    /**
+     * Tests (un)marshalling of a parameter descriptor.
+     *
+     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
+     */
+    @Test
+    public void testDescriptor() throws JAXBException {
+        final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<>(
+                Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
+                0, 1, Double.class, null, null, null);
+        final String xml = XML.marshal(descriptor);
+        assertXmlEquals(
+                "<gml:OperationParameter xmlns:gml=\"" + Namespaces.GML + "\">\n"
+              + "  <gml:name>A descriptor</gml:name>\n"
+              + "  <gml:minimumOccurs>0</gml:minimumOccurs>\n"
+              + "</gml:OperationParameter>", xml, "xmlns:*");
+        final DefaultParameterDescriptor<?> r = (DefaultParameterDescriptor<?>) XML.unmarshal(xml);
+        assertEquals("name", "A descriptor", r.getName().getCode());
+        assertEquals("minimumOccurs", 0, r.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1, r.getMaximumOccurs());
+        /*
+         * A DefaultParameterDescriptor with null 'valueClass' is illegal, but there is no way we can guess
+         * this information if the <gml:OperationParameter> element was not a child of <gml:ParameterValue>.
+         * The current implementation leaves 'valueClass' to null despite being illegal. This behavior may
+         * change in any future Apache SIS version.
+         */
+        assertNull("valueDomain", r.getValueDomain());
+        assertNull("valueClass",  r.getValueClass());   // May change in any future SIS release.
     }
 
     /**
@@ -79,12 +127,18 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
+    @DependsOnMethod("testDescriptor")
     public void testStringValue() throws JAXBException {
         final DefaultParameterValue<String> parameter = create(String.class, null);
         parameter.setValue("A string value");
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:stringValue>A string value</gml:stringValue>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type String</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -102,6 +156,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:valueFile>http://www.opengis.org</gml:valueFile>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type URI</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -118,6 +177,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
               + "  <gml:booleanValue>true</gml:booleanValue>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type Boolean</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -134,6 +198,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
               + "  <gml:integerValue>2000</gml:integerValue>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type Integer</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -150,6 +219,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:integerValueList>101 105 208</gml:integerValueList>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type int[]</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -167,6 +241,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
               + "  <gml:value uom=\"urn:ogc:def:uom:EPSG::9001\">3000.0</gml:value>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type Double</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 
@@ -184,6 +263,11 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         testMarshallAndUnmarshall(parameter,
                 "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:valueList uom=\"urn:ogc:def:uom:EPSG::9001\">203.0 207.0 204.0</gml:valueList>\n"
+              + "    <gml:operationParameter>"
+              + "      <gml:OperationParameter>"
+              + "        <gml:name>A parameter of type double[]</gml:name>"
+              + "      </gml:OperationParameter>"
+              + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
     }
 }

@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
@@ -29,6 +30,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -92,7 +94,6 @@ final class Verifier {
      *         then casted to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
-    @SuppressWarnings("unchecked")
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
             throws InvalidParameterValueException
     {
@@ -145,7 +146,7 @@ final class Verifier {
                          */
                         Number n = converter.convert(((Number) value).doubleValue());
                         try {
-                            convertedValue = Numbers.cast(n, (Class<? extends Number>) valueClass);
+                            convertedValue = Numbers.cast(n, valueClass.asSubclass(Number.class));
                         } catch (IllegalArgumentException e) {
                             throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
                         }
@@ -161,7 +162,7 @@ final class Verifier {
                             Number n = (Number) Array.get(value, i);
                             n = converter.convert(n.doubleValue()); // Value in units that we can compare.
                             try {
-                                n = Numbers.cast(n, (Class<? extends Number>) componentType);
+                                n = Numbers.cast(n, componentType.asSubclass(Number.class));
                             } catch (IllegalArgumentException e) {
                                 throw new InvalidParameterValueException(e.getLocalizedMessage(),
                                         getName(descriptor) + '[' + i + ']', value);
@@ -193,7 +194,7 @@ final class Verifier {
                 throw new InvalidParameterValueException(error.message(null, name, value), name, value);
             }
         }
-        return (T) convertedValue;
+        return valueClass.cast(convertedValue);
     }
 
     /**
@@ -313,7 +314,16 @@ final class Verifier {
      * Consequently, we may consider to returns a localized name in a future version.
      */
     static String getName(final GeneralParameterDescriptor descriptor) {
-        return descriptor.getName().getCode();
+        if (descriptor != null) {
+            final Identifier name = descriptor.getName();
+            if (name != null) {
+                final String code = name.getCode();
+                if (code != null) {
+                    return code;
+                }
+            }
+        }
+        return Vocabulary.format(Vocabulary.Keys.Unnamed);
     }
 
     /**
