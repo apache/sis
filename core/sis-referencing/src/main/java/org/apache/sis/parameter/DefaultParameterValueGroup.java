@@ -19,6 +19,8 @@ package org.apache.sis.parameter;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -103,6 +105,8 @@ import java.util.Objects;
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue
  */
+@XmlType(name = "ParameterValueGroupType")
+@XmlRootElement(name = "ParameterValueGroup")
 public class DefaultParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
@@ -169,8 +173,9 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @return The values in this group.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterValue> values() {
-        return values;
+        return values;  // Intentionally modifiable.
     }
 
     /**
