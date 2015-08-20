@@ -102,7 +102,8 @@ import java.util.Objects;
     "nonDefaultMaximumOccurs"
 })
 @XmlSeeAlso({
-    DefaultParameterDescriptor.class
+    DefaultParameterDescriptor.class,
+    DefaultParameterDescriptorGroup.class
 })
 public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObject implements GeneralParameterDescriptor {
     /**
@@ -213,6 +214,10 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         minimumOccurs = crop(descriptor.getMinimumOccurs());
         maximumOccurs = crop(descriptor.getMaximumOccurs());
     }
+
+    // NOTE: There is no 'castOrCopy' static method in this class because AbstractParameterDescriptor is abstract.
+    // If nevertheless we choose to add such method in the future, then CC_GeneralOperationParameter.getElement()
+    // should be simplified.
 
     /**
      * Crops the given integer in the [0 … 0xFFFF] range.

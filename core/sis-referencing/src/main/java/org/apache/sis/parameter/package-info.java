@@ -94,7 +94,9 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(CC_OperationParameter.class)
+    @XmlJavaTypeAdapter(CC_OperationParameter.class),
+    @XmlJavaTypeAdapter(CC_OperationParameterGroup.class),
+    @XmlJavaTypeAdapter(CC_GeneralOperationParameter.class)
 })
 package org.apache.sis.parameter;
 

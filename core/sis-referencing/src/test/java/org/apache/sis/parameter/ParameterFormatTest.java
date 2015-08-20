@@ -58,23 +58,36 @@ public final strictfp class ParameterFormatTest extends TestCase {
      * Creates the parameter descriptors to be used by all tests in this class. This method creates
      * a variant of the example documented in the {@link DefaultParameterDescriptorGroup} javadoc
      * with arbitrary non-zero default values.
+     *
+     * <div class="note"><b>Note:</b>
+     * the default values are not part of EPSG definitions. They are added here only for testing purpose.</div>
      */
     @BeforeClass
     public static void createParameterDescriptor() {
+        descriptor = createMercatorParameters();
+    }
+
+    /**
+     * Creates the test parameter for the Mercator projection, to be shared by {@link ParameterMarshallingTest}.
+     *
+     * <div class="note"><b>Note:</b>
+     * the default values are not part of EPSG definitions. They are added here only for testing purpose.</div>
+     */
+    static ParameterDescriptorGroup createMercatorParameters() {
         ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
-            builder.addName("Latitude of natural origin")      .addName(OGC, "latitude_of_origin").createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
-            builder.addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),
-            builder.addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Unit.ONE),
-            builder.addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, SI.METRE),
-            builder.addName("False northing")                  .addName(OGC, "false_northing")    .create(10000, SI.METRE)
+            builder.addIdentifier("8801").addName("Latitude of natural origin")      .addName(OGC, "latitude_of_origin").createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
+            builder.addIdentifier("8802").addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),
+            builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Unit.ONE),
+            builder.addIdentifier("8806").addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, SI.METRE),
+            builder.addIdentifier("8807").addName("False northing")                  .addName(OGC, "false_northing")    .create(10000, SI.METRE)
         };
         builder.addIdentifier("9804")
                .addName("Mercator (variant A)")
                .addName("Mercator (1SP)")
                .addName(OGC, "Mercator_1SP");
-        descriptor = builder.createGroup(parameters);
+        return builder.createGroup(parameters);
     }
 
     /**
@@ -175,6 +188,10 @@ public final strictfp class ParameterFormatTest extends TestCase {
 
     /**
      * Tests {@link ParameterFormat#format(Object, Appendable)} for descriptors with {@code ContentLevel.DETAILED}.
+     *
+     * <div class="note"><b>Note:</b>
+     * the default values expected by this method are not part of EPSG definitions.
+     * They are added here only for testing purpose.</div>
      */
     @Test
     public void testFormatDetailedDescriptors() {
@@ -185,24 +202,24 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "EPSG: Mercator (variant A) (9804)\n" +
                 "EPSG: Mercator (1SP)\n" +
                 "OGC:  Mercator_1SP\n" +
-                "╔══════════════════════════════════════╤════════╤════════════╤═══════════════╤═══════════════╗\n" +
-                "║ Name                                 │ Type   │ Obligation │ Value domain  │ Default value ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  ║\n" +
-                "║ OGC:  latitude_of_origin             │        │            │               │               ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │       -60.0°  ║\n" +
-                "║ OGC:  central_meridian               │        │            │               │               ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   ║\n" +
-                "║ OGC:  scale_factor                   │        │            │               │               ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │      5000.0 m ║\n" +
-                "║ OGC:  false_easting                  │        │            │               │               ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m ║\n" +
-                "║ OGC:  false_northing                 │        │            │               │               ║\n" +
-                "╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝\n", text);
+                "╔═════════════════════════════════════════════╤════════╤════════════╤═══════════════╤═══════════════╗\n" +
+                "║ Name                                        │ Type   │ Obligation │ Value domain  │ Default value ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
+                "║ EPSG: Latitude of natural origin (8801)     │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  ║\n" +
+                "║ OGC:  latitude_of_origin                    │        │            │               │               ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
+                "║ EPSG: Longitude of natural origin (8802)    │ Double │ Mandatory  │ [-180 … 180]° │       -60.0°  ║\n" +
+                "║ OGC:  central_meridian                      │        │            │               │               ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
+                "║ EPSG: Scale factor at natural origin (8805) │ Double │ Mandatory  │    (0 … ∞)    │         1.0   ║\n" +
+                "║ OGC:  scale_factor                          │        │            │               │               ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
+                "║ EPSG: False easting (8806)                  │ Double │ Optional   │   (-∞ … ∞) m  │      5000.0 m ║\n" +
+                "║ OGC:  false_easting                         │        │            │               │               ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
+                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m ║\n" +
+                "║ OGC:  false_northing                        │        │            │               │               ║\n" +
+                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝\n", text);
     }
 
     /**
@@ -219,21 +236,21 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "EPSG: Mercator (variant A) (9804)\n" +
                 "EPSG: Mercator (1SP)\n" +
                 "OGC:  Mercator_1SP\n" +
-                "╔══════════════════════════════════════╤════════╤════════════╤═══════════════╤══════════╗\n" +
-                "║ Name                                 │ Type   │ Obligation │ Value domain  │ Value    ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │  20.0°   ║\n" +
-                "║ OGC:  latitude_of_origin             │        │            │               │          ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │ -60.0°   ║\n" +
-                "║ OGC:  central_meridian               │        │            │               │          ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │ 0.997    ║\n" +
-                "║ OGC:  scale_factor                   │        │            │               │          ║\n" +
-                "╟──────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │  20.0 km ║\n" +
-                "║ OGC:  false_northing                 │        │            │               │          ║\n" +
-                "╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧══════════╝\n", text);
+                "╔═════════════════════════════════════════════╤════════╤════════════╤═══════════════╤══════════╗\n" +
+                "║ Name                                        │ Type   │ Obligation │ Value domain  │ Value    ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
+                "║ EPSG: Latitude of natural origin (8801)     │ Double │ Mandatory  │  [-80 … 84]°  │  20.0°   ║\n" +
+                "║ OGC:  latitude_of_origin                    │        │            │               │          ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
+                "║ EPSG: Longitude of natural origin (8802)    │ Double │ Mandatory  │ [-180 … 180]° │ -60.0°   ║\n" +
+                "║ OGC:  central_meridian                      │        │            │               │          ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
+                "║ EPSG: Scale factor at natural origin (8805) │ Double │ Mandatory  │    (0 … ∞)    │ 0.997    ║\n" +
+                "║ OGC:  scale_factor                          │        │            │               │          ║\n" +
+                "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
+                "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │  20.0 km ║\n" +
+                "║ OGC:  false_northing                        │        │            │               │          ║\n" +
+                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧══════════╝\n", text);
     }
 
     /**
@@ -254,15 +271,15 @@ public final strictfp class ParameterFormatTest extends TestCase {
 
         text = format.format(parameters.toArray(new IdentifiedObject[parameters.size()]));
         assertMultilinesEquals(
-                "┌────────────────────────────────┬────────────────────┐\n" +
-                "│ EPSG                           │ OGC                │\n" +
-                "├────────────────────────────────┼────────────────────┤\n" +
-                "│ Latitude of natural origin     │ latitude_of_origin │\n" +
-                "│ Longitude of natural origin    │ central_meridian   │\n" +
-                "│ Scale factor at natural origin │ scale_factor       │\n" +
-                "│ False easting                  │ false_easting      │\n" +
-                "│ False northing                 │ false_northing     │\n" +
-                "└────────────────────────────────┴────────────────────┘\n", text);
+                "┌────────────┬────────────────────────────────┬────────────────────┐\n" +
+                "│ Identifier │ EPSG                           │ OGC                │\n" +
+                "├────────────┼────────────────────────────────┼────────────────────┤\n" +
+                "│ EPSG:8801  │ Latitude of natural origin     │ latitude_of_origin │\n" +
+                "│ EPSG:8802  │ Longitude of natural origin    │ central_meridian   │\n" +
+                "│ EPSG:8805  │ Scale factor at natural origin │ scale_factor       │\n" +
+                "│ EPSG:8806  │ False easting                  │ false_easting      │\n" +
+                "│ EPSG:8807  │ False northing                 │ false_northing     │\n" +
+                "└────────────┴────────────────────────────────┴────────────────────┘\n", text);
     }
 
     /**

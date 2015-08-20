@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
@@ -32,10 +33,11 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.opengis.parameter.GeneralParameterDescriptor;
 
 
 /**
@@ -234,7 +236,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      */
     @Test
     @DependsOnMethod("testStringValue")
-    public void testValue() throws JAXBException {
+    public void testDoubleValue() throws JAXBException {
         final DefaultParameterValue<Double> parameter = create(Double.class,
                 new MeasurementRange<Double>(Double.class, null, false, null, false, SI.METRE));
         parameter.setValue(3000, SI.METRE);
@@ -269,5 +271,42 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+    }
+
+    /**
+     * Tests (un)marshalling of a parameter descriptor group.
+     *
+     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testDoubleValue")
+    public void testGroup() throws JAXBException {
+        assertMarshalEqualsFile("ParameterDescriptorGroup.xml",
+                ParameterFormatTest.createMercatorParameters(), "xmlns:*", "xsi:schemaLocation");
+
+        final DefaultParameterDescriptorGroup group = unmarshalFile(
+                DefaultParameterDescriptorGroup.class, "ParameterDescriptorGroup.xml");
+        assertEpsgIdentifierEquals(9804, group.getIdentifiers());
+        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, "Mercator (variant A)", group.getName());
+        final Iterator<GeneralParameterDescriptor> it = group.descriptors().iterator();
+        verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", true,  it.next());
+        verifyParameter(8802, "Longitude of natural origin",    "central_meridian",   true,  it.next());
+        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",       true,  it.next());
+        verifyParameter(8806, "False easting",                  "false_easting",      false, it.next());
+        verifyParameter(8807, "False northing",                 "false_northing",     false, it.next());
+        assertFalse("Unexpected parameter.", it.hasNext());
+    }
+
+    /**
+     * Verifies that the given parameter descriptor has the expected EPSG code, name and OGC alias.
+     */
+    private static void verifyParameter(final int code, final String name, final String alias,
+            final boolean required, final GeneralParameterDescriptor descriptor)
+    {
+        assertEpsgIdentifierEquals(code, descriptor.getIdentifiers());
+        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, name, descriptor.getName());
+        assertAliasTipEquals(alias, descriptor);
+        assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
+        assertEquals("minimumOccurs", required ? 1 : 0, descriptor.getMinimumOccurs());
     }
 }

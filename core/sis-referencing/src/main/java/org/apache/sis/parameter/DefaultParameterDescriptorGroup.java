@@ -21,6 +21,9 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -28,6 +31,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -90,6 +94,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
  */
+@XmlType(name = "OperationParameterGroupType")
+@XmlRootElement(name = "OperationParameterGroup")
 public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor implements ParameterDescriptorGroup {
     /**
      * Serial number for inter-operability with different versions.
@@ -98,8 +104,22 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * The {@linkplain #descriptors() parameter descriptors} for this group.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
+     *
+     * @see #descriptors()
      */
-    private final List<GeneralParameterDescriptor> descriptors;
+    private List<GeneralParameterDescriptor> descriptors;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value or an empty list.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultParameterDescriptorGroup() {
+        descriptors = Collections.emptyList();
+    }
 
     /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
@@ -310,8 +330,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * @return The parameter descriptors in this group.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterDescriptor> descriptors() {
-        return descriptors;
+        return descriptors;     // Unmodifiable.
     }
 
     /**
@@ -395,5 +416,27 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + descriptors.hashCode();
+    }
+
+    // ---- XML SUPPORT ----------------------------------------------------
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal.
+     */
+    @XmlElement(name = "parameter", required = true)
+    private GeneralParameterDescriptor[] getDescriptors() {
+        final List<GeneralParameterDescriptor> descriptors = descriptors();     // Give to user a chance to override.
+        return descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     */
+    private void setDescriptors(final GeneralParameterDescriptor[] parameters) {
+        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
+                "setDescriptors", "parameter", !descriptors.isEmpty()))
+        {
+            descriptors = asList(parameters);
+        }
     }
 }
