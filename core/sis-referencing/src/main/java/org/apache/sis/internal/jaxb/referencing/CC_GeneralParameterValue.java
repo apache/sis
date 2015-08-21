@@ -16,13 +16,13 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.GeneralParameterDescriptor;
-import org.apache.sis.parameter.AbstractParameterDescriptor;
-import org.apache.sis.parameter.DefaultParameterDescriptor;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.GeneralParameterValue;
+import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -35,11 +35,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.6
  * @module
  */
-public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralOperationParameter,GeneralParameterDescriptor> {
+public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParameterValue, GeneralParameterValue> {
     /**
      * Empty constructor for JAXB only.
      */
-    public CC_GeneralOperationParameter() {
+    public CC_GeneralParameterValue() {
     }
 
     /**
@@ -47,52 +47,58 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code GeneralParameterDescriptor.class}
+     * @return {@code GeneralParameterValue.class}
      */
     @Override
-    protected Class<GeneralParameterDescriptor> getBoundType() {
-        return GeneralParameterDescriptor.class;
+    protected Class<GeneralParameterValue> getBoundType() {
+        return GeneralParameterValue.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CC_GeneralOperationParameter(final GeneralParameterDescriptor parameter) {
+    private CC_GeneralParameterValue(final GeneralParameterValue parameter) {
         super(parameter);
     }
 
     /**
-     * Invoked by {@link PropertyType} at marshalling time for wrapping the given value in a
-     * {@code <gml:OperationParameter>} or {@code <gml:OperationParameterGroup>} XML element.
+     * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
+     * in a {@code <gml:ParameterValue>} or {@code <gml:ParameterValueGroup>} XML element.
      *
      * @param  parameter The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CC_GeneralOperationParameter wrap(final GeneralParameterDescriptor parameter) {
-        return new CC_GeneralOperationParameter(parameter);
+    protected CC_GeneralParameterValue wrap(final GeneralParameterValue parameter) {
+        return new CC_GeneralParameterValue(parameter);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:parameter>} XML element.
+     * inside the {@code <gml:parameterValue>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
      *
-     * @see CC_GeneralParameterValue#getElement()
+     * @see CC_GeneralOperationParameter#getElement()
      */
-    @XmlElementRef
-    public AbstractParameterDescriptor getElement() {
-        final GeneralParameterDescriptor metadata = this.metadata;
-        if (metadata instanceof AbstractParameterDescriptor) {
-            return (AbstractParameterDescriptor) metadata;
+    @XmlElements({  // We can not use @XmlElementRef because we have no public AbstractParameterValue parent class.
+        @XmlElement(name = "ParameterValue",      type = DefaultParameterValue.class),
+        @XmlElement(name = "ParameterValueGroup", type = DefaultParameterValueGroup.class)
+    })
+    public GeneralParameterValue getElement() {
+        final GeneralParameterValue metadata = this.metadata;
+        if (metadata instanceof DefaultParameterValue<?>) {
+            return (DefaultParameterValue<?>) metadata;
         }
-        if (metadata instanceof ParameterDescriptor) {
-            return DefaultParameterDescriptor.castOrCopy((ParameterDescriptor<?>) metadata);
+        if (metadata instanceof DefaultParameterValueGroup) {
+            return (DefaultParameterValueGroup) metadata;
         }
-        if (metadata instanceof ParameterDescriptorGroup) {
-            return DefaultParameterDescriptorGroup.castOrCopy((ParameterDescriptorGroup) metadata);
+        if (metadata instanceof ParameterValue) {
+            return new DefaultParameterValue<>((ParameterValue<?>) metadata);
+        }
+        if (metadata instanceof ParameterValueGroup) {
+            return new DefaultParameterValueGroup((ParameterValueGroup) metadata);
         }
         return null;    // Unknown types are currently not marshalled (we may revisit that in a future SIS version).
     }
@@ -102,7 +108,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *
      * @param parameter The unmarshalled element.
      */
-    public void setElement(final AbstractParameterDescriptor parameter) {
+    public void setElement(final GeneralParameterValue parameter) {
         metadata = parameter;
     }
 }

@@ -62,8 +62,12 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      *
      * <p>This descriptor shall not be used in {@link #equals(Object)} and {@link #hashCode()}
      * implementations in order to stay consistent with the {@link List} contract.</p>
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by
+     * {@link DefaultParameterValueGroup#setDescriptor(ParameterDescriptorGroup)}.</p>
      */
-    final ParameterDescriptorGroup descriptor;
+    ParameterDescriptorGroup descriptor;
 
     /**
      * The parameter values in the group. The length of this array is the list capacity.
@@ -75,6 +79,17 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * Number of valid elements in the {@link #values} array.
      */
     private int size;
+
+    /**
+     * Constructs a parameter without descriptor and with the given parameters.
+     * <b>It is caller's responsibility to assign an instance to the {@link #descriptor} field.</b>
+     *
+     * <p>This constructor shall be used only at JAXB unmarshalling time, when the descriptor is not yet known.</p>
+     */
+    ParameterValueList(final GeneralParameterValue[] parameters) {
+        values = parameters;
+        size = parameters.length;
+    }
 
     /**
      * Constructs an initially empty parameter list.

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.Identifier;
@@ -110,6 +111,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForNa
  * @version 0.6
  * @module
  */
+@XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable {
     /**
      * For subclass constructors only.
