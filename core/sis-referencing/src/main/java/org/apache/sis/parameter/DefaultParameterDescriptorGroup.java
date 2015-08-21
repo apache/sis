@@ -43,19 +43,23 @@ import static org.apache.sis.util.Utilities.deepEquals;
 /**
  * The definition of a group of related parameters used by an operation method.
  * {@code DefaultParameterDescriptorGroup} instances are immutable and thus thread-safe.
- * Each map projection or process will typically defines a single static {@code ParameterDescriptorGroup},
- * to be shared by all users of that projection or process.
  *
  * <div class="section">Instantiation</div>
- * Coordinate operation or process <em>implementors</em> may use the {@link ParameterBuilder} class for making
- * their task easier.
+ * Parameter descriptors are usually pre-defined by the SIS library and available through the following methods:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters()}</li>
+ * </ul>
+ *
+ * If nevertheless a {@code ParameterDescriptorGroup} needs to be instantiated directly,
+ * then the {@link ParameterBuilder} class may make the task easier.
  *
  * <div class="note"><b>Example:</b>
  * The following example declares the parameters for a <cite>Mercator (variant A)</cite> projection method
  * valid from 80°S to 84°N on all the longitude range (±180°).
  *
  * {@preformat java
- *     public class Mercator {
+ *     class Mercator {
  *         static final ParameterDescriptorGroup PARAMETERS;
  *         static {
  *             ParameterBuilder builder = new ParameterBuilder();
@@ -77,18 +81,10 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * }
  * </div>
  *
- * <div class="section">Usage</div>
- * Users can simply reference the descriptor provided par a coordinate operation or process providers like below:
- *
- * {@preformat java
- *     ParameterValueGroup parameters = Mercator.PARAMETERS.createValue();
- *     // See DefaultParameterValueGroup for examples on 'parameters' usage.
- * }
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  *
  * @see DefaultParameterValueGroup
