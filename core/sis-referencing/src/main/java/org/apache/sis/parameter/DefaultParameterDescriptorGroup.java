@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,8 +32,8 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -186,6 +187,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * Ensures that the given name array does not contain duplicate values.
+     *
+     * @param properties The properties given to the constructor, or {@code null} if unknown.
      */
     private static void verifyNames(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         for (int i=0; i<parameters.length; i++) {
@@ -194,7 +197,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             for (int j=0; j<i; j++) {
                 if (IdentifiedObjects.isHeuristicMatchForName(parameters[j], name)) {
                     throw new InvalidParameterNameException(Errors.getResources(properties).getString(
-                            Errors.Keys.DuplicatedParameterName_4, parameters[j].getName().getCode(), j, name, i),
+                            Errors.Keys.DuplicatedParameterName_4, Verifier.getDisplayName(parameters[j]), j, name, i),
                             name);
                 }
             }
@@ -364,8 +367,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             return fallback;
         }
         throw new ParameterNotFoundException(ambiguity != null
-                ? Errors.format(Errors.Keys.AmbiguousName_3, fallback.getName(), ambiguity.getName(), name)
-                : Errors.format(Errors.Keys.ParameterNotFound_2, getName(), name), name);
+                ? Errors.format(Errors.Keys.AmbiguousName_3,
+                        IdentifiedObjects.toString(fallback.getName()),
+                        IdentifiedObjects.toString(ambiguity.getName()), name)
+                : Errors.format(Errors.Keys.ParameterNotFound_2, Verifier.getDisplayName(this), name), name);
     }
 
     /**
@@ -426,13 +431,35 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Invoked by JAXB for setting the unmarshalled parameters.
+     * Invoked by JAXB or by {@link DefaultParameterValueGroup} for setting the unmarshalled parameters.
+     * If parameters already exist, them this method computes the union of the two parameter collections
+     * with the new parameters having precedence over the old ones.
+     *
+     * <div class="note"><b>Rational:</b>
+     * this method is invoked twice during {@link DefaultParameterValueGroup} unmarshalling:
+     * <ol>
+     *   <li>First, this method is invoked during unmarshalling of this {@code DefaultParameterDescriptorGroup}.
+     *       But the value class of {@code ParameterDescriptor} components are unknown because this information
+     *       is not part of GML.</li>
+     *   <li>Next, this method is invoked during unmarshalling of the {@code DefaultParameterValueGroup} enclosing
+     *       element with the descriptors found inside the {@code ParameterValue} components. The later do have the
+     *       {@code valueClass} information, so we want to use them in replacement of descriptors of step 1.</li>
+     * </ol>
+     * </div>
      */
-    private void setDescriptors(final GeneralParameterDescriptor[] parameters) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setDescriptors", "parameter", !descriptors.isEmpty()))
-        {
-            descriptors = asList(parameters);
+    final void setDescriptors(GeneralParameterDescriptor[] parameters) {
+        verifyNames(null, parameters);
+        if (!descriptors.isEmpty()) {
+            final Map<String,GeneralParameterDescriptor> union =
+                    new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
+            for (final GeneralParameterDescriptor p : descriptors) {
+                union.put(p.getName().getCode(), p);
+            }
+            for (final GeneralParameterDescriptor p : parameters) {
+                union.put(p.getName().getCode(), p);
+            }
+            parameters = union.values().toArray(new GeneralParameterDescriptor[union.size()]);
         }
+        descriptors = asList(parameters);
     }
 }

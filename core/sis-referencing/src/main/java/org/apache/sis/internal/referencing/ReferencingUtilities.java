@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -210,7 +209,7 @@ public final class ReferencingUtilities extends Static {
                 return (GeographicCRS) crs;
             }
             return new DefaultGeographicCRS(
-                    singletonMap(DefaultGeographicCRS.NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)),
+                    singletonMap(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
                     ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
         }
         if (crs instanceof CompoundCRS) {
