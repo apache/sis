@@ -27,6 +27,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.test.Validators;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.measure.Range;
@@ -285,14 +286,25 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testDoubleValue")
     public void testDescriptorGroup() throws JAXBException {
+        // Test marshalling.
         assertMarshalEqualsFile("ParameterDescriptorGroup.xml",
                 ParameterFormatTest.createMercatorParameters(), "xmlns:*", "xsi:schemaLocation");
 
-        final DefaultParameterDescriptorGroup group = unmarshalFile(
-                DefaultParameterDescriptorGroup.class, "ParameterDescriptorGroup.xml");
+        // Test unmarshalling.
+        verifyDescriptorGroup(unmarshalFile(DefaultParameterDescriptorGroup.class, "ParameterDescriptorGroup.xml"));
+    }
+
+    /**
+     * Verifies that the properties of the given parameter descriptor group are the expected properties,
+     * ignoring the {@code valueClass} and {@code unit} (because not part of GML schema for descriptors).
+     *
+     * @param group The descriptor group to verify.
+     */
+    private static void verifyDescriptorGroup(final ParameterDescriptorGroup group) {
         assertEpsgIdentifierEquals(9804, group.getIdentifiers());
         assertIdentifierEquals("name", "##unrestricted", "EPSG", null, "Mercator (variant A)", group.getName());
 
+        // Verify the ParameterDescriptors properties.
         final Iterator<GeneralParameterDescriptor> it = group.descriptors().iterator();
         verifyDescriptor(8801, "Latitude of natural origin",     "latitude_of_origin", true,  it.next());
         verifyDescriptor(8802, "Longitude of natural origin",    "central_meridian",   true,  it.next());
@@ -303,29 +315,13 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests (un)marshalling of a parameter value group.
-     *
-     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
-     */
-    @Test
-    @DependsOnMethod("testDescriptorGroup")
-    public void testValueGroup() throws JAXBException {
-        assertMarshalEqualsFile("ParameterValueGroup.xml",
-                ParameterFormatTest.createMercatorParameters().createValue(),
-                "xmlns:*", "xsi:schemaLocation", "gml:id");
-
-        final DefaultParameterValueGroup group = unmarshalFile(
-                DefaultParameterValueGroup.class, "ParameterValueGroup.xml");
-
-        final Iterator<GeneralParameterValue> it = group.values().iterator();
-        verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", true,  40, NonSI.DEGREE_ANGLE, it.next());
-        verifyParameter(8802, "Longitude of natural origin",    "central_meridian",   true, -60, NonSI.DEGREE_ANGLE, it.next());
-        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",       true,   1, Unit.ONE,           it.next());
-        assertFalse("Unexpected parameter.", it.hasNext());
-    }
-
-    /**
      * Verifies that the given parameter descriptor has the expected EPSG code, name and OGC alias.
+     *
+     * @param code       The expected EPSG code.
+     * @param name       The expected EPSG name.
+     * @param alias      The expected OGC alias.
+     * @param required   {@code true} if the parameter should be mandatory, or {@code false} if optional.
+     * @param descriptor The parameter descriptor to verify.
      */
     private static void verifyDescriptor(final int code, final String name, final String alias,
             final boolean required, final GeneralParameterDescriptor descriptor)
@@ -339,18 +335,54 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
 
     /**
      * Verifies that the given parameter value has the expected value and descriptor properties.
+     *
+     * @param code       The expected EPSG code.
+     * @param name       The expected EPSG name.
+     * @param alias      The expected OGC alias.
+     * @param value      The expected value.
+     * @param unit       The expected unit of measurement for both the value and the descriptor.
+     * @param descriptor The expected parameter descriptor associated to the parameter value.
+     * @param parameter  The parameter value to verify.
      */
     private static void verifyParameter(final int code, final String name, final String alias,
-            final boolean required, final double value, final Unit<?> unit,
+            final double value, final Unit<?> unit, final GeneralParameterDescriptor descriptor,
             final GeneralParameterValue parameter)
     {
-        verifyDescriptor(code, name, alias, required, parameter.getDescriptor());
         assertInstanceOf(name, ParameterValue.class, parameter);
         final ParameterValue<?> p = (ParameterValue<?>) parameter;
         final ParameterDescriptor<?> d = p.getDescriptor();
+        verifyDescriptor(code, name, alias, true, d);
+        assertSame  ("descriptor", descriptor,   d);
         assertEquals("value",      value,        p.doubleValue(), STRICT);
         assertEquals("unit",       unit,         p.getUnit());
         assertEquals("valueClass", Double.class, d.getValueClass());
         assertEquals("unit",       unit,         d.getUnit());
+    }
+
+    /**
+     * Tests (un)marshalling of a parameter value group.
+     *
+     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testDescriptorGroup")
+    public void testValueGroup() throws JAXBException {
+        // Test marshalling.
+        assertMarshalEqualsFile("ParameterValueGroup.xml",
+                ParameterFormatTest.createMercatorParameters().createValue(),
+                "xmlns:*", "xsi:schemaLocation", "gml:id");
+
+        // Test unmarshalling.
+        final DefaultParameterValueGroup group = unmarshalFile(
+                DefaultParameterValueGroup.class, "ParameterValueGroup.xml");
+
+        // Verify the ParameterValues properties.
+        verifyDescriptorGroup(group.getDescriptor());
+        final Iterator<GeneralParameterValue> it = group.values().iterator();
+        final Iterator<GeneralParameterDescriptor> itd = group.getDescriptor().descriptors().iterator();
+        verifyParameter(8801, "Latitude of natural origin",     "latitude_of_origin", 40, NonSI.DEGREE_ANGLE, itd.next(), it.next());
+        verifyParameter(8802, "Longitude of natural origin",    "central_meridian",  -60, NonSI.DEGREE_ANGLE, itd.next(), it.next());
+        verifyParameter(8805, "Scale factor at natural origin", "scale_factor",        1, Unit.ONE,           itd.next(), it.next());
+        assertFalse("Unexpected parameter.", it.hasNext());
     }
 }

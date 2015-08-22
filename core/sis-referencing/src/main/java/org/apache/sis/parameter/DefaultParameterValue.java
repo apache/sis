@@ -379,7 +379,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getName(descriptor)));
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
         }
         ensureNonNull("unit", unit);
         final short expectedID = Verifier.getUnitMessageID(source);
@@ -500,7 +500,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } catch (URISyntaxException exception) {
             cause = exception;
         }
-        final String name = Verifier.getName(descriptor);
+        final String name = Verifier.getDisplayName(descriptor);
         if (value != null) {
             throw new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -518,7 +518,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
     private IllegalStateException missingOrIncompatibleValue(final Object value) {
-        final String name = Verifier.getName(descriptor);
+        final String name = Verifier.getDisplayName(descriptor);
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -636,7 +636,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             // to be involved in this method. We just want the current unit setting to be unchanged.
             setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
         }
     }
 
@@ -659,7 +659,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         try {
             setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
         }
     }
 

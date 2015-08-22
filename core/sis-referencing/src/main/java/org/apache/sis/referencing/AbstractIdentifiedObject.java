@@ -46,6 +46,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -613,7 +614,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * for access to private fields without compiler-generated bridge methods.
      */
     final void addName(final Identifier id) {
-        if (name == null) {
+        if (name == NilReferencingObject.UNNAMED) {
             name = id;
         } else {
             /*

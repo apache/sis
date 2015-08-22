@@ -180,7 +180,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             // the later case we could have (to be strict) to return a <? extends T> type.
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
-                        descriptor.getName().getCode(), actual));
+                        Verifier.getDisplayName(descriptor), actual));
             }
         }
         return (ParameterDescriptor<T>) descriptor;
@@ -210,7 +210,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             final Class<?> actual = descriptor.getValueClass();
             if (!valueClass.equals(actual)) {   // Same comment than cast(ParameterDescriptor).
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
-                        descriptor.getName().getCode(), actual));
+                        Verifier.getDisplayName(descriptor), actual));
             }
         }
         return (ParameterValue<T>) parameter;
@@ -441,8 +441,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         if (value != null) {
             return value;
         } else {
-            throw new IllegalStateException(Errors.format(
-                    Errors.Keys.MissingValueForParameter_1, Verifier.getName(parameter)));
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1,
+                    Verifier.getDisplayName(parameter)));
         }
     }
 

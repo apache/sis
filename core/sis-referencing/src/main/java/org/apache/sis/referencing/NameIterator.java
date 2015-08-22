@@ -20,6 +20,7 @@ import java.util.Iterator;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.internal.referencing.NilReferencingObject;
 
 
 /**
@@ -53,7 +54,8 @@ final class NameIterator implements Iterator<Identifier> {
     NameIterator(final IdentifiedObject object) {
         alias = object.getAlias().iterator();
         next = object.getName();
-        if (next == null) { // Should never be null in a well-formed IdentifiedObject, but let be safe.
+        // Should never be null in a well-formed IdentifiedObject, but let be safe.
+        if (next == null || next == NilReferencingObject.UNNAMED) {
             next();
         }
     }

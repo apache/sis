@@ -32,7 +32,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -267,7 +267,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
             final GeneralParameterDescriptor descriptor = values.descriptor.descriptor(name);
             if (!(descriptor instanceof ParameterDescriptor<?>) || descriptor.getMaximumOccurs() == 0) {
                 throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
-                        values.descriptor.getName(), name), name);
+                        Verifier.getDisplayName(values.descriptor), name), name);
             }
             /*
              * Create the optional parameter and add it to our internal list. Note that this is
@@ -326,7 +326,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
                 return (ParameterValue<?>) values.get(fallback);   // May lazily create a ParameterValue.
             }
             throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
-                    values.descriptor(fallback).getName(), values.descriptor(ambiguity).getName(), name), name);
+                    IdentifiedObjects.toString(values.descriptor(fallback) .getName()),
+                    IdentifiedObjects.toString(values.descriptor(ambiguity).getName()), name), name);
         }
         return null;
     }
@@ -515,32 +516,41 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     }
 
     /**
-     * Invoked by JAXB for setting the unmarshalled parameters.
+     * Invoked by JAXB for setting the unmarshalled parameters. This method should be invoked last
+     * (after {@link #setDescriptor(ParameterDescriptorGroup)}) even if the {@code parameterValue}
+     * elements were first in the XML document. This is the case at least with the JAXB reference
+     * implementation.
      */
     private void setValues(final GeneralParameterValue[] parameters) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setValues", "parameterValue", !Containers.isNullOrEmpty(values)))
-        {
-            if (values == null) {
-                values = new ParameterValueList(parameters);
-            } else {
-                values.addAll(Arrays.asList(parameters));
-            }
+        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
+        for (int i=0; i<descriptors.length; i++) {
+            descriptors[i] = parameters[i].getDescriptor();
         }
+        if (values == null) {
+            // Should never happen, unless the XML document is invalid and does not have a 'group' element.
+            
+        } else {
+            // We known that the descriptor is an instance of our DefaultParameterDescriptorGroup
+            // implementation because this is what we declare to the JAXBContext and in adapters.
+            ((DefaultParameterDescriptorGroup) values.descriptor).setDescriptors(descriptors);
+            values.clear();  // Because references to parameter descriptors have changed.
+        }
+        values.addAll(Arrays.asList(parameters));
     }
 
     /**
-     * Invoked by JAXB for setting the parameter descriptor.
+     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
+     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
+     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
+     * were not present in the above {@code GeneralParameterValue} array.
      *
      * @see #getDescriptor()
      */
     private void setDescriptor(final ParameterDescriptorGroup descriptor) {
-        if (values == null) {
-// TODO     values = new ParameterValueList(descriptor);
-        } else if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setDescriptor", "group", values.descriptor != null))
+        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
+                "setDescriptor", "group", values != null))
         {
-            values.descriptor = descriptor;
+            values = new ParameterValueList(descriptor);
         }
     }
 }

@@ -196,7 +196,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         }
         if (maximumOccurs > 0xFFFE && maximumOccurs != Integer.MAX_VALUE) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                    Errors.Keys.TooManyOccurrences_2, 0xFFFE, super.getName()));
+                    Errors.Keys.TooManyOccurrences_2, 0xFFFE, super.getName().getCode()));
         }
     }
 

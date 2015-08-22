@@ -108,7 +108,7 @@ final class Verifier {
         if (unit != null) {
             final Unit<?> def = descriptor.getUnit();
             if (def == null) {
-                final String name = getName(descriptor);
+                final String name = getDisplayName(descriptor);
                 throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
             }
             if (!unit.equals(def)) {
@@ -122,7 +122,7 @@ final class Verifier {
                  */
                 if (value != null) {
                     if (!valueClass.isInstance(value)) {
-                        final String name = getName(descriptor);
+                        final String name = getDisplayName(descriptor);
                         throw new InvalidParameterValueException(
                                 Errors.format(Errors.Keys.IllegalParameterValueClass_3,
                                 name, valueClass, value.getClass()), name, value);
@@ -148,7 +148,8 @@ final class Verifier {
                         try {
                             convertedValue = Numbers.cast(n, valueClass.asSubclass(Number.class));
                         } catch (IllegalArgumentException e) {
-                            throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
+                            throw new InvalidParameterValueException(e.getLocalizedMessage(),
+                                    getDisplayName(descriptor), value);
                         }
                     } else {
                         /*
@@ -165,7 +166,7 @@ final class Verifier {
                                 n = Numbers.cast(n, componentType.asSubclass(Number.class));
                             } catch (IllegalArgumentException e) {
                                 throw new InvalidParameterValueException(e.getLocalizedMessage(),
-                                        getName(descriptor) + '[' + i + ']', value);
+                                        getDisplayName(descriptor) + '[' + i + ']', value);
                             }
                             Array.set(convertedValue, i, n);
                         }
@@ -190,7 +191,7 @@ final class Verifier {
             }
             if (error != null) {
                 error.convertRange(converter);
-                final String name = getName(descriptor);
+                final String name = getDisplayName(descriptor);
                 throw new InvalidParameterValueException(error.message(null, name, value), name, value);
             }
         }
@@ -312,8 +313,15 @@ final class Verifier {
      * Convenience method returning the name of the specified descriptor.
      * This method is used mostly for output to be read by human, not for processing.
      * Consequently, we may consider to returns a localized name in a future version.
+     *
+     * <p>This method is null-safe even if none of the references checked here should be null.
+     * We make this method safe because it is indirectly invoked by methods like {@code toString()}
+     * which are not expected to fail even if the object is invalid.</p>
+     *
+     * <p><b>This method should NOT be invoked for programmatic usage</b> (e.g. setting a parameter
+     * value) because the string returned in case of invalid descriptor is arbitrary.</p>
      */
-    static String getName(final GeneralParameterDescriptor descriptor) {
+    static String getDisplayName(final GeneralParameterDescriptor descriptor) {
         if (descriptor != null) {
             final Identifier name = descriptor.getName();
             if (name != null) {
