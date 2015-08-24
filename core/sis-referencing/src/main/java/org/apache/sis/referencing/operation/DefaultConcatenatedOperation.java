@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.Transformation;
@@ -112,7 +111,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     private DefaultConcatenatedOperation(final Map<String,?> properties,
-                                         final ArrayList<SingleOperation> list,
+                                         final ArrayList<CoordinateOperation> list,
                                          final CoordinateOperation[] operations,
                                          final MathTransformFactory factory)
             throws FactoryException
@@ -126,14 +125,14 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      */
     private DefaultConcatenatedOperation(final Map<String,?> properties,
                                          final MathTransform transform,
-                                         final List<SingleOperation> operations)
+                                         final List<CoordinateOperation> operations)
     {
         super(mergeAccuracy(properties, operations),
               operations.get(0).getSourceCRS(),
               operations.get(operations.size() - 1).getTargetCRS(),
               null, transform);
 
-        this.operations = UnmodifiableArrayList.wrap(operations.toArray(new SingleOperation[operations.size()]));
+        this.operations = UnmodifiableArrayList.wrap(operations.toArray(new CoordinateOperation[operations.size()]));
     }
 
     /**
@@ -150,7 +149,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      */
     private static MathTransform expand(final Map<String,?> properties,
             final CoordinateOperation[] operations,
-            final List<SingleOperation> target,
+            final List<CoordinateOperation> target,
             final MathTransformFactory  factory,
             final boolean wantTransform)
             throws FactoryException
@@ -160,15 +159,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         for (int i=0; i<operations.length; i++) {
             ArgumentChecks.ensureNonNullElement("operations", i, operations);
             final CoordinateOperation op = operations[i];
-            if (op instanceof SingleOperation) {
-                target.add((SingleOperation) op);
-            } else if (op instanceof ConcatenatedOperation) {
+            if (op instanceof ConcatenatedOperation) {
                 final ConcatenatedOperation cop = (ConcatenatedOperation) op;
                 final List<? extends CoordinateOperation> cops = cop.getOperations();
                 expand(properties, cops.toArray(new CoordinateOperation[cops.size()]), target, factory, false);
             } else {
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
-                        Errors.Keys.IllegalArgumentClass_2, "operations[" + i + ']', op.getClass()));
+                target.add(op);
             }
             /*
              * Checks the CRS dimensions.
