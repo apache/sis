@@ -32,7 +32,6 @@ import org.opengis.metadata.quality.Result;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -204,7 +203,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
          */
         double accuracy = Double.NaN;
         if (operation instanceof ConcatenatedOperation) {
-            for (final SingleOperation op : ((ConcatenatedOperation) operation).getOperations()) {
+            for (final CoordinateOperation op : ((ConcatenatedOperation) operation).getOperations()) {
                 final double candidate = Math.abs(getLinearAccuracy(op));
                 if (!Double.isNaN(candidate)) {
                     if (Double.isNaN(accuracy)) {

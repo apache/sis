@@ -65,7 +65,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * The sequence of operations.
      */
-    private final List<SingleOperation> operations;
+    private final List<? extends CoordinateOperation> operations;
 
     /**
      * Constructs a concatenated operation from a set of properties and a
@@ -164,7 +164,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 target.add((SingleOperation) op);
             } else if (op instanceof ConcatenatedOperation) {
                 final ConcatenatedOperation cop = (ConcatenatedOperation) op;
-                final List<SingleOperation> cops = cop.getOperations();
+                final List<? extends CoordinateOperation> cops = cop.getOperations();
                 expand(properties, cops.toArray(new CoordinateOperation[cops.size()]), target, factory, false);
             } else {
                 throw new IllegalArgumentException(Errors.getResources(properties).getString(
@@ -308,7 +308,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @return The sequence of operations.
      */
     @Override
-    public List<SingleOperation> getOperations() {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<? extends CoordinateOperation> getOperations() {
         return operations;
     }
 
