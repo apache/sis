@@ -70,6 +70,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.MatrixParametersAlphaNumTest.class,
     org.apache.sis.parameter.TensorValuesTest.class,
     org.apache.sis.parameter.MapProjectionParametersTest.class,
+    org.apache.sis.parameter.ParameterMarshallingTest.class,
 
     // Test transforms other than map projections.
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,

@@ -21,6 +21,10 @@ import java.io.File;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
@@ -33,13 +37,17 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.internal.jaxb.gml.Measure;
+import org.apache.sis.internal.jaxb.gml.MeasureList;
 import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -115,6 +123,11 @@ import java.nio.file.Path;
  * @see DefaultParameterDescriptor
  * @see DefaultParameterValueGroup
  */
+@XmlType(name = "ParameterValueType", propOrder = {
+    "xmlValue",
+    "descriptor"
+})
+@XmlRootElement(name = "ParameterValue")
 public class DefaultParameterValue<T> extends FormattableObject implements ParameterValue<T>,
         LenientComparable, Serializable, Cloneable
 {
@@ -125,8 +138,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * The definition of this parameter.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptor(ParameterDescriptor)}</p>
+     *
+     * @see #getDescriptor()
      */
-    private final ParameterDescriptor<T> descriptor;
+    private ParameterDescriptor<T> descriptor;
 
     /**
      * The value, or {@code null} if undefined.
@@ -141,6 +159,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(Object, Unit)}.
      */
     private Unit<?> unit;
+
+    /**
+     * Default constructor for JAXB only. The descriptor is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
+     */
+    private DefaultParameterValue() {
+    }
 
     /**
      * Creates a parameter value from the specified descriptor.
@@ -178,6 +203,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @return The definition of this parameter.
      */
     @Override
+    @XmlElement(name = "operationParameter", required = true)
     public ParameterDescriptor<T> getDescriptor() {
         return descriptor;
     }
@@ -353,7 +379,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private UnitConverter getConverterTo(final Unit<?> unit) {
         final Unit<?> source = getUnit();
         if (source == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getName(descriptor)));
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnitlessParameter_1, Verifier.getDisplayName(descriptor)));
         }
         ensureNonNull("unit", unit);
         final short expectedID = Verifier.getUnitMessageID(source);
@@ -474,7 +500,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } catch (URISyntaxException exception) {
             cause = exception;
         }
-        final String name = Verifier.getName(descriptor);
+        final String name = Verifier.getDisplayName(descriptor);
         if (value != null) {
             throw new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -492,7 +518,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Returns the exception to throw when an incompatible method is invoked for the value type.
      */
     private IllegalStateException missingOrIncompatibleValue(final Object value) {
-        final String name = Verifier.getName(descriptor);
+        final String name = Verifier.getDisplayName(descriptor);
         if (value != null) {
             return new InvalidParameterTypeException(getClassTypeError(), name);
         }
@@ -504,7 +530,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     private String getClassTypeError() {
         return Errors.format(Errors.Keys.IllegalOperationForValueClass_1,
-                ((ParameterDescriptor<?>) descriptor).getValueClass());
+                (descriptor != null) ? ((ParameterDescriptor<?>) descriptor).getValueClass() : "?");
     }
 
     /**
@@ -544,7 +570,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     public void setValue(final boolean value) throws InvalidParameterValueException {
         // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
         // to be involved in this method. We just want the current unit setting to be unchanged.
-        setValue(Boolean.valueOf(value), unit);
+        setValue(value, unit);
     }
 
     /**
@@ -561,7 +587,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final int value) throws InvalidParameterValueException {
-        Number n = Integer.valueOf(value);
+        Number n = value;
         final Class<T> valueClass = descriptor.getValueClass();
         if (Number.class.isAssignableFrom(valueClass)) {
             @SuppressWarnings("unchecked")
@@ -610,7 +636,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             // to be involved in this method. We just want the current unit setting to be unchanged.
             setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
         }
     }
 
@@ -633,7 +659,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         try {
             setValue(wrap(value, descriptor.getValueClass()), unit);
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getName(descriptor), value);
+            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
         }
     }
 
@@ -898,8 +924,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
              * Note that we take the descriptor unit as a starting point instead than this parameter unit
              * in order to give precedence to the descriptor units in Convention.WKT1_COMMON_UNITS mode.
              */
-            Unit<?> contextualUnit = descriptor.getUnit();
-            if (contextualUnit == null) { // Should be very rare (probably a buggy descriptor), but we try to be safe.
+            Unit<?> contextualUnit;
+            if (descriptor == null || (contextualUnit = descriptor.getUnit()) == null) {
+                // Should be very rare (probably a buggy descriptor), but we try to be safe.
                 contextualUnit = unit;
             }
             contextualUnit = formatter.toContextualUnit(contextualUnit);
@@ -919,7 +946,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             } catch (IllegalStateException exception) {
                 // May happen if a parameter is mandatory (e.g. "semi-major")
                 // but no value has been set for this parameter.
-                formatter.setInvalidWKT(descriptor, exception);
+                if (descriptor != null) {
+                    formatter.setInvalidWKT(descriptor, exception);
+                } else {
+                    // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                    // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                    formatter.setInvalidWKT(DefaultParameterValue.class, exception);
+                }
                 value = Double.NaN;
             }
             formatter.append(value);
@@ -937,7 +970,13 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 if (!isWKT1) {
                     formatter.append(unit);
                 } else if (!ignoreUnits) {
-                    formatter.setInvalidWKT(descriptor, null);
+                    if (descriptor != null) {
+                        formatter.setInvalidWKT(descriptor, null);
+                    } else {
+                        // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                        // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                        formatter.setInvalidWKT(DefaultParameterValue.class, null);
+                    }
                 }
             }
         }
@@ -961,5 +1000,101 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private static boolean hasContextualUnit(final Formatter formatter) {
         return formatter.hasContextualUnit(1) ||    // In WKT1
                formatter.hasContextualUnit(2);      // In WKT2
+    }
+
+    // ---- XML SUPPORT ----------------------------------------------------
+
+    /**
+     * Invoked by JAXB for obtaining the object to marshal.
+     * The property name depends on its type after conversion by this method.
+     */
+    @XmlElements({
+        @XmlElement(name = "value",             type = Measure.class),
+        @XmlElement(name = "integerValue",      type = Integer.class),
+        @XmlElement(name = "booleanValue",      type = Boolean.class),
+        @XmlElement(name = "stringValue",       type = String .class),
+        @XmlElement(name = "valueFile",         type = URI    .class),
+        @XmlElement(name = "integerValueList",  type = IntegerList.class),
+        @XmlElement(name = "valueList",         type = MeasureList.class)
+    })
+    private Object getXmlValue() {
+        final Object value = getValue();    // Give to user a chance to override.
+        if (value != null) {
+            if (value instanceof Number) {
+                final Number n = (Number) value;
+                if (Numbers.isInteger(n.getClass())) {
+                    final int xmlValue = n.intValue();
+                    if (xmlValue >= 0 && xmlValue == n.doubleValue()) {
+                        return xmlValue;
+                    }
+                }
+                return new Measure(((Number) value).doubleValue(), getUnit());
+            }
+            if (value instanceof CharSequence) {
+                return value.toString();
+            }
+            if (isFile(value)) {
+                return ObjectConverters.convert(value, URI.class);
+            }
+            final Class<?> type = Numbers.primitiveToWrapper(value.getClass().getComponentType());
+            if (type != null && Number.class.isAssignableFrom(type)) {
+                if (Numbers.isInteger(type)) {
+                    return new IntegerList(value);
+                }
+                return new MeasureList(value, type, getUnit());
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    @SuppressWarnings("unchecked")
+    private void setXmlValue(Object xmlValue) {
+        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
+                "setXmlValue", "value", value != null || unit != null))
+        {
+            if (xmlValue instanceof Measure) {
+                final Measure measure = (Measure) xmlValue;
+                xmlValue = measure.value;
+                unit = measure.unit;
+            } else if (xmlValue instanceof MeasureList) {
+                final MeasureList measure = (MeasureList) xmlValue;
+                xmlValue = measure.toArray();
+                unit = measure.unit;
+            } else if (xmlValue instanceof IntegerList) {
+                xmlValue = ((IntegerList) xmlValue).toArray();
+            }
+            if (descriptor != null) {
+                /*
+                 * Should never happen with default SIS implementation, but may happen if the user created
+                 * a sub-type of DefaultParameterValue with a default constructor providing the descriptor.
+                 */
+                value = ObjectConverters.convert(xmlValue, descriptor.getValueClass());
+            } else {
+                /*
+                 * Temporarily accept the value without checking its type. This is required because the
+                 * descriptor is normally defined after the value in a GML document. The type will need
+                 * to be verified when the descriptor will be set.
+                 *
+                 * There is no way we can prove that this cast is correct before the descriptor is set,
+                 * and maybe that descriptor will never be set if the GML document is illegal. However
+                 * this code is executed only during XML unmarshalling, in which case our unmarshalling
+                 * process will construct a descriptor compatible with the value rather than the converse.
+                 */
+                value = (T) xmlValue;
+            }
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDescriptor()
+     */
+    private void setDescriptor(final ParameterDescriptor<T> descriptor) {
+        this.descriptor = descriptor;
+        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
     }
 }

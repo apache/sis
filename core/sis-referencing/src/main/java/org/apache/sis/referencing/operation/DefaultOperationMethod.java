@@ -31,9 +31,9 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -255,7 +255,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 return getProperties(parameters, null);
             }
         }
-        return Collections.singletonMap(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed));
+        return Collections.singletonMap(NAME_KEY, NilReferencingObject.UNNAMED);
     }
 
     /**

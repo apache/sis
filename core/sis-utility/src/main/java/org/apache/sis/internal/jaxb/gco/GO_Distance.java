@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import javax.measure.unit.SI;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.internal.jaxb.gml.Measure;
 
 
 /**
