@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
@@ -29,6 +30,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -92,7 +94,6 @@ final class Verifier {
      *         then casted to the descriptor parameterized type.
      * @throws InvalidParameterValueException if the parameter value is invalid.
      */
-    @SuppressWarnings("unchecked")
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
             throws InvalidParameterValueException
     {
@@ -107,7 +108,7 @@ final class Verifier {
         if (unit != null) {
             final Unit<?> def = descriptor.getUnit();
             if (def == null) {
-                final String name = getName(descriptor);
+                final String name = getDisplayName(descriptor);
                 throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
             }
             if (!unit.equals(def)) {
@@ -121,7 +122,7 @@ final class Verifier {
                  */
                 if (value != null) {
                     if (!valueClass.isInstance(value)) {
-                        final String name = getName(descriptor);
+                        final String name = getDisplayName(descriptor);
                         throw new InvalidParameterValueException(
                                 Errors.format(Errors.Keys.IllegalParameterValueClass_3,
                                 name, valueClass, value.getClass()), name, value);
@@ -145,9 +146,10 @@ final class Verifier {
                          */
                         Number n = converter.convert(((Number) value).doubleValue());
                         try {
-                            convertedValue = Numbers.cast(n, (Class<? extends Number>) valueClass);
+                            convertedValue = Numbers.cast(n, valueClass.asSubclass(Number.class));
                         } catch (IllegalArgumentException e) {
-                            throw new InvalidParameterValueException(e.getLocalizedMessage(), getName(descriptor), value);
+                            throw new InvalidParameterValueException(e.getLocalizedMessage(),
+                                    getDisplayName(descriptor), value);
                         }
                     } else {
                         /*
@@ -161,10 +163,10 @@ final class Verifier {
                             Number n = (Number) Array.get(value, i);
                             n = converter.convert(n.doubleValue()); // Value in units that we can compare.
                             try {
-                                n = Numbers.cast(n, (Class<? extends Number>) componentType);
+                                n = Numbers.cast(n, componentType.asSubclass(Number.class));
                             } catch (IllegalArgumentException e) {
                                 throw new InvalidParameterValueException(e.getLocalizedMessage(),
-                                        getName(descriptor) + '[' + i + ']', value);
+                                        getDisplayName(descriptor) + '[' + i + ']', value);
                             }
                             Array.set(convertedValue, i, n);
                         }
@@ -189,11 +191,11 @@ final class Verifier {
             }
             if (error != null) {
                 error.convertRange(converter);
-                final String name = getName(descriptor);
+                final String name = getDisplayName(descriptor);
                 throw new InvalidParameterValueException(error.message(null, name, value), name, value);
             }
         }
-        return (T) convertedValue;
+        return valueClass.cast(convertedValue);
     }
 
     /**
@@ -311,9 +313,25 @@ final class Verifier {
      * Convenience method returning the name of the specified descriptor.
      * This method is used mostly for output to be read by human, not for processing.
      * Consequently, we may consider to returns a localized name in a future version.
+     *
+     * <p>This method is null-safe even if none of the references checked here should be null.
+     * We make this method safe because it is indirectly invoked by methods like {@code toString()}
+     * which are not expected to fail even if the object is invalid.</p>
+     *
+     * <p><b>This method should NOT be invoked for programmatic usage</b> (e.g. setting a parameter
+     * value) because the string returned in case of invalid descriptor is arbitrary.</p>
      */
-    static String getName(final GeneralParameterDescriptor descriptor) {
-        return descriptor.getName().getCode();
+    static String getDisplayName(final GeneralParameterDescriptor descriptor) {
+        if (descriptor != null) {
+            final Identifier name = descriptor.getName();
+            if (name != null) {
+                final String code = name.getCode();
+                if (code != null) {
+                    return code;
+                }
+            }
+        }
+        return Vocabulary.format(Vocabulary.Keys.Unnamed);
     }
 
     /**

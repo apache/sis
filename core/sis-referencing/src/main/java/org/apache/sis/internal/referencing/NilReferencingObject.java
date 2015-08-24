@@ -26,6 +26,8 @@ import org.opengis.metadata.extent.Extent;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.io.wkt.UnformattableObjectException;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -36,10 +38,24 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class NilReferencingObject implements NilObject, ReferenceSystem {
+    /**
+     * The default name of {@code NilReferencingObject} instances.
+     * We use this value because {@link ReferenceSystem#getName()}
+     * is a mandatory property and not all code is tolerant to null name.
+     *
+     * <div class="note"><b>Note:</b>
+     * in theory we do not need a default name because it will be replaced by
+     * the value of the {@code <gml:name>} element anyway at XML unmarshalling time.
+     * But not all XML documents are valid, so the {@code <gml:name>} may be missing.</div>
+     *
+     * @since 0.6
+     */
+    public static final Identifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
+
     /**
      * The unique instance.
      */
@@ -64,7 +80,7 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      * Returning null for collection are okay in the particular case of SIS implementation,
      * because the constructor will replace empty collections by null references anyway.
      */
-    @Override public Identifier               getName()        {return null;}
+    @Override public Identifier               getName()        {return UNNAMED;}
     @Override public Collection<GenericName>  getAlias()       {return null;}
     @Override public Set<Identifier>          getIdentifiers() {return null;}
     @Override public InternationalString      getRemarks()     {return null;}

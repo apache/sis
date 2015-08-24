@@ -247,8 +247,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
                             Errors.Keys.MismatchedParameterDescriptor_1, name));
                 }
             }
-            throw new InvalidParameterNameException(Errors.format(
-                    Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name.getCode());
+            throw new InvalidParameterNameException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                    Verifier.getDisplayName(descriptor), name), name.getCode());
         }
     }
 

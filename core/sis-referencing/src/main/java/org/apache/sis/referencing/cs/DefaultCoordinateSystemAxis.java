@@ -43,13 +43,11 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -63,6 +61,14 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
+
+/*
+ * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
+ * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
+ * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
+ * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
+ */
+import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -123,16 +129,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * This is used for setting the value to be returned by {@link #getRangeMeaning()}.
      */
     public static final String RANGE_MEANING_KEY = "rangeMeaning";
-
-    /**
-     * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
-     * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
-     * guess what the new name should be.
-     *
-     * <p>This constant is used as a sentinel value for skipping axis name comparisons when the axis name is
-     * unknown.</p>
-     */
-    static final NamedIdentifier UNNAMED = new NamedIdentifier(null, Vocabulary.format(Vocabulary.Keys.Unnamed));
 
     /**
      * Some names to be treated as equivalent. This is needed because axis names are the primary way to

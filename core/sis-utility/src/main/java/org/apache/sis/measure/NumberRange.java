@@ -208,7 +208,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         if (Float.isNaN(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, name));
         }
-        return (value != infinity) ? Float.valueOf(value) : null;
+        return (value != infinity) ? value : null;
     }
 
     /**
