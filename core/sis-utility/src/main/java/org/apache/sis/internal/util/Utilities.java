@@ -76,6 +76,7 @@ public final class Utilities extends Static {
             final String text, final String accepted, final boolean toLowerCase)
     {
         boolean added = false;
+        boolean toUpperCase = false;
         if (text != null) {
             for (int i=0; i<text.length();) {
                 final int c = text.codePointAt(i);
@@ -86,8 +87,12 @@ public final class Utilities extends Static {
                     if (!isFirst && !added && separator != 0) {
                         appendTo.append(separator);
                     }
-                    appendTo.appendCodePoint(toLowerCase ? Character.toLowerCase(c) : c);
+                    appendTo.appendCodePoint(toLowerCase ? Character.toLowerCase(c) :
+                                             toUpperCase ? Character.toUpperCase(c) : c);
                     added = true;
+                    toUpperCase = false;
+                } else {
+                    toUpperCase = true;
                 }
                 i += Character.charCount(c);
             }

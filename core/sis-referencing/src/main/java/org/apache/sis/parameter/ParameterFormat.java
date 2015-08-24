@@ -645,7 +645,9 @@ public class ParameterFormat extends TabularFormat<Object> {
                  */
                 final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) generalDescriptor;
                 final Class<?> valueClass = descriptor.getValueClass();
-                table.append(getFormat(Class.class).format(valueClass, buffer, dummyFP).toString());
+                if (valueClass != null) {  // Should never be null, but let be safe.
+                    table.append(getFormat(Class.class).format(valueClass, buffer, dummyFP).toString());
+                }
                 nextColumn(table);
                 buffer.setLength(0);
                 /*

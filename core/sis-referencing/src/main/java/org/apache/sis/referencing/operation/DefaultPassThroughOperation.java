@@ -17,10 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
@@ -51,7 +49,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     /**
      * The operation to apply on the subset of a coordinate tuple.
      */
-    private final SingleOperation operation;
+    private final CoordinateOperation operation;
 
     /**
      * Constructs a single operation from a set of properties.
@@ -89,7 +87,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     public DefaultPassThroughOperation(final Map<String,?>            properties,
                                        final CoordinateReferenceSystem sourceCRS,
                                        final CoordinateReferenceSystem targetCRS,
-                                       final SingleOperation           operation,
+                                       final CoordinateOperation       operation,
                                        final int firstAffectedOrdinate,
                                        final int numTrailingOrdinates)
     {
@@ -149,28 +147,6 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * @deprecated May be removed in GeoAPI 4.0 since it does not apply to pass-through operations.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public OperationMethod getMethod() {
-        return null;
-    }
-
-    /**
-     * @deprecated May be removed in GeoAPI 4.0 since it does not apply to pass-through operations.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    @Deprecated
-    public ParameterValueGroup getParameterValues() {
-        return null;
-    }
-
-    /**
      * Returns the operation to apply on the subset of a coordinate tuple.
      *
      * @return The operation to apply on the subset of a coordinate tuple.
@@ -178,7 +154,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * @see PassThroughTransform#getSubTransform()
      */
     @Override
-    public SingleOperation getOperation() {
+    public CoordinateOperation getOperation() {
         return operation;
     }
 
