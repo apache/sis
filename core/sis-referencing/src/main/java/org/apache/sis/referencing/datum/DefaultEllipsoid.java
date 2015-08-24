@@ -31,7 +31,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gco.Measure;
+import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.WKTKeywords;

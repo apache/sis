@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.Unit;
 import org.opengis.util.MemberName;
 import org.opengis.metadata.Identifier;
@@ -113,6 +114,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable {
     /**
      * For subclass constructors only.
@@ -174,13 +176,14 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     public static <T> ParameterDescriptor<T> cast(final ParameterDescriptor<?> descriptor, final Class<T> valueClass)
             throws ClassCastException
     {
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
         if (descriptor != null) {
             final Class<?> actual = descriptor.getValueClass();
             // We require a strict equality - not type.isAssignableFrom(actual) - because in
             // the later case we could have (to be strict) to return a <? extends T> type.
             if (!valueClass.equals(actual)) {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
-                        descriptor.getName().getCode(), actual));
+                        Verifier.getDisplayName(descriptor), actual));
             }
         }
         return (ParameterDescriptor<T>) descriptor;
@@ -190,9 +193,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * Casts the given parameter value to the given type.
      * An exception is thrown immediately if the parameter does not have the expected value class.
      *
-     * @param  <T>   The expected value class.
-     * @param  value The value to cast, or {@code null}.
-     * @param  type  The expected value class.
+     * @param  <T>        The expected value class.
+     * @param  parameter  The parameter to cast, or {@code null}.
+     * @param  valueClass The expected value class.
      * @return The value casted to the given type, or {@code null} if the given value was null.
      * @throws ClassCastException if the given value doesn't have the expected value class.
      *
@@ -201,18 +204,19 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @category verification
      */
     @SuppressWarnings("unchecked")
-    public static <T> ParameterValue<T> cast(final ParameterValue<?> value, final Class<T> type)
+    public static <T> ParameterValue<T> cast(final ParameterValue<?> parameter, final Class<T> valueClass)
             throws ClassCastException
     {
-        if (value != null) {
-            final ParameterDescriptor<?> descriptor = value.getDescriptor();
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
+        if (parameter != null) {
+            final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
             final Class<?> actual = descriptor.getValueClass();
-            if (!type.equals(actual)) { // Same comment than cast(ParameterDescriptor)...
+            if (!valueClass.equals(actual)) {   // Same comment than cast(ParameterDescriptor).
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalParameterType_2,
-                        descriptor.getName().getCode(), actual));
+                        Verifier.getDisplayName(descriptor), actual));
             }
         }
-        return (ParameterValue<T>) value;
+        return (ParameterValue<T>) parameter;
     }
 
     /**
@@ -440,8 +444,8 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         if (value != null) {
             return value;
         } else {
-            throw new IllegalStateException(Errors.format(
-                    Errors.Keys.MissingValueForParameter_1, Verifier.getName(parameter)));
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForParameter_1,
+                    Verifier.getDisplayName(parameter)));
         }
     }
 

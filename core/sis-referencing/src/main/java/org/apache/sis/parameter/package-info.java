@@ -88,4 +88,25 @@
  * @version 0.6
  * @module
  */
+@XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+})
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CC_OperationParameter.class),
+    @XmlJavaTypeAdapter(CC_OperationParameterGroup.class),
+    @XmlJavaTypeAdapter(CC_GeneralOperationParameter.class),
+    @XmlJavaTypeAdapter(CC_GeneralParameterValue.class)
+})
 package org.apache.sis.parameter;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.internal.jaxb.referencing.*;
+import org.apache.sis.xml.Namespaces;
