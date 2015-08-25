@@ -73,7 +73,7 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */
-    private static final String XML_FILE = "NTF.xml";
+    private static final String XML_FILE = "ProjectedCRS.xml";
 
     /**
      * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grades,
