@@ -42,7 +42,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */
-    private static final String XML_FILE = "Modified Julian.xml";
+    private static final String XML_FILE = "TemporalDatum.xml";
 
     /**
      * November 17, 1858 at 00:00 UTC as a Java timestamp.

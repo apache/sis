@@ -58,7 +58,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
      * An XML file in this package containing a geodetic datum definition.
      */
-    private static final String XML_FILE = "WGS 84.xml";
+    private static final String XML_FILE = "GeodeticDatum.xml";
 
     /**
      * Tests the creation and serialization of a {@link DefaultGeodeticDatum}.

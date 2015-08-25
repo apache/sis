@@ -180,7 +180,7 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     @Test
     @DependsOnMethod({"testUnmarshall", "testMarshall", "testWKT_inGrads"})
     public void testParisMeridian() throws JAXBException {
-        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "Paris.xml");
+        final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, "PrimeMeridian.xml");
         assertIsParis(pm);
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(NonSI.DEGREE_ANGLE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
