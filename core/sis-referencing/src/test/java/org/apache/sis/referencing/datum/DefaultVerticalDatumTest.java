@@ -47,12 +47,12 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */
-    private static final String XML_FILE = "Mean Sea Level.xml";
+    private static final String XML_FILE = "VerticalDatum.xml";
 
     /**
      * An XML file with the same content than {@link #XML_FILE}, but written in an older GML format.
      */
-    private static final String GML31_FILE = "Mean Sea Level (GML 3.1).xml";
+    private static final String GML31_FILE = "VerticalDatum (GML 3.1).xml";
 
     /**
      * Tests the {@link DefaultVerticalDatum#getVerticalDatumType()} method in a state

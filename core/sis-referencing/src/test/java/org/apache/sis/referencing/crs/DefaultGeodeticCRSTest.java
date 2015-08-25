@@ -45,7 +45,7 @@ public final strictfp class DefaultGeodeticCRSTest extends XMLTestCase {
     /**
      * An XML file in this package containing a geodetic CRS definition.
      */
-    private static final String XML_FILE = "WGS 84.xml";
+    private static final String XML_FILE = "GeographicCRS.xml";
 
     /**
      * Tests (un)marshalling of a geodetic coordinate reference system.
