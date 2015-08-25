@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.gco;
+package org.apache.sis.internal.jaxb.gml;
 
 import java.net.URISyntaxException;
 import javax.measure.unit.Unit;

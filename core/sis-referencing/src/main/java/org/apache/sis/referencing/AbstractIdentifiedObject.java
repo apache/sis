@@ -39,7 +39,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
@@ -47,6 +46,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -68,6 +68,9 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jdk7.Objects;
 
 
@@ -124,6 +127,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  */
 @XmlType(name="IdentifiedObjectType", propOrder={
+    "description",
     "identifier",
     "names",
     "remarks"
@@ -613,7 +617,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * for access to private fields without compiler-generated bridge methods.
      */
     final void addName(final ReferenceIdentifier id) {
-        if (name == null) {
+        if (name == NilReferencingObject.UNNAMED) {
             name = id;
         } else {
             /*
@@ -703,6 +707,32 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Override
     public Set<ReferenceIdentifier> getIdentifiers() {
         return nonNull(identifiers); // Needs to be null-safe because we may have a null value on unmarshalling.
+    }
+
+    /**
+     * Returns a narrative explanation of the role of this object.
+     *
+     * <div class="section">Default value</div>
+     * The default implementation returns the
+     * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
+     * provided by this object's {@linkplain #getName() name}.
+     *
+     * @return A narrative explanation of the role of this object, or {@code null} if none.
+     *
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription()
+     *
+     * @since 0.6
+     */
+    @XmlElement
+    public InternationalString getDescription() {
+        final ReferenceIdentifier name = getName();
+        if (name instanceof ImmutableIdentifier) {
+            return ((ImmutableIdentifier) name).getDescription();
+        }
+        if (name instanceof DefaultIdentifier) {
+            return ((DefaultIdentifier) name).getDescription();
+        }
+        return null;
     }
 
     /**

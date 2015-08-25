@@ -45,6 +45,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 0.6
  * @module
  */
+@SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final strictfp class DefaultParameterValueTest extends TestCase {
     /**

@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.Transformation;
@@ -42,6 +41,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.referencing.operation.SingleOperation;
 
 
 /**
@@ -305,9 +305,16 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * Returns the sequence of operations.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the element type
+     * from {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
+     * </div>
+     *
      * @return The sequence of operations.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SingleOperation> getOperations() {
         return operations;
     }
