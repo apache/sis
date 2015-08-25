@@ -49,7 +49,7 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     /**
      * An XML file in this package containing an ellipsoid definition.
      */
-    private static final String XML_FILE = "Clarke 1880.xml";
+    private static final String XML_FILE = "Ellipsoid.xml";
 
     /**
      * Half of a minute of angle, in degrees.
