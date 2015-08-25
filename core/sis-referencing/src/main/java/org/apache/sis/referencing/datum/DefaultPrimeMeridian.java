@@ -32,7 +32,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.jaxb.gco.Measure;
+import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;

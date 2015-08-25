@@ -1270,7 +1270,7 @@ public class Formatter implements Localized {
     final boolean appendValue(final Object value) {
         if (value.getClass().isArray()) {
             appendSeparator();
-            buffer.appendCodePoint(symbols.getOpenSequence());
+            elementStart = buffer.appendCodePoint(symbols.getOpenSequence()).length();
             final int length = Array.getLength(value);
             for (int i=0; i<length; i++) {
                 appendAny(Array.get(value, i));

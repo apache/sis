@@ -50,7 +50,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *   </CI_ResponsibleParty>
  * }
  *
- * The {@code </CI_Contact>} level is not really necessary, and JAXB is not designed for inserting
+ * The {@code <CI_Contact>} level is not really necessary, and JAXB is not designed for inserting
  * such level since it is not the usual way to write XML. In order to get this output with JAXB,
  * we have to wrap metadata object in an additional object. So each {@code PropertyType} subclass
  * is both a JAXB adapter and a wrapper. We have merged those functionalities in order to avoid

@@ -36,6 +36,14 @@ import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
+/*
+ * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
+ * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
+ * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
+ * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
+ */
+import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
+
 
 /**
  * Derives an coordinate system from an existing one for {@link AxesConvention}.
@@ -165,7 +173,7 @@ final class Normalizer implements Comparable<Normalizer> {
         if (newAbbr.equals(abbreviation)) {
             properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
         } else {
-            properties.put(NAME_KEY, DefaultCoordinateSystemAxis.UNNAMED);
+            properties.put(NAME_KEY, UNNAMED);
         }
         /*
          * Converts the axis range and build the new axis.

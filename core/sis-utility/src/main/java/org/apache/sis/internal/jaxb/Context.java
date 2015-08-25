@@ -29,6 +29,7 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.xml.MarshalContext;
@@ -37,15 +38,11 @@ import org.apache.sis.xml.ReferenceResolver;
 
 
 /**
- * Thread-local status of a marshalling or unmarshalling processes, also occasionally used for other processes.
+ * Thread-local status of a marshalling or unmarshalling processes.
  * All non-static methods in this class except {@link #finish()} are implementation of public API.
  * All static methods are internal API. Those methods expect a {@code Context} instance as their first argument.
  * They should be though as if they were normal member methods, except that they accept {@code null} instance
  * if no (un)marshalling is in progress.
- *
- * <p>While this class is primarily used for (un)marshalling processes, it may also be opportunistically used
- * for other processes like {@link org.apache.sis.metadata.AbstractMetadata#equals(Object)}. The class name is
- * only "{@code Context}" for that reason.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -120,34 +117,46 @@ public final class Context extends MarshalContext {
      * The timezone, or {@code null} if unspecified.
      * In the later case, an implementation-default (typically UTC) timezone is used.
      */
-    private TimeZone timezone;
+    private final TimeZone timezone;
 
     /**
      * The base URL of ISO 19139 (or other standards) schemas. The valid values
      * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
-    private Map<String,String> schemas;
+    private final Map<String,String> schemas;
 
     /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
      * If null, than the latest version is assumed.
      */
-    private Version versionGML;
+    private final Version versionGML;
 
     /**
      * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
      */
-    private ReferenceResolver resolver;
+    private final ReferenceResolver resolver;
 
     /**
      * The value converter currently in use, or {@code null} for {@link ValueConverter#DEFAULT}.
      */
-    private ValueConverter converter;
+    private final ValueConverter converter;
 
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private WarningListener<?> warningListener;
+    private final WarningListener<?> warningListener;
+
+    /**
+     * The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal, or
+     * {@code null} if this information is not provided. See {@link #getWrapper(Context)} for an example.
+     *
+     * <p>For performance reasons, this {@code wrapper} information is not provided by default.
+     * See {@link #setWrapper(Context, PropertyType)} for more information.</p>
+     *
+     * @see #getWrapper(Context)
+     * @see #setWrapper(Context, PropertyType)
+     */
+    private PropertyType<?,?> wrapper;
 
     /**
      * The context which was previously used. This form a linked list allowing to push properties
@@ -177,6 +186,7 @@ public final class Context extends MarshalContext {
      * @param  converter       The converter in use.
      * @param  warningListener The object to inform about warnings.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(final int                bitMasks,
                    final Locale             locale,   final TimeZone       timezone,
                    final Map<String,String> schemas,  final Version        versionGML,
@@ -191,13 +201,13 @@ public final class Context extends MarshalContext {
         this.resolver        = resolver;
         this.converter       = converter;
         this.warningListener = warningListener;
-        previous = current();
-        CURRENT.set(this);
         if ((bitMasks & MARSHALLING) != 0) {
             if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
                 this.bitMasks |= CLEAR_SEMAPHORE;
             }
         }
+        previous = current();
+        CURRENT.set(this);
     }
 
     /**
@@ -207,16 +217,24 @@ public final class Context extends MarshalContext {
      *
      * @see #push(Locale)
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Context(final Context previous) {
         if (previous != null) {
-            bitMasks         = previous.bitMasks;
-            locale           = previous.locale;
-            timezone         = previous.timezone;
-            schemas          = previous.schemas;
-            versionGML       = previous.versionGML;
-            resolver         = previous.resolver;
-            converter        = previous.converter;
-            warningListener  = previous.warningListener;
+            bitMasks        = previous.bitMasks;
+            locale          = previous.locale;
+            timezone        = previous.timezone;
+            schemas         = previous.schemas;
+            versionGML      = previous.versionGML;
+            resolver        = previous.resolver;
+            converter       = previous.converter;
+            warningListener = previous.warningListener;
+        } else {
+            timezone        = null;
+            schemas         = null;
+            versionGML      = null;
+            resolver        = null;
+            converter       = null;
+            warningListener = null;
         }
         this.previous = previous;
         CURRENT.set(this);
@@ -317,6 +335,57 @@ public final class Context extends MarshalContext {
             buffer.append('/');
         }
         return buffer;
+    }
+
+    /**
+     * Returns the {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
+     * or {@code null} if this information is not provided. The {@code <gml:*PropertyType>} element can contains
+     * information not found in {@code <gml:*Type>} objects like XLink or UUID.
+     *
+     * <div class="note"><b>Example:</b>
+     * before unmarshalling the {@code <gml:OperationParameter>} (upper case {@code O}) element below,
+     * {@code wrapper} will be set to the temporary object representing {@code <gml:operationParameter>}.
+     * That adapter provides important information for the SIS {@code <gml:OperationParameter>} constructor.
+     *
+     * {@preformat xml
+     *   <gml:ParameterValue>
+     *     <gml:valueFile>http://www.opengis.org</gml:valueFile>
+     *     <gml:operationParameter>
+     *       <gml:OperationParameter>
+     *         <gml:name>A parameter of type URI</gml:name>
+     *       </gml:OperationParameter>
+     *     </gml:operationParameter>
+     *   </gml:ParameterValue>
+     * }</div>
+     *
+     * For performance reasons, this {@code wrapper} information is not provided by default.
+     * See {@link #setWrapper(Context, PropertyType)} for more information.
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @return The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
+     *         or {@code null} if unknown.
+     */
+    public static PropertyType<?,?> getWrapper(final Context context) {
+        return (context != null) ? context.wrapper : null;
+    }
+
+    /**
+     * Invoked by {@link PropertyType} implementations for declaring the {@code <gml:*PropertyType>}
+     * instance which is wrapping the {@code <gml:*Type>} object to (un)marshal.
+     *
+     * <p>For performance reasons, this {@code wrapper} information is not provided by default.
+     * To get this information, the {@code PropertyType} implementation needs to define the
+     * {@code beforeUnmarshal(…)} method. For an implementation example, see
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_OperationParameter}.</p>
+     *
+     * @param context The current context, or {@code null} if none.
+     * @param wrapper The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal,
+     *                or {@code null} if unknown.
+     */
+    public static void setWrapper(final Context context, final PropertyType<?,?> wrapper) {
+        if (context != null) {
+            context.wrapper = wrapper;
+        }
     }
 
     /**

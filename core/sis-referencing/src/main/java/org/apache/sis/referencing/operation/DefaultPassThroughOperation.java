@@ -19,8 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
@@ -32,6 +31,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 
 
 /**
@@ -172,6 +173,12 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
 
     /**
      * Returns the operation to apply on the subset of a coordinate tuple.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the type from
+     * {@code SingleOperation} to {@link CoordinateOperation}. This change may be applied in GeoAPI 4.0.
+     * This is necessary for supporting usage of {@code PassThroughOperation} with {@link ConcatenatedOperation}.
+     * </div>
      *
      * @return The operation to apply on the subset of a coordinate tuple.
      *

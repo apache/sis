@@ -77,6 +77,7 @@ public final strictfp class ParameterBuilderTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testCreate")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(Citations.EPSG, "EPSG").setRequired(true);
