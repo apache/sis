@@ -17,11 +17,13 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
 <gml:ProjectedCRS xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/coordinateReferenceSystems.xsd"
                   xmlns:gml          = "http://www.opengis.net/gml/3.2"
                   xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                   xmlns:xlink        = "http://www.w3.org/1999/xlink"
                   gml:id             = "epsg-crs-27572">
+
   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::27572</gml:identifier>
   <gml:name codeSpace="EPSG">NTF (Paris) / Lambert zone II</gml:name>
   <gml:scope>Large and medium scale topographic mapping and engineering survey.</gml:scope>
