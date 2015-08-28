@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @version 0.6
  * @module
  */
-public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralOperationParameter,GeneralParameterDescriptor> {
+public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralOperationParameter, GeneralParameterDescriptor> {
     /**
      * Empty constructor for JAXB only.
      */

@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
@@ -500,6 +501,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * since it may depends on the marshalling context.</p>
      */
     @XmlID
+    @XmlSchemaType(name = "ID")
     @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     final String getID() {
