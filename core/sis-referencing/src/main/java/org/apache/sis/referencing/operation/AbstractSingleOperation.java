@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -55,7 +56,7 @@ import java.util.Objects;
  * @module
  */
 @XmlType(name="AbstractSingleOperationType", propOrder = {
-//  "method",   // TODO
+    "method",
 //  "parameters"
 })
 @XmlRootElement(name = "AbstractSingleOperation")
@@ -71,6 +72,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     /**
      * The operation method.
      */
+    @XmlElement
     private final OperationMethod method;
 
     /**
