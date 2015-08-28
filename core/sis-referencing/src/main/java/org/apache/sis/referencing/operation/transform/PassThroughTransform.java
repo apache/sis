@@ -506,7 +506,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int numRow    = numSubRow + (nSkipped + affine);
         final int numCol    = numSubCol + (nSkipped + affine);
         final Number[] elements = new Number[numRow * numCol]; // Matrix elements as row major (column index varies faster).
-        Arrays.fill(elements, Integer.valueOf(0));
+        Arrays.fill(elements, 0);
         /*                      ┌                  ┐
          *  Set UL part to 1:   │ 1  0             │
          *                      │ 0  1             │

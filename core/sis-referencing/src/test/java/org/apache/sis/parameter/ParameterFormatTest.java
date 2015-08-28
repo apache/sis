@@ -68,7 +68,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
     }
 
     /**
-     * Creates the test parameter for the Mercator projection, to be shared by {@link ParameterMarshallingTest}.
+     * Creates the test parameters for the Mercator projection, to be shared by {@link ParameterMarshallingTest}.
      *
      * <div class="note"><b>Note:</b>
      * the default values are not part of EPSG definitions. They are added here only for testing purpose.</div>
