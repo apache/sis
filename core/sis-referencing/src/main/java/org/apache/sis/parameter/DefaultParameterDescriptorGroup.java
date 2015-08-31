@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,9 +30,9 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -111,10 +110,12 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * Constructs a new object in which every attributes are set to a null value or an empty list.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB
+     * and to {@link DefaultParameterValueGroup}, which will assign values later.
+     *
+     * @see #setDescriptors(GeneralParameterDescriptor[])
      */
-    private DefaultParameterDescriptorGroup() {
+    DefaultParameterDescriptorGroup() {
         descriptors = Collections.emptyList();
     }
 
@@ -432,7 +433,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
 
     /**
      * Invoked by JAXB or by {@link DefaultParameterValueGroup} for setting the unmarshalled parameters.
-     * If parameters already exist, them this method computes the union of the two parameter collections
+     * If parameters already exist, then this method computes the union of the two parameter collections
      * with the new parameters having precedence over the old ones.
      *
      * <div class="note"><b>Rational:</b>
@@ -448,18 +449,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * </div>
      */
     final void setDescriptors(GeneralParameterDescriptor[] parameters) {
+        parameters = CC_OperationParameterGroup.merge(descriptors, parameters);
         verifyNames(null, parameters);
-        if (!descriptors.isEmpty()) {
-            final Map<String,GeneralParameterDescriptor> union =
-                    new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
-            for (final GeneralParameterDescriptor p : descriptors) {
-                union.put(p.getName().getCode(), p);
-            }
-            for (final GeneralParameterDescriptor p : parameters) {
-                union.put(p.getName().getCode(), p);
-            }
-            parameters = union.values().toArray(new GeneralParameterDescriptor[union.size()]);
-        }
         descriptors = asList(parameters);
     }
 }

@@ -43,6 +43,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -590,7 +591,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it
+     * or if this {@code OperationMethod} has been read from an incomplete GML document.</div>
      *
      * @return The parameters, or {@code null} if unknown.
      *
@@ -783,13 +785,17 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * But we would need to make sure that {@link AbstractSingleOperation#getParameters()} is consistent
      * with the decision taken by this method.</div>
+     *
+     * @see #getParameters()
+     * @see AbstractSingleOperation#getParameters()
      */
     @XmlElement(name = "parameter")
     private GeneralParameterDescriptor[] getDescriptors() {
         if (parameters != null) {
             final List<GeneralParameterDescriptor> descriptors = parameters.descriptors();
             if (descriptors != null) {      // Paranoiac check (should not be allowed).
-                return descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+                return CC_OperationMethod.filterImplicit(descriptors.toArray(
+                        new GeneralParameterDescriptor[descriptors.size()]));
             }
         }
         return null;
@@ -797,22 +803,29 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Invoked by JAXB for setting the unmarshalled parameters.
-     * This method wraps the given descriptors in an {@link DefaultParameterDescriptorGroup},
-     * unless the given descriptors was already a {@code ParameterDescriptorGroup}.
+     * This method wraps the given descriptors in a {@link DefaultParameterDescriptorGroup}.
      *
-     * <p>The parameter descriptors created by this method are incomplete, since they can not
-     * provide a non-null value for {@link ParameterDescriptor#getValueClass()}.</p>
+     * <p>The parameter descriptors created by this method are incomplete since we can not
+     * provide a non-null value for {@link ParameterDescriptor#getValueClass()}. The value
+     * class will be provided either by replacing this {@code OperationMethod} by one of the
+     * pre-defined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
+     *
+     * @see AbstractSingleOperation#setParameters
      */
     private void setDescriptors(final GeneralParameterDescriptor[] descriptors) {
         if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class,
                 "setDescriptors", "parameter", parameters != null))
         {
-            if (descriptors.length == 1 && descriptors[0] instanceof ParameterDescriptorGroup) {
-                parameters = (ParameterDescriptorGroup) descriptors[0];
-            } else {
-                parameters = new DefaultParameterDescriptorGroup(
-                        Collections.singletonMap(NAME_KEY, super.getName()), 1, 1, descriptors);
-            }
+            parameters = CC_OperationMethod.group(super.getName(), descriptors);
         }
+    }
+
+    /**
+     * Invoked by {@link AbstractSingleOperation} for completing the parameter descriptor.
+     *
+     * @see #getParameters()
+     */
+    final void setParameters(final ParameterDescriptorGroup descriptor) {
+        parameters = descriptor;
     }
 }
