@@ -19,11 +19,11 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.NonSI;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
@@ -55,8 +55,8 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         final ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
-            builder.addName("Latitude of natural origin" ).create(0, NonSI.DEGREE_ANGLE),
-            builder.addName("Longitude of natural origin").create(0, NonSI.DEGREE_ANGLE)
+            builder.addIdentifier("8801").addName("Latitude of natural origin" ).create(0, NonSI.DEGREE_ANGLE),
+            builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, NonSI.DEGREE_ANGLE)
             // There is more parameters for a Mercator projection, but 2 is enough for this test.
         };
         builder.addName(null, "Mercator");
@@ -81,12 +81,14 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
                       + "  <gml:sourceDimensions>2</gml:sourceDimensions>\n"
                       + "  <gml:targetDimensions>2</gml:targetDimensions>\n"
                       + "  <gml:parameter>\n"
-                      + "    <gml:OperationParameter gml:id=\"LatitudeOfNaturalOrigin\">\n"
+                      + "    <gml:OperationParameter gml:id=\"epsg-parameter-8801\">\n"
+                      + "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8801</gml:identifier>\n"
                       + "      <gml:name codeSpace=\"EPSG\">Latitude of natural origin</gml:name>\n"
                       + "    </gml:OperationParameter>\n"
                       + "  </gml:parameter>\n"
                       + "  <gml:parameter>\n"
-                      + "    <gml:OperationParameter gml:id=\"LongitudeOfNaturalOrigin\">\n"
+                      + "    <gml:OperationParameter gml:id=\"epsg-parameter-8802\">\n"
+                      + "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8802</gml:identifier>\n"
                       + "      <gml:name codeSpace=\"EPSG\">Longitude of natural origin</gml:name>\n"
                       + "    </gml:OperationParameter>\n"
                       + "  </gml:parameter>\n"
@@ -104,7 +106,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
         assertEquals("targetDimensions", Integer.valueOf(2), method.getTargetDimensions());
         final ParameterDescriptorGroup parameters = method.getParameters();
-        assertEquals("parameters.name", method.getName(), parameters.getName());
+        assertEquals("parameters.name", "Mercator", parameters.getName().getCode());
         final Iterator<GeneralParameterDescriptor> it = parameters.descriptors().iterator();
         verifyIncompleteDescriptor("Latitude of natural origin",  it.next());
         verifyIncompleteDescriptor("Longitude of natural origin", it.next());
@@ -122,6 +124,5 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     private static void verifyIncompleteDescriptor(final String name, final GeneralParameterDescriptor descriptor) {
         assertIdentifierEquals("name", "##unrestricted", "EPSG", null, name, descriptor.getName());
         assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
-        assertEquals("minimumOccurs", 1, descriptor.getMinimumOccurs());
     }
 }

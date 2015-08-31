@@ -519,7 +519,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * Invoked by JAXB for setting the unmarshalled parameters. This method should be invoked last
      * (after {@link #setDescriptor(ParameterDescriptorGroup)}) even if the {@code parameterValue}
      * elements were first in the XML document. This is the case at least with the JAXB reference
-     * implementation.
+     * implementation, because the property type is an array (it would not work with a list).
      */
     private void setValues(final GeneralParameterValue[] parameters) {
         final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
@@ -528,13 +528,12 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         }
         if (values == null) {
             // Should never happen, unless the XML document is invalid and does not have a 'group' element.
-            
-        } else {
-            // We known that the descriptor is an instance of our DefaultParameterDescriptorGroup
-            // implementation because this is what we declare to the JAXBContext and in adapters.
-            ((DefaultParameterDescriptorGroup) values.descriptor).setDescriptors(descriptors);
-            values.clear();  // Because references to parameter descriptors have changed.
+            values = new ParameterValueList(new DefaultParameterDescriptorGroup());
         }
+        // We known that the descriptor is an instance of our DefaultParameterDescriptorGroup
+        // implementation because this is what we declare to the JAXBContext and in adapters.
+        ((DefaultParameterDescriptorGroup) values.descriptor).setDescriptors(descriptors);
+        values.clear();  // Because references to parameter descriptors have changed.
         values.addAll(Arrays.asList(parameters));
     }
 

@@ -16,10 +16,18 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
+import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.ConcurrentModificationException;
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -88,5 +96,106 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      */
     public void setElement(final DefaultParameterDescriptorGroup parameter) {
         metadata = parameter;
+    }
+
+    /**
+     * Invoked by {@link DefaultParameterDescriptorGroup#setDescriptors(GeneralParameterDescriptor[])}
+     * for merging into a single set the descriptors which are repeated twice in a GML document.
+     * The descriptors are:
+     *
+     * <ol>
+     *   <li>The descriptors declared explicitely in the descriptor group.</li>
+     *   <li>The descriptors declared in the parameter values.</li>
+     * </ol>
+     *
+     * The later are more complete than the former, because they allow us to infer the {@code valueClass} property.
+     *
+     * <div class="note"><b>Note:</b>
+     * this code is defined in this {@code CC_OperationParameterGroup} class instead than in the
+     * {@link DefaultParameterDescriptorGroup} class in the hope to reduce the amount of code
+     * processed by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     *
+     * @param  descriptors The descriptors declared in the {@code ParameterDescriptorGroup}.
+     * @param  parameters  The descriptors declared in the {@code ParameterValue}.
+     * @return A single set containing the two given set of parameters.
+     */
+    public static GeneralParameterDescriptor[] merge(final List<GeneralParameterDescriptor> descriptors,
+            final GeneralParameterDescriptor[] parameters)
+    {
+        if (descriptors.isEmpty()) {
+            return parameters;
+        }
+        final Map<String,GeneralParameterDescriptor> union =
+                new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
+        /*
+         * Collect the descriptors declared explicitely in the ParameterDescriptorGroup. We should never have
+         * two descriptors of the same name since the DefaultParameterDescriptorGroup constructor checked for
+         * name ambiguity. If a name collision is nevertheless detected, this would mean that a descriptor's
+         * name mutated.
+         */
+        for (final GeneralParameterDescriptor p : descriptors) {
+            final String name = p.getName().getCode();
+            if (union.put(name, p) != null) {
+                throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, name));
+            }
+        }
+        /*
+         * Verify if any descriptors found in the ParameterValue instances could replace the current descriptors.
+         * We give precedence to the descriptors having a non-null 'valueClass' property, which normally are the
+         * descriptors from the 'parameters' array.
+         */
+        for (GeneralParameterDescriptor replacement : parameters) {
+            final String name = replacement.getName().getCode();
+            GeneralParameterDescriptor previous = union.put(name, replacement);
+            if (previous != null) {
+                if (previous instanceof ParameterDescriptor<?>) {
+                    verifyEquivalence(name, replacement instanceof ParameterDescriptor<?>);
+                    final Class<?> valueClass = ((ParameterDescriptor<?>) previous).getValueClass();
+                    if (valueClass != null) {
+                        final Class<?> r = ((ParameterDescriptor<?>) replacement).getValueClass();
+                        if (r != null) {
+                            /*
+                             * Should never happen unless the same (according its name) ParameterValue appears
+                             * more than once in the 'parameters' array, or unless this method is invoked more
+                             * often than expected.
+                             */
+                            verifyEquivalence(name, valueClass == r);
+                        } else {
+                            /*
+                             * Should never happen unless JAXB unmarshalled the elements in reverse order
+                             * (i.e. ParameterValue before ParameterDescriptorGroup). Since this behavior
+                             * may depend on JAXB implementation, we are better to check for such case.
+                             * Restore the previous value in the map and swap 'previous' with 'replacement'.
+                             */
+                            previous = union.put(name, replacement = previous);
+                        }
+                    }
+                } else if (previous instanceof ParameterDescriptorGroup) {
+                    verifyEquivalence(name, replacement instanceof ParameterDescriptorGroup);
+                }
+                /*
+                 * Verify that the replacement contains at least all the information provided by the previous
+                 * descriptor. The replacement is allowed to contain more information however.
+                 */
+                final GeneralParameterDescriptor r = CC_GeneralOperationParameter.replacement(previous, replacement);
+                if (r != replacement) {
+                    union.put(name, r);
+
+                    // TODO: We should instead update DefaultParameterValue descriptor here.
+                    verifyEquivalence(name, false);
+                }
+            }
+        }
+        return union.values().toArray(new GeneralParameterDescriptor[union.size()]);
+    }
+
+    /**
+     * Throws an exception for mismatched descriptor if a condition is false.
+     * This is used for verifying that a descriptors has the expected properties.
+     */
+    private static void verifyEquivalence(final String name, final boolean condition) {
+        if (!condition) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedParameterDescriptor_1, name));
+        }
     }
 }

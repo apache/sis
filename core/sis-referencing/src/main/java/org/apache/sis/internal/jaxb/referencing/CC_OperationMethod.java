@@ -16,10 +16,24 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
+import java.util.Map;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.util.FactoryException;
+import org.opengis.metadata.Identifier;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -88,5 +102,88 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      */
     public void setElement(final DefaultOperationMethod method) {
         metadata = method;
+    }
+
+    /**
+     * Returns the given descriptors, excluding the implicit {@link MapProjection} parameters.
+     *
+     * @param  array The parameters to filter.
+     * @return The filtered parameters.
+     */
+    public static GeneralParameterValue[] filterImplicit(final GeneralParameterValue[] array) {
+        int n = 0;
+        for (final GeneralParameterValue value : array) {
+            if (!CC_OperationMethod.isImplicitParameter(value.getDescriptor())) {
+                array[n++] = value;
+            }
+        }
+        return ArraysExt.resize(array, n);
+    }
+
+    /**
+     * Returns the given descriptors, excluding the implicit {@link MapProjection} parameters.
+     *
+     * @param  array The parameters to filter.
+     * @return The filtered parameters.
+     */
+    public static GeneralParameterDescriptor[] filterImplicit(final GeneralParameterDescriptor[] array) {
+        int n = 0;
+        for (final GeneralParameterDescriptor descriptor : array) {
+            if (!CC_OperationMethod.isImplicitParameter(descriptor)) {
+                array[n++] = descriptor;
+            }
+        }
+        return ArraysExt.resize(array, n);
+    }
+
+    /**
+     * Returns {@code true} if the given descriptor is for an implicit parameter which should be excluded from GML.
+     *
+     * @param  descriptor The parameter descriptor to test.
+     * @return {@code true} if the given parameter should be omitted in the GML document.
+     */
+    static boolean isImplicitParameter(final GeneralParameterDescriptor descriptor) {
+        return descriptor == MapProjection.SEMI_MAJOR
+            || descriptor == MapProjection.SEMI_MINOR;
+    }
+
+    /**
+     * Wraps the given descriptors in a descriptor group of the given name. If the given name can be matched
+     * to the name of one of the predefined operation method, then the predefined parameters will be used.
+     *
+     * <p>We try to use predefined parameters if possible because they contain information, especially the
+     * {@link org.opengis.parameter.ParameterDescriptor#getValueClass()} property, which are not available
+     * in the GML document.</p>
+     *
+     * <div class="note"><b>Note:</b>
+     * this code is defined in this {@code CC_OperationMethod} class instead than in the
+     * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
+     * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     *
+     * @param  name        The operation method name, to be also given to the descriptor group.
+     * @param  descriptors The parameter descriptors to wrap in a group. This array will be modified in-place.
+     * @return A parameter group containing at least the given descriptors, or equivalent descriptors.
+     */
+    public static ParameterDescriptorGroup group(final Identifier name, final GeneralParameterDescriptor[] descriptors) {
+        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
+        OperationMethod method = null;
+        if (factory != null) try {
+            method = factory.getOperationMethod(name.getCode());
+        } catch (FactoryException e) {
+            Context.warningOccured(Context.current(), DefaultOperationMethod.class, "setDescriptors", e, true);
+        }
+        final Map<String,?> properties = Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name);
+        if (method != null) {
+            /*
+             * Verify that the pre-defined operation method contains at least all the parameters specified by
+             * the 'descriptors' array. If this is the case, then the pre-defined parameters will be used in
+             * replacement of the given ones.
+             */
+            final ParameterDescriptorGroup parameters = method.getParameters();
+            return CC_GeneralOperationParameter.merge(properties,
+                    IdentifiedObjects.getProperties(parameters),
+                    1, 1, descriptors, parameters, true);
+        }
+        return new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);
     }
 }

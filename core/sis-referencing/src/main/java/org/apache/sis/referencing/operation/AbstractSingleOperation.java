@@ -17,21 +17,26 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.Constants;
@@ -57,7 +62,7 @@ import java.util.Objects;
  */
 @XmlType(name="AbstractSingleOperationType", propOrder = {
     "method",
-//  "parameters"
+    "parameters"
 })
 @XmlRootElement(name = "AbstractSingleOperation")
 @XmlSeeAlso({
@@ -77,8 +82,11 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
 
     /**
      * The parameter values, or {@code null} for inferring it from the math transform.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setParameters(GeneralParameterValue[])}</p>
      */
-    private final ParameterValueGroup parameters;
+    private ParameterValueGroup parameters;
 
     /**
      * Constructs a new object in which every attributes are set to a null value.
@@ -87,7 +95,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      */
     AbstractSingleOperation() {
         method = null;
-        parameters = null;
     }
 
     /**
@@ -405,5 +412,50 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * (e.g. "Mercator (1SP)" and "Mercator (2SP)" when the parameters are properly chosen).
          */
         return true;
+    }
+
+    // ---- XML SUPPORT ----------------------------------------------------
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence
+     * of parameters without their {@link ParameterValueGroup} wrapper, because GML is defined that way.
+     * The {@code ParameterValueGroup} wrapper is a GeoAPI addition done for allowing usage of its
+     * methods as a convenience (e.g. {@link ParameterValueGroup#parameter(String)}).
+     *
+     * <p>However it could happen that the user really wanted to specify a {@code ParameterValueGroup} as the
+     * sole {@code <gml:parameterValue>} element. We currently have no easy way to distinguish those cases.
+     * See {@link DefaultOperationMethod#getDescriptors()} for more discussion.</p>
+     *
+     * @see DefaultOperationMethod#getDescriptors()
+     */
+    @XmlElement(name = "parameterValue")
+    private GeneralParameterValue[] getParameters() {
+        if (parameters != null) {
+            final List<GeneralParameterValue> values = parameters.values();
+            if (values != null) {      // Paranoiac check (should not be allowed).
+                return CC_OperationMethod.filterImplicit(values.toArray(new GeneralParameterValue[values.size()]));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     * This method wraps the given parameters in a {@link ParameterValueGroup},
+     * unless the given descriptors was already a {@code ParameterValueGroup}.
+     *
+     * @see DefaultOperationMethod#setDescriptors
+     */
+    private void setParameters(final GeneralParameterValue[] values) {
+        if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class,
+                "setParameters", "parameterValue", parameters != null))
+        {
+            ParameterDescriptorGroup descriptor = method.getParameters();
+            parameters = new DefaultParameterValueGroup(descriptor);
+            parameters.values().addAll(Arrays.asList(values));
+            if (method instanceof DefaultOperationMethod) {
+                ((DefaultOperationMethod) method).setParameters(parameters.getDescriptor());
+            }
+        }
     }
 }

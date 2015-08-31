@@ -34,6 +34,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.Utilities.deepEquals;
+import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -140,8 +141,8 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      */
     AbstractParameterDescriptor() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        minimumOccurs = 1;  // Default value is XML element is omitted.
-        maximumOccurs = 1;
+        minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
+        maximumOccurs = DEFAULT_OCCURRENCE;
     }
 
     /**
@@ -378,7 +379,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     @XmlSchemaType(name = "nonNegativeInteger")
     private Integer getNonDefaultMinimumOccurs() {
         final int n = getMinimumOccurs();
-        return (n != 1) ? n : null;
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
     }
 
     /**
@@ -395,20 +396,20 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     @XmlSchemaType(name = "nonNegativeInteger")
     private Integer getNonDefaultMaximumOccurs() {
         final int n = getMaximumOccurs();
-        return (n != 1) ? n : null;
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
     }
 
     /**
      * Invoked by JAXB for unmarshalling the {@link #minimumOccurs} value.
      */
     private void setNonDefaultMinimumOccurs(final Integer n) {
-        minimumOccurs = (n != null) ? crop(n) : 1;
+        minimumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
     }
 
     /**
      * Invoked by JAXB for unmarshalling the {@link #maximumOccurs} value.
      */
     private void setNonDefaultMaximumOccurs(final Integer n) {
-        maximumOccurs = (n != null) ? crop(n) : 1;
+        maximumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
     }
 }
