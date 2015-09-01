@@ -19,13 +19,13 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
-import java.util.ConcurrentModificationException;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
@@ -104,8 +104,8 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * The descriptors are:
      *
      * <ol>
-     *   <li>The descriptors declared explicitely in the descriptor group.</li>
-     *   <li>The descriptors declared in the parameter values.</li>
+     *   <li>The descriptors declared explicitely in the {@code ParameterDescriptorGroup}.</li>
+     *   <li>The descriptors declared in the {@code ParameterValue} instances of the {@code ParameterValueGroup}.</li>
      * </ol>
      *
      * The later are more complete than the former, because they allow us to infer the {@code valueClass} property.
@@ -115,15 +115,20 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * {@link DefaultParameterDescriptorGroup} class in the hope to reduce the amount of code
      * processed by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
      *
-     * @param  descriptors The descriptors declared in the {@code ParameterDescriptorGroup}.
-     * @param  parameters  The descriptors declared in the {@code ParameterValue}.
-     * @return A single set containing the two given set of parameters.
+     * @param  descriptors  The descriptors declared in the {@code ParameterDescriptorGroup}.
+     * @param  fromValues   The descriptors declared in the {@code ParameterValue} instances.
+     *                      They are said "valid" because they contain the mandatory {@code valueClass} property.
+     * @param  replacements An {@code IdentityHashMap} where to store the replacements that the caller needs
+     *                      to apply in the {@code GeneralParameterValue} instances.
+     * @return A sequence containing the merged set of parameter descriptors.
      */
-    public static GeneralParameterDescriptor[] merge(final List<GeneralParameterDescriptor> descriptors,
-            final GeneralParameterDescriptor[] parameters)
+    public static GeneralParameterDescriptor[] merge(
+            final List<GeneralParameterDescriptor> descriptors,
+            final GeneralParameterDescriptor[] fromValues,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements)
     {
         if (descriptors.isEmpty()) {
-            return parameters;
+            return fromValues;
         }
         final Map<String,GeneralParameterDescriptor> union =
                 new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
@@ -136,27 +141,27 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
         for (final GeneralParameterDescriptor p : descriptors) {
             final String name = p.getName().getCode();
             if (union.put(name, p) != null) {
-                throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, name));
+                throw new CorruptedObjectException(name);
             }
         }
         /*
-         * Verify if any descriptors found in the ParameterValue instances could replace the current descriptors.
-         * We give precedence to the descriptors having a non-null 'valueClass' property, which normally are the
-         * descriptors from the 'parameters' array.
+         * Verify if any descriptors found in the ParameterValue instances could replace the descriptors in the group.
+         * We give precedence to the descriptors having a non-null 'valueClass' property, which normally appear in the
+         * 'valids' array.
          */
-        for (GeneralParameterDescriptor replacement : parameters) {
-            final String name = replacement.getName().getCode();
-            GeneralParameterDescriptor previous = union.put(name, replacement);
+        for (GeneralParameterDescriptor valid : fromValues) {
+            final String name = valid.getName().getCode();
+            GeneralParameterDescriptor previous = union.put(name, valid);
             if (previous != null) {
                 if (previous instanceof ParameterDescriptor<?>) {
-                    verifyEquivalence(name, replacement instanceof ParameterDescriptor<?>);
+                    verifyEquivalence(name, valid instanceof ParameterDescriptor<?>);
                     final Class<?> valueClass = ((ParameterDescriptor<?>) previous).getValueClass();
                     if (valueClass != null) {
-                        final Class<?> r = ((ParameterDescriptor<?>) replacement).getValueClass();
+                        final Class<?> r = ((ParameterDescriptor<?>) valid).getValueClass();
                         if (r != null) {
                             /*
                              * Should never happen unless the same (according its name) ParameterValue appears
-                             * more than once in the 'parameters' array, or unless this method is invoked more
+                             * more than once in the 'valids' array, or unless this method is invoked more
                              * often than expected.
                              */
                             verifyEquivalence(name, valueClass == r);
@@ -167,22 +172,23 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
                              * may depend on JAXB implementation, we are better to check for such case.
                              * Restore the previous value in the map and swap 'previous' with 'replacement'.
                              */
-                            previous = union.put(name, replacement = previous);
+                            previous = union.put(name, valid = previous);
                         }
                     }
                 } else if (previous instanceof ParameterDescriptorGroup) {
-                    verifyEquivalence(name, replacement instanceof ParameterDescriptorGroup);
+                    verifyEquivalence(name, valid instanceof ParameterDescriptorGroup);
                 }
                 /*
                  * Verify that the replacement contains at least all the information provided by the previous
                  * descriptor. The replacement is allowed to contain more information however.
                  */
-                final GeneralParameterDescriptor r = CC_GeneralOperationParameter.replacement(previous, replacement);
-                if (r != replacement) {
-                    union.put(name, r);
-
-                    // TODO: We should instead update DefaultParameterValue descriptor here.
-                    verifyEquivalence(name, false);
+                final GeneralParameterDescriptor replacement = CC_GeneralOperationParameter.replacement(previous, valid);
+                if (replacement != valid) {
+                    union.put(name, replacement);
+                    if (replacements.put(valid, replacement) != null) {
+                        // Should never happen, unless the parameter name changed during execution of this loop.
+                        throw new CorruptedObjectException(name);
+                    }
                 }
             }
         }

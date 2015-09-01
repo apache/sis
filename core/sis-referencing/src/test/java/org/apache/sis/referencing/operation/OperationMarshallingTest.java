@@ -59,7 +59,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
             builder.addIdentifier("8802").addName("Longitude of natural origin").create(0, NonSI.DEGREE_ANGLE)
             // There is more parameters for a Mercator projection, but 2 is enough for this test.
         };
-        builder.addName(null, "Mercator");
+        builder.addName(null, "Mercator (1SP)");
         final ParameterDescriptorGroup descriptor = builder.createGroup(parameters);
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(DefaultOperationMethod.NAME_KEY, descriptor.getName());
@@ -76,7 +76,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     public void testOperationMethod() throws JAXBException {
         final String xml = XML.marshal(createMercatorMethod());
         assertXmlEquals("<gml:OperationMethod xmlns:gml=\"" + Namespaces.GML + "\">\n"
-                      + "  <gml:name>Mercator</gml:name>\n"
+                      + "  <gml:name>Mercator (1SP)</gml:name>\n"
                       + "  <gml:formula>See EPSG guide.</gml:formula>\n"
                       + "  <gml:sourceDimensions>2</gml:sourceDimensions>\n"
                       + "  <gml:targetDimensions>2</gml:targetDimensions>\n"
@@ -101,12 +101,12 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
      * Verifies the unmarshalled parameter descriptors.
      */
     private static void verifyMethod(final DefaultOperationMethod method) {
-        assertIdentifierEquals("name", null, null, null, "Mercator", method.getName());
+        assertIdentifierEquals("name", null, null, null, "Mercator (1SP)", method.getName());
         assertEquals("formula", "See EPSG guide.", method.getFormula().getFormula().toString());
         assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
         assertEquals("targetDimensions", Integer.valueOf(2), method.getTargetDimensions());
         final ParameterDescriptorGroup parameters = method.getParameters();
-        assertEquals("parameters.name", "Mercator", parameters.getName().getCode());
+        assertEquals("parameters.name", "Mercator (1SP)", parameters.getName().getCode());
         final Iterator<GeneralParameterDescriptor> it = parameters.descriptors().iterator();
         verifyIncompleteDescriptor("Latitude of natural origin",  it.next());
         verifyIncompleteDescriptor("Longitude of natural origin", it.next());

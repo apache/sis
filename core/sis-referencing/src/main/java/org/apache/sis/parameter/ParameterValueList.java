@@ -310,6 +310,14 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     }
 
     /**
+     * Returns the parameters in an array.
+     */
+    @Override
+    public GeneralParameterValue[] toArray() {
+        return Arrays.copyOf(values, size);
+    }
+
+    /**
      * Returns a string representation of this list.
      */
     @Override

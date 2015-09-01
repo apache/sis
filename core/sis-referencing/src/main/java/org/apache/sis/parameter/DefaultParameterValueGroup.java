@@ -18,7 +18,8 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -522,19 +523,56 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * implementation, because the property type is an array (it would not work with a list).
      */
     private void setValues(final GeneralParameterValue[] parameters) {
-        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
-        for (int i=0; i<descriptors.length; i++) {
-            descriptors[i] = parameters[i].getDescriptor();
+        final GeneralParameterDescriptor[] fromValues = new GeneralParameterDescriptor[parameters.length];
+        for (int i=0; i<parameters.length; i++) {
+            fromValues[i] = parameters[i].getDescriptor();
         }
-        if (values == null) {
+        ParameterValueList addTo = values;
+        if (addTo == null) {
             // Should never happen, unless the XML document is invalid and does not have a 'group' element.
-            values = new ParameterValueList(new DefaultParameterDescriptorGroup());
+            addTo = new ParameterValueList(new DefaultParameterDescriptorGroup());
+        } else {
+            addTo.clear();  // Because references to parameter descriptors have changed.
         }
-        // We known that the descriptor is an instance of our DefaultParameterDescriptorGroup
-        // implementation because this is what we declare to the JAXBContext and in adapters.
-        ((DefaultParameterDescriptorGroup) values.descriptor).setDescriptors(descriptors);
-        values.clear();  // Because references to parameter descriptors have changed.
-        values.addAll(Arrays.asList(parameters));
+        /*
+         * Merge the descriptors declared in the <gml:group> element with the descriptors given in each
+         * <gml:parameterValue> element. The implementation is known to be DefaultParameterDescriptorGroup
+         * because this is the type declared in the JAXBContext and in adapters.
+         */
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+        ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(fromValues, replacements);
+        addAll(parameters, replacements, addTo);
+    }
+
+    /**
+     * Appends all parameter values. In this process, we may need to update the descriptor of some values
+     * if those descriptors changed as a result of the above merge process.
+     *
+     * @param parameters   The parameters to add, or {@code null} for {@link #values}.
+     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
+     * @param addTo        Where to store the new values.
+     */
+    @SuppressWarnings({"unchecked", "AssignmentToCollectionOrArrayFieldFromParameter"})
+    private void addAll(GeneralParameterValue[] parameters,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements,
+            final ParameterValueList addTo)
+    {
+        if (parameters == null) {
+            parameters = values.toArray();
+        }
+        for (final GeneralParameterValue p : parameters) {
+            final GeneralParameterDescriptor replacement = replacements.get(p.getDescriptor());
+            if (replacement != null) {
+                if (p instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) p).setDescriptor((ParameterDescriptor) replacement);
+                } else if (p instanceof DefaultParameterValueGroup) {
+                    ((DefaultParameterValueGroup) p).addAll(null, replacements,
+                            new ParameterValueList((ParameterDescriptorGroup) replacement));
+                }
+            }
+            addTo.add(p);
+        }
+        values = addTo;
     }
 
     /**
