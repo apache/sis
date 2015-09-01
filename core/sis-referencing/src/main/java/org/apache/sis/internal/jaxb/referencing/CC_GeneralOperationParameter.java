@@ -18,8 +18,9 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -30,6 +31,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
@@ -167,8 +169,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * @param  complete The descriptor to use for completing missing information.
      * @return The descriptor to use. May be one of the arguments given to this method, or a new instance.
      */
-    public static GeneralParameterDescriptor replacement(final GeneralParameterDescriptor provided,
-                                                         final GeneralParameterDescriptor complete)
+    static GeneralParameterDescriptor replacement(final GeneralParameterDescriptor provided,
+                                                  final GeneralParameterDescriptor complete)
     {
         if (provided == complete) {
             return complete;
@@ -212,7 +214,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         merged.putAll(actual);  // May overwrite pre-defined properties.
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();
-            return merge(actual, merged, minimumOccurs, maximumOccurs,
+            return merge(merged, merged, minimumOccurs, maximumOccurs,
                     descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]),
                     (ParameterDescriptorGroup) complete, canSubstitute);
         } else {
@@ -242,7 +244,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                           boolean                            canSubstitute)
     {
         boolean isCompatible = true;
-        final Map<GeneralParameterDescriptor,Boolean> included = new IdentityHashMap<>(provided.length);
+        final Set<GeneralParameterDescriptor> included = new HashSet<>(Containers.hashMapCapacity(provided.length));
         for (int i=0; i<provided.length; i++) {
             final GeneralParameterDescriptor p = provided[i];
             try {
@@ -253,7 +255,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 GeneralParameterDescriptor predefined = complete.descriptor(p.getName().getCode());
                 if (predefined != null) {   // Safety in case 'complete' is a user's implementation.
                     canSubstitute &= (provided[i] = replacement(p, predefined)) == predefined;
-                    included.put(predefined, Boolean.TRUE);
+                    included.add(predefined);
                     continue;
                 }
             } catch (ParameterNotFoundException e) {
@@ -274,7 +276,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
              * document were optional.
              */
             for (final GeneralParameterDescriptor descriptor : complete.descriptors()) {
-                if (!included.containsKey(descriptor) && descriptor.getMinimumOccurs() != 0
+                if (!included.contains(descriptor) && descriptor.getMinimumOccurs() != 0
                         && !CC_OperationMethod.isImplicitParameter(descriptor))
                 {
                     canSubstitute = false;

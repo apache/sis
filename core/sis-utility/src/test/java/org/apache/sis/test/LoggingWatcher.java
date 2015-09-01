@@ -30,6 +30,25 @@ import static org.junit.Assert.*;
  * Watches the logs sent to the given logger. Logs will be allowed only if the test was
  * expected to cause some logging events to occur, otherwise a test failure will occurs.
  *
+ * <div class="note">Usage example</div>
+ * Create a rule in the JUnit test class like below:
+ *
+ * {@preformat java
+ *     &#64;Rule
+ *     public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.XML)) {
+ *         &#64;Override protected void verifyMessage(final String message) {
+ *             assertTrue(message.contains("An expected word in the logging message"));
+ *         }
+ *     };
+ * }
+ *
+ * Then, <em>only</em> in the test which are expected to emit a warning, add the following line
+ * (replace 1 by a higher value if more than one logging is expected):
+ *
+ * {@preformat java
+ *     listener.maximumLogCount = 1;
+ * }
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.6
@@ -50,6 +69,7 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
     /**
      * The logger to watch.
      */
+    @SuppressWarnings("NonConstantLogger")
     private final Logger logger;
 
     /**
