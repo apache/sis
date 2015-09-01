@@ -1090,10 +1090,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
 
     /**
      * Invoked by JAXB at unmarshalling time.
+     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor as been completed
+     * with additional information provided in the {@code <gml:group>} element of a descriptor group.
      *
      * @see #getDescriptor()
      */
-    private void setDescriptor(final ParameterDescriptor<T> descriptor) {
+    final void setDescriptor(final ParameterDescriptor<T> descriptor) {
         this.descriptor = descriptor;
         assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
     }

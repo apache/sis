@@ -72,6 +72,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.MapProjectionParametersTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class,
     org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameterTest.class,
+    org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest.class,
 
     // Test transforms other than map projections.
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,

@@ -31,6 +31,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -432,25 +433,39 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Invoked by JAXB or by {@link DefaultParameterValueGroup} for setting the unmarshalled parameters.
-     * If parameters already exist, then this method computes the union of the two parameter collections
-     * with the new parameters having precedence over the old ones.
+     * Invoked by JAXB for setting the unmarshalled parameter descriptors.
+     */
+    private void setDescriptors(final GeneralParameterDescriptor[] parameters) {
+        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
+                "setDescriptors", "parameter", !descriptors.isEmpty()))
+        {
+            verifyNames(null, parameters);
+            descriptors = asList(parameters);
+        }
+    }
+
+    /**
+     * Merges the given parameter descriptors with the descriptors currently in this group.
+     * The descriptors are set twice during {@link DefaultParameterValueGroup} unmarshalling:
      *
-     * <div class="note"><b>Rational:</b>
-     * this method is invoked twice during {@link DefaultParameterValueGroup} unmarshalling:
      * <ol>
-     *   <li>First, this method is invoked during unmarshalling of this {@code DefaultParameterDescriptorGroup}.
+     *   <li>First, the descriptors are set during unmarshalling of this {@code DefaultParameterDescriptorGroup}.
      *       But the value class of {@code ParameterDescriptor} components are unknown because this information
      *       is not part of GML.</li>
      *   <li>Next, this method is invoked during unmarshalling of the {@code DefaultParameterValueGroup} enclosing
      *       element with the descriptors found inside the {@code ParameterValue} components. The later do have the
      *       {@code valueClass} information, so we want to use them in replacement of descriptors of step 1.</li>
      * </ol>
-     * </div>
+     *
+     * @param fromValues Descriptors declared in the {@code ParameterValue} instances of a {@code ParameterValueGroup}.
+     * @param replacements An {@code IdentityHashMap} where to store the replacements that the caller needs
+     *                     to apply in the {@code GeneralParameterValue} instances.
      */
-    final void setDescriptors(GeneralParameterDescriptor[] parameters) {
-        parameters = CC_OperationParameterGroup.merge(descriptors, parameters);
-        verifyNames(null, parameters);
-        descriptors = asList(parameters);
+    final void merge(GeneralParameterDescriptor[] fromValues,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements)
+    {
+        fromValues = CC_OperationParameterGroup.merge(descriptors, fromValues, replacements);
+        verifyNames(null, fromValues);
+        descriptors = asList(fromValues);
     }
 }

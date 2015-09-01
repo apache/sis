@@ -32,6 +32,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
@@ -255,7 +256,9 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 GeneralParameterDescriptor predefined = complete.descriptor(p.getName().getCode());
                 if (predefined != null) {   // Safety in case 'complete' is a user's implementation.
                     canSubstitute &= (provided[i] = replacement(p, predefined)) == predefined;
-                    included.add(predefined);
+                    if (!included.add(predefined)) {
+                        throw new CorruptedObjectException(predefined);  // Broken hashCode/equals, or object mutated.
+                    }
                     continue;
                 }
             } catch (ParameterNotFoundException e) {
