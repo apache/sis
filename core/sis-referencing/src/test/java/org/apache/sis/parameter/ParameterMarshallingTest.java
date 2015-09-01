@@ -53,7 +53,10 @@ import java.util.Objects;
  * @version 0.6
  * @module
  */
-@DependsOn(DefaultParameterValueTest.class)
+@DependsOn({
+    DefaultParameterValueTest.class,
+    DefaultParameterValueGroupTest.class
+})
 public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     /**
      * Creates a parameter value for marshalling test.
