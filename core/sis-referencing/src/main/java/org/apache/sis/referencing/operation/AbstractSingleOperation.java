@@ -69,7 +69,8 @@ import java.util.Objects;
 })
 @XmlRootElement(name = "AbstractSingleOperation")
 @XmlSeeAlso({
-    DefaultConversion.class
+    DefaultConversion.class,
+    DefaultTransformation.class
 })
 class AbstractSingleOperation extends AbstractCoordinateOperation implements SingleOperation, Parameterized {
     /**

@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -51,11 +53,21 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @see DefaultConversion
  */
+@XmlType(name = "TransformationType")
+@XmlRootElement(name = "Transformation")
 public class DefaultTransformation extends AbstractSingleOperation implements Transformation {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7486704846151648971L;
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTransformation() {
+    }
 
     /**
      * Creates a coordinate transformation from the given properties.
