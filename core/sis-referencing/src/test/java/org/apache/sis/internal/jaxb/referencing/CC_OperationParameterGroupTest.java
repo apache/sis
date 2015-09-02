@@ -22,12 +22,14 @@ import java.util.IdentityHashMap;
 import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.NonSI;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
@@ -36,11 +38,13 @@ import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
+import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 import static org.junit.Assert.*;
 
 
 /**
  * Tests {@link CC_GeneralOperationParameter} static methods.
+ * Also opportunistically tests {@link CC_OperationMethod} because we use the same data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -49,6 +53,13 @@ import static org.junit.Assert.*;
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
 public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
+    /**
+     * The remark to associate to the "Latitude of natural origin" parameter.
+     * Should be different than the comment stored in {@link Mercator1SP} in
+     * order to test parameter merges.
+     */
+    private static final String REMARK = "Always zero for this projection.";
+
     /**
      * Creates a parameter descriptor group as unmarshalled by JAXB, without {@code valueClass}.
      *
@@ -62,7 +73,7 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
                 "    <gml:OperationParameter gml:id=\"epsg-parameter-8801\">\n" +
                 "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8801</gml:identifier>\n" +
                 "      <gml:name codeSpace=\"EPSG\">Latitude of natural origin</gml:name>\n" +
-                "      <gml:remarks>Always zero for this projection.</gml:remarks>\n" +
+                "      <gml:remarks>" + REMARK + "</gml:remarks>\n" +
                 "    </gml:OperationParameter>\n" +
                 "  </gml:parameter>\n" +
                 "  <gml:parameter>\n" +
@@ -99,7 +110,7 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
     @Test
     public void testSubtitution() throws JAXBException {
         final ParameterDescriptorGroup fromXML = unmarshal();
-        final ParameterDescriptor<?>[] expected = create("Always zero for this projection.");
+        final ParameterDescriptor<?>[] expected = create(REMARK);
         final UnmodifiableArrayList<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
 
         // Normal usage: merge to existing descriptors the more complete information found in parameter values.
@@ -169,5 +180,50 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
          * All references to 'fromValue' will need to be replaced by references to 'complete'.
          */
         assertEquals("replacements", Collections.singletonMap(fromValue, complete), replacements);
+    }
+
+    /**
+     * Tests {@link CC_OperationMethod#group(Identifier, GeneralParameterDescriptor[])}.
+     *
+     * @throws JAXBException if this method failed to create test data.
+     */
+    @Test
+    @DependsOnMethod("testMerge")
+    public void testGroup() throws JAXBException {
+        // From XML
+        ParameterDescriptorGroup group = unmarshal();
+        List<GeneralParameterDescriptor> descriptors = group.descriptors();
+
+        // Merge with the parameters defined in Mercator1SP class
+        group = CC_OperationMethod.group(group.getName(), descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        descriptors = group.descriptors();
+
+        assertSame("name", group.getName(), group.getName());
+        assertEquals("descriptors.size", 2, descriptors.size());
+        verifyMethodParameter((DefaultParameterDescriptor<?>) descriptors.get(0), (DefaultParameterDescriptor<?>) Mercator1SP.LATITUDE_OF_ORIGIN, REMARK);
+        verifyMethodParameter((DefaultParameterDescriptor<?>) descriptors.get(1), (DefaultParameterDescriptor<?>) Mercator1SP.LONGITUDE_OF_ORIGIN, null);
+    }
+
+    /**
+     * Verifies the properties of an operation method parameter.
+     */
+    private static void verifyMethodParameter(final DefaultParameterDescriptor<?> actual,
+                                              final DefaultParameterDescriptor<?> expected,
+                                              final String remarks)
+    {
+        assertSame  ("name",          expected.getName(),         actual.getName());
+        assertSame  ("description",   expected.getDescription(),  actual.getDescription());
+        assertEquals("valueClass",    expected.getValueClass(),   actual.getValueClass());
+        assertSame  ("valueDomain",   expected.getValueDomain(),  actual.getValueDomain());
+        assertEquals("validValues",   expected.getValidValues(),  actual.getValidValues());
+        assertSame  ("defaultValue",  expected.getDefaultValue(), actual.getDefaultValue());
+        assertSame  ("unit",          expected.getUnit(),         actual.getUnit());
+        assertEquals("minimumOccurs", DEFAULT_OCCURRENCE,         actual.getMinimumOccurs());
+        assertEquals("maximumOccurs", DEFAULT_OCCURRENCE,         actual.getMaximumOccurs());
+        if (remarks != null) {
+            assertEquals("remarks", remarks, actual.getRemarks().toString());
+        } else {
+            assertSame("remarks", expected.getRemarks(), actual.getRemarks());
+        }
     }
 }
