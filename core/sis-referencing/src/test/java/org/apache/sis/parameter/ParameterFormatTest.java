@@ -44,7 +44,7 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.6
  * @module
  */
 @DependsOn(ParameterBuilderTest.class)
@@ -77,7 +77,9 @@ public final strictfp class ParameterFormatTest extends TestCase {
         ParameterBuilder builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
-            builder.addIdentifier("8801").addName("Latitude of natural origin")      .addName(OGC, "latitude_of_origin").createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
+            builder.addIdentifier("8801").addName("Latitude of natural origin").addName(OGC, "latitude_of_origin")
+                    .setRemarks("This parameter is shown for completeness, but should never have a value different than 0 for this projection.")
+                    .createBounded( -80,  +84,  40, NonSI.DEGREE_ANGLE),
             builder.addIdentifier("8802").addName("Longitude of natural origin")     .addName(OGC, "central_meridian")  .createBounded(-180, +180, -60, NonSI.DEGREE_ANGLE),
             builder.addIdentifier("8805").addName("Scale factor at natural origin")  .addName(OGC, "scale_factor")      .createStrictlyPositive(1, Unit.ONE),
             builder.addIdentifier("8806").addName("False easting").setRequired(false).addName(OGC, "false_easting")     .create( 5000, SI.METRE),
@@ -127,12 +129,13 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "┌────────────────────────────────┬────────┬────────────┬───────────────┬───────────────┐\n" +
                 "│ Name (EPSG)                    │ Type   │ Obligation │ Value domain  │ Default value │\n" +
                 "├────────────────────────────────┼────────┼────────────┼───────────────┼───────────────┤\n" +
-                "│ Latitude of natural origin     │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  │\n" +
+                "│ Latitude of natural origin¹    │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  │\n" +
                 "│ Longitude of natural origin    │ Double │ Mandatory  │ [-180 … 180]° │       -60.0°  │\n" +
                 "│ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │\n" +
                 "│ False easting                  │ Double │ Optional   │   (-∞ … ∞) m  │      5000.0 m │\n" +
                 "│ False northing                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m │\n" +
-                "└────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘\n", text);
+                "└────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
@@ -158,11 +161,12 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "┌────────────────────────────────┬────────┬───────────────┬──────────┐\n" +
                 "│ Name (EPSG)                    │ Type   │ Value domain  │ Value    │\n" +
                 "├────────────────────────────────┼────────┼───────────────┼──────────┤\n" +
-                "│ Latitude of natural origin     │ Double │  [-80 … 84]°  │  20.0°   │\n" +
+                "│ Latitude of natural origin¹    │ Double │  [-80 … 84]°  │  20.0°   │\n" +
                 "│ Longitude of natural origin    │ Double │ [-180 … 180]° │ -60.0°   │\n" +
                 "│ Scale factor at natural origin │ Double │    (0 … ∞)    │ 0.997    │\n" +
                 "│ False northing                 │ Double │   (-∞ … ∞) m  │  20.0 km │\n" +
-                "└────────────────────────────────┴────────┴───────────────┴──────────┘\n", text);
+                "└────────────────────────────────┴────────┴───────────────┴──────────┘\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
@@ -179,11 +183,12 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "┌────────────────────────────────┬────────┬─────────────────────┬──────────┐\n" +
                 "│ Nom (EPSG)                     │ Type   │ Domaine des valeurs │ Valeur   │\n" +
                 "├────────────────────────────────┼────────┼─────────────────────┼──────────┤\n" +
-                "│ Latitude of natural origin     │ Double │  [-80 … 84]°        │    20°   │\n" +
+                "│ Latitude of natural origin¹    │ Double │  [-80 … 84]°        │    20°   │\n" +
                 "│ Longitude of natural origin    │ Double │ [-180 … 180]°       │   -60°   │\n" +
                 "│ Scale factor at natural origin │ Double │    (0 … ∞)          │ 0,997    │\n" +
                 "│ False northing                 │ Double │   (-∞ … ∞) m        │    20 km │\n" +
-                "└────────────────────────────────┴────────┴─────────────────────┴──────────┘\n", text);
+                "└────────────────────────────────┴────────┴─────────────────────┴──────────┘\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
@@ -205,7 +210,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "╔═════════════════════════════════════════════╤════════╤════════════╤═══════════════╤═══════════════╗\n" +
                 "║ Name                                        │ Type   │ Obligation │ Value domain  │ Default value ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
-                "║ EPSG: Latitude of natural origin (8801)     │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  ║\n" +
+                "║ EPSG: Latitude of natural origin¹ (8801)    │ Double │ Mandatory  │  [-80 … 84]°  │        40.0°  ║\n" +
                 "║ OGC:  latitude_of_origin                    │        │            │               │               ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
                 "║ EPSG: Longitude of natural origin (8802)    │ Double │ Mandatory  │ [-180 … 180]° │       -60.0°  ║\n" +
@@ -219,7 +224,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢\n" +
                 "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │     10000.0 m ║\n" +
                 "║ OGC:  false_northing                        │        │            │               │               ║\n" +
-                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝\n", text);
+                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
@@ -239,7 +245,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "╔═════════════════════════════════════════════╤════════╤════════════╤═══════════════╤══════════╗\n" +
                 "║ Name                                        │ Type   │ Obligation │ Value domain  │ Value    ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
-                "║ EPSG: Latitude of natural origin (8801)     │ Double │ Mandatory  │  [-80 … 84]°  │  20.0°   ║\n" +
+                "║ EPSG: Latitude of natural origin¹ (8801)    │ Double │ Mandatory  │  [-80 … 84]°  │  20.0°   ║\n" +
                 "║ OGC:  latitude_of_origin                    │        │            │               │          ║\n" +
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
                 "║ EPSG: Longitude of natural origin (8802)    │ Double │ Mandatory  │ [-180 … 180]° │ -60.0°   ║\n" +
@@ -250,7 +256,8 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "╟─────────────────────────────────────────────┼────────┼────────────┼───────────────┼──────────╢\n" +
                 "║ EPSG: False northing (8807)                 │ Double │ Optional   │   (-∞ … ∞) m  │  20.0 km ║\n" +
                 "║ OGC:  false_northing                        │        │            │               │          ║\n" +
-                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧══════════╝\n", text);
+                "╚═════════════════════════════════════════════╧════════╧════════════╧═══════════════╧══════════╝\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
@@ -315,14 +322,15 @@ public final strictfp class ParameterFormatTest extends TestCase {
         text = format.format(createParameterValues());
         assertMultilinesEquals(
                 "OGC: Mercator_1SP\n" +
-                "┌────────────────────┬────────┬───────────────┬──────────┐\n" +
-                "│ Name (OGC)         │ Type   │ Value domain  │ Value    │\n" +
-                "├────────────────────┼────────┼───────────────┼──────────┤\n" +
-                "│ latitude_of_origin │ Double │  [-80 … 84]°  │  20.0°   │\n" +
-                "│ central_meridian   │ Double │ [-180 … 180]° │ -60.0°   │\n" +
-                "│ scale_factor       │ Double │    (0 … ∞)    │ 0.997    │\n" +
-                "│ false_northing     │ Double │   (-∞ … ∞) m  │  20.0 km │\n" +
-                "└────────────────────┴────────┴───────────────┴──────────┘\n", text);
+                "┌─────────────────────┬────────┬───────────────┬──────────┐\n" +
+                "│ Name (OGC)          │ Type   │ Value domain  │ Value    │\n" +
+                "├─────────────────────┼────────┼───────────────┼──────────┤\n" +
+                "│ latitude_of_origin¹ │ Double │  [-80 … 84]°  │  20.0°   │\n" +
+                "│ central_meridian    │ Double │ [-180 … 180]° │ -60.0°   │\n" +
+                "│ scale_factor        │ Double │    (0 … ∞)    │ 0.997    │\n" +
+                "│ false_northing      │ Double │   (-∞ … ∞) m  │  20.0 km │\n" +
+                "└─────────────────────┴────────┴───────────────┴──────────┘\n" +
+                "¹ This parameter is shown for completeness, but should never have a value different than 0 for this projection.\n", text);
     }
 
     /**
