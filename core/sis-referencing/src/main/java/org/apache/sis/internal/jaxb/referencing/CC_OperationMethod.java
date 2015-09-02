@@ -180,8 +180,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
              * replacement of the given ones.
              */
             final ParameterDescriptorGroup parameters = method.getParameters();
-            return CC_GeneralOperationParameter.merge(properties,
-                    IdentifiedObjects.getProperties(parameters),
+            return CC_GeneralOperationParameter.merge(DefaultOperationMethod.class,
+                    properties, IdentifiedObjects.getProperties(parameters),
                     1, 1, descriptors, parameters, true);
         }
         return new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);

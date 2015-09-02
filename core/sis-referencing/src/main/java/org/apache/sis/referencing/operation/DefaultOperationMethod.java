@@ -810,6 +810,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * class will be provided either by replacing this {@code OperationMethod} by one of the
      * pre-defined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
      *
+     * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     *
      * @see AbstractSingleOperation#setParameters
      */
     private void setDescriptors(final GeneralParameterDescriptor[] descriptors) {

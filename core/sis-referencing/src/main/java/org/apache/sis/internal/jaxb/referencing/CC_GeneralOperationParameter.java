@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.AbstractParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.collection.Containers;
@@ -215,7 +216,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         merged.putAll(actual);  // May overwrite pre-defined properties.
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();
-            return merge(merged, merged, minimumOccurs, maximumOccurs,
+            return merge(DefaultParameterValueGroup.class, merged, merged, minimumOccurs, maximumOccurs,
                     descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]),
                     (ParameterDescriptorGroup) complete, canSubstitute);
         } else {
@@ -227,6 +228,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Returns a descriptor with the given properties, completed with information not found in GML.
      * Those extra information are given by the {@code complete} descriptor.
      *
+     * @param  caller        The public source class to report if a log message need to be emitted.
      * @param  properties    Properties as declared in the GML document, to be used if {@code complete} is incompatible.
      * @param  merged        More complete properties, to be used if {@code complete} is compatible.
      * @param  minimumOccurs Value to assign to {@link DefaultParameterDescriptorGroup#getMinimumOccurs()}.
@@ -236,7 +238,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * @param  canSubstitute {@code true} if this method is allowed to return {@code complete}.
      * @return The parameter descriptor group to use (may be the {@code complete} instance).
      */
-    static ParameterDescriptorGroup merge(final Map<String,?>                properties,
+    static ParameterDescriptorGroup merge(final Class<?>                     caller,
+                                          final Map<String,?>                properties,
                                           final Map<String,?>                merged,
                                           final int                          minimumOccurs,
                                           final int                          maximumOccurs,
@@ -262,7 +265,14 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                     continue;
                 }
             } catch (ParameterNotFoundException e) {
-                Context.warningOccured(Context.current(), CC_GeneralOperationParameter.class, "replacement", e, canSubstitute);
+                /*
+                 * Log at Level.WARNING for the first parameter (canSubstitute == true) and at Level.FINE
+                 * for all other (canSubstitute == false).  We do not use CC_GeneralOperationParameter as
+                 * the source class because this is an internal class. We rather use the first public class
+                 * in the caller hierarchy, which is either DefaultParameterValueGroup or DefaultOperationMethod.
+                 */
+                Context.warningOccured(Context.current(), caller,
+                        (caller == DefaultParameterValueGroup.class) ? "setValues" : "setDescriptors", e, canSubstitute);
             }
             /*
              * If a parameter was not found in the 'complete' descriptor, we will not be able to use that descriptor.
