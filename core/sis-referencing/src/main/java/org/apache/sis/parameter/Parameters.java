@@ -217,6 +217,35 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     }
 
     /**
+     * Returns the descriptors of the given parameters, in the same order.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If the given array is {@code null}, then this method returns {@code null}.
+     *   <li>If an element of the given array is {@code null}, then the corresponding
+     *       element of the returned array is also {@code null}.</li>
+     * </ul>
+     *
+     * @param  parameters The parameter values from which to get the descriptors, or {@code null}.
+     * @return The descriptors of the given parameter values, or {@code null} if the {@code parameters} argument was null.
+     *
+     * @since 0.6
+     */
+    public static GeneralParameterDescriptor[] getDescriptors(final GeneralParameterValue... parameters) {
+        if (parameters == null) {
+            return null;
+        }
+        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
+        for (int i=0; i<parameters.length; i++) {
+            final GeneralParameterValue p = parameters[i];
+            if (p != null) {
+                descriptors[i] = p.getDescriptor();
+            }
+        }
+        return descriptors;
+    }
+
+    /**
      * Gets the parameter name as an instance of {@code MemberName}.
      * This method performs the following checks:
      *

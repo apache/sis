@@ -18,24 +18,27 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Arrays;
+import java.util.IdentityHashMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -450,12 +453,38 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class,
                 "setParameters", "parameterValue", parameters != null))
         {
-            ParameterDescriptorGroup descriptor = method.getParameters();
-            parameters = new DefaultParameterValueGroup(descriptor);
-            parameters.values().addAll(Arrays.asList(values));
-            if (method instanceof DefaultOperationMethod) {
-                ((DefaultOperationMethod) method).setParameters(parameters.getDescriptor());
+            /*
+             * The descriptors in the <gml:method> element do not know the class of parameter value
+             * (String, Integer, Double, double[], etc.) because this information is not part of GML.
+             * But this information is available to descriptors in the <gml:parameterValue> elements
+             * because Apache SIS infers the type from the actual parameter value. The 'merge' method
+             * below puts those information together.
+             */
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+            final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(
+                    method.getParameters().descriptors(),
+                    Parameters.getDescriptors(values),
+                    replacements);
+            /*
+             * Sometime Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
+             * build-in parameters. In such cases the unmarshalled ParameterDescriptorGroup can be used as-in.
+             * But if the above 'merge' method has changed any parameter descriptor, then we will need to create
+             * a new ParameterDescriptorGroup with the new descriptors.
+             */
+            for (int i=0; i<merged.length; i++) {
+                if (merged[i] != values[i].getDescriptor()) {
+                    ((DefaultOperationMethod) method).updateDescriptors(merged);
+                    break;
+                }
             }
+            /*
+             * Sometime the descriptors associated to ParameterValues need to be updated, for example because
+             * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
+             * needed, are applied on-the-fly by the copy operation below, using the information provided by
+             * the 'replacements' map.
+             */
+            parameters = new DefaultParameterValueGroup(method.getParameters());
+            CC_OperationMethod.store(values, parameters.values(), replacements);
         }
     }
 }
