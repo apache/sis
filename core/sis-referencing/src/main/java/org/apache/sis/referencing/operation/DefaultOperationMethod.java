@@ -825,10 +825,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Invoked by {@link AbstractSingleOperation} for completing the parameter descriptor.
-     *
-     * @see #getParameters()
      */
-    final void setParameters(final ParameterDescriptorGroup descriptor) {
-        parameters = descriptor;
+    final void updateDescriptors(final GeneralParameterDescriptor[] descriptors) {
+        final ParameterDescriptorGroup previous = parameters;
+        parameters = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(previous),
+                previous.getMinimumOccurs(), previous.getMaximumOccurs(), descriptors);
     }
 }

@@ -17,12 +17,17 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Map;
+import java.util.Collection;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
+import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -30,6 +35,8 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -185,5 +192,51 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
                     1, 1, descriptors, parameters, true);
         }
         return new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors);
+    }
+
+    /**
+     * Stores the given {@code parameters} into the given {@code addTo} collection.
+     * This method copies only the <em>references</em> if possible. However is some
+     * cases the values may need to be copied in new parameter instances.
+     *
+     * <div class="note"><b>Note:</b>
+     * this code is defined in this {@code CC_OperationMethod} class instead than in the
+     * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
+     * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     *
+     * @param parameters   The parameters to add to the {@code addTo} collection.
+     * @param addTo        Where to store the {@code parameters}.
+     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
+     */
+    public static void store(final GeneralParameterValue[] parameters,
+                             final Collection<GeneralParameterValue> addTo,
+                             final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements)
+    {
+        for (GeneralParameterValue p : parameters) {
+            final GeneralParameterDescriptor replacement = replacements.get(p.getDescriptor());
+            if (replacement != null) {
+                if (p instanceof ParameterValue<?>) {
+                    final ParameterValue<?> source = (ParameterValue<?>) p;
+                    final ParameterValue<?> target = new DefaultParameterValue<>((ParameterDescriptor<?>) replacement);
+                    final Object value = source.getValue();
+                    final Unit<?> unit = source.getUnit();
+                    if (unit == null) {
+                        target.setValue(value);
+                    } else if (value instanceof double[]) {
+                        target.setValue((double[]) value, unit);
+                    } else {
+                        target.setValue(((Number) value).doubleValue(), unit);
+                    }
+                    p = target;
+                } else if (p instanceof ParameterValueGroup) {
+                    final ParameterValueGroup source = (ParameterValueGroup) p;
+                    final ParameterValueGroup target = new DefaultParameterValueGroup((ParameterDescriptorGroup) replacement);
+                    final Collection<GeneralParameterValue> values = source.values();
+                    store(values.toArray(new GeneralParameterValue[values.size()]), target.values(), replacements);
+                    p = target;
+                }
+            }
+            addTo.add(p);
+        }
     }
 }

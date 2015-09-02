@@ -200,26 +200,43 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
 
         assertSame("name", group.getName(), group.getName());
         assertEquals("descriptors.size", 2, descriptors.size());
-        verifyMethodParameter((DefaultParameterDescriptor<?>) descriptors.get(0), (DefaultParameterDescriptor<?>) Mercator1SP.LATITUDE_OF_ORIGIN, REMARK);
-        verifyMethodParameter((DefaultParameterDescriptor<?>) descriptors.get(1), (DefaultParameterDescriptor<?>) Mercator1SP.LONGITUDE_OF_ORIGIN, null);
+        verifyMethodParameter(Mercator1SP.LATITUDE_OF_ORIGIN, REMARK, (ParameterDescriptor<?>) descriptors.get(0));
+        verifyMethodParameter(Mercator1SP.LONGITUDE_OF_ORIGIN,  null, (ParameterDescriptor<?>) descriptors.get(1));
     }
 
     /**
      * Verifies the properties of an operation method parameter.
+     *
+     * @param expected A parameter descriptor containing the expected properties (except remarks).
+     * @param actual   The parameter descriptor to verify.
      */
-    private static void verifyMethodParameter(final DefaultParameterDescriptor<?> actual,
-                                              final DefaultParameterDescriptor<?> expected,
-                                              final String remarks)
+    public static void verifyMethodParameter(final ParameterDescriptor<?> expected,
+                                             final ParameterDescriptor<?> actual)
     {
-        assertSame  ("name",          expected.getName(),         actual.getName());
-        assertSame  ("description",   expected.getDescription(),  actual.getDescription());
+        assertEquals("name",          expected.getName(),         actual.getName());
+        assertEquals("description",   expected.getDescription(),  actual.getDescription());
         assertEquals("valueClass",    expected.getValueClass(),   actual.getValueClass());
-        assertSame  ("valueDomain",   expected.getValueDomain(),  actual.getValueDomain());
         assertEquals("validValues",   expected.getValidValues(),  actual.getValidValues());
-        assertSame  ("defaultValue",  expected.getDefaultValue(), actual.getDefaultValue());
-        assertSame  ("unit",          expected.getUnit(),         actual.getUnit());
+        assertEquals("unit",          expected.getUnit(),         actual.getUnit());
         assertEquals("minimumOccurs", DEFAULT_OCCURRENCE,         actual.getMinimumOccurs());
         assertEquals("maximumOccurs", DEFAULT_OCCURRENCE,         actual.getMaximumOccurs());
+    }
+
+    /**
+     * Same verification than {@link #verifyMethodParameter(ParameterDescriptor, ParameterDescriptor)}, but stricter.
+     *
+     * @param expected A parameter descriptor containing the expected properties (except remarks).
+     * @param remarks  The expected remarks, or {@code null} for fetching this information from {@code expected}.
+     * @param actual   The parameter descriptor to verify.
+     */
+    private static void verifyMethodParameter(final ParameterDescriptor<?> expected,
+            final String remarks, final ParameterDescriptor<?> actual)
+    {
+        verifyMethodParameter(expected, actual);
+        assertSame("name",         expected.getName(),         actual.getName());
+        assertSame("minimumValue", expected.getMinimumValue(), actual.getMinimumValue());
+        assertSame("maximumValue", expected.getMaximumValue(), actual.getMaximumValue());
+        assertSame("defaultValue", expected.getDefaultValue(), actual.getDefaultValue());
         if (remarks != null) {
             assertEquals("remarks", remarks, actual.getRemarks().toString());
         } else {

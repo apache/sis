@@ -21,18 +21,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.NonSI;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
+import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -45,6 +51,7 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  */
 @DependsOn({
     DefaultOperationMethodTest.class,
+    CC_OperationParameterGroupTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
 public final strictfp class OperationMarshallingTest extends XMLTestCase {
@@ -75,24 +82,24 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     @Test
     public void testOperationMethod() throws JAXBException {
         final String xml = XML.marshal(createMercatorMethod());
-        assertXmlEquals("<gml:OperationMethod xmlns:gml=\"" + Namespaces.GML + "\">\n"
-                      + "  <gml:name>Mercator (1SP)</gml:name>\n"
-                      + "  <gml:formula>See EPSG guide.</gml:formula>\n"
-                      + "  <gml:sourceDimensions>2</gml:sourceDimensions>\n"
-                      + "  <gml:targetDimensions>2</gml:targetDimensions>\n"
-                      + "  <gml:parameter>\n"
-                      + "    <gml:OperationParameter gml:id=\"epsg-parameter-8801\">\n"
-                      + "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8801</gml:identifier>\n"
-                      + "      <gml:name codeSpace=\"EPSG\">Latitude of natural origin</gml:name>\n"
-                      + "    </gml:OperationParameter>\n"
-                      + "  </gml:parameter>\n"
-                      + "  <gml:parameter>\n"
-                      + "    <gml:OperationParameter gml:id=\"epsg-parameter-8802\">\n"
-                      + "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8802</gml:identifier>\n"
-                      + "      <gml:name codeSpace=\"EPSG\">Longitude of natural origin</gml:name>\n"
-                      + "    </gml:OperationParameter>\n"
-                      + "  </gml:parameter>\n"
-                      + "</gml:OperationMethod>", xml, "xmlns:*");
+        assertXmlEquals("<gml:OperationMethod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
+                        "  <gml:name>Mercator (1SP)</gml:name>\n" +
+                        "  <gml:formula>See EPSG guide.</gml:formula>\n" +
+                        "  <gml:sourceDimensions>2</gml:sourceDimensions>\n" +
+                        "  <gml:targetDimensions>2</gml:targetDimensions>\n" +
+                        "  <gml:parameter>\n" +
+                        "    <gml:OperationParameter gml:id=\"epsg-parameter-8801\">\n" +
+                        "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8801</gml:identifier>\n" +
+                        "      <gml:name codeSpace=\"EPSG\">Latitude of natural origin</gml:name>\n" +
+                        "    </gml:OperationParameter>\n" +
+                        "  </gml:parameter>\n" +
+                        "  <gml:parameter>\n" +
+                        "    <gml:OperationParameter gml:id=\"epsg-parameter-8802\">\n" +
+                        "      <gml:identifier codeSpace=\"IOGP\">urn:ogc:def:parameter:EPSG::8802</gml:identifier>\n" +
+                        "      <gml:name codeSpace=\"EPSG\">Longitude of natural origin</gml:name>\n" +
+                        "    </gml:OperationParameter>\n" +
+                        "  </gml:parameter>\n" +
+                        "</gml:OperationMethod>", xml, "xmlns:*");
 
         verifyMethod((DefaultOperationMethod) XML.unmarshal(xml));
     }
@@ -100,7 +107,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     /**
      * Verifies the unmarshalled parameter descriptors.
      */
-    private static void verifyMethod(final DefaultOperationMethod method) {
+    private static void verifyMethod(final OperationMethod method) {
         assertIdentifierEquals("name", null, null, null, "Mercator (1SP)", method.getName());
         assertEquals("formula", "See EPSG guide.", method.getFormula().getFormula().toString());
         assertEquals("sourceDimensions", Integer.valueOf(2), method.getSourceDimensions());
@@ -108,21 +115,31 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         final ParameterDescriptorGroup parameters = method.getParameters();
         assertEquals("parameters.name", "Mercator (1SP)", parameters.getName().getCode());
         final Iterator<GeneralParameterDescriptor> it = parameters.descriptors().iterator();
-        verifyIncompleteDescriptor("Latitude of natural origin",  it.next());
-        verifyIncompleteDescriptor("Longitude of natural origin", it.next());
+        CC_OperationParameterGroupTest.verifyMethodParameter(Mercator1SP.LATITUDE_OF_ORIGIN,  (ParameterDescriptor<?>) it.next());
+        CC_OperationParameterGroupTest.verifyMethodParameter(Mercator1SP.LONGITUDE_OF_ORIGIN, (ParameterDescriptor<?>) it.next());
         assertFalse("Unexpected parameter.", it.hasNext());
     }
 
     /**
-     * Verifies that the given parameter descriptor has the expected EPSG name. This method does not
-     * verify that {@link ParameterDescriptor#getValueClass()} returns {@code Double.class}, because
-     * this information is not known to {@code OperationMethod}.
+     * Tests unmarshalling of a conversion.
      *
-     * @param name       The expected EPSG name.
-     * @param descriptor The parameter descriptor to verify.
+     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
-    private static void verifyIncompleteDescriptor(final String name, final GeneralParameterDescriptor descriptor) {
-        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, name, descriptor.getName());
-        assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
+    @Test
+    @DependsOnMethod("testOperationMethod")
+    public void testConversionUnmarshalling() throws JAXBException {
+        final DefaultConversion c = unmarshalFile(DefaultConversion.class, "Conversion.xml");
+        assertEquals("name", "World Mercator", c.getName().getCode());
+        assertEquals("identifier", "3395", getSingleton(c.getIdentifiers()).getCode());
+        assertEquals("scope", "Very small scale mapping.", String.valueOf(c.getScope()));
+
+        final GeographicBoundingBox e = (GeographicBoundingBox) getSingleton(c.getDomainOfValidity().getGeographicElements());
+        assertEquals("eastBoundLongitude", +180, e.getEastBoundLongitude(), STRICT);
+        assertEquals("westBoundLongitude", -180, e.getWestBoundLongitude(), STRICT);
+        assertEquals("northBoundLatitude",   84, e.getNorthBoundLatitude(), STRICT);
+        assertEquals("southBoundLatitude",  -80, e.getSouthBoundLatitude(), STRICT);
+
+        // The most difficult part.
+        verifyMethod(c.getMethod());
     }
 }

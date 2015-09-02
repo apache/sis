@@ -526,16 +526,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      */
     private void setValues(final GeneralParameterValue[] parameters) {
-        final GeneralParameterDescriptor[] fromValues = new GeneralParameterDescriptor[parameters.length];
-        for (int i=0; i<parameters.length; i++) {
-            fromValues[i] = parameters[i].getDescriptor();
-        }
         ParameterValueList addTo = values;
         if (addTo == null) {
             // Should never happen, unless the XML document is invalid and does not have a 'group' element.
             addTo = new ParameterValueList(new DefaultParameterDescriptorGroup());
-        } else {
-            addTo.clear();  // Because references to parameter descriptors have changed.
         }
         /*
          * Merge the descriptors declared in the <gml:group> element with the descriptors given in each
@@ -543,8 +537,9 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
          * because this is the type declared in the JAXBContext and in adapters.
          */
         final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
-        ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(fromValues, replacements);
-        addAll(parameters, replacements, addTo);
+        ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(getDescriptors(parameters), replacements);
+        addTo.clear();  // Because references to parameter descriptors have changed.
+        setValues(parameters, replacements, addTo);
     }
 
     /**
@@ -556,7 +551,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @param addTo        Where to store the new values.
      */
     @SuppressWarnings({"unchecked", "AssignmentToCollectionOrArrayFieldFromParameter"})
-    private void addAll(GeneralParameterValue[] parameters,
+    private void setValues(GeneralParameterValue[] parameters,
             final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements,
             final ParameterValueList addTo)
     {
@@ -569,7 +564,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
                 if (p instanceof DefaultParameterValue<?>) {
                     ((DefaultParameterValue<?>) p).setDescriptor((ParameterDescriptor) replacement);
                 } else if (p instanceof DefaultParameterValueGroup) {
-                    ((DefaultParameterValueGroup) p).addAll(null, replacements,
+                    ((DefaultParameterValueGroup) p).setValues(null, replacements,
                             new ParameterValueList((ParameterDescriptorGroup) replacement));
                 }
             }
