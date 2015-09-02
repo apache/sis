@@ -521,6 +521,9 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * (after {@link #setDescriptor(ParameterDescriptorGroup)}) even if the {@code parameterValue}
      * elements were first in the XML document. This is the case at least with the JAXB reference
      * implementation, because the property type is an array (it would not work with a list).
+     *
+     * <p><b>Maintenance note:</b> the {@code "setValues"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      */
     private void setValues(final GeneralParameterValue[] parameters) {
         final GeneralParameterDescriptor[] fromValues = new GeneralParameterDescriptor[parameters.length];
