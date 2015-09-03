@@ -177,6 +177,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
         if (factory != null) try {
             method = factory.getOperationMethod(name.getCode());
         } catch (FactoryException e) {
+            // Use DefaultOperationMethod as the source class because it is the first public class in callers.
             Context.warningOccured(Context.current(), DefaultOperationMethod.class, "setDescriptors", e, true);
         }
         final Map<String,?> properties = Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name);

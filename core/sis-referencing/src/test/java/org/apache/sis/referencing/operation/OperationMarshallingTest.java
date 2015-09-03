@@ -30,11 +30,14 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.Validators;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.apache.sis.test.DependsOn;
@@ -233,5 +236,14 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         assertEquals    ("targetCRS.name",       "NTF",              targetCRS.getName().getCode());
         assertEquals    ("targetCRS.scope",      "Geodetic survey.", targetCRS.getScope().toString());
         assertEquals    ("targetCRS.identifier", "4275",             getSingleton(targetCRS.getIdentifiers()).getCode());
+
+        final MathTransform tr = c.getMathTransform();
+        assertInstanceOf("mathTransform", LinearTransform.class, tr);
+        assertMatrixEquals("mathTransform.matrix",
+                new Matrix3(1, 0, 0,
+                            0, 1, 2.33722917,
+                            0, 0, 1), ((LinearTransform) tr).getMatrix(), STRICT);
+
+        Validators.validate(c);
     }
 }
