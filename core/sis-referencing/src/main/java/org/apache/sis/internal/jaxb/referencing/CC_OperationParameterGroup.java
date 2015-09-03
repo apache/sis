@@ -101,14 +101,26 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
     /**
      * Invoked by {@link DefaultParameterDescriptorGroup#setDescriptors(GeneralParameterDescriptor[])}
      * for merging into a single set the descriptors which are repeated twice in a GML document.
-     * The descriptors are:
      *
+     * <p>The {@code descriptors} argument gives the descriptors listed explicitely inside a
+     * {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>} element. Those
+     * descriptors are said "incomplete" (from SIS point of view) because they are missing the
+     * {@link ParameterDescriptor#getValueClass()} property, which does not exist in GML but
+     * is mandatory for us. However an exception to this "incompleteness" happen when SIS has
+     * been able to match the {@code <gml:OperationMethod>} parent to one of the pre-defined
+     * operations in the {@link org.apache.sis.internal.referencing.provider} package.</p>
+     *
+     * <p>The {@code fromValues} argument gives the descriptors declared in each {@code <gml:ParameterValue>}
+     * instances of a {@code <gml:ParameterValueGroup>} or {@code <gml:AbstractSingleOperation>} element.
+     * Contrarily to the {@code descriptors} argument, the {@code fromValues} instances should have non-null
+     * {@link ParameterDescriptor#getValueClass()} property inferred by SIS from the parameter value.</p>
+     *
+     * <p>So the preferred descriptors from more complete to less complete are:</p>
      * <ol>
-     *   <li>The descriptors declared explicitely in the {@code ParameterDescriptorGroup}.</li>
-     *   <li>The descriptors declared in the {@code ParameterValue} instances of the {@code ParameterValueGroup}.</li>
+     *   <li>{@code descriptors} if and only if they contain pre-defined parameters inferred by SIS from the {@code <gml:OperationMethod>} name.</li>
+     *   <li>{@code fromValues}, which contain the descriptors declared in the {@code <gml:ParameterValue>} instances.</li>
+     *   <li>{@code descriptors}, which contain the descriptor listed in {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>}.</li>
      * </ol>
-     *
-     * The later are more complete than the former, because they allow us to infer the {@code valueClass} property.
      *
      * <div class="note"><b>Note:</b>
      * this code is defined in this {@code CC_OperationParameterGroup} class instead than in the
@@ -147,45 +159,45 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
         /*
          * Verify if any descriptors found in the ParameterValue instances could replace the descriptors in the group.
          * We give precedence to the descriptors having a non-null 'valueClass' property, which normally appear in the
-         * 'valids' array.
+         * 'fromValues' array.
          */
-        for (GeneralParameterDescriptor valid : fromValues) {
-            final String name = valid.getName().getCode();
-            GeneralParameterDescriptor previous = union.put(name, valid);
+        for (final GeneralParameterDescriptor valueDescriptor : fromValues) {
+            final String name = valueDescriptor.getName().getCode();
+            GeneralParameterDescriptor complete = valueDescriptor;
+            GeneralParameterDescriptor previous = union.put(name, complete);
             if (previous != null) {
                 if (previous instanceof ParameterDescriptor<?>) {
-                    verifyEquivalence(name, valid instanceof ParameterDescriptor<?>);
+                    verifyEquivalence(name, complete instanceof ParameterDescriptor<?>);
                     final Class<?> valueClass = ((ParameterDescriptor<?>) previous).getValueClass();
                     if (valueClass != null) {
-                        final Class<?> r = ((ParameterDescriptor<?>) valid).getValueClass();
+                        /*
+                         * This may happen if the 'descriptors' argument contain the parameters of a pre-defined
+                         * method from the 'org.apache.sis.internal.referencing.provider' package instead than a
+                         * descriptor from the GML file.  In such case, presume that 'previous' is actually more
+                         * complete than 'complete'.
+                         *
+                         * Note that 'r' should never be null unless JAXB unmarshalled the elements in reverse
+                         * order (e.g. <gml:ParameterValue> before <gml:OperationMethod>). Since this behavior
+                         * may depend on JAXB implementation, we are better to check for such case.
+                         */
+                        final Class<?> r = ((ParameterDescriptor<?>) complete).getValueClass();
                         if (r != null) {
-                            /*
-                             * Should never happen unless the same (according its name) ParameterValue appears
-                             * more than once in the 'valids' array, or unless this method is invoked more
-                             * often than expected.
-                             */
                             verifyEquivalence(name, valueClass == r);
-                        } else {
-                            /*
-                             * Should never happen unless JAXB unmarshalled the elements in reverse order
-                             * (i.e. ParameterValue before ParameterDescriptorGroup). Since this behavior
-                             * may depend on JAXB implementation, we are better to check for such case.
-                             * Restore the previous value in the map and swap 'previous' with 'replacement'.
-                             */
-                            previous = union.put(name, valid = previous);
                         }
+                        // Restore the previous value in the map and swap 'previous' with 'replacement'.
+                        previous = union.put(name, complete = previous);
                     }
                 } else if (previous instanceof ParameterDescriptorGroup) {
-                    verifyEquivalence(name, valid instanceof ParameterDescriptorGroup);
+                    verifyEquivalence(name, complete instanceof ParameterDescriptorGroup);
                 }
                 /*
                  * Verify that the replacement contains at least all the information provided by the previous
                  * descriptor. The replacement is allowed to contain more information however.
                  */
-                final GeneralParameterDescriptor replacement = CC_GeneralOperationParameter.replacement(previous, valid);
-                if (replacement != valid) {
+                final GeneralParameterDescriptor replacement = CC_GeneralOperationParameter.merge(previous, complete);
+                if (replacement != valueDescriptor) {
                     union.put(name, replacement);
-                    if (replacements.put(valid, replacement) != null) {
+                    if (replacements.put(valueDescriptor, replacement) != null) {
                         // Should never happen, unless the parameter name changed during execution of this loop.
                         throw new CorruptedObjectException(name);
                     }
