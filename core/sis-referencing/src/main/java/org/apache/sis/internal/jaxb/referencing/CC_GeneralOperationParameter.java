@@ -170,6 +170,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * @param  provided The descriptor unmarshalled from the GML document.
      * @param  complete The descriptor to use for completing missing information.
      * @return The descriptor to use. May be one of the arguments given to this method, or a new instance.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
      */
     static GeneralParameterDescriptor merge(final GeneralParameterDescriptor provided,
                                             final GeneralParameterDescriptor complete)
@@ -237,6 +239,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * @param  complete      More complete parameter descriptors.
      * @param  canSubstitute {@code true} if this method is allowed to return {@code complete}.
      * @return The parameter descriptor group to use (may be the {@code complete} instance).
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
      */
     static ParameterDescriptorGroup merge(final Class<?>                     caller,
                                           final Map<String,?>                properties,
