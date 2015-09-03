@@ -888,6 +888,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Implemented by subclasses at unmarshalling time for creating the math transform from available information.
      * Can return {@code null} if there is not enough information.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
     MathTransform createMathTransform() {
         return null;

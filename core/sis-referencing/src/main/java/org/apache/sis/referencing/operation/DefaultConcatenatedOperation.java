@@ -55,6 +55,7 @@ import java.util.Objects;
  * @version 0.6
  * @module
  */
+// Missing JAXB annotation. See http://issues.apache.org/jira/browse/SIS-292
 final class DefaultConcatenatedOperation extends AbstractCoordinateOperation implements ConcatenatedOperation {
     /**
      * Serial number for inter-operability with different versions.
