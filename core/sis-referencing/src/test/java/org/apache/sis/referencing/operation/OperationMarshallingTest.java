@@ -25,6 +25,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
@@ -121,7 +124,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests unmarshalling of a conversion.
+     * Tests unmarshalling of a defining conversion.
      *
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
@@ -139,7 +142,41 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         assertEquals("northBoundLatitude",   84, e.getNorthBoundLatitude(), STRICT);
         assertEquals("southBoundLatitude",  -80, e.getSouthBoundLatitude(), STRICT);
 
+        // This is a defining conversion, so we do not expect CRS.
+        assertNull("sourceCRS",        c.getSourceCRS());
+        assertNull("targetCRS",        c.getTargetCRS());
+        assertNull("interpolationCRS", c.getInterpolationCRS());
+        assertNull("mathTransform",    c.getMathTransform());
+
         // The most difficult part.
-        verifyMethod(c.getMethod());
+        final OperationMethod method = c.getMethod();
+        assertNotNull("method", method);
+        verifyMethod(method);
+
+        final ParameterValueGroup parameters = c.getParameterValues();
+        assertNotNull("parameters", parameters);
+        final Iterator<GeneralParameterValue> it = parameters.values().iterator();
+        verifyParameter(method, parameters,  -0.0, (ParameterValue<?>) it.next());
+        verifyParameter(method, parameters, -90.0, (ParameterValue<?>) it.next());
+        assertFalse("Unexpected parameter.", it.hasNext());
+    }
+
+    /**
+     * Verify a parameter value. The descriptor is expected to be the same instance than the descriptors
+     * defined in the {@link ParameterValueGroup} and in the {@link OperationMethod}.
+     *
+     * @param method        The method of the enclosing operation.
+     * @param group         The group which contain the given parameter.
+     * @param expectedValue The expected parameter value.
+     * @param parameter     The parameter to verify.
+     */
+    private static void verifyParameter(final OperationMethod method, final ParameterValueGroup group,
+            final double expectedValue, final ParameterValue<?> parameter)
+    {
+        final ParameterDescriptor<?> descriptor = parameter.getDescriptor();
+        final String name = descriptor.getName().getCode();
+        assertSame("parameterValues.descriptor", descriptor,  group.getDescriptor().descriptor(name));
+        assertSame("method.descriptor",          descriptor, method.getParameters().descriptor(name));
+        assertEquals("value", expectedValue, parameter.doubleValue(), STRICT);
     }
 }

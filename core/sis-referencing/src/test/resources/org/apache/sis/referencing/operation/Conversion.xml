@@ -73,6 +73,7 @@
         <gml:OperationParameter gml:id="epsg-parameter-8801">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
           <gml:name codeSpace="EPSG">Latitude of natural origin</gml:name>
+          <gml:remarks>This parameter is shown for completeness, but should never have a value different than 0 for this projection.</gml:remarks>
         </gml:OperationParameter>
       </gml:parameter>
       <gml:parameter>
@@ -89,7 +90,7 @@
   </gml:method>
   <gml:parameterValue>
     <gml:ParameterValue>
-      <gml:value uom="urn:ogc:def:uom:EPSG::9102">0</gml:value>
+      <gml:value uom="urn:ogc:def:uom:EPSG::9102">-0</gml:value>    <!-- Intentionally negative for testing purpose. -->
 
       <!-- All descriptors below this point are duplication of the descriptors already defined above.
            For now we do not yet use the XML references, but this is something that we will need to
@@ -101,14 +102,13 @@
         <gml:OperationParameter gml:id="LatitudeOfNaturalOrigin">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
           <gml:name codeSpace="EPSG">Latitude of natural origin</gml:name>
-          <gml:remarks>This parameter is shown for completeness, but should never have a value different than 0 for this projection.</gml:remarks>
         </gml:OperationParameter>
       </gml:operationParameter>
     </gml:ParameterValue>
   </gml:parameterValue>
   <gml:parameterValue>
     <gml:ParameterValue>
-      <gml:value uom="urn:ogc:def:uom:EPSG::9102">0</gml:value>
+      <gml:value uom="urn:ogc:def:uom:EPSG::9102">-90</gml:value>   <!-- Arbitrary value for testing purpose. -->
       <gml:operationParameter>
         <gml:OperationParameter gml:id="LongitudeOfNaturalOrigin">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8802</gml:identifier>
