@@ -185,7 +185,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         final DefaultParameterValue<Boolean> parameter = create(Boolean.class, null);
         parameter.setValue(Boolean.TRUE);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:booleanValue>true</gml:booleanValue>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
@@ -206,7 +206,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         final DefaultParameterValue<Integer> parameter = create(Integer.class, null);
         parameter.setValue(2000);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:integerValue>2000</gml:integerValue>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
@@ -249,7 +249,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
                 new MeasurementRange<Double>(Double.class, null, false, null, false, SI.METRE));
         parameter.setValue(3000, SI.METRE);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:value uom=\"urn:ogc:def:uom:EPSG::9001\">3000.0</gml:value>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
