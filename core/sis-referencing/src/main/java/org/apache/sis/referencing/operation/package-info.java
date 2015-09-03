@@ -70,6 +70,7 @@
     @XmlJavaTypeAdapter(CC_OperationMethod.class),
     @XmlJavaTypeAdapter(CC_GeneralParameterValue.class),
     @XmlJavaTypeAdapter(CC_GeneralOperationParameter.class),
+    @XmlJavaTypeAdapter(SC_CRS.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)
 })
 package org.apache.sis.referencing.operation;

@@ -28,7 +28,10 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.test.Validators;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest;
@@ -104,7 +107,9 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
                         "  </gml:parameter>\n" +
                         "</gml:OperationMethod>", xml, "xmlns:*");
 
-        verifyMethod((DefaultOperationMethod) XML.unmarshal(xml));
+        final OperationMethod method = (OperationMethod) XML.unmarshal(xml);
+        verifyMethod(method);
+        Validators.validate(method);
     }
 
     /**
@@ -160,6 +165,8 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         verifyParameter(method, parameters,  -0.0, (ParameterValue<?>) it.next());
         verifyParameter(method, parameters, -90.0, (ParameterValue<?>) it.next());
         assertFalse("Unexpected parameter.", it.hasNext());
+
+        Validators.validate(c);
     }
 
     /**
@@ -190,9 +197,41 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testConversionUnmarshalling")
     public void testTransformationUnmarshalling() throws JAXBException {
         final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, "Transformation.xml");
-        assertEquals("name", "NTF (Paris) to NTF (1)", c.getName().getCode());
-        assertEquals("identifier", "1763", getSingleton(c.getIdentifiers()).getCode());
-        assertEquals("scope", "Change of prime meridian.", String.valueOf(c.getScope()));
-        assertEquals("operationVersion", "IGN-Fra", c.getOperationVersion());
+        assertEquals("name",             "NTF (Paris) to NTF (1)",    c.getName().getCode());
+        assertEquals("identifier",       "1763",                      getSingleton(c.getIdentifiers()).getCode());
+        assertEquals("scope",            "Change of prime meridian.", String.valueOf(c.getScope()));
+        assertEquals("operationVersion", "IGN-Fra",                   c.getOperationVersion());
+
+        final OperationMethod method = c.getMethod();
+        assertNotNull("method", method);
+        assertEquals ("method.name", "Longitude rotation", method.getName().getCode());
+        assertEquals ("method.identifier", "9601", getSingleton(method.getIdentifiers()).getCode());
+        assertEquals ("method.formula", "Target_longitude = Source_longitude + longitude_offset.", method.getFormula().getFormula().toString());
+
+        final ParameterDescriptor<?> descriptor = (ParameterDescriptor<?>) getSingleton(method.getParameters().descriptors());
+        assertEquals("descriptor.name",       "Longitude offset", descriptor.getName().getCode());
+        assertEquals("descriptor.identifier", "8602", getSingleton(descriptor.getIdentifiers()).getCode());
+        assertEquals("descriptor.valueClass", Double.class, descriptor.getValueClass());
+
+        final ParameterValueGroup parameters = c.getParameterValues();
+        assertNotNull("parameters", parameters);
+        assertSame("parameters.descriptors", method.getParameters(), parameters.getDescriptor());
+
+        final ParameterValue<?> parameter = (ParameterValue<?>) getSingleton(parameters.values());
+        assertSame  ("parameters.descriptor", descriptor,  parameter.getDescriptor());
+        assertEquals("parameters.unit",       NonSI.GRADE, parameter.getUnit());
+        assertEquals("parameters.value",      2.5969213,   parameter.getValue());
+
+        final CoordinateReferenceSystem sourceCRS = c.getSourceCRS();
+        assertInstanceOf("sourceCRS",            GeodeticCRS.class,  sourceCRS);
+        assertEquals    ("sourceCRS.name",       "NTF (Paris)",      sourceCRS.getName().getCode());
+        assertEquals    ("sourceCRS.scope",      "Geodetic survey.", sourceCRS.getScope().toString());
+        assertEquals    ("sourceCRS.identifier", "4807",             getSingleton(sourceCRS.getIdentifiers()).getCode());
+
+        final CoordinateReferenceSystem targetCRS = c.getTargetCRS();
+        assertInstanceOf("targetCRS",            GeodeticCRS.class,  targetCRS);
+        assertEquals    ("targetCRS.name",       "NTF",              targetCRS.getName().getCode());
+        assertEquals    ("targetCRS.scope",      "Geodetic survey.", targetCRS.getScope().toString());
+        assertEquals    ("targetCRS.identifier", "4275",             getSingleton(targetCRS.getIdentifiers()).getCode());
     }
 }

@@ -35,6 +35,7 @@ import org.apache.sis.parameter.Parameterized;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.Types;
@@ -95,8 +96,8 @@ import java.util.Objects;
     "scope",
     "operationVersion",
     "coordinateOperationAccuracy",
-//  "sourceCRS",    // TODO
-//  "targetCRS"
+    "source",
+    "target"
 })
 @XmlRootElement(name = "AbstractCoordinateOperation")
 @XmlSeeAlso({
@@ -111,18 +112,22 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * The source CRS, or {@code null} if not available.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setSource(CoordinateReferenceSystem)}</p>
+     *
      * @see #getSourceCRS()
      */
-//  @XmlElement
-    private final CoordinateReferenceSystem sourceCRS;
+    private CoordinateReferenceSystem sourceCRS;
 
     /**
      * The target CRS, or {@code null} if not available.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setTarget(CoordinateReferenceSystem)}</p>
+     *
      * @see #getTargetCRS()
      */
-//  @XmlElement
-    private final CoordinateReferenceSystem targetCRS;
+    private CoordinateReferenceSystem targetCRS;
 
     /**
      * The CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
@@ -170,8 +175,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceCRS                   = null;
-        targetCRS                   = null;
         interpolationCRS            = null;
         operationVersion            = null;
         coordinateOperationAccuracy = null;
@@ -416,6 +419,36 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     @Override
     public Class<? extends CoordinateOperation> getInterface() {
         return CoordinateOperation.class;
+    }
+
+    /**
+     * Returns {@code true} if this coordinate operation is for the definition of a
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
+     * The standard (ISO 19111) approach constructs <cite>defining conversion</cite>
+     * as an operation of type {@link org.opengis.referencing.operation.Conversion}
+     * with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
+     * But SIS supports also defining conversions with non-null CRS provided that:
+     *
+     * <ul>
+     *   <li>{@link GeneralDerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>
+     *   <li>{@link GeneralDerivedCRS#getConversionFromBase()} is this operation instance.</li>
+     * </ul>
+     *
+     * When this method returns {@code true}, the source and target CRS are not marshalled in XML documents.
+     *
+     * @return {@code true} if this coordinate operation is for the definition of a derived or projected CRS.
+     */
+    public boolean isDefiningConversion() {
+        /*
+         * Trick: we do not need to verify if (this instanceof Conversion) because:
+         *   - Only DefaultConversion constructor accepts null source and target CRS.
+         *   - GeneralDerivedCRS.getConversionFromBase() return type is Conversion.
+         */
+        return (sourceCRS == null && targetCRS == null)
+               || ((targetCRS instanceof GeneralDerivedCRS)
+                    && ((GeneralDerivedCRS) targetCRS).getBaseCRS() == sourceCRS
+                    && ((GeneralDerivedCRS) targetCRS).getConversionFromBase() == this);
     }
 
     /**
@@ -789,6 +822,46 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     return type;
                 }
             });
+        }
+    }
+
+    // ---- XML SUPPORT ----------------------------------------------------
+
+    /**
+     * Invoked by JAXB for getting the source CRS to marshal.
+     */
+    @XmlElement(name = "sourceCRS")
+    private CoordinateReferenceSystem getSource() {
+        return isDefiningConversion() ? null : getSourceCRS();
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for setting the source CRS.
+     */
+    private void setSource(final CoordinateReferenceSystem crs) {
+        if (ReferencingUtilities.canSetProperty(AbstractCoordinateOperation.class,
+                "setSource", "sourceCRS", sourceCRS != null))
+        {
+            sourceCRS = crs;
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the target CRS to marshal.
+     */
+    @XmlElement(name = "targetCRS")
+    private CoordinateReferenceSystem getTarget() {
+        return isDefiningConversion() ? null : getTargetCRS();
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for setting the target CRS.
+     */
+    private void setTarget(final CoordinateReferenceSystem crs) {
+        if (ReferencingUtilities.canSetProperty(AbstractCoordinateOperation.class,
+                "setTarget", "targetCRS", targetCRS != null))
+        {
+            targetCRS = crs;
         }
     }
 }

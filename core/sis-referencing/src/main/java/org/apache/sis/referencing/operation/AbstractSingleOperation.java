@@ -451,7 +451,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see DefaultOperationMethod#setDescriptors
      */
     private void setParameters(final GeneralParameterValue[] values) {
-        if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class,
+        if (ReferencingUtilities.canSetProperty(AbstractSingleOperation.class,
                 "setParameters", "parameterValue", parameters != null))
         {
             /*
