@@ -123,20 +123,20 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     public void testParameterSubstitution() throws JAXBException {
         ParameterDescriptor<?> provided = unmarshal("Optional parameter", null);
         ParameterDescriptor<?> complete = create("Optional parameter", null, false, null);
-        assertSame("Trivial case.",    complete, CC_GeneralOperationParameter.replacement(complete, complete));
-        assertSame("Same properties.", complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame("Trivial case.",    complete, CC_GeneralOperationParameter.merge(complete, complete));
+        assertSame("Same properties.", complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("OptionalParameter", null, false, null);
-        assertSame("Slightly different name.", complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame("Slightly different name.", complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("Optional parameter", null, false, 3);
-        assertSame("With default value.", complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame("With default value.", complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("Optional parameter", "More details here.", false, null);
-        assertSame("With additional property.", complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame("With additional property.", complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         provided = unmarshal("Optional parameter", "More details here.");
-        assertSame("With same remark.", complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame("With same remark.", complete, CC_GeneralOperationParameter.merge(provided, complete));
     }
 
     /**
@@ -150,7 +150,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
     public void testParameterMerge() throws JAXBException {
         ParameterDescriptor<?> provided = unmarshal("Test parameter", null);
         ParameterDescriptor<?> complete = create("Test parameter", null, true, null);
-        ParameterDescriptor<?> merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.replacement(provided, complete);
+        ParameterDescriptor<?> merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame("Different obligation.", complete,           merged);
         assertSame   ("name",                  complete.getName(), merged.getName());
         assertEquals ("minimumOccurs",         0,                  merged.getMinimumOccurs());  // From provided descriptor.
@@ -159,11 +159,11 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         assertNull   ("remarks",                                   merged.getRemarks());
 
         complete = create("Test parameter", null, false, null);
-        assertSame(complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
         // Above assertion was tested by testParameterSubstitutions(), but was verified again here
         // for making sure that the following assertion verifies the effect of the remarks alone.
         provided = unmarshal("Test parameter", "More details here.");
-        merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.replacement(provided, complete);
+        merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame("Different remark.", complete,              merged);
         assertSame   ("name",              complete.getName(),    merged.getName());
         assertEquals ("minimumOccurs",     0,                     merged.getMinimumOccurs());
@@ -195,7 +195,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter C", "Remarks C.", false, 5),
                 create("Parameter D", "Remarks D.", false, 6));
 
-        assertSame(complete, CC_GeneralOperationParameter.replacement(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
     }
 
     /**
@@ -223,7 +223,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter D", "Remarks D.", false, 6));
 
         final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.replacement(provided, complete);
+                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   ("name",          complete.getName(),    merged.getName());
         assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
@@ -262,7 +262,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter C", null, false, 5));
 
         final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.replacement(provided, complete);
+                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   ("name",          complete.getName(),    merged.getName());
         assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
@@ -305,7 +305,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
 
         listener.maximumLogCount = 1;
         final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.replacement(provided, complete);
+                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   ("name",          complete.getName(),    merged.getName());
         assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());

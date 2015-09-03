@@ -135,6 +135,7 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         assertEquals("name", "World Mercator", c.getName().getCode());
         assertEquals("identifier", "3395", getSingleton(c.getIdentifiers()).getCode());
         assertEquals("scope", "Very small scale mapping.", String.valueOf(c.getScope()));
+        assertNull  ("operationVersion", c.getOperationVersion());
 
         final GeographicBoundingBox e = (GeographicBoundingBox) getSingleton(c.getDomainOfValidity().getGeographicElements());
         assertEquals("eastBoundLongitude", +180, e.getEastBoundLongitude(), STRICT);
@@ -178,5 +179,20 @@ public final strictfp class OperationMarshallingTest extends XMLTestCase {
         assertSame("parameterValues.descriptor", descriptor,  group.getDescriptor().descriptor(name));
         assertSame("method.descriptor",          descriptor, method.getParameters().descriptor(name));
         assertEquals("value", expectedValue, parameter.doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests unmarshalling of a transformation.
+     *
+     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testConversionUnmarshalling")
+    public void testTransformationUnmarshalling() throws JAXBException {
+        final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, "Transformation.xml");
+        assertEquals("name", "NTF (Paris) to NTF (1)", c.getName().getCode());
+        assertEquals("identifier", "1763", getSingleton(c.getIdentifiers()).getCode());
+        assertEquals("scope", "Change of prime meridian.", String.valueOf(c.getScope()));
+        assertEquals("operationVersion", "IGN-Fra", c.getOperationVersion());
     }
 }

@@ -43,9 +43,9 @@ import org.apache.sis.internal.jaxb.Context;
  * JAXB adapter mapping implementing class to the GeoAPI interface. See
  * package documentation for more information about JAXB and interface.
  *
- * <p>This class provides an additional {@link #replacement(GeneralParameterDescriptor, GeneralParameterDescriptor)}
- * method building a unique descriptor instance when the same descriptor is declared in more than one place in the
- * GML document. Some examples of duplications are:</p>
+ * <p>This class provides additional {@code merge(…)} methods for building a unique descriptor
+ * instance when the same descriptor is declared in more than one place in the GML document.
+ * Some examples of duplications are:</p>
  *
  * <ul>
  *   <li>The descriptors listed under the {@code <gml:group>} element, which duplicate the descriptors listed
@@ -171,8 +171,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * @param  complete The descriptor to use for completing missing information.
      * @return The descriptor to use. May be one of the arguments given to this method, or a new instance.
      */
-    static GeneralParameterDescriptor replacement(final GeneralParameterDescriptor provided,
-                                                  final GeneralParameterDescriptor complete)
+    static GeneralParameterDescriptor merge(final GeneralParameterDescriptor provided,
+                                            final GeneralParameterDescriptor complete)
     {
         if (provided == complete) {
             return complete;
@@ -258,7 +258,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                  */
                 GeneralParameterDescriptor predefined = complete.descriptor(p.getName().getCode());
                 if (predefined != null) {   // Safety in case 'complete' is a user's implementation.
-                    canSubstitute &= (provided[i] = replacement(p, predefined)) == predefined;
+                    canSubstitute &= (provided[i] = merge(p, predefined)) == predefined;
                     if (!included.add(predefined)) {
                         throw new CorruptedObjectException(predefined);  // Broken hashCode/equals, or object mutated.
                     }

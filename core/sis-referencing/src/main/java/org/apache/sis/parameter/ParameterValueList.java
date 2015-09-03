@@ -34,6 +34,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 
 /**
@@ -238,14 +239,15 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
              * parameter name was not found, or the parameter descriptor does not matches.
              */
             final Identifier name = desc.getName();
+            final String code = name.getCode();
             for (final GeneralParameterDescriptor descriptor : descriptors) {
-                if (name.equals(descriptor.getName())) {
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, code)) {
                     throw new IllegalArgumentException(Errors.format(
                             Errors.Keys.MismatchedParameterDescriptor_1, name));
                 }
             }
             throw new InvalidParameterNameException(Errors.format(Errors.Keys.ParameterNotFound_2,
-                    Verifier.getDisplayName(descriptor), name), name.getCode());
+                    Verifier.getDisplayName(descriptor), name), code);
         }
     }
 

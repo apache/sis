@@ -109,30 +109,11 @@ public final strictfp class CC_OperationParameterGroupTest extends XMLTestCase {
      */
     @Test
     public void testSubtitution() throws JAXBException {
-        final ParameterDescriptorGroup fromXML = unmarshal();
-        final ParameterDescriptor<?>[] expected = create(REMARK);
-        final UnmodifiableArrayList<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
-
-        // Normal usage: merge to existing descriptors the more complete information found in parameter values.
-        verifySubtitution(fromXML.descriptors(), fromValues, expected);
-
-        // Unusual case, tested for safety: the existing descriptors were actually more complete.
-        verifySubtitution(fromValues, fromXML.descriptors(), expected);
-    }
-
-    /**
-     * Implementation of {@link #testSubtitution()}.
-     *
-     * @param descriptors Simulates the descriptors already present in a {@code ParameterDescriptorGroup}.
-     * @param fromValues  Simulates the descriptors created from {@code ParameterValue} instances.
-     * @param expected    The expected descriptors.
-     */
-    private static void verifySubtitution(final List<GeneralParameterDescriptor> descriptors,
-                                          final List<GeneralParameterDescriptor> fromValues,
-                                          final GeneralParameterDescriptor[]     expected)
-    {
+        final ParameterDescriptor<?>[]         expected   = create(REMARK);
+        final List<GeneralParameterDescriptor> fromXML    = unmarshal().descriptors();
+        final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
         final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
-        final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(descriptors,
+        final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML,
                 fromValues.toArray(new GeneralParameterDescriptor[fromValues.size()]), replacements);
 
         assertTrue("Expected no replacement.", replacements.isEmpty());
