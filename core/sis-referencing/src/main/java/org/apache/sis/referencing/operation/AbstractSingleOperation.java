@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -31,6 +32,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
@@ -40,8 +42,10 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
@@ -486,6 +490,22 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              */
             parameters = new DefaultParameterValueGroup(method.getParameters());
             CC_OperationMethod.store(values, parameters.values(), replacements);
+            afterUnmarshal();   // For creating the math transform.
         }
+    }
+
+    /**
+     * Invoked at unmarshalling time for creating the math transform from available information.
+     * Can return {@code null} if there is not enough information.
+     */
+    @Override
+    final MathTransform createMathTransform() {
+        if (parameters != null) try {
+            return DefaultFactories.forBuildin(MathTransformFactory.class).createBaseToDerived(
+                    super.getSourceCRS(), parameters, super.getTargetCRS().getCoordinateSystem());
+        } catch (FactoryException e) {
+            Context.warningOccured(Context.current(), AbstractCoordinateOperation.class, "createMathTransform", e, true);
+        }
+        return super.createMathTransform();
     }
 }

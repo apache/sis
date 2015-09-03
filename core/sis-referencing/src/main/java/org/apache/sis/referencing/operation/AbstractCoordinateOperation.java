@@ -165,8 +165,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Transform from positions in the {@linkplain #getSourceCRS source coordinate reference system}
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #afterUnmarshal()}</p>
      */
-    private final MathTransform transform;
+    private MathTransform transform;
 
     /**
      * Creates a new object in which every attributes are set to a null value.
@@ -180,7 +183,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         coordinateOperationAccuracy = null;
         domainOfValidity            = null;
         scope                       = null;
-        transform                   = null;
     }
 
     /**
@@ -324,6 +326,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * are consistent with {@link #transform} input and output dimensions.
      */
     private void checkDimensions(final Map<String,?> properties) {
+        final MathTransform transform = this.transform;   // Protect from changes.
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
@@ -843,6 +846,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 "setSource", "sourceCRS", sourceCRS != null))
         {
             sourceCRS = crs;
+            afterUnmarshal();
         }
     }
 
@@ -862,6 +866,30 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 "setTarget", "targetCRS", targetCRS != null))
         {
             targetCRS = crs;
+            afterUnmarshal();
         }
+    }
+
+    /**
+     * Invoked by setter methods for computing the math transform as soon as we can.
+     * It is okay to invoke this method more than once.
+     *
+     * <div class="note"><b>Note:</b>
+     * we use a method invoked from setter methods rather than defining an {@code afterUnmarshal(Unmarshaller, Object)}
+     * method (automatically invoked by JAXB) in order to avoid a dependency to the {@link javax.xml.bind.Unmarshaller}
+     * interface when the user does not want to read GML documents.</div>
+     */
+    final void afterUnmarshal() {
+        if (transform == null && sourceCRS != null && targetCRS != null) {
+            transform = createMathTransform();
+        }
+    }
+
+    /**
+     * Implemented by subclasses at unmarshalling time for creating the math transform from available information.
+     * Can return {@code null} if there is not enough information.
+     */
+    MathTransform createMathTransform() {
+        return null;
     }
 }

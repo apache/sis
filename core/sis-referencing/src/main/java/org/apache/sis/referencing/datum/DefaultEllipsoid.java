@@ -353,6 +353,11 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * been defined, it is now possible to calculate the value of the missing parameter
      * using the values of those that are set.
      *
+     * <div class="note"><b>Note:</b>
+     * we use a method invoked from setter methods rather than defining an {@code afterUnmarshal(Unmarshaller, Object)}
+     * method (automatically invoked by JAXB) in order to avoid a dependency to the {@link javax.xml.bind.Unmarshaller}
+     * interface when the user does not want to read GML documents.</div>
+     *
      * @see #setSemiMajorAxisMeasure(Measure)
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
      */
