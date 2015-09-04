@@ -19,23 +19,23 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.metadata.Identifier;
-import org.apache.sis.parameter.Parameterized;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.iso.Types;
@@ -44,6 +44,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
@@ -167,7 +168,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #afterUnmarshal()}</p>
+     * This field is modified only at unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
      */
     private MathTransform transform;
 
@@ -856,7 +857,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setSource(final CoordinateReferenceSystem crs) {
         if (sourceCRS == null) {
             sourceCRS = crs;
-            afterUnmarshal();
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
@@ -876,22 +876,24 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     private void setTarget(final CoordinateReferenceSystem crs) {
         if (targetCRS == null) {
             targetCRS = crs;
-            afterUnmarshal();
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
 
     /**
-     * Invoked by setter methods for computing the math transform as soon as we can.
-     * It is okay to invoke this method more than once.
+     * Invoked by JAXB after unmarshalling. This method needs information provided by:
      *
-     * <div class="note"><b>Note:</b>
-     * we use a method invoked from setter methods rather than defining an {@code afterUnmarshal(Unmarshaller, Object)}
-     * method (automatically invoked by JAXB) in order to avoid a dependency to the {@link javax.xml.bind.Unmarshaller}
-     * interface when the user does not want to read GML documents.</div>
+     * <ul>
+     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
+     *   <li>{@link AbstractSingleOperation#setParameters(GeneralParameterValue[])}</li>
+     * </ul>
+     *
+     * Note that the later method is defined in a subclass, but experience suggests that it still works
+     * at least with the JAXB implementation provided in JDK.
      */
-    final void afterUnmarshal() {
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         if (transform == null && sourceCRS != null && targetCRS != null) {
             transform = createMathTransform();
         }

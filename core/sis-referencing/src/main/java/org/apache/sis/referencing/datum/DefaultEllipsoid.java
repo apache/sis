@@ -21,6 +21,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.converter.UnitConverter;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -707,15 +708,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * been defined, it is now possible to calculate the value of the missing parameter
      * using the values of those that are set.
      *
-     * <div class="note"><b>Note:</b>
-     * we use a method invoked from setter methods rather than defining an {@code afterUnmarshal(Unmarshaller, Object)}
-     * method (automatically invoked by JAXB) in order to avoid a dependency to the {@link javax.xml.bind.Unmarshaller}
-     * interface when the user does not want to read GML documents.</div>
-     *
      * @see #setSemiMajorAxisMeasure(Measure)
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
      */
-    private void afterUnmarshal() {
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         if (ivfDefinitive) {
             if (semiMinorAxis == 0) {
                 semiMinorAxis = Formulas.getSemiMinor(semiMajorAxis, inverseFlattening);
@@ -744,7 +740,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * This method is invoked by JAXB at unmarshalling time only.
      *
      * @see #setSecondDefiningParameter(SecondDefiningParameter)
-     * @see #afterUnmarshal()
+     * @see #afterUnmarshal(Unmarshaller, Object)
      */
     private void setSemiMajorAxisMeasure(final Measure measure) {
         if (semiMajorAxis != 0) {
@@ -754,9 +750,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
             unit = measure.getUnit(Length.class);
             harmonizeAxisUnits(uom);
-            if ((ivfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
-                afterUnmarshal();
-            }
         }
     }
 
@@ -776,7 +769,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * second defining parameter given. This is for JAXB unmarshalling process only.
      *
      * @see #setSemiMajorAxisMeasure(Measure)
-     * @see #afterUnmarshal()
+     * @see #afterUnmarshal(Unmarshaller, Object)
      */
     private void setSecondDefiningParameter(SecondDefiningParameter second) {
         while (second.secondDefiningParameter != null) {
@@ -798,9 +791,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 } else if (semiMinorAxis == 0) {
                     ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
                     harmonizeAxisUnits(measure.getUnit(Length.class));
-                }
-                if (semiMajorAxis != 0) {
-                    afterUnmarshal();
                 }
             }
         }

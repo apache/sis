@@ -468,6 +468,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      */
     private void setParameters(final GeneralParameterValue[] values) {
         if (parameters == null) {
+            if (!(method instanceof DefaultOperationMethod)) {  // May be a non-null proxy if defined only by xlink:href.
+                throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "method"));
+            }
             /*
              * The descriptors in the <gml:method> element do not know the class of parameter value
              * (String, Integer, Double, double[], etc.) because this information is not part of GML.
@@ -489,6 +492,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             for (int i=0; i<merged.length; i++) {
                 if (merged[i] != values[i].getDescriptor()) {
                     ((DefaultOperationMethod) method).updateDescriptors(merged);
+                    // At this point, method.getParameters() may have changed.
                     break;
                 }
             }
@@ -500,7 +504,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              */
             parameters = new DefaultParameterValueGroup(method.getParameters());
             CC_OperationMethod.store(values, parameters.values(), replacements);
-            afterUnmarshal();   // For creating the math transform.
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
         }
