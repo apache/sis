@@ -798,6 +798,13 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * But we would need to make sure that {@link AbstractSingleOperation#getParameters()} is consistent
      * with the decision taken by this method.</div>
      *
+     * <p><b>Historical note:</b> older, deprecated, names for the parameters were:
+     * <ul>
+     *   <li>{@code includesParameter}</li>
+     *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG registry</li>
+     *   <li>{@code usesParameter}</li>
+     * </ul>
+     *
      * @see #getParameters()
      * @see AbstractSingleOperation#getParameters()
      */

@@ -40,6 +40,7 @@ import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -108,6 +109,13 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * @param method The unmarshalled element.
      */
     public void setElement(final DefaultOperationMethod method) {
+        if (!CC_GeneralOperationParameter.isValid(method.getParameters())) {
+            /*
+             * Parameters are mandatory and SIS classes need them. Provide an error message
+             * here instead than waiting for a NullPointerException in some arbitrary place.
+             */
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "parameters"));
+        }
         metadata = method;
     }
 

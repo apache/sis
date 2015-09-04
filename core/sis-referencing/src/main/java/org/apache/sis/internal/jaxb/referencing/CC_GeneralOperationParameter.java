@@ -156,6 +156,14 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
+     * Verifies that the given descriptor is non-null and contains at least a name.
+     * This method is used after unmarshalling.
+     */
+    static boolean isValid(final GeneralParameterDescriptor descriptor) {
+        return descriptor != null && descriptor.getName() != null;
+    }
+
+    /**
      * Returns a descriptor with the same properties than the {@code provided} one, but completed with information
      * not found in GML. Those missing information are given by the {@code complete} descriptor, which may come from
      * two sources:
