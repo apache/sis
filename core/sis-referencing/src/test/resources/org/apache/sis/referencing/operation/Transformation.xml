@@ -167,7 +167,7 @@
       <gml:targetDimensions>2</gml:targetDimensions>
       <gml:parameter>
         <gml:OperationParameter gml:id="ParameterDescriptor">
-          <gml:identifier codeSpace="OGP">urn:ogc:def:parameter:EPSG::8602</gml:identifier>
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8602</gml:identifier>
           <gml:name>Longitude offset</gml:name>
         </gml:OperationParameter>
       </gml:parameter>
@@ -185,7 +185,7 @@
       -->
       <gml:operationParameter>
         <gml:OperationParameter gml:id="ParameterDescriptor-copy">
-          <gml:identifier codeSpace="OGP">urn:ogc:def:parameter:EPSG::8602</gml:identifier>
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8602</gml:identifier>
           <gml:name>Longitude offset</gml:name>
         </gml:OperationParameter>
       </gml:operationParameter>
