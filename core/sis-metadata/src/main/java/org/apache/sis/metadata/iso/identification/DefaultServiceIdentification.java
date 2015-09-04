@@ -462,7 +462,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Invoked after JAXB has unmarshalled this object.
      */
-    private void afterUnmarshal(final Unmarshaller u, final Object parent) {
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         if (containsOperations != null && coupledResources != null) {
             OperationName.resolve(containsOperations, coupledResources);
         }
