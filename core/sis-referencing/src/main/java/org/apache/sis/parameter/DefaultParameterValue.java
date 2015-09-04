@@ -1002,7 +1002,19 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                formatter.hasContextualUnit(2);      // In WKT2
     }
 
-    // ---- XML SUPPORT ----------------------------------------------------
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Invoked by JAXB for obtaining the object to marshal.
