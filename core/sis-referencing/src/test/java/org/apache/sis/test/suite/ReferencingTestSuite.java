@@ -134,6 +134,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
+    org.apache.sis.referencing.crs.DefaultEngineeringCRSTest.class,
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class,
     org.apache.sis.referencing.operation.OperationMarshallingTest.class,

@@ -19,18 +19,12 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.cs.CylindricalCS;
-import org.opengis.referencing.cs.LinearCS;
-import org.opengis.referencing.cs.PolarCS;
-import org.opengis.referencing.cs.SphericalCS;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
@@ -68,13 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
-    "affineCS",
-    "cartesianCS",
-    "cylindricalCS",
-    "linearCS",
-    "polarCS",
-    "sphericalCS",
-    "userDefinedCS",
+    "coordinateSystem",
     "datum"
 })
 @XmlRootElement(name = "EngineeringCRS")
@@ -215,26 +203,30 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Invoked by JAXB at marshalling time.
+     * Returns the coordinate system.
+     *
+     * @return The coordinate system.
      */
-    @XmlElement(name="affineCS")      private AffineCS      getAffineCS()      {return getCoordinateSystem(AffineCS     .class);}
-    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
-    @XmlElement(name="cylindricalCS") private CylindricalCS getCylindricalCS() {return getCoordinateSystem(CylindricalCS.class);}
-    @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
-    @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
-    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
+    @Override
+    @XmlElements({
+        @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+        @XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+        @XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+        @XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+        @XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+        @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+        @XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+    })
+    public CoordinateSystem getCoordinateSystem() {
+        return super.getCoordinateSystem();
+    }
 
     /**
-     * Invoked by JAXB at unmarshalling time.
+     * Used by JAXB only (invoked by reflection).
      */
-    private void setAffineCS     (final AffineCS      cs) {super.setCoordinateSystem("affineCS",      cs);}
-    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
-    private void setCylindricalCS(final CylindricalCS cs) {super.setCoordinateSystem("cylindricalCS", cs);}
-    private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
-    private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
-    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+    private void setCoordinateSystem(final CoordinateSystem cs) {
+        super.setCoordinateSystem("coordinateSystem", cs);
+    }
 
     /**
      * {@inheritDoc}
