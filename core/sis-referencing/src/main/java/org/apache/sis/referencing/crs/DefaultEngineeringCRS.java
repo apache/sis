@@ -273,6 +273,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @see #getCoordinateSystem()
      */
     private void setCoordinateSystem(final CoordinateSystem cs) {
-        super.setCoordinateSystem("coordinateSystem", cs);
+        setCoordinateSystem(null, cs);  // 'null' here means to infer the XML property name from the cs type.
     }
 }

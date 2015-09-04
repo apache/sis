@@ -27,6 +27,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
@@ -224,6 +225,41 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the XML property name of the given interface.
+     *
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affineCS}, {@code cartesianCS}, {@code cylindricalCS}, {@code ellipsoidalCS}, {@code linearCS},
+     * {@code parametricCS}, {@code polarCS}, {@code sphericalCS}, {@code timeCS} or {@code verticalCS}.
+     *
+     * @param  base The abstract base interface.
+     * @param  type The interface or classes for which to get the XML property name.
+     * @return The XML property name for the given class or interface, or {@code null} if none.
+     *
+     * @since 0.6
+     */
+    public static StringBuilder toPropertyName(final Class<?> base, final Class<?> type) {
+        final UML uml = type.getAnnotation(UML.class);
+        if (uml != null && uml.specification() == Specification.ISO_19111) {
+            final String name = uml.identifier();
+            final int length = name.length();
+            final StringBuilder buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);
+            if (buffer.length() != 0) {
+                buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+                return buffer;
+            }
+        }
+        for (final Class<?> c : type.getInterfaces()) {
+            if (base.isAssignableFrom(c)) {
+                final StringBuilder name = toPropertyName(base, c);
+                if (name != null) {
+                    return name;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the WKT type of the given interface.
      *
      * For {@link CoordinateSystem} base type, the returned value shall be one of
@@ -236,28 +272,18 @@ public final class ReferencingUtilities extends Static {
      */
     public static String toWKTType(final Class<?> base, final Class<?> type) {
         if (type != base) {
-            final UML uml = type.getAnnotation(UML.class);
-            if (uml != null && uml.specification() == Specification.ISO_19111) {
-                String name = uml.identifier();
-                final int length = name.length() - 5; // Length without "CS_" and "CS".
-                if (length >= 1 && name.startsWith("CS_") && name.endsWith("CS")) {
-                    final StringBuilder buffer = new StringBuilder(length).append(name, 3, 3 + length);
-                    if (!name.regionMatches(3, "Cartesian", 0, 9)) {
-                        buffer.setCharAt(0, Character.toLowerCase(buffer.charAt(0)));
+            final StringBuilder name = toPropertyName(base, type);
+            if (name != null) {
+                int end = name.length() - 2;
+                if (CharSequences.regionMatches(name, end, "CS")) {
+                    name.setLength(end);
+                    if ("time".contentEquals(name)) {
+                        return "temporal";
                     }
-                    name = buffer.toString();
-                    if (name.equals("time")) {
-                        name = "temporal";
+                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
+                        name.setCharAt(0, 'C');     // "Cartesian"
                     }
-                    return name;
-                }
-            }
-            for (final Class<?> c : type.getInterfaces()) {
-                if (base.isAssignableFrom(c)) {
-                    final String name = toWKTType(base, c);
-                    if (name != null) {
-                        return name;
-                    }
+                    return name.toString();
                 }
             }
         }
