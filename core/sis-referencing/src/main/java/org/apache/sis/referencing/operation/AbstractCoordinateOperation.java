@@ -871,7 +871,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Invoked by JAXB at marshalling time for setting the target CRS.
+     * Invoked by JAXB at unmarshalling time for setting the target CRS.
      */
     private void setTarget(final CoordinateReferenceSystem crs) {
         if (targetCRS == null) {

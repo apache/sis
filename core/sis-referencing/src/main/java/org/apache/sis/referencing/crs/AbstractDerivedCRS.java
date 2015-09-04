@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
@@ -33,6 +34,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
@@ -69,9 +73,13 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     /**
      * The conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
      * The base CRS of this {@code GeneralDerivedCRS} is {@link Conversion#getSourceCRS()}.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setConversionFromBase(Conversion)}</p>
+     *
+     * @see #getConversionFromBase()
      */
-    @XmlElement(name = "conversion", required = true)
-    private final C conversionFromBase;
+    private C conversionFromBase;
 
     /**
      * Creates a derived CRS from a defining conversion.
@@ -192,6 +200,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * @return The conversion to this CRS.
      */
     @Override
+    @XmlElement(name = "conversion", required = true)
     public C getConversionFromBase() {
         return conversionFromBase;
     }
@@ -265,6 +274,71 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractDerivedCRS() {
-        conversionFromBase = null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the <cite>defining conversion</cite>.
+     * At this state, the given conversion has null {@code sourceCRS} and {@code targetCRS}.
+     * Those CRS will be set later, in {@link #afterUnmarshal(Unmarshaller, Object)}.
+     */
+    private void setConversionFromBase(final C conversion) {
+        if (conversionFromBase == null) {
+            conversionFromBase = conversion;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setConversionFromBase", "conversion");
+        }
+    }
+
+    /**
+     * Stores a temporary association to the given base CRS.  This method shall be invoked only
+     * <strong>after</strong> the call to {@link #setConversionFromBase(Conversion)}, otherwise
+     * an exception will be thrown.
+     *
+     * <p>The given base CRS will not be stored in this {@code AbstractDerivedCRS} instance now,
+     * but in another temporary location. The reason is that we need the coordinate system (CS)
+     * before we can set the {@code baseCRS} in its final location, but the CS is not yet known
+     * when this method is invoked.</p>
+     *
+     * @param  name The property name, used only in case of error message to format.
+     * @throws IllegalStateException If the base CRS can not be set.
+     */
+    @SuppressWarnings("unchecked")
+    final void setBaseCRS(final String name, final SingleCRS baseCRS) {
+        if (conversionFromBase != null) {
+            final SingleCRS previous = CC_Conversion.setBaseCRS(conversionFromBase, baseCRS);
+            if (previous != null) {
+                CC_Conversion.setBaseCRS(conversionFromBase, previous);   // Temporary location.
+                ReferencingUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setBaseCRS", name);
+            }
+        } else {
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "conversion"));
+        }
+    }
+
+    /**
+     * Invoked by JAXB after all elements have been unmarshalled. At this point we should have the
+     * coordinate system (CS). The CS information is required by {@code createConversionFromBase(…)}
+     * in order to create a {@link MathTransform} with correct axis swapping and unit conversions.
+     */
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        String property = "conversion";
+        if (conversionFromBase != null) {
+            final SingleCRS baseCRS = CC_Conversion.setBaseCRS(conversionFromBase, null);  // Clear the temporary value now.
+            property = "coordinateSystem";
+            if (super.getCoordinateSystem() != null) {
+                property = "baseCRS";
+                if (baseCRS != null) {
+                    conversionFromBase = createConversionFromBase(null, baseCRS, conversionFromBase);
+                    return;
+                }
+            }
+        }
+        /*
+         * If we reach this point, we failed to update the conversion. The 'baseCRS' information will be lost
+         * and call to 'getConversionFromBase()' will throw a ClassCastException if this instance is actually
+         * a ProjectedCRS (because of the method overriding with return type covariance).
+         */
+        Context.warningOccured(Context.current(), AbstractDerivedCRS.class, "afterUnmarshal",
+                Errors.class, Errors.Keys.MissingValueForProperty_1, property);
     }
 }
