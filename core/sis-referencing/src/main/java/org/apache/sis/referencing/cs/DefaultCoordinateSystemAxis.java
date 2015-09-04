@@ -463,15 +463,15 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Invoked by JAXB at unmarshalling time for setting the minimum value.
      */
     private void setMinimum(final Double value) {
-        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
-                "setMinimum", "minimumValue", minimumValue != NEGATIVE_INFINITY))
-        {
+        if (minimumValue == NEGATIVE_INFINITY) {
             final double min = value; // Apply unboxing.
             if (min < maximumValue) {
                 minimumValue = min;
             } else {
                 outOfRange("minimumValue", value);
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
         }
     }
 
@@ -499,15 +499,15 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Invoked by JAXB at unmarshalling time for setting the maximum value.
      */
     private void setMaximum(final Double value) {
-        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
-                "setMaximum", "maximumValue", maximumValue != POSITIVE_INFINITY))
-        {
+        if (maximumValue == POSITIVE_INFINITY) {
             final double max = value; // Apply unboxing.
             if (max > minimumValue) {
                 maximumValue = max;
             } else {
                 outOfRange("maximumValue", value);
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
         }
     }
 

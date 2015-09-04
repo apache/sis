@@ -436,11 +436,11 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Invoked by JAXB for setting the unmarshalled parameter descriptors.
      */
     private void setDescriptors(final GeneralParameterDescriptor[] parameters) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setDescriptors", "parameter", !descriptors.isEmpty()))
-        {
+        if (descriptors.isEmpty()) {
             verifyNames(null, parameters);
             descriptors = asList(parameters);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptors", "parameter");
         }
     }
 

@@ -1052,9 +1052,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @SuppressWarnings("unchecked")
     private void setXmlValue(Object xmlValue) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setXmlValue", "value", value != null || unit != null))
-        {
+        if (value == null && unit == null) {
             if (xmlValue instanceof Measure) {
                 final Measure measure = (Measure) xmlValue;
                 xmlValue = measure.value;
@@ -1085,6 +1083,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                  */
                 value = (T) xmlValue;
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
         }
     }
 

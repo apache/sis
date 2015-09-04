@@ -455,9 +455,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see DefaultOperationMethod#setDescriptors
      */
     private void setParameters(final GeneralParameterValue[] values) {
-        if (ReferencingUtilities.canSetProperty(AbstractSingleOperation.class,
-                "setParameters", "parameterValue", parameters != null))
-        {
+        if (parameters == null) {
             /*
              * The descriptors in the <gml:method> element do not know the class of parameter value
              * (String, Integer, Double, double[], etc.) because this information is not part of GML.
@@ -491,6 +489,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             parameters = new DefaultParameterValueGroup(method.getParameters());
             CC_OperationMethod.store(values, parameters.values(), replacements);
             afterUnmarshal();   // For creating the math transform.
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
         }
     }
 

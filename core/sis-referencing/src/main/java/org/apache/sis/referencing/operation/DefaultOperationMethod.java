@@ -745,11 +745,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Invoked by JAXB for setting the citation to the formula.
      */
     private void setFormulaCitation(final Citation citation) {
-        if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class, "setFormulaCitation",
-                "formulaCitation", formula != null && formula.getCitation() != null))
-        {
+        if (formula == null || formula.getCitation() == null) {
             formula = (formula == null) ? new DefaultFormula(citation)
                       : new DefaultFormula(formula.getFormula(), citation);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaCitation", "formulaCitation");
         }
     }
 
@@ -757,11 +757,11 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Invoked by JAXB for setting the formula description.
      */
     private void setFormulaDescription(final String description) {
-        if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class, "setFormulaDescription",
-                "formula", formula != null && formula.getFormula() != null))
-        {
+        if (formula == null || formula.getFormula() == null) {
             formula = (formula == null) ? new DefaultFormula(description)
                       : new DefaultFormula(new SimpleInternationalString(description), formula.getCitation());
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaDescription", "formula");
         }
     }
 
@@ -816,10 +816,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @see AbstractSingleOperation#setParameters
      */
     private void setDescriptors(final GeneralParameterDescriptor[] descriptors) {
-        if (ReferencingUtilities.canSetProperty(DefaultOperationMethod.class,
-                "setDescriptors", "parameter", parameters != null))
-        {
+        if (parameters == null) {
             parameters = CC_OperationMethod.group(super.getName(), descriptors);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setDescriptors", "parameter");
         }
     }
 

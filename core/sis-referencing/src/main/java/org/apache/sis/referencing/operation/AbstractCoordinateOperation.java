@@ -842,11 +842,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Invoked by JAXB at marshalling time for setting the source CRS.
      */
     private void setSource(final CoordinateReferenceSystem crs) {
-        if (ReferencingUtilities.canSetProperty(AbstractCoordinateOperation.class,
-                "setSource", "sourceCRS", sourceCRS != null))
-        {
+        if (sourceCRS == null) {
             sourceCRS = crs;
             afterUnmarshal();
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
     }
 
@@ -862,11 +862,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Invoked by JAXB at marshalling time for setting the target CRS.
      */
     private void setTarget(final CoordinateReferenceSystem crs) {
-        if (ReferencingUtilities.canSetProperty(AbstractCoordinateOperation.class,
-                "setTarget", "targetCRS", targetCRS != null))
-        {
+        if (targetCRS == null) {
             targetCRS = crs;
             afterUnmarshal();
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
 
