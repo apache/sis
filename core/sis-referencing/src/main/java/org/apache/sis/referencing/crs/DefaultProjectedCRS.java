@@ -503,6 +503,15 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     /**
      * Used by JAXB only (invoked by reflection).
      *
+     * @see #getBaseCRS()
+     */
+    private void setBaseCRS(final GeographicCRS crs) {
+        setBaseCRS("baseGeodeticCRS", crs);
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
      * @see #getCoordinateSystem()
      */
     private void setCoordinateSystem(final CartesianCS cs) {

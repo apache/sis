@@ -404,14 +404,9 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      * @throws JAXBException If an error occurred during (un)marshalling.
      */
     @Test
-    @org.junit.Ignore("Still missing some JAXB annotations.")
     public void testXML() throws FactoryException, JAXBException {
         final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, XML_FILE);
         Validators.validate(crs);
         assertEquals("scope", "Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
-        /*
-         * Marshal and compare with the original file.
-         */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
     }
 }
