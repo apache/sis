@@ -133,13 +133,6 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     private ParameterValueList values;
 
     /**
-     * Default constructor for JAXB only. The values list is initialized to {@code null},
-     * but will be assigned a value after XML unmarshalling.
-     */
-    private DefaultParameterValueGroup() {
-    }
-
-    /**
      * Creates a parameter group from the specified descriptor.
      *
      * <p><b>Usage note:</b> {@code ParameterValueGroup} are usually not instantiated directly. Instead, consider
@@ -520,6 +513,29 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Default constructor for JAXB only. The values list is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
+     */
+    private DefaultParameterValueGroup() {
+    }
+
+    /**
+     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
+     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
+     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
+     * were not present in the above {@code GeneralParameterValue} array.
+     *
+     * @see #getDescriptor()
+     */
+    private void setDescriptor(final ParameterDescriptorGroup descriptor) {
+        if (values == null) {
+            values = new ParameterValueList(descriptor);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
+        }
+    }
+
+    /**
      * Invoked by JAXB for getting the parameters to marshal.
      */
     @XmlElement(name = "parameterValue", required = true)
@@ -583,21 +599,5 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
             addTo.add(p);
         }
         values = addTo;
-    }
-
-    /**
-     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
-     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
-     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
-     * were not present in the above {@code GeneralParameterValue} array.
-     *
-     * @see #getDescriptor()
-     */
-    private void setDescriptor(final ParameterDescriptorGroup descriptor) {
-        if (values == null) {
-            values = new ParameterValueList(descriptor);
-        } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
-        }
     }
 }

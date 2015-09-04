@@ -122,15 +122,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     private transient Map<AxesConvention,AbstractCRS> forConvention;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractCRS() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -287,47 +278,6 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
         }
         return null;
-    }
-
-    /**
-     * Sets the coordinate system to the given value. This method is invoked only by JAXB at
-     * unmarshalling time and can be invoked only if the coordinate system has never been set.
-     *
-     * <div class="note"><b>Implementation note:</b>
-     * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
-     * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
-     * where the same CRS may accept different kinds of CS. In GML, the different kinds of CS are marshalled
-     * as different XML elements. The usual way to handle such {@code <xs:choice>} with JAXB is to annotate
-     * a single method like below:
-     *
-     * {@preformat java
-     *   &#64;Override
-     *   &#64;XmlElements({
-     *     &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-     *     &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
-     *     &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
-     *     &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
-     *     &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
-     *     &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
-     *     &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
-     *   })
-     *   public CoordinateSystem getCoordinateSystem() {
-     *       return super.getCoordinateSystem();
-     *   }
-     * }
-     *
-     * However our attempts to apply this approach have not been conclusive.
-     * For an unknown reason, the unmarshalled CS object was empty.</div>
-     *
-     * @param  name The property name, used only in case of error message to format.
-     * @throws IllegalStateException If the coordinate system has already been set.
-     */
-    final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
-        if (coordinateSystem == null) {
-            coordinateSystem = cs;
-        } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
-        }
     }
 
     /**
@@ -536,5 +486,69 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         }
         formatter.restoreContextualUnit(unit, oldUnit);
         formatter.newLine(); // For writing the ID[…] element on its own line.
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCRS() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+    }
+
+    /**
+     * Sets the coordinate system to the given value. This method is invoked only by JAXB at
+     * unmarshalling time and can be invoked only if the coordinate system has never been set.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
+     * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
+     * where the same CRS may accept different kinds of CS. In GML, the different kinds of CS are marshalled
+     * as different XML elements. The usual way to handle such {@code <xs:choice>} with JAXB is to annotate
+     * a single method like below:
+     *
+     * {@preformat java
+     *   &#64;Override
+     *   &#64;XmlElements({
+     *     &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *     &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+     *     &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+     *     &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+     *     &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+     *     &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+     *     &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+     *   })
+     *   public CoordinateSystem getCoordinateSystem() {
+     *       return super.getCoordinateSystem();
+     *   }
+     * }
+     *
+     * However our attempts to apply this approach have not been conclusive.
+     * For an unknown reason, the unmarshalled CS object was empty.</div>
+     *
+     * @param  name The property name, used only in case of error message to format.
+     * @throws IllegalStateException If the coordinate system has already been set.
+     */
+    final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
+        if (coordinateSystem == null) {
+            coordinateSystem = cs;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
+        }
     }
 }

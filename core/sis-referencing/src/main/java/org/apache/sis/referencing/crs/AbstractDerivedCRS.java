@@ -74,15 +74,6 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     private final C conversionFromBase;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractDerivedCRS() {
-        conversionFromBase = null;
-    }
-
-    /**
      * Creates a derived CRS from a defining conversion.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
@@ -252,5 +243,28 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         return super.computeHashCode()
                + 31 * conversionFromBase.getSourceCRS().hashCode()
                + 37 * conversionFromBase.getMathTransform().hashCode();
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractDerivedCRS() {
+        conversionFromBase = null;
     }
 }

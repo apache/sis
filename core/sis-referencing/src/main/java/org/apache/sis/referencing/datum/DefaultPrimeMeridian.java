@@ -114,15 +114,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     private Unit<Angle> angularUnit;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultPrimeMeridian() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-    }
-
-    /**
      * Creates a prime meridian from the given properties. The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -252,38 +243,6 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     @Override
     public Unit<Angle> getAngularUnit() {
         return angularUnit;
-    }
-
-    /**
-     * Invoked by JAXB for obtaining the Greenwich longitude to marshall together with its {@code "uom"} attribute.
-     */
-    @XmlElement(name = "greenwichLongitude", required = true)
-    private Measure getGreenwichMeasure() {
-        return new Measure(greenwichLongitude, angularUnit);
-    }
-
-    /**
-     * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
-     */
-    private void setGreenwichMeasure(final Measure measure) {
-        if (greenwichLongitude == 0 && angularUnit == null) {
-            greenwichLongitude = measure.value;
-            angularUnit = measure.getUnit(Angle.class);
-            if (angularUnit == null) {
-                /*
-                 * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
-                 * (assuming that the missing unit was not applying an offset), so we can select a default.
-                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
-                 */
-                if (greenwichLongitude == 0) {
-                    angularUnit = NonSI.DEGREE_ANGLE;
-                } else {
-                    Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
-                }
-            }
-        } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
-        }
     }
 
     /**
@@ -424,5 +383,60 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
             formatter.append(unit);
         }
         return WKTKeywords.PrimeMeridian;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultPrimeMeridian() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+    }
+
+    /**
+     * Invoked by JAXB for obtaining the Greenwich longitude to marshall together with its {@code "uom"} attribute.
+     */
+    @XmlElement(name = "greenwichLongitude", required = true)
+    private Measure getGreenwichMeasure() {
+        return new Measure(greenwichLongitude, angularUnit);
+    }
+
+    /**
+     * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
+     */
+    private void setGreenwichMeasure(final Measure measure) {
+        if (greenwichLongitude == 0 && angularUnit == null) {
+            greenwichLongitude = measure.value;
+            angularUnit = measure.getUnit(Angle.class);
+            if (angularUnit == null) {
+                /*
+                 * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
+                 * (assuming that the missing unit was not applying an offset), so we can select a default.
+                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+                 */
+                if (greenwichLongitude == 0) {
+                    angularUnit = NonSI.DEGREE_ANGLE;
+                } else {
+                    Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
+                }
+            }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
+        }
     }
 }

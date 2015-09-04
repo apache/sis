@@ -135,17 +135,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     private short maximumOccurs;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractParameterDescriptor() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
-        maximumOccurs = DEFAULT_OCCURRENCE;
-    }
-
-    /**
      * Constructs a parameter descriptor from a set of properties. The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -382,6 +371,17 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractParameterDescriptor() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
+        maximumOccurs = DEFAULT_OCCURRENCE;
+    }
 
     /**
      * Invoked by JAXB for marshalling the {@link #minimumOccurs} value. Omit marshalling of this

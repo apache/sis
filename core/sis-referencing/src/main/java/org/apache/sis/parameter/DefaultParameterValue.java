@@ -161,13 +161,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private Unit<?> unit;
 
     /**
-     * Default constructor for JAXB only. The descriptor is initialized to {@code null},
-     * but will be assigned a value after XML unmarshalling.
-     */
-    private DefaultParameterValue() {
-    }
-
-    /**
      * Creates a parameter value from the specified descriptor.
      * The value will be initialized to the default value, if any.
      *
@@ -1017,6 +1010,25 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Default constructor for JAXB only. The descriptor is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
+     */
+    private DefaultParameterValue() {
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor as been completed
+     * with additional information provided in the {@code <gml:group>} element of a descriptor group.
+     *
+     * @see #getDescriptor()
+     */
+    final void setDescriptor(final ParameterDescriptor<T> descriptor) {
+        this.descriptor = descriptor;
+        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
+    }
+
+    /**
      * Invoked by JAXB for obtaining the object to marshal.
      * The property name depends on its type after conversion by this method.
      */
@@ -1098,17 +1110,5 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         } else {
             ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
         }
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor as been completed
-     * with additional information provided in the {@code <gml:group>} element of a descriptor group.
-     *
-     * @see #getDescriptor()
-     */
-    final void setDescriptor(final ParameterDescriptor<T> descriptor) {
-        this.descriptor = descriptor;
-        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
     }
 }

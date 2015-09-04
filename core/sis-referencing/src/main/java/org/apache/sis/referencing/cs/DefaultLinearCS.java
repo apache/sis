@@ -62,14 +62,6 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
     private static final long serialVersionUID = -6890723478287625763L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultLinearCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
      * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
@@ -204,5 +196,27 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
             case 1: return new DefaultLinearCS(properties, axes);
             default: throw unexpectedDimension(properties, axes, 1);
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultLinearCS() {
     }
 }

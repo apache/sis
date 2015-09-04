@@ -172,20 +172,6 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     private MathTransform transform;
 
     /**
-     * Creates a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractCoordinateOperation() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        interpolationCRS            = null;
-        operationVersion            = null;
-        coordinateOperationAccuracy = null;
-        domainOfValidity            = null;
-        scope                       = null;
-    }
-
-    /**
      * Creates a new coordinate operation with the same values than the specified defining conversion,
      * except for the source CRS, target CRS and the math transform which are set the given values.
      *
@@ -841,6 +827,20 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCoordinateOperation() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        interpolationCRS            = null;
+        operationVersion            = null;
+        coordinateOperationAccuracy = null;
+        domainOfValidity            = null;
+        scope                       = null;
+    }
 
     /**
      * Invoked by JAXB for getting the source CRS to marshal.

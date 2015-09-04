@@ -99,13 +99,6 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     private transient Class<?> valueClass;
 
     /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
-     * the {@link #name} field will be set by JAXB during unmarshalling.
-     */
-    private DefaultTypeName() {
-    }
-
-    /**
      * Constructs a type name from the given character sequence. The argument are given unchanged to the
      * {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class constructor}.
      *
@@ -222,5 +215,26 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
             valueClass = c;
         }
         return (c != Void.TYPE) ? c : null;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
+     * the {@link #name} field will be set by JAXB during unmarshalling.
+     */
+    private DefaultTypeName() {
     }
 }

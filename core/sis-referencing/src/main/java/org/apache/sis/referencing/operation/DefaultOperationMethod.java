@@ -178,17 +178,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     private ParameterDescriptorGroup parameters;
 
     /**
-     * Creates a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultOperationMethod() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceDimensions = null;
-        targetDimensions = null;
-    }
-
-    /**
      * Constructs an operation method from a set of properties and a descriptor group. The properties map is given
      * unchanged to the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * In addition to the properties documented in the parent constructor,
@@ -730,6 +719,17 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultOperationMethod() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        sourceDimensions = null;
+        targetDimensions = null;
+    }
 
     /**
      * Invoked by JAXB for marshalling a citation to the formula. In principle at most one of
