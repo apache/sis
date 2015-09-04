@@ -445,6 +445,20 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
         containsChain = writeCollection(newValues, containsChain, OperationChainMetadata.class);
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Invoked after JAXB has unmarshalled this object.
      */

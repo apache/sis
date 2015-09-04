@@ -78,15 +78,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     private final GeodeticDatum datum;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    DefaultGeodeticCRS() {
-        datum = null;
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -145,20 +136,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     public GeodeticDatum getDatum() {
         return datum;
     }
-
-    /**
-     * Invoked by JAXB at marshalling time.
-     */
-    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
-    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     */
-    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
-    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
 
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.
@@ -252,4 +229,41 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
             return isBaseCRS ? WKTKeywords.BaseGeodCRS : WKTKeywords.GeodeticCRS;
         }
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    DefaultGeodeticCRS() {
+        datum = null;
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time.
+     */
+    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
+    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
+    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
+    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
+    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
 }

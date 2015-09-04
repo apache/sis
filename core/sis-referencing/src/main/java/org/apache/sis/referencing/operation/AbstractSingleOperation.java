@@ -97,15 +97,6 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     private ParameterValueGroup parameters;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractSingleOperation() {
-        method = null;
-    }
-
-    /**
      * Creates a coordinate operation from the given properties.
      */
     public AbstractSingleOperation(final Map<String,?>             properties,
@@ -435,6 +426,15 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractSingleOperation() {
+        method = null;
+    }
 
     /**
      * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence

@@ -1416,6 +1416,20 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         resourceLineages = writeCollection(newValues, resourceLineages, Lineage.class);
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
      * This method sets the locale to be used for XML marshalling to the metadata language.

@@ -62,14 +62,6 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
     private static final long serialVersionUID = -7486704846151648971L;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultTransformation() {
-    }
-
-    /**
      * Creates a coordinate transformation from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCoordinateOperation#AbstractCoordinateOperation(Map, CoordinateReferenceSystem,
@@ -170,5 +162,27 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
     @Override
     public Class<? extends Transformation> getInterface() {
         return Transformation.class;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTransformation() {
     }
 }

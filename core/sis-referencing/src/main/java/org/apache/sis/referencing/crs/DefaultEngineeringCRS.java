@@ -79,15 +79,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     private final EngineeringDatum datum;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultEngineeringCRS() {
-        datum = null;
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -222,13 +213,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCoordinateSystem(final CoordinateSystem cs) {
-        super.setCoordinateSystem("coordinateSystem", cs);
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -258,5 +242,37 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
         super.formatTo(formatter);
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
                : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS : WKTKeywords.EngineeringCRS;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringCRS() {
+        datum = null;
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CoordinateSystem cs) {
+        super.setCoordinateSystem("coordinateSystem", cs);
     }
 }

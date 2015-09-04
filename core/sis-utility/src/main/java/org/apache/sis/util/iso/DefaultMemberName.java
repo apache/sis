@@ -68,14 +68,6 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     private final TypeName attributeType;
 
     /**
-     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
-     * the {@link #attributeType} field will be set by JAXB during unmarshalling.
-     */
-    private DefaultMemberName() {
-        attributeType = null;
-    }
-
-    /**
      * Constructs a member name from the given character sequence and attribute type.
      *
      * @param scope The scope of this name, or {@code null} for a global scope.
@@ -140,5 +132,27 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     @Override
     final int computeHashCode() {
         return super.computeHashCode() + Objects.hashCode(attributeType);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor to be used by JAXB only. Despite its "final" declaration,
+     * the {@link #attributeType} field will be set by JAXB during unmarshalling.
+     */
+    private DefaultMemberName() {
+        attributeType = null;
     }
 }

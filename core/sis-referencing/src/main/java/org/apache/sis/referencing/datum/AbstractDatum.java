@@ -122,19 +122,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private final InternationalString scope;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractDatum() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        anchorDefinition = null;
-        realizationEpoch = Long.MIN_VALUE;
-        domainOfValidity = null;
-        scope            = null;
-    }
-
-    /**
      * Creates a datum from the given properties.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
@@ -303,17 +290,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Invoked by JAXB only at unmarshalling time.
-     */
-    private void setRealizationEpoch(final Date value) {
-        if (realizationEpoch == Long.MIN_VALUE) {
-            realizationEpoch = value.getTime();
-        } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
-        }
-    }
-
-    /**
      * Returns the region or timeframe in which this datum is valid, or {@code null} if unspecified.
      *
      * @return Area or region or timeframe in which this datum is valid, or {@code null}.
@@ -433,5 +409,43 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractDatum() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        anchorDefinition = null;
+        realizationEpoch = Long.MIN_VALUE;
+        domainOfValidity = null;
+        scope            = null;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setRealizationEpoch(final Date value) {
+        if (realizationEpoch == Long.MIN_VALUE) {
+            realizationEpoch = value.getTime();
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+        }
     }
 }

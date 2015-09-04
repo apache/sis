@@ -110,17 +110,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     private List<GeneralParameterDescriptor> descriptors;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value or an empty list.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB
-     * and to {@link DefaultParameterValueGroup}, which will assign values later.
-     *
-     * @see #setDescriptors(GeneralParameterDescriptor[])
-     */
-    DefaultParameterDescriptorGroup() {
-        descriptors = Collections.emptyList();
-    }
-
-    /**
      * Constructs a parameter group from a set of properties. The properties map is given unchanged to the
      * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map, int, int) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -434,6 +423,17 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     ////////        (GML) support is not needed.                                              ////////
     ////////                                                                                  ////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value or an empty list.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB
+     * and to {@link DefaultParameterValueGroup}, which will assign values later.
+     *
+     * @see #setDescriptors(GeneralParameterDescriptor[])
+     */
+    DefaultParameterDescriptorGroup() {
+        descriptors = Collections.emptyList();
+    }
 
     /**
      * Invoked by JAXB for getting the parameters to marshal.

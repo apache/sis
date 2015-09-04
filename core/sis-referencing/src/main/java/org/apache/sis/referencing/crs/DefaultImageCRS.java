@@ -72,15 +72,6 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     private final ImageDatum datum;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultImageCRS() {
-        datum = null;
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -206,38 +197,6 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     }
 
     /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@code getAffineCS()} and {@link #getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "affineCS")
-    private AffineCS getAffineCS() {
-        return getCoordinateSystem(AffineCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     * Only one of {@link #getAffineCS()} and {@code getCartesianCS()} can return a non-null value.
-     */
-    @XmlElement(name = "cartesianCS")
-    private CartesianCS getCartesianCS() {
-        return getCoordinateSystem(CartesianCS.class);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setAffineCS(final AffineCS cs) {
-        setCoordinateSystem("affineCS", cs);
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCartesianCS(final CartesianCS cs) {
-        setCoordinateSystem("cartesianCS", cs);
-    }
-
-    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -273,4 +232,40 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
         }
         return WKTKeywords.ImageCRS;
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultImageCRS() {
+        datum = null;
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     * Only one of {@code getAffineCS()} and {@link #getCartesianCS()} can return a non-null value.
+     */
+    @XmlElement(name = "affineCS")    private AffineCS    getAffineCS()    {return getCoordinateSystem(AffineCS.class);}
+    @XmlElement(name = "cartesianCS") private CartesianCS getCartesianCS() {return getCoordinateSystem(CartesianCS.class);}
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     */
+    private void setAffineCS   (final AffineCS    cs) {setCoordinateSystem("affineCS",    cs);}
+    private void setCartesianCS(final CartesianCS cs) {setCoordinateSystem("cartesianCS", cs);}
 }

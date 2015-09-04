@@ -121,37 +121,6 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     private final T defaultValue;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     *
-     * <p>This constructor fetches the value class and the unit of measurement from the enclosing
-     * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.
-     * They are GeoAPI additions.</p>
-     */
-    @SuppressWarnings("unchecked")
-    private DefaultParameterDescriptor() {
-        final PropertyType<?,?> wrapper = Context.getWrapper(Context.current());
-        if (wrapper instanceof CC_OperationParameter) {
-            final CC_OperationParameter param = (CC_OperationParameter) wrapper;
-            /*
-             * This unsafe cast would be forbidden if this constructor was public or used in any context where the
-             * user can choose the value of <T>. But this constructor should be invoked only during unmarshalling,
-             * after the creation of the ParameterValue (this is the reverse creation order than what we normally
-             * do through the public API). The 'valueClass' should be compatible with DefaultParameterValue.value,
-             * and the parameterized type visible to the user should be only <?>.
-             */
-            valueClass  = (Class) param.valueClass;
-            valueDomain = param.valueDomain;
-        } else {
-            valueClass  = null;
-            valueDomain = null;
-        }
-        validValues  = null;
-        defaultValue = null;
-    }
-
-    /**
      * Constructs a descriptor from the given properties. The properties map is given unchanged to the
      * {@linkplain AbstractParameterDescriptor#AbstractParameterDescriptor(Map, int, int) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -536,5 +505,51 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
     @Override
     protected long computeHashCode() {
         return Arrays.deepHashCode(new Object[] {valueClass, valueDomain, defaultValue}) + super.computeHashCode();
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     *
+     * <p>This constructor fetches the value class and the unit of measurement from the enclosing
+     * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.
+     * They are GeoAPI additions.</p>
+     */
+    @SuppressWarnings("unchecked")
+    private DefaultParameterDescriptor() {
+        final PropertyType<?,?> wrapper = Context.getWrapper(Context.current());
+        if (wrapper instanceof CC_OperationParameter) {
+            final CC_OperationParameter param = (CC_OperationParameter) wrapper;
+            /*
+             * This unsafe cast would be forbidden if this constructor was public or used in any context where the
+             * user can choose the value of <T>. But this constructor should be invoked only during unmarshalling,
+             * after the creation of the ParameterValue (this is the reverse creation order than what we normally
+             * do through the public API). The 'valueClass' should be compatible with DefaultParameterValue.value,
+             * and the parameterized type visible to the user should be only <?>.
+             */
+            valueClass  = (Class) param.valueClass;
+            valueDomain = param.valueDomain;
+        } else {
+            valueClass  = null;
+            valueDomain = null;
+        }
+        validValues  = null;
+        defaultValue = null;
     }
 }

@@ -100,14 +100,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private VerticalDatumType type;
 
     /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultVerticalDatum() {
-    }
-
-    /**
      * Creates a vertical datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -251,28 +243,6 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Returns the type to be marshalled to XML.
-     * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
-     *
-     * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
-     */
-    @XmlElement(name = "verticalDatumType")
-    private VerticalDatumType getTypeElement() {
-        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
-    }
-
-    /**
-     * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
-     */
-    private void setTypeElement(final VerticalDatumType t) {
-        if (type == null) {
-            type = t;
-        } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
-        }
-    }
-
-    /**
      * Compare this vertical datum with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.
@@ -332,5 +302,49 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
             return WKTKeywords.Vert_Datum;
         }
         return WKTKeywords.VerticalDatum;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultVerticalDatum() {
+    }
+
+    /**
+     * Returns the type to be marshalled to XML.
+     * This element was present in GML 3.0 and 3.1, but has been removed from GML 3.2.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
+     */
+    @XmlElement(name = "verticalDatumType")
+    private VerticalDatumType getTypeElement() {
+        return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
+    }
+
+    /**
+     * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
+     */
+    private void setTypeElement(final VerticalDatumType t) {
+        if (type == null) {
+            type = t;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
+        }
     }
 }

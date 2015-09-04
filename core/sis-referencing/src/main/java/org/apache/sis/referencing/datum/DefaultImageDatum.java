@@ -66,15 +66,6 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     private final PixelInCell pixelInCell;
 
     /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultImageDatum() {
-        pixelInCell = null;
-    }
-
-    /**
      * Creates an image datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -253,5 +244,28 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
             formatter.setInvalidWKT(this, null);
         }
         return WKTKeywords.ImageDatum;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultImageDatum() {
+        pixelInCell = null;
     }
 }
