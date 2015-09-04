@@ -38,7 +38,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from 0.4)
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
@@ -81,6 +81,26 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertNormalizedEqualsWGS84("Shall build a the 2D component.", true,  HardCodedCRS.WGS84_3D);
         assertNormalizedEqualsWGS84("Shall normalize axis order.",     true,  HardCodedCRS.WGS84_φλ);
         assertNull(toNormalizedGeographicCRS(null));
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#toPropertyName(Class, Class)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testToPropertyName() {
+        assertEquals("coordinateSystem", toPropertyName(CoordinateSystem.class, CoordinateSystem.class).toString());
+        assertEquals("affineCS",         toPropertyName(CoordinateSystem.class, AffineCS        .class).toString());
+        assertEquals("cartesianCS",      toPropertyName(CoordinateSystem.class, CartesianCS     .class).toString());
+        assertEquals("cylindricalCS",    toPropertyName(CoordinateSystem.class, CylindricalCS   .class).toString());
+        assertEquals("ellipsoidalCS",    toPropertyName(CoordinateSystem.class, EllipsoidalCS   .class).toString());
+        assertEquals("linearCS",         toPropertyName(CoordinateSystem.class, LinearCS        .class).toString());
+//      assertEquals("parametricCS",     toPropertyName(CoordinateSystem.class, ParametricCS    .class).toString());
+        assertEquals("polarCS",          toPropertyName(CoordinateSystem.class, PolarCS         .class).toString());
+        assertEquals("sphericalCS",      toPropertyName(CoordinateSystem.class, SphericalCS     .class).toString());
+        assertEquals("timeCS",           toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());
+        assertEquals("verticalCS",       toPropertyName(CoordinateSystem.class, VerticalCS      .class).toString());
     }
 
     /**

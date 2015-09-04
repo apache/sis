@@ -258,14 +258,36 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
 
     /**
      * Used by JAXB only (invoked by reflection).
-     * Only one of {@code getAffineCS()} and {@link #getCartesianCS()} can return a non-null value.
+     * Only one of {@code getCartesianCS()} and {@link #getAffineCS()} can return a non-null value.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     &#64;XmlElements({
+     *       &#64;XmlElement(name = "cartesianCS", type = DefaultCartesianCS.class),
+     *       &#64;XmlElement(name = "affineCS",    type = DefaultAffineCS.class)
+     *     })
+     *     public AffineCS getCoordinateSystem() {
+     *         return super.getCoordinateSystem();
+     *     }
+     * }
+     *
+     * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
+     * ({@code AffineCS} instead than {@code CoordinateSystem} in above code) is causing confusion.</div>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */
-    @XmlElement(name = "affineCS")    private AffineCS    getAffineCS()    {return getCoordinateSystem(AffineCS.class);}
     @XmlElement(name = "cartesianCS") private CartesianCS getCartesianCS() {return getCoordinateSystem(CartesianCS.class);}
+    @XmlElement(name = "affineCS")    private AffineCS    getAffineCS()    {return getCoordinateSystem(AffineCS.class);}
 
     /**
      * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCartesianCS()
      */
-    private void setAffineCS   (final AffineCS    cs) {setCoordinateSystem("affineCS",    cs);}
     private void setCartesianCS(final CartesianCS cs) {setCoordinateSystem("cartesianCS", cs);}
+    private void setAffineCS   (final AffineCS    cs) {setCoordinateSystem("affineCS",    cs);}
 }

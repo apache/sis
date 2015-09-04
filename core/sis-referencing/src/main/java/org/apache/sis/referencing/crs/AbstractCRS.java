@@ -512,42 +512,19 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Sets the coordinate system to the given value. This method is invoked only by JAXB at
-     * unmarshalling time and can be invoked only if the coordinate system has never been set.
+     * Sets the coordinate system to the given value.
+     * This method is indirectly invoked by JAXB at unmarshalling time.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * It was easy to put JAXB annotations directly on datum fields in subclasses because each CRS type
-     * can be associated to only one datum type. But we do not have this convenience for coordinate systems,
-     * where the same CRS may accept different kinds of CS. In GML, the different kinds of CS are marshalled
-     * as different XML elements. The usual way to handle such {@code <xs:choice>} with JAXB is to annotate
-     * a single method like below:
-     *
-     * {@preformat java
-     *   &#64;Override
-     *   &#64;XmlElements({
-     *     &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-     *     &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
-     *     &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
-     *     &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
-     *     &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
-     *     &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
-     *     &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
-     *   })
-     *   public CoordinateSystem getCoordinateSystem() {
-     *       return super.getCoordinateSystem();
-     *   }
-     * }
-     *
-     * However our attempts to apply this approach have not been conclusive.
-     * For an unknown reason, the unmarshalled CS object was empty.</div>
-     *
-     * @param  name The property name, used only in case of error message to format.
+     * @param  name The property name, used only in case of error message to format. Can be null for auto-detect.
      * @throws IllegalStateException If the coordinate system has already been set.
      */
-    final void setCoordinateSystem(final String name, final CoordinateSystem cs) {
+    final void setCoordinateSystem(String name, final CoordinateSystem cs) {
         if (coordinateSystem == null) {
             coordinateSystem = cs;
         } else {
+            if (name == null) {
+                name = String.valueOf(ReferencingUtilities.toPropertyName(CoordinateSystem.class, cs.getClass()));
+            }
             ReferencingUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
         }
     }

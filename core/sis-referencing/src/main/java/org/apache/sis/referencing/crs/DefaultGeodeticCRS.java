@@ -255,15 +255,39 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * Invoked by JAXB at marshalling time.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     &#64;XmlElements({
+     *       &#64;XmlElement(name = "ellipsoidalCS", type = DefaultEllipsoidalCS.class),
+     *       &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *       &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class)
+     *     })
+     *     public CoordinateSystem getCoordinateSystem() {
+     *         return super.getCoordinateSystem();
+     *     }
+     * }
+     *
+     * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
+     * in the {@link DefaultGeographicCRS} ({@code EllipsoidCS} instead than {@code CoordinateSystem} in above code)
+     * is causing confusion.</div>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */
+    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
     @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
     @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
 
     /**
      * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getEllipsoidalCS()
      */
+    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
     private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
     private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
 }
