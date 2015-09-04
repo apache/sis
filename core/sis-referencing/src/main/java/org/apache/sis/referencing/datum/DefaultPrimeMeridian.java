@@ -266,9 +266,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Invoked by JAXB for setting the Greenwich longitude and its unit of measurement.
      */
     private void setGreenwichMeasure(final Measure measure) {
-        if (measure != null && ReferencingUtilities.canSetProperty(DefaultPrimeMeridian.class,
-                "setGreenwichMeasure", "greenwichLongitude", greenwichLongitude != 0 || angularUnit != null))
-        {
+        if (greenwichLongitude == 0 && angularUnit == null) {
             greenwichLongitude = measure.value;
             angularUnit = measure.getUnit(Angle.class);
             if (angularUnit == null) {
@@ -283,6 +281,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                     Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
                 }
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
         }
     }
 

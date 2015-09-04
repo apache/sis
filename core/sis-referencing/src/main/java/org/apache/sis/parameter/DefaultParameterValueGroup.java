@@ -582,10 +582,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @see #getDescriptor()
      */
     private void setDescriptor(final ParameterDescriptorGroup descriptor) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setDescriptor", "group", values != null))
-        {
+        if (values == null) {
             values = new ParameterValueList(descriptor);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
         }
     }
 }

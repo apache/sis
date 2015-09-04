@@ -265,9 +265,9 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Ensures that the given argument value is {@code false}. This method is invoked by private setter methods,
-     * which are themselves invoked by JAXB at unmarshalling time. Invoking this method from those setter methods
-     * serves three purposes:
+     * Invoked by private setter methods (themselves invoked by JAXB at unmarshalling time)
+     * when an element is already set. Invoking this method from those setter methods serves
+     * three purposes:
      *
      * <ul>
      *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
@@ -277,23 +277,17 @@ public final class ReferencingUtilities extends Static {
      *       warning or error messages in future SIS versions.</li>
      * </ul>
      *
-     * @param  classe    The caller class, used only in case of warning message to log.
-     * @param  method    The caller method, used only in case of warning message to log.
-     * @param  name      The property name, used only in case of error message to format.
-     * @param  isDefined Whether the property in the caller object is current defined.
-     * @return {@code true} if the caller can set the property.
+     * @param  classe The caller class, used only in case of warning message to log.
+     * @param  method The caller method, used only in case of warning message to log.
+     * @param  name   The property name, used only in case of error message to format.
      * @throws IllegalStateException If {@code isDefined} is {@code true} and we are not unmarshalling an object.
      */
-    public static boolean canSetProperty(final Class<?> classe, final String method,
-            final String name, final boolean isDefined) throws IllegalStateException
+    public static void propertyAlreadySet(final Class<?> classe, final String method, final String name)
+            throws IllegalStateException
     {
-        if (!isDefined) {
-            return true;
-        }
         final Context context = Context.current();
         if (context != null) {
             Context.warningOccured(context, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
-            return false;
         } else {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
         }

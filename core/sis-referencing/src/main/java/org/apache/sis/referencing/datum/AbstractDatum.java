@@ -33,10 +33,10 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -306,10 +306,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Invoked by JAXB only at unmarshalling time.
      */
     private void setRealizationEpoch(final Date value) {
-        if (value != null && canSetProperty(AbstractDatum.class,
-                "setRealizationEpoch", "realizationEpoch", realizationEpoch != Long.MIN_VALUE))
-        {
+        if (realizationEpoch == Long.MIN_VALUE) {
             realizationEpoch = value.getTime();
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }
     }
 

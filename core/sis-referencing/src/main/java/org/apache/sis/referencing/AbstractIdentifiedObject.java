@@ -554,13 +554,15 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Invoked by JAXB at unmarshalling time for setting the identifier.
      */
     private void setIdentifier(final Code identifier) {
-        if (identifier != null) {
-            final Identifier id = identifier.getIdentifier();
-            if (id != null && ReferencingUtilities.canSetProperty(AbstractIdentifiedObject.class,
-                    "setIdentifier", "identifier", identifiers != null))
-            {
-                identifiers = Collections.singleton(id);
+        if (identifiers == null) {
+            if (identifier != null) {
+                final Identifier id = identifier.getIdentifier();
+                if (id != null) {
+                    identifiers = Collections.singleton(id);
+                }
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
         }
     }
 
