@@ -304,8 +304,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      * @param group The descriptor group to verify.
      */
     private static void verifyDescriptorGroup(final ParameterDescriptorGroup group) {
-        assertEpsgIdentifierEquals(9804, group.getIdentifiers());
-        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, "Mercator (variant A)", group.getName());
+        assertEpsgNameAndIdentifierEqual("Mercator (variant A)", 9804, group);
 
         // Verify the ParameterDescriptors properties.
         final Iterator<GeneralParameterDescriptor> it = group.descriptors().iterator();
@@ -329,8 +328,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     private static void verifyDescriptor(final int code, final String name, final String alias,
             final boolean required, final GeneralParameterDescriptor descriptor)
     {
-        assertEpsgIdentifierEquals(code, descriptor.getIdentifiers());
-        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, name, descriptor.getName());
+        assertEpsgNameAndIdentifierEqual(name, code, descriptor);
         assertAliasTipEquals(alias, descriptor);
         assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
         assertEquals("minimumOccurs", required ? 1 : 0, descriptor.getMinimumOccurs());

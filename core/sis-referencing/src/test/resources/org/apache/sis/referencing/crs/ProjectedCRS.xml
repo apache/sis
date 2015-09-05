@@ -27,7 +27,7 @@
   <gml:name codeSpace="EPSG">NTF (Paris) / Lambert zone II</gml:name>
   <gml:scope>Large and medium scale topographic mapping and engineering survey.</gml:scope>
   <gml:conversion>
-    <gml:Conversion gml:id="LambertzoneII">
+    <gml:Conversion gml:id="LambertZoneII">
       <gml:identifier codeSpace="IOGP">urn:ogc:def:coordinateOperation:EPSG::18082</gml:identifier>
       <gml:name codeSpace="EPSG">Lambert zone II</gml:name>
       <gml:scope>Large and medium scale topographic mapping and engineering survey.</gml:scope>

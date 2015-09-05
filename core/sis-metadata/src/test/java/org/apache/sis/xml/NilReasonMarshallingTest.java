@@ -57,7 +57,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
@@ -117,6 +117,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
      */
     @Test
     @DependsOnMethod("testMissing")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testMissingInteger() throws JAXBException {
         final String expected =
                 "<gmd:MD_Dimension xmlns:gmd=\"" + Namespaces.GMD + '"' +
@@ -187,7 +188,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);
@@ -222,7 +223,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
                 "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
-        assertEquals("title", "A title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A title", citation);
 
         final Series series = citation.getSeries();
         assertInstanceOf("Should have instantiated a proxy.", NilObject.class, series);

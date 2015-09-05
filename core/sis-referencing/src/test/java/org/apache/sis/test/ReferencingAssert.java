@@ -99,20 +99,20 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     }
 
     /**
-     * Asserts that the string representation of the unique identifier in the given collection is equals to the given
-     * EPSG code. As a special case if the given code is 0, then this method verifies that the given object has no
-     * identifier.
+     * Asserts that the given object has the expected name and singleton identifier in the {@code "EPSG"} code space.
+     * No other identifier than the given one is expected. The authority is expected to have the {@code "EPSG"} title,
+     * alternate title or identifier.
      *
-     * @param expected The expected EPSG code, or {@code 0} if we expect no EPSG code.
-     * @param actual   The set of identifiers in which to verify the EPSG code.
+     * @param name       The expected EPSG name.
+     * @param identifier The expected EPSG identifier.
+     * @param object     The object to verify.
+     *
+     * @since 0.6
      */
-    public static void assertEpsgIdentifierEquals(final int expected, final Collection<? extends Identifier> actual) {
-        assertNotNull(actual);
-        if (expected == 0) {
-            assertTrue("identifiers.isEmpty()", actual.isEmpty());
-        } else {
-            assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual));
-        }
+    public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
+        assertNotNull(object);
+        assertEpsgIdentifierEquals(name, object.getName());
+        assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
     }
 
     /**
