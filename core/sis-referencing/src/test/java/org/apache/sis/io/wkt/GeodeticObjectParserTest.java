@@ -44,6 +44,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -104,8 +105,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Asserts that the name and (optionally) the EPSG identifier of the given object
-     * are equal to the given strings.
+     * Asserts that the name and (optionally) the EPSG identifier of the given object are equal to the given strings.
+     * As a special case if the given EPSG code is 0, then this method verifies that the given object has no identifier.
+     *
+     * <p>This method is similar to {@link #assertEpsgNameAndIdentifierEqual(String, int, IdentifiedObject)} except
+     * that the given name is not necessarily in the EPSG namespace and the EPSG code is allowed to be absent.</p>
      *
      * @param name The expected name.
      * @param epsg The expected EPSG identifier, or {@code 0} if the object shall have no identifier.
@@ -113,7 +117,11 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     static void assertNameAndIdentifierEqual(final String name, final int epsg, final IdentifiedObject object) {
         final String message = object.getClass().getSimpleName();
         assertEquals(message, name, object.getName().getCode());
-        assertEpsgIdentifierEquals(epsg, object.getIdentifiers());
+        if (epsg != 0) {
+            assertEquals(message, String.valueOf(epsg), getSingleton(object.getIdentifiers()).getCode());
+        } else {
+            assertTrue(message, object.getIdentifiers().isEmpty());
+        }
     }
 
     /**

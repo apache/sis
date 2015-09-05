@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -38,7 +39,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 import org.junit.Rule;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -407,6 +408,10 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     public void testXML() throws FactoryException, JAXBException {
         final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, XML_FILE);
         Validators.validate(crs);
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
+        assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, crs.getConversionFromBase());
         assertEquals("scope", "Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
+        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual("baseCRS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 }

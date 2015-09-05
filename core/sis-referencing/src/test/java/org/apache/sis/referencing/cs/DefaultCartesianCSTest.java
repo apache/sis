@@ -28,10 +28,10 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -215,9 +215,11 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
         assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "4400", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "1",    getSingleton(E.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "2",    getSingleton(N.getIdentifiers()));
+        assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
+        assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));
+        assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null, E);
+        assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null, N);
         /*
          * Marshal and compare with the original file.
          */

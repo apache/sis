@@ -58,8 +58,8 @@ public final strictfp class DataIdentificationTest extends TestCase {
 
         final Object id = XML.unmarshal(xml);
         assertInstanceOf("Expected an AFNOR instance.", DataIdentification.class, id);
-        assertEquals("citation", "Main documentation.", ((DataIdentification) id).getCitation().getTitle().toString());
-        assertEquals("relatedCitations", "Related documentation.", getSingleton(((DataIdentification) id).getRelatedCitations()).getTitle().toString());
+        assertTitleEquals("citation", "Main documentation.", ((DataIdentification) id).getCitation());
+        assertTitleEquals("relatedCitations", "Related documentation.", getSingleton(((DataIdentification) id).getRelatedCitations()));
 
         final String actual = XML.marshal(id);
         assertXmlEquals(xml, actual, "xmlns:*");
