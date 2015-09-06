@@ -17,6 +17,7 @@
   specific language governing permissions and limitations
   under the License.
 -->
+
 <gml:VerticalDatum xsi:schemaLocation = "http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/datums.xsd"
                    xmlns:gml          = "http://www.opengis.net/gml"
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"

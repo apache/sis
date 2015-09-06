@@ -84,8 +84,8 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     @Test
     public void testUnmarshall() throws JAXBException {
         final DefaultIdentifier identifier = unmarshal(DefaultIdentifier.class, XML);
-        assertNull  (        identifier.getVersion());
-        assertEquals("4326", identifier.getCode());
-        assertEquals("EPSG", identifier.getAuthority().getTitle().toString());
+        assertNull       ("identifier",        identifier.getVersion());
+        assertTitleEquals("authority", "EPSG", identifier.getAuthority());
+        assertEquals     ("code",      "4326", identifier.getCode());
     }
 }

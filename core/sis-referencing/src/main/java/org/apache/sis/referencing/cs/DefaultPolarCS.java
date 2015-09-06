@@ -61,14 +61,6 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
     private static final long serialVersionUID = 3960197260975470951L;
 
     /**
-     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
-     */
-    private DefaultPolarCS() {
-    }
-
-    /**
      * Creates a new coordinate system from an arbitrary number of axes. This constructor is for
      * implementations of the {@link #createForAxes(Map, CoordinateSystemAxis[])} method only,
      * because it does not verify the number of axes.
@@ -207,5 +199,27 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
             case 2: return new DefaultPolarCS(properties, axes);
             default: throw unexpectedDimension(properties, axes, 2);
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new coordinate system in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
+     * which will assign values to the fields using reflexion.
+     */
+    private DefaultPolarCS() {
     }
 }

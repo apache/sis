@@ -30,6 +30,7 @@
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
           <gml:name codeSpace="EPSG">Latitude of natural origin</gml:name>
           <gml:name codeSpace="OGC">latitude_of_origin</gml:name>
+          <gml:remarks>This parameter is shown for completeness, but should never have a value different than 0 for this projection.</gml:remarks>
         </gml:OperationParameter>
       </gml:operationParameter>
     </gml:ParameterValue>
@@ -75,6 +76,7 @@
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
           <gml:name codeSpace="EPSG">Latitude of natural origin</gml:name>
           <gml:name codeSpace="OGC">latitude_of_origin</gml:name>
+          <gml:remarks>This parameter is shown for completeness, but should never have a value different than 0 for this projection.</gml:remarks>
         </gml:OperationParameter>
       </gml:parameter>
       <gml:parameter>

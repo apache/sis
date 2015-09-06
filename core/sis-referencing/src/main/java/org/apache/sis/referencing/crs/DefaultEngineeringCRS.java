@@ -19,18 +19,12 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.cs.CylindricalCS;
-import org.opengis.referencing.cs.LinearCS;
-import org.opengis.referencing.cs.PolarCS;
-import org.opengis.referencing.cs.SphericalCS;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
@@ -68,13 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
-    "affineCS",
-    "cartesianCS",
-    "cylindricalCS",
-    "linearCS",
-    "polarCS",
-    "sphericalCS",
-    "userDefinedCS",
+    "coordinateSystem",
     "datum"
 })
 @XmlRootElement(name = "EngineeringCRS")
@@ -89,15 +77,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     @XmlElement(name = "engineeringDatum", required = true)
     private final EngineeringDatum datum;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultEngineeringCRS() {
-        datum = null;
-    }
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -215,26 +194,23 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Invoked by JAXB at marshalling time.
+     * Returns the coordinate system.
+     *
+     * @return The coordinate system.
      */
-    @XmlElement(name="affineCS")      private AffineCS      getAffineCS()      {return getCoordinateSystem(AffineCS     .class);}
-    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
-    @XmlElement(name="cylindricalCS") private CylindricalCS getCylindricalCS() {return getCoordinateSystem(CylindricalCS.class);}
-    @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
-    @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
-    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     */
-    private void setAffineCS     (final AffineCS      cs) {super.setCoordinateSystem("affineCS",      cs);}
-    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
-    private void setCylindricalCS(final CylindricalCS cs) {super.setCoordinateSystem("cylindricalCS", cs);}
-    private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
-    private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
-    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+    @Override
+    @XmlElements({
+        @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+        @XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+        @XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+        @XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+        @XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+        @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+        @XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+    })
+    public CoordinateSystem getCoordinateSystem() {
+        return super.getCoordinateSystem();
+    }
 
     /**
      * {@inheritDoc}
@@ -266,5 +242,37 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
         super.formatTo(formatter);
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
                : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS : WKTKeywords.EngineeringCRS;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEngineeringCRS() {
+        datum = null;
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CoordinateSystem cs) {
+        setCoordinateSystem(null, cs);  // 'null' here means to infer the XML property name from the cs type.
     }
 }

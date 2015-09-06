@@ -19,19 +19,20 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.metadata.Identifier;
-import org.apache.sis.parameter.Parameterized;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -43,6 +44,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
@@ -95,8 +97,8 @@ import java.util.Objects;
     "scope",
     "operationVersion",
     "coordinateOperationAccuracy",
-//  "sourceCRS",    // TODO
-//  "targetCRS"
+    "source",
+    "target"
 })
 @XmlRootElement(name = "AbstractCoordinateOperation")
 @XmlSeeAlso({
@@ -111,18 +113,22 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * The source CRS, or {@code null} if not available.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setSource(CoordinateReferenceSystem)}</p>
+     *
      * @see #getSourceCRS()
      */
-//  @XmlElement
-    private final CoordinateReferenceSystem sourceCRS;
+    private CoordinateReferenceSystem sourceCRS;
 
     /**
      * The target CRS, or {@code null} if not available.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setTarget(CoordinateReferenceSystem)}</p>
+     *
      * @see #getTargetCRS()
      */
-//  @XmlElement
-    private final CoordinateReferenceSystem targetCRS;
+    private CoordinateReferenceSystem targetCRS;
 
     /**
      * The CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
@@ -160,25 +166,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Transform from positions in the {@linkplain #getSourceCRS source coordinate reference system}
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
      */
-    private final MathTransform transform;
-
-    /**
-     * Creates a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractCoordinateOperation() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceCRS                   = null;
-        targetCRS                   = null;
-        interpolationCRS            = null;
-        operationVersion            = null;
-        coordinateOperationAccuracy = null;
-        domainOfValidity            = null;
-        scope                       = null;
-        transform                   = null;
-    }
+    private MathTransform transform;
 
     /**
      * Creates a new coordinate operation with the same values than the specified defining conversion,
@@ -321,6 +313,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * are consistent with {@link #transform} input and output dimensions.
      */
     private void checkDimensions(final Map<String,?> properties) {
+        final MathTransform transform = this.transform;   // Protect from changes.
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
@@ -416,6 +409,36 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     @Override
     public Class<? extends CoordinateOperation> getInterface() {
         return CoordinateOperation.class;
+    }
+
+    /**
+     * Returns {@code true} if this coordinate operation is for the definition of a
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
+     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
+     * The standard (ISO 19111) approach constructs <cite>defining conversion</cite>
+     * as an operation of type {@link org.opengis.referencing.operation.Conversion}
+     * with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
+     * But SIS supports also defining conversions with non-null CRS provided that:
+     *
+     * <ul>
+     *   <li>{@link GeneralDerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>
+     *   <li>{@link GeneralDerivedCRS#getConversionFromBase()} is this operation instance.</li>
+     * </ul>
+     *
+     * When this method returns {@code true}, the source and target CRS are not marshalled in XML documents.
+     *
+     * @return {@code true} if this coordinate operation is for the definition of a derived or projected CRS.
+     */
+    public boolean isDefiningConversion() {
+        /*
+         * Trick: we do not need to verify if (this instanceof Conversion) because:
+         *   - Only DefaultConversion constructor accepts null source and target CRS.
+         *   - GeneralDerivedCRS.getConversionFromBase() return type is Conversion.
+         */
+        return (sourceCRS == null && targetCRS == null)
+               || ((targetCRS instanceof GeneralDerivedCRS)
+                    && ((GeneralDerivedCRS) targetCRS).getBaseCRS() == sourceCRS
+                    && ((GeneralDerivedCRS) targetCRS).getConversionFromBase() == this);
     }
 
     /**
@@ -790,5 +813,99 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 }
             });
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractCoordinateOperation() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        interpolationCRS            = null;
+        operationVersion            = null;
+        coordinateOperationAccuracy = null;
+        domainOfValidity            = null;
+        scope                       = null;
+    }
+
+    /**
+     * Invoked by JAXB for getting the source CRS to marshal.
+     */
+    @XmlElement(name = "sourceCRS")
+    private CoordinateReferenceSystem getSource() {
+        return isDefiningConversion() ? null : getSourceCRS();
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for setting the source CRS.
+     */
+    private void setSource(final CoordinateReferenceSystem crs) {
+        if (sourceCRS == null) {
+            sourceCRS = crs;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the target CRS to marshal.
+     */
+    @XmlElement(name = "targetCRS")
+    private CoordinateReferenceSystem getTarget() {
+        return isDefiningConversion() ? null : getTargetCRS();
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the target CRS.
+     */
+    private void setTarget(final CoordinateReferenceSystem crs) {
+        if (targetCRS == null) {
+            targetCRS = crs;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
+        }
+    }
+
+    /**
+     * Invoked by JAXB after unmarshalling. This method needs information provided by:
+     *
+     * <ul>
+     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
+     *   <li>{@link AbstractSingleOperation#setParameters(GeneralParameterValue[])}</li>
+     * </ul>
+     *
+     * Note that the later method is defined in a subclass, but experience suggests that it still works
+     * at least with the JAXB implementation provided in JDK.
+     */
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        if (transform == null && sourceCRS != null && targetCRS != null) {
+            transform = createMathTransform();
+        }
+    }
+
+    /**
+     * Implemented by subclasses at unmarshalling time for creating the math transform from available information.
+     * Can return {@code null} if there is not enough information.
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
+     */
+    MathTransform createMathTransform() {
+        return null;
     }
 }

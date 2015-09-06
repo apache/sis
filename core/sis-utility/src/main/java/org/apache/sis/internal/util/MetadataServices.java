@@ -62,6 +62,7 @@ public class MetadataServices extends OptionalDependency {
      *
      * @return The singleton instance.
      */
+    @SuppressWarnings("DoubleCheckedLocking")
     public static MetadataServices getInstance() {
         MetadataServices c = instance;
         if (c == null) {

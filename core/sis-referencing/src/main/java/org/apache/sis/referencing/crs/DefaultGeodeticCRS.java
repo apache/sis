@@ -78,15 +78,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     private final GeodeticDatum datum;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    DefaultGeodeticCRS() {
-        datum = null;
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -145,20 +136,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     public GeodeticDatum getDatum() {
         return datum;
     }
-
-    /**
-     * Invoked by JAXB at marshalling time.
-     */
-    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
-    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     */
-    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
-    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
 
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.
@@ -252,4 +229,65 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
             return isBaseCRS ? WKTKeywords.BaseGeodCRS : WKTKeywords.GeodeticCRS;
         }
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    DefaultGeodeticCRS() {
+        datum = null;
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
+     *
+     * {@preformat java
+     *     &#64;Override
+     *     &#64;XmlElements({
+     *       &#64;XmlElement(name = "ellipsoidalCS", type = DefaultEllipsoidalCS.class),
+     *       &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *       &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class)
+     *     })
+     *     public CoordinateSystem getCoordinateSystem() {
+     *         return super.getCoordinateSystem();
+     *     }
+     * }
+     *
+     * However our attempts to apply this approach worked for {@link DefaultEngineeringCRS} but not for this class:
+     * for an unknown reason, the unmarshalled CS object is empty. Maybe this is because the covariant return type
+     * in the {@link DefaultGeographicCRS} ({@code EllipsoidCS} instead than {@code CoordinateSystem} in above code)
+     * is causing confusion.</div>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
+     */
+    @XmlElement(name="ellipsoidalCS") private EllipsoidalCS getEllipsoidalCS() {return getCoordinateSystem(EllipsoidalCS.class);}
+    @XmlElement(name="cartesianCS")   private CartesianCS   getCartesianCS()   {return getCoordinateSystem(CartesianCS  .class);}
+    @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getEllipsoidalCS()
+     */
+    private void setEllipsoidalCS(final EllipsoidalCS cs) {super.setCoordinateSystem("ellipsoidalCS", cs);}
+    private void setCartesianCS  (final CartesianCS   cs) {super.setCoordinateSystem("cartesianCS",   cs);}
+    private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
 }

@@ -17,22 +17,35 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.List;
+import java.util.IdentityHashMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
@@ -55,12 +68,13 @@ import java.util.Objects;
  * @module
  */
 @XmlType(name="AbstractSingleOperationType", propOrder = {
-//  "method",   // TODO
-//  "parameters"
+    "method",
+    "parameters"
 })
 @XmlRootElement(name = "AbstractSingleOperation")
 @XmlSeeAlso({
-    DefaultConversion.class
+    DefaultConversion.class,
+    DefaultTransformation.class
 })
 class AbstractSingleOperation extends AbstractCoordinateOperation implements SingleOperation, Parameterized {
     /**
@@ -71,22 +85,16 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     /**
      * The operation method.
      */
+    @XmlElement
     private final OperationMethod method;
 
     /**
      * The parameter values, or {@code null} for inferring it from the math transform.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setParameters(GeneralParameterValue[])}</p>
      */
-    private final ParameterValueGroup parameters;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractSingleOperation() {
-        method = null;
-        parameters = null;
-    }
+    private ParameterValueGroup parameters;
 
     /**
      * Creates a coordinate operation from the given properties.
@@ -403,5 +411,116 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * (e.g. "Mercator (1SP)" and "Mercator (2SP)" when the parameters are properly chosen).
          */
         return true;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractSingleOperation() {
+        method = null;
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence
+     * of parameters without their {@link ParameterValueGroup} wrapper, because GML is defined that way.
+     * The {@code ParameterValueGroup} wrapper is a GeoAPI addition done for allowing usage of its
+     * methods as a convenience (e.g. {@link ParameterValueGroup#parameter(String)}).
+     *
+     * <p>However it could happen that the user really wanted to specify a {@code ParameterValueGroup} as the
+     * sole {@code <gml:parameterValue>} element. We currently have no easy way to distinguish those cases.
+     * See {@link DefaultOperationMethod#getDescriptors()} for more discussion.</p>
+     *
+     * @see DefaultOperationMethod#getDescriptors()
+     */
+    @XmlElement(name = "parameterValue")
+    private GeneralParameterValue[] getParameters() {
+        if (parameters != null) {
+            final List<GeneralParameterValue> values = parameters.values();
+            if (values != null) {      // Paranoiac check (should not be allowed).
+                return CC_OperationMethod.filterImplicit(values.toArray(new GeneralParameterValue[values.size()]));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     * This method wraps the given parameters in a {@link ParameterValueGroup},
+     * unless the given descriptors was already a {@code ParameterValueGroup}.
+     *
+     * @see DefaultOperationMethod#setDescriptors
+     */
+    private void setParameters(final GeneralParameterValue[] values) {
+        if (parameters == null) {
+            if (!(method instanceof DefaultOperationMethod)) {  // May be a non-null proxy if defined only by xlink:href.
+                throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "method"));
+            }
+            /*
+             * The descriptors in the <gml:method> element do not know the class of parameter value
+             * (String, Integer, Double, double[], etc.) because this information is not part of GML.
+             * But this information is available to descriptors in the <gml:parameterValue> elements
+             * because Apache SIS infers the type from the actual parameter value. The 'merge' method
+             * below puts those information together.
+             */
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+            final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(
+                    method.getParameters().descriptors(),
+                    Parameters.getDescriptors(values),
+                    replacements);
+            /*
+             * Sometime Apache SIS recognizes the OperationMethod as one of its build-in methods and use the
+             * build-in parameters. In such cases the unmarshalled ParameterDescriptorGroup can be used as-in.
+             * But if the above 'merge' method has changed any parameter descriptor, then we will need to create
+             * a new ParameterDescriptorGroup with the new descriptors.
+             */
+            for (int i=0; i<merged.length; i++) {
+                if (merged[i] != values[i].getDescriptor()) {
+                    ((DefaultOperationMethod) method).updateDescriptors(merged);
+                    // At this point, method.getParameters() may have changed.
+                    break;
+                }
+            }
+            /*
+             * Sometime the descriptors associated to ParameterValues need to be updated, for example because
+             * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
+             * needed, are applied on-the-fly by the copy operation below, using the information provided by
+             * the 'replacements' map.
+             */
+            parameters = new DefaultParameterValueGroup(method.getParameters());
+            CC_OperationMethod.store(values, parameters.values(), replacements);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
+        }
+    }
+
+    /**
+     * Invoked at unmarshalling time for creating the math transform from available information.
+     * Can return {@code null} if there is not enough information.
+     */
+    @Override
+    final MathTransform createMathTransform() {
+        if (parameters != null) try {
+            return DefaultFactories.forBuildin(MathTransformFactory.class).createBaseToDerived(
+                    super.getSourceCRS(), parameters, super.getTargetCRS().getCoordinateSystem());
+        } catch (FactoryException e) {
+            Context.warningOccured(Context.current(), AbstractCoordinateOperation.class, "createMathTransform", e, true);
+        }
+        return super.createMathTransform();
     }
 }
