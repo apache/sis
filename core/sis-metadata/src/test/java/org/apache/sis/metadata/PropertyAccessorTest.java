@@ -63,7 +63,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.PropertyAccessor.APPEND;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
