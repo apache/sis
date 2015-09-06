@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.ValidationException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
@@ -34,7 +35,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -320,7 +320,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * coordinate system (CS). The CS information is required by {@code createConversionFromBase(…)}
      * in order to create a {@link MathTransform} with correct axis swapping and unit conversions.
      */
-    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) throws ValidationException {
         String property = "conversion";
         if (conversionFromBase != null) {
             final SingleCRS baseCRS = CC_Conversion.setBaseCRS(conversionFromBase, null);  // Clear the temporary value now.
@@ -338,7 +338,6 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
          * and call to 'getConversionFromBase()' will throw a ClassCastException if this instance is actually
          * a ProjectedCRS (because of the method overriding with return type covariance).
          */
-        Context.warningOccured(Context.current(), AbstractDerivedCRS.class, "afterUnmarshal",
-                Errors.class, Errors.Keys.MissingValueForProperty_1, property);
+        throw new ValidationException(Errors.format(Errors.Keys.MissingValueForProperty_1, property));
     }
 }

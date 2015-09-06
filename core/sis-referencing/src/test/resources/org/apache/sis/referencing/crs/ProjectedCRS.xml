@@ -34,7 +34,7 @@
       <gml:method>
         <gml:OperationMethod gml:id="epsg-method-9801">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:method:EPSG::9801</gml:identifier>
-          <gml:name>Lambert Conic Conformal (1SP)</gml:name>
+          <gml:name codeSpace="EPSG">Lambert Conic Conformal (1SP)</gml:name>
           <gml:formula>See EPSG Guidance Note #7-2.</gml:formula>
           <gml:sourceDimensions>2</gml:sourceDimensions>
           <gml:targetDimensions>2</gml:targetDimensions>
@@ -139,7 +139,7 @@
   <gml:baseGeodeticCRS>
     <gml:GeodeticCRS gml:id="epsg-crs-4807">
       <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4807</gml:identifier>
-      <gml:name>NTF (Paris)</gml:name>
+      <gml:name codeSpace="EPSG">NTF (Paris)</gml:name>
       <gml:scope>Geodetic survey.</gml:scope>
       <gml:ellipsoidalCS>
         <gml:EllipsoidalCS gml:id="epsg-cs-6422">
