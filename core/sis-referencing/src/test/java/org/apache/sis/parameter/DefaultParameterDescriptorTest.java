@@ -84,7 +84,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
             final int minimumValue, final int maximumValue, final int defaultValue)
     {
         return new DefaultParameterDescriptor<Integer>(properties(name), 1, 1, Integer.class,
-                NumberRange.create(minimumValue, true, maximumValue, true), null, Integer.valueOf(defaultValue));
+                NumberRange.create(minimumValue, true, maximumValue, true), null, defaultValue);
     }
 
     /**
@@ -102,7 +102,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
     {
         return new DefaultParameterDescriptor<Double>(properties(name), 1, 1, Double.class,
                 MeasurementRange.create(minimumValue, true, maximumValue, true, unit), null,
-                Double.isNaN(defaultValue) ? null : Double.valueOf(defaultValue));
+                Double.isNaN(defaultValue) ? null : defaultValue);
     }
 
     /**
@@ -173,6 +173,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testOptionalInteger")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testRangeValidation() {
         try {
             create("Test range", 20, 4, 12);
@@ -209,6 +210,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      * Tests {@code DefaultParameterDescriptor} construction for {@link Double} type.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testDoubleType() {
         final ParameterDescriptor<Double> descriptor = create("Length measure", 4, 20, 12, SI.METRE);
         assertEquals("name",         "Length measure",   descriptor.getName().getCode());
@@ -262,7 +264,8 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
          * Invalid operation: element not in the list of valid elements.
          */
         try {
-            create("Enumeration param", String.class, enumeration, "Pear");
+            DefaultParameterDescriptor<String> p = create("Enumeration param", String.class, enumeration, "Pear");
+            fail("Should not be allowed to create " + p);
         } catch (IllegalArgumentException e) {
             assertEquals("Parameter “Enumeration param” can not take the “Pear” value.", e.getMessage());
         }
@@ -273,6 +276,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testDoubleType")
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testArrayType() {
         final DefaultParameterDescriptor<double[]> descriptor = createForArray("Array param", 4, 9, SI.METRE);
         assertEquals("name",       "Array param",  descriptor.getName().getCode());
@@ -294,8 +298,9 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
          * Invalid operation: wrong type of range value.
          */
         try {
-            new DefaultParameterDescriptor<double[]>(properties("Array param"), 0, 1,
-                    double[].class, NumberRange.create(4, true, 9, true), null, null);
+            DefaultParameterDescriptor<double[]> p = new DefaultParameterDescriptor<double[]>(properties("Array param"),
+                    0, 1, double[].class, NumberRange.create(4, true, 9, true), null, null);
+            fail("Should not be allowed to create " + p);
         } catch (IllegalArgumentException e) {
             assertEquals("Argument ‘valueDomain’ can not be an instance of ‘Range<Integer>’.", e.getMessage());
         }

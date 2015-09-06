@@ -77,9 +77,9 @@ public final class Mercator2SP extends AbstractMercator {
          */
         builder.setRequired(false); // Will apply to all remaining parameters.
         final InternationalString remarks = notFormalParameter("Mercator (variant A)");
-        final ParameterDescriptor<Double> latitudeOfOrigin = createConstant(builder
+        final ParameterDescriptor<Double> latitudeOfOrigin = createZeroConstant(builder
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)
-                .setRemarks(remarks), 0.0);
+                .setRemarks(remarks));
         /*
          * Remove the EPSG name and identifier at least for the scale factor, because its meaning does not fit well
          * in this context. The EPSG name is "Scale factor at natural origin" while actually the scale factor applied

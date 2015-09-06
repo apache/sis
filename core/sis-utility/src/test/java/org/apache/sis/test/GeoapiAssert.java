@@ -18,6 +18,8 @@ package org.apache.sis.test;
 
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.InternationalString;
 
@@ -145,6 +147,23 @@ strictfp class GeoapiAssert extends org.opengis.test.Assert {
             if (!UNRESTRICTED.equals(codeSpace)) assertEquals (concat(message, "Wrong code space"), codeSpace, actual.getCodeSpace());
             if (!UNRESTRICTED.equals(version))   assertEquals (concat(message, "Wrong version"),    version,   actual.getVersion());
             if (!UNRESTRICTED.equals(code))      assertEquals (concat(message, "Wrong code"),       code,      actual.getCode());
+        }
+    }
+
+    /**
+     * Asserts that all axes in the given coordinate system are pointing toward the given directions, in the same order.
+     *
+     * @param message  Header of the exception message in case of failure, or {@code null} if none.
+     * @param cs       The coordinate system to test.
+     * @param expected The expected axis directions.
+     */
+    public static void assertAxisDirectionsEqual(String message,
+            final CoordinateSystem cs, final AxisDirection... expected)
+    {
+        assertEquals(concat(message, "Wrong coordinate system dimension."), expected.length, cs.getDimension());
+        message = concat(message, "Wrong axis direction.");
+        for (int i=0; i<expected.length; i++) {
+            assertEquals(message, expected[i], cs.getAxis(i).getDirection());
         }
     }
 

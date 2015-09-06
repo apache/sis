@@ -32,6 +32,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
+import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 /**
  * Abstract definition of a parameter or group of parameters used by a coordinate operation or a process.
@@ -126,17 +127,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
      * This field is modified only at unmarshalling time by {@link #setNonDefaultMaximumOccurs(Integer)}</p>
      */
     private short maximumOccurs;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractParameterDescriptor() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        minimumOccurs = 1;  // Default value is XML element is omitted.
-        maximumOccurs = 1;
-    }
 
     /**
      * Constructs a parameter descriptor from a set of properties. The properties map is given unchanged to the
@@ -350,7 +340,30 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         return WKTKeywords.Parameter;
     }
 
-    // ---- XML SUPPORT ----------------------------------------------------
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractParameterDescriptor() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        minimumOccurs = DEFAULT_OCCURRENCE;  // Default value if XML element is omitted.
+        maximumOccurs = DEFAULT_OCCURRENCE;
+    }
 
     /**
      * Invoked by JAXB for marshalling the {@link #minimumOccurs} value. Omit marshalling of this
@@ -360,7 +373,7 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     @XmlSchemaType(name = "nonNegativeInteger")
     private Integer getNonDefaultMinimumOccurs() {
         final int n = getMinimumOccurs();
-        return (n != 1) ? n : null;
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
     }
 
     /**
@@ -377,20 +390,20 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     @XmlSchemaType(name = "nonNegativeInteger")
     private Integer getNonDefaultMaximumOccurs() {
         final int n = getMaximumOccurs();
-        return (n != 1) ? n : null;
+        return (n != DEFAULT_OCCURRENCE) ? n : null;
     }
 
     /**
      * Invoked by JAXB for unmarshalling the {@link #minimumOccurs} value.
      */
     private void setNonDefaultMinimumOccurs(final Integer n) {
-        minimumOccurs = (n != null) ? crop(n) : 1;
+        minimumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
     }
 
     /**
      * Invoked by JAXB for unmarshalling the {@link #maximumOccurs} value.
      */
     private void setNonDefaultMaximumOccurs(final Integer n) {
-        maximumOccurs = (n != null) ? crop(n) : 1;
+        maximumOccurs = (n != null) ? crop(n) : DEFAULT_OCCURRENCE;
     }
 }

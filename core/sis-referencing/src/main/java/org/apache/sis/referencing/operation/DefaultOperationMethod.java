@@ -18,7 +18,13 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Formula;
@@ -26,14 +32,21 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -108,6 +121,14 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
+@XmlType(name="OperationMethodType", propOrder = {
+    "formulaCitation",
+    "formulaDescription",
+    "sourceDimensions",
+    "targetDimensions",
+    "descriptors"
+})
+@XmlRootElement(name = "OperationMethod")
 public class DefaultOperationMethod extends AbstractIdentifiedObject implements OperationMethod {
     /*
      * NOTE FOR JAVADOC WRITER:
@@ -124,14 +145,19 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Formula(s) or procedure used by this operation method. This may be a reference to a publication.
      * Note that the operation method may not be analytic, in which case this attribute references or
      * contains the procedure, not an analytic formula.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setFormula(Object)}</p>
      */
-    private final Formula formula;
+    private Formula formula;
 
     /**
      * Number of dimensions in the source CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * source dimensions (e.g. <cite>Affine Transform</cite>).
      */
+    @XmlElement
+    @XmlSchemaType(name = "positiveInteger")
     private final Integer sourceDimensions;
 
     /**
@@ -139,12 +165,17 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * May be {@code null} if this method can work with any number of
      * target dimensions (e.g. <cite>Affine Transform</cite>).
      */
+    @XmlElement
+    @XmlSchemaType(name = "positiveInteger")
     private final Integer targetDimensions;
 
     /**
      * The set of parameters, or {@code null} if none.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}</p>
      */
-    private final ParameterDescriptorGroup parameters;
+    private ParameterDescriptorGroup parameters;
 
     /**
      * Constructs an operation method from a set of properties and a descriptor group. The properties map is given
@@ -549,7 +580,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * <div class="note"><b>Departure from the ISO 19111 standard:</b>
      * this property is mandatory according ISO 19111, but may be null in Apache SIS if the
-     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it
+     * or if this {@code OperationMethod} has been read from an incomplete GML document.</div>
      *
      * @return The parameters, or {@code null} if unknown.
      *
@@ -672,5 +704,150 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             formatter.setInvalidWKT(this, null);
         }
         return WKTKeywords.Method;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultOperationMethod() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        sourceDimensions = null;
+        targetDimensions = null;
+    }
+
+    /**
+     * Invoked by JAXB for marshalling a citation to the formula. In principle at most one of
+     * {@code getFormulaCitation()} and {@link #getFormulaDescription()} methods can return a
+     * non-null value. However SIS accepts both coexist (but this is invalid GML).
+     */
+    @XmlElement(name = "formulaCitation")
+    private Citation getFormulaCitation() {
+        final Formula formula = getFormula();   // Give to users a chance to override.
+        return (formula != null) ? formula.getCitation() : null;
+    }
+
+    /**
+     * Invoked by JAXB for marshalling the formula literally. In principle at most one of
+     * {@code getFormulaDescription()} and {@link #getFormulaCitation()} methods can return
+     * a non-null value. However SIS accepts both to coexist (but this is invalid GML).
+     */
+    @XmlElement(name = "formula")
+    private String getFormulaDescription() {
+        final Formula formula = getFormula();   // Give to users a chance to override.
+        return (formula != null) ? StringAdapter.toString(formula.getFormula()) : null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the citation to the formula.
+     */
+    private void setFormulaCitation(final Citation citation) {
+        if (formula == null || formula.getCitation() == null) {
+            formula = (formula == null) ? new DefaultFormula(citation)
+                      : new DefaultFormula(formula.getFormula(), citation);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaCitation", "formulaCitation");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for setting the formula description.
+     */
+    private void setFormulaDescription(final String description) {
+        if (formula == null || formula.getFormula() == null) {
+            formula = (formula == null) ? new DefaultFormula(description)
+                      : new DefaultFormula(new SimpleInternationalString(description), formula.getCitation());
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaDescription", "formula");
+        }
+    }
+
+    /**
+     * Invoked by JAXB for getting the parameters to marshal. This method usually marshals the sequence of
+     * descriptors without their {@link ParameterDescriptorGroup} wrapper, because GML is defined that way.
+     * The {@code ParameterDescriptorGroup} wrapper is a GeoAPI addition done for allowing usage of its
+     * methods as a convenience (e.g. {@link ParameterDescriptorGroup#descriptor(String)}).
+     *
+     * <p>However it could happen that the user really wanted to specify a {@code ParameterDescriptorGroup} as
+     * the sole {@code <gml:parameter>} element. We currently have no easy way to distinguish those cases.</p>
+     *
+     * <div class="note"><b>Tip:</b>
+     * One possible way to distinguish the two cases would be to check that the parameter group does not contain
+     * any property that this method does not have:
+     *
+     * {@preformat java
+     *   if (IdentifiedObjects.getProperties(this).entrySet().containsAll(
+     *       IdentifiedObjects.getProperties(parameters).entrySet())) ...
+     * }
+     *
+     * But we would need to make sure that {@link AbstractSingleOperation#getParameters()} is consistent
+     * with the decision taken by this method.</div>
+     *
+     * <p><b>Historical note:</b> older, deprecated, names for the parameters were:
+     * <ul>
+     *   <li>{@code includesParameter}</li>
+     *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG registry</li>
+     *   <li>{@code usesParameter}</li>
+     * </ul>
+     *
+     * @see #getParameters()
+     * @see AbstractSingleOperation#getParameters()
+     */
+    @XmlElement(name = "parameter")
+    private GeneralParameterDescriptor[] getDescriptors() {
+        if (parameters != null) {
+            final List<GeneralParameterDescriptor> descriptors = parameters.descriptors();
+            if (descriptors != null) {      // Paranoiac check (should not be allowed).
+                return CC_OperationMethod.filterImplicit(descriptors.toArray(
+                        new GeneralParameterDescriptor[descriptors.size()]));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the unmarshalled parameters.
+     * This method wraps the given descriptors in a {@link DefaultParameterDescriptorGroup}.
+     *
+     * <p>The parameter descriptors created by this method are incomplete since we can not
+     * provide a non-null value for {@link ParameterDescriptor#getValueClass()}. The value
+     * class will be provided either by replacing this {@code OperationMethod} by one of the
+     * pre-defined methods, or by unmarshalling the enclosing {@link AbstractSingleOperation}.</p>
+     *
+     * <p><b>Maintenance note:</b> the {@code "setDescriptors"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
+     *
+     * @see AbstractSingleOperation#setParameters
+     */
+    private void setDescriptors(final GeneralParameterDescriptor[] descriptors) {
+        if (parameters == null) {
+            parameters = CC_OperationMethod.group(super.getName(), descriptors);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setDescriptors", "parameter");
+        }
+    }
+
+    /**
+     * Invoked by {@link AbstractSingleOperation} for completing the parameter descriptor.
+     */
+    final void updateDescriptors(final GeneralParameterDescriptor[] descriptors) {
+        final ParameterDescriptorGroup previous = parameters;
+        parameters = new DefaultParameterDescriptorGroup(IdentifiedObjects.getProperties(previous),
+                previous.getMinimumOccurs(), previous.getMaximumOccurs(), descriptors);
     }
 }

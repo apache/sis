@@ -124,14 +124,6 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private transient Type[] memberTypes;
 
     /**
-     * Empty constructor only used by JAXB.
-     */
-    private DefaultRecordType() {
-        typeName  = null;
-        container = null;
-    }
-
-    /**
      * Creates a new record with the same names and members than the given one.
      *
      * @param other The {@code RecordType} to copy.
@@ -435,5 +427,27 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     @Override
     public int hashCode() {
         return Objects.hashCode(typeName) + 31*(memberIndices().hashCode() + 31*Arrays.hashCode(memberTypes));
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor only used by JAXB.
+     */
+    private DefaultRecordType() {
+        typeName  = null;
+        container = null;
     }
 }

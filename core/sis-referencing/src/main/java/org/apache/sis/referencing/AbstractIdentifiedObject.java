@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
@@ -224,16 +225,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The only possible outdated value is 0, which is okay.
      */
     private transient int hashCode;
-
-    /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    AbstractIdentifiedObject() {
-        remarks = null;
-        deprecated = false;
-    }
 
     /**
      * Constructs an object from the given properties. Keys are strings from the table below.
@@ -503,6 +494,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * since it may depends on the marshalling context.</p>
      */
     @XmlID
+    @XmlSchemaType(name = "ID")
     @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     final String getID() {
@@ -532,144 +524,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             return id.toString();
         }
         return null;
-    }
-
-    /**
-     * Returns a single element from the {@code Set<Identifier>} collection, or {@code null} if none.
-     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
-     * while GML 3.2 defines it as a singleton.
-     *
-     * <p>This method searches for the following identifiers, in preference order:</p>
-     * <ul>
-     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
-     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
-     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
-     * </ul>
-     */
-    @XmlElement(name = "identifier")
-    final Code getIdentifier() {
-        return Code.forIdentifiedObject(getClass(), identifiers);
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time for setting the identifier.
-     */
-    private void setIdentifier(final Code identifier) {
-        if (identifier != null) {
-            final ReferenceIdentifier id = identifier.getIdentifier();
-            if (id != null && ReferencingUtilities.canSetProperty(AbstractIdentifiedObject.class,
-                    "setIdentifier", "identifier", identifiers != null))
-            {
-                identifiers = Collections.singleton(id);
-            }
-        }
-    }
-
-    /**
-     * A writable view over the {@linkplain AbstractIdentifiedObject#getName() name} of the enclosing object followed by
-     * all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
-     * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
-     * property.
-     */
-    private final class Names extends AbstractCollection<ReferenceIdentifier> {
-        /**
-         * Invoked by JAXB before to write in the collection at unmarshalling time.
-         * Do nothing since our object is already empty.
-         */
-        @Override
-        public void clear() {
-        }
-
-        /**
-         * Returns the number of name and aliases that are instance of {@link ReferenceIdentifier}.
-         */
-        @Override
-        public int size() {
-            return NameIterator.count(AbstractIdentifiedObject.this);
-        }
-
-        /**
-         * Returns an iterator over the name and aliases that are instance of {@link ReferenceIdentifier}.
-         */
-        @Override
-        public Iterator<ReferenceIdentifier> iterator() {
-            return new NameIterator(AbstractIdentifiedObject.this);
-        }
-
-        /**
-         * Invoked by JAXB at unmarshalling time for each identifier. The first identifier will be taken
-         * as the name and all other identifiers (if any) as aliases.
-         *
-         * <p>Some (but not all) JAXB implementations never invoke setter method for collections.
-         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
-         * in the returned collection. Consequently this method must writes directly in the enclosing object.
-         * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
-         */
-        @Override
-        public boolean add(final ReferenceIdentifier id) {
-            addName(id);
-            return true;
-        }
-    }
-
-    /**
-     * Implementation of {@link Names#add(ReferenceIdentifier)}, defined in the enclosing class
-     * for access to private fields without compiler-generated bridge methods.
-     */
-    final void addName(final ReferenceIdentifier id) {
-        if (name == NilReferencingObject.UNNAMED) {
-            name = id;
-        } else {
-            /*
-             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-             * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
-             */
-            final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
-            if (alias == null) {
-                alias = Collections.singleton(n);
-            } else {
-                /*
-                 * This implementation is inefficient since each addition copies the array, but we rarely
-                 * have more than two aliases.  This implementation is okay for a small number of aliases
-                 * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
-                 * add(…) method.
-                 *
-                 * Note about alternative approaches
-                 * ---------------------------------
-                 * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
-                 * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
-                 * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                 * who are not interrested in XML) and it may actually be less efficient for the vast
-                 * majority of cases where there is less than 3 aliases.
-                 */
-                final int size = alias.size();
-                final GenericName[] names = alias.toArray(new GenericName[size + 1]);
-                names[size] = n;
-                alias = UnmodifiableArrayList.wrap(names);
-            }
-        }
-    }
-
-    /**
-     * Returns the {@link #name} and all aliases which are also instance of {@link ReferenceIdentifier}.
-     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
-     *
-     * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
-     * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
-     * be used in other context.</p>
-     *
-     * <div class="section">Why there is no <code>setNames(…)</code> method</div>
-     * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
-     * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
-     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
-     * It seems a more portable approach (at least for JAXB reference implementations) to design our class
-     * without setter method, in order to have the same behavior on all supported JDK versions.
-     *
-     * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
-     */
-    @XmlElement(name = "name", required = true)
-    final Collection<ReferenceIdentifier> getNames() {
-        return new Names();
     }
 
     /**
@@ -1075,5 +929,169 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, ElementKind.forType(getClass()));
         return null;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    AbstractIdentifiedObject() {
+        remarks = null;
+        deprecated = false;
+    }
+
+    /**
+     * Returns a single element from the {@code Set<Identifier>} collection, or {@code null} if none.
+     * We have to define this method because ISO 19111 defines the {@code identifiers} property as a collection
+     * while GML 3.2 defines it as a singleton.
+     *
+     * <p>This method searches for the following identifiers, in preference order:</p>
+     * <ul>
+     *   <li>The first identifier having a code that begin with {@code "urn:"}.</li>
+     *   <li>The first identifier having a code that begin with {@code "http:"}.</li>
+     *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
+     * </ul>
+     */
+    @XmlElement(name = "identifier")
+    final Code getIdentifier() {
+        return Code.forIdentifiedObject(getClass(), identifiers);
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the identifier.
+     */
+    private void setIdentifier(final Code identifier) {
+        if (identifiers == null) {
+            if (identifier != null) {
+                final ReferenceIdentifier id = identifier.getIdentifier();
+                if (id != null) {
+                    identifiers = Collections.singleton(id);
+                }
+            }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setIdentifier", "identifier");
+        }
+    }
+
+    /**
+     * Returns the {@link #name} and all aliases which are also instance of {@link Identifier}.
+     * The later happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
+     *
+     * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
+     * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
+     * be used in other context.</p>
+     *
+     * <div class="section">Why there is no <code>setNames(…)</code> method</div>
+     * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
+     * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
+     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
+     * It seems a more portable approach (at least for JAXB reference implementations) to design our class
+     * without setter method, in order to have the same behavior on all supported JDK versions.
+     *
+     * @see <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a>
+     */
+    @XmlElement(name = "name", required = true)
+    final Collection<ReferenceIdentifier> getNames() {
+        return new Names();
+    }
+
+    /**
+     * A writable view over the {@linkplain AbstractIdentifiedObject#getName() name} of the enclosing object followed
+     * by all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link Identifier}.
+     * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
+     * property.
+     */
+    private final class Names extends AbstractCollection<ReferenceIdentifier> {
+        /**
+         * Invoked by JAXB before to write in the collection at unmarshalling time.
+         * Do nothing since our object is already empty.
+         */
+        @Override
+        public void clear() {
+        }
+
+        /**
+         * Returns the number of name and aliases that are instance of {@link Identifier}.
+         */
+        @Override
+        public int size() {
+            return NameIterator.count(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Returns an iterator over the name and aliases that are instance of {@link Identifier}.
+         */
+        @Override
+        public Iterator<ReferenceIdentifier> iterator() {
+            return new NameIterator(AbstractIdentifiedObject.this);
+        }
+
+        /**
+         * Invoked by JAXB at unmarshalling time for each identifier. The first identifier will be taken
+         * as the name and all other identifiers (if any) as aliases.
+         *
+         * <p>Some (but not all) JAXB implementations never invoke setter method for collections.
+         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
+         * in the returned collection. Consequently this method must writes directly in the enclosing object.
+         * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
+         */
+        @Override
+        public boolean add(final ReferenceIdentifier id) {
+            addName(id);
+            return true;
+        }
+    }
+
+    /**
+     * Implementation of {@link Names#add(Identifier)}, defined in the enclosing class
+     * for access to private fields without compiler-generated bridge methods.
+     */
+    final void addName(final ReferenceIdentifier id) {
+        if (name == NilReferencingObject.UNNAMED) {
+            name = id;
+        } else {
+            /*
+             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
+             * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+             */
+            final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
+            if (alias == null) {
+                alias = Collections.singleton(n);
+            } else {
+                /*
+                 * This implementation is inefficient since each addition copies the array, but we rarely
+                 * have more than two aliases.  This implementation is okay for a small number of aliases
+                 * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
+                 * add(…) method.
+                 *
+                 * Note about alternative approaches
+                 * ---------------------------------
+                 * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
+                 * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
+                 * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
+                 * who are not interrested in XML) and it may actually be less efficient for the vast
+                 * majority of cases where there is less than 3 aliases.
+                 */
+                final int size = alias.size();
+                final GenericName[] names = alias.toArray(new GenericName[size + 1]);
+                names[size] = n;
+                alias = UnmodifiableArrayList.wrap(names);
+            }
+        }
     }
 }

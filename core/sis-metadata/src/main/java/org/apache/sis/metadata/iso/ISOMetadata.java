@@ -174,6 +174,20 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         return new IdentifierMapWithSpecialCases(identifiers);
     }
 
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Returns an identifier unique for the XML document, or {@code null} if none.
      * This method is invoked automatically by JAXB and should never be invoked explicitely.

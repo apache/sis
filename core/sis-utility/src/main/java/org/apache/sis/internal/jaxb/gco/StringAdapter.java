@@ -53,7 +53,7 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
-    static String toString(final CharSequence text) {
+    public static String toString(final CharSequence text) {
         if (text == null) {
             return null;
         }

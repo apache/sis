@@ -158,19 +158,17 @@ public final strictfp class CitationsTest extends TestCase {
      */
     @Test
     public void testGetTitles() {
-        assertEquals("Apache Spatial Information System",    SIS    .getTitle().toString(Locale.US));
-        assertEquals("Identifier in OGC namespace",          OGC    .getTitle().toString(Locale.US));
-        assertEquals("EPSG Geodetic Parameter Dataset",      EPSG   .getTitle().toString(Locale.US));
-        assertEquals("International Standard Book Number",   ISBN   .getTitle().toString(Locale.US));
-        assertEquals("International Standard Serial Number", ISSN   .getTitle().toString(Locale.US));
-        assertEquals("GeoTIFF",                              GEOTIFF.getTitle().toString(Locale.US));
-        assertEquals("NetCDF",                               NETCDF .getTitle().toString(Locale.US));
-        assertEquals("Proj.4",                               PROJ4  .getTitle().toString(Locale.US));
-        assertEquals("S-57",                                 S57    .getTitle().toString(Locale.US));
-        assertEquals("Geographic Information — Metadata Part 1: Fundamentals",
-                ISO_19115.get(0).getTitle().toString(Locale.US));
-        assertEquals("Geographic Information — Metadata Part 2: Extensions for imagery and gridded data",
-                ISO_19115.get(1).getTitle().toString(Locale.US));
+        assertTitleEquals("SIS",     "Apache Spatial Information System",    SIS);
+        assertTitleEquals("OGC",     "Identifier in OGC namespace",          OGC);
+        assertTitleEquals("EPSG",    "EPSG Geodetic Parameter Dataset",      EPSG);
+        assertTitleEquals("ISBN",    "International Standard Book Number",   ISBN);
+        assertTitleEquals("ISSN",    "International Standard Serial Number", ISSN);
+        assertTitleEquals("GEOTIFF", "GeoTIFF",                              GEOTIFF);
+        assertTitleEquals("NETCDF",  "NetCDF",                               NETCDF);
+        assertTitleEquals("PROJ4",   "Proj.4",                               PROJ4);
+        assertTitleEquals("S57",     "S-57",                                 S57);
+        assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 1: Fundamentals", ISO_19115.get(0));
+        assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data", ISO_19115.get(1));
     }
 
     /**

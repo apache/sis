@@ -163,7 +163,7 @@ public final class Equirectangular extends AbstractProvider {
          * still see it in use sometime. However, taking inspiration from the practice done in "Mercator (1SP)"
          * projection, we require that the parameter value must be zero.
          */
-        LATITUDE_OF_ORIGIN = createConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
+        LATITUDE_OF_ORIGIN = createZeroConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
                 .addIdentifier("8801")
                 .addName("Latitude of natural origin")
                 .addName(Citations.OGC,     "latitude_of_origin")
@@ -172,7 +172,7 @@ public final class Equirectangular extends AbstractProvider {
                 .addName(Citations.GEOTIFF, "ProjCenterLat")
                 .addName(Citations.PROJ4,   "lat_0")
                 .setRemarks(Messages.formatInternational(Messages.Keys.ConstantProjParameterValue_1, 0))
-                .setRequired(false), 0.0);
+                .setRequired(false));
 
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.

@@ -85,14 +85,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     private static final long serialVersionUID = -4502680112031773028L;
 
     /**
-     * Constructs a new object in which every attributes are set to a default value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultProjectedCRS() {
-    }
-
-    /**
      * Creates a projected CRS from a defining conversion.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
@@ -268,13 +260,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         // See AbstractDerivedCRS.createConversionFromBase(…) for
         // an explanation about why this method is declared final.
         return (CartesianCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Used by JAXB only (invoked by reflection).
-     */
-    private void setCoordinateSystem(final CartesianCS cs) {
-        setCoordinateSystem("cartesianCS", cs);
     }
 
     /**
@@ -491,5 +476,45 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                 WKTUtilities.append(param, formatter);
             }
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a default value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultProjectedCRS() {
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getBaseCRS()
+     */
+    private void setBaseCRS(final GeographicCRS crs) {
+        setBaseCRS("baseGeodeticCRS", crs);
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CartesianCS cs) {
+        setCoordinateSystem("cartesianCS", cs);
     }
 }

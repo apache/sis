@@ -68,7 +68,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      */
     private static void assertParentIsCitation(final ExtendedElementInformation information) {
         assertInstanceOf("Specific to SIS implementation.", Identifier.class, information);
-        assertEquals("ISO 19115",   ((Identifier) information).getAuthority().getTitle().toString());
+        assertTitleEquals("authority", "ISO 19115", ((Identifier) information).getAuthority());
         assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
     }
 
@@ -138,6 +138,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * @throws NoSuchMethodException Should never happen.
      */
     @Test
+    @SuppressWarnings("UnnecessaryBoxing")
     public void testGetDomainValue() throws NoSuchMethodException {
         final ExtendedElementInformation information = new PropertyInformation<Double>(HardCodedCitations.ISO_19115,
                 "maxRelativeHumidity", EnvironmentalRecord.class.getMethod("getMaxRelativeHumidity"), Double.class,

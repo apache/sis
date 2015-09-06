@@ -213,21 +213,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     private final RangeMeaning rangeMeaning;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultCoordinateSystemAxis() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        abbreviation = null;
-        direction    = null;
-        unit         = null;
-        rangeMeaning = null;
-        minimumValue = NEGATIVE_INFINITY;
-        maximumValue = POSITIVE_INFINITY;
-    }
-
-    /**
      * Constructs an axis from a set of properties. The properties given in argument follow the same rules
      * than for the {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
      * Additionally, the following properties are understood by this constructor:
@@ -452,30 +437,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Invoke by JAXB at marshalling time for fetching the minimum value, or {@code null} if none.
-     */
-    @XmlElement(name = "minimumValue")
-    private Double getMinimum() {
-        return (minimumValue != NEGATIVE_INFINITY) ? minimumValue : null;
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time for setting the minimum value.
-     */
-    private void setMinimum(final Double value) {
-        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
-                "setMinimum", "minimumValue", minimumValue != NEGATIVE_INFINITY))
-        {
-            final double min = value; // Apply unboxing.
-            if (min < maximumValue) {
-                minimumValue = min;
-            } else {
-                outOfRange("minimumValue", value);
-            }
-        }
-    }
-
-    /**
      * Returns the maximum value normally allowed for this axis, in the {@linkplain #getUnit()
      * unit of measure for the axis}. If there is no maximum value, then this method returns
      * {@linkplain Double#POSITIVE_INFINITY negative infinity}.
@@ -485,30 +446,6 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     @Override
     public double getMaximumValue() {
         return maximumValue;
-    }
-
-    /**
-     * Invoke by JAXB at marshalling time for fetching the maximum value, or {@code null} if none.
-     */
-    @XmlElement(name = "maximumValue")
-    private Double getMaximum() {
-        return (maximumValue != POSITIVE_INFINITY) ? maximumValue : null;
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time for setting the maximum value.
-     */
-    private void setMaximum(final Double value) {
-        if (value != null && ReferencingUtilities.canSetProperty(DefaultCoordinateSystemAxis.class,
-                "setMaximum", "maximumValue", maximumValue != POSITIVE_INFINITY))
-        {
-            final double max = value; // Apply unboxing.
-            if (max > minimumValue) {
-                maximumValue = max;
-            } else {
-                outOfRange("maximumValue", value);
-            }
-        }
     }
 
     /**
@@ -893,6 +830,87 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         protected String formatTo(final Formatter formatter) {
             formatter.append(index);
             return WKTKeywords.Order;
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultCoordinateSystemAxis() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        abbreviation = null;
+        direction    = null;
+        unit         = null;
+        rangeMeaning = null;
+        minimumValue = NEGATIVE_INFINITY;
+        maximumValue = POSITIVE_INFINITY;
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for fetching the minimum value, or {@code null} if none.
+     *
+     * @see #getMinimumValue()
+     */
+    @XmlElement(name = "minimumValue")
+    private Double getMinimum() {
+        return (minimumValue != NEGATIVE_INFINITY) ? minimumValue : null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the minimum value.
+     */
+    private void setMinimum(final Double value) {
+        if (minimumValue == NEGATIVE_INFINITY) {
+            final double min = value; // Apply unboxing.
+            if (min < maximumValue) {
+                minimumValue = min;
+            } else {
+                outOfRange("minimumValue", value);
+            }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for fetching the maximum value, or {@code null} if none.
+     *
+     * @see #getMaximumValue()
+     */
+    @XmlElement(name = "maximumValue")
+    private Double getMaximum() {
+        return (maximumValue != POSITIVE_INFINITY) ? maximumValue : null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for setting the maximum value.
+     */
+    private void setMaximum(final Double value) {
+        if (maximumValue == POSITIVE_INFINITY) {
+            final double max = value; // Apply unboxing.
+            if (max > minimumValue) {
+                maximumValue = max;
+            } else {
+                outOfRange("maximumValue", value);
+            }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
         }
     }
 }

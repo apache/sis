@@ -104,14 +104,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     private static final long serialVersionUID = 861224913438092335L;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeographicCRS() {
-    }
-
-    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -165,21 +157,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                                 final EllipsoidalCS cs)
     {
         super(properties, datum, cs);
-    }
-
-    /**
-     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
-     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
-     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
-     * GeographicCRS instance.
-     */
-    DefaultGeographicCRS(final GeodeticCRS crs) {
-        super(crs);
-        final CoordinateSystem cs = super.getCoordinateSystem();
-        if (!(cs instanceof EllipsoidalCS)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
-        }
     }
 
     /**
@@ -332,5 +309,42 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     @Override
     protected String formatTo(final Formatter formatter) {
         return super.formatTo(formatter);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeographicCRS() {
+    }
+
+    /**
+     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
+     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
+     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
+     * GeographicCRS instance.
+     */
+    DefaultGeographicCRS(final GeodeticCRS crs) {
+        super(crs);
+        final CoordinateSystem cs = super.getCoordinateSystem();
+        if (!(cs instanceof EllipsoidalCS)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
+        }
     }
 }

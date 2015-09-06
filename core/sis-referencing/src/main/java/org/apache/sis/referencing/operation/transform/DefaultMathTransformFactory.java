@@ -493,6 +493,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
             throws NoSuchIdentifierException, FactoryException
     {
+        ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
         /*
          * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
          * them from the ellipsoid. We have to do that because those parameters are often omitted,
@@ -617,6 +620,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             final MathTransform parameterized, final CoordinateSystem derivedCS)
             throws FactoryException
     {
+        ArgumentChecks.ensureNonNull("baseCS",        baseCS);
+        ArgumentChecks.ensureNonNull("parameterized", parameterized);
+        ArgumentChecks.ensureNonNull("derivedCS",     derivedCS);
         /*
          * Computes matrix for swapping axis and performing units conversion.
          * There is one matrix to apply before projection on (longitude,latitude)
@@ -705,6 +711,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
+        ArgumentChecks.ensureNonNull("parameters", parameters);
         final String methodName = parameters.getDescriptor().getName().getCode();
         OperationMethod method = null;
         try {
@@ -762,22 +769,22 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * <p>The dimension of the output space of the first transform must match the dimension of the input space
      * in the second transform. In order to concatenate more than two transforms, use this constructor repeatedly.</p>
      *
-     * @param  transform1 The first transform to apply to points.
-     * @param  transform2 The second transform to apply to points.
+     * @param  tr1 The first transform to apply to points.
+     * @param  tr2 The second transform to apply to points.
      * @return The concatenated transform.
      * @throws FactoryException if the object creation failed.
      *
      * @see MathTransforms#concatenate(MathTransform, MathTransform)
      */
     @Override
-    public MathTransform createConcatenatedTransform(final MathTransform transform1,
-                                                     final MathTransform transform2)
+    public MathTransform createConcatenatedTransform(final MathTransform tr1,
+                                                     final MathTransform tr2)
             throws FactoryException
     {
         lastMethod.remove();
         final MathTransform tr;
         try {
-            tr = MathTransforms.concatenate(transform1, transform2);
+            tr = MathTransforms.concatenate(tr1, tr2);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
