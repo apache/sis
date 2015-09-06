@@ -109,7 +109,7 @@ strictfp class GeoapiAssert extends org.opengis.test.Assert {
      * @param expected The expected title or alternate title.
      * @param actual   The citation to test.
      */
-    public static void assertTitleEquals(final String message, final String expected, final Citation actual) {
+    public static void assertAnyTitleEquals(final String message, final String expected, final Citation actual) {
         if (isNull(message, expected, actual)) {
             return;
         }
@@ -143,7 +143,7 @@ strictfp class GeoapiAssert extends org.opengis.test.Assert {
         if (actual == null) {
             fail(concat(message, "Identifier is null"));
         } else {
-            if (!UNRESTRICTED.equals(authority)) assertTitleEquals(message,                         authority, actual.getAuthority());
+            if (!UNRESTRICTED.equals(authority)) assertAnyTitleEquals(message,                      authority, actual.getAuthority());
             if (!UNRESTRICTED.equals(codeSpace)) assertEquals (concat(message, "Wrong code space"), codeSpace, actual.getCodeSpace());
             if (!UNRESTRICTED.equals(version))   assertEquals (concat(message, "Wrong version"),    version,   actual.getVersion());
             if (!UNRESTRICTED.equals(code))      assertEquals (concat(message, "Wrong code"),       code,      actual.getCode());

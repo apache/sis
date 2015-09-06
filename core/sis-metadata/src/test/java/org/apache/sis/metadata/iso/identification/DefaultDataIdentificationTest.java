@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 // Branch-specific imports
 import org.opengis.metadata.identification.CharacterSet;
