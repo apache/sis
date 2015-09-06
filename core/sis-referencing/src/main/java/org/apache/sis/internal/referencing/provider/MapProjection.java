@@ -47,8 +47,6 @@ import org.apache.sis.util.resources.Messages;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
-// Branch-dependent imports
-
 
 /**
  * Base class for all map projection providers defined in this package. This base class defines some descriptors
