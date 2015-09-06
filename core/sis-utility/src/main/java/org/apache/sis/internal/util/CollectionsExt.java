@@ -20,6 +20,7 @@ import java.util.*;
 import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.resources.Errors;
 import org.opengis.parameter.InvalidParameterCardinalityException;
@@ -602,6 +603,27 @@ public final class CollectionsExt extends Static {
             return (List<T>) collection;
         }
         return new ArrayList<T>(collection);
+    }
+
+    /**
+     * Returns the elements of the given collection as an array. This method can be used when the {@code valueClass}
+     * argument is not known at compile-time. If the {@code valueClass} is known at compile-time, then callers should
+     * use {@link Collection#toArray(T[])} instead.
+     *
+     * @param  <T>        The compile-time value of {@code valueClass}.
+     * @param  collection The collection from which to get the elements.
+     * @param  valueClass The runtime type of collection elements.
+     * @return The collection elements as an array, or {@code null} if {@code collection} is null.
+     *
+     * @since 0.6
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T[] toArray(final Collection<T> collection, final Class<T> valueClass) {
+        assert Numbers.primitiveToWrapper(valueClass) == valueClass : valueClass;
+        if (collection != null) {
+            return collection.toArray((T[]) Array.newInstance(valueClass, collection.size()));
+        }
+        return null;
     }
 
     /**

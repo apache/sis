@@ -121,7 +121,8 @@ final class LogRecordCollector extends Handler {
             final String lineSeparator = JDK7.lineSeparator();
             if (!records.isEmpty()) {
                 out.append(lineSeparator)
-                   .append("The following tests have logged messages at level INFO or higher:").append(lineSeparator);
+                   .append("The following tests have logged messages at level INFO or higher:").append(lineSeparator)
+                   .append("See 'org.apache.sis.test.LoggingWatcher' for information about logging during tests.").append(lineSeparator);
                 final TableAppender table = new TableAppender(out);
                 table.setMultiLinesCells(false);
                 table.nextLine('═');

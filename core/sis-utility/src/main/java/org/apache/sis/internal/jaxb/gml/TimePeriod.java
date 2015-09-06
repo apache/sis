@@ -49,8 +49,8 @@ public final class TimePeriod extends GMLAdapter {
      * The GML2 way is more verbose.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="beginPosition"),
-        @XmlElement(type=TimePeriodBound.GML2.class, name="begin")
+        @XmlElement(type = TimePeriodBound.GML3.class, name = "beginPosition"),
+        @XmlElement(type = TimePeriodBound.GML2.class, name = "begin")
     })
     TimePeriodBound begin;
 
@@ -59,8 +59,8 @@ public final class TimePeriod extends GMLAdapter {
      * The GML2 way is more verbose.
      */
     @XmlElements({
-        @XmlElement(type=TimePeriodBound.GML3.class, name="endPosition"),
-        @XmlElement(type=TimePeriodBound.GML2.class, name="end")
+        @XmlElement(type = TimePeriodBound.GML3.class, name = "endPosition"),
+        @XmlElement(type = TimePeriodBound.GML2.class, name = "end")
     })
     TimePeriodBound end;
 

@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -51,6 +53,8 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @see DefaultConversion
  */
+@XmlType(name = "TransformationType")
+@XmlRootElement(name = "Transformation")
 public class DefaultTransformation extends AbstractSingleOperation implements Transformation {
     /**
      * Serial number for inter-operability with different versions.
@@ -158,5 +162,27 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
     @Override
     public Class<? extends Transformation> getInterface() {
         return Transformation.class;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTransformation() {
     }
 }

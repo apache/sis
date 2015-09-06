@@ -46,7 +46,7 @@ import org.apache.sis.xml.ReferenceResolver;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final class Context extends MarshalContext {
@@ -530,16 +530,16 @@ public final class Context extends MarshalContext {
      * Convenience method for sending a warning for the given exception.
      * The logger will be {@code "org.apache.sis.xml"}.
      *
-     * @param context The current context, or {@code null} if none.
-     * @param classe  The class to declare as the warning source.
-     * @param method  The name of the method to declare as the warning source.
-     * @param cause   The exception which occurred.
-     * @param warning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FINE}.
+     * @param context   The current context, or {@code null} if none.
+     * @param classe    The class to declare as the warning source.
+     * @param method    The name of the method to declare as the warning source.
+     * @param cause     The exception which occurred.
+     * @param isWarning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FINE}.
      */
     public static void warningOccured(final Context context, final Class<?> classe,
-            final String method, final Exception cause, final boolean warning)
+            final String method, final Exception cause, final boolean isWarning)
     {
-        warningOccured(context, warning ? Level.WARNING : Level.FINE, classe, method, cause,
+        warningOccured(context, isWarning ? Level.WARNING : Level.FINE, classe, method, cause,
                 null, (short) 0, (Object[]) null);
     }
 

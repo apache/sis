@@ -73,14 +73,14 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
-        assertEquals("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
+        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     ("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
     }
 
     /**
@@ -94,13 +94,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",          identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                  identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",       identifier.getVersion());
-        assertEquals("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     (CODE_KEY,            "This is a code",          identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                  identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",       identifier.getVersion());
+        assertEquals     ("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -114,13 +114,13 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull  (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
+        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY,       "An other authority",     identifier.getAuthority());
+        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
+        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
