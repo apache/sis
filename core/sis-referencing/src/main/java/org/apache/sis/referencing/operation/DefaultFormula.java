@@ -67,6 +67,16 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     private final Citation citation;
 
     /**
+     * Creates a new formula. This constructor is not public because of {@code Formula} object should not have
+     * both the formula literal and the citation. But we use this constructor an unmarshalling time if the XML
+     * document have both. Having both is not valid GML, but SIS is tolerant to this situation.
+     */
+    DefaultFormula(final InternationalString formula, final Citation citation) {
+        this.formula  = formula;
+        this.citation = citation;
+    }
+
+    /**
      * Creates a new formula from the given string.
      *
      * @param formula The formula.

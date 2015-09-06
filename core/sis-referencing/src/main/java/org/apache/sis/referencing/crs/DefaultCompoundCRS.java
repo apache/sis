@@ -130,15 +130,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     private transient List<SingleCRS> singles;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultCompoundCRS() {
-        components = null;
-    }
-
-    /**
      * Constructs a compound CRS from the given properties and CRS.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -328,6 +319,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SingleCRS> getSingleComponents() {
         return singles;
     }
@@ -538,5 +530,28 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             formatter.setInvalidWKT(this, null);
         }
         return isWKT1 ? WKTKeywords.Compd_CS : WKTKeywords.CompoundCRS;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultCompoundCRS() {
+        components = null;
     }
 }

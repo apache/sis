@@ -294,8 +294,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
 
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
-        assertInstanceOf("identifiers", Collection.class, identifiers);
-        assertContainsIdentifierCode("19111", (Collection<?>) identifiers);
+        assertEquals("19111", getSingletonCode(identifiers));
     }
 
     /**
@@ -457,7 +456,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertEquals("set(…, RETURN_PREVIOUS)", oldTitles, oldValue);
         assertEquals("get(…)",                  newTitles, newValue);
         assertSame  ("alternateTitles",         newValue, instance.getAlternateTitles());
-        assertEquals("title",                   "Ignored title", instance.getTitle().toString());
+        assertTitleEquals("title", "Ignored title", instance);
     }
 
     /**
@@ -526,7 +525,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         // Check final collection content.
         final List<InternationalString> expected = Arrays.asList(title1, title2);
         assertEquals("alternateTitles", expected, accessor.get(index, instance));
-        assertEquals("title", "Ignored title", instance.getTitle().toString());
+        assertTitleEquals("title", "Ignored title", instance);
     }
 
     /**
@@ -573,17 +572,17 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertEquals("set(…, APPEND)",  Boolean.TRUE, changed);
         assertEquals("get(…)",          merged, newValue);
         assertSame  ("alternateTitles", newValue, instance.getAlternateTitles());
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
 
         // Test setting again the title to the same value.
         titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
         assertEquals("set(…, APPEND)", Boolean.FALSE, titleChanged);
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
 
         // Test setting the title to a different value.
         titleChanged = accessor.set(titleIndex, instance, "Different title", APPEND);
         assertNull("set(…, APPEND)", titleChanged); // Operation shall be refused.
-        assertEquals("title", "Added title", instance.getTitle().toString());
+        assertTitleEquals("title", "Added title", instance);
     }
 
     /**
@@ -609,7 +608,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("identifiers", Collection.class, target);
         assertNotSame("Distinct objects shall have distinct collections.", source, target);
         assertEquals ("The two collections shall have the same content.",  source, target);
-        assertContainsIdentifierCode("EPSG", (Collection<?>) target);
+        assertEquals ("EPSG", getSingletonCode(target));
 
         // Set the identifiers to null, which should clear the collection.
         assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));
@@ -648,5 +647,19 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
         assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+    }
+
+    /**
+     * Returns the code of the singleton identifier found in the given collection.
+     * This method verifies that the object is of the expected type.
+     *
+     * @param identifiers A singleton {@code Collection<Identifier>}.
+     * @return {@link Identifier#getCode()}.
+     */
+    static String getSingletonCode(final Object identifiers) {
+        assertInstanceOf("identifiers", Collection.class, identifiers);
+        final Object identifier = getSingleton((Collection<?>) identifiers);
+        assertInstanceOf("identifier", Identifier.class, identifier);
+        return ((Identifier) identifier).getCode();
     }
 }

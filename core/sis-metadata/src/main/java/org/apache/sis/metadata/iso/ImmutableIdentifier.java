@@ -184,17 +184,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     private final InternationalString description;
 
     /**
-     * Empty constructor for JAXB.
-     */
-    private ImmutableIdentifier() {
-        code        = null;
-        codeSpace   = null;
-        authority   = null;
-        version     = null;
-        description = null;
-    }
-
-    /**
      * Creates a new identifier from the specified one. This is a copy constructor which
      * get the code, codespace, authority and version from the given identifier.
      *
@@ -685,5 +674,30 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
             formatter.append(buffer.toString(), null);
             return WKTKeywords.URI;
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor for JAXB.
+     */
+    private ImmutableIdentifier() {
+        code        = null;
+        codeSpace   = null;
+        authority   = null;
+        version     = null;
+        description = null;
     }
 }

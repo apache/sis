@@ -219,7 +219,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertEquals("parentIdentifier", "ParentID", metadata.getParentIdentifier());
 
         DefaultCitation c = (DefaultCitation) metadata.getParentMetadata();
-        assertEquals("parentMetadata", "ParentID", c.getTitle().toString());
+        assertTitleEquals("parentMetadata", "ParentID", c);
         c.setTitle(new SimpleInternationalString("New parent"));
         assertEquals("parentIdentifier", "New parent", metadata.getParentIdentifier());
     }
@@ -327,7 +327,7 @@ public final strictfp class DefaultMetadataTest extends XMLTestCase implements W
         assertEquals("metadataStandardName",    name,    metadata.getMetadataStandardName());
         assertEquals("metadataStandardVersion", version, metadata.getMetadataStandardVersion());
         final Citation standard = getSingleton(metadata.getMetadataStandards());
-        assertEquals(name,    standard.getTitle()  .toString());
+        assertTitleEquals("standard", name, standard);
         assertEquals(version, standard.getEdition().toString());
     }
 

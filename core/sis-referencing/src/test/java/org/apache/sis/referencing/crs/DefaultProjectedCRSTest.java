@@ -23,6 +23,9 @@ import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.operation.Projection;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -38,7 +41,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 import org.junit.Rule;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -404,14 +407,25 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
      * @throws JAXBException If an error occurred during (un)marshalling.
      */
     @Test
-    @org.junit.Ignore("Still missing some JAXB annotations.")
     public void testXML() throws FactoryException, JAXBException {
         final DefaultProjectedCRS crs = unmarshalFile(DefaultProjectedCRS.class, XML_FILE);
         Validators.validate(crs);
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
+        assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
         assertEquals("scope", "Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
-        /*
-         * Marshal and compare with the original file.
-         */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
+        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+
+        final Projection conversion = crs.getConversionFromBase();
+        final ParameterValueGroup pg = conversion.getParameterValues();
+        assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, conversion);
+        assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, conversion.getMethod());
+        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(NonSI.GRADE), STRICT);
+        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(NonSI.GRADE), STRICT);
+        assertEquals("Scale factor at natural origin", 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue(),            STRICT);
+        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(SI.METRE),    STRICT);
+        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(SI.METRE),    STRICT);
+
+        assertNotNull("conversion.mathTransform", conversion.getMathTransform());
     }
 }

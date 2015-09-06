@@ -160,8 +160,15 @@ public strictfp class TensorParametersTest extends TestCase {
     {
         assertEquals("name", names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
-        assertEpsgIdentifierEquals((identifiers != null) ? identifiers[row][column] : 0, actual.getIdentifiers());
         assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        if (identifiers != null) {
+            final short expected = identifiers[row][column];
+            if (expected != 0) {
+                assertEpsgIdentifierEquals(String.valueOf(expected), TestUtilities.getSingleton(actual.getIdentifiers()));
+                return;
+            }
+        }
+        assertTrue(actual.getIdentifiers().isEmpty());
     }
 
     /**

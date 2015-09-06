@@ -16,8 +16,9 @@
  */
 package org.apache.sis.test;
 
-import java.util.Collection;
-import org.opengis.metadata.Identifier;
+import java.util.Locale;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -53,25 +54,19 @@ public strictfp class MetadataAssert extends Assert {
     }
 
     /**
-     * Asserts that the given collection contains exactly one identifier with the given
-     * {@linkplain Identifier#getCode() code}. The {@linkplain Identifier#getCodeSpace()
-     * code space} and authority are ignored.
+     * Asserts that the English title of the given citation is equals to the expected string.
      *
-     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
-     * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
+     * @param message  The message to report in case of test failure.
+     * @param expected The expected English title.
+     * @param citation The citation to test.
      *
-     * @since 0.5
+     * @since 0.6
      */
-    public static void assertContainsIdentifierCode(final String expected, final Collection<?> identifiers) {
-        assertNotNull("identifiers", identifiers);
-        int count = 0;
-        for (final Object id : identifiers) {
-            assertInstanceOf("identifier", Identifier.class, id);
-            if (((Identifier) id).getCode().equals(expected)) {
-                count++;
-            }
-        }
-        assertEquals("Unexpected amount of identifiers.", 1, count);
+    public static void assertTitleEquals(final String message, final String expected, final Citation citation) {
+        assertNotNull(message, citation);
+        final InternationalString title = citation.getTitle();
+        assertNotNull(message, title);
+        assertEquals(message, expected, title.toString(Locale.US));
     }
 
     /**

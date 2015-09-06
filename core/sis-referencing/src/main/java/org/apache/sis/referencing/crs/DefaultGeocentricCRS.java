@@ -79,14 +79,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     private static final long serialVersionUID = 6784642848287659827L;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeocentricCRS() {
-    }
-
-    /**
      * For {@link #createSameType(Map, CoordinateSystem)} usage only.
      * This constructor does not verify the coordinate system type.
      */
@@ -283,5 +275,27 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     @Override
     protected String formatTo(final Formatter formatter) {
         return super.formatTo(formatter);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeocentricCRS() {
     }
 }

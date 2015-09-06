@@ -43,6 +43,7 @@ import org.opengis.referencing.operation.SingleOperation;
  * @version 0.6
  * @module
  */
+// Missing JAXB annotation. See http://issues.apache.org/jira/browse/SIS-293
 public class DefaultPassThroughOperation extends AbstractCoordinateOperation implements PassThroughOperation {
     /**
      * Serial number for inter-operability with different versions.

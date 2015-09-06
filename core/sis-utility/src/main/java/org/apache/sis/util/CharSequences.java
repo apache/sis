@@ -655,6 +655,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see String#split(String)
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public static CharSequence[] split(final CharSequence text, final char separator) {
         if (text == null) {
             return EMPTY_ARRAY;
@@ -721,6 +722,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #indexOfLineStart(CharSequence, int, int)
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public static CharSequence[] splitOnEOL(final CharSequence text) {
         if (text == null) {
             return EMPTY_ARRAY;

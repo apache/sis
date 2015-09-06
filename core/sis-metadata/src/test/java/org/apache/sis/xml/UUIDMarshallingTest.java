@@ -122,7 +122,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
     @Test
     public void testIdentification() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(IDENTIFIED_XML);
-        assertEquals("title", "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -173,7 +173,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
     @Test
     public void testReference() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML_WITH_BODY);
-        assertEquals("Citation.title",  "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation.title", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -206,7 +206,7 @@ public final strictfp class UUIDMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testReference")
     public void testReferenceInEmptyObject() throws JAXBException {
         final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML);
-        assertEquals("Citation.title",  "My data", citation.getTitle().toString());
+        assertTitleEquals("Citation.title", "My data", citation);
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.

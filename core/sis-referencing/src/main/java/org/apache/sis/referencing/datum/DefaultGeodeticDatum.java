@@ -169,17 +169,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     private final BursaWolfParameters[] bursaWolf;
 
     /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultGeodeticDatum() {
-        ellipsoid     = null;
-        primeMeridian = null;
-        bursaWolf     = null;
-    }
-
-    /**
      * Creates a geodetic datum from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * In addition to the properties documented in the parent constructor,
@@ -344,6 +333,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @return The Bursa-Wolf parameters, or an empty array if none.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public BursaWolfParameters[] getBursaWolfParameters() {
         if (bursaWolf == null) {
             return EMPTY_ARRAY;
@@ -578,5 +568,30 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         return WKTKeywords.Datum;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultGeodeticDatum() {
+        ellipsoid     = null;
+        primeMeridian = null;
+        bursaWolf     = null;
     }
 }
