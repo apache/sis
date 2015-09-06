@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.HashSet;
-import java.util.Collection;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.referencing.IdentifiedObject;
@@ -40,7 +39,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -251,9 +250,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
          */
         assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("title").toString());
         assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("getTitle").toString());
-        final Object identifiers = map.get("identifiers");
-        assertInstanceOf("identifiers", Collection.class, identifiers);
-        assertContainsIdentifierCode("EPSG", (Collection<?>) identifiers);
+        assertEquals("EPSG", PropertyAccessorTest.getSingletonCode(map.get("identifiers")));
     }
 
     /**

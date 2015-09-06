@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.crs;
 
-import org.opengis.referencing.crs.GeographicCRS;
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 

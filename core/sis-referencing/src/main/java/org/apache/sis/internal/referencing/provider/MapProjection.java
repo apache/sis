@@ -47,7 +47,6 @@ import org.apache.sis.util.resources.Messages;
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -133,7 +132,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  value The parameter value in the units given by the descriptor.
      * @throws IllegalArgumentException if the given value is out of bounds.
      *
-     * @see #createConstant(ParameterBuilder, Double)
+     * @see #createZeroConstant(ParameterBuilder)
      */
     public static void validate(final ParameterDescriptor<? extends Number> descriptor, final double value)
             throws IllegalArgumentException
@@ -144,7 +143,9 @@ public abstract class MapProjection extends AbstractProvider {
         }
         final Comparable<? extends Number> min = descriptor.getMinimumValue();
         final Comparable<? extends Number> max = descriptor.getMaximumValue();
-        if (!Objects.equals(min, max)) {
+        final double minValue = (min instanceof Number) ? ((Number) min).doubleValue() : Double.NaN;
+        final double maxValue = (max instanceof Number) ? ((Number) max).doubleValue() : Double.NaN;
+        if (value < minValue || value > maxValue) {
             /*
              * RATIONAL: why we do not check the bounds if (min == max):
              * The only case when our descriptor have (min == max) is when a parameter can only be zero,
@@ -152,11 +153,9 @@ public abstract class MapProjection extends AbstractProvider {
              * But in some cases, it would be possible to deal with non-zero values, even if in principle
              * we should not. In such case we let the caller decides.
              *
-             * Above check should be revisited if createConstant(ParameterBuilder, Double) is modified.
+             * Above check should be revisited if createZeroConstant(ParameterBuilder) is modified.
              */
-            if ((min instanceof Number && !(value >= ((Number) min).doubleValue())) ||
-                (max instanceof Number && !(value <= ((Number) max).doubleValue())))
-            {
+            if (minValue != maxValue) {   // Compare as 'double' because we want (-0 == +0) to be true.
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
                         descriptor.getName(), min, max, value));
             }

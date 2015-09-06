@@ -19,14 +19,16 @@ package org.apache.sis.referencing.cs;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.NonSI;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -129,11 +131,11 @@ public final strictfp class DefaultEllipsoidalCSTest extends XMLTestCase {
         final CoordinateSystemAxis λ = cs.getAxis(1);
         assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
         assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
-        assertIdentifierEquals(        "identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "6422", getSingleton(cs.getIdentifiers()));
-        assertIdentifierEquals("axis[0].identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "106",  getSingleton(φ.getIdentifiers()));
-        assertIdentifierEquals("axis[1].identifier", "EPSG Geodetic Parameter Dataset", "EPSG", null, "107",  getSingleton(λ.getIdentifiers()));
-        assertEquals("axis[0].abbreviation", "φ", φ.getAbbreviation());
-        assertEquals("axis[1].abbreviation", "λ", λ.getAbbreviation());
+        assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT, φ);
+        assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, λ);
+        assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("106",  getSingleton(φ.getIdentifiers()));
+        assertEpsgIdentifierEquals("107",  getSingleton(λ.getIdentifiers()));
         /*
          * Marshal and compare with the original file.
          */
