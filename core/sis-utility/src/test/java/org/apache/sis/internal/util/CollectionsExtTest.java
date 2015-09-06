@@ -44,7 +44,7 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
@@ -152,5 +152,17 @@ public final strictfp class CollectionsExtTest extends TestCase {
         assertFalse(CollectionsExt.identityEquals(c1.iterator(), c2.iterator()));
         assertFalse(CollectionsExt.identityEquals(c2.iterator(), c1.iterator()));
         assertTrue(CollectionsExt.identityEquals(c1.iterator(), Arrays.asList("A", "B", "C").iterator()));
+    }
+
+    /**
+     * Tests {@link CollectionsExt#toArray(Collection, Class)}.
+     *
+     * @since 0.6
+     */
+    @Test
+    public void testToArray() {
+        final String[] expected = new String[] {"One", "Two", "Three"};
+        final String[] actual = CollectionsExt.toArray(Arrays.asList(expected), String.class);
+        assertArrayEquals(expected, actual);
     }
 }

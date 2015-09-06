@@ -21,6 +21,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.converter.UnitConverter;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -182,17 +183,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private Unit<Length> unit;
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultEllipsoid() {
-        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        // We need to let the DefaultEllipsoid fields unitialized
-        // because afterUnmarshal(…) will check for zero values.
-    }
-
-    /**
      * Creates a new ellipsoid using the specified axis length.
      * The properties map is given unchanged to the
      * {@linkplain AbstractIdentifiedObject#AbstractIdentifiedObject(Map) super-class constructor}.
@@ -348,30 +338,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * After the unmarshalling process, only one value between {@link #semiMinorAxis} and
-     * {@link #inverseFlattening} has been defined. Since the {@link #semiMajorAxis} has
-     * been defined, it is now possible to calculate the value of the missing parameter
-     * using the values of those that are set.
-     *
-     * @see #setSemiMajorAxisMeasure(Measure)
-     * @see #setSecondDefiningParameter(SecondDefiningParameter)
-     */
-    private void afterUnmarshal() {
-        if (ivfDefinitive) {
-            if (semiMinorAxis == 0) {
-                semiMinorAxis = Formulas.getSemiMinor(semiMajorAxis, inverseFlattening);
-            }
-        } else {
-            if (inverseFlattening == 0) {
-                inverseFlattening = Formulas.getInverseFlattening(semiMajorAxis, semiMinorAxis);
-            }
-        }
-        if (unit == null) {
-            Measure.missingUOM(DefaultEllipsoid.class, "semiMajorAxis");
-        }
-    }
-
-    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code Ellipsoid.class}.
      *
@@ -407,36 +373,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     @Override
     public double getSemiMajorAxis() {
         return semiMajorAxis;
-    }
-
-    /**
-     * Returns the semi-major axis value as a measurement.
-     * This method is invoked by JAXB for XML marshalling.
-     */
-    @XmlElement(name = "semiMajorAxis", required = true)
-    final Measure getSemiMajorAxisMeasure() {
-        return new Measure(semiMajorAxis, unit);
-    }
-
-    /**
-     * Sets the semi-major axis value.
-     * This method is invoked by JAXB at unmarshalling time only.
-     *
-     * @see #setSecondDefiningParameter(SecondDefiningParameter)
-     * @see #afterUnmarshal()
-     */
-    private void setSemiMajorAxisMeasure(final Measure measure) {
-        if (semiMajorAxis != 0) {
-            warnDuplicated("semiMajorAxis");
-        } else {
-            final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
-            ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
-            unit = measure.getUnit(Length.class);
-            harmonizeAxisUnits(uom);
-            if ((ivfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
-                afterUnmarshal();
-            }
-        }
     }
 
     /**
@@ -505,75 +441,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     @Override
     public boolean isIvfDefinitive() {
         return ivfDefinitive;
-    }
-
-    /**
-     * Returns the object to be marshalled as the {@code SecondDefiningParameter} XML element. The
-     * returned object contains the values for {@link #semiMinorAxis} or {@link #inverseFlattening},
-     * according to the {@link #isIvfDefinitive()} value. This method is for JAXB marshalling only.
-     */
-    @XmlElement(name = "secondDefiningParameter")
-    final SecondDefiningParameter getSecondDefiningParameter() {
-        return new SecondDefiningParameter(this, true);
-    }
-
-    /**
-     * Sets the second defining parameter value, either the inverse of the flattening
-     * value or the semi minor axis value, according to what have been defined in the
-     * second defining parameter given. This is for JAXB unmarshalling process only.
-     *
-     * @see #setSemiMajorAxisMeasure(Measure)
-     * @see #afterUnmarshal()
-     */
-    private void setSecondDefiningParameter(SecondDefiningParameter second) {
-        while (second.secondDefiningParameter != null) {
-            second = second.secondDefiningParameter;
-        }
-        final Measure measure = second.measure;
-        if (measure != null) {
-            final boolean isIvfDefinitive = second.isIvfDefinitive();
-            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
-                warnDuplicated("secondDefiningParameter");
-            } else {
-                ivfDefinitive = isIvfDefinitive;
-                double value = measure.value;
-                if (isIvfDefinitive) {
-                    if (value == 0) {
-                        value = Double.POSITIVE_INFINITY;
-                    }
-                    ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
-                } else if (semiMinorAxis == 0) {
-                    ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
-                    harmonizeAxisUnits(measure.getUnit(Length.class));
-                }
-                if (semiMajorAxis != 0) {
-                    afterUnmarshal();
-                }
-            }
-        }
-    }
-
-    /**
-     * Ensures that the semi-minor axis uses the same unit than the semi-major one.
-     * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
-     *
-     * @param uom The semi-minor axis unit.
-     */
-    private void harmonizeAxisUnits(final Unit<Length> uom) {
-        if (unit == null) {
-            unit = uom;
-        } else if (uom != null && uom != unit) {
-            semiMinorAxis = uom.getConverterTo(unit).convert(semiMinorAxis);
-        }
-    }
-
-    /**
-     * Emits a warning telling that the given element is repeated twice.
-     */
-    private static void warnDuplicated(final String element) {
-         // We cheat a bit for the "unmarshal" method name since there is not such method...
-        Context.warningOccured(Context.current(), DefaultEllipsoid.class, "unmarshal",
-                Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 
     /**
@@ -808,5 +675,147 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             formatter.append(unit);
         }
         return WKTKeywords.Ellipsoid;
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultEllipsoid() {
+        super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        // We need to let the DefaultEllipsoid fields unitialized
+        // because afterUnmarshal(…) will check for zero values.
+    }
+
+    /**
+     * After the unmarshalling process, only one value between {@link #semiMinorAxis} and
+     * {@link #inverseFlattening} has been defined. Since the {@link #semiMajorAxis} has
+     * been defined, it is now possible to calculate the value of the missing parameter
+     * using the values of those that are set.
+     *
+     * @see #setSemiMajorAxisMeasure(Measure)
+     * @see #setSecondDefiningParameter(SecondDefiningParameter)
+     */
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        if (ivfDefinitive) {
+            if (semiMinorAxis == 0) {
+                semiMinorAxis = Formulas.getSemiMinor(semiMajorAxis, inverseFlattening);
+            }
+        } else {
+            if (inverseFlattening == 0) {
+                inverseFlattening = Formulas.getInverseFlattening(semiMajorAxis, semiMinorAxis);
+            }
+        }
+        if (unit == null) {
+            Measure.missingUOM(DefaultEllipsoid.class, "semiMajorAxis");
+        }
+    }
+
+    /**
+     * Returns the semi-major axis value as a measurement.
+     * This method is invoked by JAXB for XML marshalling.
+     */
+    @XmlElement(name = "semiMajorAxis", required = true)
+    private Measure getSemiMajorAxisMeasure() {
+        return new Measure(semiMajorAxis, unit);
+    }
+
+    /**
+     * Sets the semi-major axis value.
+     * This method is invoked by JAXB at unmarshalling time only.
+     *
+     * @see #setSecondDefiningParameter(SecondDefiningParameter)
+     * @see #afterUnmarshal(Unmarshaller, Object)
+     */
+    private void setSemiMajorAxisMeasure(final Measure measure) {
+        if (semiMajorAxis != 0) {
+            warnDuplicated("semiMajorAxis");
+        } else {
+            final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
+            ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
+            unit = measure.getUnit(Length.class);
+            harmonizeAxisUnits(uom);
+        }
+    }
+
+    /**
+     * Returns the object to be marshalled as the {@code SecondDefiningParameter} XML element. The
+     * returned object contains the values for {@link #semiMinorAxis} or {@link #inverseFlattening},
+     * according to the {@link #isIvfDefinitive()} value. This method is for JAXB marshalling only.
+     */
+    @XmlElement(name = "secondDefiningParameter")
+    private SecondDefiningParameter getSecondDefiningParameter() {
+        return new SecondDefiningParameter(this, true);
+    }
+
+    /**
+     * Sets the second defining parameter value, either the inverse of the flattening
+     * value or the semi minor axis value, according to what have been defined in the
+     * second defining parameter given. This is for JAXB unmarshalling process only.
+     *
+     * @see #setSemiMajorAxisMeasure(Measure)
+     * @see #afterUnmarshal(Unmarshaller, Object)
+     */
+    private void setSecondDefiningParameter(SecondDefiningParameter second) {
+        while (second.secondDefiningParameter != null) {
+            second = second.secondDefiningParameter;
+        }
+        final Measure measure = second.measure;
+        if (measure != null) {
+            final boolean isIvfDefinitive = second.isIvfDefinitive();
+            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
+                warnDuplicated("secondDefiningParameter");
+            } else {
+                ivfDefinitive = isIvfDefinitive;
+                double value = measure.value;
+                if (isIvfDefinitive) {
+                    if (value == 0) {
+                        value = Double.POSITIVE_INFINITY;
+                    }
+                    ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
+                } else if (semiMinorAxis == 0) {
+                    ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
+                    harmonizeAxisUnits(measure.getUnit(Length.class));
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensures that the semi-minor axis uses the same unit than the semi-major one.
+     * The {@link #unit} field shall be set to the semi-major axis unit before this method call.
+     *
+     * @param uom The semi-minor axis unit.
+     */
+    private void harmonizeAxisUnits(final Unit<Length> uom) {
+        if (unit == null) {
+            unit = uom;
+        } else if (uom != null && uom != unit) {
+            semiMinorAxis = uom.getConverterTo(unit).convert(semiMinorAxis);
+        }
+    }
+
+    /**
+     * Emits a warning telling that the given element is repeated twice.
+     */
+    private static void warnDuplicated(final String element) {
+         // We cheat a bit for the "unmarshal" method name since there is not such method...
+        Context.warningOccured(Context.current(), DefaultEllipsoid.class, "unmarshal",
+                Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 }

@@ -241,13 +241,23 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
 
 
 
-    // Bridges for elements from legacy ISO 19119
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * For JAXB marhalling of ISO 19119 document only.
      */
     @XmlElement(name = "operationName", namespace = Namespaces.SRV)
-    final String getOperationName() {
+    private String getOperationName() {
         if (LEGACY_XML) {
             final OperationMetadata operation = getOperation();
             if (operation != null) {
@@ -262,7 +272,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * {@link OperationName} placeholder. That temporary instance will be replaced by the real
      * one when the enclosing {@link DefaultServiceIdentification} is unmarshalled.
      */
-    final void setOperationName(final String name) {
+    private void setOperationName(final String name) {
         if (operation == null) {
             operation = new OperationName(name);
         }
@@ -272,7 +282,7 @@ public class DefaultCoupledResource extends ISOMetadata implements CoupledResour
      * Returns the resource identifier, which is assumed to be the name as a string.
      */
     @XmlElement(name = "identifier", namespace = Namespaces.SRV)
-    final String getIdentifier() {
+    private String getIdentifier() {
         if (LEGACY_XML) {
             final ScopedName name = getScopedName();
             if (name != null) {

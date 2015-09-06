@@ -161,13 +161,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private Unit<?> unit;
 
     /**
-     * Default constructor for JAXB only. The descriptor is initialized to {@code null},
-     * but will be assigned a value after XML unmarshalling.
-     */
-    private DefaultParameterValue() {
-    }
-
-    /**
      * Creates a parameter value from the specified descriptor.
      * The value will be initialized to the default value, if any.
      *
@@ -1002,7 +995,38 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                formatter.hasContextualUnit(2);      // In WKT2
     }
 
-    // ---- XML SUPPORT ----------------------------------------------------
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Default constructor for JAXB only. The descriptor is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
+     */
+    private DefaultParameterValue() {
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     * May also be invoked by {@link DefaultParameterValueGroup} if the descriptor as been completed
+     * with additional information provided in the {@code <gml:group>} element of a descriptor group.
+     *
+     * @see #getDescriptor()
+     */
+    final void setDescriptor(final ParameterDescriptor<T> descriptor) {
+        this.descriptor = descriptor;
+        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
+    }
 
     /**
      * Invoked by JAXB for obtaining the object to marshal.
@@ -1052,9 +1076,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @SuppressWarnings("unchecked")
     private void setXmlValue(Object xmlValue) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setXmlValue", "value", value != null || unit != null))
-        {
+        if (value == null && unit == null) {
             if (xmlValue instanceof Measure) {
                 final Measure measure = (Measure) xmlValue;
                 xmlValue = measure.value;
@@ -1085,16 +1107,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                  */
                 value = (T) xmlValue;
             }
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
         }
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time.
-     *
-     * @see #getDescriptor()
-     */
-    private void setDescriptor(final ParameterDescriptor<T> descriptor) {
-        this.descriptor = descriptor;
-        assert (value == null) || descriptor.getValueClass().isInstance(value) : this;
     }
 }

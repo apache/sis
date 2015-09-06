@@ -127,6 +127,7 @@ public class CitationConstant extends SimpleCitation {
      * since that module is required by {@code sis-referencing} which is itself required by
      * almost all other SIS modules.</p>
      */
+    @SuppressWarnings("DoubleCheckedLocking")
     private Citation delegate() {
         Citation c = delegate;
         if (c == null) {

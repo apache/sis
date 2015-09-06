@@ -53,7 +53,10 @@ import java.util.Objects;
  * @version 0.6
  * @module
  */
-@DependsOn(DefaultParameterValueTest.class)
+@DependsOn({
+    DefaultParameterValueTest.class,
+    DefaultParameterValueGroupTest.class
+})
 public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     /**
      * Creates a parameter value for marshalling test.
@@ -182,7 +185,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         final DefaultParameterValue<Boolean> parameter = create(Boolean.class, null);
         parameter.setValue(Boolean.TRUE);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:booleanValue>true</gml:booleanValue>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
@@ -203,7 +206,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
         final DefaultParameterValue<Integer> parameter = create(Integer.class, null);
         parameter.setValue(2000);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:integerValue>2000</gml:integerValue>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
@@ -246,7 +249,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
                 new MeasurementRange<Double>(Double.class, null, false, null, false, SI.METRE));
         parameter.setValue(3000, SI.METRE);
         testMarshallAndUnmarshall(parameter,
-                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n" 
+                "<gml:ParameterValue xmlns:gml=\"" + Namespaces.GML + "\">\n"
               + "  <gml:value uom=\"urn:ogc:def:uom:EPSG::9001\">3000.0</gml:value>\n"
               + "    <gml:operationParameter>"
               + "      <gml:OperationParameter>"
@@ -301,8 +304,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
      * @param group The descriptor group to verify.
      */
     private static void verifyDescriptorGroup(final ParameterDescriptorGroup group) {
-        assertEpsgIdentifierEquals(9804, group.getIdentifiers());
-        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, "Mercator (variant A)", group.getName());
+        assertEpsgNameAndIdentifierEqual("Mercator (variant A)", 9804, group);
 
         // Verify the ParameterDescriptors properties.
         final Iterator<GeneralParameterDescriptor> it = group.descriptors().iterator();
@@ -326,8 +328,7 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     private static void verifyDescriptor(final int code, final String name, final String alias,
             final boolean required, final GeneralParameterDescriptor descriptor)
     {
-        assertEpsgIdentifierEquals(code, descriptor.getIdentifiers());
-        assertIdentifierEquals("name", "##unrestricted", "EPSG", null, name, descriptor.getName());
+        assertEpsgNameAndIdentifierEqual(name, code, descriptor);
         assertAliasTipEquals(alias, descriptor);
         assertEquals("maximumOccurs", 1, descriptor.getMaximumOccurs());
         assertEquals("minimumOccurs", required ? 1 : 0, descriptor.getMinimumOccurs());

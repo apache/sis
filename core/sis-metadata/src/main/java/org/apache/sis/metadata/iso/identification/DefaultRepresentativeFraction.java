@@ -311,6 +311,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Those identifiers are marshalled in XML as {@code id} or {@code uuid} attributes.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Identifier> getIdentifiers() {
         if (identifiers == null) {
             identifiers = new CheckedArrayList<>(Identifier.class);
@@ -327,6 +328,20 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     public IdentifierMap getIdentifierMap() {
         return new IdentifierMapWithSpecialCases(getIdentifiers());
     }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Invoked by JAXB for fetching the unique identifier unique for the XML document.

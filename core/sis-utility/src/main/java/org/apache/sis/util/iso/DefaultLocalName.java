@@ -101,16 +101,6 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     final CharSequence name;
 
     /**
-     * Empty constructor to be used by JAXB only, or by sub-classes empty constructors
-     * themselves used only by JAXB. Despite its "final" declaration, the {@link #name}
-     * field will be set by JAXB during unmarshalling.
-     */
-    DefaultLocalName() {
-        scope = null;
-        name  = null;
-    }
-
-    /**
      * Constructs a local name from the given character sequence.
      * If the character sequence is an instance of {@link InternationalString},
      * then its {@link InternationalString#toString(java.util.Locale) toString(Locale.ROOT)}
@@ -340,5 +330,29 @@ public class DefaultLocalName extends AbstractName implements LocalName {
             return this;
         }
         return ns.local(name, this);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Empty constructor to be used by JAXB only, or by sub-classes empty constructors
+     * themselves used only by JAXB. Despite its "final" declaration, the {@link #name}
+     * field will be set by JAXB during unmarshalling.
+     */
+    DefaultLocalName() {
+        scope = null;
+        name  = null;
     }
 }

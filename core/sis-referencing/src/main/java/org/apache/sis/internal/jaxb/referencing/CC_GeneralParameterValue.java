@@ -24,6 +24,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -109,6 +110,13 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      * @param parameter The unmarshalled element.
      */
     public void setElement(final GeneralParameterValue parameter) {
+        if (!CC_GeneralOperationParameter.isValid(parameter.getDescriptor())) {
+            /*
+             * Descriptors are mandatory and SIS classes need them. Provide an error message
+             * here instead than waiting for a NullPointerException in some arbitrary place.
+             */
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "operationParameter"));
+        }
         metadata = parameter;
     }
 }

@@ -96,14 +96,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     private static final long serialVersionUID = -8149602276542469876L;
 
     /**
-     * Constructs a new object in which every attributes are set to a default value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultDerivedCRS() {
-    }
-
-    /**
      * Creates a derived CRS from a defining conversion.
      * The properties given in argument follow the same rules than for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
@@ -783,5 +775,27 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         @Override String keyword() {
             return WKTKeywords.EngineeringCRS;
         }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new object in which every attributes are set to a default value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultDerivedCRS() {
     }
 }

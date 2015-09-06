@@ -282,6 +282,8 @@ public final class CoordinateSystems extends Static {
                                           final CoordinateSystem targetCS)
             throws IllegalArgumentException, ConversionException
     {
+        ensureNonNull("sourceCS", sourceCS);
+        ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleCoordinateSystemTypes));
         }

@@ -18,7 +18,8 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -130,13 +131,6 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @see #values()
      */
     private ParameterValueList values;
-
-    /**
-     * Default constructor for JAXB only. The values list is initialized to {@code null},
-     * but will be assigned a value after XML unmarshalling.
-     */
-    private DefaultParameterValueGroup() {
-    }
 
     /**
      * Creates a parameter group from the specified descriptor.
@@ -504,7 +498,42 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         ParameterFormat.print(this);
     }
 
-    // ---- XML SUPPORT ----------------------------------------------------
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Default constructor for JAXB only. The values list is initialized to {@code null},
+     * but will be assigned a value after XML unmarshalling.
+     */
+    private DefaultParameterValueGroup() {
+    }
+
+    /**
+     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
+     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
+     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
+     * were not present in the above {@code GeneralParameterValue} array.
+     *
+     * @see #getDescriptor()
+     */
+    private void setDescriptor(final ParameterDescriptorGroup descriptor) {
+        if (values == null) {
+            values = new ParameterValueList(descriptor);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
+        }
+    }
 
     /**
      * Invoked by JAXB for getting the parameters to marshal.
@@ -519,38 +548,56 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * Invoked by JAXB for setting the unmarshalled parameters. This method should be invoked last
      * (after {@link #setDescriptor(ParameterDescriptorGroup)}) even if the {@code parameterValue}
      * elements were first in the XML document. This is the case at least with the JAXB reference
-     * implementation.
+     * implementation, because the property type is an array (it would not work with a list).
+     *
+     * <p><b>Maintenance note:</b> the {@code "setValues"} method name is also hard-coded in
+     * {@link org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameter} for logging purpose.</p>
      */
     private void setValues(final GeneralParameterValue[] parameters) {
-        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
-        for (int i=0; i<descriptors.length; i++) {
-            descriptors[i] = parameters[i].getDescriptor();
-        }
-        if (values == null) {
+        ParameterValueList addTo = values;
+        if (addTo == null) {
             // Should never happen, unless the XML document is invalid and does not have a 'group' element.
-            
-        } else {
-            // We known that the descriptor is an instance of our DefaultParameterDescriptorGroup
-            // implementation because this is what we declare to the JAXBContext and in adapters.
-            ((DefaultParameterDescriptorGroup) values.descriptor).setDescriptors(descriptors);
-            values.clear();  // Because references to parameter descriptors have changed.
+            addTo = new ParameterValueList(new DefaultParameterDescriptorGroup());
         }
-        values.addAll(Arrays.asList(parameters));
+        /*
+         * Merge the descriptors declared in the <gml:group> element with the descriptors given in each
+         * <gml:parameterValue> element. The implementation is known to be DefaultParameterDescriptorGroup
+         * because this is the type declared in the JAXBContext and in adapters.
+         */
+        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
+        ((DefaultParameterDescriptorGroup) addTo.descriptor).merge(getDescriptors(parameters), replacements);
+        addTo.clear();  // Because references to parameter descriptors have changed.
+        setValues(parameters, replacements, addTo);
     }
 
     /**
-     * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
-     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
-     * except the the group identification (name, <i>etc.</i>) and for any optional parameters which
-     * were not present in the above {@code GeneralParameterValue} array.
+     * Appends all parameter values. In this process, we may need to update the descriptor of some values
+     * if those descriptors changed as a result of the above merge process.
      *
-     * @see #getDescriptor()
+     * @param parameters   The parameters to add, or {@code null} for {@link #values}.
+     * @param replacements The replacements to apply in the {@code GeneralParameterValue} instances.
+     * @param addTo        Where to store the new values.
      */
-    private void setDescriptor(final ParameterDescriptorGroup descriptor) {
-        if (ReferencingUtilities.canSetProperty(DefaultParameterValue.class,
-                "setDescriptor", "group", values != null))
-        {
-            values = new ParameterValueList(descriptor);
+    @SuppressWarnings({"unchecked", "AssignmentToCollectionOrArrayFieldFromParameter"})
+    private void setValues(GeneralParameterValue[] parameters,
+            final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements,
+            final ParameterValueList addTo)
+    {
+        if (parameters == null) {
+            parameters = values.toArray();
         }
+        for (final GeneralParameterValue p : parameters) {
+            final GeneralParameterDescriptor replacement = replacements.get(p.getDescriptor());
+            if (replacement != null) {
+                if (p instanceof DefaultParameterValue<?>) {
+                    ((DefaultParameterValue<?>) p).setDescriptor((ParameterDescriptor) replacement);
+                } else if (p instanceof DefaultParameterValueGroup) {
+                    ((DefaultParameterValueGroup) p).setValues(null, replacements,
+                            new ParameterValueList((ParameterDescriptorGroup) replacement));
+                }
+            }
+            addTo.add(p);
+        }
+        values = addTo;
     }
 }

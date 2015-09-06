@@ -65,8 +65,12 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(EX_Extent.class),
+    @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(DQ_PositionalAccuracy.class),
-    @XmlJavaTypeAdapter(StringAdapter.class),
+    @XmlJavaTypeAdapter(CC_OperationMethod.class),
+    @XmlJavaTypeAdapter(CC_GeneralParameterValue.class),
+    @XmlJavaTypeAdapter(CC_GeneralOperationParameter.class),
+    @XmlJavaTypeAdapter(SC_CRS.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)
 })
 package org.apache.sis.referencing.operation;
@@ -80,5 +84,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.referencing.*;
 import org.apache.sis.internal.jaxb.metadata.EX_Extent;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.DQ_PositionalAccuracy;

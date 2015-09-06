@@ -29,12 +29,12 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.internal.referencing.ReferencingUtilities.canSetProperty;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -97,15 +97,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * This field is modified only at unmarshalling time by {@link #setOrigin(Date)}</p>
      */
     private long origin;
-
-    /**
-     * Constructs a new datum in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
-     */
-    private DefaultTemporalDatum() {
-        origin = Long.MIN_VALUE;
-    }
 
     /**
      * Creates a temporal datum from the given properties. The properties map is given
@@ -230,17 +221,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Invoked by JAXB only at unmarshalling time.
-     */
-    private void setOrigin(final Date value) {
-        if (value != null && canSetProperty(DefaultTemporalDatum.class,
-                "setOrigin", "origin", origin != Long.MIN_VALUE))
-        {
-            origin = value.getTime();
-        }
-    }
-
-    /**
      * Compares this temporal datum with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.
@@ -316,6 +296,42 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         protected String formatTo(final Formatter formatter) {
             formatter.append(origin);
             return WKTKeywords.TimeOrigin;
+        }
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructs a new datum in which every attributes are set to a null value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly
+     * reserved to JAXB, which will assign values to the fields using reflexion.
+     */
+    private DefaultTemporalDatum() {
+        origin = Long.MIN_VALUE;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getOrigin()
+     */
+    private void setOrigin(final Date value) {
+        if (origin == Long.MIN_VALUE) {
+            origin = value.getTime();
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
         }
     }
 }

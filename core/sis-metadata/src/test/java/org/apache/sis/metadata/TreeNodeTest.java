@@ -39,7 +39,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 import static java.util.Collections.singleton;
 
 
@@ -230,8 +230,8 @@ public final strictfp class TreeNodeTest extends TestCase {
     @Test
     @DependsOnMethod("testGetIdentifier")
     public void testGetIndex() {
-        final Integer ZERO = Integer.valueOf(0);
-        final Integer ONE  = Integer.valueOf(1);
+        final Integer ZERO = 0;
+        final Integer ONE  = 1;
         final DefaultCitation citation = metadataWithHierarchy();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.INDEX,
             null,           // CI_Citation
@@ -339,7 +339,7 @@ public final strictfp class TreeNodeTest extends TestCase {
         child = node.newChild();
         child.setValue(TableColumn.IDENTIFIER, "title");
         child.setValue(TableColumn.VALUE, "A new title");
-        assertEquals("A new title", citation.getTitle().toString());
+        assertTitleEquals("citation", "A new title", citation);
         assertSame(citation.getTitle(), child.getValue(TableColumn.VALUE));
         /*
          * Try adding a new element in a collection.
