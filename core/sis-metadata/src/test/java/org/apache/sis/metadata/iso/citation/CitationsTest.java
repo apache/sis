@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
