@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -178,7 +179,14 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
      */
     @Test
     public void testWKT() {
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
+                "PARAMETERGROUP[“Test group”,\n" +
+                "  PARAMETER[“Mandatory 1”, 10],\n" +
+                "  PARAMETER[“Mandatory 2”, 10],\n" +
+                "  PARAMETER[“Optional 3”, 10],\n" +
+                "  PARAMETER[“Optional 4”, 10]]", M1_M1_O1_O2);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ParameterGroup[“Test group”,\n" +
                 "  Parameter[“Mandatory 1”, 10],\n" +
                 "  Parameter[“Mandatory 2”, 10],\n" +
@@ -201,7 +209,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          * but is reproduced here for easier comparison with the test following it.
          */
         final DefaultParameterDescriptor<Double> descriptor = DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0);
-        assertWktEquals("Parameter[“A0”, Id[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
+        assertWktEquals("PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);
         /*
          * When the parameter is part of a larger element, we expect a simplification.
          * Here, the URI should be omitted because it is a long value which does not
@@ -209,8 +217,8 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          */
         final DefaultParameterDescriptorGroup group = new DefaultParameterDescriptorGroup(
                 Collections.singletonMap(NAME_KEY, "Affine"), 1, 1, descriptor);
-        assertWktEquals("ParameterGroup[“Affine”,\n" +
-                        "  Parameter[“A0”, Id[“EPSG”, 8623]]]", group);
+        assertWktEquals("PARAMETERGROUP[“Affine”,\n" +
+                        "  PARAMETER[“A0”, ID[“EPSG”, 8623]]]", group);
     }
 
     /**

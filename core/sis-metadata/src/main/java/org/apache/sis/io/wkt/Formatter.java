@@ -255,6 +255,11 @@ public class Formatter implements Localized {
     private byte toUpperCase;
 
     /**
+     * {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
+     */
+    private byte longKeywords;
+
+    /**
      * Incremented when {@link #setColor(ElementKind)} is invoked, and decremented when {@link #resetColor()}
      * is invoked. Used in order to prevent child elements to overwrite the colors decided by enclosing elements.
      */
@@ -369,20 +374,22 @@ public class Formatter implements Localized {
      * Sets the convention, authority, colors and indentation to use for formatting WKT elements.
      * This method does not validate the argument — validation must be done by the caller.
      *
-     * @param convention  The convention, or {@code null} for the default value.
-     * @param authority   The authority, or {@code null} for inferring it from the convention.
-     * @param colors      The syntax coloring, or {@code null} if none.
-     * @param toUpperCase Whether keywords shall be converted to upper cases.
-     * @param indentation The amount of spaces to use in indentation for WKT formatting,
-     *                    or {@link WKTFormat#SINGLE_LINE}.
+     * @param convention    The convention, or {@code null} for the default value.
+     * @param authority     The authority, or {@code null} for inferring it from the convention.
+     * @param colors        The syntax coloring, or {@code null} if none.
+     * @param toUpperCase   Whether keywords shall be converted to upper cases.
+     * @param longKeywords  {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
+     * @param indentation   The amount of spaces to use in indentation for WKT formatting,
+     *                      or {@link WKTFormat#SINGLE_LINE}.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
-            final byte toUpperCase, final byte indentation)
+            final byte toUpperCase, final byte longKeywords, final byte indentation)
     {
         this.convention     = convention;
         this.authority      = (authority != null) ? authority : convention.getNameAuthority();
         this.colors         = colors;
         this.toUpperCase    = toUpperCase;
+        this.longKeywords   = longKeywords;
         this.indentation    = indentation;
         this.transliterator = (convention == Convention.INTERNAL) ? Transliterator.IDENTITY : Transliterator.DEFAULT;
         unitFormat.isLocaleUS = convention.usesCommonUnits;
@@ -507,6 +514,26 @@ public class Formatter implements Localized {
      */
     public void indent(final int amount) {
         margin = Math.max(0, margin + indentation*amount);
+    }
+
+    /**
+     * Selects a short or long keyword depending on the {@link KeywordStyle} value.
+     * This method can be used by {@link FormattableObject#formatTo(Formatter)}
+     * implementations for choosing the return value.
+     *
+     * @param  shortKeyword The keyword to return if the style is {@link KeywordStyle#SHORT}.
+     * @param  longKeyword  The keyword to return if the style is {@link KeywordStyle#LONG}.
+     * @return The short or long keyword depending on the keyword style setting.
+     *
+     * @see WKTFormat#setKeywordStyle(KeywordStyle)
+     *
+     * @since 0.6
+     */
+    public String shortOrLong(final String shortKeyword, final String longKeyword) {
+        return (longKeywords != 0
+                ? longKeywords < 0              // If keyword style was explicitely specified, use the setting.
+                : convention.toUpperCase)       // Otherwise use the default value determined by the convention.
+               ? shortKeyword : longKeyword;
     }
 
     /**
@@ -1171,9 +1198,10 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a unit in a {@code UNIT[…]} element or one of the specialized elements. Specialized elements are
-     * {@code ANGLEUNIT}, {@code LENGTHUNIT}, {@code SCALEUNIT}, {@code PARAMETRICUNIT} and {@code TIMEUNIT}.
-     * Specialization is used in WKT 2 format except the <cite>simplified WKT 2</cite> one.
+     * Appends a unit in a {@code Unit[…]} element or one of the specialized elements. Specialized elements are
+     * {@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit} and {@code TimeUnit}.
+     * By {@linkplain KeywordStyle#DEFAULT default}, specialized unit keywords are used with the
+     * {@linkplain Convention#WKT2 WKT 2 convention}.
      *
      * <div class="note"><b>Example:</b>
      * {@code append(SI.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.</div>
@@ -1184,7 +1212,7 @@ public class Formatter implements Localized {
      */
     public void append(final Unit<?> unit) {
         if (unit != null) {
-            final boolean isSimplified = convention.isSimplified();
+            final boolean isSimplified = (longKeywords == 0) ? convention.isSimplified() : (longKeywords < 0);
             final boolean isWKT1 = convention.majorVersion() == 1;
             final Unit<?> base = unit.toSI();
             final String keyword;

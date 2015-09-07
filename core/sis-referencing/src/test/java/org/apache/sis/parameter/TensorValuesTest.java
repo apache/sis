@@ -321,12 +321,12 @@ public final strictfp class TensorValuesTest extends TestCase {
                 singletonMap(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine”,\n"      +
-                "  Parameter[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
-                "  Parameter[“num_col”, 3],\n"    +
-                "  Parameter[“elt_0_2”, 4.0],\n"  +
-                "  Parameter[“elt_1_0”, -2.0],\n" +
-                "  Parameter[“elt_2_2”, 7.0]]", group);
+                "PARAMETERGROUP[“Affine”,\n"      +
+                "  PARAMETER[“num_row”, 3],\n"    +   // Shall be shown even if equals to the default value.
+                "  PARAMETER[“num_col”, 3],\n"    +
+                "  PARAMETER[“elt_0_2”, 4.0],\n"  +
+                "  PARAMETER[“elt_1_0”, -2.0],\n" +
+                "  PARAMETER[“elt_2_2”, 7.0]]", group);
     }
 
     /**
@@ -348,10 +348,10 @@ public final strictfp class TensorValuesTest extends TestCase {
                 singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”,\n" +
-                "  Parameter[“A2”, 4.0, Id[“EPSG”, 8625]],\n"  +
-                "  Parameter[“B0”, -2.0, Id[“EPSG”, 8639]],\n" +
-                "  Parameter[“C2”, 7.0]]", group);
+                "PARAMETERGROUP[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A2”, 4.0, ID[“EPSG”, 8625]],\n"  +
+                "  PARAMETER[“B0”, -2.0, ID[“EPSG”, 8639]],\n" +
+                "  PARAMETER[“C2”, 7.0]]", group);
     }
 
     /**

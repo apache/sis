@@ -166,19 +166,42 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
+                "GEODCRS[“Back to Greenwich”,\n" +
+                "  BASEGEODCRS[“NTF (Paris)”,\n" +
+                "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
+                "      ELLIPSOID[“NTF”, 6378249.2, 293.4660212936269, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967]]],\n" +
+                "  DERIVINGCONVERSION[“Paris to Greenwich”,\n" +
+                "    METHOD[“Longitude rotation”, ID[“EPSG”, 9601]],\n" +
+                "    PARAMETER[“Longitude offset”, 2.33722917, ID[“EPSG”, 8602]]],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "    AXIS[“Latitude (B)”, north, ORDER[1]],\n" +
+                "    AXIS[“Longitude (L)”, east, ORDER[2]],\n" +
+                "    ANGLEUNIT[“degree”, 0.017453292519943295]]",
+                createLongitudeRotation());
+    }
+
+    /**
+     * Tests the WKT 2 "simplified" formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“Back to Greenwich”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
-                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],\n" +
+                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Unit[“degree”, 0.017453292519943295]],\n" +
                 "  DerivingConversion[“Paris to Greenwich”,\n" +
-                "    Method[“Longitude rotation”, Id[“EPSG”, 9601]],\n" +
-                "    Parameter[“Longitude offset”, 2.33722917, Id[“EPSG”, 8602]]],\n" +
+                "    Method[“Longitude rotation”],\n" +
+                "    Parameter[“Longitude offset”, 2.33722917]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[“Latitude (B)”, north, Order[1]],\n" +
-                "    Axis[“Longitude (L)”, east, Order[2]],\n" +
-                "    AngleUnit[“degree”, 0.017453292519943295]]",
+                "    Axis[“Latitude (B)”, north],\n" +
+                "    Axis[“Longitude (L)”, east],\n" +
+                "    Unit[“degree”, 0.017453292519943295]]",
                 createLongitudeRotation());
     }
 }

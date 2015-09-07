@@ -152,16 +152,16 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
-                "GeodeticCRS[“WGS 84”,\n" +
-                "  Datum[“World Geodetic System 1984”,\n" +
-                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "GEODCRS[“WGS 84”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[“Longitude (L)”, east, Order[1]],\n" +
-                "    Axis[“Latitude (B)”, north, Order[2]],\n" +
-                "    AngleUnit[“degree”, 0.017453292519943295],\n" +
-                "  Area[“World”],\n" +
-                "  BBox[-90.00, -180.00, 90.00, 180.00]]",
+                "    AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
+                "    AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
+                "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.WGS84);
     }
 

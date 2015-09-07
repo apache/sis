@@ -301,7 +301,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
             formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
             return WKTKeywords.Vert_Datum;
         }
-        return WKTKeywords.VerticalDatum;
+        return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
     }
 
 

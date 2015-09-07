@@ -21,7 +21,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.lang.reflect.Array;
 import javax.xml.bind.annotation.XmlElementRef;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -31,6 +37,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CorruptedObjectException;
@@ -72,11 +79,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * <ul>
      *   <li>We ignore the name because the comparisons shall be performed by the caller with
      *       {@link IdentifiedObjects#isHeuristicMatchForName} or something equivalent.</li>
-     *   <li>We ignore aliases and identifiers for now for avoiding the additional complexity
-     *       of dealing with collections, and because the Apache SIS pre-defined descriptors
-     *       will be more complete in a majority of case.
-     *
-     *       <b>TODO - </b> this may be revised in any future SIS version.</li>
+     *   <li>We ignore aliases and identifiers because they are collections, which require
+     *       handling in a special way.</li>
      * </ul>
      */
     private static final String[] IGNORE_DURING_MERGE = {
@@ -164,6 +168,33 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
+     * Returns {@code true} if the given descriptor is restricted to a constant value.
+     * This constraint exists in some pre-defined map projections.
+     *
+     * <div class="note"><b>Example:</b>
+     * the <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
+     * is provided for completeness, but should never be different than zero in this particular projection
+     * (otherwise it would be a <cite>"Mercator (variant C)"</cite> projection).  But if this parameter is
+     * nevertheless provided, the SIS implementation will use it. From this point of view, SIS is tolerant
+     * to non-zero value.
+     *
+     * <p>If the GML document declares explicitely a restricted parameter, maybe it intends to use it with
+     * a non-zero value. Consequently the {@code merge(…)} method will not propagate this restriction.</p>
+     * </div>
+     */
+    private static boolean isRestricted(final ParameterDescriptor<?> descriptor) {
+        final Comparable<?> min = descriptor.getMinimumValue();
+        if (min instanceof Number) {
+            final Comparable<?> max = descriptor.getMaximumValue();
+            if (max instanceof Number) {
+                // Compare as 'double' because we want (-0 == +0) to be true.
+                return ((Number) min).doubleValue() == ((Number) max).doubleValue();
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns a descriptor with the same properties than the {@code provided} one, but completed with information
      * not found in GML. Those missing information are given by the {@code complete} descriptor, which may come from
      * two sources:
@@ -207,15 +238,21 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         final Map<String,?> actual   = IdentifiedObjects.getProperties(provided, IGNORE_DURING_MERGE);
         final boolean canSubstitute  = complete.getMinimumOccurs() == minimumOccurs
                                     && complete.getMaximumOccurs() == maximumOccurs
-                                    && expected.entrySet().containsAll(actual.entrySet());
+                                    && expected.entrySet().containsAll(actual.entrySet())
+                                    && containsAll(complete.getAlias(), provided.getAlias())
+                                    && containsAll(complete.getIdentifiers(), provided.getIdentifiers());
         if (canSubstitute && !isGroup) {
             /*
              * The pre-defined or ParameterValue descriptor contains at least all the information found
-             * in the descriptor parsed from the GML document, ignoring IGNORE_DURING_MERGE properties.
-             * So we can use the existing instance directly, assuming that the additional properties and
-             * the difference in ignored properties are acceptable.
+             * in the descriptor parsed from the GML document. We can use the existing instance directly,
+             * assuming that the additional properties are acceptable.
+             *
+             * We make an exception to the above rule if the existing instance put a possibly too strong
+             * restriction on the parameter values. See 'isRestricted(…)' for more information.
              */
-            return complete;
+            if (!isRestricted((ParameterDescriptor<?>) complete)) {
+                return complete;
+            }
         }
         /*
          * Collect the properties specified in the GML document and complete with the properties provided
@@ -224,13 +261,15 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          */
         final Map<String,Object> merged = new HashMap<String,Object>(expected);
         merged.putAll(actual);  // May overwrite pre-defined properties.
+        mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(), merged, complete.getName());
+        mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, ReferenceIdentifier.class, provided.getIdentifiers(), merged, null);
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();
             return merge(DefaultParameterValueGroup.class, merged, merged, minimumOccurs, maximumOccurs,
                     descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]),
                     (ParameterDescriptorGroup) complete, canSubstitute);
         } else {
-            return merge(merged, (ParameterDescriptor<?>) provided, (ParameterDescriptor<?>) complete);
+            return create(merged, (ParameterDescriptor<?>) provided, (ParameterDescriptor<?>) complete);
         }
     }
 
@@ -323,12 +362,13 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Creates a new descriptor with the same properties than the {@code provided} one, but completed with
      * information not found in GML. Those extra information are given by the {@code complete} descriptor.
      *
-     * <p>It is the caller's responsibility to construct the {@code properties} map as a merge
-     * of the properties of the two given descriptors.</p>
+     * <p>It is the caller's responsibility to construct the {@code merged} properties as a merge of the properties
+     * of the two given descriptors. This can be done with the help of {@link #mergeArrays(String, Class, Collection,
+     * Map, Identifier)} among others.</p>
      */
-    private static <T> ParameterDescriptor<T> merge(final Map<String,?>          merged,
-                                                    final ParameterDescriptor<?> provided,
-                                                    final ParameterDescriptor<T> complete)
+    private static <T> ParameterDescriptor<T> create(final Map<String,?>          merged,
+                                                     final ParameterDescriptor<?> provided,
+                                                     final ParameterDescriptor<T> complete)
     {
         final Class<T> valueClass = complete.getValueClass();
         return new DefaultParameterDescriptor<T>(merged,
@@ -340,5 +380,86 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 Parameters.getValueDomain(complete),
                 CollectionsExt.toArray(complete.getValidValues(), valueClass),
                 complete.getDefaultValue());
+    }
+
+    /**
+     * Returns {@code true} if the {@code complete} collection contains all elements in the {@code provided}
+     * collection, where each element have been converted to the canonical {@link NamedIdentifier} implementation
+     * for comparison purpose.
+     *
+     * @param  <T>      The type of elements in the collection.
+     * @param  complete The collection which is expected to contains all elements.
+     * @param  provided The collection which may be a subset of {@code complete}.
+     * @return {@code true} if {@code complete} contains all {@code provided} elements.
+     */
+    private static <T> boolean containsAll(final Collection<T> complete, final Collection<T> provided) {
+        if (!provided.isEmpty()) {
+            final int size = complete.size();
+            if (size == 0) {
+                return false;
+            }
+            final Set<NamedIdentifier> c = new HashSet<NamedIdentifier>(Containers.hashMapCapacity(size));
+            for (final T e : complete) {
+                c.add(toNamedIdentifier(e));
+            }
+            for (final T e : provided) {
+                if (!c.contains(toNamedIdentifier(e))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Merges the property of type {@code Collection} identified by the given key.
+     * This is used when we can not just substitute one collection by the other.
+     *
+     * @param <T>           The type of elements in the array or collection.
+     * @param key           The key where to fetch or store the array in the {@code merged} map.
+     * @param componentType The type of elements in the array or collection.
+     * @param provided      The elements unmarshalled from the XML document.
+     * @param merged        The map used for completing missing information.
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> void mergeArrays(final String key, final Class<T> componentType,
+            Collection<T> provided, final Map<String,Object> merged, final Identifier remove)
+    {
+        if (!provided.isEmpty()) {
+            T[] complete = (T[]) merged.get(key);
+            if (complete != null) {
+                /*
+                 * Add the 'provided' values before 'complete' for two reasons:
+                 *   1) Use the same insertion order than the declaration order in the GML file.
+                 *   2) Replace 'provided' instances by 'complete' instances, since the later
+                 *      are sometime pre-defined instances defined as static final constants.
+                 */
+                final Map<NamedIdentifier,T> c = new LinkedHashMap<NamedIdentifier,T>();
+                for (final T e : provided) c.put(toNamedIdentifier(e), e);
+                for (final T e : complete) c.put(toNamedIdentifier(e), e);
+                c.remove(toNamedIdentifier(remove));
+                provided = c.values();
+            }
+            complete = provided.toArray((T[]) Array.newInstance(componentType, provided.size()));
+            merged.put(key, complete);
+        }
+    }
+
+    /**
+     * Given an {@link Identifier} or {@link GenericName} instance, returns that instance as a {@link NamedIdentifier}
+     * implementation. The intend is to allow {@code Object.equals(Object)} and hash code to correctly recognize two
+     * name or identifier as equal even if they are of different implementations.
+     *
+     * <p>Note that {@link NamedIdentifier} is the type of unmarshalled names, aliases and identifiers.
+     * So this method should not create any new object in a majority of cases.</p>
+     */
+    private static NamedIdentifier toNamedIdentifier(final Object name) {
+        if (name == null || name.getClass() == NamedIdentifier.class) {
+            return (NamedIdentifier) name;
+        } else if (name instanceof ReferenceIdentifier) {
+            return new NamedIdentifier((ReferenceIdentifier) name);
+        } else {
+            return new NamedIdentifier((GenericName) name);
+        }
     }
 }

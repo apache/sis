@@ -89,17 +89,17 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("Axis[“x”, east, LengthUnit[“metre”, 1]]",  X);
-        assertWktEquals("Axis[“y”, north, LengthUnit[“metre”, 1]]", Y);
-        assertWktEquals("Axis[“z”, up, LengthUnit[“metre”, 1]]",    Z);
-        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“grade”, 0.015707963267948967]]",             LONGITUDE_gon);
-        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“grade”, 0.015707963267948967]]",             LATITUDE_gon);
-        assertWktEquals("Axis[“Altitude (h)”, up, LengthUnit[“metre”, 1]]",                                  ALTITUDE);
-        assertWktEquals("Axis[“Time (t)”, future, TimeUnit[“day”, 86400]]",                                  TIME);
-        assertWktEquals("Axis[“Longitude (λ)”, east, AngleUnit[“degree”, 0.017453292519943295]]",            GEODETIC_LONGITUDE);
-        assertWktEquals("Axis[“Spherical longitude (θ)”, east, AngleUnit[“degree”, 0.017453292519943295]]",  SPHERICAL_LONGITUDE);
-        assertWktEquals("Axis[“Latitude (φ)”, north, AngleUnit[“degree”, 0.017453292519943295]]",            GEODETIC_LATITUDE);
-        assertWktEquals("Axis[“Spherical latitude (φ')”, north, AngleUnit[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
+        assertWktEquals("AXIS[“x”, east, LENGTHUNIT[“metre”, 1]]",  X);
+        assertWktEquals("AXIS[“y”, north, LENGTHUNIT[“metre”, 1]]", Y);
+        assertWktEquals("AXIS[“z”, up, LENGTHUNIT[“metre”, 1]]",    Z);
+        assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“grade”, 0.015707963267948967]]",             LONGITUDE_gon);
+        assertWktEquals("AXIS[“Latitude (φ)”, north, ANGLEUNIT[“grade”, 0.015707963267948967]]",             LATITUDE_gon);
+        assertWktEquals("AXIS[“Altitude (h)”, up, LENGTHUNIT[“metre”, 1]]",                                  ALTITUDE);
+        assertWktEquals("AXIS[“Time (t)”, future, TIMEUNIT[“day”, 86400]]",                                  TIME);
+        assertWktEquals("AXIS[“Longitude (λ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",            GEODETIC_LONGITUDE);
+        assertWktEquals("AXIS[“Spherical longitude (θ)”, east, ANGLEUNIT[“degree”, 0.017453292519943295]]",  SPHERICAL_LONGITUDE);
+        assertWktEquals("AXIS[“Latitude (φ)”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]",            GEODETIC_LATITUDE);
+        assertWktEquals("AXIS[“Spherical latitude (φ')”, north, ANGLEUNIT[“degree”, 0.017453292519943295]]", SPHERICAL_LATITUDE);
 
         assertWktEquals(Convention.WKT1,     "AXIS[“x”, EAST]",  X);
         assertWktEquals(Convention.WKT1,     "AXIS[“y”, NORTH]", Y);
@@ -116,7 +116,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT")
     public void testMeridianWKT() {
-        assertWktEquals("Axis[“South along 90°W (x)”, south, Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]], LengthUnit[“metre”, 1]]",
+        assertWktEquals("AXIS[“South along 90°W (x)”, south, MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]], LENGTHUNIT[“metre”, 1]]",
                 new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
                         "x", new DirectionAlongMeridian(AxisDirection.SOUTH, -90).getDirection(), SI.METRE));
     }
