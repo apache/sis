@@ -593,8 +593,8 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
         final DefaultParameterValue<Double>  length = create("Length", 30, SI.CENTIMETRE);
         assertWktEquals(Convention.WKT1, "PARAMETER[“Count”, 4]", count);
         assertWktEquals(Convention.WKT1, "PARAMETER[“Length”, 30.0]", length);
-        assertWktEquals(Convention.WKT2, "Parameter[“Count”, 4]", count);
-        assertWktEquals(Convention.WKT2, "Parameter[“Length”, 30.0, LengthUnit[“cm”, 0.01]]", length);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“Count”, 4]", count);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“Length”, 30.0, LENGTHUNIT[“cm”, 0.01]]", length);
     }
 
     /**
@@ -609,7 +609,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     public void testWKT_withUnformattableUnit() {
         final DefaultParameterValue<Double> p = create("Angle", 10.3, Units.valueOfEPSG(9111));
         assertWktEquals(Convention.WKT1,     "PARAMETER[“Angle”, 10.3]", p);  // 10.3 DM  ==  10.5°
-        assertWktEquals(Convention.WKT2,     "Parameter[“Angle”, 10.5, AngleUnit[“degree”, 0.017453292519943295]]", p);
+        assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
         assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", p);
     }
 
@@ -622,6 +622,6 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         final Watcher<Double> parameter = new Watcher<Double>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
-        assertWktEquals("Parameter[“A0”, null, Id[“EPSG”, 8623]]", parameter);
+        assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, null, ID[“EPSG”, 8623]]", parameter);
     }
 }
