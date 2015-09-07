@@ -53,11 +53,26 @@ public final strictfp class DefaultVerticalCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
+                "VERTCRS[“Depth”,\n" +
+                "  VDATUM[“Mean Sea Level”],\n" +
+                "  CS[vertical, 1],\n" +
+                "    AXIS[“Depth (D)”, down, ORDER[1]],\n" +
+                "    LENGTHUNIT[“metre”, 1]]",
+                HardCodedCRS.DEPTH);
+    }
+
+    /**
+     * Tests WKT 2 "simplified" formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "VerticalCRS[“Depth”,\n" +
                 "  VerticalDatum[“Mean Sea Level”],\n" +
                 "  CS[vertical, 1],\n" +
-                "    Axis[“Depth (D)”, down, Order[1]],\n" +
-                "    LengthUnit[“metre”, 1]]",
+                "    Axis[“Depth (D)”, down],\n" +
+                "    Unit[“metre”, 1]]",
                 HardCodedCRS.DEPTH);
     }
 }

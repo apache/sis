@@ -166,7 +166,7 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     @Test
     public void testToWKT() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertWktEquals("Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]", e);
+        assertWktEquals("ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]", e);
     }
 
     /**

@@ -161,7 +161,7 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     @DependsOnMethod("testConstruction")
     public void testWKT() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2", 2);
-        assertWktEquals("Method[“Mercator (variant A)”, Id[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
+        assertWktEquals("METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
         assertWktEquals(Convention.WKT1, "PROJECTION[“Mercator (variant A)”, AUTHORITY[“EPSG”, “9804”]]", method);
     }
 }

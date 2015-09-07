@@ -81,8 +81,9 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     @Test
     public void testToWKT() {
         final DefaultTemporalDatum datum = create();
-        assertWktEquals(Convention.WKT1, "TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], AUTHORITY[“SIS”, “MJ”]]", datum);
-        assertWktEquals(Convention.WKT2, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z], Id[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT1, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], AUTHORITY[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT2, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], ID[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z], Id[“SIS”, “MJ”]]", datum);
     }
 
     /**

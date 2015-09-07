@@ -71,7 +71,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
         final ParameterValueGroup p = provider.getParameters().createValue();
         p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);
         assertWktEquals(
-                "Param_MT[“Affine parametric transformation”,\n" +
-                "  Parameter[“A2”, 2.33722917, Id[“EPSG”, 8625]]]", provider.createMathTransform(null, p));
+                "PARAM_MT[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A2”, 2.33722917, ID[“EPSG”, 8625]]]", provider.createMathTransform(null, p));
     }
 }

@@ -226,7 +226,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Vert_CS
-               : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS : WKTKeywords.VerticalCRS;
+               : isBaseCRS(formatter) ? WKTKeywords.BaseVertCRS
+                 : formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
     }
 
 

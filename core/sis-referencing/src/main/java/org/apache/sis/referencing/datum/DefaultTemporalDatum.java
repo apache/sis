@@ -276,7 +276,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return WKTKeywords.TimeDatum;
+        return formatter.shortOrLong(WKTKeywords.TDatum, WKTKeywords.TimeDatum);
     }
 
     /**
