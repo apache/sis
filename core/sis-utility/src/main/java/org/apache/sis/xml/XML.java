@@ -329,6 +329,7 @@ public final class XML extends Static {
      * case the field may be reset to {@code null} if OSGi modules are loaded or unloaded, so static
      * class initialization would be a little bit too rigid.</div>
      */
+    @SuppressWarnings("DoubleCheckedLocking")
     private static MarshallerPool getPool() throws JAXBException {
         MarshallerPool pool = POOL;
         if (pool == null) {

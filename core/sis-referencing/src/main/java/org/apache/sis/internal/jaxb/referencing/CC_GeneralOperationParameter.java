@@ -167,6 +167,33 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
     }
 
     /**
+     * Returns {@code true} if the given descriptor is restricted to a constant value.
+     * This constraint exists in some pre-defined map projections.
+     *
+     * <div class="note"><b>Example:</b>
+     * the <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
+     * is provided for completeness, but should never be different than zero in this particular projection
+     * (otherwise it would be a <cite>"Mercator (variant C)"</cite> projection).  But if this parameter is
+     * nevertheless provided, the SIS implementation will use it. From this point of view, SIS is tolerant
+     * to non-zero value.
+     *
+     * <p>If the GML document declares explicitely a restricted parameter, maybe it intends to use it with
+     * a non-zero value. Consequently the {@code merge(…)} method will not propagate this restriction.</p>
+     * </div>
+     */
+    private static boolean isRestricted(final ParameterDescriptor<?> descriptor) {
+        final Comparable<?> min = descriptor.getMinimumValue();
+        if (min instanceof Number) {
+            final Comparable<?> max = descriptor.getMaximumValue();
+            if (max instanceof Number) {
+                // Compare as 'double' because we want (-0 == +0) to be true.
+                return ((Number) min).doubleValue() == ((Number) max).doubleValue();
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns a descriptor with the same properties than the {@code provided} one, but completed with information
      * not found in GML. Those missing information are given by the {@code complete} descriptor, which may come from
      * two sources:
@@ -216,11 +243,15 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         if (canSubstitute && !isGroup) {
             /*
              * The pre-defined or ParameterValue descriptor contains at least all the information found
-             * in the descriptor parsed from the GML document, ignoring IGNORE_DURING_MERGE properties.
-             * So we can use the existing instance directly, assuming that the additional properties and
-             * the difference in ignored properties are acceptable.
+             * in the descriptor parsed from the GML document. We can use the existing instance directly,
+             * assuming that the additional properties are acceptable.
+             *
+             * We make an exception to the above rule if the existing instance put a possibly too strong
+             * restriction on the parameter values. See 'isRestricted(…)' for more information.
              */
-            return complete;
+            if (!isRestricted((ParameterDescriptor<?>) complete)) {
+                return complete;
+            }
         }
         /*
          * Collect the properties specified in the GML document and complete with the properties provided
@@ -395,6 +426,12 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         if (!provided.isEmpty()) {
             T[] complete = (T[]) merged.get(key);
             if (complete != null) {
+                /*
+                 * Add the 'provided' values before 'complete' for two reasons:
+                 *   1) Use the same insertion order than the declaration order in the GML file.
+                 *   2) Replace 'provided' instances by 'complete' instances, since the later
+                 *      are sometime pre-defined instances defined as static final constants.
+                 */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();
                 for (final T e : provided) c.put(toNamedIdentifier(e), e);
                 for (final T e : complete) c.put(toNamedIdentifier(e), e);
