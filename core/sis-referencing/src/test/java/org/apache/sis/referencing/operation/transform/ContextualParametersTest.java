@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.PI;
 import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -81,20 +81,6 @@ public final strictfp class ContextualParametersTest extends TestCase {
         assertSame(p2, p.parameter("Mandatory 2"));
         assertEquals("values().size()", 2, p.values().size());
         assertArrayEquals("values.toArray()", new ParameterValue<?>[] {p1, p2}, p.values().toArray());
-    }
-
-    /**
-     * Tests Well Known Text (WKT) formatting.
-     */
-    @DependsOnMethod("testParameters")
-    public void testWKT() {
-        final ContextualParameters p = create(1, 1);
-        p.parameter("Mandatory 1").setValue(4);
-        p.parameter("Mandatory 2").setValue(5);
-        assertWktEquals(
-                "Param_MT[“Test group”,\n" +
-                "  Parameter[“Mandatory 1”, 4],\n" +
-                "  Parameter[“Mandatory 2”, 5]]", p);
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.cs;
 
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -106,7 +107,10 @@ public final strictfp class DirectionAlongMeridianTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        assertWktEquals("Meridian[-90.0, AngleUnit[“degree”, 0.017453292519943295]]",
-                DirectionAlongMeridian.parse("South along 90°W"));
+        final DirectionAlongMeridian dm = DirectionAlongMeridian.parse("South along 90°W");
+        assertWktEquals(Convention.WKT2,
+                "MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]]", dm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "Meridian[-90.0, Unit[“degree”, 0.017453292519943295]]", dm);
     }
 }

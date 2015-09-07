@@ -162,6 +162,11 @@ public class WKTFormat extends CompoundFormat<Object> {
     private KeywordCase keywordCase;
 
     /**
+     * Whether to use short or long WKT keywords.
+     */
+    private KeywordStyle keywordStyle;
+
+    /**
      * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
      * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
@@ -232,15 +237,17 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        convention  = Convention.DEFAULT;
-        symbols     = Symbols.getDefault();
-        keywordCase = KeywordCase.DEFAULT;
-        indentation = DEFAULT_INDENTATION;
+        convention   = Convention.DEFAULT;
+        symbols      = Symbols.getDefault();
+        keywordCase  = KeywordCase.DEFAULT;
+        keywordStyle = KeywordStyle.DEFAULT;
+        indentation  = DEFAULT_INDENTATION;
     }
 
     /**
      * Returns the {@link #fragments} map, creating it when first needed.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Element> fragments() {
         if (fragments == null) {
             fragments = new TreeMap<>();
@@ -251,6 +258,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Returns the {@link #factories} map, creating it when first needed.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<Class<?>,Factory> factories() {
         if (factories == null) {
             factories = new HashMap<>(8);
@@ -400,6 +408,30 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
+     * Returns whether to use short or long WKT keywords.
+     *
+     * @return The style used for formatting keywords.
+     *
+     * @since 0.6
+     */
+    public KeywordStyle getKeywordStyle() {
+        return keywordStyle;
+    }
+
+    /**
+     * Sets whether to use short or long WKT keywords.
+     *
+     * @param keywordStyle The style to use for formatting keywords.
+     *
+     * @since 0.6
+     */
+    public void setKeywordStyle(final KeywordStyle keywordStyle) {
+        ArgumentChecks.ensureNonNull("keywordStyle", keywordStyle);
+        this.keywordStyle = keywordStyle;
+        updateFormatter(formatter);
+    }
+
+    /**
      * Returns the colors to use for syntax coloring, or {@code null} if none.
      * By default there is no syntax coloring.
      *
@@ -510,9 +542,15 @@ public class WKTFormat extends CompoundFormat<Object> {
                 case LOWER_CASE: toUpperCase = -1; break;
                 case UPPER_CASE: toUpperCase = +1; break;
                 case CAMEL_CASE: toUpperCase =  0; break;
-                default: toUpperCase = (convention.majorVersion() == 1) ? (byte) 1 : 0; break;
+                default: toUpperCase = convention.toUpperCase ? (byte) +1 : 0; break;
             }
-            formatter.configure(convention, authority, colors, toUpperCase, indentation);
+            final byte longKeywords;
+            switch (keywordStyle) {
+                case SHORT: longKeywords = -1; break;
+                case LONG:  longKeywords = +1; break;
+                default:    longKeywords = (convention.majorVersion() == 1) ? (byte) -1 : 0; break;
+            }
+            formatter.configure(convention, authority, colors, toUpperCase, longKeywords, indentation);
             if (transliterator != null) {
                 formatter.transliterator = transliterator;
             }

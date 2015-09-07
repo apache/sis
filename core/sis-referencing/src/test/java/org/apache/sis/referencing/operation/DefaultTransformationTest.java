@@ -156,30 +156,30 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     @DependsOnMethod("testConstruction")
     public void testWKT() {
         final DefaultTransformation op = createGeocentricTranslation();
-        assertWktEquals(
-                "CoordinateOperation[“Tokyo to JGD2000 (GSI)”,\n" +
-                "  SourceCRS[GeodeticCRS[“Tokyo 1918”,\n" +
-                "    Datum[“Tokyo 1918”,\n" +
-                "      Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+        assertWktEquals(Convention.WKT2,
+                "COORDINATEOPERATION[“Tokyo to JGD2000 (GSI)”,\n" +
+                "  SOURCECRS[GEODCRS[“Tokyo 1918”,\n" +
+                "    DATUM[“Tokyo 1918”,\n" +
+                "      ELLIPSOID[“Bessel 1841”, 6377397.155, 299.1528128, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "    CS[Cartesian, 3],\n" +
-                "      Axis[“(X)”, geocentricX, Order[1]],\n" +
-                "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
-                "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
-                "      LengthUnit[“metre”, 1]]],\n" +
-                "  TargetCRS[GeodeticCRS[“JGD2000”,\n" +
-                "    Datum[“Japanese Geodetic Datum 2000”,\n" +
-                "      Ellipsoid[“GRS 1980”, 6378137.0, 298.257222101, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "      AXIS[“(X)”, geocentricX, ORDER[1]],\n" +
+                "      AXIS[“(Y)”, geocentricY, ORDER[2]],\n" +
+                "      AXIS[“(Z)”, geocentricZ, ORDER[3]],\n" +
+                "      LENGTHUNIT[“metre”, 1]]],\n" +
+                "  TARGETCRS[GEODCRS[“JGD2000”,\n" +
+                "    DATUM[“Japanese Geodetic Datum 2000”,\n" +
+                "      ELLIPSOID[“GRS 1980”, 6378137.0, 298.257222101, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "    CS[Cartesian, 3],\n" +
-                "      Axis[“(X)”, geocentricX, Order[1]],\n" +
-                "      Axis[“(Y)”, geocentricY, Order[2]],\n" +
-                "      Axis[“(Z)”, geocentricZ, Order[3]],\n" +
-                "      LengthUnit[“metre”, 1]]],\n" +
-                "  Method[“Geocentric translations”, Id[“EPSG”, 1031]],\n" +
-                "  Parameter[“X-axis translation”, -146.414, Id[“EPSG”, 8605]],\n" +
-                "  Parameter[“Y-axis translation”, 507.337, Id[“EPSG”, 8606]],\n" +
-                "  Parameter[“Z-axis translation”, 680.507, Id[“EPSG”, 8607]]]", op);
+                "      AXIS[“(X)”, geocentricX, ORDER[1]],\n" +
+                "      AXIS[“(Y)”, geocentricY, ORDER[2]],\n" +
+                "      AXIS[“(Z)”, geocentricZ, ORDER[3]],\n" +
+                "      LENGTHUNIT[“metre”, 1]]],\n" +
+                "  METHOD[“Geocentric translations”, ID[“EPSG”, 1031]],\n" +
+                "  PARAMETER[“X-axis translation”, -146.414, ID[“EPSG”, 8605]],\n" +
+                "  PARAMETER[“Y-axis translation”, 507.337, ID[“EPSG”, 8606]],\n" +
+                "  PARAMETER[“Z-axis translation”, 680.507, ID[“EPSG”, 8607]]]", op);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CoordinateOperation[“Tokyo to JGD2000 (GSI)”,\n" +
