@@ -64,12 +64,21 @@ public final strictfp class DefaultImageCRSTest extends XMLTestCase {
     public void testWKT2() {
         final DefaultImageCRS crs = create(true);
         assertWktEquals(Convention.WKT2,
+                "IMAGECRS[“An image CRS”,\n" +
+                "  IDATUM[“C1”],\n" +
+                "  CS[Cartesian, 2],\n" +
+                "    AXIS[“Column (i)”, columnPositive, ORDER[1]],\n" +
+                "    AXIS[“Row (j)”, rowPositive, ORDER[2]],\n" +
+                "    SCALEUNIT[“unity”, 1]]",
+                crs);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ImageCRS[“An image CRS”,\n" +
                 "  ImageDatum[“C1”],\n" +
                 "  CS[Cartesian, 2],\n" +
-                "    Axis[“Column (i)”, columnPositive, Order[1]],\n" +
-                "    Axis[“Row (j)”, rowPositive, Order[2]],\n" +
-                "    ScaleUnit[“unity”, 1]]",
+                "    Axis[“Column (i)”, columnPositive],\n" +
+                "    Axis[“Row (j)”, rowPositive],\n" +
+                "    Unit[“unity”, 1]]",
                 crs);
     }
 

@@ -118,12 +118,12 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
 
         assertWktEquals(Convention.WKT2,
                 "ReferenceSystem[“My \"object\".”,\n" +     // Quotes replaced
-                "  Scope[“Large scale topographic mapping and cadastre.”],\n" +
-                "  Area[“Netherlands offshore.”],\n" +
-                "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
-                "  VerticalExtent[-1000, -10, LengthUnit[“metre”, 1]],\n" +
-                "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
-                "  Remark[“注です。”]]",
+                "  SCOPE[“Large scale topographic mapping and cadastre.”],\n" +
+                "  AREA[“Netherlands offshore.”],\n" +
+                "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
+                "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1]],\n" +
+                "  ID[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
+                "  REMARK[“注です。”]]",
                 object);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,

@@ -81,12 +81,28 @@ public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
     public void testWKT2() {
         final DefaultEngineeringCRS crs = createSpherical();
         assertWktEquals(Convention.WKT2,
+                "ENGCRS[“A spherical CRS”,\n" +
+                "  EDATUM[“Centre”],\n" +
+                "  CS[spherical, 3],\n" +
+                "    AXIS[“Spherical latitude (U)”, north, ORDER[1], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    AXIS[“Spherical longitude (V)”, east, ORDER[2], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    AXIS[“Geocentric radius (r)”, up, ORDER[3], LENGTHUNIT[“metre”, 1]]]",
+                crs);
+    }
+
+    /**
+     * Tests WKT 2 "simplified" formatting.
+     */
+    @Test
+    public void testWKT2_Simplified() {
+        final DefaultEngineeringCRS crs = createSpherical();
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "EngineeringCRS[“A spherical CRS”,\n" +
                 "  EngineeringDatum[“Centre”],\n" +
                 "  CS[spherical, 3],\n" +
-                "    Axis[“Spherical latitude (U)”, north, Order[1], AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "    Axis[“Spherical longitude (V)”, east, Order[2], AngleUnit[“degree”, 0.017453292519943295]],\n" +
-                "    Axis[“Geocentric radius (r)”, up, Order[3], LengthUnit[“metre”, 1]]]",
+                "    Axis[“Spherical latitude (U)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Spherical longitude (V)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Geocentric radius (r)”, up, Unit[“metre”, 1]]]",
                 crs);
     }
 

@@ -243,7 +243,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
         } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return WKTKeywords.ImageDatum;
+        return formatter.shortOrLong(WKTKeywords.IDatum, WKTKeywords.ImageDatum);
     }
 
 

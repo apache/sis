@@ -94,8 +94,8 @@ public final strictfp class AffineTest extends TestCase {
     public void testWKT() {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”," +
-                " Id[“EPSG”, 9624]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine parametric transformation”," +
+                " ID[“EPSG”, 9624]]", Affine.parameters(matrix));
         /*
          * Try arbitrary values.
          */
@@ -103,23 +103,23 @@ public final strictfp class AffineTest extends TestCase {
         matrix.setElement(1, 1,  0);  // B1
         matrix.setElement(1, 2, -1);  // B2
         assertWktEquals(
-                "ParameterGroup[“Affine parametric transformation”,\n" +
-                "  Parameter[“A1”, 2.0, Id[“EPSG”, 8624]],\n"  +
-                "  Parameter[“B1”, 0.0, Id[“EPSG”, 8640]],\n" +
-                "  Parameter[“B2”, -1.0, Id[“EPSG”, 8641]],\n" +
-                "  Id[“EPSG”, 9624]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine parametric transformation”,\n" +
+                "  PARAMETER[“A1”, 2.0, ID[“EPSG”, 8624]],\n"  +
+                "  PARAMETER[“B1”, 0.0, ID[“EPSG”, 8640]],\n" +
+                "  PARAMETER[“B2”, -1.0, ID[“EPSG”, 8641]],\n" +
+                "  ID[“EPSG”, 9624]]", Affine.parameters(matrix));
         /*
          * Setting a value on the last row make the matrix non-affine.
          * So it should not be anymore EPSG:9624.
          */
         matrix.setElement(2, 0, 3);  // C0
         assertWktEquals(
-                "ParameterGroup[“Affine”,\n" +
-                "  Parameter[“num_row”, 3],\n"  +
-                "  Parameter[“num_col”, 3],\n"  +
-                "  Parameter[“elt_0_1”, 2.0],\n"  +
-                "  Parameter[“elt_1_1”, 0.0],\n" +
-                "  Parameter[“elt_1_2”, -1.0],\n" +
-                "  Parameter[“elt_2_0”, 3.0]]", Affine.parameters(matrix));
+                "PARAMETERGROUP[“Affine”,\n" +
+                "  PARAMETER[“num_row”, 3],\n"  +
+                "  PARAMETER[“num_col”, 3],\n"  +
+                "  PARAMETER[“elt_0_1”, 2.0],\n"  +
+                "  PARAMETER[“elt_1_1”, 0.0],\n" +
+                "  PARAMETER[“elt_1_2”, -1.0],\n" +
+                "  PARAMETER[“elt_2_0”, 3.0]]", Affine.parameters(matrix));
     }
 }

@@ -241,7 +241,8 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         return (formatter.getConvention().majorVersion() == 1) ? WKTKeywords.Local_CS
-               : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS : WKTKeywords.EngineeringCRS;
+               : isBaseCRS(formatter) ? WKTKeywords.BaseEngCRS
+                 : formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
     }
 
 

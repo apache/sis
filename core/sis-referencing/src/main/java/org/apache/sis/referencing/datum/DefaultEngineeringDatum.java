@@ -177,7 +177,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
             formatter.append(0);
             return WKTKeywords.Local_Datum;
         }
-        return WKTKeywords.EngineeringDatum;
+        return formatter.shortOrLong(WKTKeywords.EDatum, WKTKeywords.EngineeringDatum);
     }
 
 
