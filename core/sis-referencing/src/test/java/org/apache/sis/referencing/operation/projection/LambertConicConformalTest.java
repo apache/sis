@@ -67,7 +67,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));  // Conversion from radians to degrees.
         a = a.multiply(new BigDecimal(60 * 60));                                // Conversion from degrees to seconds.
         a = a.add     (new BigDecimal("29.2985"));                              // The standard value.
-        assertTrue(Math.abs(a.doubleValue()) < 1E-31);
+        assertTrue(abs(a.doubleValue()) < 1E-31);
     }
 
     /**
