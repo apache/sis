@@ -298,22 +298,43 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     public void testWKT2_WithMixedUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2,
+                "PROJCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                "  BASEGEODCRS[“NTF (Paris)”,\n" +
+                "    DATUM[“Nouvelle Triangulation Francaise”,\n" +
+                "      ELLIPSOID[“NTF”, 6378249.2, 293.4660212936269, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967]]],\n" +
+                "  CONVERSION[“Lambert zone II”,\n" +
+                "    METHOD[“Lambert Conic Conformal (1SP)”, ID[“EPSG”, 9801]],\n" +
+                "    PARAMETER[“Latitude of natural origin”, 52.0, ANGLEUNIT[“grade”, 0.015707963267948967], ID[“EPSG”, 8801]],\n" +
+                "    PARAMETER[“Longitude of natural origin”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295], ID[“EPSG”, 8802]],\n" +
+                "    PARAMETER[“Scale factor at natural origin”, 0.99987742, SCALEUNIT[“unity”, 1], ID[“EPSG”, 8805]],\n" +
+                "    PARAMETER[“False easting”, 600000.0, LENGTHUNIT[“metre”, 1], ID[“EPSG”, 8806]],\n" +
+                "    PARAMETER[“False northing”, 2200000.0, LENGTHUNIT[“metre”, 1], ID[“EPSG”, 8807]]],\n" +
+                "  CS[Cartesian, 2],\n" +
+                "    AXIS[“Easting (E)”, east, ORDER[1]],\n" +
+                "    AXIS[“Northing (N)”, north, ORDER[2]],\n" +
+                "    LENGTHUNIT[“metre”, 1],\n" +
+                "  ID[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
+                crs);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
                 "    Datum[“Nouvelle Triangulation Francaise”,\n" +
-                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967]]],\n" +
+                "      Ellipsoid[“NTF”, 6378249.2, 293.4660212936269]],\n" +
+                "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Unit[“degree”, 0.017453292519943295]],\n" +
                 "  Conversion[“Lambert zone II”,\n" +
-                "    Method[“Lambert Conic Conformal (1SP)”, Id[“EPSG”, 9801]],\n" +
-                "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8801]],\n" +
-                "    Parameter[“Longitude of natural origin”, 0.0, AngleUnit[“degree”, 0.017453292519943295], Id[“EPSG”, 8802]],\n" +
-                "    Parameter[“Scale factor at natural origin”, 0.99987742, ScaleUnit[“unity”, 1], Id[“EPSG”, 8805]],\n" +
-                "    Parameter[“False easting”, 600000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8806]],\n" +
-                "    Parameter[“False northing”, 2200000.0, LengthUnit[“metre”, 1], Id[“EPSG”, 8807]]],\n" +
+                "    Method[“Lambert Conic Conformal (1SP)”],\n" +
+                "    Parameter[“Latitude of natural origin”, 52.0, Unit[“grade”, 0.015707963267948967]],\n" +
+                "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
+                "    Parameter[“False easting”, 600000.0],\n" +
+                "    Parameter[“False northing”, 2200000.0]],\n" +
                 "  CS[Cartesian, 2],\n" +
-                "    Axis[“Easting (E)”, east, Order[1]],\n" +
-                "    Axis[“Northing (N)”, north, Order[2]],\n" +
-                "    LengthUnit[“metre”, 1],\n" +
+                "    Axis[“Easting (E)”, east],\n" +
+                "    Axis[“Northing (N)”, north],\n" +
+                "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
     }

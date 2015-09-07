@@ -51,6 +51,13 @@ import org.apache.sis.xml.XML;
  */
 final class MetadataSC extends SubCommand {
     /**
+     * The output format.
+     */
+    private static enum Format {
+        TEXT, WKT, XML
+    }
+
+    /**
      * {@code true} for the {@code "crs"} sub-command,
      * or {@code false} for the {@code "metadata"} sub-command.
      */
@@ -81,24 +88,27 @@ final class MetadataSC extends SubCommand {
          * Output format can be either "text" (the default) or "xml".
          * In the case of "crs" sub-command, we accept also WKT variants.
          */
-        boolean toXML = false;
-        Convention wkt = null;
+        Convention convention = null;
+        final Format outputFormat;
         final String format = options.get(Option.FORMAT);
-        if (format != null && !format.equalsIgnoreCase("text")) {
-            toXML = format.equalsIgnoreCase("xml");
-            if (!toXML) {
-                if (isCRS) {
-                    if (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2")) {
-                        wkt = Convention.WKT2;
-                    } else if (format.equalsIgnoreCase("wkt1")) {
-                        wkt = Convention.WKT1;
-                    }
-                }
-                if (wkt == null) {
-                    throw new InvalidOptionException(Errors.format(
-                            Errors.Keys.IllegalOptionValue_2, "format", format), format);
-                }
+        if (format == null || format.equalsIgnoreCase("text")) {
+            if (isCRS) {
+                outputFormat = Format.WKT;
+                convention = Convention.WKT2_SIMPLIFIED;
+            } else {
+                outputFormat = Format.TEXT;
             }
+        } else if (isCRS && (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2"))) {
+            outputFormat = Format.WKT;
+            convention = Convention.WKT2;
+        } else if (isCRS && format.equalsIgnoreCase("wkt1")) {
+            outputFormat = Format.WKT;
+            convention = Convention.WKT1;
+        } else if (format.equalsIgnoreCase("xml")) {
+            outputFormat = Format.XML;
+        } else {
+            throw new InvalidOptionException(Errors.format(
+                    Errors.Keys.IllegalOptionValue_2, "format", format), format);
         }
         /*
          * Read metadata from the data storage.
@@ -114,47 +124,60 @@ final class MetadataSC extends SubCommand {
         if (metadata == null) {
             return 0;
         }
-        CoordinateReferenceSystem crs = null;
+        Object object = metadata;
         if (isCRS) {
+            boolean found = false;
             for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
                 if (rs instanceof CoordinateReferenceSystem) {
-                    crs = (CoordinateReferenceSystem) rs;
+                    object = (CoordinateReferenceSystem) rs;
+                    found = true;
                     break;
                 }
             }
-            if (crs == null) {
+            if (!found) {
                 return 0;
             }
         }
         /*
          * Format metadata to the standard output stream.
          */
-        if (toXML) {
-            final MarshallerPool pool = new MarshallerPool(null);
-            final Marshaller marshaller = pool.acquireMarshaller();
-            marshaller.setProperty(XML.LOCALE,   locale);
-            marshaller.setProperty(XML.TIMEZONE, timezone);
-            if (isConsole()) {
-                marshaller.marshal(crs != null ? crs : metadata, out);
-            } else {
-                out.flush();
-                marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
-                marshaller.marshal(crs != null ? crs : metadata, System.out); // Use OutputStream instead than Writer.
-                System.out.flush();
+        switch (outputFormat) {
+            case TEXT: {
+                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
+                final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
+                tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                tf.format(tree, out);
+                break;
             }
-        } else if (wkt != null) {
-            final WKTFormat f = new WKTFormat(locale, timezone);
-            f.setConvention(wkt);
-            if (colors) {
-                f.setColors(Colors.DEFAULT);
+
+            case WKT: {
+                final WKTFormat f = new WKTFormat(locale, timezone);
+                if (convention != null) {
+                    f.setConvention(convention);
+                }
+                if (colors) {
+                    f.setColors(Colors.DEFAULT);
+                }
+                f.format(object, out);
+                out.println();
+                break;
             }
-            f.format(crs, out);
-            out.println();
-        } else {
-            final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
-            final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
-            tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
-            tf.format(tree, out);
+
+            case XML: {
+                final MarshallerPool pool = new MarshallerPool(null);
+                final Marshaller marshaller = pool.acquireMarshaller();
+                marshaller.setProperty(XML.LOCALE,   locale);
+                marshaller.setProperty(XML.TIMEZONE, timezone);
+                if (isConsole()) {
+                    marshaller.marshal(object, out);
+                } else {
+                    out.flush();
+                    marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
+                    marshaller.marshal(object, System.out); // Use OutputStream instead than Writer.
+                    System.out.flush();
+                }
+                break;
+            }
         }
         out.flush();
         return 0;

@@ -183,9 +183,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     @Test
     public void testToWKT() {
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
-        assertWktEquals(
+        assertWktEquals(Convention.WKT2,
+                "DATUM[“WGS84”,\n" +
+                "  ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]]",
+                datum);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticDatum[“WGS84”,\n" +
-                "  Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]]",
+                "  Ellipsoid[“WGS84”, 6378137.0, 298.257223563]]",
                 datum);
     }
 
@@ -266,8 +271,14 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 datum);
 
         assertWktEquals(Convention.WKT2,
+                "DATUM[“World Geodetic System 1984”,\n" +
+                "  ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]],\n" +
+                "  ID[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
+                datum);
+
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticDatum[“World Geodetic System 1984”,\n" +
-                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]],\n" +
+                "  Ellipsoid[“WGS 84”, 6378137.0, 298.257223563],\n" +
                 "  Id[“EPSG”, 6326, URI[“urn:ogc:def:datum:EPSG::6326”]]]",
                 datum);
 

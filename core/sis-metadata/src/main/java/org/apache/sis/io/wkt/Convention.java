@@ -70,13 +70,16 @@ public enum Convention {
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
      */
-    WKT2(false, false),
+    WKT2(false, true, false),
 
     /**
      * The ISO 19162 format with omission of some optional elements. This convention is identical
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
+     *   <li>By {@linkplain KeywordStyle#DEFAULT default} long keywords are used instead of short ones
+     *       (e.g. {@code "GeodeticCRS"} instead of {@code "GeodCRS"}) except for the {@code "Unit"} keyword,
+     *       because they match the class or interface names.</li>
      *   <li>{@code PrimeMeridian} element omitted if the meridian is Greenwich.</li>
      *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
      *   <li>{@code Unit} elements are less verbose:<ul>
@@ -99,7 +102,7 @@ public enum Convention {
      *
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
-    WKT2_SIMPLIFIED(false, false),
+    WKT2_SIMPLIFIED(false, false, false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.
@@ -139,7 +142,7 @@ public enum Convention {
      *
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */
-    WKT1(true, false),
+    WKT1(true, true, false),
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
@@ -156,7 +159,7 @@ public enum Convention {
      *       (e.g. <cite>"meter"</cite> instead than <cite>"metre"</cite>).</li>
      * </ul>
      */
-    WKT1_COMMON_UNITS(true, true),
+    WKT1_COMMON_UNITS(true, true, true),
 
     /**
      * The <cite>Simple Feature</cite> format without parsing of axis elements.
@@ -173,7 +176,7 @@ public enum Convention {
      *
      * @since 0.6
      */
-    WKT1_IGNORE_AXES(true, true),
+    WKT1_IGNORE_AXES(true, true, true),
 
     /**
      * A special convention for formatting objects as stored internally by Apache SIS.
@@ -204,7 +207,7 @@ public enum Convention {
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#getParameterValues()
      */
     @Debug
-    INTERNAL(false, false);
+    INTERNAL(false, false, false);
 
     /**
      * The default conventions.
@@ -215,6 +218,11 @@ public enum Convention {
      * {@code true} for using WKT 1 syntax, or {@code false} for using WKT 2 syntax.
      */
     private final boolean isWKT1;
+
+    /**
+     * {@code true} for using short upper-case keywords by {@linkplain KeywordStyle#DEFAULT default}.
+     */
+    final boolean toUpperCase;
 
     /**
      * {@code true} for a frequently-used convention about units instead than the standard one.
@@ -232,8 +240,9 @@ public enum Convention {
     /**
      * Creates a new enumeration value.
      */
-    private Convention(final boolean isWKT1, final boolean usesCommonUnits) {
-        this.isWKT1 = isWKT1;
+    private Convention(final boolean isWKT1, final boolean toUpperCase, final boolean usesCommonUnits) {
+        this.isWKT1          = isWKT1;
+        this.toUpperCase     = toUpperCase;
         this.usesCommonUnits = usesCommonUnits;
     }
 

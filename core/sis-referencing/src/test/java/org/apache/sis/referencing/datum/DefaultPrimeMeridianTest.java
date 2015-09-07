@@ -61,7 +61,8 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
     public void testToWKT() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(GREENWICH);
         assertIsGreenwich(pm);
-        assertWktEquals("PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]", pm);
+        assertWktEquals(Convention.WKT2, "PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]]", pm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Greenwich”, 0.0]", pm);
     }
 
     /**
@@ -94,8 +95,9 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
          * In WKT 1 format, if there is no contextual unit (which is the case of this test),
          * the formatter default to decimal degrees. In WKT 2 format it depends on the PM unit.
          */
-        assertWktEquals(Convention.WKT1,            "PRIMEM[“Test”, 10.5]", pm);  // 10.3 DM  ==  10.5°
-        assertWktEquals(Convention.WKT2,     "PrimeMeridian[“Test”, 10.5, AngleUnit[“degree”, 0.017453292519943295]]", pm);
+        assertWktEquals(Convention.WKT1, "PRIMEM[“Test”, 10.5]", pm);  // 10.3 DM  ==  10.5°
+        assertWktEquals(Convention.WKT2, "PRIMEM[“Test”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", pm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "PrimeMeridian[“Test”, 10.5]", pm);
         assertWktEquals(Convention.INTERNAL, "PrimeMeridian[“Test”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", pm);
     }
 
@@ -188,7 +190,9 @@ public final strictfp class DefaultPrimeMeridianTest extends XMLTestCase {
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
         assertWktEquals(Convention.WKT2,
-                "PrimeMeridian[“Paris”, 2.5969213, AngleUnit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+                "PRIMEM[“Paris”, 2.5969213, ANGLEUNIT[“grade”, 0.015707963267948967], ID[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
+                "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903, URI[“urn:ogc:def:meridian:EPSG::8903”]]]", pm);
         assertWktEquals(Convention.INTERNAL,
                 "PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967, Id[“EPSG”, 9105]], Id[“EPSG”, 8903],\n" +
                 "  Remark[“Equivalent to 2°20′14.025″.”]]", pm);

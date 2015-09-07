@@ -247,7 +247,7 @@ public final strictfp class WKTFormatTest extends TestCase {
         final Warnings warnings = format.getWarnings();
         assertNotNull("warnings", warnings);
         assertEquals ("warnings.numMessages", 1, warnings.getNumMessages());
-        assertEquals ("PrimeMeridian[\"Invalid \"\"$name\"\" here\", -10.0, AngleUnit[\"degree\", 0.017453292519943295]]", wkt);
+        assertEquals ("PRIMEM[\"Invalid \"\"$name\"\" here\", -10.0, ANGLEUNIT[\"degree\", 0.017453292519943295]]", wkt);
         assertEquals ("The “$” character in “\"$name\"” is not permitted by the “Well-Known Text” format.", warnings.getMessage(0));
         assertNull   (warnings.getException(0));
         /*
@@ -283,13 +283,13 @@ public final strictfp class WKTFormatTest extends TestCase {
         final Object crs = format.parseObject("GEOGCS[“Tokyo”, $Tokyo, $Lat, $Lon]");
         final String wkt = format.format(crs);
         assertMultilinesEquals(
-                "GeodeticCRS[\"Tokyo\",\n" +
-                "  Datum[\"Tokyo\",\n" +
-                "    Ellipsoid[\"Bessel 1841\", 6377397.155, 299.1528128, LengthUnit[\"metre\", 1]]],\n" +
-                "    PrimeMeridian[\"Greenwich\", 0.0, AngleUnit[\"degree\", 0.017453292519943295]],\n" +
+                "GEODCRS[\"Tokyo\",\n" +
+                "  DATUM[\"Tokyo\",\n" +
+                "    ELLIPSOID[\"Bessel 1841\", 6377397.155, 299.1528128, LENGTHUNIT[\"metre\", 1]]],\n" +
+                "    PRIMEM[\"Greenwich\", 0.0, ANGLEUNIT[\"degree\", 0.017453292519943295]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[\"Latitude (B)\", north, Order[1]],\n" +
-                "    Axis[\"Longitude (L)\", east, Order[2]],\n" +
-                "    AngleUnit[\"degree\", 0.017453292519943295]]", wkt);
+                "    AXIS[\"Latitude (B)\", north, ORDER[1]],\n" +
+                "    AXIS[\"Longitude (L)\", east, ORDER[2]],\n" +
+                "    ANGLEUNIT[\"degree\", 0.017453292519943295]]", wkt);
     }
 }

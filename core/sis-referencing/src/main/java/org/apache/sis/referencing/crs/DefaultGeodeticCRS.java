@@ -226,7 +226,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         if (isWKT1) {
             return (cs instanceof EllipsoidalCS) ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
         } else {
-            return isBaseCRS ? WKTKeywords.BaseGeodCRS : WKTKeywords.GeodeticCRS;
+            return isBaseCRS ? WKTKeywords.BaseGeodCRS
+                   : formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
     }
 

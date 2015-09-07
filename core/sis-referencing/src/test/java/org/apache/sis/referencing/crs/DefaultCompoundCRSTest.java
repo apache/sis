@@ -174,7 +174,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "    AXIS[“Gravity-related height”, UP],\n" +
                 "    AUTHORITY[“EPSG”, “5714”]],\n" +   // SIS includes Identifier for component of CompoundCRS.
                 "  TIMECRS[“Time”,\n" +
-                "    TIMEDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
                 "    TIMEUNIT[“day”, 86400],\n" +
                 "    AXIS[“Time”, FUTURE]]]",
                 HardCodedCRS.GEOID_4D);
@@ -187,25 +187,56 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
+                "COMPOUNDCRS[“WGS 84 + height + time”,\n" +
+                "  GEODCRS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    CS[ellipsoidal, 2],\n" +
+                "      AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
+                "      AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
+                "      ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "  VERTCRS[“MSL height”,\n" +
+                "    VDATUM[“Mean Sea Level”],\n" +
+                "    CS[vertical, 1],\n" +
+                "      AXIS[“Gravity-related height (H)”, up, ORDER[1]],\n" +
+                "      LENGTHUNIT[“metre”, 1],\n" +
+                "    ID[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
+                "  TIMECRS[“Time”,\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z]],\n" +
+                "    CS[temporal, 1],\n" +
+                "      AXIS[“Time (t)”, future, ORDER[1]],\n" +
+                "      TIMEUNIT[“day”, 86400]],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
+                HardCodedCRS.GEOID_4D);
+    }
+
+    /**
+     * Tests WKT 2 "simplified" formatting.
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_Simplified() {
+        assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CompoundCRS[“WGS 84 + height + time”,\n" +
                 "  GeodeticCRS[“WGS 84”,\n" +
                 "    Datum[“World Geodetic System 1984”,\n" +
-                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "      PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "      Ellipsoid[“WGS84”, 6378137.0, 298.257223563]],\n" +
                 "    CS[ellipsoidal, 2],\n" +
-                "      Axis[“Longitude (L)”, east, Order[1]],\n" +
-                "      Axis[“Latitude (B)”, north, Order[2]],\n" +
-                "      AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "      Axis[“Longitude (L)”, east],\n" +
+                "      Axis[“Latitude (B)”, north],\n" +
+                "      Unit[“degree”, 0.017453292519943295]],\n" +
                 "  VerticalCRS[“MSL height”,\n" +
                 "    VerticalDatum[“Mean Sea Level”],\n" +
                 "    CS[vertical, 1],\n" +
-                "      Axis[“Gravity-related height (H)”, up, Order[1]],\n" +
-                "      LengthUnit[“metre”, 1],\n" +
+                "      Axis[“Gravity-related height (H)”, up],\n" +
+                "      Unit[“metre”, 1],\n" +
                 "    Id[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
                 "  TimeCRS[“Time”,\n" +
                 "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]],\n" +
                 "    CS[temporal, 1],\n" +
-                "      Axis[“Time (t)”, future, Order[1]],\n" +
+                "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
