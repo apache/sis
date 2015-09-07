@@ -382,7 +382,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
         if (!convention.isSimplified() || !contextualUnit.equals(unit) || beConservative(formatter, contextualUnit)) {
             formatter.append(unit);
         }
-        return WKTKeywords.PrimeMeridian;
+        return formatter.shortOrLong(WKTKeywords.PrimeM, WKTKeywords.PrimeMeridian);
     }
 
 

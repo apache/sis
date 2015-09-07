@@ -564,7 +564,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
              * Datum appears in another context, then we will use "GeodeticDatum" for clarity.
              */
             if (!(formatter.getEnclosingElement(1) instanceof GeodeticCRS)) {
-                return WKTKeywords.GeodeticDatum;
+                return formatter.shortOrLong(WKTKeywords.Datum, WKTKeywords.GeodeticDatum);
             }
         }
         return WKTKeywords.Datum;
