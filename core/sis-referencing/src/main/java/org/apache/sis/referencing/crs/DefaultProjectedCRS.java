@@ -405,7 +405,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
         }
         formatter.restoreContextualUnit(lengthUnit, oldLength);
         formatter.restoreContextualUnit(angularUnit, oldAngle);
-        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS : WKTKeywords.ProjectedCRS;
+        return isWKT1 ? WKTKeywords.ProjCS : isBaseCRS ? WKTKeywords.BaseProjCRS
+                : formatter.shortOrLong(WKTKeywords.ProjCRS, WKTKeywords.ProjectedCRS);
     }
 
     /**

@@ -89,11 +89,13 @@ public final strictfp class DefaultVerticalDatumTest extends XMLTestCase {
         DefaultVerticalDatum datum;
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Geoidal”, 2005]", datum);
-        assertWktEquals(Convention.WKT2, "VerticalDatum[“Geoidal”]", datum);
+        assertWktEquals(Convention.WKT2, "VDATUM[“Geoidal”]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Geoidal”]", datum);
 
         datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
-        assertWktEquals(Convention.WKT2, "VerticalDatum[“Ellipsoidal”]", datum);
+        assertWktEquals(Convention.WKT2, "VDATUM[“Ellipsoidal”]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Ellipsoidal”]", datum);
     }
 
     /**

@@ -536,7 +536,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 final CoordinateSystem cs = getCoordinateSystem();
                 formatCS(formatter, cs, ReferencingUtilities.getUnit(cs), isWKT1);
             }
-            return keyword();
+            return keyword(formatter);
         }
     }
 
@@ -545,8 +545,16 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Inner subclasses will override this method for returning a constant value instead
      * than trying to infer it from the components.
      */
-    String keyword() {
-        return getType(getBaseCRS(), getCoordinateSystem());
+    String keyword(final Formatter formatter) {
+        final String longKeyword = getType(getBaseCRS(), getCoordinateSystem());
+        final String shortKeyword;
+        switch (longKeyword) {
+            case WKTKeywords.GeodeticCRS:    shortKeyword = WKTKeywords.GeodCRS; break;
+            case WKTKeywords.VerticalCRS:    shortKeyword = WKTKeywords.VertCRS; break;
+            case WKTKeywords.EngineeringCRS: shortKeyword = WKTKeywords.EngCRS;  break;
+            default: return longKeyword;
+        }
+        return formatter.shortOrLong(shortKeyword, longKeyword);
     }
 
     /**
@@ -631,8 +639,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
-        @Override String keyword() {
-            return WKTKeywords.GeodeticCRS;
+        @Override String keyword(final Formatter formatter) {
+            return formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
     }
 
@@ -679,8 +687,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
-        @Override String keyword() {
-            return WKTKeywords.VerticalCRS;
+        @Override String keyword(final Formatter formatter) {
+            return formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
         }
     }
 
@@ -727,7 +735,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
-        @Override String keyword() {
+        @Override String keyword(final Formatter formatter) {
             return WKTKeywords.TimeCRS;
         }
     }
@@ -772,8 +780,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
-        @Override String keyword() {
-            return WKTKeywords.EngineeringCRS;
+        @Override String keyword(final Formatter formatter) {
+            return formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
         }
     }
 

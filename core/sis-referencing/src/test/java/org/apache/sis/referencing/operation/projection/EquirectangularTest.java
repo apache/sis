@@ -72,9 +72,9 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
                 "  PARAMETER[“semi_minor”, 6371007.0]]");
 
         ReferencingAssert.assertWktEquals(Convention.WKT2,
-                "Param_MT[“Equidistant Cylindrical (Spherical)”,\n" +
-                "  Parameter[“semi_major”, 6371007.0, LengthUnit[“metre”, 1]],\n" +
-                "  Parameter[“semi_minor”, 6371007.0, LengthUnit[“metre”, 1]]]", transform);
+                "PARAM_MT[“Equidistant Cylindrical (Spherical)”,\n" +
+                "  PARAMETER[“semi_major”, 6371007.0, LENGTHUNIT[“metre”, 1]],\n" +
+                "  PARAMETER[“semi_minor”, 6371007.0, LENGTHUNIT[“metre”, 1]]]", transform);
 
         ReferencingAssert.assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "Param_MT[“Equidistant Cylindrical (Spherical)”,\n" +

@@ -172,8 +172,14 @@ public abstract class FormattableObject {
         if (formatter == null) {
             formatter = new Formatter();
         }
+        /*
+         * Apply the same setting than in 'WKTFormat.updateFormatter(…)'
+         * when KeywordCase and KeywordStyle have their default values.
+         */
         formatter.configure(convention, null, colorize ? Colors.DEFAULT : null,
-                (convention.majorVersion() == 1) ? (byte) 1 : 0, WKTFormat.DEFAULT_INDENTATION);
+                convention.toUpperCase           ? (byte) +1 : 0,
+                (convention.majorVersion() == 1) ? (byte) -1 : 0,
+                WKTFormat.DEFAULT_INDENTATION);
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }

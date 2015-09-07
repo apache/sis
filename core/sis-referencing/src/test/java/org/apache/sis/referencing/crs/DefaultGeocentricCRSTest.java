@@ -96,15 +96,15 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
-                "GeodeticCRS[“Geocentric”,\n" +
-                "  Datum[“World Geodetic System 1984”,\n" +
-                "    Ellipsoid[“WGS84”, 6378137.0, 298.257223563, LengthUnit[“metre”, 1]]],\n" +
-                "    PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                "GEODCRS[“Geocentric”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "  CS[Cartesian, 3],\n" +
-                "    Axis[“(X)”, geocentricX, Order[1]],\n" +
-                "    Axis[“(Y)”, geocentricY, Order[2]],\n" +
-                "    Axis[“(Z)”, geocentricZ, Order[3]],\n" +
-                "    LengthUnit[“metre”, 1]]",
+                "    AXIS[“(X)”, geocentricX, ORDER[1]],\n" +
+                "    AXIS[“(Y)”, geocentricY, ORDER[2]],\n" +
+                "    AXIS[“(Z)”, geocentricZ, ORDER[3]],\n" +
+                "    LENGTHUNIT[“metre”, 1]]",
                 HardCodedCRS.GEOCENTRIC);
     }
 
