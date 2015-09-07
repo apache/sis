@@ -61,7 +61,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      */
     @Override
     protected String preprocessWKT(String wkt) {
-        if (Math.random() >= 0.5) {
+        if (StrictMath.random() >= 0.5) {
             wkt = super.preprocessWKT(wkt);
         }
         return wkt;
