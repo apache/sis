@@ -337,7 +337,7 @@ public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
                     remarks = "Optional ";
                 } else {
                     final Comparable<?> min = param.getMinimumValue();
-                    if (min != null && min.equals(param.getMaximumValue())) {
+                    if ((min instanceof Number) && ((Number) min).doubleValue() == ((Number) param.getMaximumValue()).doubleValue()) {
                         remarks = "Unmodifiable ";
                     } else {
                         remarks = "See note ";
