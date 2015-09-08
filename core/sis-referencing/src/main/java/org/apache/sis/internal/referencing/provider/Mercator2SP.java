@@ -91,7 +91,7 @@ public final class Mercator2SP extends AbstractMercator {
                 .rename(Citations.GEOTIFF, (String[]) null)  // "ScaleAtNatOrigin" is too specific.
                 .setRemarks(remarks).setDeprecated(true));
 
-        PARAMETERS = builder.setDeprecated(false)
+        PARAMETERS = builder
             .addIdentifier(             "9805")
             .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
             .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6

@@ -20,7 +20,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -46,14 +45,11 @@ final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
 
     /**
      * Creates a deprecated identifier.
-     *
-     * @param supersededBy The code that replace this one.
      */
     DeprecatedCode(final Citation authority, final String codeSpace,
-            final String code, final String version, final CharSequence supersededBy)
+            final String code, final String version, final InternationalString remarks)
     {
-        super(authority, codeSpace, code, version,
-                Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy));
+        super(authority, codeSpace, code, version, remarks);
     }
 
     /**
