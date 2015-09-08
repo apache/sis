@@ -26,12 +26,14 @@ import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
@@ -311,18 +313,6 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Creates an identifier from a string for the given authority.
-     */
-    private Identifier createIdentifier(final Citation authority, final String identifier) {
-        if (authority == getAuthority()) {
-            return new ImmutableIdentifier(authority, getCodeSpace(), identifier, getVersion(), null);
-        } else {
-            // Do not use the version information since it applies to the default authority rather than the given one.
-            return new ImmutableIdentifier(authority, Citations.getCodeSpace(authority), identifier);
-        }
-    }
-
-    /**
      * Converts the given name into an identifier. Note that {@link NamedIdentifier}
      * implements both {@link GenericName} and {@link Identifier} interfaces.
      */
@@ -451,24 +441,35 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} name given by a {@code String} or {@code InternationalString}.
-     * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
-     * and {@link #setVersion(String) version} information for creating the {@link Identifier} or {@link GenericName}
-     * object.
+     * The given string will be combined with the authority, {@linkplain #setCodeSpace(Citation, String)
+     * code space} and {@linkplain #setVersion(String) version} information for creating the
+     * {@link Identifier} or {@link GenericName} object.
      *
      * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name}, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
      *
+     * <div class="section">Deprecated names</div>
+     * Some names may exist for historical reasons but have their use discouraged.
+     * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
+     * method creates a deprecated alias with the current {@linkplain #setRemarks(CharSequence) remarks}.
+     * The remark should suggest a replacement, for example with a sentence like
+     * <cite>"Superseded by {@literal <new-name>}"</cite>.
+     *
+     * <p>Note that deprecated names are always added as aliases, never as the primary name of an identified object.</p>
+     *
      * <p><b>Lifetime:</b>
      * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  name The {@code IdentifiedObject} name.
+     * @param  name The {@code IdentifiedObject} name as a {@link String} or {@link InternationalString} instance.
      * @return {@code this}, for method call chaining.
      */
     public B addName(final CharSequence name) {
         ensureNonNull("name", name);
-        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
+        if (isDeprecated()) {
+            aliases.add(new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), getRemarks()));
+        } else if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
             // A primary name is already present. Add the given name as an alias instead.
             aliases.add(createName(name));
         }
@@ -505,10 +506,27 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addName(final Citation authority, final CharSequence name) {
         ensureNonNull("name", name);
-        final NamedIdentifier identifier = new NamedIdentifier(authority, name);
-        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, identifier) != null) {
+        final boolean isDeprecated = isDeprecated();
+        if (!isDeprecated && properties.get(IdentifiedObject.NAME_KEY) != null) {
             // A primary name is already present. Add the given name as an alias instead.
-            aliases.add(identifier);
+            aliases.add(createName(authority, name));
+        } else {
+            final String codeSpace;
+            final String version;
+            if (authority == getAuthority()) {
+                codeSpace  = getCodeSpace();
+                version    = getVersion();
+            } else {
+                // Do not use the version information since it applies to the default authority rather than the given one.
+                codeSpace = Citations.getCodeSpace(authority);
+                version   = null;
+            }
+            if (isDeprecated) {
+                aliases.add(new DeprecatedName(authority, codeSpace, name, version, getRemarks()));
+            } else {
+                properties.put(IdentifiedObject.NAME_KEY,
+                        new NamedIdentifier(authority, codeSpace, name, version, getDescription()));
+            }
         }
         return self();
     }
@@ -567,38 +585,17 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Adds a deprecated name given by a {@code CharSequence}. Some objects have deprecated names for historical reasons.
-     * The deprecated name typically has a replacement, which can be given by the {@code supersededBy} argument.
-     * The later, if non-null, shall be a name specified by a previous call to an {@code addName(…)} method.
-     *
-     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space} and
-     * {@link #setVersion(String) version} information for creating the deprecated {@link NamedIdentifier} object.</p>
-     *
-     * <p><b>Lifetime:</b>
-     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
-     *
-     * @param  name The {@code IdentifiedObject} deprecated name.
-     * @param  supersededBy The name to use instead of this one, or {@code null} if none.
-     * @return {@code this}, for method call chaining.
-     *
-     * @see #addDeprecatedIdentifier(String, String)
-     * @see #setDeprecated(boolean)
-     *
-     * @since 0.6
-     */
-    public B addDeprecatedName(final CharSequence name, final CharSequence supersededBy) {
-        ensureNonNull("name", name);
-        final DeprecatedName dn = new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), supersededBy);
-        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, dn) != null) {
-            aliases.add(dn);
-        }
-        return self();
-    }
-
-    /**
      * Adds an {@code IdentifiedObject} identifier given by a {@code String}.
-     * The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
-     * and {@link #setVersion(String) version} information for creating the {@link Identifier} object.
+     * The given string will be combined with the authority, {@linkplain #setCodeSpace(Citation, String) code space}
+     * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description} information
+     * for creating the {@link Identifier} object.
+     *
+     * <div class="section">Deprecated identifiers</div>
+     * Some identifiers may exist for historical reasons but have their use discouraged.
+     * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
+     * method creates a deprecated identifier with the current {@linkplain #setRemarks(CharSequence) remarks}.
+     * The remark should suggest a replacement, for example with a sentence like
+     * <cite>"Superseded by {@literal <new-code>}"</cite>.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
@@ -608,7 +605,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(new ImmutableIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion(), null));
+        addIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion());
         return self();
     }
 
@@ -619,7 +616,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  authority Bibliographic reference to the authority defining the codes, or {@code null} if none.
+     * @param  authority  Bibliographic reference to the authority defining the codes, or {@code null} if none.
      * @param  identifier The {@code IdentifiedObject} identifier as a code in the namespace of the given authority.
      * @return {@code this}, for method call chaining.
      *
@@ -627,15 +624,38 @@ public abstract class Builder<B extends Builder<B>> {
      */
     public B addIdentifier(final Citation authority, final String identifier) {
         ensureNonNull("identifier", identifier);
-        identifiers.add(createIdentifier(authority, identifier));
+        final String codeSpace;
+        final String version;
+        if (authority == getAuthority()) {
+            codeSpace  = getCodeSpace();
+            version    = getVersion();
+        } else {
+            // Do not use the version information since it applies to the default authority rather than the given one.
+            codeSpace = Citations.getCodeSpace(authority);
+            version   = null;
+        }
+        addIdentifier(authority, codeSpace, identifier, version);
         return self();
     }
 
     /**
+     * Implementation of {@link #addIdentifier(String)} and {@link #addIdentifier(Citation, String)}.
+     */
+    private void addIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
+        final Identifier id;
+        if (isDeprecated()) {
+            id = new DeprecatedCode(authority, codeSpace, identifier, version, getRemarks());
+        } else {
+            id = new ImmutableIdentifier(authority, codeSpace, identifier, version, getDescription());
+        }
+        identifiers.add(id);
+    }
+
+    /**
      * Adds an {@code IdentifiedObject} identifier fully specified by the given identifier.
-     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
-     * {@link #setVersion(String) version} specified to this builder (if any), since the given
-     * identifier already contains those information.
+     * This method ignores the authority, {@linkplain #setCodeSpace(Citation, String) code space},
+     * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
+     * specified to this builder (if any), since the given identifier already contains those information.
      *
      * <p><b>Lifetime:</b>
      * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
@@ -649,35 +669,11 @@ public abstract class Builder<B extends Builder<B>> {
         return self();
     }
 
-    /**
-     * Adds a deprecated identifier given by a {@code String}. Some objects have deprecated identifiers for
-     * historical reasons. The deprecated identifier typically has a replacement, which can be given by the
-     * {@code supersededBy} argument. The later, if non-null, shall be an identifier specified by a previous
-     * call to an {@code addIdentifier(…)} method.
-     *
-     * <p>The given string will be combined with the authority, {@link #setCodeSpace(Citation, String) code space}
-     * and {@link #setVersion(String) version} information for creating the deprecated {@link Identifier} object.</p>
-     *
-     * <p><b>Lifetime:</b>
-     * all identifiers are cleared after a {@code createXXX(…)} method has been invoked.</p>
-     *
-     * @param  identifier   The {@code IdentifiedObject} deprecated identifier.
-     * @param  supersededBy The identifier to use instead of this one, or {@code null} if none.
-     * @return {@code this}, for method call chaining.
-     *
-     * @see #addDeprecatedName(CharSequence, CharSequence)
-     * @see #setDeprecated(boolean)
-     *
-     * @since 0.6
-     */
-    public B addDeprecatedIdentifier(final String identifier, final String supersededBy) {
-        ensureNonNull("identifier", identifier);
-        identifiers.add(new DeprecatedCode(getAuthority(), getCodeSpace(), identifier, getVersion(), supersededBy));
-        return self();
-    }
 
     /**
      * Returns {@code true} if the given name or identifier is deprecated.
+     *
+     * @see #isDeprecated()
      */
     private static boolean isDeprecated(final Object object) {
         return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
@@ -801,19 +797,54 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Sets the parameter description as a {@code String} or {@code InternationalString} instance.
+     * Returns the parameter description specified by the last call to {@link #setDescription(CharSequence)},
+     * or {@code null} if none.
+     */
+    private InternationalString getDescription() {
+        return (InternationalString) properties.get(Identifier.DESCRIPTION_KEY);
+    }
+
+    /**
+     * Sets an {@code Identifier} or {@code IdentifiedObject} description.
+     * Descriptions can be used in various contexts:
+     *
+     * <ul>
+     *   <li>Before calls to {@link #addIdentifier(String)} or {@link #addIdentifier(Citation, String)}
+     *       for specifying a natural language description of the meaning of the code value.
+     *
+     *       <div class="note"><b>Example:</b>
+     *       {@code setDescription("World Geodetic System 1984").addIdentifier("4326")}</div></li>
+     *
+     *   <li>Before calls to a {@code createXXX(…)} method for providing a narrative explanation
+     *       of the role of the object. Not all {@code IdentifiedObject} supports description.</li>
+     * </ul>
+     *
      * Calls to this method overwrite any previous value.
      *
      * <p><b>Lifetime:</b>
      * previous descriptions are discarded by calls to {@code setDescription(…)}.
      * Descriptions are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  description The description, or {@code null} if none.
+     * @param  description The description as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
      * @return {@code this}, for method call chaining.
+     *
+     * @see ImmutableIdentifier#getDescription()
      */
     public B setDescription(final CharSequence description) {
-        properties.put(Identifier.DESCRIPTION_KEY, description);
+        /*
+         * Convert to InternationalString now in order to share the same instance if
+         * the same description is used both for an Identifier and an IdentifiedObject.
+         */
+        properties.put(Identifier.DESCRIPTION_KEY, Types.toInternationalString(description));
         return self();
+    }
+
+    /**
+     * Returns the remarks specified by the last call to {@link #setRemarks(CharSequence)},
+     * or {@code null} if none.
+     */
+    private InternationalString getRemarks() {
+        return (InternationalString) properties.get(IdentifiedObject.REMARKS_KEY);
     }
 
     /**
@@ -824,30 +855,40 @@ public abstract class Builder<B extends Builder<B>> {
      * previous remarks are discarded by calls to {@code setRemarks(…)}.
      * Remarks are cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
-     * @param  remarks The remarks, or {@code null} if none.
+     * @param  remarks The remarks as a {@link String} or {@link InternationalString} instance, or {@code null} if none.
      * @return {@code this}, for method call chaining.
      */
     public B setRemarks(final CharSequence remarks) {
-        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
+        /*
+         * Convert to InternationalString now in order to share the same instance if
+         * the same remarks is used both for an Identifier and an IdentifiedObject.
+         */
+        properties.put(IdentifiedObject.REMARKS_KEY, Types.toInternationalString(remarks));
         return self();
     }
 
     /**
-     * Sets whether the next {@code IdentifiedObject}s to create shall be considered deprecated. Deprecated objects
-     * exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like the EPSG database.
+     * Returns {@code true} if the deprecated flag is set to {@code true}.
+     */
+    private boolean isDeprecated() {
+        return Boolean.TRUE.equals(properties.get(AbstractIdentifiedObject.DEPRECATED_KEY));
+    }
+
+    /**
+     * Sets whether the next {@code Identifier} or {@code IdentifiedObject}s to create shall be considered deprecated.
+     * Deprecated objects exist in some {@linkplain org.opengis.referencing.AuthorityFactory authority factories} like
+     * the EPSG database.
      *
      * <p>Note that this method does not apply to name and identifiers, which have their own
      * {@code addDeprecatedFoo(…)} methods.</p>
      *
      * <p><b>Lifetime:</b>
-     * this property is kept unchanged until this {@code setDeprecated(…)} method is invoked again.</p>
+     * Deprecation status is cleared after a {@code createXXX(…)} method has been invoked.</p>
      *
      * @param  deprecated {@code true} if the next names, identifiers and identified objects should be
      *         considered deprecated, or {@code false} otherwise.
      * @return {@code this}, for method call chaining.
      *
-     * @see #addDeprecatedName(CharSequence, CharSequence)
-     * @see #addDeprecatedIdentifier(String, String)
      * @see AbstractIdentifiedObject#isDeprecated()
      *
      * @since 0.6
@@ -875,8 +916,9 @@ public abstract class Builder<B extends Builder<B>> {
      * }
      *
      * If {@code cleanup} is {@code true}, then this method clears the identification information
-     * (name, aliases, identifiers and remarks) for preparing the builder to the construction of
-     * an other object. The authority, codespace and version properties are not cleared by this method.
+     * (name, aliases, identifiers, description, remarks and deprecation status) for preparing the
+     * builder to the construction of an other object.
+     * The authority, codespace and version properties are not cleared by this method.
      *
      * @param cleanup {@code false} when this method is invoked before object creation, and
      *                {@code true} when this method is invoked after object creation.
@@ -889,6 +931,8 @@ public abstract class Builder<B extends Builder<B>> {
         if (cleanup) {
             properties .put(IdentifiedObject.NAME_KEY, null);
             properties .remove(IdentifiedObject.REMARKS_KEY);
+            properties .remove(Identifier.DESCRIPTION_KEY);
+            properties .remove(AbstractIdentifiedObject.DEPRECATED_KEY);
             aliases    .clear();
             identifiers.clear();
             valueAlias = null;

@@ -18,7 +18,6 @@ package org.apache.sis.referencing;
 
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -49,10 +48,10 @@ final class DeprecatedName extends NamedIdentifier {
      * @param supersededBy The name that replace this one.
      */
     DeprecatedName(final Citation authority, final String codeSpace, final CharSequence code, final String version,
-            final CharSequence supersededBy)
+            final InternationalString remarks)
     {
         super(authority, codeSpace, code, version, null);
-        remarks = Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, supersededBy);
+        this.remarks = remarks;
     }
 
     /**
