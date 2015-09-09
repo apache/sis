@@ -213,17 +213,17 @@ public class TransverseMercator extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ      = srcPts[srcOff];
-        final double φ      = srcPts[srcOff + 1];
+        final double λ     = srcPts[srcOff];
+        final double φ     = srcPts[srcOff + 1];
 
-        final double exsinφ = excentricity * sin(φ);
-        final double Q      = asinh(tan(φ)) - atanh(exsinφ) * excentricity;
-        final double sinλ   = sin(λ);
-        final double coshQ  = cosh(Q);
-        final double η0     = atanh(sinλ / coshQ);
+        final double ℯsinφ = excentricity * sin(φ);
+        final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * excentricity;
+        final double sinλ  = sin(λ);
+        final double coshQ = cosh(Q);
+        final double η0    = atanh(sinλ / coshQ);
 
         /*
-         * Original formula : η0 = atanh(sin(λ) * cos(β)) where
+         * Original formula: η0 = atanh(sin(λ) * cos(β)) where
          * cos(β) = cos(atan(sinh(Q)))
          *        = 1 / sqrt(1 + sinh²(Q))
          *        = 1 / (sqrt(cosh²(Q) - sinh²(Q) + sinh²(Q)))
@@ -232,8 +232,8 @@ public class TransverseMercator extends NormalizedProjection {
          *
          * So η0 = atanh(sin(λ) / cosh(Q))
          */
-        final double coshη0   = cosh(η0);
-        final double ξ0       = asin(tanh(Q) * coshη0);
+        final double coshη0 = cosh(η0);
+        final double ξ0     = asin(tanh(Q) * coshη0);
 
         //-- ξ0
         final double sin_8ξ0  = sin(8*ξ0);
@@ -257,7 +257,7 @@ public class TransverseMercator extends NormalizedProjection {
 
         /*
          * Assuming that (λ, φ) ↦ Proj((λ, φ))
-         * where Proj is defined by : Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
+         * where Proj is defined by: Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
          *
          * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
          */
@@ -284,43 +284,28 @@ public class TransverseMercator extends NormalizedProjection {
             return null;
         }
 
-        //-- λ
-        final double cosλ = cos(λ);
-
-        //-- φ
-        final double cosφ = cos(φ);
-
-        //-- Q
-        final double cosh2Q = coshQ * coshQ;//-- squared cosh(Q)
-        final double sinhQ  = sinh(Q);
-        final double tanhQ  = tanh(Q);
-
-        //-- Qλ
-        final double cosh2Q_sin2λ  = cosh2Q - sinλ * sinλ;
-
-        //-- η0
-        final double sinhη0        = sinh(η0);
-
-        //-- Qη0
-        final double sqrt1_thQchη0 = sqrt(1 - tanhQ * tanhQ * coshη0 * coshη0);
+        final double cosλ          = cos(λ);                                     //-- λ
+        final double cosφ          = cos(φ);                                     //-- φ
+        final double cosh2Q        = coshQ * coshQ;                              //-- Q
+        final double sinhQ         = sinh(Q);
+        final double tanhQ         = tanh(Q);
+        final double cosh2Q_sin2λ  = cosh2Q - sinλ * sinλ;                       //-- Qλ
+        final double sinhη0        = sinh(η0);                                   //-- η0
+        final double sqrt1_thQchη0 = sqrt(1 - tanhQ * tanhQ * coshη0 * coshη0);  //-- Qη0
 
         //-- dQ_dλ = 0;
-        final double dQ_dφ         = 1 / cosφ - excentricitySquared * cosφ / (1 - exsinφ * exsinφ);
+        final double dQ_dφ  = 1 / cosφ - excentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
 
-        final double dη0_dλ        =   cosλ * coshQ         / cosh2Q_sin2λ;
-        final double dη0_dφ        = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
+        final double dη0_dλ =   cosλ * coshQ         / cosh2Q_sin2λ;
+        final double dη0_dφ = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
 
-        /*
-         * db_dλ / sqrt(1 - tanhQ² * coshη0²);
-         * db_dφ / sqrt(1 - tanhQ² * coshη0²);
-         */
-        final double dξ0_dλ        = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
-        final double dξ0_dφ        = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;
+        final double dξ0_dλ = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
+        final double dξ0_dφ = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;
 
         /*
          * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
          *
-         * So derivative Proj((λ, φ)) is defined by :
+         * So derivative Proj((λ, φ)) is defined by:
          *                    ┌                              ┐
          *                    │ dη(λ, φ) / dλ, dη(λ, φ) / dφ │
          * Jac              = │                              │
@@ -333,6 +318,7 @@ public class TransverseMercator extends NormalizedProjection {
                            + 3 *  h3 * (dξ0_dλ * cos_6ξ0 * cosh_6η0 + dη0_dλ * sinh_6η0 * sin_6ξ0)
                            + 2 * (h2 * (dξ0_dλ * cos_4ξ0 * cosh_4η0 + dη0_dλ * sinh_4η0 * sin_4ξ0)
                            + 2 *  h4 * (dξ0_dλ * cos_8ξ0 * cosh_8η0 + dη0_dλ * sinh_8η0 * sin_8ξ0)));
+
         //-- dξ(λ, φ) / dφ
         final double dξ_dφ = dξ0_dφ
                            + 2 * (h1 * (dξ0_dφ * cos_2ξ0 * cosh_2η0 + dη0_dφ * sinh_2η0 * sin_2ξ0)
