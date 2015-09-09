@@ -166,6 +166,18 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Creates a descriptor for values of the given type without domain restriction.
+     *
+     * @param  <T>          The compile-time type of the {@code valueClass} argument.
+     * @param  valueClass   The class that describe the type of the parameter values.
+     * @param  defaultValue The default value for the parameter, or {@code null} if none.
+     * @return The parameter descriptor for the given default value and unit.
+     */
+    public <T> ParameterDescriptor<T> create(final Class<T> valueClass, final T defaultValue) {
+        return create(valueClass, null, null, defaultValue);
+    }
+
+    /**
      * Creates a descriptor for floating point values without domain restriction.
      * All {@code double} values are considered valid.
      *
@@ -181,18 +193,6 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
             valueDomain = null;
         }
         return create(Double.class, valueDomain, null, valueOf(defaultValue));
-    }
-
-    /**
-     * Creates a descriptor for values of the given type without domain restriction.
-     *
-     * @param  <T>          The compile-time type of the {@code valueClass} argument.
-     * @param  valueClass   The class that describe the type of the parameter values.
-     * @param  defaultValue The default value for the parameter, or {@code null} if none.
-     * @return The parameter descriptor for the given default value and unit.
-     */
-    public <T> ParameterDescriptor<T> create(final Class<T> valueClass, final T defaultValue) {
-        return create(valueClass, null, null, defaultValue);
     }
 
     /**

@@ -61,7 +61,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      */
     @Override
     protected String preprocessWKT(String wkt) {
-        if (Math.random() >= 0.5) {
+        if (StrictMath.random() >= 0.5) {
             wkt = super.preprocessWKT(wkt);
         }
         return wkt;
@@ -274,14 +274,39 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     }
 
     /**
-     * Ignored for now, because the Transverse Mercator projection method is not yet implemented.
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters and the line feed in {@code REMARK}):
+     *
+     * <blockquote><pre>PROJCRS[“NAD83 UTM 10”,
+     *  BASEGEODCRS[“NAD83(86)”,
+     *    DATUM[“North American Datum 1983”,
+     *      ELLIPSOID[“GRS 1980”,6378137,298.257222101]],
+     *    ANGLEUNIT[“degree”,0.0174532925199433]],
+     *    PRIMEM[“Greenwich”,0],
+     *  CONVERSION[“UTM zone 10N”,ID[“EPSG”,16010],
+     *    METHOD[“Transverse Mercator”],
+     *    PARAMETER[“Latitude of natural origin”,0.0],
+     *    PARAMETER[“Longitude of natural origin”,-123.0],
+     *    PARAMETER[“Scale factor”,0.9996],
+     *    PARAMETER[“False easting”,500000.0],
+     *    PARAMETER[“False northing”,0.0]],
+     *  CS[Cartesian,2],
+     *    AXIS[“(E)”,east,ORDER[1]],
+     *    AXIS[“(N)”,north,ORDER[2]],
+     *    LENGTHUNIT[“metre”,1.0],
+     *  REMARK[“In this example units are implied. This is allowed for backward compatibility.
+     *          It is recommended that units are explicitly given in the string,
+     *          as in the previous two examples.”]]</pre></blockquote>
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
     @Test
     @Override
-    @Ignore("Transverse Mercator projection method not yet implemented.")
     public void testProjectedWithImplicitParameterUnits() throws FactoryException {
+        super.testProjectedWithImplicitParameterUnits();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
     }
 
     /**
