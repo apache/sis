@@ -65,11 +65,6 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
     public void testProjected3D() throws FactoryException {
     }
 
-    @Override
-    @Ignore("This tests need the Transverse Mercator projection, which is not yet implemented in SIS.")
-    public void testProjectedWithGeoidalHeight() throws FactoryException {
-    }
-
     /**
      * Test {@link GeodeticObjectFactory#createFromWKT(String)}. We test only a very small WKT here because
      * it is not the purpose of this class to test the parser. The main purpose of this test is to verify
