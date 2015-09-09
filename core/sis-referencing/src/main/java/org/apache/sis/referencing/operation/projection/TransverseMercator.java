@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -51,6 +52,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * all zones and a false northing of 10000000 metres is used for zones in the southern hemisphere.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
@@ -213,7 +215,7 @@ public class TransverseMercator extends NormalizedProjection {
     {
         final double λ  = srcPts[srcOff];
         final double φ  = srcPts[srcOff + 1];
-        final double Q  = asinh(tan(φ)) - atanh(sin(φ)*excentricity)*excentricity;
+        final double Q  = asinh(tan(φ)) - atanh(sin(φ) * excentricity) * excentricity;
         final double β  = atan(sinh(Q));
 
         // TODO: sin(atan(x)) = x / sqrt(1+x²)
@@ -221,14 +223,20 @@ public class TransverseMercator extends NormalizedProjection {
         final double η0 = atanh(cos(β) * sin(λ));
         final double ξ0 = asin(sin(β) * cosh(η0));
 
-        // TODO: use trigonometric identities.
-        // See ConformalProjection for example.
+       /*
+        * Assuming that (λ, φ) ↦ Proj((λ, φ))
+        * where Proj is defined by : Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
+        *
+        * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
+        */
+        //-- ξ(λ, φ)
         final double ξ = h4 * sin(8*ξ0) * cosh(8*η0)
                        + h3 * sin(6*ξ0) * cosh(6*η0)
                        + h2 * sin(4*ξ0) * cosh(4*η0)
                        + h1 * sin(2*ξ0) * cosh(2*η0)
                        + ξ0;
 
+        //-- η(λ, φ)
         final double η = h4 * cos(8*ξ0) * sinh(8*η0)
                        + h3 * cos(6*ξ0) * sinh(6*η0)
                        + h2 * cos(4*ξ0) * sinh(4*η0)
@@ -239,16 +247,77 @@ public class TransverseMercator extends NormalizedProjection {
             dstPts[dstOff    ] = η;
             dstPts[dstOff + 1] = ξ;
         }
+        
         if (!derivate) {
             return null;
         }
+        
+        //-- dQ_dλ = 0;
+        final double dQ_dφ = sqrt(1 + tan(φ) * tan(φ)) - excentricitySquared * cos(φ) / (1 - excentricitySquared * sin(φ) * sin(φ));
+        
+        //-- dβ_dλ = 0;
+        final double dβ_dφ = dQ_dφ * cosh(Q) / (1 + sinh(Q) * sinh(Q));
 
-        // TODO: compute projection derivative.
-        return null;
+        // TODO: sin(β) = sin(atan(sinh(Q))) = sinh(Q) / sqrt(1 + sinh²(Q))
+        //       cos(β) = cos(atan(sinh(Q))) = 1       / sqrt(1 + sinh²(Q))
+        final double a     =   cos(β) * sin(λ);
+        final double da_dλ =   cos(β) * cos(λ);
+        final double da_dφ = - sin(λ) * dβ_dφ * sin(β);
+        
+        final double dη0_dλ = da_dλ / (1 - a * a);
+        final double dη0_dφ = da_dφ / (1 - a * a);
+        
+        final double b     = sin(β) * cosh(η0);
+        final double db_dλ = sin(β) * dη0_dλ * sinh(η0);
+        final double db_dφ = dβ_dφ  * cos(β) * cosh(η0) + dη0_dφ * sinh(η0) * sin(β);
+        
+        final double dξ0_dλ = db_dλ / sqrt(1 - b * b);
+        final double dξ0_dφ = db_dφ / sqrt(1 - b * b);
+
+       /*
+        * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
+        *
+        * So derivative Proj((λ, φ)) is defined by :
+        *                     _                            _
+        *                    | dη(λ, φ) / dλ, dη(λ, φ) / dφ |
+        * Jac              = |                              |
+        *    (Proj(λ, φ))    | dξ(λ, φ) / dλ, dξ(λ, φ) / dφ |
+        *                    |_                            _|
+        */
+
+        //-- dξ(λ, φ) / dλ
+        final double dξ_dλ = h4 * (8 * dξ0_dλ * cos(8*ξ0) * cosh(8*η0) + 8 * dη0_dλ * sinh(8*η0) * sin(8*ξ0))
+                           + h3 * (6 * dξ0_dλ * cos(6*ξ0) * cosh(6*η0) + 6 * dη0_dλ * sinh(6*η0) * sin(6*ξ0))
+                           + h2 * (4 * dξ0_dλ * cos(4*ξ0) * cosh(4*η0) + 4 * dη0_dλ * sinh(4*η0) * sin(4*ξ0))
+                           + h1 * (2 * dξ0_dλ * cos(2*ξ0) * cosh(2*η0) + 2 * dη0_dλ * sinh(2*η0) * sin(2*ξ0))
+                           + dξ0_dλ;
+        //-- dξ(λ, φ) / dφ
+        final double dξ_dφ = h4 * (8 * dξ0_dφ * cos(8*ξ0) * cosh(8*η0) + 8 * dη0_dφ * sinh(8*η0) * sin(8*ξ0))
+                           + h3 * (6 * dξ0_dφ * cos(6*ξ0) * cosh(6*η0) + 6 * dη0_dφ * sinh(6*η0) * sin(6*ξ0))
+                           + h2 * (4 * dξ0_dφ * cos(4*ξ0) * cosh(4*η0) + 4 * dη0_dφ * sinh(4*η0) * sin(4*ξ0))
+                           + h1 * (2 * dξ0_dφ * cos(2*ξ0) * cosh(2*η0) + 2 * dη0_dφ * sinh(2*η0) * sin(2*ξ0))
+                           + dξ0_dφ;
+
+        //-- dη(λ, φ) / dλ
+        final double dη_dλ = h4 * (-8 * dξ0_dλ * sin(8 * ξ0) * sinh(8*η0) + 8 * dη0_dλ * cosh(8*η0) * cos(8*ξ0))
+                           + h3 * (-6 * dξ0_dλ * sin(6 * ξ0) * sinh(6*η0) + 6 * dη0_dλ * cosh(6*η0) * cos(6*ξ0))
+                           + h2 * (-4 * dξ0_dλ * sin(4 * ξ0) * sinh(4*η0) + 4 * dη0_dλ * cosh(4*η0) * cos(4*ξ0))
+                           + h1 * (-2 * dξ0_dλ * sin(2 * ξ0) * sinh(2*η0) + 2 * dη0_dλ * cosh(2*η0) * cos(2*ξ0))
+                           + dη0_dλ;
+
+        //-- dη(λ, φ) / dφ
+        final double dη_dφ = h4 * (-8 * dξ0_dφ * sin(8 * ξ0) * sinh(8*η0) + 8 * dη0_dφ * cosh(8*η0) * cos(8*ξ0))
+                           + h3 * (-6 * dξ0_dφ * sin(6 * ξ0) * sinh(6*η0) + 6 * dη0_dφ * cosh(6*η0) * cos(6*ξ0))
+                           + h2 * (-4 * dξ0_dφ * sin(4 * ξ0) * sinh(4*η0) + 4 * dη0_dφ * cosh(4*η0) * cos(4*ξ0))
+                           + h1 * (-2 * dξ0_dφ * sin(2 * ξ0) * sinh(2*η0) + 2 * dη0_dφ * cosh(2*η0) * cos(2*ξ0))
+                           + dη0_dφ;
+
+        return new Matrix2(dη_dλ, dη_dφ,
+                           dξ_dλ, dξ_dφ);
     }
 
     /**
-     * Transforms the specified (η,ξ) coordinates and stores the result in {@code dstPts} (angles in radians).
+     * Transforms the specified (η, ξ) coordinates and stores the result in {@code dstPts} (angles in radians).
      *
      * @throws ProjectionException if the point can not be converted.
      */

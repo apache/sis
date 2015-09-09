@@ -36,6 +36,7 @@ import static java.lang.StrictMath.toRadians;
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {
+    
     /**
      * Creates a new instance of {@link TransverseMercator}.
      *
@@ -61,7 +62,6 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testTransverseMercator()
      */
     @Test
-    @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testTransverseMercator() throws FactoryException, TransformException {
         createGeoApiTest(new org.apache.sis.internal.referencing.provider.TransverseMercator()).testTransverseMercator();
     }
@@ -76,7 +76,6 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testTransverseMercatorSouthOrientated()
      */
     @Test
-    @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testTransverseMercatorSouthOrientated() throws FactoryException, TransformException {
         createGeoApiTest(new TransverseMercatorSouth()).testTransverseMercatorSouthOrientated();
     }
@@ -87,7 +86,6 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @throws TransformException Should never happen.
      */
     @Test
-    @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testSphericalDerivative() throws TransformException {
         createNormalizedProjection(false, 0);
         tolerance = 1E-9;
@@ -105,7 +103,6 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @throws TransformException Should never happen.
      */
     @Test
-    @org.junit.Ignore("Missing implementation of the projection derivative.")
     public void testEllipsoidalDerivative() throws TransformException {
         createNormalizedProjection(true, 0);
         tolerance = 1E-9;
