@@ -35,6 +35,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
 
@@ -111,6 +112,26 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      */
     static ParameterBuilder builder() {
         return new ParameterBuilder().setCodeSpace(Citations.EPSG, Constants.EPSG).setRequired(true);
+    }
+
+    /**
+     * Adds a name together with its previous (legacy) name.
+     * The legacy name will be added as a deprecated alias.
+     */
+    static ParameterBuilder addNameAndLegacy(final ParameterBuilder builder, final String name, final String legacy) {
+        return builder.addName(name).setDeprecated(true)
+                .setRemarks(Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, name))
+                .addName(legacy).setDeprecated(false).setRemarks(null);
+    }
+
+    /**
+     * Adds an identifier code together with its previous (legacy) code.
+     * The legacy code will be added as a deprecated identifier.
+     */
+    static ParameterBuilder addIdentifierAndLegacy(final ParameterBuilder builder, final String code, final String legacy) {
+        return builder.addIdentifier(code).setDeprecated(true)
+                .setRemarks(Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, code))
+                .addIdentifier(legacy).setDeprecated(false).setRemarks(null);
     }
 
     /**
