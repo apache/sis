@@ -31,6 +31,9 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
@@ -38,6 +41,8 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -767,6 +772,94 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
+    }
+
+    /**
+     * Parses a test CRS north or south oriented.
+     * If the CRS is fully south-oriented with 0.0 northing, then it should be the EPSG:22285 one.
+     */
+    private ProjectedCRS parseTransverseMercator(final boolean methodSouth,
+            final boolean axisSouth, final double northing) throws ParseException
+    {
+        final String method = methodSouth ? "Transverse Mercator (South Orientated)" : "Transverse Mercator";
+        final String axis = axisSouth ? "“Southing”, SOUTH" : "“Northing”, NORTH";
+        return parse(ProjectedCRS.class,
+                "PROJCS[“South African Coordinate System zone 25”, " +
+                  "GEOGCS[“Cape”, " +
+                    "DATUM[“Cape”, " +
+                      "SPHEROID[“Clarke 1880 (Arc)”, 6378249.145, 293.4663077, AUTHORITY[“EPSG”,“7013”]], " +
+                      "TOWGS84[-136.0, -108.0, -292.0], " +
+                      "AUTHORITY[“EPSG”,“6222”]], " +
+                    "PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”,“8901”]], " +
+                    "UNIT[“degree”, 0.017453292519943295], " +
+                    "AXIS[“Geodetic latitude”, NORTH], " +
+                    "AXIS[“Geodetic longitude”, EAST], " +
+                    "AUTHORITY[“EPSG”,“4222”]], " +
+                  "PROJECTION[“" + method + "”], " +
+                  "PARAMETER[“central_meridian”, 25.0], " +
+                  "PARAMETER[“latitude_of_origin”, 0.0], " +
+                  "PARAMETER[“scale_factor”, 1.0], " +
+                  "PARAMETER[“false_easting”, 0.0], " +
+                  "PARAMETER[“false_northing”, " + northing + "], " +
+                  "UNIT[“m”, 1.0], " +
+                  "AXIS[“Westing”, WEST], " +
+                  "AXIS[" + axis + "]]");
+    }
+
+    /**
+     * Returns the conversion from {@code north} to {@code south}.
+     */
+    private static Matrix conversion(final ProjectedCRS north, final ProjectedCRS south)
+            throws NoninvertibleTransformException
+    {
+        final MathTransform transform = MathTransforms.concatenate(
+                north.getConversionFromBase().getMathTransform().inverse(),
+                south.getConversionFromBase().getMathTransform());
+        assertInstanceOf("North to South", LinearTransform.class, transform);
+        return ((LinearTransform) transform).getMatrix();
+    }
+
+    /**
+     * Tests the {@link MathTransform} between North-Orientated and South-Orientated cases.
+     *
+     * @throws ParseException if the parsing failed.
+     * @throws NoninvertibleTransformException if computation of the conversion from North-Orientated
+     *         to South-Orientated failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testMathTransform() throws ParseException, NoninvertibleTransformException {
+        final double TOLERANCE = 1E-10;
+        /*
+         * Tests "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
+         */
+        ProjectedCRS north = parseTransverseMercator(false, false, 1000);
+        assertEquals(AxisDirection.WEST,  north.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.NORTH, north.getCoordinateSystem().getAxis(1).getDirection());
+
+        ProjectedCRS south = parseTransverseMercator(false, true, 1000);
+        assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
+
+        Matrix matrix = conversion(north, south);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), TOLERANCE);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), TOLERANCE);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), TOLERANCE);
+        assertEquals("No northing expected.",                      0, matrix.getElement(1,2), TOLERANCE);
+        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, TOLERANCE);
+        /*
+         * Tests "Transverse Mercator South Orientated".
+         * The "False Northing" parameter is actually interpreted as a "False Southing".
+         * It may sound surprising, but "South Orientated" projection is defined that way.
+         */
+        south = parseTransverseMercator(true, true, 1000);
+        assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
+        matrix = conversion(north, south);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), TOLERANCE);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), TOLERANCE);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), TOLERANCE);
+        assertEquals("Northing expected.",                      2000, matrix.getElement(1,2), TOLERANCE);
     }
 
     /**
