@@ -17,9 +17,13 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -51,6 +55,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * all zones and a false northing of 10000000 metres is used for zones in the southern hemisphere.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
  * @version 0.6
  * @module
@@ -200,6 +205,42 @@ public class TransverseMercator extends NormalizedProjection {
     }
 
     /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    TransverseMercator(final TransverseMercator other) {
+        super(other);
+        h1  = other. h1;
+        h2  = other. h2;
+        h3  = other. h3;
+        h4  = other. h4;
+        ih1 = other.ih1;
+        ih2 = other.ih2;
+        ih3 = other.ih3;
+        ih4 = other.ih4;
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        TransverseMercator kernel = this;
+        if (excentricity == 0) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
+    }
+
+    /**
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}.
      * In addition, opportunistically computes the projection derivative if {@code derivate} is {@code true}.
      *
@@ -212,44 +253,139 @@ public class TransverseMercator extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ  = srcPts[srcOff];
-        final double φ  = srcPts[srcOff + 1];
-        final double Q  = asinh(tan(φ)) - atanh(sin(φ)*excentricity)*excentricity;
-        final double β  = atan(sinh(Q));
+        final double λ     = srcPts[srcOff];
+        final double φ     = srcPts[srcOff + 1];
 
-        // TODO: sin(atan(x)) = x / sqrt(1+x²)
-        //       cos(atan(x)) = 1 / sqrt(1+x²)
-        final double η0 = atanh(cos(β) * sin(λ));
-        final double ξ0 = asin(sin(β) * cosh(η0));
+        final double ℯsinφ = excentricity * sin(φ);
+        final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * excentricity;
+        final double sinλ  = sin(λ);
+        final double coshQ = cosh(Q);
+        final double η0    = atanh(sinλ / coshQ);
 
-        // TODO: use trigonometric identities.
-        // See ConformalProjection for example.
-        final double ξ = h4 * sin(8*ξ0) * cosh(8*η0)
-                       + h3 * sin(6*ξ0) * cosh(6*η0)
-                       + h2 * sin(4*ξ0) * cosh(4*η0)
-                       + h1 * sin(2*ξ0) * cosh(2*η0)
+        /*
+         * Original formula: η0 = atanh(sin(λ) * cos(β)) where
+         * cos(β) = cos(atan(sinh(Q)))
+         *        = 1 / sqrt(1 + sinh²(Q))
+         *        = 1 / (sqrt(cosh²(Q) - sinh²(Q) + sinh²(Q)))
+         *        = 1 / sqrt(cosh²(Q))
+         *        = 1 / cosh(Q)
+         *
+         * So η0 = atanh(sin(λ) / cosh(Q))
+         */
+        final double coshη0 = cosh(η0);
+        final double ξ0     = asin(tanh(Q) * coshη0);
+
+        //-- ξ0
+        final double sin_8ξ0  = sin(8*ξ0);
+        final double sin_6ξ0  = sin(6*ξ0);
+        final double sin_4ξ0  = sin(4*ξ0);
+        final double sin_2ξ0  = sin(2*ξ0);
+        final double cos_8ξ0  = cos(8*ξ0);
+        final double cos_6ξ0  = cos(6*ξ0);
+        final double cos_4ξ0  = cos(4*ξ0);
+        final double cos_2ξ0  = cos(2*ξ0);
+
+        //-- η0
+        final double cosh_8η0 = cosh(8*η0);
+        final double cosh_6η0 = cosh(6*η0);
+        final double cosh_4η0 = cosh(4*η0);
+        final double cosh_2η0 = cosh(2*η0);
+        final double sinh_8η0 = sinh(8*η0);
+        final double sinh_6η0 = sinh(6*η0);
+        final double sinh_4η0 = sinh(4*η0);
+        final double sinh_2η0 = sinh(2*η0);
+
+        /*
+         * Assuming that (λ, φ) ↦ Proj((λ, φ))
+         * where Proj is defined by: Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
+         *
+         * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
+         */
+        //-- ξ(λ, φ)
+        final double ξ = h4 * sin_8ξ0 * cosh_8η0
+                       + h3 * sin_6ξ0 * cosh_6η0
+                       + h2 * sin_4ξ0 * cosh_4η0
+                       + h1 * sin_2ξ0 * cosh_2η0
                        + ξ0;
 
-        final double η = h4 * cos(8*ξ0) * sinh(8*η0)
-                       + h3 * cos(6*ξ0) * sinh(6*η0)
-                       + h2 * cos(4*ξ0) * sinh(4*η0)
-                       + h1 * cos(2*ξ0) * sinh(2*η0)
+        //-- η(λ, φ)
+        final double η = h4 * cos_8ξ0 * sinh_8η0
+                       + h3 * cos_6ξ0 * sinh_6η0
+                       + h2 * cos_4ξ0 * sinh_4η0
+                       + h1 * cos_2ξ0 * sinh_2η0
                        + η0;
 
         if (dstPts != null) {
             dstPts[dstOff    ] = η;
             dstPts[dstOff + 1] = ξ;
         }
+
         if (!derivate) {
             return null;
         }
 
-        // TODO: compute projection derivative.
-        return null;
+        final double cosλ          = cos(λ);                                     //-- λ
+        final double cosφ          = cos(φ);                                     //-- φ
+        final double cosh2Q        = coshQ * coshQ;                              //-- Q
+        final double sinhQ         = sinh(Q);
+        final double tanhQ         = tanh(Q);
+        final double cosh2Q_sin2λ  = cosh2Q - sinλ * sinλ;                       //-- Qλ
+        final double sinhη0        = sinh(η0);                                   //-- η0
+        final double sqrt1_thQchη0 = sqrt(1 - tanhQ * tanhQ * coshη0 * coshη0);  //-- Qη0
+
+        //-- dQ_dλ = 0;
+        final double dQ_dφ  = 1 / cosφ - excentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
+
+        final double dη0_dλ =   cosλ * coshQ         / cosh2Q_sin2λ;
+        final double dη0_dφ = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
+
+        final double dξ0_dλ = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
+        final double dξ0_dφ = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;
+
+        /*
+         * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
+         *
+         * So derivative Proj((λ, φ)) is defined by:
+         *                    ┌                              ┐
+         *                    │ dη(λ, φ) / dλ, dη(λ, φ) / dφ │
+         * Jac              = │                              │
+         *    (Proj(λ, φ))    │ dξ(λ, φ) / dλ, dξ(λ, φ) / dφ │
+         *                    └                              ┘
+         */
+        //-- dξ(λ, φ) / dλ
+        final double dξ_dλ = dξ0_dλ
+                           + 2 * (h1 * (dξ0_dλ * cos_2ξ0 * cosh_2η0 + dη0_dλ * sinh_2η0 * sin_2ξ0)
+                           + 3 *  h3 * (dξ0_dλ * cos_6ξ0 * cosh_6η0 + dη0_dλ * sinh_6η0 * sin_6ξ0)
+                           + 2 * (h2 * (dξ0_dλ * cos_4ξ0 * cosh_4η0 + dη0_dλ * sinh_4η0 * sin_4ξ0)
+                           + 2 *  h4 * (dξ0_dλ * cos_8ξ0 * cosh_8η0 + dη0_dλ * sinh_8η0 * sin_8ξ0)));
+
+        //-- dξ(λ, φ) / dφ
+        final double dξ_dφ = dξ0_dφ
+                           + 2 * (h1 * (dξ0_dφ * cos_2ξ0 * cosh_2η0 + dη0_dφ * sinh_2η0 * sin_2ξ0)
+                           + 3 *  h3 * (dξ0_dφ * cos_6ξ0 * cosh_6η0 + dη0_dφ * sinh_6η0 * sin_6ξ0)
+                           + 2 * (h2 * (dξ0_dφ * cos_4ξ0 * cosh_4η0 + dη0_dφ * sinh_4η0 * sin_4ξ0)
+                           + 2 *  h4 * (dξ0_dφ * cos_8ξ0 * cosh_8η0 + dη0_dφ * sinh_8η0 * sin_8ξ0)));
+
+        //-- dη(λ, φ) / dλ
+        final double dη_dλ = dη0_dλ
+                           + 2 * (h1 * (dη0_dλ * cosh_2η0 * cos_2ξ0 - dξ0_dλ * sin_2ξ0 * sinh_2η0)
+                           + 3 *  h3 * (dη0_dλ * cosh_6η0 * cos_6ξ0 - dξ0_dλ * sin_6ξ0 * sinh_6η0)
+                           + 2 * (h2 * (dη0_dλ * cosh_4η0 * cos_4ξ0 - dξ0_dλ * sin_4ξ0 * sinh_4η0)
+                           + 2 *  h4 * (dη0_dλ * cosh_8η0 * cos_8ξ0 - dξ0_dλ * sin_8ξ0 * sinh_8η0)));
+
+        //-- dη(λ, φ) / dφ
+        final double dη_dφ = dη0_dφ
+                           + 2 * (h1 * (dη0_dφ * cosh_2η0 * cos_2ξ0 - dξ0_dφ * sin_2ξ0 * sinh_2η0)
+                           + 3 *  h3 * (dη0_dφ * cosh_6η0 * cos_6ξ0 - dξ0_dφ * sin_6ξ0 * sinh_6η0)
+                           + 2 * (h2 * (dη0_dφ * cosh_4η0 * cos_4ξ0 - dξ0_dφ * sin_4ξ0 * sinh_4η0)
+                           + 2 *  h4 * (dη0_dφ * cosh_8η0 * cos_8ξ0 - dξ0_dφ * sin_8ξ0 * sinh_8η0)));
+
+        return new Matrix2(dη_dλ, dη_dφ,
+                           dξ_dλ, dξ_dφ);
     }
 
     /**
-     * Transforms the specified (η,ξ) coordinates and stores the result in {@code dstPts} (angles in radians).
+     * Transforms the specified (η, ξ) coordinates and stores the result in {@code dstPts} (angles in radians).
      *
      * @throws ProjectionException if the point can not be converted.
      */
@@ -290,5 +426,84 @@ public class TransverseMercator extends NormalizedProjection {
             p = c;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+
+    /**
+     * Provides the transform equations for the spherical case of the Transverse Mercator projection.
+     *
+     * @author  André Gosselin (MPO)
+     * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @author  Rueben Schulz (UBC)
+     * @since   0.6
+     * @version 0.6
+     * @module
+     */
+    private static final class Spherical extends TransverseMercator {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 8903592710452235162L;
+
+        /**
+         * Constructs a new map projection from the parameters of the given projection.
+         *
+         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         */
+        protected Spherical(final TransverseMercator other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws ProjectionException
+        {
+            final double λ    = srcPts[srcOff];
+            final double φ    = srcPts[srcOff + 1];
+            final double sinλ = sin(λ);
+            final double cosλ = cos(λ);
+            final double sinφ = sin(φ);
+            final double cosφ = cos(φ);
+            final double tanφ = sinφ / cosφ;
+            final double B    = cosφ * sinλ;
+            /*
+             * Using Snyder's equation for calculating y, instead of the one used in Proj4.
+             * Potential problems when y and x = 90 degrees, but behaves ok in tests.
+             */
+            if (dstPts != null) {
+                dstPts[dstOff  ] = atanh(B);            // Snyder 8-1;
+                dstPts[dstOff+1] = atan2(tanφ, cosλ);   // Snyder 8-3;
+            }
+            if (!derivate) {
+                return null;
+            }
+            final double Bm  = B*B - 1;
+            final double sct = cosλ*cosλ + tanφ*tanφ;
+            return new Matrix2(-(cosφ * cosλ) / Bm,     // ∂x/∂λ
+                                (sinφ * sinλ) / Bm,     // ∂x/∂φ
+                                (tanφ * sinλ) / sct,    // ∂y/∂λ
+                         cosλ / (cosφ * cosφ * sct));   // ∂y/∂φ
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                        final double[] dstPts, final int dstOff)
+                throws ProjectionException
+        {
+            final double x = srcPts[srcOff  ];
+            final double y = srcPts[srcOff+1];
+            final double sinhx = sinh(x);
+            final double cosy  = cos(y);
+            // 'copySign' corrects for the fact that we made everything positive using sqrt(…)
+            dstPts[dstOff  ] = atan2(sinhx, cosy);
+            dstPts[dstOff+1] = copySign(asin(sqrt((1 - cosy*cosy) / (1 + sinhx*sinhx))), y);
+        }
     }
 }

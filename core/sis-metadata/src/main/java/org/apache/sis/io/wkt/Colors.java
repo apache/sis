@@ -65,7 +65,8 @@ public class Colors implements Cloneable, Serializable {
         map.put(ElementKind.CODE_LIST,  X364.FOREGROUND_CYAN);
         map.put(ElementKind.PARAMETER,  X364.FOREGROUND_GREEN);
         map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
-        map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);
+        map.put(ElementKind.DATUM,      X364.FOREGROUND_BLUE);  // Because datum names in SIS are like identifiers.
+        map.put(ElementKind.IDENTIFIER, X364.FOREGROUND_BLUE);
         map.put(ElementKind.SCOPE,      X364.FOREGROUND_GRAY);
         map.put(ElementKind.EXTENT,     X364.FOREGROUND_GRAY);
         map.put(ElementKind.CITATION,   X364.FOREGROUND_GRAY);

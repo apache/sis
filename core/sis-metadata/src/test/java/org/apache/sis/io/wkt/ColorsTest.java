@@ -39,7 +39,8 @@ public final strictfp class ColorsTest extends TestCase {
     public void testGetName() {
         final Colors colors = Colors.DEFAULT;
         assertEquals("cyan",  colors.getName(ElementKind.CODE_LIST));
-        assertEquals("green", colors.getName(ElementKind.DATUM));
+        assertEquals("green", colors.getName(ElementKind.METHOD));
+        assertEquals("blue",  colors.getName(ElementKind.DATUM));
         assertEquals("red",   colors.getName(ElementKind.ERROR));
     }
 
@@ -50,9 +51,9 @@ public final strictfp class ColorsTest extends TestCase {
     @DependsOnMethod("testGetName")
     public void testSetName() {
         final Colors colors = new Colors(Colors.DEFAULT);
-        assertEquals("green", colors.getName(ElementKind.DATUM));
-        colors.setName(ElementKind.DATUM, "blue");
-        assertEquals("blue", colors.getName(ElementKind.DATUM));
+        assertEquals("green", colors.getName(ElementKind.METHOD));
+        colors.setName(ElementKind.METHOD, "blue");
+        assertEquals("blue", colors.getName(ElementKind.METHOD));
     }
 
     /**
@@ -61,7 +62,7 @@ public final strictfp class ColorsTest extends TestCase {
     @Test
     public void testImmutability() {
         try {
-            Colors.DEFAULT.setName(ElementKind.DATUM, "blue");
+            Colors.DEFAULT.setName(ElementKind.METHOD, "blue");
             fail("Constant shall be immutable.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
@@ -77,9 +78,9 @@ public final strictfp class ColorsTest extends TestCase {
     public void testSerialization() {
         assertSame(Colors.DEFAULT, assertSerializedEquals(Colors.DEFAULT));
         final Colors colors = new Colors(Colors.DEFAULT);
-        colors.setName(ElementKind.DATUM, "blue");
+        colors.setName(ElementKind.METHOD, "blue");
         final Colors c = assertSerializedEquals(colors);
         assertNotSame(colors, c); // Expect a new instance.
-        assertEquals("blue", c.getName(ElementKind.DATUM));
+        assertEquals("blue", c.getName(ElementKind.METHOD));
     }
 }
