@@ -62,11 +62,8 @@ public final class MercatorSpherical extends AbstractMercator {
                 .setRemarks(Mercator2SP.SCALE_FACTOR.getRemarks())
                 .setRequired(false));
 
-        PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addDeprecatedIdentifier("9841", IDENTIFIER)
-            .addName("Mercator (Spherical)")                                          // Starting from EPSG version 7.6
-            .addDeprecatedName("Mercator (1SP) (Spherical)", "Mercator (Spherical)")  // Prior to EPSG version 7.6
+        PARAMETERS = addNameAndLegacy(addIdentifierAndLegacy(builder, IDENTIFIER, "9841"),
+            "Mercator (Spherical)", "Mercator (1SP) (Spherical)")   // "Mercator (Spherical)" starting from EPSG version 7.6
             .createGroupForMapProjection(
                     Mercator1SP.LATITUDE_OF_ORIGIN,
                     Mercator1SP.LONGITUDE_OF_ORIGIN,

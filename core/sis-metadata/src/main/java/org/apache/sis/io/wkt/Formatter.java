@@ -761,6 +761,7 @@ public class Formatter implements Localized {
             appendForSubtypes(object);
         }
         if (showIDs) {
+            @SuppressWarnings("null")
             Collection<ReferenceIdentifier> identifiers = object.getIdentifiers();
             if (identifiers != null) {  // Paranoiac check
                 if (filterID) {
@@ -1112,7 +1113,11 @@ public class Formatter implements Localized {
      */
     public void append(final long number) {
         appendSeparator();
-        setColor(ElementKind.INTEGER);
+        /*
+         * The check for 'isComplement' is a hack for ImmutableIdentifier.formatTo(Formatter).
+         * We do not have a public API for controlling the integer colors (it may not be desirable).
+         */
+        setColor(isComplement ? ElementKind.IDENTIFIER : ElementKind.INTEGER);
         numberFormat.setMaximumFractionDigits(0);
         numberFormat.format(number, buffer, dummy);
         resetColor();

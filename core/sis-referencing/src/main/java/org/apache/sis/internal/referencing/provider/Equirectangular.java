@@ -176,9 +176,7 @@ public final class Equirectangular extends AbstractProvider {
 
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
-        PARAMETERS = builder
-            .addIdentifier(             "1029")
-            .addDeprecatedIdentifier(   "9823", "1029")  // Using deprecated parameter names
+        PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
             .addName(                   "Equidistant Cylindrical (Spherical)")
             .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
             .addName(Citations.OGC,     "Equirectangular")
