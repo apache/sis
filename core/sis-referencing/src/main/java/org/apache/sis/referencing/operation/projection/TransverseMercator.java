@@ -17,7 +17,10 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -198,6 +201,42 @@ public class TransverseMercator extends NormalizedProjection {
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, B, null);
         denormalize.convertBefore(1, B, M0);
+    }
+
+    /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    TransverseMercator(final TransverseMercator other) {
+        super(other);
+        h1  = other. h1;
+        h2  = other. h2;
+        h3  = other. h3;
+        h4  = other. h4;
+        ih1 = other.ih1;
+        ih2 = other.ih2;
+        ih3 = other.ih3;
+        ih4 = other.ih4;
+    }
+
+    /**
+     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     *
+     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
+     *
+     * @param  factory The factory to use for creating the transform.
+     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    @Override
+    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        TransverseMercator kernel = this;
+        if (excentricity == 0) {
+            kernel = new Spherical(this);
+        }
+        return context.completeTransform(factory, kernel);
     }
 
     /**
@@ -386,5 +425,84 @@ public class TransverseMercator extends NormalizedProjection {
             p = c;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+
+    /**
+     * Provides the transform equations for the spherical case of the Transverse Mercator projection.
+     *
+     * @author  André Gosselin (MPO)
+     * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @author  Rueben Schulz (UBC)
+     * @since   0.6
+     * @version 0.6
+     * @module
+     */
+    private static final class Spherical extends TransverseMercator {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 8903592710452235162L;
+
+        /**
+         * Constructs a new map projection from the parameters of the given projection.
+         *
+         * @param other The other projection (usually ellipsoidal) from which to copy the parameters.
+         */
+        protected Spherical(final TransverseMercator other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws ProjectionException
+        {
+            final double λ    = srcPts[srcOff];
+            final double φ    = srcPts[srcOff + 1];
+            final double sinλ = sin(λ);
+            final double cosλ = cos(λ);
+            final double sinφ = sin(φ);
+            final double cosφ = cos(φ);
+            final double tanφ = sinφ / cosφ;
+            final double B    = cosφ * sinλ;
+            /*
+             * Using Snyder's equation for calculating y, instead of the one used in Proj4.
+             * Potential problems when y and x = 90 degrees, but behaves ok in tests.
+             */
+            if (dstPts != null) {
+                dstPts[dstOff  ] = atanh(B);            // Snyder 8-1;
+                dstPts[dstOff+1] = atan2(tanφ, cosλ);   // Snyder 8-3;
+            }
+            if (!derivate) {
+                return null;
+            }
+            final double Bm  = B*B - 1;
+            final double sct = cosλ*cosλ + tanφ*tanφ;
+            return new Matrix2(-(cosφ * cosλ) / Bm,     // ∂x/∂λ
+                                (sinφ * sinλ) / Bm,     // ∂x/∂φ
+                                (tanφ * sinλ) / sct,    // ∂y/∂λ
+                         cosλ / (cosφ * cosφ * sct));   // ∂y/∂φ
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                        final double[] dstPts, final int dstOff)
+                throws ProjectionException
+        {
+            final double x = srcPts[srcOff  ];
+            final double y = srcPts[srcOff+1];
+            final double sinhx = sinh(x);
+            final double cosy  = cos(y);
+            // 'copySign' corrects for the fact that we made everything positive using sqrt(…)
+            dstPts[dstOff  ] = atan2(sinhx, cosy);
+            dstPts[dstOff+1] = copySign(asin(sqrt((1 - cosy*cosy) / (1 + sinhx*sinhx))), y);
+        }
     }
 }
