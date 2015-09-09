@@ -829,9 +829,13 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     @DependsOnMethod("testProjectedCRS")
     public void testMathTransform() throws ParseException, NoninvertibleTransformException {
-        final double TOLERANCE = 1E-10;
         /*
-         * Tests "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
+         * Test "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
+         * The 'south' transform is actually the usual Transverse Mercator projection, despite
+         * having axis oriented toward South.  Consequently the "False Northing" parameter has
+         * the same meaning for those two CRS. Since we assigned the same False Northing value,
+         * those two CRS have their "False origin" at the same location. This is why conversion
+         * from 'south' to 'north' introduce no translation, only a reversal of y axis.
          */
         ProjectedCRS north = parseTransverseMercator(false, false, 1000);
         assertEquals(AxisDirection.WEST,  north.getCoordinateSystem().getAxis(0).getDirection());
@@ -842,24 +846,27 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
 
         Matrix matrix = conversion(north, south);
-        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), TOLERANCE);
-        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), TOLERANCE);
-        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), TOLERANCE);
-        assertEquals("No northing expected.",                      0, matrix.getElement(1,2), TOLERANCE);
-        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, TOLERANCE);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
+        assertEquals("No northing expected.",                      0, matrix.getElement(1,2), STRICT);
+        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, STRICT);
         /*
-         * Tests "Transverse Mercator South Orientated".
-         * The "False Northing" parameter is actually interpreted as a "False Southing".
-         * It may sound surprising, but "South Orientated" projection is defined that way.
+         * Test "Transverse Mercator South Orientated". In this projection, the "False Northing" parameter
+         * is actually a "False Southing". It may sound surprising, but "South Orientated" projections are
+         * defined that way.  For converting from our CRS having a False Northing of 1000 to a CRS without
+         * False Northing or Southing, we must subtract 1000 from the axis which is oriented toward North.
+         * This means adding 1000 if the axis is rather oriented toward South. Then we add another 1000 m
+         * (the value specified in the line just below) toward South.
          */
-        south = parseTransverseMercator(true, true, 1000);
+        south = parseTransverseMercator(true, true, 1000);  // "False Southing" of 1000 metres.
         assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
         assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
         matrix = conversion(north, south);
-        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), TOLERANCE);
-        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), TOLERANCE);
-        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), TOLERANCE);
-        assertEquals("Northing expected.",                      2000, matrix.getElement(1,2), TOLERANCE);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
+        assertEquals("Northing expected.",                      2000, matrix.getElement(1,2), STRICT);
     }
 
     /**

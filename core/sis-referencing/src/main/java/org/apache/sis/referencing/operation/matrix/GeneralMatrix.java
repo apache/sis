@@ -634,6 +634,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public MatrixSIS clone() {
         return new GeneralMatrix(this);
     }

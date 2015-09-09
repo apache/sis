@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.LenientComparable;
@@ -70,37 +71,13 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * set to a non-null value before an {@link AffineTransform2D} instance is published.</p>
      *
      * @see #getMatrix()
-     * @see #freeze()
      */
-    private AffineMatrix matrix;
+    private final AffineMatrix matrix;
 
     /**
      * The inverse transform. This field will be computed only when needed.
      */
     private transient volatile AffineTransform2D inverse;
-
-    /**
-     * Constructs a <strong>temporarily mutable</strong> identity affine transform.
-     * Callers shall initializing the affine transform to the desired final values,
-     * then invoke {@link #freeze()}.
-     */
-    public AffineTransform2D() {
-        super();
-    }
-
-    /**
-     * Constructs a new affine transform with the same coefficients than the specified transform.
-     *
-     * @param transform The affine transform to copy.
-     * @param mutable {@code true} if this affine transform needs to be <strong>temporarily</strong> mutable.
-     *        If {@code true}, then caller shall invoke {@link #freeze()} after they completed initialization.
-     */
-    public AffineTransform2D(final AffineTransform transform, final boolean mutable) {
-        super(transform);
-        if (!mutable) {
-            freeze();
-        }
-    }
 
     /**
      * Constructs a new affine transform with the same coefficients than the specified transform.
@@ -109,8 +86,8 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
-        forcePositiveZeros();
-        freeze();
+        forcePositiveZeros();   // Must be invoked before to set the 'matrix' value.
+        matrix = new AffineMatrix(this, null);
     }
 
     /**
@@ -123,7 +100,6 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
               pz(elements[1]), pz(elements[4]),
               pz(elements[2]), pz(elements[5]));
         matrix = new AffineMatrix(this, elements);
-        // Do not call freeze(), as it was implied by above line.
     }
 
     /**
@@ -141,7 +117,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      */
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12) {
         super(pz(m00), pz(m10), pz(m01), pz(m11), pz(m02), pz(m12));
-        freeze();
+        matrix = new AffineMatrix(this, null);
     }
 
     /**
@@ -164,15 +140,6 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
         super.setTransform(pz(super.getScaleX()),     pz(super.getShearY()),
                            pz(super.getShearX()),     pz(super.getScaleY()),
                            pz(super.getTranslateX()), pz(super.getTranslateY()));
-    }
-
-    /**
-     * Makes this {@code AffineTransform2D} immutable.
-     * This method shall be invoked exactly once.
-     */
-    public final void freeze() {
-        assert matrix == null;
-        matrix = new AffineMatrix(this, null);
     }
 
     /**
@@ -327,15 +294,25 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
                  * Is okay with the new memory model since Java 5 provided that the field is
                  * declared volatile (Joshua Bloch, "Effective Java" second edition).
                  */
-                if (inverse == null) try {
-                    final AffineTransform2D work = new AffineTransform2D(this, true);
-                    work.invert();
-                    work.forcePositiveZeros();
-                    work.freeze();
+                if (inverse == null) {
+                    /*
+                     * In a previous version, we were using the Java2D code as below:
+                     *
+                     *     AffineTransform2D work = new AffineTransform2D(this, true);
+                     *     work.invert();
+                     *     work.forcePositiveZeros();
+                     *     work.freeze();
+                     *
+                     * Current version now uses the SIS code instead in order to get the double-double precision.
+                     * It usually does not make a difference in the result of the matrix inversion, when ignoring
+                     * the error terms.  But those error terms appear to be significant later, when the result of
+                     * this matrix inversion is multiplied with other matrices: the double-double accuracy allows
+                     * us to better detect the terms that are 0 or 1 after matrix concatenation.
+                     */
+                    final AffineTransform2D work = new AffineTransform2D(
+                            ((ExtendedPrecisionMatrix) Matrices.inverse(matrix)).getExtendedElements());
                     work.inverse = this;
                     inverse = work; // Set only on success.
-                } catch (java.awt.geom.NoninvertibleTransformException exception) {
-                    throw new NoninvertibleTransformException(exception.getLocalizedMessage(), exception);
                 }
             }
         }
@@ -432,6 +409,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * @return A modifiable copy of this affine transform.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public AffineTransform clone() {
         return new AffineTransform(this);
     }
