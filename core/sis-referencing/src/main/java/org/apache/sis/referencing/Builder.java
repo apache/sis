@@ -256,8 +256,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Creates a new builder initialized to properties of the given object.
-     * The properties recognized by this constructor are documented in the
-     * {@link IdentifiedObjects#getProperties(IdentifiedObject, String...)} method.
+     * The properties recognized by this constructor are documented
+     * {@linkplain IdentifiedObjects#getProperties(IdentifiedObject, String...) here}.
      *
      * @param object The identified object from which to inherit properties, or {@code null}.
      *
@@ -533,9 +533,9 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} name fully specified by the given identifier.
-     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
-     * {@link #setVersion(String) version} specified to this builder (if any), since the given
-     * identifier already contains those information.
+     * This method ignores the authority, {@linkplain #setCodeSpace(Citation, String) code space},
+     * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
+     * specified to this builder (if any), since the given identifier may already contain those information.
      *
      * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
@@ -559,9 +559,9 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Adds an {@code IdentifiedObject} name fully specified by the given generic name.
-     * This method ignores the authority, {@link #setCodeSpace(Citation, String) code space} or
-     * {@link #setVersion(String) version} specified to this builder (if any), since the given
-     * generic name already contains those information.
+     * This method ignores the authority, {@linkplain #setCodeSpace(Citation, String) code space},
+     * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
+     * specified to this builder (if any), since the given generic name may already contain those information.
      *
      * <div class="section">Name and aliases</div>
      * This method can be invoked many times. The first invocation sets the
