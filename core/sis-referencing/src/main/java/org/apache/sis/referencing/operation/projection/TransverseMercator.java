@@ -213,104 +213,146 @@ public class TransverseMercator extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ  = srcPts[srcOff];
-        final double φ  = srcPts[srcOff + 1];
-        final double Q  = asinh(tan(φ)) - atanh(sin(φ) * excentricity) * excentricity;
-        final double β  = atan(sinh(Q));
+        final double λ      = srcPts[srcOff];
+        final double φ      = srcPts[srcOff + 1];
 
-        // TODO: sin(atan(x)) = x / sqrt(1+x²)
-        //       cos(atan(x)) = 1 / sqrt(1+x²)
-        final double η0 = atanh(cos(β) * sin(λ));
-        final double ξ0 = asin(sin(β) * cosh(η0));
+        final double exsinφ = excentricity * sin(φ);
+        final double Q      = asinh(tan(φ)) - atanh(exsinφ) * excentricity;
+        final double sinλ   = sin(λ);
+        final double coshQ  = cosh(Q);
+        final double η0     = atanh(sinλ / coshQ);
 
-       /*
-        * Assuming that (λ, φ) ↦ Proj((λ, φ))
-        * where Proj is defined by : Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
-        *
-        * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
-        */
+        /*
+         * Original formula : η0 = atanh(sin(λ) * cos(β)) where
+         * cos(β) = cos(atan(sinh(Q)))
+         *        = 1 / sqrt(1 + sinh²(Q))
+         *        = 1 / (sqrt(cosh²(Q) - sinh²(Q) + sinh²(Q)))
+         *        = 1 / sqrt(cosh²(Q))
+         *        = 1 / cosh(Q)
+         *
+         * So η0 = atanh(sin(λ) / cosh(Q))
+         */
+        final double coshη0   = cosh(η0);
+        final double ξ0       = asin(tanh(Q) * coshη0);
+
+        //-- ξ0
+        final double sin_8ξ0  = sin(8*ξ0);
+        final double sin_6ξ0  = sin(6*ξ0);
+        final double sin_4ξ0  = sin(4*ξ0);
+        final double sin_2ξ0  = sin(2*ξ0);
+        final double cos_8ξ0  = cos(8*ξ0);
+        final double cos_6ξ0  = cos(6*ξ0);
+        final double cos_4ξ0  = cos(4*ξ0);
+        final double cos_2ξ0  = cos(2*ξ0);
+
+        //-- η0
+        final double cosh_8η0 = cosh(8*η0);
+        final double cosh_6η0 = cosh(6*η0);
+        final double cosh_4η0 = cosh(4*η0);
+        final double cosh_2η0 = cosh(2*η0);
+        final double sinh_8η0 = sinh(8*η0);
+        final double sinh_6η0 = sinh(6*η0);
+        final double sinh_4η0 = sinh(4*η0);
+        final double sinh_2η0 = sinh(2*η0);
+
+        /*
+         * Assuming that (λ, φ) ↦ Proj((λ, φ))
+         * where Proj is defined by : Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
+         *
+         * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
+         */
         //-- ξ(λ, φ)
-        final double ξ = h4 * sin(8*ξ0) * cosh(8*η0)
-                       + h3 * sin(6*ξ0) * cosh(6*η0)
-                       + h2 * sin(4*ξ0) * cosh(4*η0)
-                       + h1 * sin(2*ξ0) * cosh(2*η0)
+        final double ξ = h4 * sin_8ξ0 * cosh_8η0
+                       + h3 * sin_6ξ0 * cosh_6η0
+                       + h2 * sin_4ξ0 * cosh_4η0
+                       + h1 * sin_2ξ0 * cosh_2η0
                        + ξ0;
 
         //-- η(λ, φ)
-        final double η = h4 * cos(8*ξ0) * sinh(8*η0)
-                       + h3 * cos(6*ξ0) * sinh(6*η0)
-                       + h2 * cos(4*ξ0) * sinh(4*η0)
-                       + h1 * cos(2*ξ0) * sinh(2*η0)
+        final double η = h4 * cos_8ξ0 * sinh_8η0
+                       + h3 * cos_6ξ0 * sinh_6η0
+                       + h2 * cos_4ξ0 * sinh_4η0
+                       + h1 * cos_2ξ0 * sinh_2η0
                        + η0;
 
         if (dstPts != null) {
             dstPts[dstOff    ] = η;
             dstPts[dstOff + 1] = ξ;
         }
-        
+
         if (!derivate) {
             return null;
         }
-        
+
+        //-- λ
+        final double cosλ = cos(λ);
+
+        //-- φ
+        final double cosφ = cos(φ);
+
+        //-- Q
+        final double cosh2Q = coshQ * coshQ;//-- squared cosh(Q)
+        final double sinhQ  = sinh(Q);
+        final double tanhQ  = tanh(Q);
+
+        //-- Qλ
+        final double cosh2Q_sin2λ  = cosh2Q - sinλ * sinλ;
+
+        //-- η0
+        final double sinhη0        = sinh(η0);
+
+        //-- Qη0
+        final double sqrt1_thQchη0 = sqrt(1 - tanhQ * tanhQ * coshη0 * coshη0);
+
         //-- dQ_dλ = 0;
-        final double dQ_dφ = sqrt(1 + tan(φ) * tan(φ)) - excentricitySquared * cos(φ) / (1 - excentricitySquared * sin(φ) * sin(φ));
-        
-        //-- dβ_dλ = 0;
-        final double dβ_dφ = dQ_dφ * cosh(Q) / (1 + sinh(Q) * sinh(Q));
+        final double dQ_dφ         = 1 / cosφ - excentricitySquared * cosφ / (1 - exsinφ * exsinφ);
 
-        // TODO: sin(β) = sin(atan(sinh(Q))) = sinh(Q) / sqrt(1 + sinh²(Q))
-        //       cos(β) = cos(atan(sinh(Q))) = 1       / sqrt(1 + sinh²(Q))
-        final double a     =   cos(β) * sin(λ);
-        final double da_dλ =   cos(β) * cos(λ);
-        final double da_dφ = - sin(λ) * dβ_dφ * sin(β);
-        
-        final double dη0_dλ = da_dλ / (1 - a * a);
-        final double dη0_dφ = da_dφ / (1 - a * a);
-        
-        final double b     = sin(β) * cosh(η0);
-        final double db_dλ = sin(β) * dη0_dλ * sinh(η0);
-        final double db_dφ = dβ_dφ  * cos(β) * cosh(η0) + dη0_dφ * sinh(η0) * sin(β);
-        
-        final double dξ0_dλ = db_dλ / sqrt(1 - b * b);
-        final double dξ0_dφ = db_dφ / sqrt(1 - b * b);
+        final double dη0_dλ        =   cosλ * coshQ         / cosh2Q_sin2λ;
+        final double dη0_dφ        = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
 
-       /*
-        * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
-        *
-        * So derivative Proj((λ, φ)) is defined by :
-        *                     _                            _
-        *                    | dη(λ, φ) / dλ, dη(λ, φ) / dφ |
-        * Jac              = |                              |
-        *    (Proj(λ, φ))    | dξ(λ, φ) / dλ, dξ(λ, φ) / dφ |
-        *                    |_                            _|
-        */
+        /*
+         * db_dλ / sqrt(1 - tanhQ² * coshη0²);
+         * db_dφ / sqrt(1 - tanhQ² * coshη0²);
+         */
+        final double dξ0_dλ        = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
+        final double dξ0_dφ        = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;
 
+        /*
+         * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
+         *
+         * So derivative Proj((λ, φ)) is defined by :
+         *                    ┌                              ┐
+         *                    │ dη(λ, φ) / dλ, dη(λ, φ) / dφ │
+         * Jac              = │                              │
+         *    (Proj(λ, φ))    │ dξ(λ, φ) / dλ, dξ(λ, φ) / dφ │
+         *                    └                              ┘
+         */
         //-- dξ(λ, φ) / dλ
-        final double dξ_dλ = h4 * (8 * dξ0_dλ * cos(8*ξ0) * cosh(8*η0) + 8 * dη0_dλ * sinh(8*η0) * sin(8*ξ0))
-                           + h3 * (6 * dξ0_dλ * cos(6*ξ0) * cosh(6*η0) + 6 * dη0_dλ * sinh(6*η0) * sin(6*ξ0))
-                           + h2 * (4 * dξ0_dλ * cos(4*ξ0) * cosh(4*η0) + 4 * dη0_dλ * sinh(4*η0) * sin(4*ξ0))
-                           + h1 * (2 * dξ0_dλ * cos(2*ξ0) * cosh(2*η0) + 2 * dη0_dλ * sinh(2*η0) * sin(2*ξ0))
-                           + dξ0_dλ;
+        final double dξ_dλ = dξ0_dλ
+                           + 2 * (h1 * (dξ0_dλ * cos_2ξ0 * cosh_2η0 + dη0_dλ * sinh_2η0 * sin_2ξ0)
+                           + 3 *  h3 * (dξ0_dλ * cos_6ξ0 * cosh_6η0 + dη0_dλ * sinh_6η0 * sin_6ξ0)
+                           + 2 * (h2 * (dξ0_dλ * cos_4ξ0 * cosh_4η0 + dη0_dλ * sinh_4η0 * sin_4ξ0)
+                           + 2 *  h4 * (dξ0_dλ * cos_8ξ0 * cosh_8η0 + dη0_dλ * sinh_8η0 * sin_8ξ0)));
         //-- dξ(λ, φ) / dφ
-        final double dξ_dφ = h4 * (8 * dξ0_dφ * cos(8*ξ0) * cosh(8*η0) + 8 * dη0_dφ * sinh(8*η0) * sin(8*ξ0))
-                           + h3 * (6 * dξ0_dφ * cos(6*ξ0) * cosh(6*η0) + 6 * dη0_dφ * sinh(6*η0) * sin(6*ξ0))
-                           + h2 * (4 * dξ0_dφ * cos(4*ξ0) * cosh(4*η0) + 4 * dη0_dφ * sinh(4*η0) * sin(4*ξ0))
-                           + h1 * (2 * dξ0_dφ * cos(2*ξ0) * cosh(2*η0) + 2 * dη0_dφ * sinh(2*η0) * sin(2*ξ0))
-                           + dξ0_dφ;
+        final double dξ_dφ = dξ0_dφ
+                           + 2 * (h1 * (dξ0_dφ * cos_2ξ0 * cosh_2η0 + dη0_dφ * sinh_2η0 * sin_2ξ0)
+                           + 3 *  h3 * (dξ0_dφ * cos_6ξ0 * cosh_6η0 + dη0_dφ * sinh_6η0 * sin_6ξ0)
+                           + 2 * (h2 * (dξ0_dφ * cos_4ξ0 * cosh_4η0 + dη0_dφ * sinh_4η0 * sin_4ξ0)
+                           + 2 *  h4 * (dξ0_dφ * cos_8ξ0 * cosh_8η0 + dη0_dφ * sinh_8η0 * sin_8ξ0)));
 
         //-- dη(λ, φ) / dλ
-        final double dη_dλ = h4 * (-8 * dξ0_dλ * sin(8 * ξ0) * sinh(8*η0) + 8 * dη0_dλ * cosh(8*η0) * cos(8*ξ0))
-                           + h3 * (-6 * dξ0_dλ * sin(6 * ξ0) * sinh(6*η0) + 6 * dη0_dλ * cosh(6*η0) * cos(6*ξ0))
-                           + h2 * (-4 * dξ0_dλ * sin(4 * ξ0) * sinh(4*η0) + 4 * dη0_dλ * cosh(4*η0) * cos(4*ξ0))
-                           + h1 * (-2 * dξ0_dλ * sin(2 * ξ0) * sinh(2*η0) + 2 * dη0_dλ * cosh(2*η0) * cos(2*ξ0))
-                           + dη0_dλ;
+        final double dη_dλ = dη0_dλ
+                           + 2 * (h1 * (dη0_dλ * cosh_2η0 * cos_2ξ0 - dξ0_dλ * sin_2ξ0 * sinh_2η0)
+                           + 3 *  h3 * (dη0_dλ * cosh_6η0 * cos_6ξ0 - dξ0_dλ * sin_6ξ0 * sinh_6η0)
+                           + 2 * (h2 * (dη0_dλ * cosh_4η0 * cos_4ξ0 - dξ0_dλ * sin_4ξ0 * sinh_4η0)
+                           + 2 *  h4 * (dη0_dλ * cosh_8η0 * cos_8ξ0 - dξ0_dλ * sin_8ξ0 * sinh_8η0)));
 
         //-- dη(λ, φ) / dφ
-        final double dη_dφ = h4 * (-8 * dξ0_dφ * sin(8 * ξ0) * sinh(8*η0) + 8 * dη0_dφ * cosh(8*η0) * cos(8*ξ0))
-                           + h3 * (-6 * dξ0_dφ * sin(6 * ξ0) * sinh(6*η0) + 6 * dη0_dφ * cosh(6*η0) * cos(6*ξ0))
-                           + h2 * (-4 * dξ0_dφ * sin(4 * ξ0) * sinh(4*η0) + 4 * dη0_dφ * cosh(4*η0) * cos(4*ξ0))
-                           + h1 * (-2 * dξ0_dφ * sin(2 * ξ0) * sinh(2*η0) + 2 * dη0_dφ * cosh(2*η0) * cos(2*ξ0))
-                           + dη0_dφ;
+        final double dη_dφ = dη0_dφ
+                           + 2 * (h1 * (dη0_dφ * cosh_2η0 * cos_2ξ0 - dξ0_dφ * sin_2ξ0 * sinh_2η0)
+                           + 3 *  h3 * (dη0_dφ * cosh_6η0 * cos_6ξ0 - dξ0_dφ * sin_6ξ0 * sinh_6η0)
+                           + 2 * (h2 * (dη0_dφ * cosh_4η0 * cos_4ξ0 - dξ0_dφ * sin_4ξ0 * sinh_4η0)
+                           + 2 *  h4 * (dη0_dφ * cosh_8η0 * cos_8ξ0 - dξ0_dφ * sin_8ξ0 * sinh_8η0)));
 
         return new Matrix2(dη_dλ, dη_dφ,
                            dξ_dλ, dξ_dφ);
