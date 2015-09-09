@@ -44,13 +44,8 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
      */
     @Test
     public void testDirect2D() throws TransformException {
-        final AffineTransform2D first = new AffineTransform2D();
-        first.translate(2,4);
-        first.freeze();
-
-        final AffineTransform2D second = new AffineTransform2D();
-        second.translate(0.25, 0.75);
-        second.freeze();
+        final AffineTransform2D first  = new AffineTransform2D(1, 0, 0, 1, 2.00, 4.00);    // translate(2, 4)
+        final AffineTransform2D second = new AffineTransform2D(1, 0, 0, 1, 0.25, 0.75);    // translate(0.25, 0.75);
 
         // Direct for 2D case.
         tolerance = 1E-10;
@@ -93,9 +88,7 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
     public void testGeneric() throws TransformException {
         final MathTransform first = null; //MathTransforms.dimensionFilter(4, new int[] {1,3});
 
-        final AffineTransform2D second = new AffineTransform2D();
-        second.scale(0.5, 0.25);
-        second.freeze();
+        final AffineTransform2D second = new AffineTransform2D(0.5, 0, 0, 0.25, 0, 0);  // scale(0.5, 0.25);
 
         transform = new ConcatenatedTransform(first, second);
         isInverseTransformSupported = false;

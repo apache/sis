@@ -86,6 +86,7 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
      * Returns {@code this} since this matrix is immutable.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public Matrix clone() {
         return this;
     }
