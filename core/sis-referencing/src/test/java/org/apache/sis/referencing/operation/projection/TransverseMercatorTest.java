@@ -18,8 +18,11 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -36,7 +39,6 @@ import static java.lang.StrictMath.toRadians;
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {
-    
     /**
      * Creates a new instance of {@link TransverseMercator}.
      *
@@ -76,8 +78,31 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testTransverseMercatorSouthOrientated()
      */
     @Test
+    @DependsOnMethod("testTransverseMercator")
     public void testTransverseMercatorSouthOrientated() throws FactoryException, TransformException {
         createGeoApiTest(new TransverseMercatorSouth()).testTransverseMercatorSouthOrientated();
+    }
+
+    /**
+     * Verifies the consistency of elliptical formulas with the spherical formulas.
+     * This test compares the results of elliptical formulas with the spherical ones
+     * for some random points.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testTransverseMercator")
+    public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(), false,
+                  0.5,    // Central meridian
+                  2.5,    // Latitude of origin
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        compareEllipticalWithSpherical(CoordinateDomain.RANGE_10, 0);
     }
 
     /**
