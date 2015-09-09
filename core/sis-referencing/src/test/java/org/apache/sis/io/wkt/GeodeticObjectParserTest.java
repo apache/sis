@@ -513,6 +513,100 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a projected CRS from a WKT 1 string with authority and Bursa-Wolf parameters.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testProjectedWithID() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+               "PROJCS[“OSGB 1936 / British National Grid”,\n" +
+               "  GEOGCS[“OSGB 1936”,\n" +
+               "    DATUM[“OSGB_1936”,\n" +
+               "      SPHEROID[“Airy 1830”, 6377563.396, 299.3249646, AUTHORITY[“EPSG”, “7001”]],\n" +
+               "      TOWGS84[375.0, -111.0, 431.0, 0.0, 0.0, 0.0, 0.0],\n" +
+               "      AUTHORITY[“EPSG”, “6277”]],\n" +
+               "      PRIMEM[“Greenwich”,0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
+               "    UNIT[“DMSH”,0.0174532925199433],\n" +
+               "    AXIS[“Lat”,NORTH],AXIS[“Long”,EAST], AUTHORITY[“EPSG”, “4277”]],\n" +
+               "  PROJECTION[“Transverse_Mercator”],\n" +
+               "  PARAMETER[“latitude_of_origin”, 49.0],\n" +
+               "  PARAMETER[“central_meridian”, -2.0],\n" +
+               "  PARAMETER[“scale_factor”, 0.999601272],\n" +
+               "  PARAMETER[“false_easting”, 400000.0],\n" +
+               "  PARAMETER[“false_northing”, -100000.0],\n" +
+               "  UNIT[“metre”, 1.0, AUTHORITY[“EPSG”, “9001”]],\n" +
+               "  AXIS[“E”,EAST],\n" +
+               "  AXIS[“N”,NORTH],\n" +
+               "  AUTHORITY[“EPSG”, “27700”]]");
+
+        assertNameAndIdentifierEqual("OSGB 1936 / British National Grid", 27700, crs);
+        assertNameAndIdentifierEqual("OSGB 1936", 4277, crs.getBaseCRS());
+        assertNameAndIdentifierEqual("OSGB_1936", 6277, crs.getDatum());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.METRE);
+
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
+        assertEquals("semi_major",   6377563.396, param.parameter("semi_major"        ).doubleValue(), 1E-4);
+        assertEquals("semi_minor",   6356256.909, param.parameter("semi_minor"        ).doubleValue(), 1E-3);
+        assertEquals("latitude_of_origin",  49.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals("central_meridian",    -2.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals("scale_factor",      0.9996, param.parameter("scale_factor"      ).doubleValue(), 1E-5);
+        assertEquals("false_easting",   400000.0, param.parameter("false_easting"     ).doubleValue(), 1E-4);
+        assertEquals("false_northing", -100000.0, param.parameter("false_northing"    ).doubleValue(), 1E-4);
+
+        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
+        assertEquals("BursaWolfParameters", 1, bwp.length);
+        assertArrayEquals("BursaWolfParameters", new double[] {375, -111, 431}, bwp[0].getValues(), STRICT);
+    }
+
+    /**
+     * Tests the parsing of a projected CRS with feet units.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testProjectedWithFeetUnits() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+               "PROJCS[“TransverseMercator”,\n" +
+               "  GEOGCS[“Sphere”,\n" +
+               "    DATUM[“Sphere”,\n" +
+               "      SPHEROID[“Sphere”, 6370997.0, 0.0],\n" +
+               "      TOWGS84[0, 0, 0, 0, 0, 0, 0]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Longitude”, EAST],\n" +
+               "    AXIS[“Latitude”, NORTH]],\n" +
+               "  PROJECTION[“Transverse_Mercator”,\n" +
+               "    AUTHORITY[“OGC”, “Transverse_Mercator”]],\n" +
+               "  PARAMETER[“central_meridian”, 170.0],\n" +
+               "  PARAMETER[“latitude_of_origin”, 50.0],\n" +
+               "  PARAMETER[“scale_factor”, 0.95],\n" +
+               "  PARAMETER[“false_easting”, 0.0],\n" +
+               "  PARAMETER[“false_northing”, 0.0],\n" +
+               "  UNIT[“feet”, 0.304800609601219],\n" +
+               "  AXIS[“E”, EAST],\n" +
+               "  AXIS[“N”, NORTH]]");
+
+        assertNameAndIdentifierEqual("TransverseMercator", 0, crs);
+        assertNameAndIdentifierEqual("Sphere", 0, crs.getBaseCRS());
+        assertNameAndIdentifierEqual("Sphere", 0, crs.getDatum());
+        verifyProjectedCS(crs.getCoordinateSystem(), NonSI.FOOT_SURVEY_US);
+
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
+        assertEquals("semi_major",     6370997.0, param.parameter("semi_major"        ).doubleValue(), 1E-5);
+        assertEquals("semi_minor",     6370997.0, param.parameter("semi_minor"        ).doubleValue(), 1E-5);
+        assertEquals("latitude_of_origin",  50.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals("central_meridian",   170.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals("scale_factor",        0.95, param.parameter("scale_factor"      ).doubleValue(), 1E-8);
+        assertEquals("false_easting",        0.0, param.parameter("false_easting"     ).doubleValue(), 1E-8);
+        assertEquals("false_northing",       0.0, param.parameter("false_northing"    ).doubleValue(), 1E-8);
+    }
+
+    /**
      * Tests the parsing of a projected CRS using angular values in grades instead than degrees
      * and in lengths in kilometres instead than metres.
      *
