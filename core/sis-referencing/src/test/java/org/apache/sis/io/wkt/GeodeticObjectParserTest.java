@@ -31,6 +31,9 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
@@ -38,6 +41,8 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -516,6 +521,100 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a projected CRS from a WKT 1 string with authority and Bursa-Wolf parameters.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testProjectedWithID() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+               "PROJCS[“OSGB 1936 / British National Grid”,\n" +
+               "  GEOGCS[“OSGB 1936”,\n" +
+               "    DATUM[“OSGB_1936”,\n" +
+               "      SPHEROID[“Airy 1830”, 6377563.396, 299.3249646, AUTHORITY[“EPSG”, “7001”]],\n" +
+               "      TOWGS84[375.0, -111.0, 431.0, 0.0, 0.0, 0.0, 0.0],\n" +
+               "      AUTHORITY[“EPSG”, “6277”]],\n" +
+               "      PRIMEM[“Greenwich”,0.0, AUTHORITY[“EPSG”, “8901”]],\n" +
+               "    UNIT[“DMSH”,0.0174532925199433],\n" +
+               "    AXIS[“Lat”,NORTH],AXIS[“Long”,EAST], AUTHORITY[“EPSG”, “4277”]],\n" +
+               "  PROJECTION[“Transverse_Mercator”],\n" +
+               "  PARAMETER[“latitude_of_origin”, 49.0],\n" +
+               "  PARAMETER[“central_meridian”, -2.0],\n" +
+               "  PARAMETER[“scale_factor”, 0.999601272],\n" +
+               "  PARAMETER[“false_easting”, 400000.0],\n" +
+               "  PARAMETER[“false_northing”, -100000.0],\n" +
+               "  UNIT[“metre”, 1.0, AUTHORITY[“EPSG”, “9001”]],\n" +
+               "  AXIS[“E”,EAST],\n" +
+               "  AXIS[“N”,NORTH],\n" +
+               "  AUTHORITY[“EPSG”, “27700”]]");
+
+        assertNameAndIdentifierEqual("OSGB 1936 / British National Grid", 27700, crs);
+        assertNameAndIdentifierEqual("OSGB 1936", 4277, crs.getBaseCRS());
+        assertNameAndIdentifierEqual("OSGB_1936", 6277, crs.getDatum());
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.METRE);
+
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
+        assertEquals("semi_major",   6377563.396, param.parameter("semi_major"        ).doubleValue(), 1E-4);
+        assertEquals("semi_minor",   6356256.909, param.parameter("semi_minor"        ).doubleValue(), 1E-3);
+        assertEquals("latitude_of_origin",  49.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals("central_meridian",    -2.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals("scale_factor",      0.9996, param.parameter("scale_factor"      ).doubleValue(), 1E-5);
+        assertEquals("false_easting",   400000.0, param.parameter("false_easting"     ).doubleValue(), 1E-4);
+        assertEquals("false_northing", -100000.0, param.parameter("false_northing"    ).doubleValue(), 1E-4);
+
+        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
+        assertEquals("BursaWolfParameters", 1, bwp.length);
+        assertArrayEquals("BursaWolfParameters", new double[] {375, -111, 431}, bwp[0].getValues(), STRICT);
+    }
+
+    /**
+     * Tests the parsing of a projected CRS with feet units.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testProjectedWithFeetUnits() throws ParseException {
+        final ProjectedCRS crs = parse(ProjectedCRS.class,
+               "PROJCS[“TransverseMercator”,\n" +
+               "  GEOGCS[“Sphere”,\n" +
+               "    DATUM[“Sphere”,\n" +
+               "      SPHEROID[“Sphere”, 6370997.0, 0.0],\n" +
+               "      TOWGS84[0, 0, 0, 0, 0, 0, 0]],\n" +
+               "      PRIMEM[“Greenwich”, 0.0],\n" +
+               "    UNIT[“degree”, 0.017453292519943295],\n" +
+               "    AXIS[“Longitude”, EAST],\n" +
+               "    AXIS[“Latitude”, NORTH]],\n" +
+               "  PROJECTION[“Transverse_Mercator”,\n" +
+               "    AUTHORITY[“OGC”, “Transverse_Mercator”]],\n" +
+               "  PARAMETER[“central_meridian”, 170.0],\n" +
+               "  PARAMETER[“latitude_of_origin”, 50.0],\n" +
+               "  PARAMETER[“scale_factor”, 0.95],\n" +
+               "  PARAMETER[“false_easting”, 0.0],\n" +
+               "  PARAMETER[“false_northing”, 0.0],\n" +
+               "  UNIT[“feet”, 0.304800609601219],\n" +
+               "  AXIS[“E”, EAST],\n" +
+               "  AXIS[“N”, NORTH]]");
+
+        assertNameAndIdentifierEqual("TransverseMercator", 0, crs);
+        assertNameAndIdentifierEqual("Sphere", 0, crs.getBaseCRS());
+        assertNameAndIdentifierEqual("Sphere", 0, crs.getDatum());
+        verifyProjectedCS(crs.getCoordinateSystem(), NonSI.FOOT_SURVEY_US);
+
+        final ParameterValueGroup param = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Transverse Mercator", crs.getConversionFromBase().getMethod().getName().getCode());
+        assertEquals("semi_major",     6370997.0, param.parameter("semi_major"        ).doubleValue(), 1E-5);
+        assertEquals("semi_minor",     6370997.0, param.parameter("semi_minor"        ).doubleValue(), 1E-5);
+        assertEquals("latitude_of_origin",  50.0, param.parameter("latitude_of_origin").doubleValue(), 1E-8);
+        assertEquals("central_meridian",   170.0, param.parameter("central_meridian"  ).doubleValue(), 1E-8);
+        assertEquals("scale_factor",        0.95, param.parameter("scale_factor"      ).doubleValue(), 1E-8);
+        assertEquals("false_easting",        0.0, param.parameter("false_easting"     ).doubleValue(), 1E-8);
+        assertEquals("false_northing",       0.0, param.parameter("false_northing"    ).doubleValue(), 1E-8);
+    }
+
+    /**
      * Tests the parsing of a projected CRS using angular values in grades instead than degrees
      * and in lengths in kilometres instead than metres.
      *
@@ -676,6 +775,101 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("scale_factor",    0.999877499, param.parameter("scale_factor"      ).doubleValue(Unit .ONE),          STRICT);
         assertEquals("false_easting",      600000.0, param.parameter("false_easting"     ).doubleValue(SI   .METRE),        STRICT);
         assertEquals("false_northing",     200000.0, param.parameter("false_northing"    ).doubleValue(SI   .METRE),        STRICT);
+    }
+
+    /**
+     * Parses a test CRS north or south oriented.
+     * If the CRS is fully south-oriented with 0.0 northing, then it should be the EPSG:22285 one.
+     */
+    private ProjectedCRS parseTransverseMercator(final boolean methodSouth,
+            final boolean axisSouth, final double northing) throws ParseException
+    {
+        final String method = methodSouth ? "Transverse Mercator (South Orientated)" : "Transverse Mercator";
+        final String axis = axisSouth ? "“Southing”, SOUTH" : "“Northing”, NORTH";
+        return parse(ProjectedCRS.class,
+                "PROJCS[“South African Coordinate System zone 25”, " +
+                  "GEOGCS[“Cape”, " +
+                    "DATUM[“Cape”, " +
+                      "SPHEROID[“Clarke 1880 (Arc)”, 6378249.145, 293.4663077, AUTHORITY[“EPSG”,“7013”]], " +
+                      "TOWGS84[-136.0, -108.0, -292.0], " +
+                      "AUTHORITY[“EPSG”,“6222”]], " +
+                    "PRIMEM[“Greenwich”, 0.0, AUTHORITY[“EPSG”,“8901”]], " +
+                    "UNIT[“degree”, 0.017453292519943295], " +
+                    "AXIS[“Geodetic latitude”, NORTH], " +
+                    "AXIS[“Geodetic longitude”, EAST], " +
+                    "AUTHORITY[“EPSG”,“4222”]], " +
+                  "PROJECTION[“" + method + "”], " +
+                  "PARAMETER[“central_meridian”, 25.0], " +
+                  "PARAMETER[“latitude_of_origin”, 0.0], " +
+                  "PARAMETER[“scale_factor”, 1.0], " +
+                  "PARAMETER[“false_easting”, 0.0], " +
+                  "PARAMETER[“false_northing”, " + northing + "], " +
+                  "UNIT[“m”, 1.0], " +
+                  "AXIS[“Westing”, WEST], " +
+                  "AXIS[" + axis + "]]");
+    }
+
+    /**
+     * Returns the conversion from {@code north} to {@code south}.
+     */
+    private static Matrix conversion(final ProjectedCRS north, final ProjectedCRS south)
+            throws NoninvertibleTransformException
+    {
+        final MathTransform transform = MathTransforms.concatenate(
+                north.getConversionFromBase().getMathTransform().inverse(),
+                south.getConversionFromBase().getMathTransform());
+        assertInstanceOf("North to South", LinearTransform.class, transform);
+        return ((LinearTransform) transform).getMatrix();
+    }
+
+    /**
+     * Tests the {@link MathTransform} between North-Orientated and South-Orientated cases.
+     *
+     * @throws ParseException if the parsing failed.
+     * @throws NoninvertibleTransformException if computation of the conversion from North-Orientated
+     *         to South-Orientated failed.
+     */
+    @Test
+    @DependsOnMethod("testProjectedCRS")
+    public void testMathTransform() throws ParseException, NoninvertibleTransformException {
+        /*
+         * Test "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
+         * The 'south' transform is actually the usual Transverse Mercator projection, despite
+         * having axis oriented toward South.  Consequently the "False Northing" parameter has
+         * the same meaning for those two CRS. Since we assigned the same False Northing value,
+         * those two CRS have their "False origin" at the same location. This is why conversion
+         * from 'south' to 'north' introduce no translation, only a reversal of y axis.
+         */
+        ProjectedCRS north = parseTransverseMercator(false, false, 1000);
+        assertEquals(AxisDirection.WEST,  north.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.NORTH, north.getCoordinateSystem().getAxis(1).getDirection());
+
+        ProjectedCRS south = parseTransverseMercator(false, true, 1000);
+        assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
+
+        Matrix matrix = conversion(north, south);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
+        assertEquals("No northing expected.",                      0, matrix.getElement(1,2), STRICT);
+        assertDiagonalEquals(new double[] {+1, -1, 1}, true, matrix, STRICT);
+        /*
+         * Test "Transverse Mercator South Orientated". In this projection, the "False Northing" parameter
+         * is actually a "False Southing". It may sound surprising, but "South Orientated" projections are
+         * defined that way.  For converting from our CRS having a False Northing of 1000 to a CRS without
+         * False Northing or Southing, we must subtract 1000 from the axis which is oriented toward North.
+         * This means adding 1000 if the axis is rather oriented toward South. Then we add another 1000 m
+         * (the value specified in the line just below) toward South.
+         */
+        south = parseTransverseMercator(true, true, 1000);  // "False Southing" of 1000 metres.
+        assertEquals(AxisDirection.WEST,  south.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals(AxisDirection.SOUTH, south.getCoordinateSystem().getAxis(1).getDirection());
+        matrix = conversion(north, south);
+        assertEquals("West direction should be unchanged. ",      +1, matrix.getElement(0,0), STRICT);
+        assertEquals("North-South direction should be reverted.", -1, matrix.getElement(1,1), STRICT);
+        assertEquals("No easting expected.",                       0, matrix.getElement(0,2), STRICT);
+        assertEquals("Northing expected.",                      2000, matrix.getElement(1,2), STRICT);
     }
 
     /**
