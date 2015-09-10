@@ -142,6 +142,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.internal.jaxb.gmd.EnumAdapterTest.class,
     org.apache.sis.internal.jaxb.gmd.LanguageCodeTest.class,
     org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
     org.apache.sis.internal.jaxb.gml.MeasureTest.class,
