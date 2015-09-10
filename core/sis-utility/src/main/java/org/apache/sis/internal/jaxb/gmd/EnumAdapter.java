@@ -54,7 +54,7 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
      * @param  value The text in the XML element.
      * @return The presumed enumeration constant name.
      */
-    protected static String name(String value) {
+    protected static String name(final String value) {
         /*
          * Replace space ! " # $ % & ' ( ) * + , - . / punction characters by '_'.
          * For example this replace "in/out" by "IN_OUT" in ParameterDirection.
@@ -62,12 +62,20 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
          * Note: we do not use codepoint API because this method is mostly for
          * GeoAPI programmatic constant names, which are written in English.
          */
-        final char[] ca = value.toCharArray();
-        for (int i=0; i<ca.length; i++) {
-            final char c = ca[i];
-            ca[i] = (c >= '0') ? Character.toUpperCase(c) : '_';
+        final int length = value.length();
+        final StringBuilder buffer = new StringBuilder(length);
+        for (int i=0; i<length; i++) {
+            char c = value.charAt(i);
+            if (c < '0') {
+                c = '_';
+            } else if (!Character.isUpperCase(c)) {
+                c = Character.toUpperCase(c);
+            } else if (i != 0) {
+                buffer.append('_');
+            }
+            buffer.append(c);
         }
-        return String.valueOf(ca);
+        return buffer.toString();
     }
 
     /**
