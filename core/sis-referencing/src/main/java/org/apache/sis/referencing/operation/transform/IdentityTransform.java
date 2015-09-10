@@ -87,11 +87,9 @@ final class IdentityTransform extends AbstractLinearTransform implements Seriali
                 }
             }
             switch (dimension) {
-                default: candidate = new IdentityTransform(dimension); break;
-                case 1:  candidate = IdentityTransform1D.INSTANCE;     break;
-                case 2:  candidate = new AffineTransform2D();
-                         ((AffineTransform2D) candidate).freeze();
-                         break;
+                default: candidate = new IdentityTransform(dimension);        break;
+                case 1:  candidate = IdentityTransform1D.INSTANCE;            break;
+                case 2:  candidate = new AffineTransform2D(1, 0, 0, 1, 0, 0); break;
             }
             if (dimension < IDENTITIES.length) {
                 IDENTITIES[dimension] = candidate;
