@@ -175,6 +175,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      * Returns a copy of the matrix that user can modify.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public final Matrix clone() {
         return Matrices.copy(this);
     }
