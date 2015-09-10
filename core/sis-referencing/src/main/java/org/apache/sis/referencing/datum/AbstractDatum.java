@@ -26,6 +26,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -34,6 +35,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.io.wkt.ElementKind;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
@@ -61,7 +64,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.6
  * @module
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
@@ -409,6 +412,31 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch, domainOfValidity, scope);
+    }
+
+    /**
+     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this datum.
+     * See {@link AbstractIdentifiedObject#formatTo(Formatter)} for more information.
+     *
+     * @param  formatter The formatter where to format the inner content of this WKT element.
+     * @return The {@linkplain org.apache.sis.io.wkt.KeywordCase#CAMEL_CASE CamelCase} keyword
+     *         for the WKT element, or {@code null} if unknown.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        final Citation authority = formatter.getNameAuthority();
+        String name = IdentifiedObjects.getName(this, authority);
+        if (name == null) {
+            name = IdentifiedObjects.getName(this, null);
+            if (name == null) { // Should never happen, but be safe.
+                return super.formatTo(formatter);
+            }
+            if ("ESRI".equalsIgnoreCase(Citations.getCodeSpace(authority)) && !name.startsWith(ESRI_PREFIX)) {
+                name = ESRI_PREFIX + name;
+            }
+        }
+        formatter.append(name, ElementKind.DATUM);
+        return null;
     }
 
 
