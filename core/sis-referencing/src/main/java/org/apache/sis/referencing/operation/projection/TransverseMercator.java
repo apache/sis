@@ -70,6 +70,39 @@ public class TransverseMercator extends NormalizedProjection {
     private static final long serialVersionUID = -4717976245811852528L;
 
     /**
+     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
+     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
+     * and similar method. The identities used are:
+     *
+     * <ul>
+     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
+     *   <li>cos(2θ) = cos²θ - sin²θ</li>
+     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
+     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
+     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
+     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
+     * </ul>
+     *
+     * Hyperbolic formulas:
+     * <ul>
+     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
+     *   <li>cosh(2θ) = cosh²θ + sinh²θ =  2cosh²θ - 1 = 1 + 2sinh²θ</li>
+     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
+     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)coshθ</li>
+     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
+     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
+     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
+     *                = 8.cosh²θ(cosh²θ - 1) + 1
+     *                = 8.cosh²(θ).sinh²(θ) + 1
+     *                = 2.sinh²(2θ) + 1</li>
+     * </ul>
+     *
+     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
+     * executed (no need to comment-out that code).
+     */
+    private static final boolean ORIGINAL_FORMULA = false;
+
+    /**
      * Internal coefficients for computation, depending only on value of excentricity.
      * Defined in §1.3.5.1 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      */
@@ -274,25 +307,60 @@ public class TransverseMercator extends NormalizedProjection {
         final double coshη0 = cosh(η0);
         final double ξ0     = asin(tanh(Q) * coshη0);
 
-        //-- ξ0
-        final double sin_8ξ0  = sin(8*ξ0);
-        final double sin_6ξ0  = sin(6*ξ0);
-        final double sin_4ξ0  = sin(4*ξ0);
-        final double sin_2ξ0  = sin(2*ξ0);
-        final double cos_8ξ0  = cos(8*ξ0);
-        final double cos_6ξ0  = cos(6*ξ0);
-        final double cos_4ξ0  = cos(4*ξ0);
-        final double cos_2ξ0  = cos(2*ξ0);
-
-        //-- η0
-        final double cosh_8η0 = cosh(8*η0);
-        final double cosh_6η0 = cosh(6*η0);
-        final double cosh_4η0 = cosh(4*η0);
-        final double cosh_2η0 = cosh(2*η0);
-        final double sinh_8η0 = sinh(8*η0);
-        final double sinh_6η0 = sinh(6*η0);
-        final double sinh_4η0 = sinh(4*η0);
-        final double sinh_2η0 = sinh(2*η0);
+        /*
+         * Compute sin(2⋅ξ₀), sin(4⋅ξ₀), sin(6⋅ξ₀), sin(8⋅ξ₀) and same for cos, but using the following
+         * trigonometric identities in order to reduce the number of calls to Math.sin and cos methods.
+         */
+        final double sin_2ξ0, sin_4ξ0, sin_6ξ0, sin_8ξ0,
+                     cos_2ξ0, cos_4ξ0, cos_6ξ0, cos_8ξ0;
+        if (ORIGINAL_FORMULA) {
+            sin_2ξ0 = sin(2*ξ0);
+            cos_2ξ0 = cos(2*ξ0);
+            sin_4ξ0 = sin(4*ξ0);
+            cos_4ξ0 = cos(4*ξ0);
+            sin_6ξ0 = sin(6*ξ0);
+            cos_6ξ0 = cos(6*ξ0);
+            sin_8ξ0 = sin(8*ξ0);
+            cos_8ξ0 = cos(8*ξ0);
+        } else {
+            sin_2ξ0 = sin(2*ξ0);                              // sin(2⋅ξ₀);
+            cos_2ξ0 = cos(2*ξ0);                              // cos(2⋅ξ₀)
+            final double sin2 = sin_2ξ0 * sin_2ξ0;
+            final double cos2 = cos_2ξ0 * cos_2ξ0;
+            sin_4ξ0 = 2 * sin_2ξ0 * cos_2ξ0;                  // sin(4⋅ξ₀)
+            cos_4ξ0 = cos2 - sin2;                            // cos(4⋅ξ₀)
+            sin_6ξ0 = (3 - 4 * sin2) * sin_2ξ0;               // sin(6⋅ξ₀)
+            cos_6ξ0 = (4 * cos2 - 3) * cos_2ξ0;               // cos(6⋅ξ₀)
+            sin_8ξ0 = 4 * cos_4ξ0 * (sin_2ξ0 * cos_2ξ0);      // sin(8⋅ξ₀)
+            cos_8ξ0 = -2*sin_4ξ0 * sin_4ξ0 + 1;               // cos(8⋅ξ₀)
+        }
+        
+        /*
+         * Compute sinh(2⋅ξ₀), sinh(4⋅ξ₀), sinh(6⋅ξ₀), sinh(8⋅ξ₀) and same for cosh, but using the following
+         * hyperbolic identities in order to reduce the number of calls to Math.sinh and cosh methods.
+         */
+        final double sinh_2η0, cosh_2η0, cosh_8η0, cosh_6η0, cosh_4η0, sinh_8η0, sinh_6η0, sinh_4η0;
+        if (ORIGINAL_FORMULA) {
+            sinh_2η0 = sinh(2*η0);
+            cosh_2η0 = cosh(2*η0);
+            sinh_4η0 = sinh(4*η0);
+            cosh_4η0 = cosh(4*η0);
+            sinh_6η0 = sinh(6*η0);
+            cosh_6η0 = cosh(6*η0);
+            sinh_8η0 = sinh(8*η0);
+            cosh_8η0 = cosh(8*η0);
+        } else {
+            sinh_2η0 = sinh(2*η0);                              // sinh(2⋅η₀);
+            cosh_2η0 = cosh(2*η0);                              // cosh(2⋅η₀)
+            final double sinh2 = sinh_2η0 * sinh_2η0;
+            final double cosh2 = cosh_2η0 * cosh_2η0;
+            sinh_4η0 = 2 * sinh_2η0 * cosh_2η0;                 // sinh(4⋅η₀)
+            cosh_4η0 = cosh2 + sinh2;                           // cosh(4⋅η₀)
+            sinh_6η0 = (3 + 4*sinh2) * sinh_2η0;                // sinh(6⋅η₀)
+            cosh_6η0 = (4*cosh2 - 3) * cosh_2η0;                // cosh(6⋅η₀)
+            sinh_8η0 = 4 * cosh_4η0 * sinh_2η0 * cosh_2η0;      // sinh(8⋅η₀)
+            cosh_8η0 = 1 + 2*sinh_4η0*sinh_4η0;                 // cosh(8⋅η₀)
+        }
 
         /*
          * Assuming that (λ, φ) ↦ Proj((λ, φ))
