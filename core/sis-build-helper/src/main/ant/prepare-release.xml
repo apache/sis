@@ -32,7 +32,8 @@
     <!-- Ensure that the "sis-build-helper" plugin used by the build is the released version. -->
     <replaceregexp file = "${user.dir}/pom.xml"
                   match = "&lt;sis\.plugin\.version&gt;.+&lt;/sis\.plugin\.version&gt;"
-                replace = "&lt;sis.plugin.version&gt;${sis.version}&lt;/sis.plugin.version&gt;"/>
+                replace = "&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
+                <!-- The -SNAPSHOT part will be removed later, at tag creation. -->
 
     <!-- Replace the version number in Java code. -->
     <replaceregexp file = "${user.dir}/core/sis-utility/src/main/java/org/apache/sis/util/Version.java"
