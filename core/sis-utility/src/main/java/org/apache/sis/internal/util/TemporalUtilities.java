@@ -43,7 +43,7 @@ public final class TemporalUtilities extends Static {
      *
      * This constant will be removed after SIS release a sis-temporal module.
      */
-    public static final boolean REPORT_MISSING_MODULE = true;
+    public static final boolean REPORT_MISSING_MODULE = false;
 
     /**
      * Do not allow instantiation of this class.
