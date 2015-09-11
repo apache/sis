@@ -68,12 +68,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
+      scm:svn:http://svn.apache.org/repos/asf/sis/branches/0.6
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
+      scm:svn:https://svn.apache.org/repos/asf/sis/branches/0.6
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/trunk</url>
+    <url>http://svn.apache.org/viewvc/sis/branches/0.6</url>
   </scm>
 
   <ciManagement>
@@ -410,7 +410,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>${project.version}</sis.plugin.version>
+    <sis.plugin.version>0.6</sis.plugin.version>
     <geoapi.version>3.0.0</geoapi.version>
   </properties>
 
@@ -697,25 +697,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
     </pluginManagement>
   </build>
 
-
-
-  <!-- ==============================================================
-         Additional repositories from which to download artifacts.
-         The parent pom.xml already declares the apache.snapshots
-         repository for library artifacts. But we also need it for
-         Maven plugins in order to download sis-build-helper when
-         the user did not built it himself.
-       ============================================================== -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
 
   <!-- ==============================================================

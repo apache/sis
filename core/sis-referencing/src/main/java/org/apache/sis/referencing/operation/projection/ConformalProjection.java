@@ -85,7 +85,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
      * executed (no need to comment-out that code).
      */
-    private static final boolean ORIGINAL_FORMULA = false;
+    private static final boolean ORIGINAL_FORMULA = true;
 
     /**
      * Coefficients in the series expansion used by {@link #φ(double)}.
