@@ -485,6 +485,7 @@ public class TransverseMercator extends NormalizedProjection {
             sin_8ξ = sin(8*ξ);
             cos_8ξ = cos(8*ξ);
 
+            sinh_2η = sinh(2*η);
             cosh_2η = cosh(2*η);
             sinh_4η = sinh(4*η);
             cosh_4η = cosh(4*η);
