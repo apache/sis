@@ -126,7 +126,7 @@ public class OptionKey<T> implements Serializable {
      *   <tr><td>{@code "CREATE"}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
      * </table>
      *
-     * {@section Differences between the JDK6 and JDK7 branches of SIS}
+     * <div class="section">Differences between the JDK6 and JDK7 branches of SIS</div>
      * In the JDK7 branch of SIS, the array type for this key is {@code java.nio.file.OpenOption[]} instead than
      * {@code Object[]} and the constants listed in the above table are {@code java.nio.file.StandardOpenOption}
      * enumeration values.
