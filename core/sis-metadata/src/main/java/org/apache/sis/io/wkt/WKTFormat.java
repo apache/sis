@@ -354,40 +354,6 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns whether non-ASCII characters are preserved. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
-     *
-     * <p>This value is always {@code true} when the WKT {@linkplain #getConvention() convention}
-     * is set to {@link Convention#INTERNAL}.</p>
-     *
-     * @return Whether non-ASCII characters are preserved.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by {@link #getTransliterator()}.
-     */
-    @Deprecated
-    public boolean isNonAsciiAllowed() {
-        return getTransliterator() == Transliterator.IDENTITY;
-    }
-
-    /**
-     * Sets whether non-ASCII characters shall be preserved. The default value is {@code false},
-     * which causes replacements like "é" → "e" in all elements except {@link ElementKind#REMARKS}.
-     * Setting this property to {@code true} will disable such replacements.
-     *
-     * @param allowed Whether non-ASCII characters shall be preserved.
-     *
-     * @since 0.5
-     *
-     * @deprecated Replaced by {@link #setTransliterator(Transliterator)}.
-     */
-    @Deprecated
-    public void setNonAsciiAllowed(final boolean allowed) {
-        setTransliterator(allowed ? Transliterator.IDENTITY : Transliterator.DEFAULT);
-    }
-
-    /**
      * Returns whether WKT keywords should be written with upper cases or camel cases.
      *
      * @return The case to use for formatting keywords.
@@ -872,20 +838,6 @@ public class WKTFormat extends CompoundFormat<Object> {
             w.publish();
         }
         return w;
-    }
-
-    /**
-     * If a warning occurred during the last WKT {@linkplain #parse(CharSequence, ParsePosition) parsing} or
-     * {@linkplain #format(Object, Appendable) formatting}, returns the warning. Otherwise returns {@code null}.
-     * The warning is cleared every time a new object is parsed or formatted.
-     *
-     * @return The last warning, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #getWarnings()}.
-     */
-    @Deprecated
-    public String getWarning() {
-        return (warnings != null) ? warnings.toString() : null;
     }
 
     /**

@@ -27,7 +27,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.6
  * @module
  */
 public final strictfp class AssertTest extends TestCase {
@@ -58,7 +58,7 @@ public final strictfp class AssertTest extends TestCase {
      * Tests the {@link Assert#assertSerializedEquals(Object)} method.
      */
     @Test
-    public void testSerialize() {
+    public void testAssertSerializedEquals() {
         final String local = "Le silence éternel de ces espaces infinis m'effraie";
         assertNotSame(local, assertSerializedEquals(local));
     }

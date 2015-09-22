@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -29,7 +30,7 @@ import org.opengis.metadata.citation.Citation;
  * @version 0.6
  * @module
  */
-final class DeprecatedName extends NamedIdentifier {
+final class DeprecatedName extends NamedIdentifier implements Deprecable {
     /**
      * For cross-version compatibility.
      */
