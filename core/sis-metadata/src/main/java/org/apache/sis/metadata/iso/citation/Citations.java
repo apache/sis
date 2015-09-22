@@ -75,14 +75,6 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  */
 public final class Citations extends Static {
     /**
-     * The <a href="http://www.iso.org/">International Organization for Standardization</a>.
-     *
-     * @deprecated No replacement since ISO is an {@linkplain DefaultOrganisation organisation} rather than a citation.
-     */
-    @Deprecated
-    public static final Citation ISO = new SimpleCitation("ISO");
-
-    /**
      * The <cite>Geographic Information — Metadata</cite> standards defined by ISO 19115.
      * This list contains two standards published by the
      * <a href="http://www.iso.org/">International Organization for Standardization</a>:
@@ -119,16 +111,15 @@ public final class Citations extends Static {
     });
 
     /**
-     * The <a href="http://www.ogp.org.uk">International Association of Oil &amp; Gas Producers</a> organization.
+     * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
-     * @since 0.4
+     * <p>We do not expose this citation in public API because it is an organization rather than a reference
+     * to a document or a database (see SIS-200). However we need it as the authority of {@link #EPSG}.</p>
      *
-     * @deprecated The OGP organization is now known as IOGP. This citation will be removed in SIS 0.7
-     *             because of this name change and for avoiding confusion with {@link #EPSG} citation.
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
      */
-    @Deprecated
-    public static final Citation OGP = new SimpleCitation("OGP");
+    static final Citation IOGP = new SimpleCitation("IOGP");
 
     /**
      * The authority for identifiers of objects defined by the
@@ -264,17 +255,6 @@ public final class Citations extends Static {
      * @see #EPSG
      */
     public static final IdentifierSpace<String> ESRI = new CitationConstant.Authority<>("ESRI");
-
-    /**
-     * The <a href="http://www.oracle.com">Oracle</a> organization.
-     *
-     * @deprecated No replacement since Oracle is an {@linkplain DefaultOrganisation organisation} rather
-     *             than a citation, and we do not have Oracle-specific objects.
-     *
-     * @since 0.4
-     */
-    @Deprecated
-    public static final Citation ORACLE = new CitationConstant("Oracle");
 
     /**
      * The authority for identifiers of objects defined by the
@@ -424,9 +404,7 @@ public final class Citations extends Static {
         (SimpleCitation) SIS,
         (SimpleCitation) ISO_19115.get(0),
         (SimpleCitation) ISO_19115.get(1),
-        (SimpleCitation) OGP,
-        (SimpleCitation) ISO,
-        (SimpleCitation) ORACLE
+        (SimpleCitation) IOGP
     };
 
     static {  // Must be after CITATIONS array construction.
@@ -476,11 +454,8 @@ public final class Citations extends Static {
                 return citation;
             }
         }
-        /*
-         * Temporary check to be removed after we deleted the deprecated citation.
-         */
-        if (equalsFiltered(identifier, Constants.IOGP)) {
-            return OGP;
+        if (equalsFiltered(identifier, "OGP")) {    // Old name of "IOGP" organization.
+            return IOGP;
         }
         /*
          * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects the default citation
