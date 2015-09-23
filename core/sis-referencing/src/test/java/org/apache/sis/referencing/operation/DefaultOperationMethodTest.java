@@ -161,6 +161,12 @@ public final strictfp class DefaultOperationMethodTest extends TestCase {
     public void testWKT() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2", 2);
         assertWktEquals("METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);
-        assertWktEquals(Convention.WKT1, "PROJECTION[“Mercator (variant A)”, AUTHORITY[“EPSG”, “9804”]]", method);
+        /*
+         * By default, WKT 1 conventions implies usage of OGC names instead then ESRI ones.
+         * Even if the OperationMethod created in this test did not declared explicitely the OGC name,
+         * DefaultOperationMethod.formatTo(Formatter) is expected to check the aliases declared in the
+         * 'org.apache.sis.internal.referencing.provider' package.
+         */
+        assertWktEquals(Convention.WKT1, "PROJECTION[“Mercator_1SP”, AUTHORITY[“EPSG”, “9804”]]", method);
     }
 }
