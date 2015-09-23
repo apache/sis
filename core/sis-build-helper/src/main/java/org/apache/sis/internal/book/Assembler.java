@@ -83,6 +83,11 @@ public final class Assembler {
     private final Document document;
 
     /**
+     * The node where to write the table of content.
+     */
+    private final Element tableOfContent;
+
+    /**
      * The {@code title} attributes found in abbreviations.
      */
     private final Map<String,String> abbreviations = new HashMap<>();
@@ -105,6 +110,8 @@ public final class Assembler {
         inputDirectory = input.getParentFile();
         builder        = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         document       = load(input.getName());
+        tableOfContent = document.createElement("ul");
+        tableOfContent.setAttribute("class", "toc");
     }
 
     /**
@@ -179,9 +186,12 @@ public final class Assembler {
     private void process(Node node) throws IOException, SAXException {
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
-                String text = node.getNodeValue();
-                if (text != null && (text = text.trim()).startsWith(INCLUDE_PREFIX)) {
+                final String text = node.getNodeValue().trim();
+                if (text.startsWith(INCLUDE_PREFIX)) {
                     node = replaceByBody(text.substring(INCLUDE_PREFIX.length()), node);
+                } else if (text.equals("TOC")) {
+                    node.getParentNode().replaceChild(tableOfContent, node);
+                    return;
                 }
                 break;
             }
@@ -197,6 +207,7 @@ public final class Assembler {
                             final int c = name.charAt(1) - '0';
                             if (c >= 1 && c <= 9) {
                                 writtenAbbreviations.clear();
+                                appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
                             }
                         }
                         break;
@@ -213,6 +224,37 @@ public final class Assembler {
     }
 
     /**
+     * Appends the given header to the table of content.
+     *
+     * @param level level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, etc. element found.
+     */
+    private void appendToTableOfContent(int level, final String id, final String text) throws IOException {
+        if (id.isEmpty()) {
+            throw new IOException("Missing identifier for header: " + text);
+        }
+        final Element item = document.createElement("li");
+        final Element ref = document.createElement("a");
+        ref.setAttribute("href", "#" + id);
+        ref.setTextContent(text);
+        item.appendChild(ref);
+        Node node = tableOfContent;
+        while (--level > 0) {
+            node = node.getLastChild(); // Last <li> element.
+            if (node == null) {
+                throw new IOException("Non-continuous header level: " + text);
+            }
+            Node list = node.getLastChild();    // Search for <ul> element in above <li>.
+            if (list == null || !"ul".equals(list.getNodeName())) {
+                list = document.createElement("ul");
+                node.appendChild(list);
+            }
+            node = list;
+        }
+        node.appendChild(document.createTextNode("\n"));
+        node.appendChild(item);
+    }
+
+    /**
      * Assembles the document and writes to the destination.
      *
      * @param  output the output file (e.g. {@code "site/content/en/developer-guide.html"}).
@@ -222,6 +264,7 @@ public final class Assembler {
      */
     public void run(final File output) throws IOException, SAXException, TransformerException {
         process(document.getDocumentElement());
+        tableOfContent.appendChild(document.createTextNode("\n"));
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.transform(new DOMSource(document), new StreamResult(output));
     }
