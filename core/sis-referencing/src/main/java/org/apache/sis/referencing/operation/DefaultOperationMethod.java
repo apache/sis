@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -32,13 +33,16 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -46,12 +50,16 @@ import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -679,7 +687,56 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        super.formatTo(formatter);
+        /*
+         * The next few lines below are basically a copy of the work done by super.formatTo(formatter),
+         * which search for the name to write inside METHOD["name"]. The difference is in the fallback
+         * executed if we do not find a name for the given authority.
+         */
+        final Citation authority = formatter.getNameAuthority();
+        String name = IdentifiedObjects.getName(this, authority);
+        ElementKind kind = ElementKind.METHOD;
+        if (name == null) {
+            name = IdentifiedObjects.getName(this, null);
+            if (name == null) {
+                name = Vocabulary.getResources(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
+                kind = ElementKind.NAME;  // Because the "Unnamed" string is not a real OperationMethod name.
+            } else if (!(this instanceof MathTransformProvider)) {
+                /*
+                 * No name found for the given authority. We may use the primary name as a fallback.
+                 * But before doing that, maybe we can find the name that we are looking for in the
+                 * hard-coded values in the 'org.apache.sis.internal.referencing.provider' package.
+                 * The typical use case is when this DefaultOperationMethod has been instantiated
+                 * by the EPSG factory using only the information found in the EPSG database.
+                 *
+                 * We skip this operation if this DefaultOperationMethod is also a MathTransformProvider
+                 * on the assumption that those providers already choose carefuly their aliases, and are
+                 * already registered in CoordinateOperationFactory (so the call to 'getOperationMethod'
+                 * is likely to return 'this'). This is the case at least for SIS build-in methods. The
+                 * intend is to avoid class loading (the factory, potentially followed by all providers)
+                 * when it is likely to not give us a better name.
+                 */
+                final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
+                if (factory != null) try {
+                    final OperationMethod method = factory.getOperationMethod(name);
+                    if (method != null) {  // Paranoiac check, but should never be null.
+                        final String candidate = IdentifiedObjects.getName(method, authority);
+                        if (candidate != null) {
+                            name = candidate;
+                        }
+                    }
+                } catch (FactoryException e) {
+                    /*
+                     * If this OperationMethod is not know to the CoordinateOperationFactory, do not declare the WKT
+                     * as invalid because this is not a WKT syntax problem. We will fallback on the primary name.
+                     * Even if that name is not from the specified authority, maybe the user know that the target
+                     * software will understand that name.
+                     */
+                    Logging.recoverableException(Logging.getLogger(Loggers.WKT),
+                            DefaultOperationMethod.class, "formatTo", e);
+                }
+            }
+        }
+        formatter.append(name, kind);
         if (formatter.getConvention().majorVersion() == 1) {
             /*
              * The WKT 1 keyword is "PROJECTION", which imply that the operation method should be of type
