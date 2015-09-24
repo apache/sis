@@ -21,12 +21,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -44,12 +43,14 @@ import org.xml.sax.SAXException;
  * This class performs the following processing:
  *
  * <ul>
- *   <li>Comments of the form {@code <!-- file:introduction.html -->} are replaced by content
- *       of the {@code <body>} element in the given file.</li>
+ *   <li>Replace elements of the form {@code <xi:include href="introduction.html"/>} by content of the {@code <body>} element
+ *       in the file given by the {@code href} attribute.</li>
  *
- *   <li>{@code <abbr>} elements without {@code title} attribute automatically get the last title used for that abbreviation.
- *        However this automatic insertion is performed only for the first occurrence of that abbreviation after a {@code h?}
- *        element.</li>
+ *   <li>Complete {@code <abbr>} elements without {@code title} attribute by reusing the last title used for the same abbreviation.
+ *       This automatic insertion is performed only for the first occurrence of that abbreviation after a {@code h?} element.</li>
+ *
+ *   <li>Replace the {@code <!-- TOC -->} comment by a table of content generated from all {@code <h1>}, {@code <h2>}, etc.
+ *       found in the document.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -58,12 +59,10 @@ import org.xml.sax.SAXException;
  */
 public final class Assembler {
     /**
-     * The prefix used in comments for instructing {@code Assembler} to insert the content of another file.
-     * This is used in the source HTML file like the following example:
-     *
-     * <pre>{@literal <!-- file:introduction.html -->}</pre>
+     * The line separator to be used in the output file.
+     * We fix it to the Unix style (not the native style of the platform) for more compact output file.
      */
-    private static final String INCLUDE_PREFIX = "file:";
+    private static final String LINE_SEPARATOR = "\n";
 
     /**
      * The directory of all input files to process.
@@ -107,27 +106,87 @@ public final class Assembler {
      * @throws SAXException if an error occurred while parsing the XML.
      */
     public Assembler(final File input) throws ParserConfigurationException, IOException, SAXException {
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // No setXIncludeAware(true) -  we will handle <xi:include> elements ourself.
+        factory.setNamespaceAware(true);
         inputDirectory = input.getParentFile();
-        builder        = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        builder        = factory.newDocumentBuilder();
         document       = load(input.getName());
         tableOfContent = document.createElement("ul");
         tableOfContent.setAttribute("class", "toc");
+        /*
+         * Remove the "http://www.w3.org/2001/XInclude" namespace since we
+         * should have no <xi:include> elements left in the output file.
+         */
+        ((Element) document.getElementsByTagName("html").item(0)).removeAttribute("xmlns:xi");
+        /*
+         * Replace the License comment by a shorter one followed by the
+         * "This is an automatically generated file"> notice.
+         */
+        for (final Node node : toArray(document.getDocumentElement().getParentNode().getChildNodes())) {
+            if (node.getNodeType() == Node.COMMENT_NODE) {
+                node.setNodeValue(LINE_SEPARATOR + LINE_SEPARATOR +
+                        "  Licensed to the Apache Software Foundation (ASF)" + LINE_SEPARATOR +
+                        LINE_SEPARATOR +
+                        "      http://www.apache.org/licenses/LICENSE-2.0" + LINE_SEPARATOR +
+                        LINE_SEPARATOR +
+                        "  This is an automatically generated file. DO NOT EDIT." + LINE_SEPARATOR +
+                        "  See the files in the ../../../book/ directory instead." + LINE_SEPARATOR +
+                        LINE_SEPARATOR);
+                break;
+            }
+        }
     }
 
     /**
      * Loads the XML document from the given file in the same directory than the input file given to the constructor.
      */
     private Document load(final String filename) throws IOException, SAXException {
-        final Document include;
-        try (final InputStream in = new FileInputStream(new File(inputDirectory, filename))) {
-            include = builder.parse(in);
-        }
+        final Document include = builder.parse(new File(inputDirectory, filename));
         builder.reset();
+        removeIndentation(include.getDocumentElement());
         return include;
     }
 
     /**
+     * Removes the indentation at the beginning of lines in the given node and all child nodes.
+     * This can reduce the file length by as much as 20%. Note that the indentation was broken
+     * anyway after the treatment of {@code <xi:include>}, because included file does not use
+     * the right amount of spaces for the location where it is introduced.
+     */
+    private void removeIndentation(final Node node) {
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            boolean       newLine = false;
+            StringBuilder buffer  = null;
+            CharSequence  text    = node.getTextContent();
+            for (int i=0; i<text.length(); i++) {
+                switch (text.charAt(i)) {
+                    case '\r': break;  // Delete all occurrences of '\r'.
+                    case '\n': newLine = true;  continue;
+                    default  : newLine = false; continue;
+                    case ' ' : if (newLine) break; else continue;
+                }
+                if (buffer == null) {
+                    text = buffer = new StringBuilder(text);
+                }
+                buffer.deleteCharAt(i--);
+            }
+            if (buffer != null) {
+                node.setNodeValue(buffer.toString());
+            }
+            return;
+        }
+        final NodeList children = node.getChildNodes();
+        final int length = children.getLength();
+        for (int i=0; i<length; i++) {
+            removeIndentation(children.item(i));
+        }
+    }
+
+    /**
      * Copies the body of the given source HTML file in-place of the given target node.
+     * This method is doing the work of {@code <xi:include>} element. We do this work ourself instead than relying on
+     * {@link DocumentBuilder} build-in support mostly because we have been unable to get the {@code xpointer} to work.
      *
      * @param filename  the source XML file in the same directory than the input file given to the constructor.
      * @param toReplace the target XML node to be replaced by the content of the given file.
@@ -187,17 +246,18 @@ public final class Assembler {
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
                 final String text = node.getNodeValue().trim();
-                if (text.startsWith(INCLUDE_PREFIX)) {
-                    node = replaceByBody(text.substring(INCLUDE_PREFIX.length()), node);
-                } else if (text.equals("TOC")) {
+                if ("TOC".equals(text)) {
                     node.getParentNode().replaceChild(tableOfContent, node);
-                    return;
                 }
-                break;
+                return;
             }
             case Node.ELEMENT_NODE: {
                 final String name = node.getNodeName();
                 switch (name) {
+                    case "xi:include": {
+                        node = replaceByBody(((Element) node).getAttribute("href"), node);
+                        break;
+                    }
                     case "abbr": {
                         processAbbreviation((Element) node);
                         break;
@@ -216,10 +276,8 @@ public final class Assembler {
                 break;
             }
         }
-        final NodeList nodes = node.getChildNodes();
-        final int length = nodes.getLength();
-        for (int i=0; i<length; i++) {
-            process(nodes.item(i));
+        for (final Node child : toArray(node.getChildNodes())) {
+            process(child);
         }
     }
 
@@ -250,7 +308,7 @@ public final class Assembler {
             }
             node = list;
         }
-        node.appendChild(document.createTextNode("\n"));
+        node.appendChild(document.createTextNode(LINE_SEPARATOR));
         node.appendChild(item);
     }
 
@@ -264,8 +322,13 @@ public final class Assembler {
      */
     public void run(final File output) throws IOException, SAXException, TransformerException {
         process(document.getDocumentElement());
-        tableOfContent.appendChild(document.createTextNode("\n"));
+        tableOfContent.appendChild(document.createTextNode(LINE_SEPARATOR));
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "about:legacy-compat");
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
         transformer.transform(new DOMSource(document), new StreamResult(output));
     }
 }
