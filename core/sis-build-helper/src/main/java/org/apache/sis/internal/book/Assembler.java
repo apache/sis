@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.book;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -96,6 +97,11 @@ public final class Assembler {
      * This is used in order to avoid inserting too many abbreviation title.
      */
     private final Set<String> writtenAbbreviations = new HashSet<>();
+
+    /**
+     * Section numbers, incremented when a new {@code <h1>}, {@code <h2>}, etc. element is found.
+     */
+    private final int[] sectionNumbering = new int[9];
 
     /**
      * Creates a new assembler for the given input and output files.
@@ -284,7 +290,10 @@ public final class Assembler {
                             if (c >= 1 && c <= 9) {
                                 writtenAbbreviations.clear();
                                 if (index) {
+                                    sectionNumbering[c-1]++;
+                                    Arrays.fill(sectionNumbering, c, sectionNumbering.length, 0);
                                     appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
+                                    prependSectionNumber(c, node);  // Only after insertion in TOC.
                                 }
                             }
                         }
@@ -297,6 +306,21 @@ public final class Assembler {
         for (final Node child : toArray(node.getChildNodes())) {
             process(child, index);
         }
+    }
+
+    /**
+     * Prepend the current section numbers to the given node.
+     */
+    private void prependSectionNumber(final int level, final Node node) {
+        final Element number = document.createElement("span");
+        number.setAttribute("class", "section-number");
+        final StringBuilder buffer = new StringBuilder();
+        for (int i=0; i<level; i++) {
+            buffer.append(sectionNumbering[i]).append('.');
+        }
+        number.setTextContent(buffer.toString());
+        node.insertBefore(document.createTextNode(" "), node.getFirstChild());
+        node.insertBefore(number, node.getFirstChild());
     }
 
     /**
