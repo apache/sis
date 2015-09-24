@@ -155,26 +155,34 @@ public final class Assembler {
      * the right amount of spaces for the location where it is introduced.
      */
     private void removeIndentation(final Node node) {
-        if (node.getNodeType() == Node.TEXT_NODE) {
-            boolean       newLine = false;
-            StringBuilder buffer  = null;
-            CharSequence  text    = node.getTextContent();
-            for (int i=0; i<text.length(); i++) {
-                switch (text.charAt(i)) {
-                    case '\r': break;  // Delete all occurrences of '\r'.
-                    case '\n': newLine = true;  continue;
-                    default  : newLine = false; continue;
-                    case ' ' : if (newLine) break; else continue;
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE: {
+                if ("pre".equals(node.getNodeName())) {
+                    return;
                 }
-                if (buffer == null) {
-                    text = buffer = new StringBuilder(text);
+                break;
+            }
+            case Node.TEXT_NODE: {
+                boolean       newLine = false;
+                StringBuilder buffer  = null;
+                CharSequence  text    = node.getTextContent();
+                for (int i=0; i<text.length(); i++) {
+                    switch (text.charAt(i)) {
+                        case '\r': break;  // Delete all occurrences of '\r'.
+                        case '\n': newLine = true;  continue;
+                        default  : newLine = false; continue;
+                        case ' ' : if (newLine) break; else continue;
+                    }
+                    if (buffer == null) {
+                        text = buffer = new StringBuilder(text);
+                    }
+                    buffer.deleteCharAt(i--);
                 }
-                buffer.deleteCharAt(i--);
+                if (buffer != null) {
+                    node.setNodeValue(buffer.toString());
+                }
+                return;
             }
-            if (buffer != null) {
-                node.setNodeValue(buffer.toString());
-            }
-            return;
         }
         final NodeList children = node.getChildNodes();
         final int length = children.getLength();
