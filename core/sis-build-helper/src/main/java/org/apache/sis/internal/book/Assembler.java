@@ -249,8 +249,11 @@ public final class Assembler {
     /**
      * Performs on the given node the processing documented in the class javadoc.
      * This method invokes itself recursively.
+     *
+     * @param index {@code true} for including the {@code <h1>}, etc. texts in the Table Of Content (TOC).
+     *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
-    private void process(Node node) throws IOException, SAXException {
+    private void process(Node node, boolean index) throws IOException, SAXException {
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
                 final String text = node.getNodeValue().trim();
@@ -266,6 +269,11 @@ public final class Assembler {
                         node = replaceByBody(((Element) node).getAttribute("href"), node);
                         break;
                     }
+                    case "aside":
+                    case "article": {
+                        index = false;
+                        break;
+                    }
                     case "abbr": {
                         processAbbreviation((Element) node);
                         break;
@@ -275,7 +283,9 @@ public final class Assembler {
                             final int c = name.charAt(1) - '0';
                             if (c >= 1 && c <= 9) {
                                 writtenAbbreviations.clear();
-                                appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
+                                if (index) {
+                                    appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
+                                }
                             }
                         }
                         break;
@@ -285,7 +295,7 @@ public final class Assembler {
             }
         }
         for (final Node child : toArray(node.getChildNodes())) {
-            process(child);
+            process(child, index);
         }
     }
 
@@ -329,7 +339,7 @@ public final class Assembler {
      * @throws TransformerException if an error occurred while formatting the output XML.
      */
     public void run(final File output) throws IOException, SAXException, TransformerException {
-        process(document.getDocumentElement());
+        process(document.getDocumentElement(), true);
         tableOfContent.appendChild(document.createTextNode(LINE_SEPARATOR));
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
