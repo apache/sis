@@ -19,7 +19,9 @@ package org.apache.sis.internal.book;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.io.File;
 import java.io.IOException;
@@ -114,14 +116,21 @@ public final class Assembler {
     private Element previousChapter;
 
     /**
+     * Localized resources.
+     */
+    private final ResourceBundle resources;
+
+    /**
      * Creates a new assembler for the given input and output files.
      *
-     * @param  input the input file (e.g. {@code "site/book/en/body.html"}).
+     * @param  input  the input file (e.g. {@code "site/book/en/body.html"}).
+     * @param  locale the locale for the message to generates in HTML code.
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
      */
-    public Assembler(final File input) throws ParserConfigurationException, IOException, SAXException {
+    public Assembler(final File input, final Locale locale) throws ParserConfigurationException, IOException, SAXException {
+        resources = ResourceBundle.getBundle("org.apache.sis.internal.book.Resources", locale);
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // No setXIncludeAware(true) -  we will handle <xi:include> elements ourself.
         factory.setNamespaceAware(true);
@@ -308,7 +317,7 @@ public final class Assembler {
                                         tableOfChapterContent = document.createElement("ul");
                                         tableOfChapterContent.setAttribute("class", "toc");
                                         final Node nav = document.createElement("nav");
-                                        nav.appendChild(document.createTextNode("In this chapter:"));
+                                        nav.appendChild(document.createTextNode(resources.getString("this-chapter")));
                                         nav.appendChild(tableOfChapterContent);
                                         Node insertionPoint = node.getParentNode();             // The <header> element.
                                         do insertionPoint = insertionPoint.getNextSibling();    // The first paragraph.
@@ -401,7 +410,7 @@ public final class Assembler {
             final Element previous = document.createElement("div");
             previous.setAttribute("class", "previous-chapter");
             previous.appendChild(document.createTextNode("⬅ "));
-            previous.appendChild(createLink(previousChapter.getAttribute("id"), "Previous chapter"));
+            previous.appendChild(createLink(previousChapter.getAttribute("id"), resources.getString("previous-chapter")));
             links.appendChild(previous);
             /*
              * Update the previous <h1> element with the link to the next chapter,
@@ -411,7 +420,7 @@ public final class Assembler {
              */
             final Element next = document.createElement("div");
             next.setAttribute("class", "next-chapter");
-            next.appendChild(createLink(head.getAttribute("id"), "Next chapter"));
+            next.appendChild(createLink(head.getAttribute("id"), resources.getString("next-chapter")));
             next.appendChild(document.createTextNode(" ➡"));
 
             Node previousNav = previousChapter;
