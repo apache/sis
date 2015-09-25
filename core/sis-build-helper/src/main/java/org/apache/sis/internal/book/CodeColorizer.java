@@ -18,8 +18,15 @@ package org.apache.sis.internal.book;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,6 +73,23 @@ public final class CodeColorizer {
     }
 
     /**
+     * The origin of an identifier.
+     */
+    private static enum Origin {
+        OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS");
+
+        final String style;
+        private Origin(final String style) {
+            this.style = style;
+        }
+    };
+
+    /**
+     * Map pre-defined identifiers to their origin.
+     */
+    private final Map<String,Origin> identifierOrigins;
+
+    /**
      * The object to use for creating nodes.
      */
     private final Document document;
@@ -74,9 +98,32 @@ public final class CodeColorizer {
      * Creates a new color colorizer.
      *
      * @param document the object to use for creating nodes.
+     * @throws IOException if an error occurred while reading the list of pre-defined identifiers.
+     * @throws BookException if an identifier is defined twice.
      */
-    CodeColorizer(final Document document) {
+    public CodeColorizer(final Document document) throws IOException, BookException {
         this.document = document;
+        identifierOrigins = new HashMap<>(1000);
+        for (final Origin origin : Origin.values()) {
+            final String filename;
+            switch (origin) {
+                case OGC:    filename = "OGC.txt";    break;
+                case GEOAPI: filename = "GeoAPI.txt"; break;
+                default: continue;
+            }
+            final InputStream in = CodeColorizer.class.getResourceAsStream(filename);
+            if (in == null) {
+                throw new FileNotFoundException(filename);
+            }
+            try (final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+                String line;
+                while ((line = r.readLine()) != null) {
+                    if (identifierOrigins.put(line, origin) != null) {
+                        throw new BookException(line + " is defined twice.");
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -190,6 +237,12 @@ public final class CodeColorizer {
                             Element emphase = null;
                             if (JAVA_KEYWORDS.contains(word)) {
                                 emphase = document.createElement("b");
+                            } else if (isJava) {
+                                final Origin origin = identifierOrigins.get(word);
+                                if (origin != null) {
+                                    emphase = document.createElement("code");
+                                    emphase.setAttribute("class", origin.style);
+                                }
                             }
                             if (emphase != null) {
                                 emphase.setTextContent(word);

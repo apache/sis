@@ -140,8 +140,11 @@ public final class Assembler {
      * @throws ParserConfigurationException if this constructor can not build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
+     * @throws BookException if a logical error occurred while initializing the assembler.
      */
-    public Assembler(final File input, final Locale locale) throws ParserConfigurationException, IOException, SAXException {
+    public Assembler(final File input, final Locale locale)
+            throws ParserConfigurationException, IOException, SAXException, BookException
+    {
         resources = ResourceBundle.getBundle("org.apache.sis.internal.book.Resources", locale);
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // No setXIncludeAware(true) -  we will handle <xi:include> elements ourself.
