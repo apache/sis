@@ -82,15 +82,46 @@ public final class CodeColorizer {
     /**
      * Applies emphasing on the words found in all text node of the given node.
      *
-     * @param parent the root element where to put Java keywords in bold characters.
-     *        This is typically a {@code <pre>} or {@code <code>} element.
-     * @param isInsideQuotes if the text begin inside a quoted text.
+     * @param  parent the root element where to put Java keywords in bold characters.
+     *         This is typically a {@code <pre>} or {@code <code>} element.
+     * @param  type {@code "xml"} if the element to process is XML rather than Java code.
+     * @throws BookException if an element can not be processed.
      */
-    public void highlight(final Node parent, boolean isInsideQuotes) {
+    public void highlight(final Node parent, final String type) throws BookException {
+        final boolean isXML = "xml".equals(type);
+        final boolean isJava = !isXML;   // Future version may add more choices.
+        Element syntaticElement = null;  // E.g. comment block or a String.
+        String  stopCondition   = null;  // Identify 'syntaticElement' end.
         for (final Node node : toArray(parent.getChildNodes())) {
+            /*
+             * The following condition happen only if a quoted string or a comment started in a previous
+             * node and is continuing in the current node. In such case we need to transfer everything we
+             * found into the 'syntaticElement' node, until we found the 'stopCondition'.
+             */
+            if (stopCondition != null) {
+                if (node.getNodeType() != Node.TEXT_NODE) {
+                    syntaticElement.appendChild(node);  // Also remove from its previous position.
+                    continue;
+                }
+                final String text = node.getTextContent();
+                int lower = text.indexOf(stopCondition);
+                if (lower >= 0) {
+                    lower += stopCondition.length();
+                    stopCondition = null;
+                } else {
+                    lower = text.length();
+                }
+                syntaticElement.appendChild(document.createTextNode(text.substring(0, lower)));
+                node.setTextContent(text.substring(lower));
+                // Continue below in case there is some remaining characters to analyse.
+            }
+            /*
+             * The following is the usual code path where we search for Java keywords, OGC/ISO, GeoAPI and SIS
+             * identifiers, and where the quoted strings and the comments are recognized.
+             */
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE: {
-                    highlight(node, isInsideQuotes);
+                    highlight(node, type);
                     break;
                 }
                 case Node.TEXT_NODE: {
@@ -98,11 +129,46 @@ public final class CodeColorizer {
                     int nextSubstringStart = 0, lower = 0;
                     while (lower < text.length()) {
                         int c = text.codePointAt(lower);
-                        if (isInsideQuotes || !Character.isJavaIdentifierStart(c)) {
+                        if (!Character.isJavaIdentifierStart(c)) {
                             if (c == '"') {
-                                isInsideQuotes = !isInsideQuotes;
+                                stopCondition = "\"";
+                                syntaticElement = document.createElement("i");
+                            } else if (isJava && text.regionMatches(lower, "/*", 0, 2)) {
+                                stopCondition = "*/";
+                                syntaticElement = document.createElement("code");
+                                syntaticElement.setAttribute("class", "comment");
+                            } else if (isJava && text.regionMatches(lower, "//", 0, 2)) {
+                                stopCondition = "\n";
+                                syntaticElement = document.createElement("code");
+                                syntaticElement.setAttribute("class", "comment");
+                            } else if (isXML && text.regionMatches(lower, "<!--", 0, 4)) {
+                                stopCondition = "-->";
+                                syntaticElement = document.createElement("code");
+                                syntaticElement.setAttribute("class", "comment");
+                            } else {
+                                lower += Character.charCount(c);
+                                continue;  // "Ordinary" character: scan next characters.
                             }
-                            lower += Character.charCount(c);
+                            /*
+                             * Found the begining of a comment block or a string. Search where that block ends
+                             * (it may be in another node) and store all text between the current position and
+                             * the end into 'syntaticElement'.
+                             */
+                            if (nextSubstringStart != lower) {
+                                parent.insertBefore(document.createTextNode(text.substring(nextSubstringStart, lower)), node);
+                            }
+                            nextSubstringStart = lower;
+                            lower = text.indexOf(stopCondition, lower+1);
+                            if (lower >= 0) {
+                                lower += stopCondition.length();
+                                stopCondition = null;
+                            } else {
+                                lower = text.length();
+                                // Keep stopCondition; we will need to search for it in next nodes.
+                            }
+                            syntaticElement.setTextContent(text.substring(nextSubstringStart, lower));
+                            parent.insertBefore(syntaticElement, node);
+                            nextSubstringStart = lower;
                         } else {
                             /*
                              * Found the beginning of a Java identifier. Search where it ends.
