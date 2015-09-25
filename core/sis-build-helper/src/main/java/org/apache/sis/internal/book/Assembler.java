@@ -83,7 +83,7 @@ public final class Assembler {
     private final Document document;
 
     /**
-     * The node where to write the table of content.
+     * The node where to write the table of content for the whole document.
      */
     private final Element tableOfContent;
 
@@ -210,17 +210,17 @@ public final class Assembler {
      * @param filename  the source XML file in the same directory than the input file given to the constructor.
      * @param toReplace the target XML node to be replaced by the content of the given file.
      */
-    private Node replaceByBody(final String filename, final Node toReplace) throws IOException, SAXException {
+    private Node replaceByBody(final String filename, final Node toReplace) throws IOException, SAXException, BookException {
         final NodeList nodes = load(filename).getElementsByTagName("body");
         if (nodes.getLength() != 1) {
-            throw new IOException(filename + ": expected exactly one <body> element.");
+            throw new BookException(filename + ": expected exactly one <body> element.");
         }
         final Node element = document.createElement("section");
         toReplace.getParentNode().replaceChild(element, toReplace);
         for (Node child : toArray(nodes.item(0).getChildNodes())) {
             child = document.importNode(child, true);   // document.adoptNode(child) would have been more efficient but does not seem to work.
             if (child == null) {
-                throw new IOException("Failed to copy subtree.");
+                throw new BookException("Failed to copy subtree.");
             }
             element.appendChild(child);
         }
@@ -264,7 +264,7 @@ public final class Assembler {
      * @param index {@code true} for including the {@code <h1>}, etc. texts in the Table Of Content (TOC).
      *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
-    private void process(Node node, boolean index) throws IOException, SAXException {
+    private void process(Node node, boolean index) throws IOException, SAXException, BookException {
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
                 final String text = node.getNodeValue().trim();
@@ -340,20 +340,17 @@ public final class Assembler {
      *
      * @param level level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, etc. element found.
      */
-    private void appendToTableOfContent(int level, final String id, final String text) throws IOException {
+    private void appendToTableOfContent(int level, final String id, final String text) throws BookException {
         if (id.isEmpty()) {
-            throw new IOException("Missing identifier for header: " + text);
+            throw new BookException("Missing identifier for header: " + text);
         }
         final Element item = document.createElement("li");
-        final Element ref = document.createElement("a");
-        ref.setAttribute("href", "#" + id);
-        ref.setTextContent(text);
-        item.appendChild(ref);
+        item.appendChild(createLink(id, text));
         Node node = tableOfContent;
         while (--level > 0) {
             node = node.getLastChild();     // Last <li> element.
             if (node == null) {
-                throw new IOException("Non-continuous header level: " + text);
+                throw new BookException("Non-continuous header level: " + text);
             }
             Node list = node.getLastChild();    // Search for <ul> element in above <li>.
             if (list == null || !"ul".equals(list.getNodeName())) {
@@ -372,7 +369,7 @@ public final class Assembler {
      *
      * @param head the {@code <h1>} element.
      */
-    private void linkToSiblingChapters(final Element head) {
+    private void linkToSiblingChapters(final Element head) throws BookException {
         final Element links = document.createElement("div");
         links.setAttribute("class", "chapter-links");
         if (previousChapter != null) {
@@ -381,13 +378,10 @@ public final class Assembler {
              *
              *     <div class="previous-chapter">⬅ <a href="#id">Previous chapter</a></div>
              */
-            Element ref = document.createElement("a");
-            ref.setAttribute("href", "#" + previousChapter.getAttribute("id"));
-            ref.setTextContent("Previous chapter");
             final Element previous = document.createElement("div");
             previous.setAttribute("class", "previous-chapter");
             previous.appendChild(document.createTextNode("⬅ "));
-            previous.appendChild(ref);
+            previous.appendChild(createLink(previousChapter.getAttribute("id"), "Previous chapter"));
             links.appendChild(previous);
             /*
              * Update the previous <h1> element with the link to the next chapter,
@@ -395,12 +389,9 @@ public final class Assembler {
              *
              *     <div class="next-chapter"><a href="#id">Next chapter</a> ➡</div>
              */
-            ref = document.createElement("a");
-            ref.setAttribute("href", "#" + head.getAttribute("id"));
-            ref.setTextContent("Next chapter");
             final Element next = document.createElement("div");
             next.setAttribute("class", "next-chapter");
-            next.appendChild(ref);
+            next.appendChild(createLink(head.getAttribute("id"), "Next chapter"));
             next.appendChild(document.createTextNode(" ➡"));
 
             Node previousNav = previousChapter;
@@ -417,14 +408,28 @@ public final class Assembler {
     }
 
     /**
+     * Creates a {@code <a href="reference">text</a>} node.
+     */
+    private Element createLink(final String reference, final String text) throws BookException {
+        if (reference.isEmpty()) {
+            throw new BookException("Missing reference for: " + text);
+        }
+        final Element ref = document.createElement("a");
+        ref.setAttribute("href", "#" + reference);
+        ref.setTextContent(text);
+        return ref;
+    }
+
+    /**
      * Assembles the document and writes to the destination.
      *
      * @param  output the output file (e.g. {@code "site/content/en/developer-guide.html"}).
      * @throws IOException if an error occurred while reading or writing file.
      * @throws SAXException if an error occurred while parsing an input XML.
+     * @throws BookException if an error was found in the content of the XML file.
      * @throws TransformerException if an error occurred while formatting the output XML.
      */
-    public void run(final File output) throws IOException, SAXException, TransformerException {
+    public void run(final File output) throws IOException, SAXException, BookException, TransformerException {
         process(document.getDocumentElement(), true);
         tableOfContent.appendChild(document.createTextNode(LINE_SEPARATOR));
         final Transformer transformer = TransformerFactory.newInstance().newTransformer();
