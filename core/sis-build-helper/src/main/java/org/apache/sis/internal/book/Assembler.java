@@ -305,7 +305,7 @@ public final class Assembler {
                         break;
                     }
                     case "pre": {
-                        colorizer.highlight(node, false);
+                        colorizer.highlight(node, ((Element) node).getAttribute("class"));
                         break;
                     }
                     default: {
