@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
  *   <li>Complete {@code <abbr>} elements without {@code title} attribute by reusing the last title used for the same abbreviation.
  *       This automatic insertion is performed only for the first occurrence of that abbreviation after a {@code h?} element.</li>
  *
- *   <li>Replace the {@code <!-- TOC -->} comment by a table of content generated from all {@code <h1>}, {@code <h2>}, etc.
+ *   <li>Replace the {@code <!-- TOC -->} comment by a table of content generated from all {@code <h1>}, {@code <h2>}, <i>etc.</i>
  *       found in the document.</li>
  * </ul>
  *
@@ -88,6 +88,11 @@ public final class Assembler {
     private final Element tableOfContent;
 
     /**
+     * The node where to write the table of content for the current chapter.
+     */
+    private Element tableOfChapterContent;
+
+    /**
      * The {@code title} attributes found in abbreviations.
      */
     private final Map<String,String> abbreviations = new HashMap<>();
@@ -99,7 +104,7 @@ public final class Assembler {
     private final Set<String> writtenAbbreviations = new HashSet<>();
 
     /**
-     * Section numbers, incremented when a new {@code <h1>}, {@code <h2>}, etc. element is found.
+     * Section numbers, incremented when a new {@code <h1>}, {@code <h2>}, <i>etc.</i> element is found.
      */
     private final int[] sectionNumbering = new int[9];
 
@@ -261,7 +266,7 @@ public final class Assembler {
      * Performs on the given node the processing documented in the class javadoc.
      * This method invokes itself recursively.
      *
-     * @param index {@code true} for including the {@code <h1>}, etc. texts in the Table Of Content (TOC).
+     * @param index {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
      *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
     private void process(Node node, boolean index) throws IOException, SAXException, BookException {
@@ -297,11 +302,23 @@ public final class Assembler {
                                 if (index) {
                                     sectionNumbering[c-1]++;
                                     Arrays.fill(sectionNumbering, c, sectionNumbering.length, 0);
-                                    appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
-                                    prependSectionNumber(c, node);  // Only after insertion in TOC.
+                                    appendToTableOfContent(tableOfContent, c, (Element) node);
                                     if (c == 1) {
                                         linkToSiblingChapters((Element) node);
+                                        tableOfChapterContent = document.createElement("ul");
+                                        tableOfChapterContent.setAttribute("class", "toc");
+                                        final Node nav = document.createElement("nav");
+                                        nav.appendChild(document.createTextNode("In this chapter:"));
+                                        nav.appendChild(tableOfChapterContent);
+                                        Node insertionPoint = node.getParentNode();             // The <header> element.
+                                        do insertionPoint = insertionPoint.getNextSibling();    // The first paragraph.
+                                        while (insertionPoint.getNodeType() == Node.TEXT_NODE);
+                                        insertionPoint.getParentNode().insertBefore(nav, insertionPoint);
+                                        insertLineSeparator(insertionPoint);
+                                    } else {
+                                        appendToTableOfContent(tableOfChapterContent, c-1, (Element) node);
                                     }
+                                    prependSectionNumber(c, node);  // Only after insertion in TOC.
                                 }
                             }
                         }
@@ -318,10 +335,10 @@ public final class Assembler {
 
     /**
      * Prepend the current section numbers to the given node.
-     * The given node shall be a {@code <h1>}, {@code <h2>}, etc. element.
+     * The given node shall be a {@code <h1>}, {@code <h2>}, <i>etc.</i> element.
      *
-     * @param level 1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, etc.
-     * @param head  the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, etc. element.
+     * @param level 1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, <i>etc.</i>
+     * @param head  the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, <i>etc.</i> element.
      */
     private void prependSectionNumber(final int level, final Node head) {
         final Element number = document.createElement("span");
@@ -338,29 +355,32 @@ public final class Assembler {
     /**
      * Appends the given header to the table of content.
      *
-     * @param level level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, etc. element found.
+     * @param appendTo   The root node of the table of content where to append a new line.
+     * @param level      Level of the {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element found.
+     * @param referenced The {@code <h1>}, {@code <h2>}, {@code <h3>}, <i>etc.</i> element to reference.
      */
-    private void appendToTableOfContent(int level, final String id, final String text) throws BookException {
+    private void appendToTableOfContent(Node appendTo, int level, final Element referenced) throws BookException {
+        final String id = referenced.getAttribute("id");
+        final String text = referenced.getTextContent();
         if (id.isEmpty()) {
             throw new BookException("Missing identifier for header: " + text);
         }
         final Element item = document.createElement("li");
         item.appendChild(createLink(id, text));
-        Node node = tableOfContent;
         while (--level > 0) {
-            node = node.getLastChild();     // Last <li> element.
-            if (node == null) {
+            appendTo = appendTo.getLastChild();     // Last <li> element.
+            if (appendTo == null) {
                 throw new BookException("Non-continuous header level: " + text);
             }
-            Node list = node.getLastChild();    // Search for <ul> element in above <li>.
+            Node list = appendTo.getLastChild();    // Search for <ul> element in above <li>.
             if (list == null || !"ul".equals(list.getNodeName())) {
                 list = document.createElement("ul");
-                node.appendChild(list);
+                appendTo.appendChild(list);
             }
-            node = list;
+            appendTo = list;
         }
-        node.appendChild(document.createTextNode(LINE_SEPARATOR));
-        node.appendChild(item);
+        appendTo.appendChild(document.createTextNode(LINE_SEPARATOR));
+        appendTo.appendChild(item);
     }
 
     /**
@@ -403,7 +423,7 @@ public final class Assembler {
         final Element nav = document.createElement("nav");
         nav.appendChild(links);
         head.getParentNode().insertBefore(nav, head.getNextSibling());
-        head.getParentNode().insertBefore(document.createTextNode(LINE_SEPARATOR), nav);
+        insertLineSeparator(nav);
         previousChapter = head;
     }
 
@@ -418,6 +438,13 @@ public final class Assembler {
         ref.setAttribute("href", "#" + reference);
         ref.setTextContent(text);
         return ref;
+    }
+
+    /**
+     * Inserts a line separator just before the given node.
+     */
+    private void insertLineSeparator(final Node insertionPoint) {
+        insertionPoint.getParentNode().insertBefore(document.createTextNode(LINE_SEPARATOR), insertionPoint);
     }
 
     /**
