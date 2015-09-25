@@ -54,6 +54,10 @@ import org.xml.sax.SAXException;
  *
  *   <li>Replace the {@code <!-- TOC -->} comment by a table of content generated from all {@code <h1>}, {@code <h2>}, <i>etc.</i>
  *       found in the document.</li>
+ *
+ *   <li>Generate below {@code <h1>} elements a table of content containing only the sections in that chapter.</li>
+ *
+ *   <li>Generate below {@code <h1>} elements the navigation bar with links to the previous and next chapters.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
