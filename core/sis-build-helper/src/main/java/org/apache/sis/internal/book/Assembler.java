@@ -104,6 +104,11 @@ public final class Assembler {
     private final int[] sectionNumbering = new int[9];
 
     /**
+     * The last {@code <h1>} element found while parsing the document, or {@code null} if none.
+     */
+    private Element previousChapter;
+
+    /**
      * Creates a new assembler for the given input and output files.
      *
      * @param  input the input file (e.g. {@code "site/book/en/body.html"}).
@@ -294,6 +299,9 @@ public final class Assembler {
                                     Arrays.fill(sectionNumbering, c, sectionNumbering.length, 0);
                                     appendToTableOfContent(c, ((Element) node).getAttribute("id"), node.getTextContent());
                                     prependSectionNumber(c, node);  // Only after insertion in TOC.
+                                    if (c == 1) {
+                                        linkToSiblingChapters((Element) node);
+                                    }
                                 }
                             }
                         }
@@ -310,8 +318,12 @@ public final class Assembler {
 
     /**
      * Prepend the current section numbers to the given node.
+     * The given node shall be a {@code <h1>}, {@code <h2>}, etc. element.
+     *
+     * @param level 1 if {@code head} is {@code <h1>}, 2 if {@code head} is {@code <h2>}, etc.
+     * @param head  the {@code <h1>}, {@code <h2>}, {@code <h3>}, {@code <h4>}, etc. element.
      */
-    private void prependSectionNumber(final int level, final Node node) {
+    private void prependSectionNumber(final int level, final Node head) {
         final Element number = document.createElement("span");
         number.setAttribute("class", "section-number");
         final StringBuilder buffer = new StringBuilder();
@@ -319,8 +331,8 @@ public final class Assembler {
             buffer.append(sectionNumbering[i]).append('.');
         }
         number.setTextContent(buffer.toString());
-        node.insertBefore(document.createTextNode(" "), node.getFirstChild());
-        node.insertBefore(number, node.getFirstChild());
+        head.insertBefore(document.createTextNode(" "), head.getFirstChild());
+        head.insertBefore(number, head.getFirstChild());
     }
 
     /**
@@ -339,7 +351,7 @@ public final class Assembler {
         item.appendChild(ref);
         Node node = tableOfContent;
         while (--level > 0) {
-            node = node.getLastChild(); // Last <li> element.
+            node = node.getLastChild();     // Last <li> element.
             if (node == null) {
                 throw new IOException("Non-continuous header level: " + text);
             }
@@ -352,6 +364,56 @@ public final class Assembler {
         }
         node.appendChild(document.createTextNode(LINE_SEPARATOR));
         node.appendChild(item);
+    }
+
+    /**
+     * Generates a {@code <nav>} element below the given {@code <h1>} element with navigation links
+     * to previous and next chapters.
+     *
+     * @param head the {@code <h1>} element.
+     */
+    private void linkToSiblingChapters(final Element head) {
+        final Element links = document.createElement("div");
+        links.setAttribute("class", "chapter-links");
+        if (previousChapter != null) {
+            /*
+             * Generate the link to previous chapter with the following pattern:
+             *
+             *     <div class="previous-chapter">⬅ <a href="#id">Previous chapter</a></div>
+             */
+            Element ref = document.createElement("a");
+            ref.setAttribute("href", "#" + previousChapter.getAttribute("id"));
+            ref.setTextContent("Previous chapter");
+            final Element previous = document.createElement("div");
+            previous.setAttribute("class", "previous-chapter");
+            previous.appendChild(document.createTextNode("⬅ "));
+            previous.appendChild(ref);
+            links.appendChild(previous);
+            /*
+             * Update the previous <h1> element with the link to the next chapter,
+             * which is the given 'head' element. The pattern is:
+             *
+             *     <div class="next-chapter"><a href="#id">Next chapter</a> ➡</div>
+             */
+            ref = document.createElement("a");
+            ref.setAttribute("href", "#" + head.getAttribute("id"));
+            ref.setTextContent("Next chapter");
+            final Element next = document.createElement("div");
+            next.setAttribute("class", "next-chapter");
+            next.appendChild(ref);
+            next.appendChild(document.createTextNode(" ➡"));
+
+            Node previousNav = previousChapter;
+            previousNav = previousNav.getNextSibling();     // The line separator after <h1>.
+            previousNav = previousNav.getNextSibling();     // The <nav> element.
+            previousNav = previousNav.getFirstChild();      // The <div class="chapter-links"> element.
+            previousNav.appendChild(next);
+        }
+        final Element nav = document.createElement("nav");
+        nav.appendChild(links);
+        head.getParentNode().insertBefore(nav, head.getNextSibling());
+        head.getParentNode().insertBefore(document.createTextNode(LINE_SEPARATOR), nav);
+        previousChapter = head;
     }
 
     /**
