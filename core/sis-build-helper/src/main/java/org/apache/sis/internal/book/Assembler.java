@@ -40,6 +40,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+// Share a convenience method.
+import static org.apache.sis.internal.book.CodeColorizer.toArray;
+
 
 /**
  * Generates the developer guide from the given input file.
@@ -125,6 +128,11 @@ public final class Assembler {
     private final ResourceBundle resources;
 
     /**
+     * Helper class for applying colors on content of {@code <pre>} and {@code <code>} elements.
+     */
+    private final CodeColorizer colorizer;
+
+    /**
      * Creates a new assembler for the given input and output files.
      *
      * @param  input  the input file (e.g. {@code "site/book/en/body.html"}).
@@ -141,6 +149,7 @@ public final class Assembler {
         inputDirectory = input.getParentFile();
         builder        = factory.newDocumentBuilder();
         document       = load(input.getName());
+        colorizer      = new CodeColorizer(document);
         tableOfContent = document.createElement("ul");
         tableOfContent.setAttribute("class", "toc");
         /*
@@ -246,18 +255,6 @@ public final class Assembler {
     }
 
     /**
-     * Returns all nodes in the given list as an array. This method is used for getting a snapshot
-     * of the list before to modify it (for example before the elements are moved to another node).
-     */
-    private static Node[] toArray(final NodeList nodes) {
-        final Node[] children = new Node[nodes.getLength()];
-        for (int i=0; i<children.length; i++) {
-            children[i] = nodes.item(i);
-        }
-        return children;
-    }
-
-    /**
      * Automatically inserts a {@code title} attribute in the given {@code <abbr>} element
      * if it meets the condition documented in the class javadoc.
      */
@@ -305,6 +302,10 @@ public final class Assembler {
                     }
                     case "abbr": {
                         processAbbreviation((Element) node);
+                        break;
+                    }
+                    case "pre": {
+                        colorizer.highlight(node, false);
                         break;
                     }
                     default: {
