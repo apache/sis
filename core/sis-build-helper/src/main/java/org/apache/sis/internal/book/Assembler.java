@@ -311,6 +311,15 @@ public final class Assembler {
                         colorizer.highlight(node, ((Element) node).getAttribute("class"));
                         break;
                     }
+                    case "code": {
+                        if (!((Element) node).hasAttribute("class")) {
+                            final String style = colorizer.styleForSingleIdentifier(node.getTextContent());
+                            if (style != null) {
+                                ((Element) node).setAttribute("class", style);
+                            }
+                        }
+                        break;
+                    }
                     default: {
                         if (name.length() == 2 && name.charAt(0) == 'h') {
                             final int c = name.charAt(1) - '0';

@@ -19,6 +19,7 @@ CharacterSet
 Citation
 CitationDate
 Classification
+CodeList
 Completeness
 CompletenessCommission
 CompletenessOmission
@@ -37,6 +38,7 @@ CoordinateSystem
 CoordinateSystemAxis
 CoupledResource
 CouplingType
+Coverage
 CoverageContentType
 CoverageDescription
 CoverageResult
@@ -51,6 +53,7 @@ DerivedCRS
 DigitalTransferOptions
 Dimension
 DimensionNameType
+DirectPosition
 DistributedComputingPlatform
 Distribution
 Distributor
@@ -65,6 +68,7 @@ EvaluationMethodType
 Event
 ExtendedElementInformation
 Extent
+Factory
 FactoryException
 FeatureCatalogueDescription
 FeatureTypeInfo
@@ -87,6 +91,7 @@ GeographicExtent
 GeolocationInformation
 GeometricObjectType
 GeometricObjects
+Geometry
 GeometryType
 Georectified
 Georeferenceable
@@ -146,9 +151,11 @@ PixelOrientation
 Plan
 Platform
 PlatformPass
+Point
 PolarCS
 PolarizationOrientation
 PortrayalCatalogueReference
+Position
 PositionalAccuracy
 PresentationForm
 PrimeMeridian
@@ -208,6 +215,7 @@ TopicCategory
 TopologicalConsistency
 TopologyLevel
 TransferFunctionType
+TransfiniteSet
 Transformation
 TransformException
 Trigger

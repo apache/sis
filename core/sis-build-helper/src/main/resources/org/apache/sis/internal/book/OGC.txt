@@ -1,3 +1,4 @@
+CharacterString
 CC_ConcatenatedOperation
 CC_Conversion
 CC_CoordinateOperation
@@ -46,6 +47,7 @@ CS_CoordinateSystem
 CS_CoordinateSystemAxis
 CS_CylindricalCS
 CS_EllipsoidalCS
+CS_ImageCS
 CS_LinearCS
 CS_PolarCS
 CS_RangeMeaning
@@ -53,6 +55,9 @@ CS_SphericalCS
 CS_TimeCS
 CS_UserDefinedCS
 CS_VerticalCS
+CV_ContinuousCoverage
+CV_Coverage
+CV_DiscreteCoverage
 DCPList
 DQ_AbsoluteExternalPositionalAccuracy
 DQ_AccuracyOfATimeMeasurement
@@ -83,6 +88,7 @@ DQ_ThematicClassificationCorrectness
 DQ_TopologicalConsistency
 DS_AssociationTypeCode
 DS_InitiativeTypeCode
+Enumeration
 EX_BoundingPolygon
 EX_Extent
 EX_GeographicBoundingBox
@@ -91,6 +97,8 @@ EX_GeographicExtent
 EX_SpatialTemporalExtent
 EX_TemporalExtent
 EX_VerticalExtent
+GM_Object
+GM_Point
 IO_IdentifiedObject
 LE_Algorithm
 LE_NominalResolution
@@ -114,6 +122,7 @@ MD_Constraints
 MD_ContentInformation
 MD_CoverageContentTypeCode
 MD_CoverageDescription
+MD_CRS
 MD_DataIdentification
 MD_DatatypeCode
 MD_DigitalTransferOptions
