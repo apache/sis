@@ -73,21 +73,24 @@ public final class CodeColorizer {
     }
 
     /**
-     * The origin of an identifier.
+     * The specifier of an identifier.
      */
-    private static enum Origin {
-        OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS");
+    private static enum Specifier {
+        OGC("OGC"), GEOAPI("GeoAPI"), SIS("SIS"), XML_PREFIX(null);
 
+        /** The value to put in the {@code class} attribute of {@code <code>} or elements, or {@code null} if none. */
         final String style;
-        private Origin(final String style) {
+
+        /** Creates a new enum to be rendered with the given style. */
+        private Specifier(final String style) {
             this.style = style;
         }
     };
 
     /**
-     * Map pre-defined identifiers to their origin.
+     * Map of pre-defined identifiers and the authority who defined them.
      */
-    private final Map<String,Origin> identifierOrigins;
+    private final Map<String,Specifier> identifierSpecifiers;
 
     /**
      * The object to use for creating nodes.
@@ -103,12 +106,14 @@ public final class CodeColorizer {
      */
     public CodeColorizer(final Document document) throws IOException, BookException {
         this.document = document;
-        identifierOrigins = new HashMap<>(1000);
-        for (final Origin origin : Origin.values()) {
+        identifierSpecifiers = new HashMap<>(1000);
+        for (final Specifier specifier : Specifier.values()) {
             final String filename;
-            switch (origin) {
-                case OGC:    filename = "OGC.txt";    break;
-                case GEOAPI: filename = "GeoAPI.txt"; break;
+            switch (specifier) {
+                case OGC:        filename = "OGC.txt";        break;
+                case GEOAPI:     filename = "GeoAPI.txt";     break;
+                case SIS:        filename = "SIS.txt";        break;
+                case XML_PREFIX: filename = "XML_PREFIX.txt"; break;
                 default: continue;
             }
             final InputStream in = CodeColorizer.class.getResourceAsStream(filename);
@@ -118,12 +123,129 @@ public final class CodeColorizer {
             try (final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
                 String line;
                 while ((line = r.readLine()) != null) {
-                    if (identifierOrigins.put(line, origin) != null) {
-                        throw new BookException(line + " is defined twice.");
+                    if (identifierSpecifiers.put(line, specifier) != null) {
+                        throw new BookException(line + " is defined twice in " + specifier);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given string starts with the given prefix,
+     * and the character following the prefix is not an identifier character.
+     */
+    private static boolean startsWithWord(final String string, final String prefix) {
+        return string.startsWith(prefix) && (string.length() <= prefix.length() ||
+                !Character.isJavaIdentifierPart(string.codePointAt(prefix.length())));
+    }
+
+    /**
+     * Returns {@code true} if the given string from {@code i} inclusive to {@code upper} exclusive
+     * is a Java identifier.
+     */
+    private static boolean isJavaIdentifier(final String identifier, int i, final int upper) {
+        if (upper <= i) {
+            return false;
+        }
+        int c = identifier.codePointAt(i);
+        if (!Character.isJavaIdentifierStart(c)) {
+            return false;
+        }
+        while ((i += Character.charCount(c)) < upper) {
+            c = Character.codePointAt(identifier, i);
+            if (!Character.isJavaIdentifierPart(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the value to put inside in {@code class} attribute of a {@code <code>} element
+     * encompassing the given identifier.
+     *
+     * <p>This method differs from {@link #highlight(Node, String)} in that it is used for applying
+     * a single style on the whole string. By contrast, {@code highlight(…)} parses the text and may
+     * apply different styles for different words.</p>
+     */
+    final String styleForSingleIdentifier(String word) {
+        if (word.isEmpty()) {
+            return null;
+        }
+        /*
+         * If the given identifier is wrapped by some syntatic characters (e.g. "@Foo" for Java annotation,
+         * or <Foo> for XML elements), remove the wrapper characters so we can get the identifier itelf.
+         */
+        switch (word.charAt(0)) {
+            case '@': {
+                word = word.substring(1);
+                break;
+            }
+            case '<': {
+                final int upper = word.length() - 1;
+                if (word.charAt(upper) == '>') {
+                    word = word.substring(1, upper);
+                }
+                break;
+            }
+        }
+        /*
+         * Check if the keyword is a known one. The 'identifierOrigins' map contains only simple name
+         * without package name or XML prefix. Fully qualified names are less commons but easier to
+         * check since the package/prefix name is sufficient.
+         */
+        Specifier specifier = identifierSpecifiers.get(word);
+        if (specifier == null) {
+            if (startsWithWord(word, "org.opengis") || startsWithWord(word, "geoapi")) {
+                specifier = Specifier.GEOAPI;
+            } else if (startsWithWord(word, "org.apache.sis") || startsWithWord(word, "sis")) {
+                specifier = Specifier.SIS;
+            } else {
+                /*
+                 * For more elaborated analysis than the above easy check, we need the Specifier enum of the
+                 * first word. It may be a GeoAPI or SIS class name (e.g. "Citation" in "Citation.title"),
+                 * or a XML prefix (e.g. "gmd" in "gmd:CI_Citation").
+                 */
+                int c, i=0;
+                while (Character.isJavaIdentifierPart((c = word.charAt(i)))) {
+                    i += Character.charCount(c);
+                    if (i >= word.length()) {
+                        return null;
+                    }
+                }
+                specifier = identifierSpecifiers.get(word.substring(0, i));
+                switch (c) {
+                    default: {
+                        return null;
+                    }
+                    case '.': {
+                        if (specifier != null && specifier.style != null) {
+                            int s = word.lastIndexOf('(');
+                            if (s < 0) s = word.length();
+                            if (isJavaIdentifier(word, i+1, s)) {
+                                break;
+                            }
+                        }
+                        return null;
+                    }
+                    case ':': {
+                        if (specifier == Specifier.XML_PREFIX) {
+                            break;
+                        }
+                        return null;
+                    }
+                }
+            }
+        }
+        /*
+         * Found the specifier. The XML prefix case is handle in a special way because
+         * we do not highlight the "gmd", "gml", etc. prefixes in highlitht(…) method.
+         */
+        if (specifier == Specifier.XML_PREFIX) {
+            specifier = Specifier.OGC;
+        }
+        return specifier.style;
     }
 
     /**
@@ -238,7 +360,7 @@ public final class CodeColorizer {
                             if (JAVA_KEYWORDS.contains(word)) {
                                 emphase = document.createElement("b");
                             } else if (isJava) {
-                                final Origin origin = identifierOrigins.get(word);
+                                final Specifier origin = identifierSpecifiers.get(word);
                                 if (origin != null) {
                                     emphase = document.createElement("code");
                                     emphase.setAttribute("class", origin.style);
