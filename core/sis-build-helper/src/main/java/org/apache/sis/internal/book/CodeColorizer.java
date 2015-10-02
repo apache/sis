@@ -108,14 +108,7 @@ public final class CodeColorizer {
         this.document = document;
         identifierSpecifiers = new HashMap<>(1000);
         for (final Specifier specifier : Specifier.values()) {
-            final String filename;
-            switch (specifier) {
-                case OGC:        filename = "OGC.txt";        break;
-                case GEOAPI:     filename = "GeoAPI.txt";     break;
-                case SIS:        filename = "SIS.txt";        break;
-                case XML_PREFIX: filename = "XML_PREFIX.txt"; break;
-                default: continue;
-            }
+            final String filename = specifier.name() + ".lst";
             final InputStream in = CodeColorizer.class.getResourceAsStream(filename);
             if (in == null) {
                 throw new FileNotFoundException(filename);
