@@ -318,7 +318,7 @@ public final class Assembler {
                                 ((Element) node).setAttribute("class", style);
                             }
                         }
-                        break;
+                        return; // Do not scan recursively the <code> text content.
                     }
                     default: {
                         if (name.length() == 2 && name.charAt(0) == 'h') {
