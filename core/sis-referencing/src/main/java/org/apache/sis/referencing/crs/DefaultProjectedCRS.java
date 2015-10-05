@@ -227,7 +227,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     @Override
     @XmlElement(name = "baseGeodeticCRS", required = true)  // Note: older GML version used "baseGeographicCRS".
     public GeographicCRS getBaseCRS() {
-        return super.getConversionFromBase().getSourceCRS();
+        final Projection projection = super.getConversionFromBase();
+        return (projection != null) ? projection.getSourceCRS() : null;
     }
 
     /**
