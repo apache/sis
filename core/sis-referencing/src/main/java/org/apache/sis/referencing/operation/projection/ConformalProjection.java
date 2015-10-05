@@ -206,13 +206,13 @@ abstract class ConformalProjection extends NormalizedProjection {
              * Same formula than above, be rewriten using trigonometric identities in order to have only two
              * calls to Math.sin/cos instead than 5. The performance gain is twice faster on some machines.
              */
-            final double sin2χ     = sin(2*φ);
-            final double sin_cos2χ = cos(2*φ) * sin2χ;
-            final double sin_sin2χ = sin2χ * sin2χ;
-            φ += c8χ * (0.50 - sin_sin2χ)*sin_cos2χ     // ÷8 compared to original formula
-               + c6χ * (0.75 - sin_sin2χ)*sin2χ         // ÷4 compared to original formula
-               + c4χ * (       sin_cos2χ)               // ÷2 compared to original formula
-               + c2χ * sin2χ;
+            final double sin2φ     = sin(2*φ);
+            final double sin_cos2φ = cos(2*φ) * sin2φ;
+            final double sin_sin2φ = sin2φ * sin2φ;
+            φ += c8χ * (0.50 - sin_sin2φ)*sin_cos2φ     // ÷8 compared to original formula
+               + c6χ * (0.75 - sin_sin2φ)*sin2φ         // ÷4 compared to original formula
+               + c4χ * (       sin_cos2φ)               // ÷2 compared to original formula
+               + c2χ * sin2φ;
         }
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
