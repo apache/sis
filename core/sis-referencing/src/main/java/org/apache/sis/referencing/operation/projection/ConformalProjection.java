@@ -49,7 +49,7 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 abstract class ConformalProjection extends NormalizedProjection {
@@ -70,22 +70,6 @@ abstract class ConformalProjection extends NormalizedProjection {
      * </ul>
      */
     static final double EXCENTRICITY_THRESHOLD = 0.16;
-
-    /**
-     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
-     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
-     * method. The identities used are:
-     *
-     * <ul>
-     *   <li>sin(2⋅x) = 2⋅sin(x)⋅cos(x)</li>
-     *   <li>sin(3⋅x) = (3 - 4⋅sin²(x))⋅sin(x)</li>
-     *   <li>sin(4⋅x) = (4 - 8⋅sin²(x))⋅sin(x)⋅cos(x)</li>
-     * </ul>
-     *
-     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
-     * executed (no need to comment-out that code).
-     */
-    private static final boolean ORIGINAL_FORMULA = false;
 
     /**
      * Coefficients in the series expansion used by {@link #φ(double)}.
@@ -129,7 +113,7 @@ abstract class ConformalProjection extends NormalizedProjection {
         c4χ  =   811/ 11520.* e8  +  29/240.* e6  +  7/48.* e4;
         c6χ  =    81/  1120.* e8  +   7/120.* e6;
         c8χ  =  4279/161280.* e8;
-        if (!ORIGINAL_FORMULA) {
+        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
             c4χ *= 2;
             c6χ *= 4;
             c8χ *= 8;
@@ -196,7 +180,7 @@ abstract class ConformalProjection extends NormalizedProjection {
          * EPSG guidance note. Note that we add those terms in reverse order, beginning with the smallest
          * values, for reducing rounding errors due to IEEE 754 arithmetic.
          */
-        if (ORIGINAL_FORMULA) {
+        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
             φ += c8χ * sin(8*φ)
                + c6χ * sin(6*φ)
                + c4χ * sin(4*φ)
@@ -204,15 +188,12 @@ abstract class ConformalProjection extends NormalizedProjection {
         } else {
             /*
              * Same formula than above, be rewriten using trigonometric identities in order to have only two
-             * calls to Math.sin/cos instead than 5. The performance gain is twice faster on some machines.
+             * calls to Math.sin/cos instead than 5. The performance gain is twice faster on tested machine.
              */
-            final double sin2φ     = sin(2*φ);
-            final double sin_cos2φ = cos(2*φ) * sin2φ;
-            final double sin_sin2φ = sin2φ * sin2φ;
-            φ += c8χ * (0.50 - sin_sin2φ)*sin_cos2φ     // ÷8 compared to original formula
-               + c6χ * (0.75 - sin_sin2φ)*sin2φ         // ÷4 compared to original formula
-               + c4χ * (       sin_cos2φ)               // ÷2 compared to original formula
-               + c2χ * sin2φ;
+            final double sin_2φ = sin(2*φ);
+            final double sin2 = sin_2φ * sin_2φ;
+            φ += ((c4χ + c8χ * (0.50 - sin2)) * cos(2*φ)
+                + (c2χ + c6χ * (0.75 - sin2))) * sin_2φ;
         }
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
