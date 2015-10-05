@@ -277,7 +277,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     @Override
     public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
-            return false; // Unbounded: can't be empty.
+            return false; // Unbounded: can not be empty.
         }
         final int c = minValue.compareTo(maxValue);
         if (c < 0) {
@@ -561,6 +561,15 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Compares this range with the given object for equality.
+     * Two ranges are considered equal if they have the same {@link #getElementType() element type} and:
+     *
+     * <ul>
+     *   <li>are both {@linkplain #isEmpty() empty}, or</li>
+     *   <li>have equal {@linkplain #getMinValue() minimum} and {@linkplain #getMaxValue() maximum} values
+     *       with equal inclusive/exclusive flags.</li>
+     * </ul>
+     *
+     * Note that subclasses may add other requirements, for example on units of measurement.
      *
      * @param  object The object to compare with this range for equality.
      * @return {@code true} if the given object is equal to this range.

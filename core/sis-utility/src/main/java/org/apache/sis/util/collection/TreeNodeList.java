@@ -261,6 +261,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     protected void removeRange(final int lower, final int upper) throws IllegalArgumentException {
+        ArgumentChecks.ensureValidIndexRange(size, lower, upper);
         int i = upper;
         try {
             while (i != lower) {
@@ -269,8 +270,10 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
             }
         } finally {
             modCount++;
-            System.arraycopy(children, upper, children, i, size - upper);
-            Arrays.fill(children, upper, size, null);
+            if (children != null) {
+                System.arraycopy(children, upper, children, i, size - upper);
+                Arrays.fill(children, upper, size, null);
+            }
             size -= (upper - i);
         }
     }

@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso;
 
 import java.util.Collection;
-import java.util.logging.Logger;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -31,10 +30,8 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -64,17 +61,6 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4997239501383133209L;
-
-    /**
-     * The logger for warnings emitted by any class in the {@code org.apache.sis.metadata.iso.*} packages.
-     * Warnings are emitted when an action causes the lost of data. For example the {@code "distance"} and
-     * {@code "equivalentScale"} properties in {@link org.apache.sis.metadata.iso.identification.DefaultResolution}
-     * are mutually exclusive: setting one discards the other. In such case, a warning is logged.
-     *
-     * @deprecated Messages related to XML (un)marshalling are now logged to the {@code "org.apache.sis.xml"} logger.
-     */
-    @Deprecated
-    public static final Logger LOGGER = Logging.getLogger(Loggers.ISO_19115);
 
     /**
      * All identifiers associated with this metadata, or {@code null} if none.

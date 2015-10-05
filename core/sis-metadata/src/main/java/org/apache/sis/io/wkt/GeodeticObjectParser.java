@@ -424,6 +424,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @return A properties map with the parent name and the optional authority code.
      * @throws ParseException if an element can not be parsed.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> parseMetadataAndClose(final Element parent, final String name,
             final IdentifiedObject fallback) throws ParseException
     {
