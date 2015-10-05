@@ -347,11 +347,11 @@ public class TransverseMercator extends NormalizedProjection {
             final double sin2 = sin_2ξ0 * sin_2ξ0;
             final double cos2 = cos_2ξ0 * cos_2ξ0;
             sin_4ξ0 = sin_2ξ0 * cos_2ξ0;                      // sin(4⋅ξ₀) ÷ 2
-            cos_4ξ0 = (cos2 - sin2) * 0.5;                    // cos(4⋅ξ₀) ÷ 2
-            sin_6ξ0 = (0.75 - sin2) * sin_2ξ0;                // sin(6⋅ξ₀) ÷ 4
-            cos_6ξ0 = (cos2 - 0.75) * cos_2ξ0;                // cos(6⋅ξ₀) ÷ 4
-            sin_8ξ0 =         cos_4ξ0 * sin_4ξ0;              // sin(8⋅ξ₀) ÷ 8
-            cos_8ξ0 = 0.125 - sin_4ξ0 * sin_4ξ0;              // cos(8⋅ξ₀) ÷ 8
+            cos_4ξ0 = (cos2  - sin2)   * 0.5;                 // cos(4⋅ξ₀) ÷ 2
+            sin_6ξ0 = (0.75  - sin2)   * sin_2ξ0;             // sin(6⋅ξ₀) ÷ 4
+            cos_6ξ0 = (cos2  - 0.75)   * cos_2ξ0;             // cos(6⋅ξ₀) ÷ 4
+            sin_8ξ0 =          sin_4ξ0 * cos_4ξ0;             // sin(8⋅ξ₀) ÷ 8
+            cos_8ξ0 =  0.125 - sin_4ξ0 * sin_4ξ0;             // cos(8⋅ξ₀) ÷ 8
         }
         /*
          * Compute sinh(2⋅ξ₀), sinh(4⋅ξ₀), sinh(6⋅ξ₀), sinh(8⋅ξ₀) and same for cosh, but using the following
@@ -372,12 +372,12 @@ public class TransverseMercator extends NormalizedProjection {
         } else {
             final double sinh2 = sinh_2η0 * sinh_2η0;
             final double cosh2 = cosh_2η0 * cosh_2η0;
-            sinh_4η0 = sinh_2η0 * cosh_2η0;                     // sinh(4⋅η₀) ÷ 2
             cosh_4η0 = (cosh2 + sinh2) * 0.5;                   // cosh(4⋅η₀) ÷ 2
-            sinh_6η0 = (sinh2 +  0.75) * sinh_2η0;              // sinh(6⋅η₀) ÷ 4
-            cosh_6η0 = (cosh2 -  0.75) * cosh_2η0;              // cosh(6⋅η₀) ÷ 4
-            sinh_8η0 = sinh_4η0 * cosh_4η0;                     // sinh(8⋅η₀) ÷ 8
+            sinh_4η0 = cosh_2η0 * sinh_2η0;                     // sinh(4⋅η₀) ÷ 2
+            cosh_6η0 = cosh_2η0 * (cosh2   - 0.75);             // cosh(6⋅η₀) ÷ 4
+            sinh_6η0 = sinh_2η0 * (sinh2   + 0.75);             // sinh(6⋅η₀) ÷ 4
             cosh_8η0 = sinh_4η0 * sinh_4η0 + 0.125;             // cosh(8⋅η₀) ÷ 8
+            sinh_8η0 = sinh_4η0 * cosh_4η0;                     // sinh(8⋅η₀) ÷ 8
         }
         /*
          * Assuming that (λ, φ) ↦ Proj((λ, φ))
@@ -510,19 +510,19 @@ public class TransverseMercator extends NormalizedProjection {
             final double cos2 = cos_2ξ * cos_2ξ;
             sin_4ξ = sin_2ξ * cos_2ξ;                   // sin(4⋅ξ) ÷ 2
             cos_4ξ = (cos2 - sin2) * 0.5;               // cos(4⋅ξ) ÷ 2
-            sin_6ξ = (0.75 - sin2) * sin_2ξ;            // sin(6⋅ξ) ÷ 4
-            cos_6ξ = (cos2 - 0.75) * cos_2ξ;            // cos(6⋅ξ) ÷ 4
-            sin_8ξ =         cos_4ξ * sin_4ξ;           // sin(8⋅ξ) ÷ 8
-            cos_8ξ = 0.125 - sin_4ξ * sin_4ξ;           // cos(8⋅ξ) ÷ 8
+            sin_6ξ = (0.75  - sin2)  * sin_2ξ;          // sin(6⋅ξ) ÷ 4
+            cos_6ξ = (cos2  - 0.75)  * cos_2ξ;          // cos(6⋅ξ) ÷ 4
+            sin_8ξ =          sin_4ξ * cos_4ξ;          // sin(8⋅ξ) ÷ 8
+            cos_8ξ =  0.125 - sin_4ξ * sin_4ξ;          // cos(8⋅ξ) ÷ 8
 
             final double sinh2 = sinh_2η * sinh_2η;
             final double cosh2 = cosh_2η * cosh_2η;
-            sinh_4η = sinh_2η * cosh_2η;                // sinh(4⋅η₀) ÷ 2
-            cosh_4η = (cosh2 + sinh2) * 0.5;            // cosh(4⋅η₀) ÷ 2
-            sinh_6η = (sinh2 +  0.75) * sinh_2η;        // sinh(6⋅η₀) ÷ 4
-            cosh_6η = (cosh2 -  0.75) * cosh_2η;        // cosh(6⋅η₀) ÷ 4
-            sinh_8η = sinh_4η * cosh_4η;                // sinh(8⋅η₀) ÷ 8
-            cosh_8η = sinh_4η * sinh_4η + 0.125;        // cosh(8⋅η₀) ÷ 8
+            cosh_4η = (cosh2 + sinh2) * 0.5;            // cosh(4⋅η) ÷ 2
+            sinh_4η = cosh_2η * sinh_2η;                // sinh(4⋅η) ÷ 2
+            cosh_6η = cosh_2η * (cosh2  - 0.75);        // cosh(6⋅η) ÷ 4
+            sinh_6η = sinh_2η * (sinh2  + 0.75);        // sinh(6⋅η) ÷ 4
+            cosh_8η = sinh_4η * sinh_4η + 0.125;        // cosh(8⋅η) ÷ 8
+            sinh_8η = sinh_4η * cosh_4η;                // sinh(8⋅η) ÷ 8
         }
         /*
          * The actual inverse transform.
