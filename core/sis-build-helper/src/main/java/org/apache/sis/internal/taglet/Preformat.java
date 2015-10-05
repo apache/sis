@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.taglet;
 
-import java.util.*;
+import java.util.Map;
+import java.util.StringTokenizer;
 import com.sun.javadoc.Tag;
 import com.sun.tools.doclets.Taglet;
+import org.apache.sis.internal.book.CodeColorizer;
 
 
 /**
@@ -168,24 +170,6 @@ all:    while (tk.hasMoreTokens()) {
     }
 
     /**
-     * Lists of Java keywords.
-     */
-    private static final Set<String> KEYWORDS =
-            Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
-        "abstract", "continue", "for",        "new",        "switch",
-        "assert",   "default",  "goto",       "package",    "synchronized",
-        "boolean",  "do",       "if",         "private",    "this",
-        "break",    "double",   "implements", "protected",  "throw",
-        "byte",     "else",     "import",     "public",     "throws",
-        "case",     "enum",     "instanceof", "return",     "transient",
-        "catch",    "extends",  "int",        "short",      "try",
-        "char",     "final",    "interface",  "static",     "void",
-        "class",    "finally",  "long",       "strictfp",   "volatile",
-        "const",    "float",    "native",     "super",      "while",
-        /* literals: */ "true", "false", "null"
-    )));
-
-    /**
      * Adds syntactic coloration for the given line.
      */
     private static void colorJava(final String line, final StringBuilder buffer) {
@@ -198,7 +182,7 @@ all:    while (tk.hasMoreTokens()) {
                     int j = i;
                     while (++j < length && Character.isJavaIdentifierPart(line.charAt(j)));
                     final String word = line.substring(i, j);
-                    final boolean keyword = KEYWORDS.contains(word);
+                    final boolean keyword = CodeColorizer.JAVA_KEYWORDS.contains(word);
                     i = j-1;
                     boolean function = false;
                     if (!keyword || word.equals("this") || word.equals("super")) {

@@ -1479,21 +1479,6 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Removes the unit previously added by a call to {@code addContextualUnit(unit)}.
-     * If the given unit is null, then this method does nothing.
-     *
-     * @param unit The contextual unit to remove, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #restoreContextualUnit(Unit, Unit)}.
-     */
-    @Deprecated
-    public void removeContextualUnit(final Unit<?> unit) {
-        if (unit != null) {
-            units.remove(unit.toSI());
-        }
-    }
-
-    /**
      * Returns the unit to use instead than the given one, or {@code unit} if there is no replacement.
      * This method searches for a unit specified by {@link #addContextualUnit(Unit)}
      * which {@linkplain Unit#isCompatible(Unit) is compatible} with the given unit.

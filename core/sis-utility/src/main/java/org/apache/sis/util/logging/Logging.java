@@ -28,8 +28,8 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * A set of utilities method for configuring loggings in SIS. Library implementors shall fetch
- * their loggers using the {@link #getLogger(Class)} static method defined in this {@code Logging}
+ * A set of utilities method for configuring loggings in SIS. Library implementors should fetch
+ * their loggers using the {@link #getLogger(String)} static method defined in this {@code Logging}
  * class rather than the one defined in the standard {@link Logger} class, in order to give SIS a
  * chance to redirect the logs to an other framework like
  * <a href="http://commons.apache.org/logging/">Commons-logging</a> or
@@ -41,13 +41,13 @@ import org.apache.sis.util.Classes;
  *       the logger name}, {@linkplain LogRecord#setSourceClassName(String) source class name} and
  *       {@linkplain LogRecord#setSourceMethodName(String) source method name} of the given record
  *       before to log it.</li>
- *   <li>{@link #unexpectedException(Class, String, Throwable)} for reporting an anomalous but
+ *   <li>{@link #unexpectedException(Logger, Class, String, Throwable)} for reporting an anomalous but
  *       nevertheless non-fatal exception.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.6
  * @module
  */
 public final class Logging extends Static {
@@ -134,12 +134,12 @@ public final class Logging extends Static {
     }
 
     /**
-     * Returns a logger for the specified name. If a {@linkplain LoggerFactory logger factory} has
-     * been set, then this method first {@linkplain LoggerFactory#getLogger asks to the factory}.
+     * Returns a logger for the specified name. If a {@linkplain LoggerFactory logger factory} has been set,
+     * then this method first {@linkplain LoggerFactory#getLogger(String) asks to the factory}.
      * This rule gives SIS a chance to redirect logging events to
      * <a href="http://commons.apache.org/logging/">commons-logging</a> or some equivalent framework.
      * Only if no factory was found or if the factory choose to not redirect the loggings, then this
-     * method delegate to <code>{@linkplain Logger#getLogger Logger.getLogger}(name)</code>.
+     * method delegate to <code>{@linkplain Logger#getLogger(String) Logger.getLogger}(name)</code>.
      *
      * @param  name The logger name.
      * @return A logger for the specified name.
@@ -161,11 +161,8 @@ public final class Logging extends Static {
      *
      * @param  classe The class for which to obtain a logger.
      * @return A logger for the specified class.
-     *
-     * @deprecated Use {@link #getLogger(String)}, because the class name is sometime too close to implementation details.
      */
-    @Deprecated   // Make package-private (do not delete) after we removed from public API.
-    public static Logger getLogger(Class<?> classe) {
+    static Logger getLogger(Class<?> classe) {
         Class<?> outer;
         while ((outer = classe.getEnclosingClass()) != null) {
             classe = outer;
@@ -211,34 +208,30 @@ public final class Logging extends Static {
     }
 
     /**
-     * Invoked when an unexpected error occurs. This method logs a message at {@link Level#WARNING} to the
+     * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING} to the
      * specified logger. The originating class name and method name are inferred from the error stack trace,
      * using the first {@linkplain StackTraceElement stack trace element} for which the class name is inside
      * a package or sub-package of the logger name.
      *
-     * <div class="note"><b>Example:</b>
-     * if the logger name is {@code "org.apache.sis.image"}, then this method will uses the first stack
-     * trace element where the fully qualified class name starts with {@code "org.apache.sis.image"} or
-     * {@code "org.apache.sis.image.io"}, but not {@code "org.apache.sis.imageio"}.</div>
+     * @param  logger Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  error  The error that occurred, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#WARNING}.
      *
-     * @param  logger Where to log the error.
-     * @param  error  The error that occurred.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         does not log anything at {@link Level#WARNING}.
+     * @deprecated Use {@link #unexpectedException(Logger, Class, String, Throwable)} instead.
      */
+    @Deprecated
     public static boolean unexpectedException(final Logger logger, final Throwable error) {
         return unexpectedException(logger, null, null, error, Level.WARNING);
     }
 
     /**
-     * Invoked when an unexpected error occurs. This method logs a message at {@link Level#WARNING}
+     * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING}
      * to the specified logger. The originating class name and method name can optionally be specified.
-     * If any of them is {@code null}, then it will be inferred from the error stack trace as in
-     * {@link #unexpectedException(Logger, Throwable)}.
+     * If any of them is {@code null}, then it will be inferred from the error stack trace as described below.
      *
-     * <p>Explicit value for class and method names are sometime preferred to automatic
-     * inference for the following reasons:</p>
-     *
+     * <div class="note"><b>Recommended usage:</b>
+     * explicit value for class and method names are preferred to automatic inference for the following reasons:
      * <ul>
      *   <li>Automatic inference is not 100% reliable, since the Java Virtual Machine
      *       is free to omit stack frame in optimized code.</li>
@@ -247,14 +240,23 @@ public final class Logging extends Static {
      *       since the user is not expected to know anything about the existence of the
      *       private method. If a developer really want to know about the private method,
      *       the stack trace is still available anyway.</li>
-     * </ul>
+     * </ul></div>
      *
-     * @param logger  Where to log the error.
-     * @param classe  The class where the error occurred, or {@code null}.
-     * @param method  The method where the error occurred, or {@code null}.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         does not log anything at {@link Level#WARNING}.
+     * If the {@code classe} or {@code method} arguments are null, then the originating class name and method name
+     * are inferred from the given {@code error} using the first {@linkplain StackTraceElement stack trace element}
+     * for which the class name is inside a package or sub-package of the same name than the logger name.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the logger name is {@code "org.apache.sis.image"}, then this method will uses the first stack
+     * trace element where the fully qualified class name starts with {@code "org.apache.sis.image"} or
+     * {@code "org.apache.sis.image.io"}, but not {@code "org.apache.sis.imageio"}.</div>
+     *
+     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param method  The method where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param error   The error, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#WARNING}.
      *
      * @see #recoverableException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -267,35 +269,15 @@ public final class Logging extends Static {
     }
 
     /**
-     * Invoked when an unexpected error occurs. This method logs a message at the
-     * {@link Level#WARNING WARNING} level to a logger inferred from the given class.
-     *
-     * @param classe  The class where the error occurred.
-     * @param method  The method where the error occurred, or {@code null}.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at {@link Level#WARNING}.
-     *
-     * @see #recoverableException(Class, String, Throwable)
-     *
-     * @deprecated A logger should be specified explicitely with
-     * {@link #unexpectedException(Logger, Class, String, Throwable)}.
-     */
-    @Deprecated
-    public static boolean unexpectedException(Class<?> classe, String method, Throwable error) {
-        return unexpectedException((Logger) null, classe, method, error);
-    }
-
-    /**
      * Implementation of {@link #unexpectedException(Logger, Class, String, Throwable)}.
      *
-     * @param logger  Where to log the error, or {@code null}.
-     * @param classe  The fully qualified class name where the error occurred, or {@code null}.
-     * @param method  The method where the error occurred, or {@code null}.
-     * @param error   The error.
+     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param classe  The fully qualified class name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param method  The method where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param error   The error, or {@code null} if none.
      * @param level   The logging level.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the specified level.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at the specified level.
      */
     private static boolean unexpectedException(Logger logger, String classe, String method,
                                                final Throwable error, final Level level)
@@ -317,7 +299,7 @@ public final class Logging extends Static {
         /*
          * Loggeable, so complete the null argument from the stack trace if we can.
          */
-        if (logger==null || classe==null || method==null) {
+        if (logger == null || classe == null || method == null) {
             String paquet = (logger != null) ? logger.getName() : null;
             for (final StackTraceElement element : error.getStackTrace()) {
                 /*
@@ -421,14 +403,14 @@ public final class Logging extends Static {
      * {@code jre/lib/logging.properties} file is illegal, then {@link MonolineFormatter} will log
      * this problem and use a default time pattern.</div>
      *
-     * @param logger  Where to log the error.
-     * @param classe  The class where the error occurred.
-     * @param method  The method name where the error occurred.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at {@link Level#CONFIG}.
+     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param error   The error, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#CONFIG}.
      *
-     * @see #unexpectedException(Class, String, Throwable)
+     * @see #unexpectedException(Logger, Class, String, Throwable)
      */
     static boolean configurationException(final Logger logger, final Class<?> classe, final String method, final Throwable error) {
         final String classname = (classe != null) ? classe.getName() : null;
@@ -436,37 +418,16 @@ public final class Logging extends Static {
     }
 
     /**
-     * Invoked when a recoverable error occurs. This method is similar to
-     * {@link #unexpectedException(Class,String,Throwable) unexpectedException}
-     * except that it doesn't log the stack trace and uses a lower logging level.
-     *
-     * @param classe  The class where the error occurred.
-     * @param method  The method name where the error occurred.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at {@link Level#FINE}.
-     *
-     * @see #unexpectedException(Class, String, Throwable)
-     *
-     * @deprecated A logger should be specified explicitely with
-     * {@link #recoverableException(Logger, Class, String, Throwable)}.
-     */
-    @Deprecated
-    public static boolean recoverableException(final Class<?> classe, final String method, final Throwable error) {
-        return recoverableException(null, classe, method, error);
-    }
-
-    /**
-     * Invoked when a recoverable error occurs. This method is similar to
+     * Invoked when a recoverable error occurred. This method is similar to
      * {@link #unexpectedException(Logger,Class,String,Throwable) unexpectedException(…)}
      * except that it does not log the stack trace and uses a lower logging level.
      *
-     * @param logger  Where to log the error.
-     * @param classe  The class where the error occurred.
-     * @param method  The method name where the error occurred.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         does not log anything at {@link Level#FINE}.
+     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param error   The error, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#FINE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -479,16 +440,16 @@ public final class Logging extends Static {
     }
 
     /**
-     * Invoked when a severe error occurs. This method is similar to
+     * Invoked when a severe error occurred. This method is similar to
      * {@link #unexpectedException(Logger,Class,String,Throwable) unexpectedException}
      * except that it logs the message at the {@link Level#SEVERE SEVERE} level.
      *
-     * @param logger  Where to log the error.
-     * @param classe  The class where the error occurred.
-     * @param method  The method name where the error occurred.
-     * @param error   The error.
-     * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at {@link Level#SEVERE}.
+     * @param logger  Where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param classe  The class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param method  The method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param error   The error, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#SEVERE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #recoverableException(Logger, Class, String, Throwable)
