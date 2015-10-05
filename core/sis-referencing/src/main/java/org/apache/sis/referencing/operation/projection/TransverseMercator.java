@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
@@ -57,7 +59,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see Mercator
@@ -67,46 +69,15 @@ public class TransverseMercator extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4717976245811852528L;
-
-    /**
-     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
-     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
-     * and similar method. The identities used are:
-     *
-     * <ul>
-     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
-     *   <li>cos(2θ) = cos²θ - sin²θ</li>
-     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
-     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
-     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
-     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
-     * </ul>
-     *
-     * Hyperbolic formulas:
-     * <ul>
-     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
-     *   <li>cosh(2θ) = cosh²θ + sinh²θ =  2cosh²θ - 1 = 1 + 2sinh²θ</li>
-     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
-     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)coshθ</li>
-     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
-     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
-     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
-     *                = 8.cosh²θ(cosh²θ - 1) + 1
-     *                = 8.cosh²(θ).sinh²(θ) + 1
-     *                = 2.sinh²(2θ) + 1</li>
-     * </ul>
-     *
-     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
-     * executed (no need to comment-out that code).
-     */
-    private static final boolean ORIGINAL_FORMULA = false;
+    private static final long serialVersionUID = 8167193470189463354L;
 
     /**
      * Internal coefficients for computation, depending only on value of excentricity.
      * Defined in §1.3.5.1 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
+     *
+     * <p>Consider those fields as final. They are not only of the purpose of {@link #readObject(ObjectInputStream)}.</p>
      */
-    private final double h1, h2, h3, h4, ih1, ih2, ih3, ih4;
+    private transient double h1, h2, h3, h4, ih1, ih2, ih3, ih4;
 
     /**
      * Creates a Transverse Mercator projection from the given parameters.
@@ -159,7 +130,6 @@ public class TransverseMercator extends NormalizedProjection {
          * Opportunistically use double-double arithmetic for computation of B since we will store
          * it in the denormalization matrix, and there is no sine/cosine functions involved here.
          */
-        final double n;
         final DoubleDouble B;
         {   // For keeping the 't' variable locale.
             /*
@@ -168,35 +138,16 @@ public class TransverseMercator extends NormalizedProjection {
              */
             final DoubleDouble t = initializer.axisLengthRatio();   // t  =  b/a
             t.ratio_1m_1p();                                        // t  =  (1 - t) / (1 + t)
-            n = t.doubleValue();
+            initialize(t.doubleValue());
             /*
              * Compute B  =  (1 + n²/4 + n⁴/64) / (1 + n)
              */
             B = new DoubleDouble(t);        // B  =  n
             B.square();
             B.series(1, 0.25, 1./64);       // B  =  (1 + n²/4 + n⁴/64)
-            t.add(1,0);
+            t.add(1, 0);
             B.divide(t);                    // B  =  (1 + n²/4 + n⁴/64) / (1 + n)
         }
-        final double n2 = n  * n;
-        final double n3 = n2 * n;
-        final double n4 = n2 * n2;
-        /*
-         * Coefficients for direct projection.
-         * Add the smallest values first in order to reduce rounding errors.
-         */
-        h1 = (   41. /    180)*n4  +  ( 5. /  16)*n3  +  (-2. /  3)*n2  +  n/2;
-        h2 = (  557. /   1440)*n4  +  (-3. /   5)*n3  +  (13. / 48)*n2;
-        h3 = ( -103. /    140)*n4  +  (61. / 240)*n3;
-        h4 = (49561. / 161280)*n4;
-        /*
-         * Coefficients for inverse projection.
-         * Add the smallest values first in order to reduce rounding errors.
-         */
-        ih1 = (  -1. /    360)*n4  +  (37. /  96)*n3  +  (-2. /  3)*n2  +  n/2;
-        ih2 = (-437. /   1440)*n4  +  ( 1. /  15)*n3  +  ( 1. / 48)*n2;
-        ih3 = ( -37. /    840)*n4  +  (17. / 480)*n3;
-        ih4 = (4397. / 161280)*n4;
         /*
          * Compute M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄) and negate in anticipation for what will be needed
          * in the denormalization matrix. We opportunistically use double-double arithmetic but
@@ -234,6 +185,63 @@ public class TransverseMercator extends NormalizedProjection {
         final MatrixSIS denormalize = context.getMatrix(false);
         denormalize.convertBefore(0, B, null);
         denormalize.convertBefore(1, B, M0);
+    }
+
+    /**
+     * Restores transient fields after deserialization.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        /*
+         * Double-double precision is necessary for computing 'n', otherwise we have rounding errors
+         * in the 3 last digits. Note that we still have sometime a 1 ULP difference compared to the
+         * 'n' value at serialization time.
+         */
+        final DoubleDouble t = new DoubleDouble(1, 0);
+        t.subtract(excentricitySquared, 0);
+        t.sqrt();
+        t.ratio_1m_1p();
+        initialize(t.doubleValue());
+    }
+
+    /**
+     * Computes the transient fields after construction or deserialization.
+     * The <var>n</var> parameter is defined by the EPSG guide as:
+     *
+     *     <blockquote>n = f / (2-f)</blockquote>
+     *
+     * Where <var>f</var> is the flattening factor (1 - b/a). This equation can be rewritten as:
+     *
+     *     <blockquote>n = (1 - b/a) / (1 + b/a)</blockquote>
+     *
+     * As much as possible, b/a should be computed from the map projection parameters.
+     * However if those parameters are not available anymore, then they can be computed
+     * from the excentricity as:
+     *
+     *     <blockquote>b/a = √(1 - ℯ²)</blockquote>
+     *
+     * @param n The value of {@code f / (2-f)} where {@code f} is the flattening factor.
+     */
+    private void initialize(final double n) {
+        final double n2 = n  * n;
+        final double n3 = n2 * n;
+        final double n4 = n2 * n2;
+        /*
+         * Coefficients for direct projection.
+         * Add the smallest values first in order to reduce rounding errors.
+         */
+        h1 = (   41. /    180)*n4  +  ( 5. /  16)*n3  +  (-2. /  3)*n2  +  n/2;
+        h2 = (  557. /   1440)*n4  +  (-3. /   5)*n3  +  (13. / 48)*n2;
+        h3 = ( -103. /    140)*n4  +  (61. / 240)*n3;
+        h4 = (49561. / 161280)*n4;
+        /*
+         * Coefficients for inverse projection.
+         * Add the smallest values first in order to reduce rounding errors.
+         */
+        ih1 = (  -1. /    360)*n4  +  (37. /  96)*n3  +  (-2. /  3)*n2  +  n/2;
+        ih2 = (-437. /   1440)*n4  +  ( 1. /  15)*n3  +  ( 1. / 48)*n2;
+        ih3 = ( -37. /    840)*n4  +  (17. / 480)*n3;
+        ih4 = (4397. / 161280)*n4;
     }
 
     /**
@@ -313,7 +321,7 @@ public class TransverseMercator extends NormalizedProjection {
          */
         final double sin_2ξ0, sin_4ξ0, sin_6ξ0, sin_8ξ0,
                      cos_2ξ0, cos_4ξ0, cos_6ξ0, cos_8ξ0;
-        if (ORIGINAL_FORMULA) {
+        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
             sin_2ξ0 = sin(2*ξ0);
             cos_2ξ0 = cos(2*ξ0);
             sin_4ξ0 = sin(4*ξ0);
@@ -342,7 +350,7 @@ public class TransverseMercator extends NormalizedProjection {
          */
         final double sinh_2η0, sinh_4η0, sinh_6η0, sinh_8η0,
                      cosh_2η0, cosh_4η0, cosh_6η0, cosh_8η0;
-        if (ORIGINAL_FORMULA) {
+        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
             sinh_2η0 = sinh(2*η0);
             cosh_2η0 = cosh(2*η0);
             sinh_4η0 = sinh(4*η0);
@@ -474,7 +482,7 @@ public class TransverseMercator extends NormalizedProjection {
                      cos_2ξ,  cos_4ξ,  cos_6ξ,  cos_8ξ,
                      sinh_2η, sinh_4η, sinh_6η, sinh_8η,
                      cosh_2η, cosh_4η, cosh_6η, cosh_8η;
-        if (ORIGINAL_FORMULA) {
+        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
             sin_2ξ = sin(2*ξ);
             cos_2ξ = cos(2*ξ);
             sin_4ξ = sin(4*ξ);

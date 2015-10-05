@@ -116,7 +116,7 @@ import java.util.Objects;
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see ContextualParameters
@@ -127,6 +127,40 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1969740225939106310L;
+
+    /**
+     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
+     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
+     * and similar methods. Some identities used are:
+     *
+     * <ul>
+     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
+     *   <li>cos(2θ) = cos²θ - sin²θ</li>
+     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
+     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
+     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
+     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
+     * </ul>
+     *
+     * Hyperbolic formulas:
+     *
+     * <ul>
+     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
+     *   <li>cosh(2θ) = cosh²θ + sinh²θ   =   2⋅cosh²θ - 1   =   1 + 2⋅sinh²θ</li>
+     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
+     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)⋅coshθ</li>
+     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
+     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
+     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
+     *                = 8⋅cosh²(θ) ⋅ (cosh²θ - 1) + 1
+     *                = 8⋅cosh²(θ) ⋅ sinh²(θ) + 1
+     *                = 2⋅sinh²(2θ) + 1</li>
+     * </ul>
+     *
+     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
+     * executed (no need to comment-out that code).
+     */
+    static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
