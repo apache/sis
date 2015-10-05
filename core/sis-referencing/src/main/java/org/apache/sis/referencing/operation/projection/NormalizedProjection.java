@@ -129,9 +129,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     private static final long serialVersionUID = 1969740225939106310L;
 
     /**
-     * Whether to use the original formulas a published by EPSG, or their form modified using trigonometric identities.
-     * The modified form uses trigonometric identifies for reducing the amount of calls to the {@link Math#sin(double)}
-     * and similar methods. Some identities used are:
+     * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
+     * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
+     * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
      *
      * <ul>
      *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
