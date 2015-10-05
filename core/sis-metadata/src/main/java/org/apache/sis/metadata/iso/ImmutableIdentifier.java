@@ -457,39 +457,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Comments on or information about this identifier, or {@code null} if none.
-     *
-     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
-     *
-     * @return Optional comments about this identifier, or {@code null} if none.
-     *
-     * @deprecated Replaced by {@link #getDescription()} for non-deprecated identifiers, or by
-     *             {@link org.apache.sis.util.Deprecable#getRemarks()} for identifiers that may be deprecated.
-     */
-    @Deprecated
-    public InternationalString getRemarks() {
-        return description;
-    }
-
-    /**
-     * Returns {@code true} if the object represented by this identifier is deprecated. In such
-     * case, the {@linkplain #getRemarks() remarks} may contains the new identifier to use.
-     *
-     * <p>The default implementation returns {@code false} in all cases.</p>
-     *
-     * @see org.apache.sis.referencing.AbstractIdentifiedObject#isDeprecated()
-     *
-     * @return {@code true} if this code is deprecated.
-     *
-     * @deprecated Moved to {@link org.apache.sis.util.Deprecable#isDeprecated()} if this
-     *             {@code ImmutableIdentifier} instance implements {@code Deprecable}.
-     */
-    @Deprecated
-    public boolean isDeprecated() {
-        return false;
-    }
-
-    /**
      * Returns a hash code value for this object.
      */
     @Override

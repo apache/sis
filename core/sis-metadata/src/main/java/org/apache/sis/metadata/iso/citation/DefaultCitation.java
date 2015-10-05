@@ -32,7 +32,6 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
@@ -176,36 +175,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     public DefaultCitation(final CharSequence title) {
         this.title = Types.toInternationalString(title);
-    }
-
-    /**
-     * Constructs a citation with the specified responsible party.
-     * This convenience constructor initializes the citation title
-     * to the first non-null of the following properties:
-     * {@linkplain DefaultResponsibleParty#getOrganisationName() organization name},
-     * {@linkplain DefaultResponsibleParty#getPositionName() position name} or
-     * {@linkplain DefaultResponsibleParty#getIndividualName() individual name}.
-     *
-     * @param party The name and position information for an individual or organization that is
-     *              responsible for the resource, or {@code null} if none.
-     *
-     * @deprecated As of ISO 19115:2014, {@link ResponsibleParty} has been replaced by {@code Responsibility}.
-     */
-    @Deprecated
-    public DefaultCitation(final ResponsibleParty party) {
-        if (party != null) {
-            citedResponsibleParties = singleton(party, ResponsibleParty.class);
-            title = party.getOrganisationName();
-            if (title == null) {
-                title = party.getPositionName();
-                if (title == null) {
-                    String name = party.getIndividualName();
-                    if (name != null) {
-                        title = new SimpleInternationalString(name);
-                    }
-                }
-            }
-        }
     }
 
     /**
