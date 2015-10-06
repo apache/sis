@@ -79,8 +79,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * }
  *
  * An initially modifiable metadata may become unmodifiable at a later stage
- * (typically after its construction is completed) by the call to the
- * {@link #freeze()} method.
+ * (typically after its construction is completed) by the call to the {@link #freeze()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -129,10 +128,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns {@code true} if this metadata is modifiable. This method returns
      * {@code false} if {@link #freeze()} has been invoked on this object.
      *
-     * <div class="warning"><b>Warning:</b>
-     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
-     * (modifiable, appendable, etc.).</div>
-     *
      * @return {@code true} if this metadata is modifiable.
      *
      * @see #freeze()
@@ -164,15 +159,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * The default implementation makes the following choice:
      *
      * <ul>
-     *   <li>If this metadata is itself unmodifiable, then this method returns {@code this}
-     *       unchanged.</li>
+     *   <li>If this metadata is itself unmodifiable, then this method returns {@code this} unchanged.</li>
      *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
      *       {@linkplain #freeze() freeze} the clone before to return it.</li>
      * </ul>
-     *
-     * <div class="warning"><b>Warning:</b>
-     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
-     * (modifiable, appendable, etc.).</div>
      *
      * @return An unmodifiable copy of this metadata.
      */
@@ -209,12 +199,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * property after this method call will throw an {@link UnmodifiableMetadataException}.
      * If this metadata is already unmodifiable, then this method does nothing.
      *
-     * <p>Subclasses usually don't need to override this method since the default implementation
+     * <p>Subclasses usually do not need to override this method since the default implementation
      * performs its work using Java reflection.</p>
-     *
-     * <div class="warning"><b>Warning:</b>
-     * this method is likely to change. Future SIS version will probably uses a "state" enumeration
-     * (modifiable, appendable, etc.).</div>
      *
      * @see #isModifiable()
      * @see #checkWritePermission()
@@ -265,8 +251,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
-     *       modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link List}.</li>
@@ -313,8 +298,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
-     *       modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set}.</li>
@@ -325,8 +309,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source set, or {@code null}.
      * @param  target      The target set, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the set.
-     * @return A set (possibly the {@code target} instance) containing the {@code source}
-     *         elements, or {@code null} if the source was null.
+     * @return A set (possibly the {@code target} instance) containing the {@code source} elements,
+     *         or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      *
      * @see #nonNullSet(Set, Class)
@@ -361,8 +345,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * creating it if needed. This method performs the following steps:
      *
      * <ul>
-     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
-     *       modifiable.</li>
+     *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
      *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
@@ -381,8 +364,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  source      The source collection, or {@code null}.
      * @param  target      The target collection, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the collection.
-     * @return A collection (possibly the {@code target} instance) containing the {@code source}
-     *         elements, or {@code null} if the source was null.
+     * @return A collection (possibly the {@code target} instance) containing the {@code source} elements,
+     *         or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
     @SuppressWarnings("unchecked")
