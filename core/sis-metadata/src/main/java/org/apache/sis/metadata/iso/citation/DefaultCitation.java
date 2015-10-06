@@ -63,7 +63,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @XmlType(name = "CI_Citation_Type", propOrder = {
@@ -364,29 +364,25 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "identifier")
     public Collection<Identifier> getIdentifiers() {
-        return NonMarshalledAuthority.excludeOnMarshalling(super.getIdentifiers());
+        return NonMarshalledAuthority.filterOnMarshalling(super.getIdentifiers());
     }
 
     /**
      * Sets the unique identifier for the resource.
      * Example: Universal Product Code (UPC), National Stock Number (NSN).
      *
-     * <p>This method overwrites all previous identifiers with the given new values,
-     * <strong>except</strong> the XML identifiers ({@linkplain IdentifierSpace#ID ID},
-     * {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>), ISBN and ISSN codes, if any.
-     * We do not overwrite the XML identifiers because they are usually associated to object
-     * identity, and we do not overwrite ISBN/ISSN codes because they have dedicated setters
-     * for compliance with the ISO 19115 model.</p>
+     * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes are not affected by this method, unless
+     * they are explicitely provided in the given collection.</p>
      *
      * @param newValues The new identifiers, or {@code null} if none.
      *
      * @see #setISBN(String)
      * @see #setISSN(String)
      */
-    public void setIdentifiers(final Collection<? extends Identifier> newValues) {
-        final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
+    public void setIdentifiers(Collection<? extends Identifier> newValues) {
+        newValues = NonMarshalledAuthority.setMarshallables(identifiers, newValues);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
-        NonMarshalledAuthority.replace(identifiers, oldIds);
     }
 
     /**

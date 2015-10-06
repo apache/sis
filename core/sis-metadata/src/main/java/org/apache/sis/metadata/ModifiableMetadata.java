@@ -104,8 +104,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * A flag used for {@link #unmodifiable} in order to specify that
-     * {@link #freeze()} is under way.
+     * A sentinel value used for {@link #unmodifiable} in order to specify that {@link #freeze()} is under way.
      */
     private static final ModifiableMetadata FREEZING = new Null();
 
@@ -134,7 +133,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #checkWritePermission()
      */
     public final boolean isModifiable() {
-        return unmodifiable != this;
+        return unmodifiable != this && unmodifiable != FREEZING;
     }
 
     /**
@@ -240,10 +239,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #freeze()
      */
     protected void checkWritePermission() throws UnmodifiableMetadataException {
-        if (!isModifiable()) {
-            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        if (unmodifiable != null) {
+            if (unmodifiable == this) {
+                throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+            } else if (unmodifiable != FREEZING) {
+                unmodifiable = null;
+            }
         }
-        unmodifiable = null;
     }
 
     /**

@@ -18,11 +18,13 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CollectionsExt;
 
 
@@ -33,7 +35,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 final class Cloner extends org.apache.sis.internal.util.Cloner {
@@ -50,6 +52,15 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
     @Override
     protected boolean isCloneRequired(final Object object) {
         return false;
+    }
+
+    /**
+     * Recursively clones all elements in the given array.
+     */
+    private void clones(final Object[] array) throws CloneNotSupportedException {
+        for (int i=0; i<array.length; i++) {
+            array[i] = clone(array[i]);
+        }
     }
 
     /**
@@ -87,29 +98,39 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
         if (object instanceof Collection<?>) {
             Collection<?> collection = (Collection<?>) object;
             final boolean isSet = (collection instanceof Set<?>);
-            if (collection.isEmpty()) {
-                if (isSet) {
-                    collection = Collections.EMPTY_SET;
-                } else {
-                    collection = Collections.EMPTY_LIST;
+            final Object[] array = collection.toArray();
+            switch (array.length) {
+                case 0: {
+                    collection = isSet ? Collections.EMPTY_SET
+                                       : Collections.EMPTY_LIST;
+                    break;
                 }
-            } else {
-                final Object[] array = collection.toArray();
-                for (int i=0; i<array.length; i++) {
-                    array[i] = clone(array[i]);
+                case 1: {
+                    final Object value = clone(array[0]);
+                    collection = isSet ? Collections.singleton(value)
+                                       : Collections.singletonList(value);
+                    break;
                 }
-                // Do not use the SIS Checked* classes since
-                // we don't need type checking anymore.
-                if (isSet) {
-                    collection = CollectionsExt.immutableSet(false, array);
-                } else {
-                    // Conservatively assumes a List if we are not sure to have a Set,
-                    // since the list is less destructive (no removal of duplicated).
-                    switch (array.length) {
-                        case 0:  collection = Collections.EMPTY_LIST; break; // Redundant with isEmpty(), but we are paranoiac.
-                        case 1:  collection = Collections.singletonList(array[0]); break;
-                        default: collection = Containers.unmodifiableList(array); break;
+                default: {
+                    if (isSet) {
+                        if (collection instanceof EnumSet<?>) {
+                            collection = Collections.unmodifiableSet(((EnumSet<?>) collection).clone());
+                        } else if (collection instanceof CodeListSet<?>) {
+                            collection = Collections.unmodifiableSet(((CodeListSet<?>) collection).clone());
+                        } else {
+                            clones(array);
+                            collection = CollectionsExt.immutableSet(false, array);
+                        }
+                    } else {
+                        /*
+                         * Do not use the SIS Checked* classes since we don't need type checking anymore.
+                         * Conservatively assumes a List if we are not sure to have a Set since the list
+                         * is less destructive (no removal of duplicated values).
+                         */
+                        clones(array);
+                        collection = Containers.unmodifiableList(array);
                     }
+                    break;
                 }
             }
             return collection;
