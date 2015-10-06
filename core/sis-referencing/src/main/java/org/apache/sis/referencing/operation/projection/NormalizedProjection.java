@@ -129,40 +129,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     private static final long serialVersionUID = 1969740225939106310L;
 
     /**
-     * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
-     * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
-     * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
-     *
-     * <ul>
-     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
-     *   <li>cos(2θ) = cos²θ - sin²θ</li>
-     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
-     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
-     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
-     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
-     * </ul>
-     *
-     * Hyperbolic formulas:
-     *
-     * <ul>
-     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
-     *   <li>cosh(2θ) = cosh²θ + sinh²θ   =   2⋅cosh²θ - 1   =   1 + 2⋅sinh²θ</li>
-     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
-     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)⋅coshθ</li>
-     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
-     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
-     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
-     *                = 8⋅cosh²(θ) ⋅ (cosh²θ - 1) + 1
-     *                = 8⋅cosh²(θ) ⋅ sinh²(θ) + 1
-     *                = 2⋅sinh²(2θ) + 1</li>
-     * </ul>
-     *
-     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
-     * executed (no need to comment-out that code).
-     */
-    static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
-
-    /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
      * The current value takes the system-wide angular tolerance value (equivalent to
      * about 1 cm on Earth) converted to radians.
@@ -490,7 +456,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
-     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
      * changes in axis order} are <strong>not</strong> managed by the returned transform.
