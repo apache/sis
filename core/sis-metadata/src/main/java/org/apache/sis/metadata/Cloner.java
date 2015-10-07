@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 
 /**
@@ -84,11 +85,16 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
     @Override
     public Object clone(final Object object) throws CloneNotSupportedException {
         /*
-         * CASE 1 - The object is an implementation of ModifiableMetadata. It may have
+         * CASE 1 - The object is an org.apache.sis.metadata.* implementation. It may have
          *          its own algorithm for creating an unmodifiable view of metadata.
          */
         if (object instanceof ModifiableMetadata) {
             return ((ModifiableMetadata) object).unmodifiable();
+        }
+        if (object instanceof DefaultRepresentativeFraction) {
+            final DefaultRepresentativeFraction c = ((DefaultRepresentativeFraction) object).clone();
+            c.freeze();
+            return c;
         }
         /*
          * CASE 2 - The object is a collection. All elements are replaced by their

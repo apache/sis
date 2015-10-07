@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
@@ -71,5 +71,28 @@ public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
          * Unmarshal the element back to a Java object and compare to the original.
          */
         assertEquals(fraction, XML.unmarshal(xml));
+    }
+
+    /**
+     * Tests indirectly {@link DefaultRepresentativeFraction#freeze()}.
+     * This method verifies that a call to {@link DefaultResolution#freeze()}
+     * implies a call to {@link DefaultRepresentativeFraction#freeze()}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testFreeze() {
+        final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(1000);
+        final DefaultResolution resolution = new DefaultResolution(fraction);
+        resolution.freeze();
+        final DefaultRepresentativeFraction clone = (DefaultRepresentativeFraction) resolution.getEquivalentScale();
+        assertEquals ("Fraction should have the same value.",      fraction, clone);
+        assertNotSame("Should have copied the fraction instance.", fraction, clone);
+        try {
+            clone.setDenominator(10);
+            fail("Shall not be allowed to modify an unmodifiable fraction.");
+        } catch (UnsupportedOperationException e) {
+            // This is the expected exception.
+        }
     }
 }
