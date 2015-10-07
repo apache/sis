@@ -89,8 +89,7 @@ public final class Containers extends Static {
      *
      * @param  <E> The base type of elements in the list.
      * @param  array The array to wrap, or {@code null} if none.
-     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
-     *         array was null.
+     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
      *
      * @see java.util.Arrays#asList(Object[])
      */
@@ -148,10 +147,9 @@ public final class Containers extends Static {
      * @param  <S>       The type of elements in the storage (original) set.
      * @param  <E>       The type of elements in the derived set.
      * @param  storage   The storage set containing the original elements, or {@code null}.
-     * @param  converter The converter from the elements in the storage set to the elements
-     *                   in the derived set.
-     * @return A view over the {@code storage} set containing all elements converted by the given
-     *         converter, or {@code null} if {@code storage} was null.
+     * @param  converter The converter from the elements in the storage set to the elements in the derived set.
+     * @return A view over the {@code storage} set containing all elements converted by the given converter,
+     *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
      */
@@ -195,8 +193,8 @@ public final class Containers extends Static {
      * @param storage      The storage map containing the original entries, or {@code null}.
      * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
      * @param valueConverter The converter from the values in the storage map to the values in the derived map.
-     * @return A view over the {@code storage} map containing all entries converted by the given
-     *         converters, or {@code null} if {@code storage} was null.
+     * @return A view over the {@code storage} map containing all entries converted by the given converters,
+     *         or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
      * @see org.apache.sis.util.ObjectConverters#derivedKeys(Map, ObjectConverter, Class)

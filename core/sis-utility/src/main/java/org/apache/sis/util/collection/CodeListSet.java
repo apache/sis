@@ -547,7 +547,6 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     @SuppressWarnings("unchecked")
     public CodeListSet<E> clone() {
-        @SuppressWarnings("unchecked")
         final CodeListSet<E> clone;
         try {
             clone = (CodeListSet<E>) super.clone();
