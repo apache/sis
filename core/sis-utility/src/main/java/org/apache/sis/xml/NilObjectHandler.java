@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -73,7 +73,7 @@ final class NilObjectHandler implements InvocationHandler {
                 asList.add(identifier);
             }
         }
-        attribute = new IdentifierMapWithSpecialCases(asList);
+        attribute = new ModifiableIdentifierMap(asList);
     }
 
     /**

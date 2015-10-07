@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
@@ -326,7 +326,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @Override
     public IdentifierMap getIdentifierMap() {
-        return new IdentifierMapWithSpecialCases(getIdentifiers());
+        return new ModifiableIdentifierMap(getIdentifiers());
     }
 
 
