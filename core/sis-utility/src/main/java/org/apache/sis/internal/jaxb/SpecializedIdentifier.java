@@ -44,10 +44,10 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
-public final class SpecializedIdentifier<T> implements Identifier, Serializable {
+public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -207,6 +207,20 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                    Objects.equals(value, that.value);
         }
         return false;
+    }
+
+    /**
+     * Returns a clone of this identifier.
+     *
+     * @return A shallow clone of this identifier.
+     */
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);    // Should never happen, since we are cloneable.
+        }
     }
 
     /**

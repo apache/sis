@@ -139,7 +139,7 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
-    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
+    org.apache.sis.internal.jaxb.ModifiableIdentifierMapTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
     org.apache.sis.internal.jaxb.gmd.LanguageCodeTest.class,

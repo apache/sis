@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.jaxb;
 
+import java.net.URI;
 import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +30,7 @@ import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 
@@ -39,13 +41,20 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * A map of identifiers which can be used as a helper class for
- * {@link org.apache.sis.xml.IdentifiedObject} implementations.
+ * Implementation of the map of identifiers associated to {@link org.apache.sis.xml.IdentifiedObject} instances.
+ * This base class implements an unmodifiable map, but the {@link ModifiableIdentifierMap} subclass add write
+ * capabilities.
  *
  * <p>This class works as a wrapper around a collection of identifiers. Because all operations
  * are performed by an iteration over the collection elements, this implementation is suitable
  * only for small maps (less than 10 elements). Given that objects typically have only one or
  * two identifiers, this is considered acceptable.</p>
+ *
+ * <div class="section">Special cases</div>
+ * The identifiers for the following authorities are handled in a special way:
+ * <ul>
+ *   <li>{@link IdentifierSpace#HREF}: handled as a shortcut to {@link XLink#getHRef()}.</li>
+ * </ul>
  *
  * <div class="section">Handling of duplicated authorities</div>
  * The collection shall not contain more than one identifier for the same
@@ -65,22 +74,17 @@ import org.apache.sis.internal.jdk7.Objects;
  * </ul>
  *
  * <div class="section">Handling of null identifiers</div>
- * The collection of identifiers shall not contains any null element. This is normally ensured by
+ * The collection of identifiers shall not contain any null element. This is normally ensured by
  * the {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations.
- * This class performs opportunist null checks as an additional safety. However because we perform
- * those checks only in opportunist ways, the following inconsistencies remain:
- *
- * <ul>
- *   <li>{@link #isEmpty()} may return {@code false} when the more accurate {@link #size()}
- *       method returns 0.</li>
- * </ul>
+ * This class performs opportunist null checks as an additional safety, but consistency is not
+ * guaranteed. See {@link #size()} for more information.
  *
  * <div class="section">Thread safety</div>
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.xml.IdentifiedObject
@@ -106,46 +110,113 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      *
      * @param identifiers The identifiers to wrap in a map view.
      */
-    IdentifierMapAdapter(final Collection<Identifier> identifiers) {
+    public IdentifierMapAdapter(final Collection<Identifier> identifiers) {
         this.identifiers = identifiers;
     }
 
     /**
-     * Removes every entries in the underlying collection.
+     * If the given authority is a special case, returns its {@link NonMarshalledAuthority} integer enum.
+     * Otherwise returns -1. See javadoc for more information about special cases.
      *
-     * @throws UnsupportedOperationException If the collection of identifiers is unmodifiable.
+     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
+     *        because the signature of some {@code Map} methods are that way.
      */
-    @Override
-    public void clear() throws UnsupportedOperationException {
-        identifiers.clear();
+    static int specialCase(final Object authority) {
+        if (authority == IdentifierSpace.HREF) return NonMarshalledAuthority.HREF;
+        // A future Apache SIS version may add more special cases here.
+        return -1;
+    }
+
+    /**
+     * Extracts the {@code xlink:href} value from the {@link XLink} if presents.
+     * This method does not test if an explicit {@code xlink:href} identifier exists;
+     * this check must be done by the caller <strong>before</strong> to invoke this method.
+     *
+     * @see ModifiableIdentifierMap#setHRef(URI)
+     */
+    private URI getHRef() {
+        final Identifier identifier = getIdentifier(IdentifierSpace.XLINK);
+        if (identifier instanceof SpecializedIdentifier<?>) {
+            final Object link = ((SpecializedIdentifier<?>) identifier).value;
+            if (link instanceof XLink) {
+                return ((XLink) link).getHRef();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the string representation of the given value, or {@code null} if none.
+     *
+     * @param value The value returned be one of the above {@code getFoo()} methods.
+     */
+    private static String toString(final Object value) {
+        return (value != null) ? value.toString() : null;
+    }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                        ////////
+    ////////    END OF SPECIAL CASES.                                               ////////
+    ////////                                                                        ////////
+    ////////    Implementation of IdentifierMap methods follow. Each method may     ////////
+    ////////    have a switch statement over the special cases declared above.      ////////
+    ////////                                                                        ////////
+    ////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Whether this map support {@code put} and {@code remove} operations.
+     */
+    boolean isModifiable() {
+        return false;
     }
 
     /**
      * Returns {@code true} if the collection of identifiers contains at least one element.
      * This method does not verify if the collection contains null element (it should not).
-     * Consequently, this method may return {@code false} even if the {@link #size()} method
-     * returns 0.
      */
     @Override
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return identifiers.isEmpty();
     }
 
     /**
-     * Returns {@code true} if at least one identifier declares the given
-     * {@linkplain Identifier#getCode() code}.
+     * Counts the number of entries, ignoring null elements and duplicated authorities.
+     *
+     * <p>Because {@code null} elements are ignored, this method may return 0 even if {@link #isEmpty()}
+     * returns {@code false}. However this inconsistency should not happen in practice because
+     * {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations
+     * do not allow null values.</p>
+     */
+    @Override
+    public final int size() {
+        final HashSet<Citation> done = new HashSet<Citation>(hashMapCapacity(identifiers.size()));
+        for (final Identifier identifier : identifiers) {
+            if (identifier != null) {
+                done.add(identifier.getAuthority());
+            }
+        }
+        return done.size();
+    }
+
+    /**
+     * Returns {@code true} if at least one identifier declares the given {@linkplain Identifier#getCode() code}.
      *
      * @param  code The code to search, which should be an instance of {@link String}.
      * @return {@code true} if at least one identifier uses the given code.
      */
     @Override
-    public boolean containsValue(final Object code) {
+    public final boolean containsValue(final Object code) {
         if (code instanceof String) {
             for (final Identifier identifier : identifiers) {
                 if (identifier != null && code.equals(identifier.getCode())) {
                     return true;
                 }
             }
+            return code.equals(toString(getHRef()));
+            // A future Apache SIS version may add more special cases here.
         }
         return false;
     }
@@ -158,14 +229,23 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @return {@code true} if at least one identifier uses the given authority.
      */
     @Override
-    public boolean containsKey(final Object authority) {
-        return (authority instanceof Citation) && getIdentifier((Citation) authority) != null;
+    public final boolean containsKey(final Object authority) {
+        if (authority instanceof Citation) {
+            if (getIdentifier((Citation) authority) != null) {
+                return true;
+            }
+            switch (specialCase(authority)) {
+                case NonMarshalledAuthority.HREF: return getHRef() != null;
+                // A future Apache SIS version may add more special cases here.
+            }
+        }
+        return false;
     }
 
     /**
      * Returns the identifier for the given key, or {@code null} if none.
      */
-    private Identifier getIdentifier(final Citation authority) {
+    final Identifier getIdentifier(final Citation authority) {
         for (final Identifier identifier : identifiers) {
             if (identifier != null && Objects.equals(authority, identifier.getAuthority())) {
                 return identifier;
@@ -180,44 +260,35 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getSpecialized(final IdentifierSpace<T> authority) {
+    public final <T> T getSpecialized(final IdentifierSpace<T> authority) {
         final Identifier identifier = getIdentifier(authority);
-        return (identifier instanceof SpecializedIdentifier<?>) ? ((SpecializedIdentifier<T>) identifier).value : null;
-    }
-
-    /**
-     * Returns the code of the first identifier associated with the given authority only if
-     * if is <strong>not</strong> a specialized identifier. Otherwise returns {@code null}.
-     *
-     * <p>This is a helper method for {@link IdentifierMapWithSpecialCases#put(Citation, String)},
-     * in order to be able to return the old value if that value was a {@link String} rather than
-     * the specialized type. We do not return the string for the specialized case in order to avoid
-     * the cost of invoking {@code toString()} on the specialized object (some may be costly). Such
-     * call would be useless because {@code IdentifierMapWithSpecialCase} discard the value of this
-     * method when it found a specialized type.</p>
-     */
-    final String getUnspecialized(final Citation authority) {
-        final Identifier identifier = getIdentifier(authority);
-        if (identifier != null && !(identifier instanceof SpecializedIdentifier<?>)) {
-            return identifier.getCode();
+        if (identifier instanceof SpecializedIdentifier<?>) {
+            return ((SpecializedIdentifier<T>) identifier).value;
+        }
+        switch (specialCase(authority)) {
+            case NonMarshalledAuthority.HREF: return (T) getHRef();
+            // A future Apache SIS version may add more special cases here.
         }
         return null;
     }
 
     /**
      * Returns the code of the first identifier associated with the given
-     * {@linkplain Identifier#getAuthority() authority}, or {@code null}
-     * if no identifier was found.
+     * {@linkplain Identifier#getAuthority() authority}, or {@code null} if no identifier was found.
      *
      * @param  authority The authority to search, which should be an instance of {@link Citation}.
      * @return The code of the identifier for the given authority, or {@code null} if none.
      */
     @Override
-    public String get(final Object authority) {
+    public final String get(final Object authority) {
         if (authority instanceof Citation) {
             final Identifier identifier = getIdentifier((Citation) authority);
             if (identifier != null) {
                 return identifier.getCode();
+            }
+            switch (specialCase(authority)) {
+                case NonMarshalledAuthority.HREF: return toString(getHRef());
+                // A future Apache SIS version may add more special cases here.
             }
         }
         return null;
@@ -225,102 +296,57 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
 
     /**
      * Removes all identifiers associated with the given {@linkplain Identifier#getAuthority() authority}.
-     * The default implementation delegates to {@link #put(Citation, String)} with a {@code null} value.
      *
      * @param  authority The authority to search, which should be an instance of {@link Citation}.
      * @return The code of the identifier for the given authority, or {@code null} if none.
+     * @throws UnsupportedOperationException if the collection of identifiers is unmodifiable.
      */
     @Override
-    public String remove(final Object authority) {
-        return (authority instanceof Citation) ? put((Citation) authority, null) : null;
+    public String remove(Object authority) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Removes every entries in the underlying collection.
+     *
+     * @throws UnsupportedOperationException if the collection of identifiers is unmodifiable.
+     */
+    @Override
+    public void clear() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Sets the code of the identifier having the given authority to the given value.
-     * If no identifier is found for the given authority, a new one is created. If
-     * more than one identifier is found for the given authority, then all previous
-     * identifiers may be removed in order to ensure that the new entry will be the
-     * first entry, so it can be find by the {@code get} method.
+     * If no identifier is found for the given authority, a new one is created.
+     * If more than one identifier is found for the given authority, then all previous identifiers may be removed
+     * in order to ensure that the new entry will be the first entry, so it can be find by the {@code get} method.
      *
      * @param  authority The authority for which to set the code.
      * @param  code The new code for the given authority, or {@code null} for removing the entry.
      * @return The previous code for the given authority, or {@code null} if none.
+     * @throws UnsupportedOperationException if the collection of identifiers is unmodifiable.
      */
     @Override
-    public String put(final Citation authority, final String code)
-            throws UnsupportedOperationException
-    {
-        ArgumentChecks.ensureNonNull("authority", authority);
-        String old = null;
-        final Iterator<? extends Identifier> it = identifiers.iterator();
-        while (it.hasNext()) {
-            final Identifier identifier = it.next();
-            if (identifier == null) {
-                it.remove(); // Opportunist cleaning, but should not happen.
-            } else if (Objects.equals(authority, identifier.getAuthority())) {
-                if (code != null && identifier instanceof IdentifierMapEntry) {
-                    return ((IdentifierMapEntry) identifier).setValue(code);
-                    // No need to suppress other occurrences of the key (if any)
-                    // because we made a replacement in the first entry, so the
-                    // new value will be visible by the getter methods.
-                }
-                if (old == null) {
-                    old = identifier.getCode();
-                }
-                it.remove();
-                // Continue the iteration in order to remove all other occurrences,
-                // in order to ensure that the getter methods will see the new value.
-            }
-        }
-        if (code != null) {
-            identifiers.add(SpecializedIdentifier.parse(authority, code));
-        }
-        return old;
+    public String put(Citation authority, String code) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Sets the identifier associated with the given authority, and returns the previous value.
      */
     @Override
-    public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value)
-            throws UnsupportedOperationException
-    {
-        ArgumentChecks.ensureNonNull("authority", authority);
-        T old = null;
-        final Iterator<? extends Identifier> it = identifiers.iterator();
-        while (it.hasNext()) {
-            final Identifier identifier = it.next();
-            if (identifier == null) {
-                it.remove(); // Opportunist cleaning, but should not happen.
-            } else if (Objects.equals(authority, identifier.getAuthority())) {
-                if (identifier instanceof SpecializedIdentifier<?>) {
-                    @SuppressWarnings("unchecked")
-                    final SpecializedIdentifier<T> id = (SpecializedIdentifier<T>) identifier;
-                    if (old == null) {
-                        old = id.value;
-                    }
-                    if (value != null) {
-                        id.value = value;
-                        return old;
-                        // No need to suppress other occurrences of the key (if any)
-                        // because we made a replacement in the first entry, so the
-                        // new value will be visible by the getter methods.
-                    }
-                }
-                it.remove();
-                // Continue the iteration in order to remove all other occurrences,
-                // in order to ensure that the getter methods will see the new value.
-            }
-        }
-        if (value != null) {
-            identifiers.add(new SpecializedIdentifier<T>(authority, value));
-        }
-        return old;
+    public <T> T putSpecialized(IdentifierSpace<T> authority, T value) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Returns a view over the collection of identifiers. This view supports removal operation
      * if the underlying collection of identifiers supports the {@link Iterator#remove()} method.
+     *
+     * <p>If the backing identifier collection contains null entries, those entries will be ignored.
+     * If the backing collection contains many entries for the same authority, then only the first
+     * occurrence is included.</p>
      *
      * @return A view over the collection of identifiers.
      */
@@ -332,83 +358,35 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
          * fields if the underlying list is thread-safe. Furthermore, IdentifierMapAdapter are temporary
          * objects anyway in the current ISOMetadata implementation.
          */
-        return new Entries(identifiers);
-    }
-
-    /**
-     * The view returned by {@link IdentifierMapAdapter#entrySet()}. If the backing identifier collection
-     * contains null entries, those entries will be ignored. If the backing collection contains many entries
-     * for the same authority, then only the first occurrence is retained.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.3
-     * @version 0.3
-     * @module
-     */
-    private static final class Entries extends AbstractSet<Entry<Citation,String>> {
-        /**
-         * The identifiers to wrap in a set of entries view. This is a reference
-         * to the same collection than {@link IdentifierMapAdapter#identifiers}.
-         */
-        private final Collection<? extends Identifier> identifiers;
-
-        /**
-         * Creates a new view over the collection of identifiers.
-         *
-         * @param identifiers The identifiers to wrap in a set of entries view.
-         */
-        Entries(final Collection<? extends Identifier> identifiers) {
-            this.identifiers = identifiers;
-        }
-
-        /**
-         * Same implementation than {@link IdentifierMapAdapter#clear()}.
-         */
-        @Override
-        public void clear() throws UnsupportedOperationException {
-            identifiers.clear();
-        }
-
-        /**
-         * Same implementation than {@link IdentifierMapAdapter#isEmpty()}.
-         */
-        @Override
-        public boolean isEmpty() {
-            return identifiers.isEmpty();
-        }
-
-        /**
-         * Counts the number of entries, ignoring null elements and duplicated authorities.
-         * Because {@code null} elements are ignored, this method may return 0 even if
-         * {@link #isEmpty()} returns {@code false}.
-         */
-        @Override
-        public int size() {
-            final HashMap<Citation,Boolean> done = new HashMap<Citation,Boolean>(hashMapCapacity(identifiers.size()));
-            for (final Identifier identifier : identifiers) {
-                if (identifier != null) {
-                    done.put(identifier.getAuthority(), null);
-                }
+        return new AbstractSet<Entry<Citation,String>>() {
+            /** Delegates to the enclosing class. */
+            @Override public void clear() throws UnsupportedOperationException {
+                IdentifierMapAdapter.this.clear();
             }
-            return done.size();
-        }
 
-        /**
-         * Returns an iterator over the (<var>citation</var>, <var>code</var>) entries.
-         */
-        @Override
-        public Iterator<Entry<Citation, String>> iterator() {
-            return new Iter(identifiers);
-        }
+            /** Delegates to the enclosing class. */
+            @Override public boolean isEmpty() {
+                return IdentifierMapAdapter.this.isEmpty();
+            }
+
+            /** Delegates to the enclosing class. */
+            @Override public int size() {
+                return IdentifierMapAdapter.this.size();
+            }
+
+            /** Returns an iterator over the (<var>citation</var>, <var>code</var>) entries. */
+            @Override public Iterator<Entry<Citation, String>> iterator() {
+                return new Iter(identifiers, isModifiable());
+            }
+        };
     }
 
     /**
      * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is created by
      * the {@link IdentifierMapAdapter.Entries} collection. It extends {@link HashMap} as an opportunist
-     * implementation strategy, but users don't need to know this detail.
+     * implementation strategy, but users does not need to know this detail.
      *
-     * <p>This iterator supports the {@link #remove()} operation if the underlying collection
-     * supports it.</p>
+     * <p>This iterator supports the {@link #remove()} operation if the underlying collection supports it.</p>
      *
      * <p>The map entries are used as a safety against duplicated authority values. The map values
      * are non-null only after we iterated over an authority. Then the value is {@link Boolean#TRUE}
@@ -416,7 +394,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
-     * @version 0.3
+     * @version 0.7
      * @module
      */
     @SuppressWarnings("serial") // Not intended to be serialized.
@@ -439,11 +417,17 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
         private transient Citation authority;
 
         /**
+         * {@code true} if the iterator should support the {@link #remove()} operation.
+         */
+        private final boolean isModifiable;
+
+        /**
          * Creates a new iterator for the given collection of identifiers.
          */
-        Iter(final Collection<? extends Identifier> identifiers) {
+        Iter(final Collection<? extends Identifier> identifiers, final boolean isModifiable) {
             super(hashMapCapacity(identifiers.size()));
             this.identifiers = identifiers.iterator();
+            this.isModifiable = isModifiable;
         }
 
         /**
@@ -518,6 +502,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
          */
         @Override
         public void remove() throws IllegalStateException {
+            if (!isModifiable) {
+                throw new UnsupportedOperationException();
+            }
             final Iterator<? extends Identifier> it = identifiers;
             if (it == null || next != null) {
                 throw new IllegalStateException();

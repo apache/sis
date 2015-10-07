@@ -26,7 +26,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.metadata.UnmodifiableMetadataException;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
@@ -63,14 +65,14 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultResolution#getEquivalentScale()
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
-public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable {
+public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject, Emptiable, Cloneable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -86,6 +88,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * This field is initialized to a non-null value when first needed.
      */
     private Collection<Identifier> identifiers;
+
+    /**
+     * {@code true} if this representative fraction has been made unmodifiable.
+     */
+    private transient boolean isUnmodifiable;
 
     /**
      * Creates a uninitialized representative fraction.
@@ -161,6 +168,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setDenominator(final long denominator) {
+        if (isUnmodifiable) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        }
         if (ensurePositive(DefaultRepresentativeFraction.class, "denominator", false, denominator)) {
             this.denominator = denominator;
         }
@@ -176,6 +186,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @throws IllegalArgumentException if the given scale is our of range.
      */
     public void setScale(final double scale) {
+        if (isUnmodifiable) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        }
         /*
          * For the following argument check, we do not need to use a Metadatautility method because
          * 'setScale' is never invoked at (un)marshalling time. Note also that we accept NaN values
@@ -259,6 +272,35 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     }
 
     /**
+     * Makes this representative fraction unmodifiable. After invocation to this method,
+     * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
+     *
+     * @since 0.7
+     *
+     * @see org.apache.sis.metadata.ModifiableMetadata#freeze()
+     */
+    public void freeze() {
+        isUnmodifiable = true;
+    }
+
+    /**
+     * Returns a modifiable copy of this representative fraction.
+     *
+     * @return A modifiable copy of this representative fraction.
+     */
+    @Override
+    public DefaultRepresentativeFraction clone() {
+        final DefaultRepresentativeFraction c;
+        try {
+            c = (DefaultRepresentativeFraction) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);    // Should never happen since we are cloneable.
+        }
+        c.isUnmodifiable = false;
+        return c;
+    }
+
+    /**
      * Compares this object with the specified value for equality.
      *
      * @param object The object to compare with.
@@ -326,7 +368,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @Override
     public IdentifierMap getIdentifierMap() {
-        return new IdentifierMapWithSpecialCases(getIdentifiers());
+        final Collection<Identifier> identifiers = getIdentifiers();
+        return isUnmodifiable ? new IdentifierMapAdapter(identifiers)
+                              : new ModifiableIdentifierMap(identifiers);
     }
 
 

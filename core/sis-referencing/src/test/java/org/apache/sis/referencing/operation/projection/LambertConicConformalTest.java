@@ -37,7 +37,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.*;
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 // Branch-specific imports
 import static org.junit.Assume.assumeTrue;
@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
@@ -339,5 +339,24 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
                 100);     // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
+    }
+
+    /**
+     * Verifies that deserialized projections work as expected. This implies that deserialization
+     * recomputed the internal transient fields, especially the series expansion coefficients.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testLambertConicConformal1SP")
+    public void testSerialization() throws FactoryException, TransformException {
+        createNormalizedProjection(true, 40);
+        final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH.generateRandomInput(TestUtilities.createRandomNumberGenerator(), 2, 10);
+        final double[] target = new double[source.length];
+        transform.transform(source, 0, target, 0, 10);
+        transform = assertSerializedEquals(transform);
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(source, target);
     }
 }

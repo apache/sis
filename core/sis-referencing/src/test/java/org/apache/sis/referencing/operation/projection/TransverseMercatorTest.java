@@ -24,9 +24,11 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -34,7 +36,7 @@ import static java.lang.StrictMath.toRadians;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
@@ -137,5 +139,24 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));
         verifyDerivative(toRadians(+6), toRadians(60));
+    }
+
+    /**
+     * Verifies that deserialized projections work as expected. This implies that deserialization
+     * recomputed the internal transient fields, especially the series expansion coefficients.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    @DependsOnMethod("testTransverseMercator")
+    public void testSerialization() throws FactoryException, TransformException {
+        createNormalizedProjection(true, 40);
+        final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_HALF_λ.generateRandomInput(TestUtilities.createRandomNumberGenerator(), 2, 10);
+        final double[] target = new double[source.length];
+        transform.transform(source, 0, target, 0, 10);
+        transform = assertSerializedEquals(transform);
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        verifyTransform(source, target);
     }
 }
