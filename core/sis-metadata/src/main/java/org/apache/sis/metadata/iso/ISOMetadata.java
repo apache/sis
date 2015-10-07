@@ -29,7 +29,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.CharSequences;
@@ -52,7 +53,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -151,13 +152,14 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
          */
         identifiers = nonNullCollection(identifiers, Identifier.class);
         if (identifiers == null) {
-            return IdentifierMapWithSpecialCases.EMPTY;
+            return IdentifierMapAdapter.EMPTY;
         }
         /*
          * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
          * caching it we would need anyway to check if 'identifiers' still references the same list.
          */
-        return new IdentifierMapWithSpecialCases(identifiers);
+        return isModifiable() ? new ModifiableIdentifierMap(identifiers)
+                              : new IdentifierMapAdapter(identifiers);
     }
 
 
@@ -204,7 +206,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getUUID() {
         /*
-         * IdentifierMapWithSpecialCases will take care of converting UUID to String,
+         * IdentifierMapAdapter will take care of converting UUID to String,
          * or to return a previously stored String if it was an unparsable UUID.
          */
         return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
@@ -216,9 +218,9 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      */
     private void setUUID(final String id) {
         /*
-         * IdentifierMapWithSpecialCases will take care of converting the String to UUID if possible,
-         * or will store the value as a plain String if it can not be converted. In the later case, a
-         * warning will be emitted (logged or processed by listeners).
+         * IdentifierMapAdapter will take care of converting the String to UUID if possible, or
+         * will store the value as a plain String if it can not be converted. In the later case,
+         * a warning will be emitted (logged or processed by listeners).
          */
         getIdentifierMap().put(IdentifierSpace.UUID, id);
     }

@@ -656,12 +656,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
-        return (Class) (CodeList.class.isAssignableFrom(elementType) ||
-                            Enum.class.isAssignableFrom(elementType) ||
-                         Charset.class.isAssignableFrom(elementType) ||
-                          String.class ==               elementType  ||
-                          Locale.class ==               elementType  ||
-                        Currency.class ==               elementType
+        return (Class) (CodeList.class.isAssignableFrom(elementType)
+                ||          Enum.class.isAssignableFrom(elementType)
+                ||       Charset.class.isAssignableFrom(elementType)
+                ||        String.class ==               elementType
+                ||        Locale.class ==               elementType
+                ||      Currency.class ==               elementType
                 ? Set.class : List.class);
     }
 

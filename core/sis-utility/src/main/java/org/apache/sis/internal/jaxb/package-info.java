@@ -26,7 +26,7 @@
  * <div class="section">Main content</div>
  * {@link org.apache.sis.internal.jaxb.IdentifierMapAdapter} is our internal implementation of
  * the public {@link org.apache.sis.xml.IdentifierMap} interface. The actual implementation is
- * usually the {@code IdentifierMapWithSpecialCases} subclass.
+ * usually the {@code ModifiableIdentifierMap} subclass.
  *
  * <p>{@link org.apache.sis.internal.jaxb.SpecializedIdentifier} wraps {@link org.apache.sis.xml.XLink},
  * {@link java.net.URI} and {@link java.util.UUID} as {@link org.opengis.metadata.Identifier} instances.
