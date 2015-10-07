@@ -465,8 +465,22 @@ public final class Context extends MarshalContext {
      *
      * @since 0.7
      */
-    public static String getExistingID(final Context context, final Object object) {
+    public static String getObjectID(final Context context, final Object object) {
         return (context != null) ? context.identifiedObjects.get(object) : null;
+    }
+
+    /**
+     * Returns the object for the given {@code gml:id}, or {@code null} if none.
+     * This association is valid only for the current XML document.
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @param  id      The identifier for which to get the object.
+     * @return The object associated to the given identifier, or {@code null} if none.
+     *
+     * @since 0.7
+     */
+    public static Object getObjectForID(final Context context, final String id) {
+        return (context != null) ? context.identifiers.get(id) : null;
     }
 
     /**
@@ -482,7 +496,7 @@ public final class Context extends MarshalContext {
      *
      * @since 0.7
      */
-    public static boolean isAvailableID(final Context context, final Object object, final String id) {
+    public static boolean setObjectForID(final Context context, final Object object, final String id) {
         if (context != null) {
             final Object existing = context.identifiers.putIfAbsent(id, object);
             if (existing == null) {

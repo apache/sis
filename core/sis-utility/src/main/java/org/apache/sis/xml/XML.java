@@ -171,16 +171,21 @@ public final class XML extends Static {
     public static final String GML_VERSION = "org.apache.sis.gml.version";
 
     /**
-     * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual
-     * object to use. The value for this property shall be an instance of {@link ReferenceResolver}.
+     * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual objects to use.
+     * The value for this property shall be an instance of {@link ReferenceResolver}.
      *
      * <p>If a property in a XML document is defined only by {@code xlink} or {@code uuidref} attributes,
-     * without any concrete definition, then the default behavior is to create an empty element which
-     * contain only the values of the above-cited attributes. This is usually not the right behavior,
-     * since we should use the reference ({@code href} or {@code uuidref} attributes) for fetching
-     * the appropriate object. However doing so require some application knowledge, for example a
-     * catalog where to perform the search, which is left to users. Users can define their search
-     * algorithm by subclassing {@link ReferenceResolver} and configure a unmarshaller as below:</p>
+     * without any concrete definition, then the default behavior is as below:</p>
+     *
+     * <ul>
+     *   <li>If the reference is of the form {@code xlink:href="#foo"} and an object with the {@code gml:id="foo"}
+     *       attribute was previously found in the same XML document, then that object will be used.</li>
+     *   <li>Otherwise an empty element containing only the values of the above-cited attributes is created.</li>
+     * </ul>
+     *
+     * Applications can sometime do better by using some domain-specific knowledge, for example by searching in a
+     * database. Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
+     * a unmarshaller as below:
      *
      * {@preformat java
      *     ReferenceResolver  myResolver = ...;
