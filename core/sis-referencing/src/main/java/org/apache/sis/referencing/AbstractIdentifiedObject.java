@@ -41,6 +41,7 @@ import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.metadata.NameMeaning;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -121,7 +122,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name="IdentifiedObjectType", propOrder={
@@ -495,32 +496,50 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     final String getID() {
-        final StringBuilder id = new StringBuilder();
-        /*
-         * We will iterate over the identifiers first. Only after the iteration is over,
-         * if we found no suitable ID, then we will use the primary name as a last resort.
-         */
-        if (identifiers != null) {
-            for (final Identifier identifier : identifiers) {
-                if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-                    appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
-                    appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
-                {
-                    /*
-                     * TODO: If we want to check for ID uniqueness or any other condition before to accept the ID,
-                     * we would do that here. If the ID is rejected, then we just need to clear the buffer and let
-                     * the iteration continue the search for an other ID.
-                     */
-                    return id.toString();
+        final Context context = Context.current();
+        String candidate = Context.getExistingID(context, this);
+        if (candidate == null) {
+            final StringBuilder id = new StringBuilder();
+            /*
+             * We will iterate over the identifiers first. Only after the iteration is over,
+             * if we found no suitable ID, then we will use the primary name as a last resort.
+             */
+            if (identifiers != null) {
+                for (final Identifier identifier : identifiers) {
+                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
+                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
+                        appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
+                    {
+                        /*
+                         * Check for ID uniqueness. If the ID is rejected, then we just need to clear
+                         * the buffer and let the iteration continue the search for another ID.
+                         */
+                        candidate = id.toString();
+                        if (Context.isAvailableID(context, this, candidate)) {
+                            return candidate;
+                        }
+                    }
+                    id.setLength(0);    // Clear the buffer for another try.
                 }
-                id.setLength(0); // Clear the buffer for an other try.
+            }
+            /*
+             * In last ressort, append code without codespace since the name are often verbose.
+             * If that name is also used, append a number until we find a free ID.
+             */
+            if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+                candidate = id.toString();
+                if (!Context.isAvailableID(context, this, candidate)) {
+                    final int s = id.append('-').length();
+                    int n = 0;
+                    do {
+                        if (++n == 100) return null;    //  Arbitrary limit.
+                        candidate = id.append(n).toString();
+                        id.setLength(s);
+                    } while (!Context.isAvailableID(context, this, candidate));
+                }
             }
         }
-        // In last ressort, append code without codespace since the name are often verbose.
-        if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
-            return id.toString();
-        }
-        return null;
+        return candidate;
     }
 
     /**

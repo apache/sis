@@ -131,9 +131,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Either {@code null}, an {@link ObjectReference} or a {@link String}.
      *
      * <ul>
-     *   <li>{@link ObjectReference} defines the {@code idref}, {@code uuidref}, {@code xlink:href},
-     *       {@code xlink:role}, {@code xlink:arcrole}, {@code xlink:title}, {@code xlink:show} and
-     *       {@code xlink:actuate} attributes.</li>
+     *   <li>{@link ObjectReference} defines the {@code uuidref}, {@code xlink:href}, {@code xlink:role},
+     *       {@code xlink:arcrole}, {@code xlink:title}, {@code xlink:show} and {@code xlink:actuate} attributes.</li>
      *   <li>{@link String} defines the {@code nilReason} attribute.</li>
      * </ul>
      *
@@ -350,8 +349,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
 
     /**
      * A URN to an external resources, or to an other part of a XML document, or an identifier.
-     * The {@code idref} attribute allows an XML element to refer to another XML element that
-     * has a corresponding {@code id} attribute.
+     * The {@code xlink:href} attribute allows an XML element to refer to another XML element
+     * that has a corresponding {@code id} attribute.
      *
      * @return the current value, or {@code null} if none.
      * @category xlink

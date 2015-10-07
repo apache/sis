@@ -27,6 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.internal.jaxb.referencing.Code;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -42,7 +43,7 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -99,6 +100,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      * This is invalid and should thrown an exception.
      */
     @Test
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingName() {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY, "Not a name."));
@@ -191,6 +193,35 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertNotNull("gmlId",                   gmlId);
         assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
         assertEquals ("gmlId.code",      "7019", gmlId.getCode());
+    }
+
+    /**
+     * Tests two {@code AbstractIdentifiedObject} declaring the same identifier in the same XML document.
+     * The {@code getID()} method should detect the collision and select different identifier.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testWithManyIdentifiers")
+    public void testIdentifierCollision() {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put("name", "GRS 1980"));
+        assertNull(properties.put("identifiers", new NamedIdentifier(EPSG, "7019")));
+        final AbstractIdentifiedObject o1 = new AbstractIdentifiedObject(properties);
+        final AbstractIdentifiedObject o2 = new AbstractIdentifiedObject(properties);
+        final AbstractIdentifiedObject o3 = new AbstractIdentifiedObject(properties);
+        final Context context = new Context(0, null, null, null, null, null, null, null);
+        try {
+            final String c1, c2, c3;
+            assertEquals("o1", "epsg-7019", c1 = o1.getID());
+            assertEquals("o2", "GRS1980",   c2 = o2.getID());
+            assertEquals("o3", "GRS1980-1", c3 = o3.getID());
+            assertSame  ("o1", c1, o1.getID());  // Verify that values are remembered.
+            assertSame  ("o2", c2, o2.getID());
+            assertSame  ("o3", c3, o3.getID());
+        } finally {
+            context.finish();
+        }
     }
 
     /**

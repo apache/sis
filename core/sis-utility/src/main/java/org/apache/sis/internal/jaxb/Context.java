@@ -17,8 +17,12 @@
 package org.apache.sis.internal.jaxb;
 
 import java.util.Map;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -32,6 +36,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -41,12 +46,12 @@ import org.apache.sis.xml.ReferenceResolver;
  * Thread-local status of a marshalling or unmarshalling processes.
  * All non-static methods in this class except {@link #finish()} are implementation of public API.
  * All static methods are internal API. Those methods expect a {@code Context} instance as their first argument.
- * They should be though as if they were normal member methods, except that they accept {@code null} instance
+ * They can be though as if they were normal member methods, except that they accept {@code null} instance
  * if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Context extends MarshalContext {
@@ -109,9 +114,9 @@ public final class Context extends MarshalContext {
     private int bitMasks;
 
     /**
-     * The locale to use for marshalling, or {@code null} if no locale were explicitly specified.
+     * The locale to use for marshalling, or an empty queue if no locale were explicitly specified.
      */
-    private Locale locale;
+    private final Deque<Locale> locales;
 
     /**
      * The timezone, or {@code null} if unspecified.
@@ -142,6 +147,24 @@ public final class Context extends MarshalContext {
     private final ValueConverter converter;
 
     /**
+     * The objects associated to XML identifiers. At marhalling time, this is used for avoiding duplicated identifiers
+     * in the same XML document. At unmarshalling time, this is used for getting a previous object from its identifier.
+     *
+     * @since 0.7
+     */
+    private final Map<String,Object> identifiers;
+
+    /**
+     * The identifiers used for marshalled objects. This is the converse of {@link #identifiers}, used in order to
+     * identify which {@code gml:id} to use for the given object. The {@code gml:id} to use are not necessarily the
+     * same than the one associated to {@link IdentifierSpace#ID} if the identifier was already used for another
+     * object in the same XML document.
+     *
+     * @since 0.7
+     */
+    private final Map<Object,String> identifiedObjects;
+
+    /**
      * The object to inform about warnings, or {@code null} if none.
      */
     private final WarningListener<?> warningListener;
@@ -160,7 +183,7 @@ public final class Context extends MarshalContext {
 
     /**
      * The context which was previously used. This form a linked list allowing to push properties
-     * (e.g. {@link #push(Locale)}) and pull back the context to its previous state once finished.
+     * and pull back the context to its previous state once finished.
      */
     private final Context previous;
 
@@ -193,50 +216,25 @@ public final class Context extends MarshalContext {
                    final ReferenceResolver  resolver, final ValueConverter converter,
                    final WarningListener<?> warningListener)
     {
-        this.bitMasks        = bitMasks;
-        this.locale          = locale;
-        this.timezone        = timezone;
-        this.schemas         = schemas; // No clone, because this class is internal.
-        this.versionGML      = versionGML;
-        this.resolver        = resolver;
-        this.converter       = converter;
-        this.warningListener = warningListener;
+        this.bitMasks          = bitMasks;
+        this.locales           = new LinkedList<>();
+        this.timezone          = timezone;
+        this.schemas           = schemas; // No clone, because this class is internal.
+        this.versionGML        = versionGML;
+        this.resolver          = resolver;
+        this.converter         = converter;
+        this.warningListener   = warningListener;
+        this.identifiers       = new HashMap<>();
+        this.identifiedObjects = new IdentityHashMap<>();
         if ((bitMasks & MARSHALLING) != 0) {
             if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
                 this.bitMasks |= CLEAR_SEMAPHORE;
             }
         }
-        previous = current();
-        CURRENT.set(this);
-    }
-
-    /**
-     * Inherits all configuration from the previous context, if any.
-     *
-     * @param previous The context from which to inherit the configuration, or {@code null}.
-     *
-     * @see #push(Locale)
-     */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
-    private Context(final Context previous) {
-        if (previous != null) {
-            bitMasks        = previous.bitMasks;
-            locale          = previous.locale;
-            timezone        = previous.timezone;
-            schemas         = previous.schemas;
-            versionGML      = previous.versionGML;
-            resolver        = previous.resolver;
-            converter       = previous.converter;
-            warningListener = previous.warningListener;
-        } else {
-            timezone        = null;
-            schemas         = null;
-            versionGML      = null;
-            resolver        = null;
-            converter       = null;
-            warningListener = null;
+        if (locale != null) {
+            locales.add(locale);
         }
-        this.previous = previous;
+        previous = CURRENT.get();
         CURRENT.set(this);
     }
 
@@ -247,7 +245,7 @@ public final class Context extends MarshalContext {
      */
     @Override
     public final Locale getLocale() {
-        return locale;
+        return locales.peekLast();
     }
 
     /**
@@ -275,12 +273,18 @@ public final class Context extends MarshalContext {
         return null;
     }
 
-    /*
-     * ---- END OF PUBLIC API --------------------------------------------------------------
-     *
-     * Following are internal API. They are provided as static methods with a Context
-     * argument rather than normal member methods in order to accept null context.
-     */
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                        ////////
+    ////////    END OF PUBLIC (non-internal) API.                                   ////////
+    ////////                                                                        ////////
+    ////////    Following are internal API. They are provided as static methods     ////////
+    ////////    with a Context argument rather than normal member methods           ////////
+    ////////    in order to accept null context.                                    ////////
+    ////////                                                                        ////////
+    ////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Returns the context of the XML (un)marshalling currently progressing in the current thread,
@@ -293,6 +297,45 @@ public final class Context extends MarshalContext {
     }
 
     /**
+     * Sets the locale to the given value. The old locales are remembered and will
+     * be restored by the next call to {@link #pull()}. This method can be invoked
+     * when marshalling object that need to marshall their children in a different
+     * locale, like below:
+     *
+     * {@preformat java
+     *     private void beforeMarshal(Marshaller marshaller) {
+     *         Context.push(language);
+     *     }
+     *
+     *     private void afterMarshal(Marshaller marshaller) {
+     *         Context.pull();
+     *     }
+     * }
+     *
+     * @param locale The locale to set, or {@code null}.
+     */
+    public static void push(Locale locale) {
+        final Context current = current();
+        if (current != null) {
+            if (locale == null) {
+                locale = current.getLocale();
+            }
+            current.locales.addLast(locale);
+        }
+    }
+
+    /**
+     * Restores the locale which was used prior the call to {@link #push(Locale)}.
+     * It is not necessary to invoke this method in a {@code finally} block.
+     */
+    public static void pull() {
+        final Context current = current();
+        if (current != null) {
+            current.locales.removeLast();
+        }
+    }
+
+    /**
      * Returns {@code true} if the given flag is set.
      *
      * @param  context The current context, or {@code null} if none.
@@ -302,6 +345,30 @@ public final class Context extends MarshalContext {
      */
     public static boolean isFlagSet(final Context context, final int flag) {
         return (context != null) && (context.bitMasks & flag) != 0;
+    }
+
+    /**
+     * Returns {@code true} if the GML version is equals or newer than the specified version.
+     * If no GML version were specified, then this method returns {@code true}, i.e. newest
+     * version is assumed.
+     *
+     * <div class="note"><b>API note:</b>
+     * This method is static for the convenience of performing the check for null context.</div>
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @param  version The version to compare to.
+     * @return {@code true} if the GML version is equals or newer than the specified version.
+     *
+     * @see #getVersion(String)
+     */
+    public static boolean isGMLVersion(final Context context, final Version version) {
+        if (context != null) {
+            final Version versionGML = context.versionGML;
+            if (versionGML != null) {
+                return versionGML.compareTo(version) >= 0;
+            }
+        }
+        return true;
     }
 
     /**
@@ -389,24 +456,41 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns {@code true} if the GML version is equals or newer than the specified version.
-     * If no GML version were specified, then this method returns {@code true}, i.e. newest
-     * version is assumed.
-     *
-     * <div class="note"><b>API note:</b>
-     * This method is static for the convenience of performing the check for null context.</div>
+     * If a {@code gml:id} value has already been used for the given object in the current XML document,
+     * returns that identifier. Otherwise returns {@code null}.
      *
      * @param  context The current context, or {@code null} if none.
-     * @param  version The version to compare to.
-     * @return {@code true} if the GML version is equals or newer than the specified version.
+     * @param  object  The object for which to get the {@code gml:id}.
+     * @return The identifier used in the current XML document for the given object, or {@code null} if none.
      *
-     * @see #getVersion(String)
+     * @since 0.7
      */
-    public static boolean isGMLVersion(final Context context, final Version version) {
+    public static String getExistingID(final Context context, final Object object) {
+        return (context != null) ? context.identifiedObjects.get(object) : null;
+    }
+
+    /**
+     * Returns {@code true} if the given identifier is available, or {@code false} if it is used by another object.
+     * If this method returns {@code true}, then the given identifier is associated to the given object for future
+     * invocation of {@code Context} method.  If this method returns {@code false}, then the caller is responsible
+     * for computing an other identifier candidate.
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @param  object  The object for which to assign the {@code gml:id}.
+     * @param  id      The identifier to assign to the given object.
+     * @return {@code true} if the given identifier can be used.
+     *
+     * @since 0.7
+     */
+    public static boolean isAvailableID(final Context context, final Object object, final String id) {
         if (context != null) {
-            final Version versionGML = context.versionGML;
-            if (versionGML != null) {
-                return versionGML.compareTo(version) >= 0;
+            final Object existing = context.identifiers.putIfAbsent(id, object);
+            if (existing == null) {
+                if (context.identifiedObjects.put(object, id) != null) {
+                    throw new AssertionError(id);   // Caller forgot to invoke getExistingID(context, object).
+                }
+            } else if (existing != object) {
+                return false;
             }
         }
         return true;
@@ -541,44 +625,6 @@ public final class Context extends MarshalContext {
     {
         warningOccured(context, isWarning ? Level.WARNING : Level.FINE, classe, method, cause,
                 null, (short) 0, (Object[]) null);
-    }
-
-    /**
-     * Sets the locale to the given value. The old locales are remembered and will
-     * be restored by the next call to {@link #pull()}. This method can be invoked
-     * when marshalling object that need to marshall their children in a different
-     * locale, like below:
-     *
-     * {@preformat java
-     *     private void beforeMarshal(Marshaller marshaller) {
-     *         Context.push(language);
-     *     }
-     *
-     *     private void afterMarshal(Marshaller marshaller) {
-     *         Context.pull();
-     *     }
-     * }
-     *
-     * @param locale The locale to set, or {@code null}.
-     */
-    public static void push(final Locale locale) {
-        final Context context = new Context(current());
-        if (locale != null) {
-            context.locale = locale;
-        }
-    }
-
-    /**
-     * Restores the locale (or any other setting) which was used prior the call
-     * to {@link #push(Locale)}. It is not necessary to invoke this method in a
-     * {@code finally} block if the parent {@code Context} is itself
-     * disposed in a {@code finally} block.
-     */
-    public static void pull() {
-        final Context current = current();
-        if (current != null) {
-            current.finish();
-        }
     }
 
     /**
