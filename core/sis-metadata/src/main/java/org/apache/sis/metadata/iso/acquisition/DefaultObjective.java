@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 @XmlType(name = "MI_Objective_Type", propOrder = {
@@ -175,23 +175,20 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Collection<Identifier> getIdentifiers() {
-        return NonMarshalledAuthority.excludeOnMarshalling(super.getIdentifiers());
+        return NonMarshalledAuthority.filterOnMarshalling(super.getIdentifiers());
     }
 
     /**
      * Sets the code used to identify the objective.
      *
-     * <p>This method overwrites all previous identifiers with the given new values,
-     * <strong>except</strong> the XML identifiers ({@linkplain IdentifierSpace#ID ID},
-     * {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>), if any. We do not overwrite
-     * the XML identifiers because they are usually associated to object identity.</p>
+     * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * are not affected by this method, unless they are explicitely provided in the given collection.</p>
      *
      * @param newValues The new identifiers values.
      */
-    public void setIdentifiers(final Collection<? extends Identifier> newValues) {
-        final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
+    public void setIdentifiers(Collection<? extends Identifier> newValues) {
+        newValues = NonMarshalledAuthority.setMarshallables(identifiers, newValues);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
-        NonMarshalledAuthority.replace(identifiers, oldIds);
     }
 
     /**

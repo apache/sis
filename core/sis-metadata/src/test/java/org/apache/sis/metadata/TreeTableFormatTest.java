@@ -20,14 +20,13 @@ import java.util.Arrays;
 import javax.measure.unit.SI;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
@@ -76,53 +75,41 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     }
 
     /**
-     * Creates the citation to use for testing purpose.
-     */
-    private static DefaultCitation createCitation() {
-        final DefaultCitation citation = new DefaultCitation();
-        final InternationalString title = new SimpleInternationalString("Undercurrent");
-        citation.setTitle(title);
-        citation.setISBN("9782505004509");
-        citation.setPresentationForms(asList(
-                PresentationForm.DOCUMENT_HARDCOPY,
-                PresentationForm.IMAGE_HARDCOPY));
-        citation.setAlternateTitles(asList(
-                new SimpleInternationalString("Alt A"),
-                new SimpleInternationalString("Alt B")));
-        citation.setCitedResponsibleParties(asList(
-                new DefaultResponsibility(Role.AUTHOR, null, new DefaultIndividual("Testsuya Toyoda", null, null)),
-                new DefaultResponsibility(null, null, new DefaultIndividual("A japanese author", null, null))));
-        return citation;
-    }
-
-    /**
      * Tests the formatting of a {@link DefaultCitation} object.
      */
     @Test
     public void testCitation() {
-        final DefaultCitation citation = createCitation();
+        final DefaultCitation citation = DefaultCitationTest.create();
         final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
             "Citation\n" +
-            "  ├─Title……………………………………………………………………… Undercurrent\n" +
-            "  ├─Alternate title (1 of 2)…………………… Alt A\n" +
-            "  ├─Alternate title (2 of 2)…………………… Alt B\n" +
+            "  ├─Title…………………………………………………………………………… Undercurrent\n" +
+            "  ├─Alternate title………………………………………………… Andākarento\n" +
             "  ├─Identifier\n" +
-            "  │   ├─Code……………………………………………………………… 9782505004509\n" +
+            "  │   ├─Code…………………………………………………………………… 9782505004509\n" +
             "  │   ├─Authority\n" +
-            "  │   │   ├─Title………………………………………………… International Standard Book Number\n" +
-            "  │   │   └─Alternate title……………………… ISBN\n" +
-            "  │   └─Code space……………………………………………… ISBN\n"+
+            "  │   │   ├─Title……………………………………………………… International Standard Book Number\n" +
+            "  │   │   └─Alternate title…………………………… ISBN\n" +
+            "  │   └─Code space…………………………………………………… ISBN\n"+
             "  ├─Cited responsible party (1 of 2)\n" +
             "  │   ├─Party\n" +
-            "  │   │   └─Name…………………………………………………… Testsuya Toyoda\n" +
-            "  │   └─Role……………………………………………………………… Author\n" +
+            "  │   │   └─Name………………………………………………………… Testsuya Toyoda\n" +
+            "  │   └─Role…………………………………………………………………… Author\n" +
             "  ├─Cited responsible party (2 of 2)\n" +
-            "  │   └─Party\n" +
-            "  │       └─Name…………………………………………………… A japanese author\n" +
-            "  ├─Presentation form (1 of 2)……………… Document hardcopy\n" +
-            "  ├─Presentation form (2 of 2)……………… Image hardcopy\n" +
-            "  └─ISBN………………………………………………………………………… 9782505004509\n", text);
+            "  │   ├─Party\n" +
+            "  │   │   └─Name………………………………………………………… Kōdansha\n" +
+            "  │   ├─Role…………………………………………………………………… Editor\n" +
+            "  │   └─Extent\n" +
+            "  │       ├─Description……………………………………… World\n" +
+            "  │       └─Geographic element\n" +
+            "  │           ├─West bound longitude…… 180°W\n" +
+            "  │           ├─East bound longitude…… 180°E\n" +
+            "  │           ├─South bound latitude…… 90°S\n" +
+            "  │           ├─North bound latitude…… 90°N\n" +
+            "  │           └─Extent type code……………… true\n" +
+            "  ├─Presentation form (1 of 2)…………………… Document digital\n" +
+            "  ├─Presentation form (2 of 2)…………………… Document hardcopy\n" +
+            "  └─ISBN……………………………………………………………………………… 9782505004509\n", text);
     }
 
     /**

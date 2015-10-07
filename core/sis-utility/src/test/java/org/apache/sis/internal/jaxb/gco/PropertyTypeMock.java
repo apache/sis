@@ -22,7 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Result;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierMap;
-import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 
 
 /**
@@ -84,7 +84,7 @@ final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Res
         /** Creates a new instance with initially no identifier. */
         Value() {
             identifiers = new ArrayList<Identifier>();
-            map = new IdentifierMapWithSpecialCases(identifiers);
+            map = new ModifiableIdentifierMap(identifiers);
         }
 
         /** Returns the identifiers as a modifiable list. */
