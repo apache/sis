@@ -206,7 +206,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
              *   </gmd:CI_Citation>
              *
              * We do not try to parse UUID or XLink objects from String because it should be the job of
-             * org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases.put(Citation, String).
+             * org.apache.sis.internal.jaxb.ModifiableIdentifierMap.put(Citation, String).
              */
             final IdentifierMap map = ((IdentifiedObject) value).getIdentifierMap();
             XLink  link = map.getSpecialized(IdentifierSpace.XLINK);

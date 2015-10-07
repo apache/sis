@@ -116,7 +116,7 @@ import java.util.Objects;
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see ContextualParameters
@@ -456,7 +456,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
-     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
      * changes in axis order} are <strong>not</strong> managed by the returned transform.
