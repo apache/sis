@@ -210,6 +210,7 @@ public class LambertConicConformal extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConicConformal(final Initializer initializer) {
         super(initializer);
+        super.computeCoefficients();
         double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
@@ -367,7 +368,7 @@ public class LambertConicConformal extends ConformalProjection {
 
     /**
      * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
-     * as a whole. The transform returned by this method except (<var>longitude</var>, <var>latitude</var>)
+     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
