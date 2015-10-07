@@ -416,12 +416,7 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Returns a URN to an external resources, or to an other part of a XML document, or an
-     * identifier.
-     *
-     * <div class="note"><b>Note:</b>
-     * This serves a role similar to {@code idref}. The {@code idref} attribute allows an XML element
-     * to refer to another XML element that has a corresponding {@code id} attribute.</div>
+     * Returns a URN to an external resources, or to an other part of a XML document, or an identifier.
      *
      * @return A URN to a resources, or {@code null} if none.
      *
