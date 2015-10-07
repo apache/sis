@@ -106,7 +106,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see XmlAdapter
@@ -173,7 +173,6 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @param value The interface to wrap.
      */
     protected PropertyType(final BoundType value) {
-        metadata = value;
         /*
          * Do not invoke NilReason.forObject(metadata) in order to avoid unnecessary synchronization.
          * Subclasses will use the PropertyType(BoundType, boolean) constructor instead when a check
@@ -183,9 +182,15 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             final NilReason reason = ((NilObject) value).getNilReason();
             if (reason != null) {
                 reference = reason.toString();
-                metadata  = null;
+                return;
             }
         }
+        metadata = value;   // Non-null only after we verified that not a NilObject.
+
+        @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+        final Class<BoundType>  type     = getBoundType();
+        final Context           context  = Context.current();
+        final ReferenceResolver resolver = Context.resolver(context);
         if (value instanceof IdentifiedObject) {
             /*
              * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
@@ -208,13 +213,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
              * org.apache.sis.internal.jaxb.ModifiableIdentifierMap.put(Citation, String).
              */
             final IdentifierMap map = ((IdentifiedObject) value).getIdentifierMap();
-            XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
-            UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
+            XLink link = map.getSpecialized(IdentifierSpace.XLINK);
+            UUID  uuid = map.getSpecialized(IdentifierSpace.UUID);
             if (uuid != null || link != null) {
-                @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
-                final Class<BoundType>  type     = getBoundType();
-                final Context           context  = Context.current();
-                final ReferenceResolver resolver = Context.resolver(context);
                 /*
                  * Check if the user gives us the permission to use reference to those identifiers.
                  * If not, forget them in order to avoid marshalling the identifiers twice (see the
@@ -238,6 +239,21 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                 if (uuid != null || link != null) {
                     reference = new ObjectReference(uuid, link);
                 }
+            }
+        }
+        /*
+         * If the object to marshall has not been replaced by a user-specified {@code uuidref} or {@code xlink},
+         * verify if we already marshalled that object previously with a {@code gml:id} attribute.
+         */
+        if (metadata != null) {
+            final String id = Context.getObjectID(context, metadata);
+            if (id != null && resolver.canSubstituteByReference(context, type, value, id)) try {
+                final XLink link = new XLink();
+                link.setHRef(new URI(null, null, id));
+                reference = new ObjectReference(null, link);
+                metadata  = null;    // Clear only after success.
+            } catch (URISyntaxException e) {
+                Context.warningOccured(context, getClass(), "<init>", e, true);
             }
         }
     }

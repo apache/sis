@@ -473,76 +473,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
-     * regardless its authority. If no identifier is found, then the name is used.
-     * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
-     *
-     * <p>If an identifier has been found, this method returns the concatenation of the following elements
-     * separated by hyphens:</p>
-     * <ul>
-     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
-     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
-     * </ul>
-     *
-     * Example: {@code "epsg-crs-4326"}.
-     *
-     * <p>The returned ID needs to be unique only in the XML document being marshalled.
-     * Consecutive invocations of this method do not need to return the same value,
-     * since it may depends on the marshalling context.</p>
-     */
-    @XmlID
-    @XmlSchemaType(name = "ID")
-    @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    final String getID() {
-        final Context context = Context.current();
-        String candidate = Context.getExistingID(context, this);
-        if (candidate == null) {
-            final StringBuilder id = new StringBuilder();
-            /*
-             * We will iterate over the identifiers first. Only after the iteration is over,
-             * if we found no suitable ID, then we will use the primary name as a last resort.
-             */
-            if (identifiers != null) {
-                for (final Identifier identifier : identifiers) {
-                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
-                        appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
-                    {
-                        /*
-                         * Check for ID uniqueness. If the ID is rejected, then we just need to clear
-                         * the buffer and let the iteration continue the search for another ID.
-                         */
-                        candidate = id.toString();
-                        if (Context.isAvailableID(context, this, candidate)) {
-                            return candidate;
-                        }
-                    }
-                    id.setLength(0);    // Clear the buffer for another try.
-                }
-            }
-            /*
-             * In last ressort, append code without codespace since the name are often verbose.
-             * If that name is also used, append a number until we find a free ID.
-             */
-            if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
-                candidate = id.toString();
-                if (!Context.isAvailableID(context, this, candidate)) {
-                    final int s = id.append('-').length();
-                    int n = 0;
-                    do {
-                        if (++n == 100) return null;    //  Arbitrary limit.
-                        candidate = id.append(n).toString();
-                        id.setLength(s);
-                    } while (!Context.isAvailableID(context, this, candidate));
-                }
-            }
-        }
-        return candidate;
-    }
-
-    /**
      * Returns the primary name by which this object is identified.
      *
      * @return The primary name.
@@ -962,6 +892,90 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     AbstractIdentifiedObject() {
         remarks = null;
         deprecated = false;
+    }
+
+    /**
+     * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
+     * regardless its authority. If no identifier is found, then the name is used.
+     * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
+     *
+     * <p>If an identifier has been found, this method returns the concatenation of the following elements
+     * separated by hyphens:</p>
+     * <ul>
+     *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
+     *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
+     * </ul>
+     *
+     * Example: {@code "epsg-crs-4326"}.
+     *
+     * <p>The returned ID needs to be unique only in the XML document being marshalled.
+     * Consecutive invocations of this method do not need to return the same value,
+     * since it may depends on the marshalling context.</p>
+     */
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    final String getID() {
+        final Context context = Context.current();
+        String candidate = Context.getObjectID(context, this);
+        if (candidate == null) {
+            final StringBuilder id = new StringBuilder();
+            /*
+             * We will iterate over the identifiers first. Only after the iteration is over,
+             * if we found no suitable ID, then we will use the primary name as a last resort.
+             */
+            if (identifiers != null) {
+                for (final Identifier identifier : identifiers) {
+                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
+                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
+                        appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
+                    {
+                        /*
+                         * Check for ID uniqueness. If the ID is rejected, then we just need to clear
+                         * the buffer and let the iteration continue the search for another ID.
+                         */
+                        candidate = id.toString();
+                        if (Context.setObjectForID(context, this, candidate)) {
+                            return candidate;
+                        }
+                    }
+                    id.setLength(0);    // Clear the buffer for another try.
+                }
+            }
+            /*
+             * In last ressort, append code without codespace since the name are often verbose.
+             * If that name is also used, append a number until we find a free ID.
+             */
+            if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+                candidate = id.toString();
+                if (!Context.setObjectForID(context, this, candidate)) {
+                    final int s = id.append('-').length();
+                    int n = 0;
+                    do {
+                        if (++n == 100) return null;    //  Arbitrary limit.
+                        candidate = id.append(n).toString();
+                        id.setLength(s);
+                    } while (!Context.setObjectForID(context, this, candidate));
+                }
+            }
+        }
+        return candidate;
+    }
+
+    /**
+     * Invoked by JAXB at unmarhalling time for specifying the value of the {@code gml:id} attribute.
+     * That GML identifier is not actually stored in this {@code AbstractIdentifiedObject}
+     * since we rather generate it dynamically from the ISO 19111 identifiers. But we still
+     * need to declare that identifier to our unmarshaller context, in case it is referenced
+     * from elsewhere in the XML document.
+     */
+    private void setID(final String id) {
+        final Context context = Context.current();
+        if (!Context.setObjectForID(context, this, id)) {
+            Context.warningOccured(context, getClass(), "setID", Errors.class, Errors.Keys.DuplicatedIdentifier_1, id);
+        }
     }
 
     /**
