@@ -66,6 +66,5 @@ public interface IdentifierMap extends Map<Citation,String> {
      *         if there was no mapping of the specialized type for {@code authority}.
      * @throws UnsupportedOperationException If the identifier map is unmodifiable.
      */
-    <T> T putSpecialized(IdentifierSpace<T> authority, T value)
-            throws UnsupportedOperationException;
+    <T> T putSpecialized(IdentifierSpace<T> authority, T value) throws UnsupportedOperationException;
 }

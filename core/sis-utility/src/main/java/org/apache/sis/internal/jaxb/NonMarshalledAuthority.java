@@ -17,12 +17,18 @@
 package org.apache.sis.internal.jaxb;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.util.Collection;
+import java.util.Collections;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -57,7 +63,7 @@ import org.apache.sis.xml.IdentifierSpace;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see IdentifierSpace
@@ -73,6 +79,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * mirror the constants defined in the {@link IdentifierSpace} interface
      * and {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     public static final byte ID=0, UUID=1, HREF=2, XLINK=3, ISSN=4, ISBN=5;
     // If more codes are added, please update readResolve() below.
 
@@ -103,6 +110,9 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * "special" identifiers (ISO 19139 attributes, ISBN codes...), which are recognized by
      * the implementation class of their authority.
      *
+     * <p>This method is used for implementation of {@code getIdentifier()} methods (singular form)
+     * in public metadata objects.</p>
+     *
      * @param  <T> The type of object used as identifier values.
      * @param  identifiers The collection from which to get identifiers, or {@code null}.
      * @return The first identifier, or {@code null} if none.
@@ -124,23 +134,26 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * method is used when the given collection is expected to contains only one ISO 19115
      * identifier.
      *
-     * @param <T> The type of object used as identifier values.
+     * <p>This method is used for implementation of {@code setIdentifier(Identifier)} methods
+     * in public metadata objects.</p>
+     *
+     * @param <T>         The type of object used as identifier values.
      * @param identifiers The collection in which to add the identifier.
-     * @param id The identifier to add, or {@code null}.
+     * @param newValue    The identifier to add, or {@code null}.
+     *
+     * @see #setMarshallables(Collection, Collection)
      */
-    public static <T extends Identifier> void setMarshallable(final Collection<T> identifiers, final T id) {
+    public static <T extends Identifier> void setMarshallable(final Collection<T> identifiers, final T newValue) {
         final Iterator<T> it = identifiers.iterator();
         while (it.hasNext()) {
             final T old = it.next();
-            if (old != null) {
-                if (old.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                    continue; // Don't touch this identifier.
-                }
+            if (old != null && old.getAuthority() instanceof NonMarshalledAuthority<?>) {
+                continue; // Don't touch this identifier.
             }
             it.remove();
         }
-        if (id != null) {
-            identifiers.add(id);
+        if (newValue != null) {
+            identifiers.add(newValue);
         }
     }
 
@@ -149,10 +162,15 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      * for which the authority is an instance of {@code NonMarshalledAuthority}. This should exclude
      * all {@link org.apache.sis.xml.IdentifierSpace} constants.
      *
+     * <p>This method is used for implementation of {@code getIdentifiers()} methods (plural form)
+     * in public metadata objects. Note that those methods override
+     * {@link org.apache.sis.xml.IdentifiedObject#getIdentifiers()}, which is expected to return
+     * all identifiers in normal (non-marshalling) usage.</p>
+     *
      * @param  identifiers The identifiers to filter, or {@code null}.
      * @return The identifiers to marshal, or {@code null} if none.
      */
-    public static Collection<Identifier> excludeOnMarshalling(Collection<Identifier> identifiers) {
+    public static Collection<Identifier> filterOnMarshalling(Collection<Identifier> identifiers) {
         if (identifiers != null && Context.isFlagSet(Context.current(), Context.MARSHALLING)) {
             int count = identifiers.size();
             if (count != 0) {
@@ -170,69 +188,72 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
     }
 
     /**
-     * Returns a collection containing only the identifiers having a {@code NonMarshalledAuthority}.
-     * This method is invoked for saving the identifiers that are conceptually stored in distinct fields
-     * (XML identifier, UUID, ISBN, ISSN) before to overwrite the collection of all identifiers in
-     * a metadata object.
+     * Returns a collection containing all marshallable values of {@code newValues}, together with unmarshallable
+     * values of {@code identifiers}. This method is invoked for preserving the identifiers that are conceptually
+     * stored in distinct fields (XML identifier, UUID, ISBN, ISSN) when setting the collection of all identifiers
+     * in a metadata object.
      *
-     * <p>This method is invoked from {@code setIdentifiers(Collection<Identifier>)} implementation
-     * in {@link org.apache.sis.metadata.iso.ISOMetadata} subclasses as below:</p>
+     * <p>This method is used for implementation of {@code setIdentifiers(Collection)} methods
+     * in public metadata objects.</p>
      *
-     * {@preformat java
-     *     final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
-     *     identifiers = writeCollection(newValues, identifiers, Identifier.class);
-     *     NonMarshalledAuthority.replace(identifiers, oldIds);
-     * }
-     *
-     * @param  <T> The type of object used as identifier values.
      * @param  identifiers The metadata internal identifiers collection, or {@code null} if none.
-     * @return The new list containing the filtered identifiers, or {@code null} if none.
+     * @param  newValues   The identifiers to add, or {@code null}.
+     * @return The collection to set (may be {@code newValues}.
+     *
+     * @see #setMarshallable(Collection, Identifier)
      */
-    public static <T extends Identifier> Collection<T> filteredCopy(final Collection<T> identifiers) {
-        Collection<T> filtered = null;
-        if (identifiers != null) {
-            int remaining = identifiers.size();
-            for (final T candidate : identifiers) {
-                if (candidate != null && candidate.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                    if (filtered == null) {
-                        filtered = new ArrayList<T>(remaining);
-                    }
-                    filtered.add(candidate);
+    @SuppressWarnings("null")
+    public static Collection<? extends Identifier> setMarshallables(
+            final Collection<Identifier> identifiers, final Collection<? extends Identifier> newValues)
+    {
+        int remaining;
+        if (identifiers == null || (remaining = identifiers.size()) == 0) {
+            return newValues;
+        }
+        /*
+         * If there is any identifiers that need to be preserved (XML identifier, UUID, ISBN, etc.),
+         * remember them. Otherwise there is nothing special to do and we can return the new values directly.
+         */
+        List<Identifier> toPreserve = null;
+        for (final Identifier id : identifiers) {
+            if (id != null && id.getAuthority() instanceof NonMarshalledAuthority<?>) {
+                if (toPreserve == null) {
+                    toPreserve = new ArrayList<Identifier>(remaining);
                 }
-                remaining--;
+                toPreserve.add(id);
+            }
+            remaining--;
+        }
+        if (toPreserve == null) {
+            return newValues;
+        }
+        /*
+         * We find at least one identifier that may need to be preserved.
+         * We need to create a combination of the two collections.
+         */
+        final Map<Citation,Identifier> authorities = new IdentityHashMap<Citation,Identifier>(4);
+        final List<Identifier> merged = new ArrayList<Identifier>(newValues.size());
+        for (final Identifier id : newValues) {
+            merged.add(id);
+            if (id != null) {
+                final Citation authority = id.getAuthority();
+                if (authority instanceof NonMarshalledAuthority<?>) {
+                    authorities.put(authority, id);
+                }
             }
         }
-        return filtered;
-    }
-
-    /**
-     * Replaces all identifiers in the {@code identifiers} collection having the same
-     * {@linkplain Identifier#getAuthority() authority} than the ones in {@code oldIds}.
-     * More specifically:
-     *
-     * <ul>
-     *   <li>First, remove all {@code identifiers} elements having the same authority
-     *       than one of the elements in {@code oldIds}.</li>
-     *   <li>Next, add all {@code oldIds} elements to {@code identifiers}.</li>
-     * </ul>
-     *
-     * @param <T> The type of object used as identifier values.
-     * @param identifiers The metadata internal identifiers collection, or {@code null} if none.
-     * @param oldIds The previous filtered identifiers returned by {@link #filteredCopy(Collection)},
-     *               or {@code null} if none.
-     */
-    public static <T extends Identifier> void replace(final Collection<T> identifiers, final Collection<T> oldIds) {
-        if (oldIds != null && identifiers != null) {
-            for (final T old : oldIds) {
-                final Citation authority = old.getAuthority();
-                for (final Iterator<T> it=identifiers.iterator(); it.hasNext();) {
-                    final T id = it.next();
-                    if (id == null || id.getAuthority() == authority) {
-                        it.remove();
-                    }
-                }
+        for (final Identifier id : toPreserve) {
+            if (!authorities.containsKey(id.getAuthority())) {
+                merged.add(id);
             }
-            identifiers.addAll(oldIds);
+        }
+        /*
+         * Wraps in an unmodifiable list in case the caller is creating an unmodifiable metadata.
+         */
+        switch (merged.size()) {
+            case 0:  return Collections.emptyList();
+            case 1:  return Collections.singletonList(merged.get(0));
+            default: return Containers.unmodifiableList(CollectionsExt.toArray(merged, Identifier.class));
         }
     }
 
