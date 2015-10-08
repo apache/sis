@@ -945,10 +945,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                 }
             }
             /*
-             * In last ressort, append code without codespace since the name are often verbose.
-             * If that name is also used, append a number until we find a free ID.
+             * In last ressort, use the name or an alias. The name will be used without codespace since
+             * names are often verbose. If that name is also used, append a number until we find a free ID.
              */
-            if (name != null && appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+            if (name == null || !appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+                if (alias != null) {
+                    for (final GenericName alias : alias) {
+                        if (appendUnicodeIdentifier(id, '-', alias.toString(), ":", false)) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (id.length() != 0) {
                 candidate = id.toString();
                 if (!Context.setObjectForID(context, this, candidate)) {
                     final int s = id.append('-').length();

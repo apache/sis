@@ -185,12 +185,25 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                 return;
             }
         }
-        metadata = value;   // Non-null only after we verified that not a NilObject.
-
+        /*
+         * Verifies if the object to marshall can be replaced by a xlink or uuidref.
+         * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
+         * Only if no gml:id was found, check for user-defined xlink or uuidref.
+         */
         @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
         final Class<BoundType>  type     = getBoundType();
         final Context           context  = Context.current();
         final ReferenceResolver resolver = Context.resolver(context);
+        final String id = Context.getObjectID(context, value);
+        if (id != null && resolver.canSubstituteByReference(context, type, value, id)) try {
+            final XLink link = new XLink();
+            link.setHRef(new URI(null, null, id));
+            reference = new ObjectReference(null, link);
+            return;
+        } catch (URISyntaxException e) {
+            Context.warningOccured(context, getClass(), "<init>", e, true);
+        }
+        metadata = value;   // Non-null only after we verified that not a NilObject or xlink:href="#foo".
         if (value instanceof IdentifiedObject) {
             /*
              * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
@@ -239,21 +252,6 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                 if (uuid != null || link != null) {
                     reference = new ObjectReference(uuid, link);
                 }
-            }
-        }
-        /*
-         * If the object to marshall has not been replaced by a user-specified {@code uuidref} or {@code xlink},
-         * verify if we already marshalled that object previously with a {@code gml:id} attribute.
-         */
-        if (metadata != null) {
-            final String id = Context.getObjectID(context, metadata);
-            if (id != null && resolver.canSubstituteByReference(context, type, value, id)) try {
-                final XLink link = new XLink();
-                link.setHRef(new URI(null, null, id));
-                reference = new ObjectReference(null, link);
-                metadata  = null;    // Clear only after success.
-            } catch (URISyntaxException e) {
-                Context.warningOccured(context, getClass(), "<init>", e, true);
             }
         }
     }

@@ -210,15 +210,18 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         final AbstractIdentifiedObject o1 = new AbstractIdentifiedObject(properties);
         final AbstractIdentifiedObject o2 = new AbstractIdentifiedObject(properties);
         final AbstractIdentifiedObject o3 = new AbstractIdentifiedObject(properties);
+        final AbstractIdentifiedObject o4 = new AbstractIdentifiedObject(properties);
         final Context context = new Context(0, null, null, null, null, null, null, null);
         try {
-            final String c1, c2, c3;
+            final String c1, c2, c3, c4;
             assertEquals("o1", "epsg-7019", c1 = o1.getID());
             assertEquals("o2", "GRS1980",   c2 = o2.getID());
             assertEquals("o3", "GRS1980-1", c3 = o3.getID());
+            assertEquals("o4", "GRS1980-2", c4 = o4.getID());
             assertSame  ("o1", c1, o1.getID());  // Verify that values are remembered.
             assertSame  ("o2", c2, o2.getID());
             assertSame  ("o3", c3, o3.getID());
+            assertSame  ("o4", c4, o4.getID());
         } finally {
             context.finish();
         }
