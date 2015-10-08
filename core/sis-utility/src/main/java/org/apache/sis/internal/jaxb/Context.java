@@ -103,8 +103,6 @@ public final class Context extends MarshalContext {
 
     /**
      * The logger to use for warnings that are specific to XML.
-     *
-     * @see org.apache.sis.metadata.iso.ISOMetadata#LOGGER
      */
     public static final Logger LOGGER = Logging.getLogger(Loggers.XML);
 
