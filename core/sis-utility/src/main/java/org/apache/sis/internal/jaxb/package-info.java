@@ -34,7 +34,7 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 package org.apache.sis.internal.jaxb;

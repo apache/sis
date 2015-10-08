@@ -43,12 +43,6 @@
  *   <li>Any other JAR registering a {@link org.apache.sis.util.logging.LoggerFactory} implementation.</li>
  * </ul>
  *
- * <div class="section">Apache SIS logger constants</div>
- * Some static final {@code Logger} constant defined in Apache SIS are:
- * <ul>
- *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata#LOGGER} for the {@code org.apache.sis.metadata.iso.*} packages</li>
- * </ul>
- *
  * <div class="section">Note for SIS developers</div>
  * All SIS code should fetch their logger through a call to our custom
  * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead than

@@ -20,6 +20,7 @@
 
 <gml:ProjectedCRS xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/coordinateReferenceSystems.xsd"
                   xmlns:gml          = "http://www.opengis.net/gml/3.2"
+                  xmlns:xlink        = "http://www.w3.org/1999/xlink"
                   xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                   gml:id             = "epsg-crs-27572">
 
@@ -70,68 +71,34 @@
           </gml:parameter>
         </gml:OperationMethod>
       </gml:method>
-
-      <!--
-        All parameters below this point are duplication of the parameters already defined above.
-        For now we do not yet use the XML references, but this is something that we will need to
-        support in a future SIS version. See https://issues.apache.org/jira/browse/SIS-173 issue.
-        In the meantime, we have to change the gml:id attribute values used below for avoiding
-        collisions with the gml:id attribute used in above parameters.
-      -->
-
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9105">52</gml:value>
-          <gml:operationParameter>
-            <gml:OperationParameter gml:id="t-8801">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
-              <gml:name>Latitude of natural origin</gml:name>
-            </gml:OperationParameter>
-          </gml:operationParameter>
+          <gml:operationParameter xlink:href="#epsg-param-8801"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9105">0</gml:value>
-          <gml:operationParameter>
-            <gml:OperationParameter gml:id="t-8802">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8802</gml:identifier>
-              <gml:name>Longitude of natural origin</gml:name>
-            </gml:OperationParameter>
-          </gml:operationParameter>
+          <gml:operationParameter xlink:href="#epsg-param-8802"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9201">0.99987742</gml:value>
-          <gml:operationParameter>
-            <gml:OperationParameter gml:id="t-8805">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8805</gml:identifier>
-              <gml:name>Scale factor at natural origin</gml:name>
-            </gml:OperationParameter>
-          </gml:operationParameter>
+          <gml:operationParameter xlink:href="#epsg-param-8805"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9001">600000</gml:value>
-          <gml:operationParameter>
-            <gml:OperationParameter gml:id="t-8806">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8806</gml:identifier>
-              <gml:name>False easting</gml:name>
-            </gml:OperationParameter>
-          </gml:operationParameter>
+          <gml:operationParameter xlink:href="#epsg-param-8806"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9001">2200000</gml:value>
-          <gml:operationParameter>
-            <gml:OperationParameter gml:id="t-8807">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8807</gml:identifier>
-              <gml:name>False northing</gml:name>
-            </gml:OperationParameter>
-          </gml:operationParameter>
+          <gml:operationParameter xlink:href="#epsg-param-8807"/>
         </gml:ParameterValue>
       </gml:parameterValue>
     </gml:Conversion>

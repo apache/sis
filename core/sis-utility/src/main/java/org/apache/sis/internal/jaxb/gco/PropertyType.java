@@ -106,7 +106,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see XmlAdapter
@@ -131,9 +131,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Either {@code null}, an {@link ObjectReference} or a {@link String}.
      *
      * <ul>
-     *   <li>{@link ObjectReference} defines the {@code idref}, {@code uuidref}, {@code xlink:href},
-     *       {@code xlink:role}, {@code xlink:arcrole}, {@code xlink:title}, {@code xlink:show} and
-     *       {@code xlink:actuate} attributes.</li>
+     *   <li>{@link ObjectReference} defines the {@code uuidref}, {@code xlink:href}, {@code xlink:role},
+     *       {@code xlink:arcrole}, {@code xlink:title}, {@code xlink:show} and {@code xlink:actuate} attributes.</li>
      *   <li>{@link String} defines the {@code nilReason} attribute.</li>
      * </ul>
      *
@@ -174,7 +173,6 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @param value The interface to wrap.
      */
     protected PropertyType(final BoundType value) {
-        metadata = value;
         /*
          * Do not invoke NilReason.forObject(metadata) in order to avoid unnecessary synchronization.
          * Subclasses will use the PropertyType(BoundType, boolean) constructor instead when a check
@@ -184,9 +182,28 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             final NilReason reason = ((NilObject) value).getNilReason();
             if (reason != null) {
                 reference = reason.toString();
-                metadata  = null;
+                return;
             }
         }
+        /*
+         * Verifies if the object to marshall can be replaced by a xlink or uuidref.
+         * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
+         * Only if no gml:id was found, check for user-defined xlink or uuidref.
+         */
+        @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+        final Class<BoundType>  type     = getBoundType();
+        final Context           context  = Context.current();
+        final ReferenceResolver resolver = Context.resolver(context);
+        final String id = Context.getObjectID(context, value);
+        if (id != null && resolver.canSubstituteByReference(context, type, value, id)) try {
+            final XLink link = new XLink();
+            link.setHRef(new URI(null, null, id));
+            reference = new ObjectReference(null, link);
+            return;
+        } catch (URISyntaxException e) {
+            Context.warningOccured(context, getClass(), "<init>", e, true);
+        }
+        metadata = value;   // Non-null only after we verified that not a NilObject or xlink:href="#foo".
         if (value instanceof IdentifiedObject) {
             /*
              * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
@@ -209,13 +226,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
              * org.apache.sis.internal.jaxb.ModifiableIdentifierMap.put(Citation, String).
              */
             final IdentifierMap map = ((IdentifiedObject) value).getIdentifierMap();
-            XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
-            UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
+            XLink link = map.getSpecialized(IdentifierSpace.XLINK);
+            UUID  uuid = map.getSpecialized(IdentifierSpace.UUID);
             if (uuid != null || link != null) {
-                @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
-                final Class<BoundType>  type     = getBoundType();
-                final Context           context  = Context.current();
-                final ReferenceResolver resolver = Context.resolver(context);
                 /*
                  * Check if the user gives us the permission to use reference to those identifiers.
                  * If not, forget them in order to avoid marshalling the identifiers twice (see the
@@ -350,8 +363,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
 
     /**
      * A URN to an external resources, or to an other part of a XML document, or an identifier.
-     * The {@code idref} attribute allows an XML element to refer to another XML element that
-     * has a corresponding {@code id} attribute.
+     * The {@code xlink:href} attribute allows an XML element to refer to another XML element
+     * that has a corresponding {@code id} attribute.
      *
      * @return the current value, or {@code null} if none.
      * @category xlink

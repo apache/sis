@@ -24,10 +24,11 @@
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
 
-  <!-- The <nameOfMeasure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
-       The <result> element was added only in order to allow validation of this XML file, with the addition of an
-       opportunist check of xsi:type declaration. -->
-
+  <!--
+    The <nameOfMeasure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
+    The <result> element was added only in order to allow validation of this XML file, with the addition of an
+    opportunist check of xsi:type declaration.
+  -->
   <gmd:nameOfMeasure xsi:type="gmd:PT_FreeText_PropertyType">
     <gco:CharacterString>Quantitative quality measure focusing on the effective class percent regarded to the total surface size</gco:CharacterString>
     <gmd:PT_FreeText>
@@ -37,8 +38,10 @@
     </gmd:PT_FreeText>
   </gmd:nameOfMeasure>
   <gmd:result>
-    <!-- The xsi:type declaration below is useless, but we put it
-         in order to test that it does not break unmarshalling. -->
+    <!--
+      The xsi:type declaration below is useless, but we put it
+      in order to test that it does not break unmarshalling.
+    -->
     <gmd:DQ_ConformanceResult xsi:type="gmd:DQ_ConformanceResult_Type">
       <gmd:specification>
         <gmd:CI_Citation>
