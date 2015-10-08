@@ -65,14 +65,12 @@
       <gml:name codeSpace="EPSG">Mercator (variant A)</gml:name>
       <gml:name codeSpace="OGC">Mercator_1SP</gml:name>
       <gml:minimumOccurs>0</gml:minimumOccurs>
-
-      <!-- Parameters below this point are duplication of the parameters already defined above.
-           We could use xlink:href attribute for avoiding duplication (this is the purpose of
-           the ParameterValueGroup.xml test file), but in this file we intentionally keep the
-           duplication in order to test Apache SIS capability to replace duplicated instances
-           by unique instances. Note that we have to change the gml:id attribute values used
-           below for avoiding collisions with the gml:id attribute used in above parameters. -->
-
+      <!--
+        Parameters below this point are duplications of the parameters already defined above.
+        In this file we intentionally do this duplication in order to test SIS capability to
+        replace duplicated instances by unique instances.   The better alternative, which is
+        to use xlink:href attributes, is tested in a separated file: ParameterValueGroup.xml
+      -->
       <gml:parameter>
         <gml:OperationParameter gml:id="epsg-8801">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>

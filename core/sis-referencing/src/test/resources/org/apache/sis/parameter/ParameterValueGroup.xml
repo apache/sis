@@ -19,8 +19,8 @@
 -->
 
 <gml:ParameterValueGroup xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/coordinateOperations.xsd"
-                         xmlns:xlink        = "http://www.w3.org/1999/xlink"
                          xmlns:gml          = "http://www.opengis.net/gml/3.2"
+                         xmlns:xlink        = "http://www.w3.org/1999/xlink"
                          xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance">
 
   <gml:parameterValue>
@@ -66,11 +66,11 @@
       <gml:name codeSpace="EPSG">Mercator (variant A)</gml:name>
       <gml:name codeSpace="OGC">Mercator_1SP</gml:name>
       <gml:minimumOccurs>0</gml:minimumOccurs>
-
-      <!-- The first 3 parameters below this point are duplication of the parameters already defined above.
-           The xlink:href attribute allows to reference existing instances instead than repeating them.
-           See https://issues.apache.org/jira/browse/SIS-173 -->
-
+      <!--
+        The first three parameters below this point are the same than the parameters defined above.
+        The xlink:href attribute allows to reference existing instances instead than repeating them.
+        Repetition will be tested with another file: DuplicatedParameters.xml
+      -->
       <gml:parameter xlink:href="#epsg-parameter-8801"/>
       <gml:parameter xlink:href="#epsg-parameter-8802"/>
       <gml:parameter xlink:href="#epsg-parameter-8805"/>
