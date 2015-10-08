@@ -68,14 +68,14 @@
           <gml:name>Nouvelle Triangulation Française (Paris)</gml:name>
           <gml:scope>Topographic mapping.</gml:scope>
           <gml:primeMeridian>
-            <gml:PrimeMeridian gml:id = "ParisMeridian">
+            <gml:PrimeMeridian gml:id="ParisMeridian">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
               <gml:name>Greenwich</gml:name>
               <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
             </gml:PrimeMeridian>
           </gml:primeMeridian>
           <gml:ellipsoid>
-            <gml:Ellipsoid gml:id = "Ellipsoid">
+            <gml:Ellipsoid gml:id="Ellipsoid">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7030</gml:identifier>
               <gml:name>Clarke 1880 (IGN)</gml:name>
               <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378249.2</gml:semiMajorAxis>
@@ -94,65 +94,27 @@
   <!--
     Following CRS definition contains a lot of information identical to the source CRS.
     The only difference are the datum and the prime meridian.
-
-    See https://issues.apache.org/jira/browse/SIS-173 issue.
-    Duplicated value have the "-copy" suffix in gml:id.
+    We reuse the above definitions with xlink:href attributes.
   -->
   <gml:targetCRS>
     <gml:GeodeticCRS gml:id="Greenwich">
       <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4275</gml:identifier>
       <gml:name>NTF</gml:name>
       <gml:scope>Geodetic survey.</gml:scope>
-      <gml:ellipsoidalCS>
-        <!-- TODO (SIS-173): replace following element by IDREF -->
-        <gml:EllipsoidalCS gml:id="CoordinateSystem-copy">
-          <gml:identifier codeSpace="IOGP">urn:ogc:def:cs:EPSG::6422</gml:identifier>
-          <gml:name>Latitude (north), Longitude (east)</gml:name>
-          <gml:axis>
-            <gml:CoordinateSystemAxis gml:id="φ-copy" uom="urn:ogc:def:uom:EPSG::9122">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::106</gml:identifier>
-              <gml:name>Geodetic latitude</gml:name>
-              <gml:axisAbbrev>φ</gml:axisAbbrev>
-              <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
-              <gml:rangeMeaning codeSpace="EPSG">exact</gml:rangeMeaning>
-            </gml:CoordinateSystemAxis>
-          </gml:axis>
-          <gml:axis>
-            <gml:CoordinateSystemAxis gml:id="λ-copy" uom="urn:ogc:def:uom:EPSG::9122">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:axis:EPSG::107</gml:identifier>
-              <gml:name>Geodetic longitude</gml:name>
-              <gml:axisAbbrev>λ</gml:axisAbbrev>
-              <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
-              <gml:rangeMeaning codeSpace="EPSG">wraparound</gml:rangeMeaning>
-            </gml:CoordinateSystemAxis>
-          </gml:axis>
-        </gml:EllipsoidalCS>
-      </gml:ellipsoidalCS>
+      <gml:ellipsoidalCS xlink:href="#CoordinateSystem"/>
       <gml:geodeticDatum>
         <gml:GeodeticDatum gml:id="GreenwichDatum">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::6275</gml:identifier>
           <gml:name>Nouvelle Triangulation Française</gml:name>
           <gml:scope>Topographic mapping.</gml:scope>
           <gml:primeMeridian>
-            <gml:PrimeMeridian gml:id = "GreenwichMeridian">
+            <gml:PrimeMeridian gml:id="GreenwichMeridian">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8901</gml:identifier>
               <gml:name>Greenwich</gml:name>
               <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9102">0</gml:greenwichLongitude>
             </gml:PrimeMeridian>
           </gml:primeMeridian>
-          <!-- TODO (SIS-173): replace following element by IDREF -->
-          <gml:ellipsoid>
-            <gml:Ellipsoid gml:id = "Ellipsoid-copy">
-              <gml:identifier codeSpace="IOGP">urn:ogc:def:ellipsoid:EPSG::7011</gml:identifier>
-              <gml:name>Clarke 1880 (IGN)</gml:name>
-              <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378249.2</gml:semiMajorAxis>
-              <gml:secondDefiningParameter>
-                <gml:SecondDefiningParameter>
-                  <gml:semiMinorAxis uom="urn:ogc:def:uom:EPSG::9001">6356515</gml:semiMinorAxis>
-                </gml:SecondDefiningParameter>
-              </gml:secondDefiningParameter>
-            </gml:Ellipsoid>
-          </gml:ellipsoid>
+          <gml:ellipsoid xlink:href="#Ellipsoid"/>
         </gml:GeodeticDatum>
       </gml:geodeticDatum>
     </gml:GeodeticCRS>
@@ -179,7 +141,7 @@
       <gml:value uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:value>
       <!--
         The following duplicates the descriptor defined in above <gml:method>, so we could replace the definition
-        by a gml:idref="ParameterDescriptor" attribute (http://issues.apache.org/jira/browse/SIS-173).  But we do
+        by xlink:href="#ParameterDescriptor" attribute (http://issues.apache.org/jira/browse/SIS-173).  But we do
         not apply this simplification because we want to opportunistically test SIS capability to consolidate the
         various descriptors into canonical instances based on the parameter name.
       -->

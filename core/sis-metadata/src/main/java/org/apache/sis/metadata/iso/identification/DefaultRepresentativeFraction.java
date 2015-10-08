@@ -30,12 +30,12 @@ import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.resources.Errors;
@@ -396,7 +396,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+        return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
     }
 
     /**
@@ -405,10 +405,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @see org.apache.sis.metadata.iso.ISOMetadata#setID(String)
      */
     private void setID(String id) {
-        id = CharSequences.trimWhitespaces(id);
-        if (id != null && !id.isEmpty()) {
-            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
-        }
+        MetadataUtilities.setObjectID(this, id);
     }
 
     /**

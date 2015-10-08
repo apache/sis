@@ -31,9 +31,9 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.CharSequences;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -184,18 +184,15 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+        return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
     }
 
     /**
      * Sets an identifier unique for the XML document.
      * This method is invoked automatically by JAXB and should never be invoked explicitely.
      */
-    private void setID(String id) {
-        id = CharSequences.trimWhitespaces(id);
-        if (id != null && !id.isEmpty()) {
-            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
-        }
+    private void setID(final String id) {
+        MetadataUtilities.setObjectID(this, id);
     }
 
     /**
