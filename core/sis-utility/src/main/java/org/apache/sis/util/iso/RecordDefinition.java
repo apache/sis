@@ -184,6 +184,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     /**
      * Read-only access to the map of member indices.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<MemberName,Integer> memberIndices() {
         return memberIndices;
     }
@@ -192,7 +193,8 @@ abstract class RecordDefinition { // Intentionally not Serializable.
      * Returns the number of elements in records.
      */
     final int size() {
-        return members.length;
+        // 'members' should not be null, but let be safe.
+        return (members != null) ? members.length : 0;
     }
 
     /**
@@ -238,7 +240,7 @@ abstract class RecordDefinition { // Intentionally not Serializable.
     final String toString(final String head, final Object values) {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
-        final String[] names = new String[members.length];
+        final String[] names = new String[size()];
         int width = 0;
         buffer.append(head).append("[“").append(getRecordType().getTypeName()).append("”] {").append(lineSeparator);
         for (int i=0; i<names.length; i++) {
