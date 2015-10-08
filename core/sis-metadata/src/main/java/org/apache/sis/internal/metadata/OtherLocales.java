@@ -147,28 +147,6 @@ public final class OtherLocales extends AbstractCollection<Locale> {
     }
 
     /**
-     * Returns the first element of the given collection, or {@code null} if none.
-     * This method does not emit warning if more than one element is found.
-     * Consequently, this method should be used only when multi-occurrence is not ambiguous.
-     *
-     * <p><b>Note:</b> while defined in {@code OtherLocales} because the primary use for this method is to
-     * get the default locale, this method is also opportunistically used for other legacy properties.</p>
-     *
-     * @param  <T>    The type of elements in the collection.
-     * @param  values The collection from which to get the first element, or {@code null}.
-     * @return The first element found in the given collection, or {@code null}.
-     */
-    public static <T> T getFirst(final Collection<T> values) {
-        if (values != null) {
-            final Iterator<T> it = values.iterator();
-            if (it.hasNext()) {
-                return it.next();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Sets the first element in the given collection to the given value.
      * Special cases:
      *
@@ -185,6 +163,8 @@ public final class OtherLocales extends AbstractCollection<Locale> {
      * @param  values   The collection where to add the new value, or {@code null}.
      * @param  newValue The new value to set, or {@code null} for instead removing the first element.
      * @return The collection (may or may not be the given {@code values} collection).
+     *
+     * @see org.apache.sis.internal.util.CollectionsExt#first(Iterable)
      */
     public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
         if (values == null) {

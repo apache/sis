@@ -91,13 +91,13 @@
   <gml:parameterValue>
     <gml:ParameterValue>
       <gml:value uom="urn:ogc:def:uom:EPSG::9102">-0</gml:value>    <!-- Intentionally negative for testing purpose. -->
-
-      <!-- All descriptors below this point are duplication of the descriptors already defined above.
-           For now we do not yet use the XML references, but this is something that we will need to
-           support in a future SIS version. See https://issues.apache.org/jira/browse/SIS-173 issue.
-           In the meantime, we have to change the gml:id attribute values used below for avoiding
-           collisions with the gml:id attribute used in above descriptors. -->
-
+      <!--
+        All descriptors below this point are duplications of the descriptors already defined above.
+        We could use the xlink:href attribute, but we rather repeat the descriptors in this file in
+        order to test SIS capability to replace duplicated instances by unique instances. Note that
+        we have to use different gml:id attribute values for avoiding collisions with the values in
+        above descriptors.
+      -->
       <gml:operationParameter>
         <gml:OperationParameter gml:id="LatitudeOfNaturalOrigin">
           <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>

@@ -63,7 +63,10 @@ public final class CollectionsExt extends Static {
 
     /**
      * Returns the first element of the given iterable, or {@code null} if none.
-     * This method is null-safe. Note that the first element may be null.
+     * This method does not emit warning if more than one element is found.
+     * Consequently, this method should be used only when multi-occurrence is not ambiguous.
+     *
+     * <p>This method is null-safe. Note however that the first element may be null.</p>
      *
      * @param  <T> The type of elements contained in the iterable.
      * @param  collection The iterable from which to get the first element, or {@code null}.
