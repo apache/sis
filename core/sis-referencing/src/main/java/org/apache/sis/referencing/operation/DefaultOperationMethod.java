@@ -152,7 +152,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * contains the procedure, not an analytic formula.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setFormula(Object)}</p>
+     * This field is modified only at unmarshalling time by {@link #setFormulaCitation(Citation)}
+     * or {@link #setFormulaDescription(String)}.</p>
      */
     private Formula formula;
 
