@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.measure.unit.SI;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.gml.Measure;
@@ -35,6 +36,7 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  * @version 0.3
  * @module
  */
+@XmlType(name = "Measure_PropertyType")
 public final class GO_Measure extends XmlAdapter<GO_Measure, Double> {
     /**
      * A proxy representation of the {@code <gco:Measure>} element.

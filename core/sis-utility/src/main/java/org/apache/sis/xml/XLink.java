@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSchemaType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
@@ -422,6 +423,7 @@ public class XLink implements Serializable {
      *
      * @category locator
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "href", namespace = Namespaces.XLINK)
     public URI getHRef() {
         return href;
@@ -449,6 +451,7 @@ public class XLink implements Serializable {
      *
      * @category semantic
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "role", namespace = Namespaces.XLINK)
     public URI getRole() {
         return role;
@@ -476,6 +479,7 @@ public class XLink implements Serializable {
      *
      * @category semantic
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "arcrole", namespace = Namespaces.XLINK)
     public URI getArcRole() {
         return arcrole;

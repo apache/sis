@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.NilObject;
@@ -369,6 +370,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category xlink
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "href", namespace = Namespaces.XLINK)
     public final String getHRef() {
         final XLink link = xlink(false);
@@ -392,6 +394,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category xlink
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "role", namespace = Namespaces.XLINK)
     public final String getRole() {
         final XLink link = xlink(false);
@@ -415,6 +418,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category xlink
      */
+    @XmlSchemaType(name = "anyURI")
     @XmlAttribute(name = "arcrole", namespace = Namespaces.XLINK)
     public final String getArcRole() {
         final XLink link = xlink(false);
