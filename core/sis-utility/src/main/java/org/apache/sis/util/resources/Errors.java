@@ -746,6 +746,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonUniformScale = 88;
 
         /**
+         * No element for the “{0}” identifier, or the identifier is a forward reference.
+         */
+        public static final short NotABackwardReference_1 = 199;
+
+        /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
          */
         public static final short NotANumber_1 = 89;
@@ -914,6 +919,11 @@ public final class Errors extends IndexedResourceBundle {
          * Parameter “{0}” was not expected.
          */
         public static final short UnexpectedParameter_1 = 152;
+
+        /**
+         * Expected “{0}” to reference an instance of ‘{1}’, but found an instance of ‘{2}’.
+         */
+        public static final short UnexpectedTypeForReference_3 = 200;
 
         /**
          * Unexpected value “{1}” in “{0}” element.
