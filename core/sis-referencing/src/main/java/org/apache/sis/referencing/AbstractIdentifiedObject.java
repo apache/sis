@@ -950,8 +950,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
              */
             if (name == null || !appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
                 if (alias != null) {
-                    for (final GenericName alias : alias) {
-                        if (appendUnicodeIdentifier(id, '-', alias.toString(), ":", false)) {
+                    for (final GenericName a : alias) {
+                        if (appendUnicodeIdentifier(id, '-', a.toString(), ":", false)) {
                             break;
                         }
                     }
