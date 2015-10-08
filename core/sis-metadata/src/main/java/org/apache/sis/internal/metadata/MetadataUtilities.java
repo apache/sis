@@ -18,11 +18,15 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Date;
 import org.apache.sis.xml.NilReason;
+import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Utilities;
 
 
 /**
@@ -30,7 +34,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class MetadataUtilities extends Static {
@@ -168,6 +172,60 @@ public final class MetadataUtilities extends Static {
             buffer.setCharAt(3, Character.toUpperCase(buffer.charAt(3)));
             Context.warningOccured(context, classe, buffer.toString(), Errors.class, key, arguments);
             return null;
+        }
+    }
+
+    /**
+     * Returns the {@code gco:id} or {@code gml:id} value to use for the given object.
+     * The returned identifier will be unique in the current XML document.
+     *
+     * @param  object The object for which to get the unique identifier.
+     * @return The unique XML identifier, or {@code null} if none.
+     *
+     * @since 0.7
+     */
+    public static String getObjectID(final IdentifiedObject object) {
+        final Context context = Context.current();
+        String id = Context.getObjectID(context, object);
+        if (id == null) {
+            id = object.getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+            if (id != null) {
+                final StringBuilder buffer = new StringBuilder();
+                if (!Utilities.appendUnicodeIdentifier(buffer, (char) 0, id, ":-", false)) {
+                    return null;
+                }
+                id = buffer.toString();
+                if (!Context.setObjectForID(context, object, id)) {
+                    final int s = buffer.append('-').length();
+                    int n = 0;
+                    do {
+                        if (++n == 100) return null;    //  Arbitrary limit.
+                        id = buffer.append(n).toString();
+                        buffer.setLength(s);
+                    } while (!Context.setObjectForID(context, object, id));
+                }
+            }
+        }
+        return id;
+    }
+
+    /**
+     * Invoked by {@code setID(String)} method implementations for assigning an identifier to an object
+     * at unmarshalling time.
+     *
+     * @param object The object for which to assign an identifier.
+     * @param id The {@code gco:id} or {@code gml:id} value.
+     *
+     * @since 0.7
+     */
+    public static void setObjectID(final IdentifiedObject object, String id) {
+        id = CharSequences.trimWhitespaces(id);
+        if (id != null && !id.isEmpty()) {
+            object.getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
+            final Context context = Context.current();
+            if (!Context.setObjectForID(context, object, id)) {
+                Context.warningOccured(context, object.getClass(), "setID", Errors.class, Errors.Keys.DuplicatedIdentifier_1, id);
+            }
         }
     }
 }

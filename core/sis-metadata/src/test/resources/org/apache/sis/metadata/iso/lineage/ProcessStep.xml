@@ -25,9 +25,10 @@
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
 
-  <!-- As of February 2011, there is not yet any XSD schema for the "gmi" namespace on the
-       OGC web site. Consequently the validation of this file does not work fully yet. -->
-
+  <!--
+    As of February 2011, there is not yet any XSD schema for the "gmi" namespace on the
+    OGC web site. Consequently the validation of this file does not work fully yet.
+  -->
   <gmd:description>
     <gco:CharacterString>Some process step.</gco:CharacterString>
   </gmd:description>
