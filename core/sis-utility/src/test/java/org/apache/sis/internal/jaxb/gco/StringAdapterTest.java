@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public final strictfp class StringAdapterTest extends TestCase {
@@ -48,7 +48,7 @@ public final strictfp class StringAdapterTest extends TestCase {
 
     /**
      * Tests {@link StringAdapter#toString(CharSequence)} for an {@link InternationalString}
-     * having loalization in different languages.
+     * having localizations in different languages.
      */
     @Test
     @DependsOnMethod("testToUnlocalizedString")
@@ -57,25 +57,16 @@ public final strictfp class StringAdapterTest extends TestCase {
         i18n.add(Locale.ENGLISH,  "A word");
         i18n.add(Locale.FRENCH,   "Un mot");
         i18n.add(Locale.JAPANESE, "言葉");
-        Context.push(Locale.JAPANESE);
+        final Context context = new Context(0, Locale.ENGLISH, null, null, null, null, null, null);
         try {
-            assertEquals("言葉", StringAdapter.toString(i18n));
-            Context.push(Locale.FRENCH);
-            try {
-                assertEquals("Un mot", StringAdapter.toString(i18n));
-                Context.push(Locale.ENGLISH);
-                try {
-                    assertEquals("A word", StringAdapter.toString(i18n));
-                } finally {
-                    Context.pull();
-                }
-                assertEquals("Un mot", StringAdapter.toString(i18n));
-            } finally {
-                Context.pull();
-            }
-            assertEquals("言葉", StringAdapter.toString(i18n));
+            Context.push(Locale.JAPANESE);  assertEquals("言葉",    StringAdapter.toString(i18n));
+            Context.push(Locale.FRENCH);    assertEquals("Un mot", StringAdapter.toString(i18n));
+            Context.push(Locale.ENGLISH);   assertEquals("A word", StringAdapter.toString(i18n));
+            Context.pull();                 assertEquals("Un mot", StringAdapter.toString(i18n));
+            Context.pull();                 assertEquals("言葉",    StringAdapter.toString(i18n));
+            Context.pull();                 assertEquals("A word", StringAdapter.toString(i18n));
         } finally {
-            Context.pull();
+            context.finish();
         }
     }
 }

@@ -62,6 +62,7 @@ public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests construction with an invalid range of latitudes.
      */
+    @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidLatitudeRange() {
         new DefaultGeographicBoundingBox(-1, +1, 12, 10);

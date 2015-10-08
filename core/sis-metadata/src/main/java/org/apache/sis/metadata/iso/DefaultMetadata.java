@@ -64,6 +64,7 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.OtherLocales;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.code.PT_Locale;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
@@ -455,7 +456,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     @XmlElement(name = "language")
     public Locale getLanguage() {
-        return OtherLocales.getFirst(getLanguages());
+        return CollectionsExt.first(getLanguages());
         // No warning if the collection contains more than one locale, because
         // this is allowed by the "getLanguage() + getLocales()" contract.
     }
@@ -504,7 +505,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Deprecated
     public void setLocales(final Collection<? extends Locale> newValues) {
         checkWritePermission();
-        setLanguages(OtherLocales.merge(OtherLocales.getFirst(languages), newValues)); // See "Note about deprecated methods implementation"
+        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues)); // See "Note about deprecated methods implementation"
     }
 
     /**
@@ -1129,7 +1130,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         final URI uri = new URI(newValue);
         checkWritePermission();
         Collection<Identification> info = identificationInfo; // See "Note about deprecated methods implementation"
-        AbstractIdentification firstId = AbstractIdentification.castOrCopy(OtherLocales.getFirst(info));
+        AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
         }
@@ -1138,7 +1139,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             citation = new DefaultCitation();
         }
         Collection<OnlineResource> onlineResources = citation.getOnlineResources();
-        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(OtherLocales.getFirst(onlineResources));
+        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(CollectionsExt.first(onlineResources));
         if (firstOnline == null) {
             firstOnline = new DefaultOnlineResource();
         }
@@ -1435,7 +1436,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
     private void beforeMarshal(final Marshaller marshaller) {
-        Context.push(OtherLocales.getFirst(languages));
+        Context.push(CollectionsExt.first(languages));
     }
 
     /**

@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Collections;
 import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -54,6 +55,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLComparator;
 import org.apache.sis.test.XMLTestCase;
@@ -75,7 +77,7 @@ import org.apache.sis.internal.jdk7.StandardCharsets;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
@@ -121,6 +123,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
             final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
             online.setProtocol("http");
             final DefaultContact contact = new DefaultContact(online);
+            contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "IFREMER");
             contact.setPhones(Arrays.asList(
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x6", TelephoneType.VOICE),
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x4", TelephoneType.FACSIMILE)
@@ -132,7 +135,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
             address.setCountry(country);
             address.setElectronicMailAddresses(singleton("xx@xx.fr"));
             contact.setAddresses(singleton(address));
-            author.setParties(Arrays.asList(
+            author.setParties(Collections.singleton(
                     new DefaultOrganisation("Marine institutes", null, null, contact)
             ));
             metadata.setContacts(singleton(author));
@@ -162,7 +165,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
                 address.setPostalCode("13288");
                 address.setCountry(country);
                 contact.setAddresses(singleton(address));
-                originator.setParties(Arrays.asList(
+                originator.setParties(Collections.singleton(
                         new DefaultOrganisation("Oceanology laboratory", null, null, contact)
                 ));
                 citation.setCitedResponsibleParties(singleton(originator));
@@ -199,7 +202,7 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
             {
                 final DefaultBrowseGraphic g = new DefaultBrowseGraphic(URI.create("file:///thumbnail.png"));
                 g.setFileDescription(new SimpleInternationalString("Arbitrary thumbnail for this test only."));
-                identification.setGraphicOverviews(Arrays.asList(g));
+                identification.setGraphicOverviews(Collections.singleton(g));
             }
             /*
              * Data indentification / Resource constraint.

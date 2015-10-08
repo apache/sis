@@ -59,7 +59,7 @@ public abstract class GMLAdapter {
      * </ul>
      *
      * @see <a href="https://www.seegrid.csiro.au/wiki/bin/view/AppSchemas/GmlIdentifiers">GML identifiers</a>
-     * @see org.apache.sis.internal.jaxb.gco.ObjectReference#getUUIDREF()
+     * @see org.apache.sis.internal.jaxb.gco.PropertyType#getUUIDREF()
      */
     @XmlID
     @XmlAttribute(namespace = Namespaces.GML, required = true)
@@ -94,7 +94,7 @@ public abstract class GMLAdapter {
     }
 
     /**
-     * Assign the {@link #id} value (if non-null) to the given object. This method
+     * Assigns the {@link #id} value (if non-null) to the given object. This method
      * is typically invoked at unmarshalling time in order to assign the ID of this
      * temporary wrapper to the "real" GeoAPI implementation instance.
      *
