@@ -50,7 +50,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -361,23 +361,48 @@ public final strictfp class ParameterMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests (un)marshalling of a parameter value group.
+     * Tests marshalling of a parameter value group.
      *
-     * @throws JAXBException if an error occurred during marshalling or unmarshalling.
+     * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
     @DependsOnMethod("testDescriptorGroup")
-    public void testValueGroup() throws JAXBException {
-        // Test marshalling.
+    public void testValueGroupMmarshalling() throws JAXBException {
         assertMarshalEqualsFile("ParameterValueGroup.xml",
                 ParameterFormatTest.createMercatorParameters().createValue(),
-                "xmlns:*", "xsi:schemaLocation", "gml:id");
+                "xmlns:*", "xsi:schemaLocation");
+    }
 
-        // Test unmarshalling.
-        final DefaultParameterValueGroup group = unmarshalFile(
-                DefaultParameterValueGroup.class, "ParameterValueGroup.xml");
+    /**
+     * Tests unmarshalling of a parameter value group. The XML file use {@code xlink:href} attributes
+     * for avoiding to repeat the full definition of descriptors.
+     *
+     * @throws JAXBException if an error occurred during unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testDescriptorGroup")
+    public void testValueGroupUnmarshalling() throws JAXBException {
+        testValueGroupUnmarshalling("ParameterValueGroup.xml");
+    }
 
-        // Verify the ParameterValues properties.
+    /**
+     * Tests unmarshalling of a parameter value group. The XML file does not use {@code xlink:href} attributes;
+     * descriptor definitions are repeated. The intend of this test is to test Apache SIS capability to replace
+     * duplicates instances by unique instances.
+     *
+     * @throws JAXBException if an error occurred during unmarshalling.
+     */
+    @Test
+    @DependsOnMethod("testValueGroupUnmarshalling")
+    public void testDuplicatedParametersUnmarshalling() throws JAXBException {
+        testValueGroupUnmarshalling("DuplicatedParameters.xml");
+    }
+
+    /**
+     * Tests unmarshalling of the given file.
+     */
+    private void testValueGroupUnmarshalling(final String file) throws JAXBException {
+        final DefaultParameterValueGroup group = unmarshalFile(DefaultParameterValueGroup.class, file);
         verifyDescriptorGroup(group.getDescriptor());
         final Iterator<GeneralParameterValue> it = group.values().iterator();
         final Iterator<GeneralParameterDescriptor> itd = group.getDescriptor().descriptors().iterator();

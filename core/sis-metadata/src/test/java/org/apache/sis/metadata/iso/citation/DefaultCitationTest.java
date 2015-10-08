@@ -19,22 +19,29 @@ package org.apache.sis.metadata.iso.citation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Locale;
+import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.Contact;
+import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.junit.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**
@@ -45,7 +52,12 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @module
  */
-public final strictfp class DefaultCitationTest extends TestCase {
+public final strictfp class DefaultCitationTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a citation.
+     */
+    private static final String XML_FILE = "Citation.xml";
+
     /**
      * Creates a citation with an arbitrary title, presentation form and other properties.
      *
@@ -164,5 +176,64 @@ public final strictfp class DefaultCitationTest extends TestCase {
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }
+    }
+
+    /**
+     * Tests XML marshalling using the format derived form ISO 19115:2003 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during marshalling.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testMarshalling() throws JAXBException {
+        final DefaultContact contact = new DefaultContact();
+        contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
+        contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
+        final DefaultCitation c = new DefaultCitation("Fight against poverty");
+        final DefaultResponsibleParty r1 = new DefaultResponsibleParty(Role.ORIGINATOR);
+        final DefaultResponsibleParty r2 = new DefaultResponsibleParty(Role.valueOf("funder"));
+        r1.setParties(Collections.singleton(new DefaultIndividual("Maid Marian", null, contact)));
+        r2.setParties(Collections.singleton(new DefaultIndividual("Robin Hood",  null, contact)));
+        c.setCitedResponsibleParties(Arrays.asList(r1, r2));
+        c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.valueOf("adopted")));
+        assertMarshalEqualsFile(XML_FILE, c, "xlmns:*", "xsi:schemaLocation");
+    }
+
+    /**
+     * Tests XML unmarshalling using the format derived form ISO 19115:2003 model.
+     * This method also tests usage of {@code gml:id} and {@code xlink:href}.
+     *
+     * @throws JAXBException if an error occurred during unmarshalling.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testUnmarshalling() throws JAXBException {
+        final DefaultCitation c = unmarshalFile(DefaultCitation.class, XML_FILE);
+        assertTitleEquals("title", "Fight against poverty", c);
+
+        final CitationDate date = getSingleton(c.getDates());
+        assertEquals("date", date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
+        assertEquals("dateType", date.getDateType(), DateType.valueOf("adopted"));
+
+        final Iterator<ResponsibleParty> it = c.getCitedResponsibleParties().iterator();
+        final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
+        assertEquals("Contact instruction", "Send carrier pigeon.", contact.getContactInstructions().toString());
+
+        // Thanks to xlink:href, the Contact shall be the same instance than above.
+        assertSame("contact", contact, assertResponsibilityEquals(Role.valueOf("funder"), "Robin Hood", it.next()));
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * Asserts that the given responsibility has the expected properties, then returns its contact info.
+     */
+    private static Contact assertResponsibilityEquals(final Role role, final String name, final ResponsibleParty actual) {
+        assertEquals("role", role, actual.getRole());
+        final AbstractParty p = getSingleton(((DefaultResponsibleParty) actual).getParties());
+        assertEquals("name", name, p.getName().toString());
+        return getSingleton(p.getContactInfo());
     }
 }

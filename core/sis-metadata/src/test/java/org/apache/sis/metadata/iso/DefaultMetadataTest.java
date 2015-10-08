@@ -45,17 +45,10 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests XML (un)marshalling of various metadata objects.
- * For every metadata objects tested by this class, the expected XML representation
- * is provided by {@code *.xml} files in the following directory:
+ * Tests {@link DefaultMetadata}, without Coordinate Reference System (CRS) information.
  *
- * <ul>
- *   <li>{@code "core/sis-metadata/src/test/resources/org/apache/sis/metadata/iso"}</li>
- * </ul>
- *
- * Metadata tested by this class do not include Coordinate Reference System (CRS) information. A metadata
- * object with CRS information is tested by {@code org.apache.sis.test.integration.DefaultMetadataTest}
- * in the {@code sis-referencing} module.
+ * <p><b>Note:</b> a metadata object with CRS information is tested by a different
+ * {@code org.apache.sis.test.integration.DefaultMetadataTest} class in the {@code sis-referencing} module.</p>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
