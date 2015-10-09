@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * For now we keep it package-private, but we could consider to enable execution from
  * the command-line in a future version if this happen to be useful.</p>
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
