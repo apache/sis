@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -31,6 +33,7 @@ import javax.xml.bind.annotation.XmlElement;
  * @version 0.4
  * @module
  */
+@XmlType(name = "Boolean_PropertyType")
 public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Empty constructor used only by JAXB.
@@ -77,6 +80,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Boolean")
+    @XmlSchemaType(name = "boolean")
     public Boolean getElement() {
         return metadata;
     }

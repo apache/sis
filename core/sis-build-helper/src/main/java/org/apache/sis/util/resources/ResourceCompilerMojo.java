@@ -24,6 +24,10 @@ import java.util.List;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.Scanner;
 import org.sonatype.plexus.build.incremental.BuildContext;
@@ -39,12 +43,10 @@ import static org.apache.sis.util.resources.IndexedResourceCompiler.PROPERTIES_E
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Olivier Nouguier (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
- *
- * @goal compile-resources
- * @phase generate-resources
  */
+@Mojo(name = "compile-resources", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {
     /**
      * Pattern to filter properties files that were modified.
@@ -53,11 +55,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
 
     /**
      * Project information (name, version, URL).
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
@@ -65,18 +64,14 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * When Maven is run from the command line, this object does nothing.
      *
      * @see <a href="http://wiki.eclipse.org/M2E_compatible_maven_plugins">M2E compatible maven plugins</a>
-     *
-     * @component
      */
+    @Component
     private BuildContext buildContext;
 
     /**
      * The source directories containing the sources to be compiled.
-     *
-     * @parameter property="project.compileSourceRoots"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project.compileSourceRoots", required=true, readonly=true)
     private List<String> compileSourceRoots;
 
     /**
@@ -88,10 +83,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * (for resources), such separation seems of limited use since the resources are copied verbatim in the JAR
      * file, so preventing clash in the <code>generated-resources</code> directory would not prevent clash in
      * the JAR file anyway.</p>
-     *
-     * @parameter default-value="${project.build.directory}/generated-resources"
-     * @required
      */
+    @Parameter(defaultValue="${project.build.directory}/generated-resources", required=true)
     private File outputDirectory;
 
     /**

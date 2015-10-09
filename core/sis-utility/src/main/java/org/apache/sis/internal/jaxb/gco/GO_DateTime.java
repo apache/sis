@@ -17,7 +17,9 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.Date;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -37,12 +39,14 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * @version 0.4
  * @module
  */
+@XmlType(name = "Date_PropertyType")
 public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * The date and time value using the {@code code "DateTime"} name.
      * Only one of {@code date} and {@link #dateTime} shall be non-null.
      */
     @XmlElement(name = "DateTime")
+    @XmlSchemaType(name = "dateTime")
     private XMLGregorianCalendar dateTime;
 
     /**
@@ -50,6 +54,7 @@ public final class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * hour, minutes or seconds to format.
      */
     @XmlElement(name = "Date")
+    @XmlSchemaType(name = "date")
     private XMLGregorianCalendar date;
 
     /**

@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.project.MavenProject;
 
 import static org.apache.sis.internal.maven.Filenames.*;
@@ -40,29 +43,22 @@ import static org.apache.sis.internal.maven.Filenames.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
- *
- * @goal pack
- * @phase install
  */
+@Mojo(name = "pack", defaultPhase = LifecyclePhase.INSTALL)
 public class BundleCreator extends AbstractMojo {
     /**
      * Project information (name, version, URL).
-     *
-     * @parameter property="project"
-     * @required
-     * @readonly
      */
+    @Parameter(property="project", required=true, readonly=true)
     private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
      * are to be copied. It should be the directory of the root <code>pom.xml</code>.
-     *
-     * @parameter property="session.executionRootDirectory"
-     * @required
      */
+    @Parameter(property="session.executionRootDirectory", required=true)
     private String rootDirectory;
 
     /**

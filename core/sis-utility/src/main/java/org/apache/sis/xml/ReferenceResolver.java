@@ -129,9 +129,22 @@ public class ReferenceResolver {
         ensureNonNull("xlink", link);
         final URI href = link.getHRef();
         if (href != null && href.toString().startsWith("#")) {
-            final Object object = Context.getObjectForID(Context.current(), href.getFragment());
+            final String id = href.getFragment();
+            final Context c = (context instanceof Context) ? (Context) context : Context.current();
+            final Object object = Context.getObjectForID(c, id);
             if (type.isInstance(object)) {
                 return type.cast(object);
+            } else {
+                final short key;
+                final Object args;
+                if (object == null) {
+                    key = Errors.Keys.NotABackwardReference_1;
+                    args = id;
+                } else {
+                    key = Errors.Keys.UnexpectedTypeForReference_3;
+                    args = new Object[] {id, type, object.getClass()};
+                }
+                Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
             }
         }
         return null;
