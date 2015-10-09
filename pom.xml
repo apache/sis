@@ -354,20 +354,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
-        <version>6.0</version>
+        <version>7.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.9</version>
+        <version>1.10</version>
       </dependency>
 
       <!-- Optional dependencies -->
       <dependency>
         <groupId>org.osgi</groupId>
         <artifactId>org.osgi.core</artifactId>
-        <version>5.0.0</version>
+        <version>6.0.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -405,7 +405,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.2</netcdf.version>
+    <netcdf.version>4.6.3</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
