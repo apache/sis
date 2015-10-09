@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -35,6 +37,7 @@ import javax.xml.bind.annotation.XmlElement;
  * @version 0.3
  * @module
  */
+@XmlType(name = "Real_PropertyType")
 public final class GO_Real extends PropertyType<GO_Real, Double> {
     /**
      * Empty constructor used only by JAXB.
@@ -80,6 +83,7 @@ public final class GO_Real extends PropertyType<GO_Real, Double> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Real")
+    @XmlSchemaType(name = "double")
     public Double getElement() {
         return metadata;
     }

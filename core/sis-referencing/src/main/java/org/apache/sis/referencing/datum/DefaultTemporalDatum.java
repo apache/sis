@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -215,6 +216,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     @Override
     @XmlElement(name = "origin")
+    @XmlSchemaType(name = "dateTime")
     @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
     public Date getOrigin() {
         return MetadataUtilities.toDate(origin);

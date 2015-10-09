@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 
 
 /**
@@ -75,6 +76,7 @@ public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Integer")
+    @XmlSchemaType(name = "integer")
     public Long getElement() {
         return metadata;
     }

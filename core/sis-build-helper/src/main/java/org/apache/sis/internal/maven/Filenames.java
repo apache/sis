@@ -35,7 +35,7 @@ import java.io.IOException;
 final class Filenames {
     /**
      * The target directory. This directory name is hard-coded instead than using a property annotated
-     * by {@code @parameter default-value="${project.build.directory}"} - or alternatively by invoking
+     * by {@code @Parameter(defaultValue="${project.build.directory}")} - or alternatively by invoking
      * {@code MavenProject.getModel().getBuild().getDirectory()}, because we need the target directory
      * of the project root rather than the directory of the module being built.
      */

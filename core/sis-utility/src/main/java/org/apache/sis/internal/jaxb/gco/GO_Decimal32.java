@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 
 
 /**
@@ -75,6 +76,7 @@ public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Decimal")
+    @XmlSchemaType(name = "decimal")
     public Float getElement() {
         return metadata;
     }

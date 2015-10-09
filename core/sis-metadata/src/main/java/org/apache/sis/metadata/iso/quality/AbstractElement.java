@@ -515,6 +515,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "dateTime")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
             return isNullOrEmpty(dates) ? null : dates;
