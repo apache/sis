@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Random;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
@@ -24,7 +25,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
@@ -152,7 +152,11 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     @DependsOnMethod("testTransverseMercator")
     public void testSerialization() throws FactoryException, TransformException {
         createNormalizedProjection(true, 40);
-        final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_HALF_λ.generateRandomInput(TestUtilities.createRandomNumberGenerator(), 2, 10);
+        /*
+         * Use a fixed seed for the random number generator in this test, because in case of failure this class will not
+         * report which seed it used. This limitation exists because this test class does not extend the SIS TestCase.
+         */
+        final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_HALF_λ.generateRandomInput(new Random(5346144739450824145L), 2, 10);
         final double[] target = new double[source.length];
         transform.transform(source, 0, target, 0, 10);
         transform = assertSerializedEquals(transform);

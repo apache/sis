@@ -92,11 +92,9 @@
               <goal>start</goal>
             </goals>
             <configuration>
-              <connectors>
-                <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                  <port>${jettyPort}</port>
-                </connector>
-              </connectors>
+              <httpConnector>
+                <port>${jettyPort}</port>
+              </httpConnector>
               <scanIntervalSeconds>0</scanIntervalSeconds>
               <daemon>true</daemon>
               <systemProperties>
