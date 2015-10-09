@@ -18,6 +18,7 @@ package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
@@ -153,6 +154,7 @@ public class GO_CharacterString {
      *
      * @return The text, or {@code null}.
      */
+    @XmlSchemaType(name = "string")         // Not needed, but declared as a matter of principle.
     @XmlElement(name = "CharacterString")
     public final String getCharacterString() {
         return (type == 0 && !(text instanceof Anchor)) ? StringAdapter.toString(text) : null;

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.measure.unit.SI;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.gml.Measure;
@@ -35,6 +36,7 @@ import org.apache.sis.internal.jaxb.gml.Measure;
  * @version 0.3
  * @module
  */
+@XmlType(name = "Distance_PropertyType")
 public final class GO_Distance extends XmlAdapter<GO_Distance, Double> {
     /**
      * A proxy representation of the {@code <gco:Distance>} element.
