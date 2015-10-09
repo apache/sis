@@ -709,9 +709,9 @@ Apache SIS is a free software, Java language library for developing geospatial a
           <version>1.9.1</version>
         </plugin>
         <plugin>
-          <groupId>org.mortbay.jetty</groupId>
+          <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>8.1.14.v20131031</version>
+          <version>9.3.4.v20151007</version>
         </plugin>
       </plugins>
     </pluginManagement>
