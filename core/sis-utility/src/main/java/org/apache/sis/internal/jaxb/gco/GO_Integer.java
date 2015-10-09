@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -33,6 +35,7 @@ import javax.xml.bind.annotation.XmlElement;
  *
  * @see GO_Integer64
  */
+@XmlType(name = "Integer_PropertyType")
 public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
     /**
      * Empty constructor used only by JAXB.
@@ -78,6 +81,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Integer")
+    @XmlSchemaType(name = "integer")
     public Integer getElement() {
         return metadata;
     }

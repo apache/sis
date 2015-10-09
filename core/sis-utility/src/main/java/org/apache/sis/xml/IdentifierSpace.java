@@ -63,7 +63,10 @@ public interface IdentifierSpace<T> extends Citation {
      * for {@code "gco:id"} in metadata documents. However the {@code "gco:"} prefix is omitted
      * in XML documents (i.e. the {@code gco:id} attribute is <cite>unqualified</cite>).</p>
      *
-     * <p>The XML attribute name of the reference to such identified object is {@code "xlink:href"}.</p>
+     * <p>Elements with {@code gml:id} or {@code gco:id} attribute can be referenced from other XML elements
+     * using the {@code xlink:href} attribute. This is done automatically by Apache SIS implementations at
+     * marshalling and unmarshalling time. If many of {@code gml:id}, {@code gco:uuid} and {@code xlink:href}
+     * attributes are used, then {@code gml:id} has precedence.</p>
      *
      * @see javax.xml.bind.annotation.XmlID
      */
@@ -78,7 +81,9 @@ public interface IdentifierSpace<T> extends Citation {
      * {@code "gco:"} prefix is omitted in XML documents (i.e. the {@code gco:uuid} attribute
      * is <cite>unqualified</cite>).</p>
      *
-     * <p>The XML attribute name of the reference to such identified object is {@code "gco:uuidref"}.
+     * <p>Elements with {@code gco:uuid} attribute can be referenced from other XML elements using the
+     * {@code gco:uuidref} attribute. However this is not done automatically by Apache SIS. Users need
+     * to manage their set of UUIDs in their own {@link ReferenceResolver} subclass.</p>
      *
      * @see UUID
      */
