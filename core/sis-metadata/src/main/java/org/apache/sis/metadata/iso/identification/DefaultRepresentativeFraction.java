@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -394,6 +395,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      */
     @XmlID
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
         return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);

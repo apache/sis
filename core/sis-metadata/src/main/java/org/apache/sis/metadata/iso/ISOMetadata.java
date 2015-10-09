@@ -21,6 +21,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
@@ -182,6 +183,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      */
     @XmlID
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlSchemaType(name = "ID")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getID() {
         return isNullOrEmpty(identifiers) ? null : MetadataUtilities.getObjectID(this);
