@@ -93,6 +93,7 @@
             </goals>
             <configuration>
               <connectors>
+                <!-- This is how the specify the port with Jetty 8. Note that Jetty 9 has a different way. -->
                 <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
                   <port>${jettyPort}</port>
                 </connector>
