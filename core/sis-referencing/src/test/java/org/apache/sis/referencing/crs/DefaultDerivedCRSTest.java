@@ -17,9 +17,15 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Collections;
+import javax.xml.bind.JAXBException;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -30,10 +36,10 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -41,14 +47,19 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
     DefaultProjectedCRSTest.class,  // Has many similarities with DerivedCRS, but is simpler.
     DefaultConversionTest.class
 })
-public final strictfp class DefaultDerivedCRSTest extends TestCase {
+public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
+    /**
+     * An XML file in this package containing a projected CRS definition.
+     */
+    private static final String XML_FILE = "DerivedCRS.xml";
+
     /**
      * Tests {@link DefaultDerivedCRS#getType(SingleCRS, CoordinateSystem)}.
      */
@@ -203,5 +214,33 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
                 "    Axis[“Longitude (L)”, east],\n" +
                 "    Unit[“degree”, 0.017453292519943295]]",
                 createLongitudeRotation());
+    }
+
+    /**
+     * Tests (un)marshalling of a derived coordinate reference system.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     * @throws JAXBException If an error occurred during (un)marshalling.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testXML() throws FactoryException, JAXBException {
+        final DefaultDerivedCRS crs = unmarshalFile(DefaultDerivedCRS.class, XML_FILE);
+        Validators.validate(crs);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4979, crs.getBaseCRS());
+        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP);
+
+        final Conversion conversion = crs.getConversionFromBase();
+        final ParameterValueGroup pg = conversion.getParameterValues();
+        assertEpsgNameAndIdentifierEqual("Geographic/topocentric conversions", 9837, conversion.getMethod());
+        assertEquals("Latitude", 55, pg.parameter("Latitude of topocentric origin" ).doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("Longitude", 5, pg.parameter("Longitude of topocentric origin").doubleValue(NonSI.DEGREE_ANGLE), STRICT);
+        assertEquals("Height",    0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(SI.METRE),  STRICT);
+        /*
+         * Test marshalling and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
     }
 }

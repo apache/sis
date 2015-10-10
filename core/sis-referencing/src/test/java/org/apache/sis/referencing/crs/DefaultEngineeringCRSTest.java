@@ -17,11 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Collections;
-import org.opengis.referencing.cs.AxisDirection;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.io.wkt.Convention;

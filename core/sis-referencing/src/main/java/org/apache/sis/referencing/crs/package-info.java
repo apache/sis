@@ -74,7 +74,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
@@ -83,6 +83,18 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    /*
+     * Do NOT declare the following adapters in this package-info:
+     *
+     *   - CS_CoordinateSystem
+     *   - SC_SingleCRS
+     *   - SC_CRS
+     *
+     * Because the above types are the base type of many other types,
+     * adding the above adapters is a cause of confusion for JAXB.
+     *
+     * Note: be careful with CS_AffineCS and CS_CartesianCS relationship.
+     */
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
     @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
     @XmlJavaTypeAdapter(CD_ImageDatum.class),
