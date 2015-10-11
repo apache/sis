@@ -20,7 +20,6 @@ import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -219,13 +218,12 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
     /**
      * Tests (un)marshalling of a derived coordinate reference system.
      *
-     * @throws FactoryException if the CRS creation failed.
      * @throws JAXBException If an error occurred during (un)marshalling.
      *
      * @since 0.7
      */
     @Test
-    public void testXML() throws FactoryException, JAXBException {
+    public void testXML() throws JAXBException {
         final DefaultDerivedCRS crs = unmarshalFile(DefaultDerivedCRS.class, XML_FILE);
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4979, crs.getBaseCRS());
