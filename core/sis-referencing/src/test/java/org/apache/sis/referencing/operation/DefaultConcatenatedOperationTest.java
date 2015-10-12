@@ -35,7 +35,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  */
 @DependsOn({
     DefaultTransformationTest.class,
-    OperationMarshallingTest.class
+    SingleOperationMarshallingTest.class
 })
 public class DefaultConcatenatedOperationTest extends XMLTestCase {
     /**
