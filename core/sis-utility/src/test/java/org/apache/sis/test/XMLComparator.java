@@ -716,7 +716,11 @@ public strictfp class XMLComparator {
         final List<String> hierarchy = new ArrayList<>();
         while (node != null) {
             hierarchy.add(node.getNodeName());
-            node = node.getParentNode();
+            if (node instanceof Attr) {
+                node = ((Attr) node).getOwnerElement();
+            } else {
+                node = node.getParentNode();
+            }
         }
         if (hierarchy.equals(expected)) {
             buffer.append("└─Same as expected").append(lineSeparator);
