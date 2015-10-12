@@ -436,7 +436,7 @@ public final class CRS extends Static {
      *   <li>If the given CRS is an instance of {@link SingleCRS}, returns that instance in a singleton list.</li>
      *   <li>If the given CRS is an instance of {@link CompoundCRS}, returns a flattened list of its
      *       {@linkplain DefaultCompoundCRS#getComponents() components}. Some components may themselves be
-     *       other {@code CompoundCRS} instances, in which case those compound CRS are also expanded in their
+     *       other {@code CompoundCRS} instances, in which case those compound CRS are also flattened in their
      *       list of {@code SingleCRS} components.</li>
      *   <li>Otherwise throws a {@code ClassCastException}.</li>
      * </ul>
