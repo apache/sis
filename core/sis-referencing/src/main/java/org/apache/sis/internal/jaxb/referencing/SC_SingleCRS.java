@@ -17,9 +17,11 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -27,15 +29,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
- * @version 0.6
+ * @since   0.7
+ * @version 0.7
  * @module
  */
-public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {
+public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
     /**
      * Empty constructor for JAXB only.
      */
-    public SC_CRS() {
+    public SC_SingleCRS() {
     }
 
     /**
@@ -43,35 +45,35 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code CoordinateReferenceSystem.class}
+     * @return {@code SingleCRS.class}
      */
     @Override
-    protected Class<CoordinateReferenceSystem> getBoundType() {
-        return CoordinateReferenceSystem.class;
+    protected Class<SingleCRS> getBoundType() {
+        return SingleCRS.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SC_CRS(final CoordinateReferenceSystem crs) {
+    private SC_SingleCRS(final SingleCRS crs) {
         super(crs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:AbstractCRS>} XML element.
+     * in a {@code <gml:AbstractSingleCRS>} XML element.
      *
      * @param  crs The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected SC_CRS wrap(final CoordinateReferenceSystem crs) {
-        return new SC_CRS(crs);
+    protected SC_SingleCRS wrap(final SingleCRS crs) {
+        return new SC_SingleCRS(crs);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:AbstractCRS>} XML element.
+     * inside the {@code <gml:AbstractSingleCRS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
@@ -85,8 +87,13 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
      * @param crs The unmarshalled element.
+     * @throws IllegalArgumentException if the unmarshalled CRS is not a single CRS.
      */
     public void setElement(final AbstractCRS crs) {
-        metadata = crs;
+        if (crs != null && !(crs instanceof SingleCRS)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2,
+                    "baseCRS", IdentifiedObjects.getName(crs, null)));
+        }
+        metadata = (SingleCRS) crs;
     }
 }
