@@ -17,7 +17,11 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -45,6 +49,9 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.internal.jaxb.referencing.SC_SingleCRS;
+import org.apache.sis.internal.jaxb.referencing.SC_DerivedCRSType;
+import org.apache.sis.internal.jaxb.referencing.CS_CoordinateSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -85,10 +92,15 @@ import org.apache.sis.util.Classes;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-@XmlTransient   // TODO: GML not yet investigated
+@XmlType(name="DerivedCRSType", propOrder = {
+    "baseCRS",
+    "type",
+    "coordinateSystem"
+})
+@XmlRootElement(name = "DerivedCRS")
 public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements DerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
@@ -408,6 +420,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * @return The base coordinate reference system.
      */
     @Override
+    @XmlElement(name = "baseCRS", required = true)
+    @XmlJavaTypeAdapter(SC_SingleCRS.class)
     public SingleCRS getBaseCRS() {
         return (SingleCRS) super.getConversionFromBase().getSourceCRS();
     }
@@ -430,6 +444,18 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     @Override
     public Conversion getConversionFromBase() {
         return super.getConversionFromBase();
+    }
+
+    /**
+     * Returns the coordinate system.
+     *
+     * @return The coordinate system.
+     */
+    @Override
+    @XmlElement(name="coordinateSystem", required = true)
+    @XmlJavaTypeAdapter(CS_CoordinateSystem.class)
+    public CoordinateSystem getCoordinateSystem() {
+        return super.getCoordinateSystem();
     }
 
     /**
@@ -546,6 +572,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     String keyword(final Formatter formatter) {
         final String longKeyword = getType(getBaseCRS(), getCoordinateSystem());
         final String shortKeyword;
+        if (longKeyword == null) {
+            return null;
+        }
              if (longKeyword.equals(WKTKeywords.GeodeticCRS))    shortKeyword = WKTKeywords.GeodCRS;
         else if (longKeyword.equals(WKTKeywords.VerticalCRS))    shortKeyword = WKTKeywords.VertCRS;
         else if (longKeyword.equals(WKTKeywords.EngineeringCRS)) shortKeyword = WKTKeywords.EngCRS;
@@ -565,8 +594,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             // For avoiding ambiguity if a user chooses to implement more
             // than 1 CRS interface (not recommended, but may happen).
             type = ((AbstractIdentifiedObject) baseCRS).getInterface();
-        } else {
+        } else if (baseCRS != null) {
             type = baseCRS.getClass();
+        } else {
+            return null;
         }
         if (GeodeticCRS.class.isAssignableFrom(type)) {
             if (Classes.implementSameInterfaces(derivedCS.getClass(),
@@ -638,6 +669,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
+
+        /** Returns the GML code for this derived CRS type. */
+        @Override SC_DerivedCRSType getType() {
+            return new SC_DerivedCRSType("geodetic");
+        }
     }
 
     /**
@@ -685,6 +721,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         /** Returns the WKT keyword for this derived CRS type.*/
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
+        }
+
+        /** Returns the GML code for this derived CRS type. */
+        @Override SC_DerivedCRSType getType() {
+            return new SC_DerivedCRSType("vertical");
         }
     }
 
@@ -734,6 +775,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         @Override String keyword(final Formatter formatter) {
             return WKTKeywords.TimeCRS;
         }
+
+        /** Returns the GML code for this derived CRS type. */
+        @Override SC_DerivedCRSType getType() {
+            return new SC_DerivedCRSType("time");
+        }
     }
 
     /**
@@ -779,6 +825,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
         }
+
+        /** Returns the GML code for this derived CRS type. */
+        @Override SC_DerivedCRSType getType() {
+            return new SC_DerivedCRSType("engineering");
+        }
     }
 
 
@@ -801,5 +852,37 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultDerivedCRS() {
+    }
+
+    /**
+     * Returns the {@code <gml:derivedCRSType>} element to marshal. The default implementation tries to infer this
+     * information from the {@code DefaultDerivedCRS} properties, but subclasses will override for more determinism.
+     *
+     * <div class="note"><b>Note:</b>
+     * there is no setter at this time because SIS does not store this information in a {@code DefaultDerivedCRS}
+     * field. Instead, we rely on the interface that we implement. For example a {@code DefaultDerivedCRS} of type
+     * {@code SC_DerivedCRSType.vertical} will implement the {@link VerticalCRS} interface.</div>
+     */
+    @XmlElement(name = "derivedCRSType", required = true)
+    SC_DerivedCRSType getType() {
+        return SC_DerivedCRSType.fromWKT(getType(getBaseCRS(), getCoordinateSystem()));
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getBaseCRS()
+     */
+    private void setBaseCRS(final SingleCRS crs) {
+        setBaseCRS("baseCRS", crs);
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     *
+     * @see #getCoordinateSystem()
+     */
+    private void setCoordinateSystem(final CoordinateSystem cs) {
+        setCoordinateSystem("coordinateSystem", cs);
     }
 }
