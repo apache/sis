@@ -43,7 +43,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public strictfp class Assert extends org.opengis.test.Assert {
@@ -250,7 +250,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     }
 
     /**
-     * Parses two XML tree as DOM documents, and compares the nodes.
+     * Parses two XML trees as DOM documents, and compares the nodes.
      * The inputs given to this method can be any of the following types:
      *
      * <ul>
@@ -260,7 +260,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
-     * This method will ignore comments and the optional attributes given in arguments.
+     * The comparison will ignore comments and the optional attributes given in arguments.
      *
      * <div class="section">Ignored attributes substitution</div>
      * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
@@ -297,14 +297,12 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *
      * @see XMLComparator
      */
-    public static void assertXmlEquals(final Object expected, final Object actual,
-            final String... ignoredAttributes)
-    {
-        assertXmlEquals(expected, actual, 0, ignoredAttributes);
+    public static void assertXmlEquals(final Object expected, final Object actual, final String... ignoredAttributes) {
+        assertXmlEquals(expected, actual, TestCase.STRICT, null, ignoredAttributes);
     }
 
     /**
-     * Parses two XML tree as DOM documents, and compares the nodes with the given tolerance
+     * Parses two XML trees as DOM documents, and compares the nodes with the given tolerance
      * threshold for numerical values. The inputs given to this method can be any of the types
      * documented {@linkplain #assertXmlEquals(Object, Object, String[]) above}. This method
      * will ignore comments and the optional attributes given in arguments as documented in the
@@ -313,13 +311,14 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @param  expected  The expected XML document.
      * @param  actual    The XML document to compare.
      * @param  tolerance The tolerance threshold for comparison of numerical values.
+     * @param  ignoredNodes The fully-qualified names of the nodes to ignore, or {@code null} if none.
      * @param  ignoredAttributes The fully-qualified names of attributes to ignore
      *         (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
      *
      * @see XMLComparator
      */
     public static void assertXmlEquals(final Object expected, final Object actual,
-            final double tolerance, final String... ignoredAttributes)
+            final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes)
     {
         final XMLComparator comparator;
         try {
@@ -333,8 +332,15 @@ public strictfp class Assert extends org.opengis.test.Assert {
         }
         comparator.tolerance = tolerance;
         comparator.ignoreComments = true;
-        for (final String attribute : ignoredAttributes) {
-            comparator.ignoredAttributes.add(XMLComparator.substitutePrefix(attribute));
+        if (ignoredNodes != null) {
+            for (final String node : ignoredNodes) {
+                comparator.ignoredNodes.add(XMLComparator.substitutePrefix(node));
+            }
+        }
+        if (ignoredAttributes != null) {
+            for (final String attribute : ignoredAttributes) {
+                comparator.ignoredAttributes.add(XMLComparator.substitutePrefix(attribute));
+            }
         }
         comparator.compare();
     }
