@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see XMLComparator
@@ -200,6 +200,28 @@ public abstract strictfp class XMLTestCase extends TestCase {
             final String... ignoredAttributes) throws JAXBException
     {
         assertXmlEquals(getResource(filename), marshal(object), addIgnoreXSI(ignoredAttributes));
+    }
+
+    /**
+     * Marshals the given object and ensure that the result is equals to the content of the given file,
+     * within a tolerance threshold for numerical values.
+     *
+     * @param  filename The name of the XML file in the package of the final subclass of {@code this}.
+     * @param  object The object to marshal.
+     * @param  tolerance The tolerance threshold for comparison of numerical values.
+     * @param  ignoredNodes The fully-qualified names of the nodes to ignore, or {@code null} if none.
+     * @param  ignoredAttributes The fully-qualified names of attributes to ignore
+     *         (typically {@code "xmlns:*"} and {@code "xsi:schemaLocation"}).
+     * @throws JAXBException If an error occurred during marshalling.
+     *
+     * @see #unmarshalFile(Class, String)
+     *
+     * @since 0.7
+     */
+    protected final void assertMarshalEqualsFile(final String filename, final Object object,
+            final double tolerance, final String[] ignoredNodes, final String[] ignoredAttributes) throws JAXBException
+    {
+        assertXmlEquals(getResource(filename), marshal(object), tolerance, ignoredNodes, ignoredAttributes);
     }
 
     /**

@@ -40,31 +40,31 @@
           <gml:sourceDimensions>2</gml:sourceDimensions>
           <gml:targetDimensions>2</gml:targetDimensions>
           <gml:parameter>
-            <gml:OperationParameter gml:id="epsg-param-8801">
+            <gml:OperationParameter gml:id="epsg-parameter-8801">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8801</gml:identifier>
               <gml:name>Latitude of natural origin</gml:name>
             </gml:OperationParameter>
           </gml:parameter>
           <gml:parameter>
-            <gml:OperationParameter gml:id="epsg-param-8802">
+            <gml:OperationParameter gml:id="epsg-parameter-8802">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8802</gml:identifier>
               <gml:name>Longitude of natural origin</gml:name>
             </gml:OperationParameter>
           </gml:parameter>
           <gml:parameter>
-            <gml:OperationParameter gml:id="epsg-param-8805">
+            <gml:OperationParameter gml:id="epsg-parameter-8805">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8805</gml:identifier>
               <gml:name>Scale factor at natural origin</gml:name>
             </gml:OperationParameter>
           </gml:parameter>
           <gml:parameter>
-            <gml:OperationParameter gml:id="epsg-param-8806">
+            <gml:OperationParameter gml:id="epsg-parameter-8806">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8806</gml:identifier>
               <gml:name>False easting</gml:name>
             </gml:OperationParameter>
           </gml:parameter>
           <gml:parameter>
-            <gml:OperationParameter gml:id="epsg-param-8807">
+            <gml:OperationParameter gml:id="epsg-parameter-8807">
               <gml:identifier codeSpace="IOGP">urn:ogc:def:parameter:EPSG::8807</gml:identifier>
               <gml:name>False northing</gml:name>
             </gml:OperationParameter>
@@ -74,31 +74,31 @@
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9105">52</gml:value>
-          <gml:operationParameter xlink:href="#epsg-param-8801"/>
+          <gml:operationParameter xlink:href="#epsg-parameter-8801"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9105">0</gml:value>
-          <gml:operationParameter xlink:href="#epsg-param-8802"/>
+          <gml:operationParameter xlink:href="#epsg-parameter-8802"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9201">0.99987742</gml:value>
-          <gml:operationParameter xlink:href="#epsg-param-8805"/>
+          <gml:operationParameter xlink:href="#epsg-parameter-8805"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9001">600000</gml:value>
-          <gml:operationParameter xlink:href="#epsg-param-8806"/>
+          <gml:operationParameter xlink:href="#epsg-parameter-8806"/>
         </gml:ParameterValue>
       </gml:parameterValue>
       <gml:parameterValue>
         <gml:ParameterValue>
           <gml:value uom="urn:ogc:def:uom:EPSG::9001">2200000</gml:value>
-          <gml:operationParameter xlink:href="#epsg-param-8807"/>
+          <gml:operationParameter xlink:href="#epsg-parameter-8807"/>
         </gml:ParameterValue>
       </gml:parameterValue>
     </gml:Conversion>
@@ -138,12 +138,12 @@
       </gml:ellipsoidalCS>
       <gml:geodeticDatum>
         <gml:GeodeticDatum gml:id="epsg-datum-6807">
-          <gml:identifier codeSpace="EPSG">urn:ogc:def:datum:EPSG::6807</gml:identifier>
+          <gml:identifier codeSpace="IOGP">urn:ogc:def:datum:EPSG::6807</gml:identifier>
           <gml:name>Nouvelle Triangulation Française</gml:name>
           <gml:scope>Topographic mapping.</gml:scope>
           <gml:primeMeridian>
             <gml:PrimeMeridian gml:id="epsg-meridian-8903">
-              <gml:identifier codeSpace="EPSG">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
+              <gml:identifier codeSpace="IOGP">urn:ogc:def:meridian:EPSG::8903</gml:identifier>
               <gml:name>Paris</gml:name>
               <gml:greenwichLongitude uom="urn:ogc:def:uom:EPSG::9105">2.5969213</gml:greenwichLongitude>
             </gml:PrimeMeridian>
