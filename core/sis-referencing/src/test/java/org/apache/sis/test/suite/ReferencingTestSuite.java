@@ -139,6 +139,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class,
     org.apache.sis.referencing.operation.OperationMarshallingTest.class,
+    org.apache.sis.referencing.operation.DefaultConcatenatedOperationTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultDerivedCRSTest.class,
     org.apache.sis.referencing.crs.SubTypesTest.class,

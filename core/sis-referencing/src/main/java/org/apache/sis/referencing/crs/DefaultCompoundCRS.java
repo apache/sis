@@ -125,13 +125,13 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * May be the same reference than {@link #singles}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setComponents(List)}</p>
+     * This field is modified only at construction and unmarshalling time by {@link #setComponents(List)}</p>
      */
     private List<? extends CoordinateReferenceSystem> components;
 
     /**
      * A decomposition of the CRS list into the single elements.
-     * Computed by {@link #setSingleComponents(List)} on construction or deserialization.
+     * Computed by {@link #setSingleComponents(List)} on construction, deserialization or unmarshalling.
      */
     private transient List<SingleCRS> singles;
 
@@ -303,7 +303,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
 
     /**
      * Returns the ordered list of single coordinate reference systems. If this compound CRS contains
-     * other compound CRS, then all of them are expanded in a sequence of {@code SingleCRS} objects.
+     * other compound CRS, then all of them are flattened in a sequence of {@code SingleCRS} objects.
      * See class Javadoc for more information.
      *
      * @return The single coordinate reference systems as an unmodifiable list.
@@ -325,9 +325,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @see #getSingleComponents()
      */
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
-        final List<SingleCRS> expanded = new ArrayList<>(crs.size());
-        final boolean identical = ReferencingUtilities.getSingleComponents(crs, expanded);
-        singles = UnmodifiableArrayList.wrap(expanded.toArray(new SingleCRS[expanded.size()]));
+        final List<SingleCRS> flattened = new ArrayList<>(crs.size());
+        final boolean identical = ReferencingUtilities.getSingleComponents(crs, flattened);
+        singles = UnmodifiableArrayList.wrap(flattened.toArray(new SingleCRS[flattened.size()]));
         return identical;
     }
 

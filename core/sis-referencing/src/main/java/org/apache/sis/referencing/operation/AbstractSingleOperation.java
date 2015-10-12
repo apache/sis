@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.List;
 import java.util.IdentityHashMap;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
@@ -510,17 +511,22 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Invoked at unmarshalling time for creating the math transform from available information.
-     * Can return {@code null} if there is not enough information.
+     * Invoked by JAXB after unmarshalling. This method needs information provided by:
+     *
+     * <ul>
+     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setParameters(GeneralParameterValue[])}</li>
+     * </ul>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
-    @Override
-    final MathTransform createMathTransform() {
-        if (parameters != null) try {
-            return DefaultFactories.forBuildin(MathTransformFactory.class).createBaseToDerived(
-                    super.getSourceCRS(), parameters, super.getTargetCRS().getCoordinateSystem());
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
+            transform = DefaultFactories.forBuildin(MathTransformFactory.class)
+                    .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
         } catch (FactoryException e) {
-            Context.warningOccured(Context.current(), AbstractCoordinateOperation.class, "createMathTransform", e, true);
+            Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
         }
-        return super.createMathTransform();
     }
 }
