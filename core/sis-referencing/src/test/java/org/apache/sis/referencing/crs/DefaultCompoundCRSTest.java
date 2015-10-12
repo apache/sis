@@ -16,21 +16,25 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.util.List;
+import javax.xml.bind.JAXBException;
 import org.opengis.test.Validators;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -38,7 +42,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -46,7 +50,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends TestCase {
+public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */
@@ -56,6 +60,11 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
      * The temporal CRS arbitrarily chosen in this class for the tests.
      */
     private static final DefaultTemporalCRS TIME = HardCodedCRS.TIME;
+
+    /**
+     * An XML file in this package containing a projected CRS definition.
+     */
+    private static final String XML_FILE = "CompoundCRS.xml";
 
     /**
      * Tests construction and serialization of a {@link DefaultCompoundCRS}.
@@ -147,11 +156,18 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     public void testIsStandardCompliant() {
         final DefaultCompoundCRS crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), HardCodedCRS.WGS84,  HEIGHT);
         final DefaultCompoundCRS crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), HardCodedCRS.WGS84_3D, TIME);
-        assertTrue (crs3.isStandardCompliant());
-        assertTrue (crs4.isStandardCompliant());
-        assertTrue (new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME).isStandardCompliant());
-        assertFalse(new DefaultCompoundCRS(singletonMap(NAME_KEY, "5D"), crs4, TIME).isStandardCompliant());
-        assertFalse(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), TIME, crs3).isStandardCompliant());
+        assertTrue (isStandardCompliant(crs3));
+        assertTrue (isStandardCompliant(crs4));
+        assertTrue (isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "5D"), crs4, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), TIME, crs3)));
+    }
+
+    /**
+     * Returns {@code true} if the given CRS is compliant with ISO 19162 restrictions.
+     */
+    private static boolean isStandardCompliant(final DefaultCompoundCRS crs) {
+        return DefaultCompoundCRS.isStandardCompliant(crs.getSingleComponents());
     }
 
     /**
@@ -241,5 +257,32 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
                 "  Area[“World”],\n" +
                 "  BBox[-90.00, -180.00, 90.00, 180.00]]",
                 HardCodedCRS.GEOID_4D);
+    }
+
+    /**
+     * Tests (un)marshalling of a derived coordinate reference system.
+     *
+     * @throws JAXBException If an error occurred during (un)marshalling.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testXML() throws JAXBException {
+        final DefaultCompoundCRS crs = unmarshalFile(DefaultCompoundCRS.class, XML_FILE);
+        Validators.validate(crs);
+        assertEpsgNameAndIdentifierEqual("JGD2011 + JGD2011 (vertical) height", 6697, crs);
+        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        /*
+         * Shallow verification of the components.
+         */
+        final List<CoordinateReferenceSystem> components = crs.getComponents();
+        assertSame("singleComponents", components, crs.getSingleComponents());
+        assertEquals("components.size", 2, components.size());
+        assertEpsgNameAndIdentifierEqual("JGD2011",                   6668, components.get(0));
+        assertEpsgNameAndIdentifierEqual("JGD2011 (vertical) height", 6695, components.get(1));
+        /*
+         * Test marshalling and compare with the original file.
+         */
+        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
     }
 }

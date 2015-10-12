@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.crs.AbstractCRS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -27,15 +27,15 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
- * @version 0.6
+ * @since   0.7
+ * @version 0.7
  * @module
  */
-public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {
+public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem, CoordinateSystem> {
     /**
      * Empty constructor for JAXB only.
      */
-    public SC_CRS() {
+    public CS_CoordinateSystem() {
     }
 
     /**
@@ -43,50 +43,50 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code CoordinateReferenceSystem.class}
+     * @return {@code CoordinateSystem.class}
      */
     @Override
-    protected Class<CoordinateReferenceSystem> getBoundType() {
-        return CoordinateReferenceSystem.class;
+    protected Class<CoordinateSystem> getBoundType() {
+        return CoordinateSystem.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SC_CRS(final CoordinateReferenceSystem crs) {
-        super(crs);
+    private CS_CoordinateSystem(final CoordinateSystem cs) {
+        super(cs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
-     * in a {@code <gml:AbstractCRS>} XML element.
+     * in a {@code <gml:AbstractCS>} XML element.
      *
-     * @param  crs The element to marshall.
+     * @param  cs The element to marshall.
      * @return A {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected SC_CRS wrap(final CoordinateReferenceSystem crs) {
-        return new SC_CRS(crs);
+    protected CS_CoordinateSystem wrap(final CoordinateSystem cs) {
+        return new CS_CoordinateSystem(cs);
     }
 
     /**
      * Invoked by JAXB at marshalling time for getting the actual element to write
-     * inside the {@code <gml:AbstractCRS>} XML element.
+     * inside the {@code <gml:AbstractCS>} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The element to be marshalled.
      */
     @XmlElementRef
-    public AbstractCRS getElement() {
-        return AbstractCRS.castOrCopy(metadata);
+    public AbstractCS getElement() {
+        return AbstractCS.castOrCopy(metadata);
     }
 
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param crs The unmarshalled element.
+     * @param cs The unmarshalled element.
      */
-    public void setElement(final AbstractCRS crs) {
-        metadata = crs;
+    public void setElement(final AbstractCS cs) {
+        metadata = cs;
     }
 }

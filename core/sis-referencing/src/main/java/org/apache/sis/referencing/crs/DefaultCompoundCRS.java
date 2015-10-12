@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -42,10 +44,11 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.jaxb.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 
@@ -106,7 +109,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name="CompoundCRSType")
@@ -120,12 +123,15 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * The coordinate reference systems in this compound CRS.
      * May be the same reference than {@link #singles}.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setComponents(List)}</p>
      */
-    private final List<? extends CoordinateReferenceSystem> components;
+    private List<? extends CoordinateReferenceSystem> components;
 
     /**
      * A decomposition of the CRS list into the single elements.
-     * Computed by {@link #computeSingleCRS(List)} on construction or deserialization.
+     * Computed by {@link #setSingleComponents(List)} on construction or deserialization.
      */
     private transient List<SingleCRS> singles;
 
@@ -179,16 +185,17 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
         super(properties, createCoordinateSystem(properties, components));
-        this.components = copy(Arrays.asList(components));
+        setComponents(Arrays.asList(components));
         // 'singles' is computed by the above method call.
     }
 
     /**
      * Returns a compound coordinate system for the specified array of CRS objects.
-     * This method is a work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     *
+     * @param  properties The properties given to the constructor, or {@code null} if unknown.
+     * @param  components The CRS components, usually singles but not necessarily.
+     * @return The coordinate system for the given components.
      */
-    @Workaround(library="JDK", version="1.7")
     private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
             final CoordinateReferenceSystem[] components)
     {
@@ -207,36 +214,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Computes the {@link #singles} field from the given CRS list and returns {@code true}
-     * if it has the same content.
-     */
-    private boolean computeSingleCRS(List<? extends CoordinateReferenceSystem> crs) {
-        singles = new ArrayList<>(crs.size());
-        final boolean identical = ReferencingUtilities.getSingleComponents(crs, singles);
-        singles = UnmodifiableArrayList.wrap(singles.toArray(new SingleCRS[singles.size()]));
-        return identical;
-    }
-
-    /**
-     * Returns an unmodifiable copy of the given list. As a side effect, this method computes the
-     * {@linkplain singles} list. If it appears that the list of {@code SingleCRS} is equal to the
-     * given list, then it is returned in other to share the same list in both {@link #components}
-     * and {@link #singles} references.
-     *
-     * <p><strong>WARNING:</strong> this method is invoked by constructors <em>before</em>
-     * the {@linkplain #components} field is set. Do not use this field in this method.</p>
-     */
-    @SuppressWarnings("SuspiciousToArrayCall")
-    private List<? extends CoordinateReferenceSystem> copy(List<? extends CoordinateReferenceSystem> components) {
-        if (computeSingleCRS(components)) {
-            components = singles; // Shares the same list.
-        } else {
-            components = UnmodifiableArrayList.wrap(components.toArray(new CoordinateReferenceSystem[components.size()]));
-        }
-        return components;
-    }
-
-    /**
      * Constructs a new coordinate reference system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -252,8 +229,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             this.components = that.components;
             this.singles    = that.singles;
         } else {
-            this.components = copy(crs.getComponents());
-            // 'singles' is computed by the above method call.
+            setComponents(crs.getComponents());
         }
     }
 
@@ -311,6 +287,21 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
+     * Computes the {@link #components} and {@link #singles} fields from the given CRS list.
+     * If the two lists have the same content, then the two fields will reference the same list.
+     *
+     * @see #getComponents()
+     */
+    @SuppressWarnings("SuspiciousToArrayCall")
+    private void setComponents(final List<? extends CoordinateReferenceSystem> crs) {
+        if (setSingleComponents(crs)) {
+            components = singles; // Shares the same list.
+        } else {
+            components = UnmodifiableArrayList.wrap(crs.toArray(new CoordinateReferenceSystem[crs.size()]));
+        }
+    }
+
+    /**
      * Returns the ordered list of single coordinate reference systems. If this compound CRS contains
      * other compound CRS, then all of them are expanded in a sequence of {@code SingleCRS} objects.
      * See class Javadoc for more information.
@@ -322,6 +313,42 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SingleCRS> getSingleComponents() {
         return singles;
+    }
+
+    /**
+     * Computes the {@link #singles} field from the given CRS list and returns {@code true}
+     * if the given list was already a list of single CRS.
+     *
+     * <p><strong>WARNING:</strong> this method is invoked by <em>before</em> the {@linkplain #components}
+     * field is set. Do not use that field in this method.</p>
+     *
+     * @see #getSingleComponents()
+     */
+    private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
+        final List<SingleCRS> expanded = new ArrayList<>(crs.size());
+        final boolean identical = ReferencingUtilities.getSingleComponents(crs, expanded);
+        singles = UnmodifiableArrayList.wrap(expanded.toArray(new SingleCRS[expanded.size()]));
+        return identical;
+    }
+
+    /**
+     * Computes the single CRS list on deserialization.
+     *
+     * @param  in The input stream from which to deserialize a compound CRS.
+     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     */
+    @SuppressWarnings("unchecked")
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (components instanceof CheckedContainer<?>) {
+            final Class<?> type = ((CheckedContainer<?>) components).getElementType();
+            if (type == SingleCRS.class) {
+                singles = (List<SingleCRS>) components;
+                return;
+            }
+        }
+        setSingleComponents(components);
     }
 
     /**
@@ -352,7 +379,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * @return {@code true} if this CRS is "standard" compliant, except for the above-cited limitations.
      */
     @SuppressWarnings("fallthrough")
-    final boolean isStandardCompliant() {
+    static boolean isStandardCompliant(final List<? extends CoordinateReferenceSystem> singles) {
+        if (Containers.isNullOrEmpty(singles)) {
+            return false;
+        }
         /*
          * 0 if we expect a horizontal CRS: Geographic2D, projected or engineering.
          * 1 if we expect a vertical or parametric CRS (but not both).
@@ -360,7 +390,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
          * 3 if we do not expect any other CRS.
          */
         int state = 0;
-        for (final SingleCRS crs : getSingleComponents()) {
+        for (final CoordinateReferenceSystem crs : singles) {
             switch (state) {
                 case 0: {
                     if (crs instanceof GeodeticCRS || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
@@ -389,26 +419,6 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             }
         }
         return true;
-    }
-
-    /**
-     * Computes the single CRS list on deserialization.
-     *
-     * @param  in The input stream from which to deserialize a compound CRS.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
-     */
-    @SuppressWarnings("unchecked")
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        if (components instanceof CheckedContainer<?>) {
-            final Class<?> type = ((CheckedContainer<?>) components).getElementType();
-            if (type == SingleCRS.class) {
-                singles = (List<SingleCRS>) components;
-                return;
-            }
-        }
-        computeSingleCRS(components);
     }
 
     /**
@@ -518,15 +528,24 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
         final Convention convention = formatter.getConvention();
+        final List<? extends CoordinateReferenceSystem> crs;
+        final boolean isStandardCompliant;
         final boolean isWKT1 = convention.majorVersion() == 1;
-        for (final CoordinateReferenceSystem element :
-                (isWKT1 || convention == Convention.INTERNAL) ? getComponents() : getSingleComponents())
-        {
-            formatter.newLine();
-            formatter.append(toFormattable(element));
+        if (isWKT1 || convention == Convention.INTERNAL) {
+            crs = getComponents();
+            isStandardCompliant = true;    // WKT 1 does not put any restriction.
+        } else {
+            crs = getSingleComponents();
+            isStandardCompliant = isStandardCompliant(crs);
         }
-        formatter.newLine(); // For writing the ID[…] element on its own line.
-        if (!isStandardCompliant()) {
+        if (crs != null) {    // Should never be null, except e.g. if unmarshalling invalid GML.
+            for (final CoordinateReferenceSystem element : crs) {
+                formatter.newLine();
+                formatter.append(toFormattable(element));
+            }
+            formatter.newLine();    // For writing the ID[…] element on its own line.
+        }
+        if (!isStandardCompliant) {
             formatter.setInvalidWKT(this, null);
         }
         return isWKT1 ? WKTKeywords.Compd_CS : WKTKeywords.CompoundCRS;
@@ -552,6 +571,33 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultCompoundCRS() {
-        components = null;
+    }
+
+    /**
+     * Returns the CRS components to marshal. We use this private methods instead than annotating
+     * {@link #getSingleComponents()} directly for two reasons:
+     *
+     * <ul>
+     *   <li>Use array instead of {@code List} in order to force JAXB to invoke the setter method.
+     *       This setter is needed for performing additional work after setting the list of CRS.</li>
+     *
+     *   <li>Allow a slightly asymmetry: marshal {@code SingleCRS} components for compliance with
+     *       the standard, but accept the more generic {@code CoordinateReferenceSystem} elements
+     *       at unmarshalling time.</li>
+     * </ul>
+     */
+    @XmlJavaTypeAdapter(SC_CRS.class)
+    @XmlElement(name = "componentReferenceSystem", required = true)
+    private CoordinateReferenceSystem[] getXMLComponents() {
+        final List<SingleCRS> crs = getSingleComponents();
+        return (crs != null) ? crs.toArray(new CoordinateReferenceSystem[crs.size()]) : null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the components of this compound CRS.
+     */
+    private void setXMLComponents(final CoordinateReferenceSystem[] crs) {
+        components = setSingleComponents(Arrays.asList(crs)) ? singles : UnmodifiableArrayList.wrap(crs);
+        setCoordinateSystem("coordinateSystem", createCoordinateSystem(null, crs));
     }
 }
