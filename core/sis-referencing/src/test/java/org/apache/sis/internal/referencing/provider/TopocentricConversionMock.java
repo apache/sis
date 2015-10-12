@@ -46,7 +46,7 @@ public final strictfp class TopocentricConversionMock extends MockProvider {
         final ParameterDescriptor<?>[] parameters = {
             createLatitude (builder.addIdentifier("8834").addName("Latitude of topocentric origin"), true),
             createLongitude(builder.addIdentifier("8835").addName("Longitude of topocentric origin")),
-                            builder.addIdentifier("8836").addName("Ellipsoidal height of topocentric origin").create(Double.NaN, SI.METRE)
+            builder.addIdentifier("8836").addName("Ellipsoidal height of topocentric origin").create(0, SI.METRE)
         };
         PARAMETERS = builder
                 .addIdentifier("9837")

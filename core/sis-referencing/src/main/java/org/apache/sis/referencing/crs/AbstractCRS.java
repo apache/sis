@@ -473,10 +473,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             formatter.indent(+1);
         }
         if (!isWKT1 || formatter.getConvention() != Convention.WKT1_IGNORE_AXES) {
-            final int dimension = cs.getDimension();
-            for (int i=0; i<dimension; i++) {
-                formatter.newLine();
-                formatter.append(toFormattable(cs.getAxis(i)));
+            if (cs != null) { // Should never be null, except sometime temporarily during construction.
+                final int dimension = cs.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    formatter.newLine();
+                    formatter.append(toFormattable(cs.getAxis(i)));
+                }
             }
         }
         if (!isWKT1) { // WKT 2 writes unit after axes, while WKT 1 wrote them before axes.

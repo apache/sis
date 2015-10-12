@@ -62,6 +62,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 @XmlType(name="AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")
 @XmlSeeAlso({
+    DefaultDerivedCRS.class,
     DefaultProjectedCRS.class
 })
 abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements GeneralDerivedCRS {

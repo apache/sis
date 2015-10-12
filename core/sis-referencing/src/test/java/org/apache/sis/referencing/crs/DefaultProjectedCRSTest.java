@@ -448,5 +448,11 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(SI.METRE),    STRICT);
 
         assertNotNull("conversion.mathTransform", conversion.getMathTransform());
+        /*
+         * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
+         * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.
+         */
+        assertMarshalEqualsFile(XML_FILE, crs, STRICT, new String[] {"gml:name"},
+                new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
     }
 }
