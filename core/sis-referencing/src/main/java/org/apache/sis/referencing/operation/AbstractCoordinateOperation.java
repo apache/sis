@@ -115,7 +115,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * The source CRS, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non final only for the convenience of constructors and for initialization
+     * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link #setSource(CoordinateReferenceSystem)}.</p>
      *
      * @see #getSourceCRS()
@@ -126,7 +126,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * The target CRS, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non final only for the convenience of constructors and for initialization
+     * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link #setTarget(CoordinateReferenceSystem)}.</p>
      *
      * @see #getTargetCRS()
@@ -138,7 +138,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * {@linkplain #getTargetCRS() target CRS} but still required for performing the operation.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non final only for the convenience of constructors.</p>
+     * This field is non-final only for the convenience of constructors.</p>
      *
      * @see #getInterpolationCRS()
      */
@@ -155,7 +155,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Estimate(s) of the impact of this operation on point accuracy, or {@code null} if none.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non final only for the convenience of constructors.</p>
+     * This field is non-final only for the convenience of constructors.</p>
      *
      * @see #getCoordinateOperationAccuracy()
      */
@@ -179,41 +179,21 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non final only for the convenience of constructors and for initialization
+     * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
      */
     MathTransform transform;
-
-    /**
-     * Creates a new coordinate operation with the same values than the specified defining conversion,
-     * except for the source CRS, target CRS and the math transform which are set the given values.
-     *
-     * <p>This constructor is (indirectly) for {@link DefaultConversion} usage only,
-     * in order to create a "real" conversion from a defining conversion.</p>
-     */
-    AbstractCoordinateOperation(final CoordinateOperation definition,
-                                final CoordinateReferenceSystem sourceCRS,
-                                final CoordinateReferenceSystem targetCRS,
-                                final MathTransform transform)
-    {
-        super(definition);
-        this.sourceCRS                   = sourceCRS;
-        this.targetCRS                   = targetCRS;
-        this.interpolationCRS            = getInterpolationCRS(definition);
-        this.operationVersion            = definition.getOperationVersion();
-        this.coordinateOperationAccuracy = definition.getCoordinateOperationAccuracy();
-        this.domainOfValidity            = definition.getDomainOfValidity();
-        this.scope                       = definition.getScope();
-        this.transform                   = transform;
-        checkDimensions(null);
-    }
 
     /**
      * Creates a new coordinate operation initialized from the given properties.
      * It is caller's responsibility to:
      *
      * <ul>
-     *   <li>Set the {@link #sourceCRS}, {@link #targetCRS} and {@link #transform} fields.</li>
+     *   <li>Set the following fields:<ul>
+     *     <li>{@link #sourceCRS}</li>
+     *     <li>{@link #targetCRS}</li>
+     *     <li>{@link #transform}</li>
+     *   </ul></li>
      *   <li>Invoke {@link #checkDimensions(Map)} after the above-cited fields have been set.</li>
      * </ul>
      */
@@ -512,7 +492,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
