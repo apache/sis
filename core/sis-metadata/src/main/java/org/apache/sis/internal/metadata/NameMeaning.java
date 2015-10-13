@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -32,7 +35,7 @@ import org.apache.sis.internal.util.Constants;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.internal.util.DefinitionURI
@@ -77,21 +80,56 @@ public final class NameMeaning extends Static {
     };
 
     /**
+     * Naming authorities allowed to appear in {@code "urn:ogc:def:"}.
+     *
+     * <p><b>Note on the case:</b> The <cite>"Name type specification — definitions"</cite> document (OGC 09-048) writes
+     * authorities in upper cases, while <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
+     * use lower cases. Apache SIS uses upper cases for now.</p>
+     *
+     * @see <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
+     *
+     * @since 0.7
+     */
+    private static final Map<String,String> AUTHORITIES = new HashMap<>(12);
+    static {
+        add(Constants.EPSG);    // IOGP
+        add(Constants.OGC);     // Open Geospatial Consortium
+        add("OGC-WFS");         // OGC Web Feature Service
+        add("SI");              // Système International d'Unités
+        add("UCUM");            // Unified Code for Units of Measure
+        add("UNSD");            // United Nations Statistics Division
+        add("USNO");            // United States Naval Observatory
+    }
+
+    /**
+     * Adds the given authority to the {@link #AUTHORITIES} map.
+     * This method shall be invoked at class initialization time only.
+     */
+    private static void add(final String authority) {
+        AUTHORITIES.put(authority, authority);
+    }
+
+    /**
      * Do not allow instantiation of this class.
      */
     private NameMeaning() {
     }
 
     /**
-     * Returns {@code true} if codes in the given code space are often represented using the URN syntax.
-     * Current implementation conservatively returns {@code true} only for {@code "EPSG"}.
-     * The list of accepted code spaces may be expanded in any future SIS version.
+     * Returns the authority to format for the given code space, or {@code null} if there is no known authority
+     * in URN syntax for the given code space. The return value is used for fixing the Apache SIS policy regarding
+     * lower or upper cases (both conventions are used in different OGC resources).
      *
      * @param  codeSpace The code space (can be {@code null}).
-     * @return {@code true} if the given code space is known to use the URN syntax.
+     * @return The authority to format in the URN, or {@code null} if none.
+     *
+     * @since 0.7
      */
-    public static boolean usesURN(final String codeSpace) {
-        return (codeSpace != null) && codeSpace.equalsIgnoreCase(Constants.EPSG);
+    public static String authority(String codeSpace) {
+        if (codeSpace != null) {
+            codeSpace = AUTHORITIES.get(codeSpace.toUpperCase(Locale.US));
+        }
+        return codeSpace;
     }
 
     /**

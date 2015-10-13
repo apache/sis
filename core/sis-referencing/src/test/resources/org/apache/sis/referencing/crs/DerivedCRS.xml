@@ -24,12 +24,12 @@
                 xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                 gml:id             = "test-crs-derived">
 
-  <gml:identifier codeSpace="test">urn:ogc:def:crs:test::derived</gml:identifier>
+  <gml:identifier codeSpace="test">derived</gml:identifier>
   <gml:name codeSpace="test">Topocentric example</gml:name>
   <gml:scope>Nowhere.</gml:scope>
   <gml:conversion>
     <gml:Conversion gml:id="test-coordinateOperation-frombase">
-      <gml:identifier codeSpace="test">urn:ogc:def:coordinateOperation:test::fromBase</gml:identifier>
+      <gml:identifier codeSpace="test">fromBase</gml:identifier>
       <gml:name codeSpace="test">Topocentric example</gml:name>
       <gml:scope>Nowhere.</gml:scope>
       <gml:method>
@@ -151,11 +151,11 @@
 
   <gml:coordinateSystem>
     <gml:CartesianCS gml:id="test-cs-derivedcs">
-      <gml:identifier codeSpace="test">urn:ogc:def:cs:test::derivedCS</gml:identifier>
+      <gml:identifier codeSpace="test">derivedCS</gml:identifier>
       <gml:name>Topocentric easting and northing</gml:name>
       <gml:axis>
         <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="test-axis-east">
-          <gml:identifier codeSpace="test">urn:ogc:def:axis:test::east</gml:identifier>
+          <gml:identifier codeSpace="test">east</gml:identifier>
           <gml:name>Topocentric East</gml:name>
           <gml:axisAbbrev>U</gml:axisAbbrev>
           <gml:axisDirection codeSpace="EPSG">east</gml:axisDirection>
@@ -163,7 +163,7 @@
       </gml:axis>
       <gml:axis>
         <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="test-axis-north">
-          <gml:identifier codeSpace="test">urn:ogc:def:axis:test::north</gml:identifier>
+          <gml:identifier codeSpace="test">north</gml:identifier>
           <gml:name>Topocentric North</gml:name>
           <gml:axisAbbrev>V</gml:axisAbbrev>
           <gml:axisDirection codeSpace="EPSG">north</gml:axisDirection>
@@ -171,7 +171,7 @@
       </gml:axis>
       <gml:axis>
         <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="test-axis-up">
-          <gml:identifier codeSpace="test">urn:ogc:def:axis:test::up</gml:identifier>
+          <gml:identifier codeSpace="test">up</gml:identifier>
           <gml:name>Topocentric Up</gml:name>
           <gml:axisAbbrev>z</gml:axisAbbrev>
           <gml:axisDirection codeSpace="EPSG">up</gml:axisDirection>

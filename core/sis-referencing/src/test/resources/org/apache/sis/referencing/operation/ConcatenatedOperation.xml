@@ -24,7 +24,7 @@
                            xmlns:gco          = "http://www.isotc211.org/2005/gco"
                            xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                            xmlns:xlink        = "http://www.w3.org/1999/xlink"
-                           gml:id             = "test-operation-concatenated">
+                           gml:id             = "test-coordinateOperation-concatenated">
 
   <!--
     For this test we use the "NTF (Paris) to NTF (1)" transformation (EPSG:1763), but separated
@@ -124,7 +124,7 @@
     between the real source and real target CRS.
   -->
   <gml:coordOperation>
-    <gml:Transformation gml:id="test-crs-step1">
+    <gml:Transformation gml:id="test-coordinateOperation-step1">
       <gml:identifier codeSpace="test">step-1</gml:identifier>
       <gml:name>Paris to tmp</gml:name>
       <gml:scope>None.</gml:scope>
@@ -180,7 +180,7 @@
     Second transformation step, reusing above elements.
   -->
   <gml:coordOperation>
-    <gml:Transformation gml:id="test-crs-step2">
+    <gml:Transformation gml:id="test-coordinateOperation-step2">
       <gml:identifier codeSpace="test">step-2</gml:identifier>
       <gml:name>Tmp to Greenwich</gml:name>
       <gml:scope>None.</gml:scope>

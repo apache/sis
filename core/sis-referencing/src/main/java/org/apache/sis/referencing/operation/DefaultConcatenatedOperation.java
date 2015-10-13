@@ -321,7 +321,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + 37 * operations.hashCode();
+        return super.computeHashCode() + 37 * Objects.hashCode(operations);
     }
 
 
