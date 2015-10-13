@@ -89,7 +89,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name="AbstractCoordinateOperationType", propOrder = {
@@ -102,7 +102,8 @@ import java.util.Objects;
 })
 @XmlRootElement(name = "AbstractCoordinateOperation")
 @XmlSeeAlso({
-    AbstractSingleOperation.class
+    AbstractSingleOperation.class,
+    DefaultConcatenatedOperation.class
 })
 public class AbstractCoordinateOperation extends AbstractIdentifiedObject implements CoordinateOperation {
     /**
@@ -114,29 +115,34 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * The source CRS, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setSource(CoordinateReferenceSystem)}</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setSource(CoordinateReferenceSystem)}.</p>
      *
      * @see #getSourceCRS()
      */
-    private CoordinateReferenceSystem sourceCRS;
+    CoordinateReferenceSystem sourceCRS;
 
     /**
      * The target CRS, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setTarget(CoordinateReferenceSystem)}</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setTarget(CoordinateReferenceSystem)}.</p>
      *
      * @see #getTargetCRS()
      */
-    private CoordinateReferenceSystem targetCRS;
+    CoordinateReferenceSystem targetCRS;
 
     /**
      * The CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
      * {@linkplain #getTargetCRS() target CRS} but still required for performing the operation.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is non-final only for the convenience of constructors.</p>
+     *
      * @see #getInterpolationCRS()
      */
-    private final CoordinateReferenceSystem interpolationCRS;
+    private CoordinateReferenceSystem interpolationCRS;
 
     /**
      * Version of the coordinate transformation
@@ -147,9 +153,14 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
 
     /**
      * Estimate(s) of the impact of this operation on point accuracy, or {@code null} if none.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is non-final only for the convenience of constructors.</p>
+     *
+     * @see #getCoordinateOperationAccuracy()
      */
     @XmlElement
-    private final Collection<PositionalAccuracy> coordinateOperationAccuracy;
+    Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
      * Area in which this operation is valid, or {@code null} if not available.
@@ -168,32 +179,37 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
      */
-    private MathTransform transform;
+    MathTransform transform;
 
     /**
-     * Creates a new coordinate operation with the same values than the specified defining conversion,
-     * except for the source CRS, target CRS and the math transform which are set the given values.
+     * Creates a new coordinate operation initialized from the given properties.
+     * It is caller's responsibility to:
      *
-     * <p>This constructor is (indirectly) for {@link DefaultConversion} usage only,
-     * in order to create a "real" conversion from a defining conversion.</p>
+     * <ul>
+     *   <li>Set the following fields:<ul>
+     *     <li>{@link #sourceCRS}</li>
+     *     <li>{@link #targetCRS}</li>
+     *     <li>{@link #transform}</li>
+     *   </ul></li>
+     *   <li>Invoke {@link #checkDimensions(Map)} after the above-cited fields have been set.</li>
+     * </ul>
      */
-    AbstractCoordinateOperation(final CoordinateOperation definition,
-                                final CoordinateReferenceSystem sourceCRS,
-                                final CoordinateReferenceSystem targetCRS,
-                                final MathTransform transform)
-    {
-        super(definition);
-        this.sourceCRS                   = sourceCRS;
-        this.targetCRS                   = targetCRS;
-        this.interpolationCRS            = getInterpolationCRS(definition);
-        this.operationVersion            = definition.getOperationVersion();
-        this.coordinateOperationAccuracy = definition.getCoordinateOperationAccuracy();
-        this.domainOfValidity            = definition.getDomainOfValidity();
-        this.scope                       = definition.getScope();
-        this.transform                   = transform;
-        checkDimensions(null);
+    AbstractCoordinateOperation(final Map<String,?> properties) {
+        super(properties);
+        this.scope            = Types.toInternationalString(properties, SCOPE_KEY);
+        this.domainOfValidity = Containers.property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
+        this.operationVersion = Containers.property(properties, OPERATION_VERSION_KEY, String.class);
+        Object value = properties.get(COORDINATE_OPERATION_ACCURACY_KEY);
+        if (value != null) {
+            if (value instanceof PositionalAccuracy[]) {
+                coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
+            } else {
+                coordinateOperationAccuracy = Collections.singleton((PositionalAccuracy) value);
+            }
+        }
     }
 
     /**
@@ -291,20 +307,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
                                        final CoordinateReferenceSystem interpolationCRS,
                                        final MathTransform             transform)
     {
-        super(properties);
+        this(properties);
         this.sourceCRS        = sourceCRS;
         this.targetCRS        = targetCRS;
         this.interpolationCRS = interpolationCRS;
         this.transform        = transform;
-        this.domainOfValidity = Containers.property(properties, DOMAIN_OF_VALIDITY_KEY, Extent.class);
-        this.scope            = Types.toInternationalString(properties, SCOPE_KEY);
-        this.operationVersion = Containers.property(properties, OPERATION_VERSION_KEY, String.class);
-        Object value = properties.get(COORDINATE_OPERATION_ACCURACY_KEY);
-        if (value instanceof PositionalAccuracy[]) {
-            coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
-        } else {
-            coordinateOperationAccuracy = (value != null) ? Collections.singleton((PositionalAccuracy) value) : null;
-        }
         checkDimensions(properties);
     }
 
@@ -312,7 +319,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Ensures that {@link #sourceCRS}, {@link #targetCRS} and {@link #interpolationCRS} dimensions
      * are consistent with {@link #transform} input and output dimensions.
      */
-    private void checkDimensions(final Map<String,?> properties) {
+    final void checkDimensions(final Map<String,?> properties) {
         final MathTransform transform = this.transform;   // Protect from changes.
         if (transform != null) {
             final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
@@ -485,7 +492,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
@@ -836,11 +843,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        interpolationCRS            = null;
-        operationVersion            = null;
-        coordinateOperationAccuracy = null;
-        domainOfValidity            = null;
-        scope                       = null;
+        operationVersion = null;
+        domainOfValidity = null;
+        scope            = null;
     }
 
     /**
@@ -879,33 +884,5 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
-    }
-
-    /**
-     * Invoked by JAXB after unmarshalling. This method needs information provided by:
-     *
-     * <ul>
-     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
-     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
-     *   <li>{@link AbstractSingleOperation#setParameters(GeneralParameterValue[])}</li>
-     * </ul>
-     *
-     * Note that the later method is defined in a subclass, but experience suggests that it still works
-     * at least with the JAXB implementation provided in JDK.
-     */
-    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        if (transform == null && sourceCRS != null && targetCRS != null) {
-            transform = createMathTransform();
-        }
-    }
-
-    /**
-     * Implemented by subclasses at unmarshalling time for creating the math transform from available information.
-     * Can return {@code null} if there is not enough information.
-     *
-     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
-     */
-    MathTransform createMathTransform() {
-        return null;
     }
 }

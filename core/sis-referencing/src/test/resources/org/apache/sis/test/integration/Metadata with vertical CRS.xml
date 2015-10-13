@@ -112,16 +112,16 @@
               <gmd:maximumValue> <gco:Real>10000</gco:Real> </gmd:maximumValue>
               <gmd:verticalCRS>
                 <gml:VerticalCRS gml:id="sis-crs-test1">
-                  <gml:identifier codeSpace="SIS">urn:ogc:def:crs:SIS::test1</gml:identifier>
+                  <gml:identifier codeSpace="SIS">test1</gml:identifier>
                   <gml:name>Depth</gml:name>
                   <gml:scope>World</gml:scope>
                   <gml:verticalCS>
                     <gml:VerticalCS gml:id="sis-cs-test3">
-                      <gml:identifier codeSpace="SIS">urn:ogc:def:cs:SIS::test3</gml:identifier>
+                      <gml:identifier codeSpace="SIS">test3</gml:identifier>
                       <gml:name>Depth</gml:name>
                       <gml:axis>
                         <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="sis-axis-test4">
-                          <gml:identifier codeSpace="SIS">urn:ogc:def:axis:SIS::test4</gml:identifier>
+                          <gml:identifier codeSpace="SIS">test4</gml:identifier>
                           <gml:name>Depth</gml:name>
                           <gml:axisAbbrev>d</gml:axisAbbrev>
                           <gml:axisDirection codeSpace="EPSG">down</gml:axisDirection>
@@ -131,7 +131,7 @@
                   </gml:verticalCS>
                   <gml:verticalDatum>
                     <gml:VerticalDatum gml:id="sis-datum-test2">
-                      <gml:identifier codeSpace="SIS">urn:ogc:def:datum:SIS::test2</gml:identifier>
+                      <gml:identifier codeSpace="SIS">test2</gml:identifier>
                       <gml:name>Depth</gml:name>
                       <gml:scope>World</gml:scope>
                     </gml:VerticalDatum>

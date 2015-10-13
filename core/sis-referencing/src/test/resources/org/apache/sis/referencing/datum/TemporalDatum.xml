@@ -23,7 +23,7 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "sis-datum-mj">
 
-  <gml:identifier codeSpace="SIS">urn:ogc:def:datum:SIS::MJ</gml:identifier>
+  <gml:identifier codeSpace="SIS">MJ</gml:identifier>
   <gml:name>Modified Julian</gml:name>
   <gml:remarks>Time measured as days since November 17, 1858 at 00:00 UTC.</gml:remarks>
   <gml:scope>History.</gml:scope>

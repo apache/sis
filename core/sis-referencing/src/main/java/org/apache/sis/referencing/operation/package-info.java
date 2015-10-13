@@ -54,7 +54,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 0.7
  * @since   0.6
  * @module
  */
@@ -68,6 +68,7 @@
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(DQ_PositionalAccuracy.class),
     @XmlJavaTypeAdapter(CC_OperationMethod.class),
+    @XmlJavaTypeAdapter(CC_CoordinateOperation.class),
     @XmlJavaTypeAdapter(CC_GeneralParameterValue.class),
     @XmlJavaTypeAdapter(CC_GeneralOperationParameter.class),
     @XmlJavaTypeAdapter(SC_CRS.class),
